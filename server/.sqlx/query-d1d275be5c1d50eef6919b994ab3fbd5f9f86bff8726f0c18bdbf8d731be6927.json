@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)\n         VALUES(1,'Alice','alice','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d1d275be5c1d50eef6919b994ab3fbd5f9f86bff8726f0c18bdbf8d731be6927"
+}

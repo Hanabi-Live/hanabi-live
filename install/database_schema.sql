@@ -42,6 +42,9 @@ CREATE TABLE users (
     num_normal_games           INTEGER  NOT NULL  DEFAULT 0,
     num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0,
 
+    /* The time spent in solo and shared replays, counted since November 2026. */
+    seconds_reviewing          BIGINT   NOT NULL  DEFAULT 0,
+
     /**
      * The settings a user changed, keyed by their client-facing names. The server supplies the
      * default for every setting that is not listed.

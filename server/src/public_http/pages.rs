@@ -381,10 +381,13 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
     .await
     .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
     transaction.commit().await?;
-    let date: chrono::DateTime<chrono::Utc> =
-        sqlx::query_scalar!("SELECT datetime_created FROM users WHERE id=$1", user)
-            .fetch_one(&state.pool)
-            .await?;
+    let account = sqlx::query!(
+        "SELECT datetime_created,seconds_reviewing FROM users WHERE id=$1",
+        user
+    )
+    .fetch_one(&state.pool)
+    .await?;
+    let date = account.datetime_created;
     let suffix = match date.day() {
         1 | 21 | 31 => "st",
         2 | 22 => "nd",
@@ -395,6 +398,7 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
         json!({"numGamesNormal":row.normal,"numGamesOther":row.other,
         "numGamesTotal":row.normal+row.other,"numGamesSpeedrun":row.speed,
         "timePlayed":duration(row.duration),"timePlayedSpeedrun":duration(row.speed_duration),
+        "timeReviewed":duration(account.seconds_reviewing),
         "dateJoined":format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year())}),
     )
 }

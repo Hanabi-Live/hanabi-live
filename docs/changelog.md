@@ -32,6 +32,8 @@ of the repository.
   for a clue; use the buttons in the clue panel.
 - The profile page no longer shows the total number of max scores. The "Missing
   Scores" page still shows it.
+- Profiles now show the time spent reviewing games in solo and shared replays,
+  counted from today.
 
 ## November 11th, 2026
 

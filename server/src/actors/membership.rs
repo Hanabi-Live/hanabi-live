@@ -263,6 +263,7 @@ impl TableActor {
         {
             absent.remove(&session.user);
         }
+        let reviewing_since = self.reviewing_since(session.user);
         self.attendees.insert(
             session.user,
             Attendance {
@@ -272,6 +273,7 @@ impl TableActor {
                 spectator: spectating || replay,
                 shadow,
                 typing_until: None,
+                reviewing_since,
             },
         );
         if let Some(absent) = self.replay_absent() {
@@ -377,7 +379,9 @@ impl TableActor {
         }
         self.persist(next).await?;
         let mut e = if attending {
-            self.attendees.remove(&session.user);
+            if let Some(a) = self.attendees.remove(&session.user) {
+                self.credit_review([&a], Instant::now());
+            }
             let mut e = self.effects();
             e.statuses.push((session.clone(), Status::Lobby, None));
             e.messages.push((

@@ -395,6 +395,8 @@ struct Attendance {
     spectator: bool,
     shadow: Option<PlayerIndex>,
     typing_until: Option<Instant>,
+    /// When the attendee started viewing the replay, for their review time. `None` outside replays.
+    reviewing_since: Option<Instant>,
 }
 struct TableActor {
     table: TableSnapshot,

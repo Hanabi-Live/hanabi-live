@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users u SET seconds_reviewing=u.seconds_reviewing+c.seconds\n                 FROM UNNEST($1::integer[],$2::bigint[]) AS c(id,seconds) WHERE u.id=c.id",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int8Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5decbc564a8c7130b0a2b8fdccc5c7c3f575e9362ba57df28466e6f7d82e4f4b"
+}

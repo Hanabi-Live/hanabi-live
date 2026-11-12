@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT datetime_created FROM users WHERE id=$1",
+  "query": "SELECT datetime_created,seconds_reviewing FROM users WHERE id=$1",
   "describe": {
     "columns": [
       {
@@ -13,6 +13,17 @@
             "name": "datetime_created"
           }
         }
+      },
+      {
+        "ordinal": 1,
+        "name": "seconds_reviewing",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "seconds_reviewing"
+          }
+        }
       }
     ],
     "parameters": {
@@ -21,8 +32,9 @@
       ]
     },
     "nullable": [
+      false,
       false
     ]
   },
-  "hash": "25146b95c69734f001bba11aa8e79499f420f3099288c91649597db55a4f1d89"
+  "hash": "1aa649c5c7752984a9389e46e2438a51b5f6d0e89aabd7f37400d7c2e7d71838"
 }

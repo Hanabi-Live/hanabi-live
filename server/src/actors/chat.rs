@@ -539,6 +539,7 @@ impl TableActor {
         self.persist(next).await?;
         let mut e = self.effects();
         if let Some(a) = self.attendees.remove(&kicked_user) {
+            self.credit_review([&a], Instant::now());
             e.statuses.push((a.session.clone(), Status::Lobby, None));
             e.messages.push((
                 a.session,

@@ -436,6 +436,39 @@ impl Store {
             }
         });
     }
+    /// Adds time that users spent in a replay to their review time, in the background.
+    pub fn credit_review_background(&self, credits: Vec<(UserId, Duration)>) {
+        let (users, seconds): (Vec<i32>, Vec<i64>) = credits
+            .into_iter()
+            .filter_map(|(user, time)| Some((user.0, i64::try_from(time.as_secs()).ok()?)))
+            .filter(|(_, seconds)| *seconds > 0)
+            .unzip();
+        if users.is_empty() {
+            return;
+        }
+        let Ok(permit) = self.stats_slots.clone().try_acquire_owned() else {
+            tracing::warn!("Derived statistics capacity exhausted; review time was not counted.");
+            return;
+        };
+        let store = self.clone();
+        self.stats.spawn(async move {
+            let _permit = permit;
+            let Ok(_running) = store.stats_running.acquire().await else {
+                return;
+            };
+            let result = sqlx::query!(
+                "UPDATE users u SET seconds_reviewing=u.seconds_reviewing+c.seconds
+                 FROM UNNEST($1::integer[],$2::bigint[]) AS c(id,seconds) WHERE u.id=c.id",
+                &users,
+                &seconds
+            )
+            .execute(&store.primary)
+            .await;
+            if let Err(e) = result {
+                tracing::error!("Review time failed: {e}");
+            }
+        });
+    }
     pub async fn close(&self) -> Result<()> {
         self.stats.close();
         self.stats.wait().await;

@@ -350,6 +350,7 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
         synced: false,
         shadow: None,
         typing_until: None,
+        reviewing_since: None,
     }
 }
 
@@ -409,6 +410,76 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         );
         actor.retire().await?;
     }
+    store.close().await?;
+    db.close().await;
+    Ok(())
+}
+
+/// Waits for the background work to count a user's review time.
+async fn seconds_reviewing(pool: &sqlx::PgPool, user: UserId, expected: i64) -> Result<i64> {
+    let mut seconds = 0;
+    for _ in 0..100 {
+        seconds = sqlx::query_scalar!("SELECT seconds_reviewing FROM users WHERE id=$1", user.0)
+            .fetch_one(pool)
+            .await?;
+        if seconds >= expected {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
+    Ok(seconds)
+}
+
+#[tokio::test]
+async fn replay_viewers_get_review_time_without_the_idle_time() -> Result<()> {
+    let Some((db, store, _)) = fixture_store().await? else {
+        return Ok(());
+    };
+    sqlx::query!(
+        "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+         VALUES(1,'Alice','alice','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')"
+    )
+    .execute(&db.pool)
+    .await?;
+    let id = store.allocate_table().await?;
+    let table = review(id, EndCondition::TerminatedByPlayer)?;
+    let revision = store.save_at(&table, 0).await?;
+    let (hub, _notifications) = mpsc::channel(16);
+    let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
+    let mut actor = TableActor::new(
+        table,
+        saved,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
+    );
+    let ago = |seconds| Instant::now().checked_sub(Duration::from_secs(seconds));
+    let (alice, _alice_frames) = Session::new(UserId(1), "Alice".into(), 1);
+    let (cathy, _cathy_frames) = Session::new(UserId(3), "Cathy".into(), 1);
+    for viewer in [&alice, &cathy] {
+        actor
+            .reattend(viewer.clone(), &BTreeSet::new(), true, None)
+            .await?;
+    }
+    actor.attendees.get_mut(&UserId(1)).unwrap().reviewing_since = ago(40 * 60);
+    actor.attendees.get_mut(&UserId(3)).unwrap().reviewing_since = ago(90);
+    actor.leave(cathy, false).await?;
+    let cathy_seconds = seconds_reviewing(&db.pool, UserId(3), 90).await?;
+    ensure!(
+        (90..=92).contains(&cathy_seconds),
+        "A viewer who left got {cathy_seconds} seconds of review time"
+    );
+    // The replay closes after its idle timeout, which is not review time.
+    actor.anchor = ago(31 * 60).unwrap();
+    actor.tick().await?;
+    ensure!(actor.retired, "The idle replay did not close");
+    let alice_seconds = seconds_reviewing(&db.pool, UserId(1), 10 * 60).await?;
+    ensure!(
+        (10 * 60..=10 * 60 + 2).contains(&alice_seconds),
+        "A viewer of an idle replay got {alice_seconds} seconds of review time"
+    );
     store.close().await?;
     db.close().await;
     Ok(())

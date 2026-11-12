@@ -530,8 +530,20 @@ impl TableActor {
     /// Makes `next` the table's state, with its timers up to date as of now. A turn or an idle
     /// reset that restarts the idle timer lets the idle warning be sent again.
     fn install(&mut self, next: TableSnapshot) {
+        let was_replay = matches!(self.table.phase, Phase::Replay { .. });
         self.table = next;
         self.anchor = Instant::now();
+        // Review time starts when a game becomes a replay, and ends when a replay is restarted.
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        if replay != was_replay {
+            if was_replay {
+                self.credit_review(self.attendees.values(), self.anchor);
+            }
+            let since = replay.then_some(self.anchor);
+            for a in self.attendees.values_mut() {
+                a.reviewing_since = since;
+            }
+        }
         if self
             .table
             .game()
@@ -540,6 +552,34 @@ impl TableActor {
         {
             *warned = false;
         }
+    }
+    /// When a user who enters the table started viewing it as a replay. A user who is already
+    /// here, such as from another tab, keeps their start.
+    pub(super) fn reviewing_since(&self, user: UserId) -> Option<Instant> {
+        matches!(self.table.phase, Phase::Replay { .. }).then(|| {
+            self.attendees
+                .get(&user)
+                .and_then(|a| a.reviewing_since)
+                .unwrap_or_else(Instant::now)
+        })
+    }
+    /// Counts the time that `viewers` spent in this replay, up to `until`, as their review time.
+    pub(super) fn credit_review<'a>(
+        &self,
+        viewers: impl IntoIterator<Item = &'a Attendance>,
+        until: Instant,
+    ) {
+        self.store.credit_review_background(
+            viewers
+                .into_iter()
+                .filter_map(|a| {
+                    Some((
+                        a.session.user,
+                        until.saturating_duration_since(a.reviewing_since?),
+                    ))
+                })
+                .collect(),
+        );
     }
     /// Keeps a change that is not worth a durable write, such as an idle-timer reset, in memory.
     /// The next checkpoint saves it, including the one written when the server drains; a crash
@@ -615,6 +655,7 @@ impl TableActor {
             next.shadows.insert(s.user, None);
             self.persist(next).await?;
         }
+        let reviewing_since = self.reviewing_since(s.user);
         self.attendees.insert(
             s.user,
             Attendance {
@@ -624,6 +665,7 @@ impl TableActor {
                 spectator: replay,
                 shadow: None,
                 typing_until: None,
+                reviewing_since,
             },
         );
         if let Some(absent) = self.replay_absent() {
@@ -806,6 +848,12 @@ impl TableActor {
     }
     /// Saves the table for a graceful stop, giving timed games their maintenance allowance once.
     async fn drain(&mut self) -> CommandResult<()> {
+        // Viewers reconnect to the restored replay, which starts their review time again.
+        let now = Instant::now();
+        self.credit_review(self.attendees.values(), now);
+        for a in self.attendees.values_mut() {
+            a.reviewing_since = a.reviewing_since.map(|_| now);
+        }
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
             && s.game.end.is_none()
@@ -828,7 +876,17 @@ impl TableActor {
             .filter(|a| !a.session.active() && a.typing_until.is_some())
             .map(|a| (a.session.user, a.session.name.clone()))
             .collect::<Vec<_>>();
-        self.attendees.retain(|_, a| a.session.active());
+        let departed = self
+            .attendees
+            .iter()
+            .filter(|(_, a)| !a.session.active())
+            .map(|(id, _)| *id)
+            .collect::<Vec<_>>();
+        for id in departed {
+            if let Some(a) = self.attendees.remove(&id) {
+                self.credit_review([&a], now);
+            }
+        }
         let empty = self.attendees.is_empty();
         if let Some(absent) = self.replay_absent() {
             if empty {
@@ -1174,6 +1232,18 @@ impl TableActor {
         self.store
             .remove(self.table.id, self.saved.revision)
             .await?;
+        // A replay that closes for being idle does not count the idle time.
+        let now = Instant::now();
+        let until = if self.timers().is_some_and(|t| t.idle_remaining == 0) {
+            now.checked_sub(Duration::from_millis(IDLE_TIMEOUT_MS.unsigned_abs()))
+                .unwrap_or(now)
+        } else {
+            now
+        };
+        self.credit_review(self.attendees.values(), until);
+        for a in self.attendees.values_mut() {
+            a.reviewing_since = None;
+        }
         let mut e = self.effects();
         for a in self.audience() {
             e.statuses.push((a.session.clone(), Status::Lobby, None));
