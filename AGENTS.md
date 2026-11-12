@@ -40,6 +40,10 @@ plain box that does not match the site's tooltips. Use the site's tooltip
 instead. In React components, pass `tooltipRef("text")` (or `tooltipRefHtml` for
 HTML) from `packages/client/src/tooltipRef.ts` as the element's `ref`.
 
+When a shape joins two parts, such as a box and its arrow, draw its outline
+around the joined shape, not around each part. Otherwise the outline breaks
+where the parts meet. Check the joint in a zoomed screenshot.
+
 Before you design a new button or animation for the New UI, load the
 `frontend-design`, `game-feel`, and `game-ui-ux` skills, and follow them.
 
