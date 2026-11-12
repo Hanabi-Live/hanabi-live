@@ -9,7 +9,7 @@ const VIEW_AS_TOOLTIP =
   "Watch the game from a player's seat. You can also right-click a player's name.";
 
 const ITEM_CLASS =
-  "tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-2.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-[14px] tw:text-game-text tw:hover:bg-white/10";
+  "tw:flex tw:w-full tw:items-center tw:enabled:cursor-pointer tw:gap-2.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-[14px] tw:text-game-text tw:enabled:hover:bg-white/10";
 
 /**
  * A menu to view the game from a player's seat, for anyone who does not play in it (see
@@ -106,6 +106,8 @@ export function ViewAsMenu({
               <button
                 aria-checked={current}
                 className={ITEM_CLASS}
+                // The current view cannot be chosen again.
+                disabled={current}
                 key={name}
                 onClick={() => {
                   choose(playerIndex);
@@ -127,6 +129,7 @@ export function ViewAsMenu({
               <button
                 aria-checked={viewedSeat === undefined}
                 className={ITEM_CLASS}
+                disabled={viewedSeat === undefined}
                 onClick={() => {
                   choose(undefined);
                 }}
