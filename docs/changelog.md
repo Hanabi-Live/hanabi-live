@@ -56,6 +56,8 @@ of the repository.
 - In the new game screen, the cursor turns into an eye over another player's
   cards, where holding the mouse button down shows their view of them. The eye
   buttons beside the names now show only on touch screens.
+- In the new game screen, on a narrow window that still has room, the names go
+  beside the cards instead of above them, so that the hands take less space.
 
 ## November 11th, 2026
 

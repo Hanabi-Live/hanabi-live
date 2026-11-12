@@ -123,6 +123,13 @@ const CLOCK_TICK_MILLISECONDS = 500;
 /** The smallest and largest card in a hand, in CSS pixels of width. */
 const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
 
+/**
+ * When the columns stack, the names go beside the cards only if the cards are still at least this
+ * wide. Otherwise, as on a phone, the names go above the cards, so that the cards get the whole
+ * width.
+ */
+const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
+
 /** The smallest and largest card on the play stacks and in the discard pile. */
 const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
 
@@ -551,6 +558,7 @@ function getHandCardWidth(
   numPlayers: number,
   cardsPerHand: number,
   nameColumnWidth: number | undefined,
+  stacked: boolean,
 ): number {
   const widthForCards =
     handsWidth
@@ -560,10 +568,9 @@ function getHandCardWidth(
   const byWidth = widthForCards / cardsPerHand;
   const rowHeight =
     (handsHeight - HAND_ROW_GAP * (numPlayers - 1)) / numPlayers;
-  const byHeight =
-    nameColumnWidth === undefined
-      ? Infinity
-      : (rowHeight - HAND_BOX_VERTICAL_PADDING) / CARD_HEIGHT_PER_WIDTH;
+  const byHeight = stacked
+    ? Infinity
+    : (rowHeight - HAND_BOX_VERTICAL_PADDING) / CARD_HEIGHT_PER_WIDTH;
   return clamp(
     Math.floor(Math.min(byWidth, byHeight)),
     HAND_CARD_WIDTH.MIN,
@@ -1116,23 +1123,28 @@ export function GameScreen({
     waitingText = "The team has no clues. Play or discard a card.";
   }
 
-  let nameColumnWidth: number | undefined;
-  if (!stacked) {
-    // On a touch screen, the column also holds the eye button that shows a player's view of their
-    // hand.
-    nameColumnWidth =
-      Math.min(
-        nameWidth,
-        mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
-      ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
+  // On a touch screen, the name column also holds the eye button that shows a player's view of
+  // their hand.
+  let nameColumnWidth: number | undefined =
+    Math.min(
+      nameWidth,
+      mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
+    ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
+  function getHandCardWidthFor(columnWidth: number | undefined) {
+    return getHandCardWidth(
+      handsSize.width,
+      handsSize.height,
+      options.numPlayers,
+      getCardsPerHand(options),
+      columnWidth,
+      stacked,
+    );
   }
-  const handCardWidth = getHandCardWidth(
-    handsSize.width,
-    handsSize.height,
-    options.numPlayers,
-    getCardsPerHand(options),
-    nameColumnWidth,
-  );
+  let handCardWidth = getHandCardWidthFor(nameColumnWidth);
+  if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
+    nameColumnWidth = undefined;
+    handCardWidth = getHandCardWidthFor(undefined);
+  }
   const tableCardWidth = getTableCardWidth(
     playAreaSize.width,
     playAreaSize.height,

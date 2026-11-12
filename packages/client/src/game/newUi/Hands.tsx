@@ -41,8 +41,8 @@ interface HandsProps {
   readonly cardWidth: number;
 
   /**
-   * The width of the column with each player's name, in CSS pixels. On narrow screens, the name
-   * sits above the cards instead, and this is `undefined`.
+   * The width of the column with each player's name, in CSS pixels. On a window too narrow for the
+   * names beside the cards, the names sit above the cards instead, and this is `undefined`.
    */
   readonly nameColumnWidth: number | undefined;
 
