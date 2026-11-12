@@ -2,11 +2,17 @@ import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { CARD_FADE, CARD_H, CARD_W } from "../ui/constants.ts";
+import { CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
 
 /** Cards keep the proportions of the classic card images. */
 export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
+
+/**
+ * How opaque a trash card is. It fades more than on the classic screen (`CARD_FADE`), so that it
+ * stands further apart from the cards that still matter.
+ */
+const TRASH_CARD_OPACITY = 0.4;
 
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 const CLUED_RAISE_PER_WIDTH = 0.12;
@@ -423,7 +429,7 @@ export function CardFace({
         background: faceColors.background,
         color: faceColors.ink,
         transform: `translateY(${-raise}px)`,
-        opacity: trash ? CARD_FADE : 1,
+        opacity: trash ? TRASH_CARD_OPACITY : 1,
       }}
     >
       {clueMarker !== undefined && (
