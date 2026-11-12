@@ -88,9 +88,23 @@ export const cardIdentitiesSchema = z
 const chatIdSchema = z.number().int().min(1).max(9_007_199_254_740_991);
 
 /**
- * Who wrote a chat message. The wire and the database's chat log both use these names.
+ * Who wrote a chat message.
  */
-const chatSourceSchema = z.enum(["user", "server", "discord"]);
+const chatAuthorSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({ type: z.literal("user"), username: z.string().min(1) })
+    .readonly(),
+  z
+    .strictObject({
+      type: z.literal("discord"),
+      /**
+       * The Discord user who wrote the message. Absent for a notice about the Discord server.
+       */
+      username: z.string().min(1).optional(),
+    })
+    .readonly(),
+  z.strictObject({ type: z.literal("server") }).readonly(),
+]);
 
 /**
  * A saved game's ID.
@@ -148,16 +162,41 @@ const tableSettingsSchema = z
     options: gameOptionsSchema,
   })
   .readonly();
+
+/**
+ * Who a chat message is for, and who wrote it.
+ */
+const chatKindSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({ author: chatAuthorSchema, type: z.literal("public") })
+    .readonly(),
+  z
+    .strictObject({
+      author: chatAuthorSchema,
+      recipient: z.string().min(1),
+      type: z.literal("private"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      recipient: z.string().min(1),
+      settings: tableSettingsSchema,
+      type: z.literal("suggestion"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A chat message.
+ */
 export const chatSchema = z
   .strictObject({
-    chatId: chatIdSchema.optional(),
-    recipient: z.string().min(1).optional(),
-    sentAt: z.iso.datetime({ precision: 3 }),
-    source: chatSourceSchema,
     /**
-     * What the message's button applies to the table, in a suggestion to its owner.
+     * Absent for a message that the chat log does not keep, or does not keep yet.
      */
-    suggestedSettings: tableSettingsSchema.optional(),
+    chatId: chatIdSchema.optional(),
+    kind: chatKindSchema,
+    sentAt: z.iso.datetime({ precision: 3 }),
     /**
      * The table whose chat shows the message. Absent means the lobby, or the recipient's current
      * chat for a private message.
@@ -167,10 +206,6 @@ export const chatSchema = z
      * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
     text: z.string().min(1),
-    /**
-     * The author. Absent when nobody wrote the message, such as a server message.
-     */
-    username: z.string().min(1).optional(),
   })
   .readonly();
 export const chatDeletedSchema = z

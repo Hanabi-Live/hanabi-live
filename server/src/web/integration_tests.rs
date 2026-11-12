@@ -366,10 +366,11 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
             .unwrap();
         for prefix in ["The server came online at:", "Uptime:"] {
             let reply = receive(&mut alice, "chat").await;
-            assert!(reply.get("username").is_none());
-            assert_eq!(reply["recipient"], "Alice");
+            assert_eq!(
+                reply["kind"],
+                json!({"type":"private","author":{"type":"server"},"recipient":"Alice"})
+            );
             assert_eq!(reply.get("tableId").and_then(Value::as_u64), table);
-            assert_eq!(reply["source"], "server");
             assert!(reply["text"].as_str().unwrap().starts_with(prefix));
             assert!(reply.get("chatId").is_none());
         }
@@ -519,8 +520,10 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let pm = receive(&mut bob, "chat").await;
-    assert_eq!(pm["username"], "Alicè");
-    assert_eq!(pm["recipient"], "Bob");
+    assert_eq!(
+        pm["kind"],
+        json!({"type":"private","author":{"type":"user","username":"Alicè"},"recipient":"Bob"})
+    );
     assert_eq!(pm["text"], "private &lt;content&gt;");
     assert!(pm.get("chatId").is_none());
     assert!(pm.get("tableId").is_none());
@@ -531,7 +534,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let token = receive(&mut alice, "chat").await;
-    assert_eq!(token["recipient"], "Alicè");
+    assert_eq!(token["kind"]["recipient"], "Alicè");
     assert!(token["text"].as_str().unwrap().contains("<code>"));
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='user'")
@@ -582,9 +585,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
                 generation: 2,
                 message: Outgoing::new(
                     hanabi_protocol::server::CHAT,
-                    hanabi_protocol::Chat::new(
+                    hanabi_protocol::Chat::server(
                         "must not reroute to replacement",
-                        hanabi_protocol::ChatSource::User,
                         chrono::DateTime::from_timestamp(1_794_009_600, 0).unwrap(),
                     ),
                 ),

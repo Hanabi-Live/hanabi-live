@@ -135,10 +135,10 @@ pub(crate) fn notice_publication(
         hanabi_protocol::server::CHAT,
         hanabi_protocol::Chat {
             table_id: table,
-            recipient: Some(recipient.into()),
-            ..hanabi_protocol::Chat::new(
+            ..hanabi_protocol::Chat::private(
                 message,
-                hanabi_protocol::ChatSource::Server,
+                hanabi_protocol::ChatAuthor::Server {},
+                recipient,
                 hanabi_protocol::Timestamp::from(chrono::Utc::now()),
             )
         },

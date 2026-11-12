@@ -603,8 +603,8 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                     messages.len() == 1,
                     "Expected one leader-change announcement"
                 );
-                ensure!(messages[0]["text"] == expected && messages[0]["source"] == "server");
-                ensure!(messages[0].get("recipient").is_none());
+                ensure!(messages[0]["text"] == expected);
+                ensure!(messages[0]["kind"] == json!({"type":"public","author":{"type":"server"}}));
             }
             ensure!(
                 chat_messages(&h.frames(2)?).is_empty(),
@@ -1965,7 +1965,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
         let history = h.receive(0, "chatList").await?;
         ensure!(history["messages"][0]["text"] == "Alice created the table.");
-        ensure!(history["messages"][0]["source"] == "server");
+        ensure!(history["messages"][0]["kind"]["author"]["type"] == "server");
         ensure!(
             history["numUnread"] == 0,
             "The creator has unread chat: {history}"
@@ -1976,7 +1976,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         let history = h.receive(1, "chatList").await?;
         ensure!(history["messages"][1]["text"] == "Before Bob joined");
         ensure!(history["messages"][2]["text"] == "Bob joined the game.");
-        ensure!(history["messages"][2]["source"] == "server");
+        ensure!(history["messages"][2]["kind"]["author"]["type"] == "server");
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
@@ -2258,7 +2258,7 @@ fn browser_json(value: Value) -> Value {
 
 fn suggestion(value: &Value) -> Result<Value> {
     value
-        .get("suggestedSettings")
+        .pointer("/kind/settings")
         .cloned()
         .context("Missing actionable suggestion")
 }
@@ -2340,8 +2340,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 let messages = chat_messages(&h.frames(0)?);
                 ensure!(
                     messages.iter().any(|message| message["text"] == expected
-                        && message["username"] == "Alice"
-                        && message["source"] == "user"),
+                        && message["kind"]["author"] == json!({"type":"user","username":"Alice"})),
                     "Bot did not receive table command"
                 );
                 let snapshot = h.snapshot(id).await?.0;
@@ -2385,7 +2384,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         h.barrier(0).await?;
         for index in 0..3 {
             let messages = chat_messages(&h.frames(index)?);
-            let summary = messages.iter().find(|m| m.get("recipient").is_none()).context("Missing public summary")?;
+            let summary = messages.iter().find(|m| m["kind"]["type"] == "public").context("Missing public summary")?;
             let text = summary["text"].as_str().context("Missing summary text")?;
             for expected in ["Bob&lt;&amp;&gt; proposes the following options:", "Table Name: <b>Proposal</b>", "Variant: <b>6 Suits</b>", "Timed: <b>120 / 20</b>", "Max Players: <b>2</b>", "Empty Clues: <b>Yes</b>", "Players above the new limit will be removed."] {
                 ensure!(text.contains(expected), "Missing proposal detail: {expected}");
@@ -2394,7 +2393,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
             let button = messages.iter().find(|m| m["text"].as_str().is_some_and(|s| s.contains("new-options")));
             if index == 0 {
                 let button = button.context("Owner is missing the apply button")?;
-                ensure!(button["recipient"] == "Alice");
+                ensure!(button["kind"]["recipient"] == "Alice");
                 let suggestion = suggestion(button)?;
                 ensure!(suggestion["options"]["variantId"] == 1 && suggestion["maxPlayers"] == 2 && suggestion["name"] == "Proposal");
             } else {
@@ -2406,7 +2405,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
         let message = &table.chat.last().context("Summary was not persisted")?.message;
         ensure!(message.text.contains("Variant: <b>6 Suits</b>"));
-        ensure!(message.recipient.is_none());
+        ensure!(matches!(message.kind, hanabi_protocol::ChatKind::Public { .. }));
         let before = table.chat.len();
         let error = h.send(1, "tableUpdate", json!({"tableId":id,"settings":{"name":"Original"}}))
             .await.expect_err("Unchanged options should be rejected");
@@ -2499,7 +2498,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         h.send(1,"chat",json!({"tableId":id,"text":"/findvariant"})).await?;h.barrier(0).await?;
         let alice=chat_messages(&h.frames(0)?);let bob=chat_messages(&h.frames(1)?);
         let proposal=alice.iter().find(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))).context("Owner did not receive proposal")?;
-        ensure!(proposal["recipient"]=="Alice","Proposal was not private");
+        ensure!(proposal["kind"]["recipient"]=="Alice","Proposal was not private");
         ensure!(!bob.iter().any(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
         ensure!(bob.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
         let suggestion=browser_json(suggestion(proposal)?);let options=&suggestion["options"];
@@ -2585,7 +2584,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
-                .any(|v| v["recipient"] == "Alice"
+                .any(|v| v["kind"]["recipient"] == "Alice"
                     && v["text"].as_str().unwrap_or("").contains("new-options")),
             "Current owner did not get the button"
         );
@@ -2630,7 +2629,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             private.len() == 2
                 && private.iter().all(|v| v["text"]
                     == "Successfully added a tag of \"alpha &lt;b&gt;\"."
-                    && v["recipient"] == "Alice"),
+                    && v["kind"]["recipient"] == "Alice"),
             "Unexpected live tag acknowledgements"
         );
         ensure!(
@@ -2685,7 +2684,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                     "Tag listing was stale, duplicated, unescaped, or combined"
                 );
                 ensure!(
-                    chats.iter().all(|v| v.get("recipient").is_none()),
+                    chats.iter().all(|v| v["kind"]["type"] == "public"),
                     "Replay list was not public"
                 );
             }

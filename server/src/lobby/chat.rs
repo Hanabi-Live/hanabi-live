@@ -3,7 +3,7 @@ use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, r
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
-use hanabi_protocol::{Chat, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId};
+use hanabi_protocol::{Chat, ChatAuthor, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId};
 use serde::Deserialize;
 use sqlx::PgPool;
 use std::sync::LazyLock;
@@ -296,15 +296,14 @@ pub async fn private_message(
     )
     .fetch_one(pool)
     .await?;
-    let data = Chat {
-        username: Some(caller.name.clone().into()),
-        recipient: Some(target.identity.name.clone().into()),
-        ..Chat::new(
-            message,
-            ChatSource::User,
-            hanabi_protocol::Timestamp::from(row.datetime_sent),
-        )
-    };
+    let data = Chat::private(
+        message,
+        ChatAuthor::User {
+            username: caller.name.clone().into(),
+        },
+        target.identity.name.clone(),
+        hanabi_protocol::Timestamp::from(row.datetime_sent),
+    );
     Ok(vec![
         Effect::to_self(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
         Publication::ToUser {
@@ -357,25 +356,20 @@ pub async fn private_history(
     .await?;
     let mut list = Vec::new();
     for row in rows.iter().rev() {
-        list.push(Chat {
-            username: Some(
-                row.who
+        list.push(Chat::private(
+            row.message.clone(),
+            ChatAuthor::User {
+                username: row
+                    .who
                     .clone()
                     .context("Missing private message author")?
                     .into(),
-            ),
-            recipient: Some(
-                row.recipient
-                    .clone()
-                    .context("Missing private message recipient")?
-                    .into(),
-            ),
-            ..Chat::new(
-                row.message.clone(),
-                ChatSource::User,
-                hanabi_protocol::Timestamp::from(row.datetime_sent),
-            )
-        });
+            },
+            row.recipient
+                .clone()
+                .context("Missing private message recipient")?,
+            hanabi_protocol::Timestamp::from(row.datetime_sent),
+        ));
     }
     let response = ChatPmHistory {
         messages: list,
@@ -507,11 +501,14 @@ pub async fn lobby_chat(
         effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                username: who.map(Into::into),
                 chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
-                ..Chat::new(
+                ..Chat::public(
                     content,
-                    ChatSource::from_name(source).context("Unknown chat source")?,
+                    ChatAuthor::new(
+                        ChatSource::from_name(source).context("Unknown chat source")?,
+                        who.map(Into::into),
+                    )
+                    .context("Invalid chat author")?,
                     hanabi_protocol::Timestamp::from(row.datetime_sent),
                 )
             },
@@ -570,10 +567,13 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
         };
         result.push(Chat {
             chat_id: Some(hanabi_protocol::ChatId(i64::from(row.id))),
-            username: who.map(Into::into),
-            ..Chat::new(
+            ..Chat::public(
                 message,
-                ChatSource::from_name(&source).context("Unknown chat source")?,
+                ChatAuthor::new(
+                    ChatSource::from_name(&source).context("Unknown chat source")?,
+                    who.map(Into::into),
+                )
+                .context("Invalid chat author")?,
                 hanabi_protocol::Timestamp::from(row.datetime_sent),
             )
         });
@@ -597,11 +597,7 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
             hanabi_protocol::server::CHAT,
             Chat {
                 chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
-                ..Chat::new(
-                    message,
-                    ChatSource::Server,
-                    hanabi_protocol::Timestamp::from(row.datetime_sent),
-                )
+                ..Chat::server(message, hanabi_protocol::Timestamp::from(row.datetime_sent))
             },
         ),
         message: message.into(),

@@ -151,20 +151,19 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
             num_unread: hanabi_protocol::Count(0),
         },
     ));
-    initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
-        ..hanabi_protocol::Chat::new(
+    initial.push(frame(
+        hanabi_protocol::server::CHAT,
+        hanabi_protocol::Chat::server(
             "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
-            hanabi_protocol::ChatSource::Server,
             hanabi_protocol::Timestamp::from(Utc::now()),
-        )
-    }));
+        ),
+    ));
     let motd = app.public.root.join("motd.txt");
     match tokio::fs::read_to_string(motd).await {
         Ok(text) if !text.trim().is_empty() => initial.push(frame(
             hanabi_protocol::server::CHAT,
-            hanabi_protocol::Chat::new(
+            hanabi_protocol::Chat::server(
                 format!("[Server Notice] {}", text.trim()),
-                hanabi_protocol::ChatSource::Server,
                 hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         )),

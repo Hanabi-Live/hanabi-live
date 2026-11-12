@@ -384,6 +384,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
         clue_fields_and_morphed_identities,
     ),
     ("hanabi-live-16", "hanabi-live-17", suggested_variant_ids),
+    ("hanabi-live-17", "hanabi-live-18", chat_kinds),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -863,6 +864,35 @@ fn suggested_variant_ids(_: &mut Value, parts: &mut [(String, String)]) -> Resul
                 message.remove("suggestedSettings");
             }
         }
+    })
+}
+
+/// Format 17 gave a chat message its author's source and name, and a recipient and suggested
+/// settings that only some messages had, side by side.
+fn chat_kinds(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        let Some(message) = chat.get_mut("message").and_then(Value::as_object_mut) else {
+            return;
+        };
+        let source = message.remove("source");
+        let username = message.remove("username");
+        let recipient = message.remove("recipient");
+        let settings = message.remove("suggestedSettings");
+        let mut author = Map::new();
+        author.insert("type".into(), source.unwrap_or_else(|| "server".into()));
+        if let Some(username) = username {
+            author.insert("username".into(), username);
+        }
+        let kind = match (recipient, settings) {
+            (Some(recipient), Some(settings)) => serde_json::json!({
+                "type": "suggestion", "recipient": recipient, "settings": settings,
+            }),
+            (Some(recipient), None) => serde_json::json!({
+                "type": "private", "author": author, "recipient": recipient,
+            }),
+            (None, _) => serde_json::json!({ "type": "public", "author": author }),
+        };
+        message.insert("kind".into(), kind);
     })
 }
 

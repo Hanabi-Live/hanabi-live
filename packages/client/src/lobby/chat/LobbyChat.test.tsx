@@ -21,9 +21,8 @@ function message(
 ): ServerCommandData["chat"] {
   return {
     text: "hello",
-    username: "alice",
-    source: "user",
     sentAt: "2026-11-09T12:34:00.000Z",
+    kind: { type: "public", author: { type: "user", username: "alice" } },
     ...fields,
   };
 }
@@ -51,7 +50,17 @@ describe("LobbyChat", () => {
     act(() => {
       add(message({ chatId: 1, text: "first" }), true);
       add(message({ chatId: 2, text: "second" }), true);
-      add(message({ recipient: "me", text: "psst" }), true);
+      add(
+        message({
+          kind: {
+            type: "private",
+            author: { type: "user", username: "alice" },
+            recipient: "me",
+          },
+          text: "psst",
+        }),
+        true,
+      );
       // Table chat goes to the pre-game or game chat, never the lobby chat.
       add(message({ tableId: tableIdSchema.parse(5), text: "table" }), true);
     });

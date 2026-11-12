@@ -18,7 +18,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-17";
+pub const FORMAT: &str = "hanabi-live-18";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -824,7 +824,8 @@ mod tests {
             id: Some(1),
             user: Some(UserId(1)),
             message: serde_json::from_value(serde_json::json!(
-                {"text": "hi", "source": "user", "sentAt": "2026-11-02T20:00:00.123456Z"}
+                {"text": "hi", "sentAt": "2026-11-02T20:00:00.123456Z",
+                 "kind": {"type": "public", "author": {"type": "user", "username": "Alice"}}}
             ))
             .unwrap(),
         };

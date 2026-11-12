@@ -229,8 +229,13 @@
     "command": "chat",
     "input": {
       "text": "&amp;",
-      "source": "server",
-      "sentAt": "2026-01-01T12:00:00.000Z"
+      "sentAt": "2026-01-01T12:00:00.000Z",
+      "kind": {
+        "type": "public",
+        "author": {
+          "type": "server"
+        }
+      }
     },
     "valid": true
   },
@@ -240,11 +245,16 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "source": "user",
       "sentAt": "2026-01-01T12:00:00.000Z",
-      "username": "Alice",
-      "recipient": "Bob",
-      "chatId": 9007199254740991
+      "chatId": 9007199254740991,
+      "kind": {
+        "type": "private",
+        "author": {
+          "type": "user",
+          "username": "Alice"
+        },
+        "recipient": "Bob"
+      }
     },
     "valid": true
   },
@@ -254,11 +264,75 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "source": "user",
       "sentAt": "2026-01-01T12:00:00.000Z",
-      "username": ""
+      "kind": {
+        "type": "public",
+        "author": {
+          "type": "user",
+          "username": ""
+        }
+      }
     },
     "valid": false
+  },
+  {
+    "name": "a user's chat names the user",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "text": "hello",
+      "sentAt": "2026-01-01T12:00:00.000Z",
+      "kind": {
+        "type": "public",
+        "author": {
+          "type": "user"
+        }
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "a suggestion carries the settings that it applies",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "text": "apply",
+      "sentAt": "2026-01-01T12:00:00.000Z",
+      "tableId": 1,
+      "kind": {
+        "type": "suggestion",
+        "recipient": "Alice",
+        "settings": {
+          "name": "Table",
+          "maxPlayers": 5,
+          "options": {}
+        }
+      }
+    },
+    "normalized": {
+      "text": "apply",
+      "sentAt": "2026-01-01T12:00:00.000Z",
+      "tableId": 1,
+      "kind": {
+        "type": "suggestion",
+        "recipient": "Alice",
+        "settings": {
+          "name": "Table",
+          "maxPlayers": 5,
+          "options": {
+            "variantId": 0,
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          }
+        }
+      }
+    },
+    "valid": true
   },
   {
     "name": "server chat rejects null optional fields",
@@ -266,9 +340,14 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "source": "server",
       "sentAt": "2026-01-01T12:00:00.000Z",
-      "username": null
+      "chatId": null,
+      "kind": {
+        "type": "public",
+        "author": {
+          "type": "server"
+        }
+      }
     },
     "valid": false
   },
@@ -278,8 +357,13 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "source": "other",
-      "sentAt": "2026-01-01T12:00:00.000Z"
+      "sentAt": "2026-01-01T12:00:00.000Z",
+      "kind": {
+        "type": "public",
+        "author": {
+          "type": "other"
+        }
+      }
     },
     "valid": false
   },

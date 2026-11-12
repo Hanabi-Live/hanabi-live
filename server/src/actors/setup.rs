@@ -1,4 +1,4 @@
-use super::chat::{server_chat, table_notice};
+use super::chat::table_notice;
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
@@ -13,7 +13,9 @@ use crate::{
 use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, Turn};
+use hanabi_protocol::{
+    Chat, ChatKind, Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, Turn,
+};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -191,11 +193,14 @@ pub(super) fn options_suggestion(
     extra: &ExtraOptions,
 ) -> Chat {
     Chat {
-        recipient: Some(owner.into()),
-        suggested_settings: Some(table_settings(name, max_players, options, extra)),
-        ..server_chat(
-            id,
+        table_id: Some(id),
+        ..Chat::new(
             "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",
+            ChatKind::Suggestion {
+                recipient: owner.into(),
+                settings: table_settings(name, max_players, options, extra),
+            },
+            super::chat::chat_time(),
         )
     }
 }

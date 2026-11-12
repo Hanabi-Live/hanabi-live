@@ -562,7 +562,7 @@ async fn archive_chat(
             .table_id
             .context("Invalid archived chat room")?;
         tables.push(i64::try_from(table.0)?);
-        sources.push(match entry.message.source {
+        sources.push(match entry.message.author().source() {
             ChatSource::User => "user",
             ChatSource::Server => "server",
             ChatSource::Discord => bail!("Invalid table chat source"),
@@ -778,9 +778,11 @@ mod tests {
         table.chat.push(TableChat {
             id: Some(7),
             user: Some(UserId(1)),
-            message: hanabi_protocol::Chat::new(
+            message: hanabi_protocol::Chat::public(
                 "hello",
-                ChatSource::User,
+                hanabi_protocol::ChatAuthor::User {
+                    username: "Alice".into(),
+                },
                 hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         });
@@ -862,14 +864,7 @@ mod tests {
     /// A table with a chat message that suggests options, as an owner's chat holds one.
     fn suggested() -> TableSnapshot {
         let mut table = pregame(TableId(1));
-        let mut message = hanabi_protocol::Chat::new(
-            "suggestion",
-            ChatSource::Server,
-            hanabi_protocol::Timestamp::from(Utc::now()),
-        );
-        message.chat_id = Some(hanabi_protocol::ChatId(3));
-        message.table_id = Some(TableId(1));
-        message.suggested_settings = Some(hanabi_protocol::TableSettings {
+        let settings = hanabi_protocol::TableSettings {
             options: hanabi_protocol::GameOptions {
                 time_control: Some(hanabi_protocol::TimeControl {
                     base_seconds: 120,
@@ -882,13 +877,32 @@ mod tests {
                 turn: hanabi_protocol::Turn::new(2),
             }),
             ..hanabi_protocol::TableSettings::named("suggested")
-        });
+        };
+        let message = hanabi_protocol::Chat {
+            chat_id: Some(hanabi_protocol::ChatId(3)),
+            table_id: Some(TableId(1)),
+            ..hanabi_protocol::Chat::new(
+                "suggestion",
+                hanabi_protocol::ChatKind::Suggestion {
+                    recipient: "Alice".into(),
+                    settings,
+                },
+                hanabi_protocol::Timestamp::from(Utc::now()),
+            )
+        };
         table.chat.push(TableChat {
             id: Some(3),
             user: None,
             message,
         });
         table
+    }
+    /// The settings that a table's suggestion applies.
+    fn suggested_settings(chat: &mut TableChat) -> Result<&mut hanabi_protocol::TableSettings> {
+        match &mut chat.message.kind {
+            hanabi_protocol::ChatKind::Suggestion { settings, .. } => Ok(settings),
+            _ => bail!("The message is not a suggestion"),
+        }
     }
     /// Checks that a table that an older server saved decodes as the current server saved it.
     /// `older` rewrites each part as the older format holds it.
@@ -910,10 +924,72 @@ mod tests {
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
-    /// Rewrites a part from format 17 into format 16, for the variants that these tests suggest.
+    /// Rewrites a part from format 18 into format 17: a chat message with its author's source and
+    /// name, and its recipient and suggested settings, side by side.
+    fn format_17(text: &str) -> String {
+        #[derive(serde::Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct OldMessage {
+            text: String,
+            source: ChatSource,
+            sent_at: hanabi_protocol::Timestamp,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            username: Option<hanabi_protocol::Username>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            chat_id: Option<hanabi_protocol::ChatId>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            table_id: Option<TableId>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            recipient: Option<hanabi_protocol::Username>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            suggested_settings: Option<hanabi_protocol::TableSettings>,
+        }
+        #[derive(serde::Serialize)]
+        struct OldChat {
+            id: Option<i32>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            user: Option<UserId>,
+            message: OldMessage,
+        }
+        let Ok(chat) = serde_json::from_str::<TableChat>(text) else {
+            return text.into();
+        };
+        let message = chat.message;
+        let author = message.author().clone();
+        let source = author.source();
+        let username = match author {
+            hanabi_protocol::ChatAuthor::User { username } => Some(username),
+            hanabi_protocol::ChatAuthor::Discord { username } => username,
+            hanabi_protocol::ChatAuthor::Server {} => None,
+        };
+        let (recipient, suggested_settings) = match message.kind {
+            hanabi_protocol::ChatKind::Public { .. } => (None, None),
+            hanabi_protocol::ChatKind::Private { recipient, .. } => (Some(recipient), None),
+            hanabi_protocol::ChatKind::Suggestion {
+                recipient,
+                settings,
+            } => (Some(recipient), Some(settings)),
+        };
+        serde_json::to_string(&OldChat {
+            id: chat.id,
+            user: chat.user,
+            message: OldMessage {
+                text: message.text,
+                source,
+                sent_at: message.sent_at,
+                username,
+                chat_id: message.chat_id,
+                table_id: message.table_id,
+                recipient,
+                suggested_settings,
+            },
+        })
+        .expect("a chat message serializes")
+    }
+    /// Rewrites a part from format 18 into format 16, for the variants that these tests suggest.
     fn format_16(text: &str) -> String {
         regex!(r#""options":\{"variantId":(\d+)"#)
-            .replace_all(text, |captures: &regex::Captures<'_>| {
+            .replace_all(&format_17(text), |captures: &regex::Captures<'_>| {
                 let id = captures[1].parse().expect("a variant ID");
                 let variant = hanabi_engine::get_variant_by_id(id).expect("a catalog variant");
                 format!(r#""options":{{"variantName":{}"#, json!(variant.name))
@@ -1302,9 +1378,8 @@ mod tests {
         let mut seeded = table.chat[0].clone();
         seeded.id = Some(4);
         seeded.message.chat_id = Some(hanabi_protocol::ChatId(4));
-        if let Some(settings) = &mut seeded.message.suggested_settings {
-            settings.deal = Some(hanabi_protocol::Deal::Seed { suffix: "7".into() });
-        }
+        suggested_settings(&mut seeded)?.deal =
+            Some(hanabi_protocol::Deal::Seed { suffix: "7".into() });
         table.chat.push(seeded);
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
@@ -1358,22 +1433,85 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn checkpoints_of_format_17_give_chat_messages_their_kind() -> Result<()> {
+        let mut table = suggested();
+        let sent = || hanabi_protocol::Timestamp::from(Utc::now());
+        for (id, user, message) in [
+            (
+                4,
+                Some(UserId(1)),
+                hanabi_protocol::Chat::public(
+                    "hello",
+                    hanabi_protocol::ChatAuthor::User {
+                        username: "Alice".into(),
+                    },
+                    sent(),
+                ),
+            ),
+            (
+                5,
+                None,
+                hanabi_protocol::Chat::private(
+                    "notice",
+                    hanabi_protocol::ChatAuthor::Server {},
+                    "Alice",
+                    sent(),
+                ),
+            ),
+        ] {
+            table.chat.push(TableChat {
+                id: Some(id),
+                user,
+                message: hanabi_protocol::Chat {
+                    chat_id: Some(hanabi_protocol::ChatId(i64::from(id))),
+                    table_id: Some(TableId(1)),
+                    ..message
+                },
+            });
+        }
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-17");
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| (key.clone(), format_17(part)))
+            .collect::<Vec<_>>();
+        for field in [
+            "\"source\":\"user\"",
+            "\"recipient\"",
+            "\"suggestedSettings\"",
+        ] {
+            ensure!(
+                parts.iter().any(|(_, part)| part.contains(field)),
+                "The older format has no {field}"
+            );
+        }
+        let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
     fn checkpoints_of_format_16_name_suggested_variants() -> Result<()> {
         let mut table = suggested();
         let mut six_suits = table.chat[0].clone();
         six_suits.id = Some(4);
         six_suits.message.chat_id = Some(hanabi_protocol::ChatId(4));
-        if let Some(settings) = &mut six_suits.message.suggested_settings {
-            settings.options.variant_id = hanabi_protocol::VariantId(1);
-        }
+        suggested_settings(&mut six_suits)?.options.variant_id = hanabi_protocol::VariantId(1);
         table.chat.push(six_suits);
         let mut removed = table.chat[0].clone();
         removed.id = Some(5);
         removed.message.chat_id = Some(hanabi_protocol::ChatId(5));
         table.chat.push(removed);
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
-        // The suggestion of a variant that the catalog no longer has is dropped.
-        table.chat[2].message.suggested_settings = None;
+        // The suggestion of a variant that the catalog no longer has is dropped, which leaves a
+        // private message.
+        table.chat[2].message.kind = hanabi_protocol::ChatKind::Private {
+            author: hanabi_protocol::ChatAuthor::Server {},
+            recipient: "Alice".into(),
+        };
         let expected = serde_json::to_value(&table)?;
         let mut head: Value = serde_json::from_str(&encoded.head)?;
         head["format"] = json!("hanabi-live-16");
@@ -1532,9 +1670,11 @@ mod tests {
         let message = |id: i32| TableChat {
             id: Some(id),
             user: Some(UserId(1)),
-            message: hanabi_protocol::Chat::new(
+            message: hanabi_protocol::Chat::public(
                 format!("message {id}"),
-                ChatSource::User,
+                hanabi_protocol::ChatAuthor::User {
+                    username: "Alice".into(),
+                },
                 hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         };
@@ -1967,8 +2107,8 @@ mod tests {
             id: None,
             user: Some(UserId(1)),
             message: serde_json::from_value(json!({
-                "text": text, "username": "Alice", "source": "user",
-                "tableId":id, "sentAt": "2026-11-02T20:00:00.123456Z"
+                "text": text, "tableId": id, "sentAt": "2026-11-02T20:00:00.123456Z",
+                "kind": {"type": "public", "author": {"type": "user", "username": "Alice"}},
             }))?,
         })
     }

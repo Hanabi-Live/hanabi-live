@@ -19,6 +19,13 @@ import { mountEmojiPicker } from "./EmojiPicker.tsx";
 import { globals } from "./Globals.ts";
 import { chatCommands } from "./chatCommands.ts";
 import { LobbyChatDeletionState } from "./chatDeletion.ts";
+import type { SuggestedSettings } from "./chatKind.ts";
+import {
+  chatAuthor,
+  chatAuthorName,
+  chatRecipient,
+  chatSuggestion,
+} from "./chatKind.ts";
 import {
   FADE_TIME_MS,
   LOCAL_STORAGE_KEY,
@@ -592,7 +599,6 @@ export function addPmHistory(data: PmHistoryMessage, room?: string): void {
   addInternal(
     {
       ...data,
-      source: "user",
       ...(room !== undefined && { room }),
     },
     true,
@@ -606,13 +612,16 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   }
 
   // If we are receiving a private message (PM), record who it is from.
+  const author = chatAuthor(data);
+  const authorName = chatAuthorName(data);
+  const recipient = chatRecipient(data);
+  const suggestion = chatSuggestion(data);
   if (
     updateLiveState
-    && data.source === "user"
-    && data.recipient === globals.username
-    && data.username !== undefined
+    && author.type === "user"
+    && recipient === globals.username
   ) {
-    lastPrivateMessageSender = data.username;
+    lastPrivateMessageSender = author.username;
   }
 
   const box = getChatBox(data);
@@ -649,16 +658,14 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
           key,
           html,
           fadeIn: !fast,
-          ...(data.suggestedSettings !== undefined && {
-            suggestion: data.suggestedSettings,
-          }),
+          ...(suggestion !== undefined && { suggestion }),
         }),
       );
       break;
     }
 
     case "game": {
-      appendGameChatLine(key, html, fast, data.suggestedSettings);
+      appendGameChatLine(key, html, fast, suggestion);
       break;
     }
   }
@@ -666,10 +673,10 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   // Remove the person from the typing list, if present.
   if (
     updateLiveState
-    && data.username !== undefined
-    && store.getState().pregame.typing.includes(data.username)
+    && authorName !== undefined
+    && store.getState().pregame.typing.includes(authorName)
   ) {
-    store.dispatch(typingStopped(data.username));
+    store.dispatch(typingStopped(authorName));
     updatePeopleTyping();
   }
 }
@@ -678,22 +685,23 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
 function formatChatLine(data: ChatData, msg: string): string {
   const datetime = chatTimeFormatter.format(new Date(data.sentAt));
 
+  const authorName = chatAuthorName(data);
+  const recipient = chatRecipient(data);
+  const fromServer = chatAuthor(data).type === "server";
   let line = `[${datetime}]&nbsp; `;
-  if (data.recipient !== undefined) {
+  if (recipient !== undefined) {
     line +=
-      data.recipient === globals.username
-        ? `<span class="red">[PM from <strong>${textToHtml(data.username ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
-        : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
+      recipient === globals.username
+        ? `<span class="red">[PM from <strong>${textToHtml(authorName ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
+        : `<span class="red">[PM to <strong>${textToHtml(recipient)}</strong>]</span>&nbsp; `;
   }
-  if (data.source === "server" || data.recipient !== undefined) {
-    line += msg;
-  } else if (data.username === undefined) {
+  if (fromServer || recipient !== undefined || authorName === undefined) {
     line += msg;
   } else {
-    line += `&lt;<strong>${textToHtml(data.username)}</strong>&gt;&nbsp; `;
+    line += `&lt;<strong>${textToHtml(authorName)}</strong>&gt;&nbsp; `;
     line += msg;
   }
-  if (data.source === "server" && line.includes("[Server Notice]")) {
+  if (fromServer && line.includes("[Server Notice]")) {
     line = line.replace(
       "[Server Notice]",
       '<span class="red">[Server Notice]</span>',
@@ -708,7 +716,7 @@ function appendGameChatLine(
   key: number,
   html: string,
   fast: boolean,
-  suggestion: ChatData["suggestedSettings"],
+  suggestion: SuggestedSettings | undefined,
 ) {
   const chat = $("#game-chat-text");
   // Find out if we should automatically scroll down after adding the new line of chat:
@@ -753,7 +761,7 @@ function appendGameChatLine(
 function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   // A private message (PM) or private notice outside of a table has no room, so we display it on
   // the chat window that the user currently has open.
-  const isPm = data.tableId === undefined && data.recipient !== undefined;
+  const isPm = data.tableId === undefined && chatRecipient(data) !== undefined;
   if (data.tableId === undefined && !isPm) {
     return "lobby";
   }
@@ -958,10 +966,13 @@ export function sendSelfPmFromServer(
   add(
     {
       text: message,
-      source: "server",
       sentAt: new Date().toISOString(),
       ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
-      recipient: globals.username,
+      kind: {
+        type: "private",
+        author: { type: "server" },
+        recipient: globals.username,
+      },
     },
     false,
   );

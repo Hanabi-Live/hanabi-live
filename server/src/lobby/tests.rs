@@ -358,7 +358,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     .await;
     let message = self_data(&effects, "chat");
     assert_eq!(message["text"], "&lt;secret&gt;");
-    assert_eq!(message["recipient"], "Bob");
+    assert_eq!(message["kind"]["recipient"], "Bob");
     assert!(message.get("chatId").is_none());
     assert_eq!(effects.len(), 2);
     assert!(effects.iter().all(|effect| match effect {

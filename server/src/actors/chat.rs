@@ -9,7 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
+use hanabi_protocol::{Chat, ChatAuthor, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
 use std::{
     collections::HashSet,
     sync::Arc,
@@ -25,16 +25,24 @@ const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 pub(super) fn server_chat(id: TableId, message: &str) -> Chat {
     Chat {
         table_id: Some(id),
-        ..Chat::new(message, ChatSource::Server, chat_time())
+        ..Chat::server(message, chat_time())
+    }
+}
+/// A message from the server to one user at the table.
+pub(super) fn private_server_chat(id: TableId, recipient: &str, message: &str) -> Chat {
+    Chat {
+        table_id: Some(id),
+        ..Chat::private(message, ChatAuthor::Server {}, recipient, chat_time())
     }
 }
 pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
     Chat {
-        username: Some(name.into()),
         table_id: Some(id),
-        ..Chat::new(
+        ..Chat::public(
             crate::accounts::escape_html(message),
-            ChatSource::User,
+            ChatAuthor::User {
+                username: name.into(),
+            },
             chat_time(),
         )
     }
@@ -305,8 +313,7 @@ impl TableActor {
             let responses = match response {
                 crate::lobby::GeneralResponse::Private(response) => {
                     let mut e = self.effects();
-                    let mut message = server_chat(self.table.id, &response);
-                    message.recipient = Some(session.name.clone().into());
+                    let message = private_server_chat(self.table.id, &session.name, &response);
                     e.messages
                         .push((session, frame(hanabi_protocol::server::CHAT, message)));
                     return self.publish(e).await;
@@ -501,15 +508,15 @@ impl TableActor {
                 let mut e = self.effects();
                 for (i, p) in players.iter().enumerate() {
                     if let Some(a) = p.id.and_then(|id| self.attendees.get(&id)) {
-                        let mut message = server_chat(
+                        let message = private_server_chat(
                             self.table.id,
+                            &a.session.name,
                             if i == chosen {
                                 "You are an IMPOSTOR."
                             } else {
                                 "You are a CREWMATE."
                             },
                         );
-                        message.recipient = Some(a.session.name.clone().into());
                         e.messages.push((
                             a.session.clone(),
                             frame(hanabi_protocol::server::CHAT, message),

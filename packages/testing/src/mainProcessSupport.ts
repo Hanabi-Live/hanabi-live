@@ -80,7 +80,7 @@ const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
 ]);
 
 export const rustProgressTableSchema = z.object({
-  format: z.literal("hanabi-live-17"),
+  format: z.literal("hanabi-live-18"),
   phase: rustProgressPhaseSchema,
 });
 

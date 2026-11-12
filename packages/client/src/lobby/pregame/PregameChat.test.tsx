@@ -28,10 +28,9 @@ function message(
 ): ServerCommandData["chat"] {
   return {
     text: "hello",
-    username: "alice",
-    source: "user",
     sentAt: "2026-11-09T12:34:00.000Z",
     tableId: TABLE_ID,
+    kind: { type: "public", author: { type: "user", username: "alice" } },
     ...fields,
   };
 }
@@ -75,16 +74,19 @@ describe("PregameChat", () => {
     act(() => {
       add(
         message({
-          source: "server",
+          kind: { type: "public", author: { type: "server" } },
           text: "Try @/setleader bob@",
         }),
         true,
       );
       add(
         message({
-          source: "server",
+          kind: {
+            type: "suggestion",
+            recipient: "alice",
+            settings: suggestion,
+          },
           text: '<button class="new-options">click to apply the suggestion</button>',
-          suggestedSettings: suggestion,
         }),
         true,
       );

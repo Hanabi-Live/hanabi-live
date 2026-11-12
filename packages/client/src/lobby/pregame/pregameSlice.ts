@@ -4,13 +4,12 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatLine } from "../chat/ChatBox.tsx";
 
 interface PregameChatLine extends ChatLine {
   /** What the line's button applies to the table, in a suggestion to its owner. */
-  readonly suggestion?: NonNullable<
-    ServerCommandData["chat"]["suggestedSettings"]
-  >;
+  readonly suggestion?: SuggestedSettings;
 }
 
 export type Game = ServerCommandData["pregame"];

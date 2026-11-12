@@ -1,6 +1,6 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { ServerCommandData, Settings } from "@hanabi-live/data";
+import type { Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -29,6 +29,7 @@ import {
   parseIntSafe,
 } from "complete-common";
 import equal from "fast-deep-equal";
+import type { SuggestedSettings } from "../chatKind.ts";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { creatingTableChanged } from "../sessionSlice.ts";
@@ -332,9 +333,7 @@ function submit() {
   }
 }
 
-export function acceptOptionsFromGuest(
-  suggestion: NonNullable<ServerCommandData["chat"]["suggestedSettings"]>,
-): void {
+export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
   globals.conn!.send("tableUpdate", {
     tableId: globals.joinedTableId,
     settings: suggestion,

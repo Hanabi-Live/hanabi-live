@@ -2,7 +2,7 @@ use super::request;
 use super::table::wrong_phase;
 use super::{
     HubCommand, Status, TableActor,
-    chat::{server_chat, table_notice},
+    chat::{private_server_chat, table_notice},
     pending::Completed,
     setup::next_requested_seed,
 };
@@ -182,9 +182,7 @@ impl TableActor {
             self.charge_chat(session.user)?;
             table_notice(&mut next, &text)
         } else {
-            let mut message = server_chat(self.table.id, &text);
-            message.recipient = Some(session.name.clone().into());
-            Some(message)
+            Some(private_server_chat(self.table.id, &session.name, &text))
         };
         self.persist_with(
             next,

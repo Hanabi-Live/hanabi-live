@@ -661,10 +661,11 @@ impl Bridge {
                         hanabi_protocol::server::CHAT,
                         hanabi_protocol::Chat {
                             chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
-                            username: Some(name.clone().into()),
-                            ..hanabi_protocol::Chat::new(
+                            ..hanabi_protocol::Chat::public(
                                 rendered,
-                                hanabi_protocol::ChatSource::Discord,
+                                hanabi_protocol::ChatAuthor::Discord {
+                                    username: Some(name.clone().into()),
+                                },
                                 hanabi_protocol::Timestamp::from(time),
                             )
                         },
@@ -753,9 +754,9 @@ impl Bridge {
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
                     chat_id: Some(hanabi_protocol::ChatId(i64::from(id))),
-                    ..hanabi_protocol::Chat::new(
+                    ..hanabi_protocol::Chat::public(
                         rendered,
-                        hanabi_protocol::ChatSource::Discord,
+                        hanabi_protocol::ChatAuthor::Discord { username: None },
                         hanabi_protocol::Timestamp::from(time),
                     )
                 },

@@ -2,6 +2,7 @@
 
 import { globals } from "./Globals.ts";
 import * as chat from "./chat.ts";
+import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
 import {
   startGameSentChanged,
@@ -40,7 +41,7 @@ commands.set("error", (data) => {
 // Received by the client when a new chat message arrives.
 commands.set("chat", (data) => {
   chat.add(data, false); // The second argument is "fast".
-  acknowledgeChatRead(data.tableId, data.recipient);
+  acknowledgeChatRead(data.tableId, chatRecipient(data));
 });
 
 commands.set("chatDeleted", (data) => {
