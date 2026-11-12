@@ -190,15 +190,22 @@ async function buildServer() {
   // The server rejects clients from another revision, so pair the tests' client version with the
   // revision the server is built from.
   await run("bash", [path.join(ROOT, "scripts/dev/set-version.sh")]);
-  await run("cargo", ["build", "--release", "--locked"], {
-    cwd: path.join(ROOT, "server"),
-    timeout: 300_000,
-    maxBuffer: 2 * 1024 * 1024,
-  });
-  // The catalog test compares the variants that the rules derive with the game library's.
+  // A debug build reuses most of what "cargo test" compiles. The catalog test compares the variants
+  // that the rules derive with the game library's.
   await run(
     "cargo",
-    ["build", "--locked", "--package", "hanabi_engine", "--example", "catalog"],
+    [
+      "build",
+      "--locked",
+      "--package",
+      "hanabi-live",
+      "--bin",
+      "hanabi-live",
+      "--package",
+      "hanabi_engine",
+      "--example",
+      "catalog",
+    ],
     {
       cwd: path.join(ROOT, "server"),
       timeout: 300_000,

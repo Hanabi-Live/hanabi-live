@@ -262,7 +262,7 @@ export async function settleLanes(
 
 export async function buildRust(directory: string): Promise<void> {
   await cp(
-    path.join(ROOT, "server/target/release/hanabi-live"),
+    path.join(ROOT, "server/target/debug/hanabi-live"),
     path.join(directory, "hanabi-live"),
   );
 }

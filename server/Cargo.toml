@@ -138,8 +138,9 @@ tokio-rustls = { version = "0.26", default-features = false, features = [
 ] }
 tower = { version = "0.5", features = ["util"] }
 
-# Keep real password costs without debug-only hashing latency exhausting admission in tests.
-[profile.test.package.argon2]
+# Keep real password costs without debug-only hashing latency exhausting admission in tests. The
+# test profile inherits this, so test and debug builds share their compiled dependencies.
+[profile.dev.package.argon2]
 opt-level = 3
 
 [lints]
