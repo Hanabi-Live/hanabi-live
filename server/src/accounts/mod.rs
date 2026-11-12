@@ -218,8 +218,8 @@ pub fn validate_client_version(version: &str, current: &str) -> Result<(), Strin
         concat!(
             "You are running an outdated version of the client code.",
             "<ul>",
-            "<li>You are on version: <strong>{}</strong></li>",
-            "<li>The latest version: <strong>{}</strong></li>",
+            "<li>You are on: <strong>{}</strong></li>",
+            "<li>The latest: <strong>{}</strong></li>",
             "</ul>",
             "Please perform a refresh to get the latest version. ",
         ),
