@@ -103,25 +103,9 @@ jobs:
             tasks: test-client
           - suite: rust
             tasks: test-rust
-            postgres: postgres:18-alpine
           - suite: bun
             tasks: test-bun test-critical-css
-            postgres: postgres:18-alpine
-    env:
-      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
-    services:
-      postgres:
-        # An empty image skips the service.
-        image: ${{ matrix.postgres || '' }}
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+    # The test runner starts its own PostgreSQL server from the runner image's binaries.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -160,18 +144,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     defaults:
       run:
         working-directory: server
@@ -204,6 +176,13 @@ jobs:
             ${{ steps.platform.outputs.bin }}/sqlx
             ${{ steps.platform.outputs.bin }}/cargo-sqlx
           key: ${{ steps.sqlx.outputs.cache-primary-key }}
+      - name: Start a disposable PostgreSQL server
+        run: |
+          # The runner image includes PostgreSQL but does not start it.
+          bin=/usr/lib/postgresql/18/bin
+          "$bin/initdb" -D "$RUNNER_TEMP/postgres" --username postgres --auth trust --no-sync
+          "$bin/pg_ctl" -D "$RUNNER_TEMP/postgres" --wait start \
+            -o "-c listen_addresses=127.0.0.1 -c unix_socket_directories= -c fsync=off"
       - name: Check SQLx metadata against a disposable schema
         run: python3 sqlx_schema.py
 
