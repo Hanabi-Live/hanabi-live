@@ -63,6 +63,8 @@ of the repository.
 - In the new game screen, while you follow the leader of a shared replay, the
   turn number rolls up or down and the timeline's knob slides, to show which way
   they moved.
+- In the new game screen, strikes are X's in their squares, and a replay shows
+  the strikes still to come as faded X's, as the classic screen does.
 
 ## November 11th, 2026
 

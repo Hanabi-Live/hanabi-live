@@ -2,6 +2,7 @@ import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
@@ -426,6 +427,33 @@ function getClueCountClass(atMaxClues: boolean, outOfClues: boolean): string {
   return "tw:text-game-text";
 }
 
+/**
+ * The X drawn inside a box for each strike. A shape, not only a color, so that players who cannot
+ * tell red apart still see the strikes.
+ */
+function StrikeMark({
+  upcoming = false,
+}: {
+  /** A strike that happens later in the game, which shows faded. */
+  readonly upcoming?: boolean;
+}): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className={`tw:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M6 6 18 18M18 6 6 18"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth={3.4}
+      />
+    </svg>
+  );
+}
+
 /** The tint of the strikes bubble: none without strikes, and strongest one strike from losing. */
 function getStrikeBubbleClass(strikes: number): string {
   if (strikes >= MAX_STRIKES - 1) {
@@ -504,13 +532,25 @@ export function TableTokens({
         >
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
-            const className = `tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
-              i < strikes
-                ? "tw:border-critical tw:bg-critical"
+            const struck = i < strikes;
+            // In a replay, a strike that happens later in the game shows faded, as on the classic
+            // screen. Clicking it goes to its turn.
+            const upcoming = !struck && segment !== undefined;
+            const className = `tw:box-border tw:flex tw:size-[32px] tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+              struck
+                ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"
             }`;
+            let mark: React.ReactNode;
+            if (struck) {
+              mark = <StrikeMark />;
+            } else if (upcoming) {
+              mark = <StrikeMark upcoming />;
+            }
             return segment === undefined ? (
-              <span className={className} data-strike-box={i} key={i} />
+              <span className={className} data-strike-box={i} key={i}>
+                {mark}
+              </span>
             ) : (
               <button
                 aria-label={`Show the turn of strike ${i + 1}`}
@@ -520,8 +560,15 @@ export function TableTokens({
                 onClick={() => {
                   onShowStrike(segment);
                 }}
+                ref={tooltipRef(
+                  upcoming
+                    ? "A strike happens later in the game. Click to go to its turn."
+                    : "Click to go to the turn of this strike.",
+                )}
                 type="button"
-              />
+              >
+                {mark}
+              </button>
             );
           })}
         </div>
