@@ -99,6 +99,11 @@ describe("received messages", () => {
           data: JSON.stringify({ event: "warning", data }),
         } as MessageEvent);
       }
+      // An outdated client's error also arrives in the frame of clients from before JSON frames,
+      // which this client ignores.
+      conn.onMessage({
+        data: 'warning {"message":"Old frame"}',
+      } as MessageEvent);
       expect(warnings).toEqual([{ message: "Careful" }]);
       expect(Object.isFrozen(warnings[0])).toBe(false);
       expect(invalid).toEqual(["warning", "warning"]);

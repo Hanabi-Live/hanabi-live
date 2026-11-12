@@ -232,8 +232,17 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
     for query in ["", "version=", "version=41"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
-            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+            // A page from before JSON frames reads the error in the old `command JSON` form,
+            // which current clients ignore.
+            let WireMessage::Text(legacy) = socket.next().await.unwrap().unwrap() else {
                 panic!("Expected a version error before any bootstrap messages");
+            };
+            assert!(parse_frame(&legacy).is_none());
+            let (command, body) = legacy.split_once(' ').unwrap();
+            assert_eq!(command, "error");
+            let legacy: Value = serde_json::from_str(body).unwrap();
+            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+                panic!("Expected the version error as a JSON frame");
             };
             let Some(Received::Event(name, payload)) = parse_frame(&text) else {
                 panic!("Expected an error before any bootstrap messages: {text}");
@@ -249,6 +258,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
                     .unwrap()
                     .contains("perform a refresh")
             );
+            assert_eq!(legacy, payload);
             assert!(matches!(
                 socket.next().await.unwrap().unwrap(),
                 WireMessage::Close(_)

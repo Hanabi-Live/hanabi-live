@@ -316,6 +316,15 @@ fn encode(frame: &impl Serialize) -> Frame {
         .into()
 }
 
+/// Encodes a message as `command JSON`, the frame of clients from before JSON frames, so that a page
+/// opened before JSON frames can read that it is outdated and reload. Remove it a month after JSON
+/// frames are deployed, when no such page is still open.
+pub fn legacy_frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: &T) -> Frame {
+    let mut text = format!("{} ", message.name());
+    text.push_str(&serde_json::to_string(data).expect("JSON-serializable protocol payload"));
+    text.into()
+}
+
 /// The name and payload of an encoded server message, or `None` for a reply.
 #[cfg(test)]
 pub fn event(frame: &str) -> Option<(String, serde_json::Value)> {

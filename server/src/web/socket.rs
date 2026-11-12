@@ -7,7 +7,7 @@ use crate::{
     accounts,
     actors::{HubCommand, request},
     lobby,
-    transport::{Frame, Identity, Inbound, InboundBudget, Outbound, Session, frame},
+    transport::{Frame, Identity, Inbound, InboundBudget, Outbound, Session, frame, legacy_frame},
 };
 use anyhow::{Context, Result};
 use axum::{
@@ -374,14 +374,24 @@ pub(super) async fn websocket(
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
                             // Clients reload on this error's code, and show its message when a
                             // reload did not help.
+                            let notice = hanabi_protocol::Notice {
+                                code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
+                                ..hanabi_protocol::Notice::new(message)
+                            };
                             tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
+                                // Pages that predate JSON frames read only `command JSON`, so
+                                // they get this error in that form first. Current clients ignore
+                                // it.
+                                socket
+                                    .send(Message::Text(legacy_frame(
+                                        hanabi_protocol::server::ERROR,
+                                        &notice,
+                                    )))
+                                    .await?;
                                 socket
                                     .send(Message::Text(frame(
                                         hanabi_protocol::server::ERROR,
-                                        hanabi_protocol::Notice {
-                                            code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
-                                            ..hanabi_protocol::Notice::new(message)
-                                        },
+                                        notice,
                                     )))
                                     .await?;
                                 socket.close().await
