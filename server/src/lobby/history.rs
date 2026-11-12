@@ -90,10 +90,7 @@ pub async fn get_history(
             end_condition: crate::archive::end_condition_from_db(i32::from(game.end_condition))?,
             started_at: time(game.datetime_started),
             finished_at: time(game.datetime_finished),
-            num_games_on_seed: game
-                .seed
-                .is_some()
-                .then(|| hanabi_protocol::Count(i64::from(row.num_games_on_this_seed))),
+            num_games_on_seed: hanabi_protocol::Count(i64::from(row.num_games_on_this_seed)),
             seed: game.seed,
             player_names: row.player_names.into_iter().map(Into::into).collect(),
             tags: row.tags,

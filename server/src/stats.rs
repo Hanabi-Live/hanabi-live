@@ -5,7 +5,7 @@ use crate::{
     store::{LockSpace, advisory_lock},
     transport::Identity,
 };
-use anyhow::Result;
+use anyhow::{Context, Result};
 use hanabi_protocol::{PregameStats, UserId};
 use sqlx::PgPool;
 use std::collections::BTreeMap;
@@ -83,10 +83,8 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let players = i32::try_from(s.players.len())?;
     let mut tx = pool.begin().await?;
     advisory_lock(&mut tx, LockSpace::VariantStats, i32::from(v)).await?;
-    // A game with its own deck instead of a seed shares no seed with other games.
-    if let Some(seed) = &s.seed {
-        sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", seed).execute(&mut *tx).await?;
-    }
+    let seed = s.seed.as_ref().context("A saved game has a seed")?;
+    sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", seed).execute(&mut *tx).await?;
     sqlx::query!(
         "INSERT INTO variant_stats(variant_id,best_score2,best_score3,best_score4,best_score5,best_score6)
          VALUES($1,NULL,NULL,NULL,NULL,NULL) ON CONFLICT DO NOTHING",

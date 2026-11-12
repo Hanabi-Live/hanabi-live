@@ -586,6 +586,7 @@ impl Snapshot {
         Ok(())
     }
     /// The game as a player's history lists it, or `None` for a game that is not in the database.
+    /// `count` is how many saved games use its seed.
     pub fn history(&self, count: Option<i64>) -> Option<hanabi_protocol::GameHistoryEntry> {
         let mut names = self
             .players
@@ -597,13 +598,13 @@ impl Snapshot {
         Some(hanabi_protocol::GameHistoryEntry {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
-            seed: self.seed.clone(),
+            seed: self.seed.clone()?,
             score: hanabi_protocol::Score(self.game.score),
             num_turns: u16::try_from(self.game.turn).ok()?,
             end_condition: self.game.end?.condition,
             started_at: time(self.started),
             finished_at: time(self.finished.unwrap_or(self.started)),
-            num_games_on_seed: count.map(hanabi_protocol::Count),
+            num_games_on_seed: hanabi_protocol::Count(count?),
             player_names: names.into_iter().map(Into::into).collect(),
             tags: self
                 .tags

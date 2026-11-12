@@ -272,10 +272,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
         game_id: hanabi_protocol::GameId(g.id),
         num_turns: g.turn_count()?,
         options: crate::model::wire_options(&crate::archive::options(&g)?),
-        num_games_on_seed: g
-            .seed
-            .is_some()
-            .then(|| hanabi_protocol::Count(i64::from(row.seed_count))),
+        num_games_on_seed: hanabi_protocol::Count(i64::from(row.seed_count)),
         seed: g.seed,
         score: hanabi_protocol::Score(i32::from(g.score)),
         end_condition: crate::archive::end_condition_from_db(i32::from(g.end_condition))?,

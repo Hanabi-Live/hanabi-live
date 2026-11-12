@@ -414,18 +414,15 @@ pub struct TableList {
 pub struct GameHistoryEntry {
     pub game_id: GameId,
     pub options: GameOptions,
-    /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub seed: Option<String>,
+    pub seed: String,
     pub score: Score,
     #[schemars(range(min = 0, max = MAX_GAME_ACTIONS))]
     pub num_turns: u16,
     pub end_condition: EndCondition,
     pub started_at: Timestamp,
     pub finished_at: Timestamp,
-    /// How many games used this seed. Absent when the game has no seed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub num_games_on_seed: Option<Count>,
+    /// How many games used this seed.
+    pub num_games_on_seed: Count,
     /// In alphabetical order, ignoring case.
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,

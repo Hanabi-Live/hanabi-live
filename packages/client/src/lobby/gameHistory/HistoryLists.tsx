@@ -117,11 +117,8 @@ function HistoryRow({
   readonly username: string;
 }) {
   const { seed, numGamesOnSeed } = game;
-  // A game with its own deck instead of a seed has no count.
-  const otherGameCount =
-    numGamesOnSeed === undefined ? undefined : numGamesOnSeed - 1;
-  const hasOtherGames =
-    seed !== undefined && otherGameCount !== undefined && otherGameCount > 0;
+  const otherGameCount = numGamesOnSeed - 1;
+  const hasOtherGames = otherGameCount > 0;
 
   return (
     <tr>
@@ -232,10 +229,7 @@ function OtherScoreRow({
     return ourGame ? <strong>{text}</strong> : text;
   }
 
-  const seedNumber =
-    game.seed === undefined
-      ? "Unknown"
-      : (SEED_NUMBER_REGEX.exec(game.seed)?.[1] ?? "Unknown");
+  const seedNumber = SEED_NUMBER_REGEX.exec(game.seed)?.[1] ?? "Unknown";
 
   return (
     <tr>

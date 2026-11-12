@@ -51,14 +51,7 @@ pub(super) async fn export(
             id,
         )
     })?;
-    let seed = row.seed.clone().ok_or_else(|| {
-        export_failure(
-            hanabi_protocol::NoticeCode::ArchiveMissingSeed,
-            "The archived game has no seed to produce its deck",
-            id,
-        )
-    })?;
-    let deck = crate::game::seeded_deck(i32::from(row.variant_id), &seed).map_err(|_| {
+    let deck = crate::game::seeded_deck(i32::from(row.variant_id), &row.seed).map_err(|_| {
         export_failure(
             hanabi_protocol::NoticeCode::ArchiveInvalidSeed,
             "The archived game's seed cannot produce a deck",
@@ -141,6 +134,6 @@ pub(super) async fn export(
             vec![]
         },
         characters,
-        seed: Some(seed),
+        seed: Some(row.seed),
     })
 }

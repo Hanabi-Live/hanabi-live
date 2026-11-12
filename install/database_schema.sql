@@ -148,8 +148,8 @@ CREATE TABLE games (
     all_or_nothing          BOOLEAN      NOT NULL,
     detrimental_characters  BOOLEAN      NOT NULL,
 
-    /* e.g. "p2v0s1". NULL for a game with its own deck instead of a seed, such as an imported one. */
-    seed                    TEXT         NULL,
+    /* e.g. "p2v0s1" */
+    seed                    TEXT         NOT NULL,
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
 

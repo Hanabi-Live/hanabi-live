@@ -344,9 +344,9 @@ export const gameHistoryEntrySchema = z
     finishedAt: z.iso.datetime({ precision: 3 }),
     gameId: gameIdSchema,
     /**
-     * How many games used this seed. Absent when the game has no seed.
+     * How many games used this seed.
      */
-    numGamesOnSeed: countSchema.optional(),
+    numGamesOnSeed: countSchema,
     numTurns: z.number().int().min(0).max(512),
     options: gameOptionsSchema,
     /**
@@ -354,10 +354,7 @@ export const gameHistoryEntrySchema = z
      */
     playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     score: scoreSchema,
-    /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
-     */
-    seed: z.string().optional(),
+    seed: z.string(),
     startedAt: z.iso.datetime({ precision: 3 }),
     /**
      * The game's tags, in alphabetical order.
@@ -674,7 +671,6 @@ export const noticeCodeSchema = z.enum([
   "archiveInconsistentPlayers",
   "archiveInvalidAction",
   "archiveInvalidSeed",
-  "archiveMissingSeed",
   "archiveInvalidCharacter",
   "archiveUnknownVariant",
   "commandFailed",

@@ -96,7 +96,6 @@ named_enum! {
         ArchiveInconsistentPlayers => "archiveInconsistentPlayers",
         ArchiveInvalidAction => "archiveInvalidAction",
         ArchiveInvalidSeed => "archiveInvalidSeed",
-        ArchiveMissingSeed => "archiveMissingSeed",
         ArchiveInvalidCharacter => "archiveInvalidCharacter",
         ArchiveUnknownVariant => "archiveUnknownVariant",
         // A command that failed for a reason the server did not anticipate. Its report keeps the
