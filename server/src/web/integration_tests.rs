@@ -258,7 +258,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
                 payload["message"]
                     .as_str()
                     .unwrap()
-                    .contains("hard-refresh")
+                    .contains("perform a refresh")
             );
             assert!(matches!(
                 socket.next().await.unwrap().unwrap(),

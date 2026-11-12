@@ -212,7 +212,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
 #[test]
 fn client_version_validation_rejects_missing_versions_and_escapes_html() {
     let error = validate_client_version("", "42").unwrap_err();
-    assert!(error.contains("hard-refresh"));
+    assert!(error.contains("perform a refresh"));
     assert!(error.contains("unknown"));
     assert!(validate_client_version("", "").is_err());
     let error = validate_client_version("<old>", "<current>").unwrap_err();
