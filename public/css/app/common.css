@@ -119,11 +119,6 @@ body[data-screen="game"] {
   color: var(--error);
 }
 
-/* Wrong input indicator */
-input[type="text"].wrong-input {
-  border: 2px solid var(--error);
-}
-
 @media screen and (max-width: 1440px) {
   .container.max {
     width: calc(100% - 2em);

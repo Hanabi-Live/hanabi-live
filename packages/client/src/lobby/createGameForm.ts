@@ -33,7 +33,7 @@ export type ExtraOption = Exclude<
 type TimeControl = NonNullable<GameOptions["timeControl"]>;
 
 /** The checkboxes under "Extra Options", in the order that the form shows them. */
-export const EXTRA_OPTION_NAMES = [
+const EXTRA_OPTION_NAMES = [
   "speedrun",
   "deckPlays",
   "emptyClues",
@@ -71,7 +71,7 @@ export interface CreateGameForm {
 }
 
 /** The text boxes that turn red and explain why while their value is invalid. */
-export type CheckedField =
+type CheckedField =
   | "timeBaseMinutes"
   | "timePerTurnSeconds"
   | "seed"

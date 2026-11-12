@@ -569,6 +569,16 @@ function getStates({
       },
     },
     {
+      // The links beside the descriptions show the site's tooltip.
+      name: "create-game-help-tooltip",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+      },
+      hover: '#lobby-create-game a[aria-label="About variants"]',
+    },
+    {
       name: "watch-replay",
       path: "/",
       loggedIn: true,

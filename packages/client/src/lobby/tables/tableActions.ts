@@ -3,7 +3,6 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
-import * as createGame from "../createGame.ts";
 import { Screen } from "../types/Screen.ts";
 import type { Table } from "./tablesSlice.ts";
 
@@ -39,9 +38,6 @@ export function tableJoin(table: Table): void {
     globals.conn!.send("tableJoin", {
       tableId: table.tableId,
     });
-
-    // Prepare the Change Options dialog for guest.
-    createGame.ready();
     // (We will get a "tableJoined" response back from the server.)
   }
 }

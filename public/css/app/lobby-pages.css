@@ -18,89 +18,8 @@
   margin-right: 0.6em;
 }
 
-/* Most games do not use the extra options, so they start out hidden behind this button. */
-.create-game-extra-options-toggle {
-  margin: 1.5em 0 0;
-  text-align: center;
-}
-
-#create-game-extra-options {
-  margin-top: 1.5em;
-}
-
-#create-game-submit {
-  margin-top: 1.5em;
-}
-
-.create-game-variant {
-  align-items: center;
-  display: flex;
-  gap: 0.9em;
-}
-
-/* The ID of the game to replay and the turn to start from share one row. */
-.create-game-replay {
-  align-items: center;
-  display: flex;
-  gap: 0.75em;
-}
-
-.create-game-replay > input {
-  flex: 1;
-  min-width: 0;
-}
-
-#create-game-replay-turn-label {
-  align-items: center;
-  display: flex;
-  gap: 0.75em;
-  margin: 0;
-  white-space: nowrap;
-}
-
-#create-game-replay-turn {
-  text-align: center;
-  width: 4em;
-}
-
-.create-game-variant-input {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-}
-
-#create-game-variant-dropdown1 {
-  width: 100%;
-}
-
-#create-game-variant-dropdown2 {
-  padding-right: 2.75em;
-}
-
-#create-game-variant-dropdown2-icon {
-  pointer-events: none; /* We want to "click through" this element */
-  position: absolute;
-  right: 1em;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-#dice {
-  color: var(--green-text);
-  cursor: pointer;
-  font-size: 1.2em;
-}
-
-#dice:hover {
-  color: var(--dice-hover);
-}
-
 .lobby-page button[type="submit"] {
   font-size: 1em;
-}
-
-.question-mark:hover {
-  color: var(--help-icon-hover);
 }
 
 /*
@@ -268,11 +187,9 @@
   height: 2.5em;
 }
 
-/* Text fields and the variant picker share one width, so their edges line up. */
+/* Text fields share one width, so their edges line up. */
 .lobby-row > input[type="text"],
-.lobby-row > input[type="number"],
-.create-game-variant,
-.create-game-replay {
+.lobby-row > input[type="number"] {
   flex: 0 0 20em;
   width: 20em;
 }
@@ -396,9 +313,7 @@
   }
 
   .lobby-row > input[type="text"],
-  .lobby-row > input[type="number"],
-  .create-game-variant,
-  .create-game-replay {
+  .lobby-row > input[type="number"] {
     flex-basis: auto;
     width: 100%;
   }
