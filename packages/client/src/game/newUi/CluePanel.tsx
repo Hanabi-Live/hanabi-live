@@ -40,6 +40,16 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
   return a?.type === "rank" && b.type === "rank" && a.value === b.value;
 }
 
+/**
+ * A name longer than this many characters may not fit in its space, which ends it with an ellipsis.
+ * Such a name shows in full in a tooltip.
+ */
+const LONG_NAME_LENGTH = 10;
+
+function fullNameTooltip(name: string) {
+  return tooltipRef(name.length > LONG_NAME_LENGTH ? name : undefined);
+}
+
 const choiceClass =
   "tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:text-base tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40";
 
@@ -60,10 +70,6 @@ export function CluePanel({
   canGive,
   onGive,
 }: CluePanelProps): React.JSX.Element {
-  const targetName = targets.find(
-    (player) => player.playerIndex === target,
-  )?.name;
-
   if (!canClue) {
     return (
       <section
@@ -80,7 +86,9 @@ export function CluePanel({
       aria-label="Give a clue"
       className="tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-game-zone tw:px-4 tw:py-2"
     >
-      {targets.length > 1 ? (
+      {/* With one other player, such as in a 2-player game, the clue can only go to them, and their
+      hand stands out, so the panel shows only the clues. */}
+      {targets.length > 1 && (
         // At narrow widths, the players take a row of their own above the clues.
         <div
           aria-label="Player to clue"
@@ -101,6 +109,7 @@ export function CluePanel({
                 onClick={() => {
                   onChooseTarget(playerIndex);
                 }}
+                ref={fullNameTooltip(name)}
                 type="button"
               >
                 {name}
@@ -108,10 +117,6 @@ export function CluePanel({
             );
           })}
         </div>
-      ) : (
-        <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-game-muted">
-          {targetName === undefined ? "Pick a hand" : `Clue ${targetName}:`}
-        </span>
       )}
       {/* The clues stay together: when they do not fit beside the players, they all move to a row
       of their own below them. */}
