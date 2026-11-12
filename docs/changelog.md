@@ -27,6 +27,9 @@ of the repository.
   to play it, or anywhere to the right of them to discard it.
 - In the new game screen, the clue panel has a button for each player, and the
   clue hotkeys (Tab, 1 to 5, Q to Y, and Ctrl + Enter) work in it.
+- In the new game screen, holding the mouse button down on another player's
+  cards shows their view right away. Clicking a hand no longer picks that player
+  for a clue; use the buttons in the clue panel.
 
 ## November 11th, 2026
 

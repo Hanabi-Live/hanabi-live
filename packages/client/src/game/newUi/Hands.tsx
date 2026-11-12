@@ -45,10 +45,12 @@ interface HandsProps {
    */
   readonly nameColumnWidth: number | undefined;
 
-  /** Whether the viewer can pick a player to clue. */
+  /**
+   * Whether the viewer can give a clue, so that the hand of the player picked in the clue panel
+   * stands out.
+   */
   readonly canChooseClueTarget: boolean;
   readonly clueTarget: PlayerIndex | undefined;
-  readonly onChooseClueTarget: (playerIndex: PlayerIndex) => void;
 
   /** The cards that the clue being chosen would touch. */
   readonly touchedCards: ReadonlySet<CardOrder>;
@@ -265,12 +267,6 @@ function ClueRail({
     </svg>
   );
 }
-
-/**
- * How long the pointer must stay down on another player's hand before the hand shows their view of
- * it. A shorter press is a click, which picks the player for a clue.
- */
-const EMPATHY_HOLD_MILLISECONDS = 150;
 
 /** The width that the eye button takes beside a name, with its gap, in CSS pixels. */
 export const EMPATHY_TOGGLE_SPACE = 34;
@@ -541,8 +537,11 @@ function Hand({
   readonly props: HandsProps;
 }): React.JSX.Element {
   const editing = props.onEditCard !== undefined;
-  const canPick = props.canChooseClueTarget && !seat.acting && !editing;
-  const chosen = canPick && props.clueTarget === seat.playerIndex;
+  const chosen =
+    props.canChooseClueTarget
+    && !seat.acting
+    && !editing
+    && props.clueTarget === seat.playerIndex;
 
   let boxClass = "tw:ring-1 tw:ring-game-raised";
   if (seat.active) {
@@ -555,13 +554,12 @@ function Hand({
 
   const chip = <NameChip seat={seat} />;
 
-  // Holding the pointer down on another player's cards shows their view of them until it lifts.
-  const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Holding the pointer down on another player's cards shows their view of them until it lifts, as
+  // on the classic screen.
   const heldRef = useRef(false);
   function endHold() {
-    clearTimeout(holdTimer.current);
-    holdTimer.current = undefined;
     if (heldRef.current) {
+      heldRef.current = false;
       props.onHoldEmpathy(undefined);
     }
   }
@@ -612,21 +610,7 @@ function Hand({
                 }
           }
         >
-          {canPick ? (
-            <button
-              aria-pressed={chosen}
-              className="tw:max-w-full tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-left"
-              onClick={() => {
-                props.onChooseClueTarget(seat.playerIndex);
-              }}
-              ref={tooltipRef(`Give ${seat.name} a clue`)}
-              type="button"
-            >
-              {chip}
-            </button>
-          ) : (
-            chip
-          )}
+          {chip}
         </span>
         {!seat.you && (
           <button
@@ -649,31 +633,16 @@ function Hand({
           </button>
         )}
       </div>
-      {/* Clicking another player's cards also picks them for a clue. The name button does the
-          same for the keyboard. */}
       <div
-        className={`tw:flex ${canPick ? "tw:cursor-pointer" : ""}`}
-        onClick={() => {
-          // A press that was held long enough to show the player's view is not a click.
-          if (heldRef.current) {
-            heldRef.current = false;
-            return;
-          }
-          if (canPick) {
-            props.onChooseClueTarget(seat.playerIndex);
-          }
-        }}
+        className="tw:flex"
         onPointerCancel={endHold}
         onPointerDown={(event) => {
-          if (seat.you || event.button !== 0) {
+          // While editing cards, a press picks the card to change instead.
+          if (seat.you || editing || event.button !== 0) {
             return;
           }
-          heldRef.current = false;
-          clearTimeout(holdTimer.current);
-          holdTimer.current = setTimeout(() => {
-            heldRef.current = true;
-            props.onHoldEmpathy(seat.playerIndex);
-          }, EMPATHY_HOLD_MILLISECONDS);
+          heldRef.current = true;
+          props.onHoldEmpathy(seat.playerIndex);
         }}
         onPointerLeave={endHold}
         onPointerUp={endHold}

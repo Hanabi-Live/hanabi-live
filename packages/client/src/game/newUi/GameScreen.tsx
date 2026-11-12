@@ -1191,7 +1191,6 @@ export function GameScreen({
                     };
                   }
                 }}
-                onChooseClueTarget={setClueTarget}
                 onDiscard={(order) => {
                   setMenuCard(undefined);
                   if (canDiscardNow()) {
