@@ -419,7 +419,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     .strictObject({
       endCondition: endConditionSchema,
       /**
-       * The player whom the ending names, such as the one who timed out, if any.
+       * The player who ended the game, such as the one who timed out. Absent when no player did.
        */
       playerIndex: playerIndexSchema.optional(),
       type: z.literal("gameOver"),

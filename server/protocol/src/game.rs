@@ -232,7 +232,7 @@ pub struct ClueEvent {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOverEvent {
     pub end_condition: EndCondition,
-    /// The player whom the ending names, such as the one who timed out, if any.
+    /// The player who ended the game, such as the one who timed out. Absent when no player did.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
     /// The players who voted to end the game. Empty when a vote did not end it.

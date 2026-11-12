@@ -1,7 +1,8 @@
 use crate::{ClueType, int};
 use anyhow::{Result, anyhow};
 use hanabi_protocol::{
-    CatalogColor, CatalogSuit, CatalogVariant, MAX_RANK, MIN_RANK, START_CARD_RANK,
+    CatalogColor, CatalogSuit, CatalogVariant, EVEN_RANK_CLUE, MAX_RANK, MIN_RANK, ODD_RANK_CLUE,
+    START_CARD_RANK,
 };
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -324,8 +325,14 @@ pub fn is_card_touched(
                 return rank >= value;
             }
             if variant.odds_and_evens {
-                // The 1 clue touches the odd ranks and the 2 clue the even ones, but not a start card.
-                return (MIN_RANK..=MAX_RANK).contains(&rank) && rank % 2 == value % 2;
+                // The odd clue touches the odd ranks and the even clue the even ones, but not a
+                // start card.
+                let odd = match value {
+                    ODD_RANK_CLUE => true,
+                    EVEN_RANK_CLUE => false,
+                    _ => return false,
+                };
+                return (MIN_RANK..=MAX_RANK).contains(&rank) && (rank % 2 == 1) == odd;
             }
             if variant.special_rank == Some(rank) {
                 if variant.special_rank_all_clue_ranks {
