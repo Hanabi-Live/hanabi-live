@@ -9,6 +9,20 @@
   background: none;
   overflow: visible;
   pointer-events: none;
+  /* The border goes around the box and its arrow as one shape, so that it has no seam where they
+     meet. Each shadow copies everything before it 1px over, which draws the border around the edge.
+     The last shadow lifts the whole tooltip off the page. */
+  filter: drop-shadow(
+      var(--tooltip-border-width) 0 0 var(--tooltip-border-color)
+    )
+    drop-shadow(
+      calc(-1 * var(--tooltip-border-width)) 0 0 var(--tooltip-border-color)
+    )
+    drop-shadow(0 var(--tooltip-border-width) 0 var(--tooltip-border-color))
+    drop-shadow(
+      0 calc(-1 * var(--tooltip-border-width)) 0 var(--tooltip-border-color)
+    )
+    drop-shadow(0 6px 20px rgb(0 0 0 / 25%));
   /* Closed, the bubble sits a little away from its anchor, so that its arrow never covers it. */
   opacity: 0;
   transform: translateY(calc(-1 * var(--tooltip-slide)));
@@ -61,11 +75,8 @@
   }
 }
 
-/* The arrow is two triangles: the border (before) and, over it, the fill (after). The fill moves in
-   by the width of the border, measured across the arrow's slanted sides, so that the arrow's outline
-   is as thick as the box's. The fill reaches 1px into the box, over the box's border, so that the
-   outlines join and no seam shows between them at fractional positions. */
-.tooltip-bubble::before,
+/* The arrow reaches 1px into the box's fill so that no seam shows between them at fractional
+   positions. */
 .tooltip-bubble::after {
   content: "";
   position: absolute;
@@ -73,34 +84,19 @@
   left: var(--tooltip-arrow-x);
   margin-left: calc(-1 * var(--tooltip-arrow-size));
   border: var(--tooltip-arrow-size) solid transparent;
+  border-top-color: var(--tooltip-background);
+  border-top-width: calc(
+    var(--tooltip-arrow-size) + var(--tooltip-border-width) + 1px
+  );
   border-bottom-width: 0;
 }
 
-.tooltip-bubble::before {
-  border-top-color: var(--tooltip-border-color);
-}
-
-.tooltip-bubble::after {
-  bottom: calc(var(--tooltip-border-width) * sqrt(2));
-  border-top-color: var(--tooltip-background);
-  border-top-width: calc(var(--tooltip-arrow-size) + 1px);
-}
-
-.tooltip-bubble[data-side="bottom"]::before,
 .tooltip-bubble[data-side="bottom"]::after {
   top: 0;
   bottom: auto;
-  border-width: 0 var(--tooltip-arrow-size) var(--tooltip-arrow-size);
-}
-
-.tooltip-bubble[data-side="bottom"]::before {
-  border-color: transparent transparent var(--tooltip-border-color);
-}
-
-.tooltip-bubble[data-side="bottom"]::after {
-  top: calc(var(--tooltip-border-width) * sqrt(2));
   border-color: transparent transparent var(--tooltip-background);
-  border-bottom-width: calc(var(--tooltip-arrow-size) + 1px);
+  border-width: 0 var(--tooltip-arrow-size)
+    calc(var(--tooltip-arrow-size) + var(--tooltip-border-width) + 1px);
 }
 
 .tooltip-box {
@@ -113,9 +109,9 @@
   overflow: auto;
   padding: 0.65em 0.85em;
   border-radius: var(--radius);
-  background: var(--tooltip-background);
-  border: var(--tooltip-border-width) solid var(--tooltip-border-color);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 25%);
+  /* The bubble draws the border in this transparent space (see above). */
+  border: var(--tooltip-border-width) solid transparent;
+  background: var(--tooltip-background) padding-box;
   color: var(--text);
   font-size: 1.5em;
   line-height: 1.5;
