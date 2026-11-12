@@ -5,12 +5,14 @@ import { historyReducer } from "./lobby/gameHistory/historySlice.ts";
 import { pregameReducer } from "./lobby/pregame/pregameSlice.ts";
 import { tablesReducer } from "./lobby/tables/tablesSlice.ts";
 import { usersReducer } from "./lobby/users/usersSlice.ts";
+import { messageModalReducer } from "./messageModalSlice.ts";
 import { sessionReducer } from "./sessionSlice.ts";
 
 export const store = configureStore({
   reducer: {
     history: historyReducer,
     lobbyChat: lobbyChatReducer,
+    messageModal: messageModalReducer,
     pregame: pregameReducer,
     session: sessionReducer,
     tables: tablesReducer,

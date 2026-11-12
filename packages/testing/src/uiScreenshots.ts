@@ -525,6 +525,18 @@ function getStates({
         await page.fill("#emoji-picker input", "cat");
       },
     },
+    // A reply before anyone sent us a private message shows a warning.
+    {
+      name: "warning-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.fill("#lobby-chat-input", "/r hi");
+        await page.press("#lobby-chat-input", "Enter");
+        await page.locator("#warning-modal").waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
     {
       name: "chat-length-near-limit",
       path: "/",

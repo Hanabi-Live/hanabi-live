@@ -4,34 +4,11 @@ import { afterAll, beforeAll, expect, test, vi } from "vitest";
 const dom = new JSDOM(`<!doctype html><body>
   <dialog id="modal-dialog"></dialog>
   <div id="modals-container">
-    <div id="warning-modal" class="hidden">
-      <p id="warning-modal-description"></p>
-      <button id="warning-modal-button"></button>
-    </div>
-    <div id="confirm-modal" class="hidden">
-      <h3 id="confirm-modal-title"></h3>
-      <p id="confirm-modal-description"></p>
-      <button id="confirm-modal-confirm"></button>
-      <button id="confirm-modal-cancel"></button>
-    </div>
-    <div id="error-modal" class="hidden">
-      <p id="error-modal-description"></p>
-      <button id="error-modal-button"></button>
-      <button id="error-modal-signout"></button>
-    </div>
-    <div id="idle-modal" class="hidden">
-      <p id="idle-modal-description"></p>
-      <button id="idle-modal-keep"></button>
-      <button id="idle-modal-close"></button>
-    </div>
+    <div id="message-modal"></div>
     <button id="morph-modal-button-cancel"></button>
     <button id="morph-modal-button-ok"></button>
     <p id="morph-modal-description"></p>
     <input id="morph-modal-textbox" />
-    <button id="password-modal-cancel"></button>
-    <input id="password-modal-id" />
-    <input id="password-modal-password" />
-    <button id="password-modal-submit"></button>
   </div>
 </body>`);
 // The "jsdom" library does not open or close dialogs.
@@ -86,30 +63,31 @@ vi.mock("./game/ui/HanabiCardClick.ts", () => ({
   morphReplayFromModal: vi.fn(),
 }));
 
+function getMessageModal() {
+  return dom.window.document.querySelector("#message-modal");
+}
+
 // This must run before the error test, whose error modal cannot be closed.
-test("the idle warning counts down and only lets players keep the game going", async () => {
+test("the idle warning only lets players keep the game going", async () => {
   const modals = await import("./modals.ts");
-  const { document } = dom.window;
-  const idleModal = document.querySelector("#idle-modal");
-  const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
+  const { store } = await import("./store.ts");
 
   modals.showIdleWarning(299_000, undefined);
-  expect(idleModal?.parentElement?.id).toBe("modal-dialog");
-  expect(
-    document.querySelector("#idle-modal-description strong")?.textContent,
-  ).toBe("4:59");
-  expect(keep?.style.display).toBe("none");
-
-  let keepPlayingCalls = 0;
-  modals.showIdleWarning(299_000, () => {
-    keepPlayingCalls++;
+  expect(getMessageModal()?.parentElement?.id).toBe("modal-dialog");
+  expect(store.getState().messageModal.modal).toMatchObject({
+    type: "idle",
+    canKeepPlaying: false,
   });
-  expect(keep?.style.display).toBe("");
-  keep?.onpointerdown?.(
-    new dom.window.Event("pointerdown") as unknown as PointerEvent,
-  );
-  expect(keepPlayingCalls).toBe(1);
-  expect(idleModal?.parentElement?.id).toBe("modals-container");
+
+  const keepPlaying = vi.fn<() => void>();
+  modals.showIdleWarning(299_000, keepPlaying);
+  expect(store.getState().messageModal.modal).toMatchObject({
+    canKeepPlaying: true,
+  });
+  modals.keepPlaying();
+  expect(keepPlaying).toHaveBeenCalledTimes(1);
+  expect(getMessageModal()?.parentElement?.id).toBe("modals-container");
+  expect(store.getState().messageModal.modal).toBeUndefined();
 });
 
 test("a confirmation runs exactly one of its callbacks", async () => {
@@ -122,7 +100,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   const onConfirm = vi.fn<() => void>();
   const onCancel = vi.fn<() => void>();
   modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
-  document.querySelector<HTMLElement>("#confirm-modal-confirm")!.click();
+  modals.confirm();
   expect(onConfirm).toHaveBeenCalledTimes(1);
   expect(onCancel).not.toHaveBeenCalled();
 
@@ -154,21 +132,12 @@ test("a confirmation runs exactly one of its callbacks", async () => {
 
 test("a warning shown after an error does not replace the error modal", async () => {
   const modals = await import("./modals.ts");
+  const { store } = await import("./store.ts");
   modals.showError("The connection was rejected.");
   // The "warning" command opens its modal after a delay, so it can arrive after an error.
   modals.showWarning("A late warning.");
-  const { document } = dom.window;
-  expect(document.querySelector("#error-modal")?.parentElement?.id).toBe(
-    "modal-dialog",
-  );
-  expect(
-    document.querySelector("#error-modal")?.classList.contains("hidden"),
-  ).toBe(false);
-  expect(document.querySelector("#warning-modal")?.parentElement?.id).toBe(
-    "modals-container",
-  );
+  expect(store.getState().messageModal.modal?.type).toBe("error");
   modals.closeModals();
-  expect(document.querySelector("#error-modal")?.parentElement?.id).toBe(
-    "modal-dialog",
-  );
+  expect(getMessageModal()?.parentElement?.id).toBe("modal-dialog");
+  expect(store.getState().messageModal.modal?.type).toBe("error");
 });

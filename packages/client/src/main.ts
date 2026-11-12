@@ -22,6 +22,7 @@ import { mountNav } from "./lobby/nav/mountNav.tsx";
 import * as lobbyPregame from "./lobby/pregame/pregame.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
+import { mountMessageModal } from "./mountMessageModal.tsx";
 import * as sounds from "./sounds.ts";
 import * as tooltips from "./tooltips.ts";
 import { setBrowserAddressBarPath } from "./utils.ts";
@@ -88,6 +89,7 @@ $(document).ready(() => {
 
   // Now that the page has loaded, initialize and define the functionality of various UI elements.
   modals.init();
+  mountMessageModal();
   chat.init();
   game.init();
   gameChat.init();

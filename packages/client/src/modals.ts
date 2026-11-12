@@ -1,18 +1,16 @@
 // Modals (boxes that hover on top of the UI).
 
 import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
-import { millisecondsToClockString, START_CARD_RANK } from "@hanabi-live/game";
-import {
-  assertDefined,
-  parseIntSafe,
-  SECOND_IN_MILLISECONDS,
-} from "complete-common";
+import { START_CARD_RANK } from "@hanabi-live/game";
+import { assertDefined } from "complete-common";
 import { globals } from "./Globals.ts";
-import { LOCAL_STORAGE_KEY, START_CARD_RANK_LABEL } from "./constants.ts";
+import { START_CARD_RANK_LABEL } from "./constants.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
-import { signOut } from "./lobby/signOut.ts";
+import type { MessageModal } from "./messageModalSlice.ts";
+import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
+import { store } from "./store.ts";
 import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Used by the morph dialog. */
@@ -24,31 +22,18 @@ let downtimeMessage: string | undefined;
 let currentModal: HTMLElement | undefined;
 let confirmModalOnConfirm: (() => void) | undefined;
 let confirmModalOnCancel: (() => void) | undefined;
+let idleModalKeepPlaying: (() => void) | undefined;
 let morphDragArea: DragAreaType;
-let idleCountdown: ReturnType<typeof setInterval> | undefined;
 
-const confirmModalCancel = getHtmlElement("#confirm-modal-cancel");
-const confirmModalConfirm = getHtmlElement("#confirm-modal-confirm");
-const confirmModalDescription = getHtmlElement("#confirm-modal-description");
-const confirmModalTitle = getHtmlElement("#confirm-modal-title");
-const errorModalButton = getHtmlElement("#error-modal-button");
-const errorModalDescription = getHtmlElement("#error-modal-description");
-const errorModalSignOut = getHtmlElement("#error-modal-signout");
-const idleModalClose = getHtmlElement("#idle-modal-close");
-const idleModalDescription = getHtmlElement("#idle-modal-description");
-const idleModalKeep = getHtmlElement("#idle-modal-keep");
+/** The modal that "MessageModal.tsx" renders the content of. */
+const MESSAGE_MODAL_ID = "message-modal";
+
 const modalDialog = getModalDialog();
 const modalsContainer = getHtmlElement("#modals-container");
 const morphModalButtonCancel = getHtmlElement("#morph-modal-button-cancel");
 const morphModalButtonOk = getHtmlElement("#morph-modal-button-ok");
 const morphModalDescription = getHtmlElement("#morph-modal-description");
 const morphModalTextbox = getHtmlInputElement("#morph-modal-textbox");
-const passwordModalCancel = getHtmlElement("#password-modal-cancel");
-const passwordModalId = getHtmlInputElement("#password-modal-id");
-const passwordModalPassword = getHtmlInputElement("#password-modal-password");
-const passwordModalSubmit = getHtmlElement("#password-modal-submit");
-const warningModalButton = getHtmlElement("#warning-modal-button");
-const warningModalDescription = getHtmlElement("#warning-modal-description");
 
 function getModalDialog(): HTMLDialogElement {
   const element = document.querySelector("#modal-dialog");
@@ -90,48 +75,6 @@ export function init(): void {
     }
   });
 
-  // Password modal setup.
-  passwordModalPassword.addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      passwordSubmit();
-    }
-  });
-  passwordModalSubmit.addEventListener("pointerdown", () => {
-    passwordSubmit();
-  });
-  passwordModalCancel.addEventListener("pointerdown", () => {
-    closeModals();
-  });
-
-  // Warning modal setup.
-  warningModalButton.addEventListener("pointerdown", () => {
-    closeModals();
-  });
-
-  // Idle modal setup.
-  idleModalClose.addEventListener("pointerdown", () => {
-    closeModals();
-  });
-
-  // Confirm modal setup. Use "click" so that the buttons also work from the keyboard.
-  confirmModalConfirm.addEventListener("click", () => {
-    const onConfirm = confirmModalOnConfirm;
-    confirmModalOnConfirm = undefined;
-    confirmModalOnCancel = undefined;
-    closeModals();
-    onConfirm?.();
-  });
-  confirmModalCancel.addEventListener("click", () => {
-    closeModals();
-  });
-
-  // Error modal setup.
-  errorModalButton.addEventListener("pointerdown", () => {
-    globalThis.location.reload();
-  });
-  errorModalSignOut.addEventListener("click", signOut);
-
   // Morph modal textbox.
   const morphTextboxObserver = new MutationObserver(() => {
     const { suit } = morphModalTextbox.dataset;
@@ -154,43 +97,8 @@ export function init(): void {
   });
 }
 
-function passwordSubmit() {
-  const tableIdString = passwordModalId.value;
-  const tableId = parseIntSafe(tableIdString); // The server expects this as a number
-  if (tableId === undefined) {
-    return;
-  }
-
-  const password = passwordModalPassword.value;
-
-  globals.conn!.send("tableJoin", {
-    tableId,
-    ...(password !== "" && { password }),
-  });
-
-  // Record the password in local storage (cookie).
-  localStorage.setItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD, password);
-
-  closeModals();
-}
-
 export function askForPassword(tableId: number): void {
-  allowCloseModal = true;
-
-  passwordModalId.setAttribute("value", tableId.toString());
-
-  // We want to fill in the text field with the player's last typed-in password.
-  const password = localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD);
-  if (password !== null && password !== "") {
-    passwordModalPassword.value = password;
-  }
-
-  // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
-  const ready = () => {
-    passwordModalPassword.focus();
-    passwordModalPassword.select();
-  };
-  showModal("#password-modal", true, ready);
+  showMessageModal({ type: "password", tableId });
 }
 
 export function askForMorph(
@@ -322,21 +230,10 @@ export function showWarning(msg: string): void {
   if (globals.errorOccurred) {
     return;
   }
-  allowCloseModal = true;
-
-  // Warning messages include intentional markup from the server and client.
-  // eslint-disable-next-line unicorn/no-unsafe-dom-html
-  warningModalDescription.innerHTML = msg;
 
   // Store the screen's active element.
   globals.lastActiveElement = document.activeElement as HTMLElement;
-
-  // Show the modal and focus the close button.
-  // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
-  const ready = () => {
-    warningModalButton.focus();
-  };
-  showModal("#warning-modal", true, ready);
+  showMessageModal({ type: "warning", html: msg });
 }
 
 /**
@@ -345,62 +242,35 @@ export function showWarning(msg: string): void {
  */
 export function showIdleWarning(
   remainingMs: number,
-  keepPlaying: (() => void) | undefined,
+  onKeepPlaying: (() => void) | undefined,
 ): void {
   if (globals.errorOccurred) {
     return;
   }
 
-  const deadline = Date.now() + remainingMs;
-  const countdown = document.createElement("strong");
-  idleModalDescription.replaceChildren(
-    "Nobody has taken a turn in a while, so this game will end in ",
-    countdown,
-    keepPlaying === undefined
-      ? " unless a player takes a turn or keeps it going."
-      : " unless someone takes a turn or keeps it going.",
-  );
-  function update() {
-    countdown.textContent = millisecondsToClockString(
-      Math.max(0, deadline - Date.now()),
-    );
-  }
-  update();
-  stopIdleCountdown();
-  idleCountdown = setInterval(() => {
-    if (currentModal?.id === "idle-modal") {
-      update();
-    } else {
-      stopIdleCountdown();
-    }
-  }, SECOND_IN_MILLISECONDS);
-
-  idleModalKeep.style.display = keepPlaying === undefined ? "none" : "";
-  // We can't use "addEventListener" because we can't easily remove the previous listener.
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  idleModalKeep.onpointerdown = () => {
-    keepPlaying?.();
-    closeIdleWarning();
-  };
-
   globals.lastActiveElement = document.activeElement as HTMLElement;
-  showModal("#idle-modal", true, () => {
-    (keepPlaying === undefined ? idleModalClose : idleModalKeep).focus();
+  showMessageModal({
+    type: "idle",
+    deadline: Date.now() + remainingMs,
+    canKeepPlaying: onKeepPlaying !== undefined,
   });
+  // Showing the modal closes any previous one, so the callback must be stored afterward.
+  idleModalKeepPlaying = onKeepPlaying;
+}
+
+/** Keeps the game of the idle warning going. */
+export function keepPlaying(): void {
+  idleModalKeepPlaying?.();
+  closeIdleWarning();
 }
 
 /** Closes the idle warning (and only it), for example after a turn keeps the game going. */
 export function closeIdleWarning(): void {
-  stopIdleCountdown();
-  if (currentModal?.id === "idle-modal") {
+  if (
+    currentModal?.id === MESSAGE_MODAL_ID
+    && store.getState().messageModal.modal?.type === "idle"
+  ) {
     closeModals();
-  }
-}
-
-function stopIdleCountdown() {
-  if (idleCountdown !== undefined) {
-    clearInterval(idleCountdown);
-    idleCountdown = undefined;
   }
 }
 
@@ -421,23 +291,23 @@ export function askForConfirmation(
     return;
   }
 
-  confirmModalTitle.textContent = title;
-  confirmModalDescription.textContent = description;
-  confirmModalConfirm.textContent = confirmText;
-
   // Store the screen's active element.
   globals.lastActiveElement = document.activeElement as HTMLElement;
-
-  // eslint-disable-next-line func-style
-  const ready = () => {
-    confirmModalConfirm.focus();
-  };
-  showModal("#confirm-modal", true, ready);
+  showMessageModal({ type: "confirm", title, description, confirmText });
 
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
   // must be stored afterward.
   confirmModalOnConfirm = onConfirm;
   confirmModalOnCancel = onCancel;
+}
+
+/** Confirms the action of the confirm modal. */
+export function confirm(): void {
+  const onConfirm = confirmModalOnConfirm;
+  confirmModalOnConfirm = undefined;
+  confirmModalOnCancel = undefined;
+  closeModals();
+  onConfirm?.();
 }
 
 /** The reason stays visible if a reconnect error (such as an outdated client) replaces it. */
@@ -454,13 +324,16 @@ export function showError(msg: string): void {
   // This also clears the buttons of the navigation bar.
   globals.errorOccurred = true;
 
-  // Error messages include the formatted stack trace from "errors.ts".
-  // eslint-disable-next-line unicorn/no-unsafe-dom-html
-  errorModalDescription.innerHTML =
-    downtimeMessage === undefined
-      ? msg
-      : `${downtimeMessage}<br /><br />${msg}`;
-  showModal("#error-modal", false);
+  showMessageModal(
+    {
+      type: "error",
+      html:
+        downtimeMessage === undefined
+          ? msg
+          : `${downtimeMessage}<br /><br />${msg}`,
+    },
+    false,
+  );
 }
 
 export function showPrompt(
@@ -506,6 +379,10 @@ export function closeModals(): void {
   }
 
   downtimeMessage = undefined;
+  idleModalKeepPlaying = undefined;
+  if (currentModal?.id === MESSAGE_MODAL_ID) {
+    store.dispatch(messageModalClosed());
+  }
   if (currentModal !== undefined) {
     currentModal.classList.add("hidden");
     modalsContainer.append(currentModal);
@@ -525,6 +402,12 @@ export function closeModals(): void {
 
 export function isModalVisible(): boolean {
   return currentModal !== undefined;
+}
+
+/** Shows a message modal. Its buttons focus themselves once it renders. */
+function showMessageModal(modal: MessageModal, allowClose = true) {
+  showModal(`#${MESSAGE_MODAL_ID}`, allowClose);
+  store.dispatch(messageModalShown(modal));
 }
 
 function showModal(selector: string, allowClose: boolean, ready?: () => void) {
