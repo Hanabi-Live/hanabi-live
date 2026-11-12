@@ -20,7 +20,6 @@ of the repository.
   screen now says "Suggest to Table Owner".
 - The new game screen has an "End game" button, to vote to end the game or to
   end it right away.
-- Votes to end a game are secret again: only you see your own vote.
 
 ## November 11th, 2026
 
