@@ -1112,12 +1112,12 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
             init["mode"]["type"] == "sharedReplay"
-                && init["mode"]["sharedReplay"]["spoilerFree"] == true,
+                && init["mode"]["spoilerFree"] == true,
             "A spectator joined a spoiler-free review without being told: {init}"
         );
         // Bob has the name of a player, but he did not play this game at this table.
         ensure!(
-            init["mode"]["sharedReplay"]["canPlayAgain"] == false,
+            init["mode"]["canPlayAgain"] == false,
             "A replay of an imported game offered a restart: {init}"
         );
         Ok(())
@@ -1165,7 +1165,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
-            init["mode"]["sharedReplay"]["replayStartedAt"]
+            init["mode"]["replayStartedAt"]
                     == hanabi_protocol::Timestamp::from(created).as_str(),
             "The shared replay did not start when its table was created: {init}"
         );
@@ -1926,10 +1926,12 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         for declined in declined {
             ensure!(declined["restartDecliners"] == json!([carol]), "{declined}");
         }
+        h.send(2, "gameStateLoad", json!({"tableId":id})).await?;
+        let state = h.receive(2, "gameState").await?;
         ensure!(
-            init["mode"]["sharedReplay"]["restartDecliners"] == json!([carol])
-                && init["mode"]["sharedReplay"]["canPlayAgain"] == true,
-            "{init}"
+            state["phase"]["sharedReplay"]["restartDecliners"] == json!([carol])
+                && init["mode"]["canPlayAgain"] == true,
+            "{init} {state}"
         );
         ensure!(
             h.send(0, "tableRestart", json!({"tableId":id,"startNow":true}))
@@ -2193,16 +2195,20 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         // After a restart, the table has no one at it until its viewers return.
         h.restart().await?;
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
-        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
+        h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
+        h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
+        let state = h.receive(1, "gameState").await?;
         ensure!(
-            init["mode"]["sharedReplay"]["owner"]["userId"] == 2,
-            "The returning viewer did not lead the replay: {init}"
+            state["phase"]["sharedReplay"]["owner"]["userId"] == 2,
+            "The returning viewer did not lead the replay: {state}"
         );
         ensure!(h.snapshot(id).await?.0.owner.user_id == UserId::new(2).unwrap());
         // Alice returns to a replay that Bob now leads.
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
-        let init = h.request(0, "gameInitLoad", json!({"tableId":id})).await?;
-        ensure!(init["mode"]["sharedReplay"]["owner"]["userId"] == 2);
+        h.request(0, "gameInitLoad", json!({"tableId":id})).await?;
+        h.send(0, "gameStateLoad", json!({"tableId":id})).await?;
+        let state = h.receive(0, "gameState").await?;
+        ensure!(state["phase"]["sharedReplay"]["owner"]["userId"] == 2);
         Ok::<(), anyhow::Error>(())
     }
     .await;
@@ -2270,6 +2276,39 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 .iter()
                 .all(|p| p["username"] != "Observer"),
             "Departed attendee remained a leader candidate"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
+async fn a_shared_replay_state_carries_the_leaders_latest_changes() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.replay(0).await?;
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableId":id,"action":{"type":"efficiency","modifier":3}}),
+        )
+        .await?;
+        h.send(1, "tableSpectate", json!({"tableId":id})).await?;
+        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
+        ensure!(
+            init["mode"].get("efficiencyModifier").is_none(),
+            "The reply to gameInitLoad carried a shared replay's changing state: {init}"
+        );
+        h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
+        let state = h.receive(1, "gameState").await?;
+        ensure!(
+            state["phase"]["sharedReplay"]["efficiencyModifier"] == 3,
+            "The game state did not carry the leader's change: {state}"
         );
         Ok::<(), anyhow::Error>(())
     }

@@ -107,9 +107,6 @@ pub struct CardIdentity {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameFinished {
     pub table_id: TableId,
-    /// Absent when the game was not saved.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub game_id: Option<GameId>,
     pub finished_at: Timestamp,
     /// Every card's identity, by card order. The client rebuilds the game as a replay, which needs
     /// the cards that were hidden from it.
@@ -120,6 +117,8 @@ pub struct GameFinished {
     pub events: Vec<GameEvent>,
     /// Every player's and spectator's notes, which the recipient may now all see.
     pub notes: Vec<AuthorNotes>,
+    /// How the recipient views the shared replay, as `GameInit.mode` would show it.
+    pub view: SharedReplayView,
     pub shared_replay: SharedReplayState,
 }
 
@@ -352,9 +351,9 @@ pub enum GamePhase {
         /// Every card's identity, by card order.
         #[schemars(length(max = MAX_DECK_SIZE))]
         deck: Vec<CardIdentity>,
-        /// The hypothetical that a shared replay plays through, if any.
+        /// Present for a shared replay.
         #[serde(skip_serializing_if = "Option::is_none")]
-        hypothetical: Option<ActiveHypothetical>,
+        shared_replay: Option<SharedReplayState>,
     },
 }
 
@@ -419,15 +418,7 @@ pub enum ViewMode {
         our_player_index: Option<PlayerIndex>,
     },
     /// A viewer of a finished game, with others.
-    SharedReplay {
-        /// Absent when the game is not saved, such as an imported one.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        game_id: Option<GameId>,
-        /// The seat that the recipient played in or shadows, if any.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        our_player_index: Option<PlayerIndex>,
-        shared_replay: SharedReplayState,
-    },
+    SharedReplay(SharedReplayView),
 }
 
 impl ViewMode {
@@ -440,9 +431,9 @@ impl ViewMode {
             Self::SoloReplay {
                 our_player_index, ..
             }
-            | Self::SharedReplay {
+            | Self::SharedReplay(SharedReplayView {
                 our_player_index, ..
-            } => *our_player_index,
+            }) => *our_player_index,
             Self::Spectating {} => None,
         }
     }
@@ -471,7 +462,30 @@ pub struct GameInit {
     pub characters: Vec<CharacterAssignment>,
 }
 
-/// The state of a shared replay, when a client joins it or when its game ends.
+/// How the recipient views a shared replay. It does not change while they watch it. What
+/// changes is in `SharedReplayState`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SharedReplayView {
+    /// Absent when the game is not saved, such as an imported one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_id: Option<GameId>,
+    /// The seat that the recipient played in or shadows, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub our_player_index: Option<PlayerIndex>,
+    /// Whether the shared replay hides what happens later in the game.
+    pub spoiler_free: bool,
+    /// Whether the recipient played the game of this shared replay at this table, so that they can
+    /// play it again: the leader by restarting, and the other players by saying if they are ready.
+    pub can_play_again: bool,
+    /// When the replay began: when the game ended, for a review of a game just played, or when the
+    /// table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
+    pub replay_started_at: Timestamp,
+}
+
+/// The parts of a shared replay that change while people watch it, in a game's state and in
+/// `gameFinished`. They are not in the reply to `gameInitLoad`: a reply can arrive after a newer
+/// `replayAction`, and would then undo it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayState {
@@ -479,17 +493,12 @@ pub struct SharedReplayState {
     pub owner: UserRef,
     pub turn: Turn,
     pub efficiency_modifier: EfficiencyModifier,
-    /// Whether the shared replay hides what happens later in the game.
-    pub spoiler_free: bool,
     /// The seats of the players who will not play again if the leader restarts.
     #[schemars(length(max = MAX_PLAYERS))]
     pub restart_decliners: Vec<PlayerIndex>,
-    /// Whether the recipient played the game of this shared replay at this table, so that they can
-    /// play it again: the leader by restarting, and the other players by saying if they are ready.
-    pub can_play_again: bool,
-    /// When the replay began: when the game ended, for a review of a game just played, or when the
-    /// table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
-    pub replay_started_at: Timestamp,
+    /// The hypothetical that the replay plays through, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hypothetical: Option<ActiveHypothetical>,
 }
 
 /// How a game ended.

@@ -22,6 +22,7 @@ export type Action =
   | ActionPauseQueue
   | ActionSpectators
   | ActionGameFinished
+  | ActionSharedReplayState
   | UiAction;
 
 export type { ActionIncludingHypothetical } from "@hanabi-live/game";
@@ -52,9 +53,6 @@ export interface ActionInit extends Readonly<
   Pick<ReplyData["gameInitLoad"], "startedAt" | "finishedAt" | "mode">
 > {
   readonly type: "init";
-
-  /** The name of the shared replay's leader. */
-  readonly leader: string | undefined;
 }
 
 interface ActionListReceived {
@@ -93,7 +91,7 @@ interface ActionSpectators {
 }
 
 interface ActionGameFinished extends Readonly<
-  Pick<ServerEventData["gameFinished"], "gameId" | "sharedReplay">
+  Pick<ServerEventData["gameFinished"], "view" | "sharedReplay">
 > {
   readonly type: "gameFinished";
 
@@ -106,6 +104,24 @@ interface ActionGameFinished extends Readonly<
   /** The name of the shared replay's leader, which the server sends as a user ID. */
   readonly leader: string;
 }
+
+/** Where a shared replay is now, which the server sends in the game's state. */
+interface ActionSharedReplayState extends Readonly<
+  Pick<
+    NonNullable<SharedReplayPhase["sharedReplay"]>,
+    "turn" | "efficiencyModifier" | "restartDecliners"
+  >
+> {
+  readonly type: "sharedReplayState";
+
+  /** The name of the shared replay's leader, which the server sends as a user ID. */
+  readonly leader: string;
+}
+
+type SharedReplayPhase = Extract<
+  ServerEventData["gameState"]["phase"],
+  { type: "replay" }
+>;
 
 // --------------
 // Replay actions

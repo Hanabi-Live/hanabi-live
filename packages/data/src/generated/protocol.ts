@@ -264,14 +264,17 @@ export const gameEventMessageSchema = z
   .readonly();
 
 /**
- * A saved game's ID.
+ * The hypothetical that a shared replay plays through.
  */
-export const gameIdSchema = z
-  .number()
-  .int()
-  .min(1)
-  .max(2_147_483_647)
-  .brand<"GameId">();
+const activeHypotheticalSchema = z
+  .strictObject({
+    /**
+     * The hypothetical's events so far, in order.
+     */
+    events: z.array(hypotheticalEventSchema).readonly(),
+    showDrawnCards: z.boolean(),
+  })
+  .readonly();
 
 /**
  * How far a shared replay's leader moved the count of cards that the efficiency uses.
@@ -296,34 +299,67 @@ export const userRefSchema = z
   .readonly();
 
 /**
- * The state of a shared replay, when a client joins it or when its game ends.
+ * The parts of a shared replay that change while people watch it, in a game's state and in
+ * `gameFinished`. They are not in the reply to `gameInitLoad`: a reply can arrive after a newer
+ * `replayAction`, and would then undo it.
  */
 const sharedReplayStateSchema = z
+  .strictObject({
+    efficiencyModifier: efficiencyModifierSchema,
+    /**
+     * The hypothetical that the replay plays through, if any.
+     */
+    hypothetical: activeHypotheticalSchema.optional(),
+    /**
+     * The table's owner, who leads the replay.
+     */
+    owner: userRefSchema,
+    /**
+     * The seats of the players who will not play again if the leader restarts.
+     */
+    restartDecliners: z.array(playerIndexSchema).max(6).readonly(),
+    turn: turnSchema,
+  })
+  .readonly();
+
+/**
+ * A saved game's ID.
+ */
+export const gameIdSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(2_147_483_647)
+  .brand<"GameId">();
+
+/**
+ * How the recipient views a shared replay. It does not change while they watch it. What
+ * changes is in `SharedReplayState`.
+ */
+const sharedReplayViewSchema = z
   .strictObject({
     /**
      * Whether the recipient played the game of this shared replay at this table, so that they can
      * play it again: the leader by restarting, and the other players by saying if they are ready.
      */
     canPlayAgain: z.boolean(),
-    efficiencyModifier: efficiencyModifierSchema,
     /**
-     * The table's owner, who leads the replay.
+     * Absent when the game is not saved, such as an imported one.
      */
-    owner: userRefSchema,
+    gameId: gameIdSchema.optional(),
+    /**
+     * The seat that the recipient played in or shadows, if any.
+     */
+    ourPlayerIndex: playerIndexSchema.optional(),
     /**
      * When the replay began: when the game ended, for a review of a game just played, or when the
      * table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
      */
     replayStartedAt: z.iso.datetime({ precision: 3 }),
     /**
-     * The seats of the players who will not play again if the leader restarts.
-     */
-    restartDecliners: z.array(playerIndexSchema).max(6).readonly(),
-    /**
      * Whether the shared replay hides what happens later in the game.
      */
     spoilerFree: z.boolean(),
-    turn: turnSchema,
   })
   .readonly();
 
@@ -344,15 +380,15 @@ export const gameFinishedSchema = z
     events: z.array(gameEventSchema).readonly(),
     finishedAt: z.iso.datetime({ precision: 3 }),
     /**
-     * Absent when the game was not saved.
-     */
-    gameId: gameIdSchema.optional(),
-    /**
      * Every player's and spectator's notes, which the recipient may now all see.
      */
     notes: z.array(authorNotesSchema).readonly(),
     sharedReplay: sharedReplayStateSchema,
     tableId: tableIdSchema,
+    /**
+     * How the recipient views the shared replay, as `GameInit.mode` would show it.
+     */
+    view: sharedReplayViewSchema,
   })
   .readonly();
 
@@ -414,6 +450,11 @@ const viewModeSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
+       * Whether the recipient played the game of this shared replay at this table, so that they can
+       * play it again: the leader by restarting, and the other players by saying if they are ready.
+       */
+      canPlayAgain: z.boolean(),
+      /**
        * Absent when the game is not saved, such as an imported one.
        */
       gameId: gameIdSchema.optional(),
@@ -421,7 +462,15 @@ const viewModeSchema = z.discriminatedUnion("type", [
        * The seat that the recipient played in or shadows, if any.
        */
       ourPlayerIndex: playerIndexSchema.optional(),
-      sharedReplay: sharedReplayStateSchema,
+      /**
+       * When the replay began: when the game ended, for a review of a game just played, or when the
+       * table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
+       */
+      replayStartedAt: z.iso.datetime({ precision: 3 }),
+      /**
+       * Whether the shared replay hides what happens later in the game.
+       */
+      spoilerFree: z.boolean(),
       type: z.literal("sharedReplay"),
     })
     .readonly(),
@@ -515,19 +564,6 @@ export const gamePageSchema = z
   .readonly();
 
 /**
- * The hypothetical that a shared replay plays through.
- */
-const activeHypotheticalSchema = z
-  .strictObject({
-    /**
-     * The hypothetical's events so far, in order.
-     */
-    events: z.array(hypotheticalEventSchema).readonly(),
-    showDrawnCards: z.boolean(),
-  })
-  .readonly();
-
-/**
  * Every player's clock, in the `clock` message and in a game's state.
  */
 const clockStateSchema = z
@@ -616,9 +652,9 @@ const gamePhaseSchema = z.discriminatedUnion("type", [
        */
       deck: z.array(cardIdentitySchema).max(60).readonly(),
       /**
-       * The hypothetical that a shared replay plays through, if any.
+       * Present for a shared replay.
        */
-      hypothetical: activeHypotheticalSchema.optional(),
+      sharedReplay: sharedReplayStateSchema.optional(),
       type: z.literal("replay"),
     })
     .readonly(),

@@ -110,15 +110,15 @@ gameCommands.set("gameFinished", (data) => {
   });
 
   // Set the browser address bar. A game that was not saved has no replay address.
-  if (data.gameId !== undefined) {
-    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.gameId}`);
+  if (data.view.gameId !== undefined) {
+    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.view.gameId}`);
   }
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
     type: "gameFinished",
     actions: data.events.map(toGameAction),
-    gameId: data.gameId,
+    view: data.view,
     sharedReplay: data.sharedReplay,
     finishedAt: data.finishedAt,
     leader: data.sharedReplay.owner.username,
@@ -322,6 +322,16 @@ gameCommands.set("gameEvent", (data) => {
  */
 gameCommands.set("gameState", (data) => {
   const { phase } = data;
+  const shared = phase.type === "replay" ? phase.sharedReplay : undefined;
+  if (shared !== undefined) {
+    globals.store!.dispatch({
+      type: "sharedReplayState",
+      turn: shared.turn,
+      efficiencyModifier: shared.efficiencyModifier,
+      restartDecliners: shared.restartDecliners,
+      leader: shared.owner.username,
+    });
+  }
   setEvents(data.events);
   if (phase.type === "replay") {
     setCardIdentities(phase.deck);
@@ -340,14 +350,14 @@ gameCommands.set("gameState", (data) => {
     }
   }
   setSpectators(data.spectators);
-  if (phase.type === "replay" && phase.hypothetical !== undefined) {
+  if (shared?.hypothetical !== undefined) {
     // We are joining a shared replay that plays through a hypothetical line. Play all of its
     // actions so far to catch up with everyone else.
     globals.store!.dispatch({
       type: "hypotheticalStart",
       shared: true,
-      showDrawnCards: phase.hypothetical.showDrawnCards,
-      actions: phase.hypothetical.events.map(toHypotheticalAction),
+      showDrawnCards: shared.hypothetical.showDrawnCards,
+      actions: shared.hypothetical.events.map(toHypotheticalAction),
     });
   }
 });
@@ -641,10 +651,6 @@ function initStateStore(data: GameInit) {
     mode: data.mode,
     startedAt: data.startedAt,
     finishedAt: data.finishedAt,
-    leader:
-      data.mode.type === "sharedReplay"
-        ? data.mode.sharedReplay.owner.username
-        : undefined,
   });
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We

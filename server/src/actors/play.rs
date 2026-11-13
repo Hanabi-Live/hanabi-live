@@ -187,13 +187,15 @@ impl TableActor {
                         hanabi_protocol::event::GAME_FINISHED,
                         hanabi_protocol::GameFinished {
                             table_id: self.table.id,
-                            game_id: s.game_id,
                             finished_at: finished_at.clone(),
                             deck: deck.clone(),
                             events: events.clone(),
                             notes: self.observer_notes(a),
+                            view: self
+                                .shared_replay_view(s, &a.session, Self::our_player_index(s, a))
+                                .context("A finished game is not a shared replay")?,
                             shared_replay: self
-                                .shared_replay_state(s, &a.session)
+                                .shared_replay_state()
                                 .context("A finished game is not a shared replay")?,
                         },
                     ),
@@ -461,33 +463,58 @@ impl TableActor {
         }
         notes
     }
-    /// The state of the table's shared replay that `session` joins, or `None` if the table is not
-    /// a shared replay.
-    fn shared_replay_state(
+    /// How `session` views the table's shared replay from `our_player_index`, or `None` if the
+    /// table is not a shared replay.
+    fn shared_replay_view(
         &self,
         s: &Snapshot,
         session: &Session,
-    ) -> Option<hanabi_protocol::SharedReplayState> {
+        our_player_index: Option<PlayerIndex>,
+    ) -> Option<hanabi_protocol::SharedReplayView> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
             return None;
         };
-        if !self.table.visible {
+        self.table
+            .visible
+            .then(|| hanabi_protocol::SharedReplayView {
+                game_id: s.game_id,
+                our_player_index,
+                spoiler_free: replay.spoiler_free,
+                can_play_again: self.can_play_again(session),
+                // A review of a game just played begins when the game ends; a replay of an older
+                // game begins when its table is created.
+                replay_started_at: hanabi_protocol::Timestamp::from(
+                    s.finished
+                        .map_or(self.table.created, |f| f.max(self.table.created)),
+                ),
+            })
+    }
+    /// Where the table's shared replay is now, or `None` if the table is not a shared replay.
+    fn shared_replay_state(&self) -> Option<hanabi_protocol::SharedReplayState> {
+        let Phase::Replay { replay, .. } = &self.table.phase else {
             return None;
-        }
-        Some(hanabi_protocol::SharedReplayState {
-            owner: self.table.owner.clone(),
-            turn: replay.segment,
-            efficiency_modifier: replay.efficiency_modifier,
-            spoiler_free: replay.spoiler_free,
-            restart_decliners: self.restart_decliners(),
-            can_play_again: self.can_play_again(session),
-            // A review of a game just played begins when the game ends; a replay of an older
-            // game begins when its table is created.
-            replay_started_at: hanabi_protocol::Timestamp::from(
-                s.finished
-                    .map_or(self.table.created, |f| f.max(self.table.created)),
-            ),
-        })
+        };
+        self.table
+            .visible
+            .then(|| hanabi_protocol::SharedReplayState {
+                owner: self.table.owner.clone(),
+                turn: replay.segment,
+                efficiency_modifier: replay.efficiency_modifier,
+                restart_decliners: self.restart_decliners(),
+                hypothetical: replay
+                    .hypothetical
+                    .then(|| hanabi_protocol::ActiveHypothetical {
+                        show_drawn_cards: replay.show_drawn_cards,
+                        events: replay.hypothetical_actions.clone(),
+                    }),
+            })
+    }
+    /// The seat that the attendee sees the game from: the one they shadow, or else their own.
+    fn our_player_index(s: &Snapshot, a: &Attendance) -> Option<PlayerIndex> {
+        let user = a.session.user;
+        let seat = s.players.iter().position(|p| p.is(user));
+        let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == a.session.name));
+        a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new))
     }
     pub(super) async fn info(
         &self,
@@ -502,19 +529,14 @@ impl TableActor {
         let a = self.attendees.get(&session.user).expect("attendee");
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = s.players.iter().position(|p| p.is(session.user));
-        let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         let data = if part == GameInfo::Init {
-            let shared_replay = self.shared_replay_state(s, &session);
-            let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
+            let our_player_index = Self::our_player_index(s, a);
+            let shared_replay = self.shared_replay_view(s, &session, our_player_index);
             let init = hanabi_protocol::GameInit {
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
                 mode: match (shared_replay, a.shadow) {
-                    (Some(shared_replay), _) => ViewMode::SharedReplay {
-                        game_id: s.game_id,
-                        our_player_index,
-                        shared_replay,
-                    },
+                    (Some(view), _) => ViewMode::SharedReplay(view),
                     (None, _) if replay => ViewMode::SoloReplay {
                         game_id: s.game_id,
                         our_player_index,
@@ -576,14 +598,9 @@ impl TableActor {
                     .collect()
             };
             let phase = match &self.table.phase {
-                Phase::Replay { replay, .. } => hanabi_protocol::GamePhase::Replay {
+                Phase::Replay { .. } => hanabi_protocol::GamePhase::Replay {
                     deck: Self::card_identities(s),
-                    hypothetical: replay.hypothetical.then(|| {
-                        hanabi_protocol::ActiveHypothetical {
-                            show_drawn_cards: replay.show_drawn_cards,
-                            events: replay.hypothetical_actions.clone(),
-                        }
-                    }),
+                    shared_replay: self.shared_replay_state(),
                 },
                 _ => hanabi_protocol::GamePhase::Playing {
                     clock: self.clock()?.clock,

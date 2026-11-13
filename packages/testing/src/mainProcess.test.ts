@@ -426,12 +426,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "gameFinished",
           SERVER_EVENT_SCHEMAS.gameFinished,
         );
-        assertDefined(finished.gameId, "The finished game was not saved.");
-        expect<number>(finished.gameId).toBe(checkpoint.game_id);
+        assertDefined(finished.view.gameId, "The finished game was not saved.");
+        expect<number>(finished.view.gameId).toBe(checkpoint.game_id);
         await replacement.receive(
           "gameHistoryAdded",
           SERVER_EVENT_SCHEMAS.gameHistoryAdded,
-          (row) => row.gameId === finished.gameId,
+          (row) => row.gameId === finished.view.gameId,
         );
         replacement.send("replayAction", {
           tableId,
@@ -455,7 +455,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             .every((event) => event.identity !== undefined),
         ).toBe(true);
         expect(
-          await client`SELECT id FROM games WHERE id = ${finished.gameId}`,
+          await client`SELECT id FROM games WHERE id = ${finished.view.gameId}`,
         ).toHaveLength(1);
         expect(await client`SELECT id FROM games`).toEqual<unknown>([
           { id: checkpoint.game_id },
@@ -657,11 +657,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
       );
       // A deck of 6 suits has 60 cards.
       expect(finished.deck).toHaveLength(60);
-      assertDefined(finished.gameId, "The finished game was not saved.");
+      assertDefined(finished.view.gameId, "The finished game was not saved.");
       expect(
-        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.gameId}`,
+        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.view.gameId}`,
       ).toHaveLength(6);
-      const exported = await fetch(`${address}/export/${finished.gameId}`);
+      const exported = await fetch(`${address}/export/${finished.view.gameId}`);
       expect(exported.status).toBe(200);
       const replayJson = replayGameSchema.parse(await exported.json());
       expect(replayJson.playerNames).toHaveLength(6);
@@ -682,7 +682,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "replayCreate",
           source === "id"
             ? {
-                source: { type: "saved", gameId: finished.gameId },
+                source: { type: "saved", gameId: finished.view.gameId },
                 visibility: { type: "solo" },
               }
             : {
@@ -777,15 +777,20 @@ databaseDescribe("compiled application entry point (rust)", () => {
               entersGame(message) && message.tableId === created.tableId,
           );
           const recovered = await bootstrap(returning, created.tableId);
-          if (imported.init.mode.type !== "sharedReplay") {
+          const importedPhase = imported.history.phase;
+          if (
+            importedPhase.type !== "replay"
+            || importedPhase.sharedReplay === undefined
+          ) {
             throw new Error("The imported game is not a shared replay.");
           }
           expect(recovered.init).toMatchObject({
-            mode: {
-              type: "sharedReplay",
-              sharedReplay: { turn: imported.init.mode.sharedReplay.turn },
-            },
+            mode: { type: "sharedReplay" },
             startedAt: imported.init.startedAt,
+          });
+          expect(recovered.history.phase).toMatchObject({
+            type: "replay",
+            sharedReplay: { turn: importedPhase.sharedReplay.turn },
           });
           expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.events).toEqual(imported.history.events);

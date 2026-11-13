@@ -89,7 +89,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.finishedAt = action.finishedAt;
 
       // Record the database ID of the game, if it was saved.
-      state.replay.gameId = action.gameId;
+      state.replay.gameId = action.view.gameId;
 
       // If we were in an in-game replay when the game ended, keep us at the current turn so that we
       // are not taken away from what we are looking at. Otherwise, go to the penultimate segment.
@@ -117,17 +117,20 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
       // Initialize the shared replay. Its players stay on the penultimate segment rather than the
       // server's shared segment.
-      const shared = action.sharedReplay;
+      const { view } = action;
       state.replay.shared = {
         segment: penultimateSegment,
         useSharedSegments: !inInGameReplay,
         leader: action.leader,
         amLeader: action.leader === state.metadata.ourUsername,
-        replayStartedAt: shared.replayStartedAt,
-        spoilerFree: shared.spoilerFree,
-        canPlayAgain: shared.canPlayAgain,
+        replayStartedAt: view.replayStartedAt,
+        spoilerFree: view.spoilerFree,
+        canPlayAgain: view.canPlayAgain,
         restartDeclined: castDraft(
-          playerNamesAt(state.metadata.playerNames, shared.restartDecliners),
+          playerNamesAt(
+            state.metadata.playerNames,
+            action.sharedReplay.restartDecliners,
+          ),
         ),
         hypothetical: undefined,
       };
@@ -165,31 +168,44 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.replay.gameId = mode.gameId;
 
           if (mode.type === "sharedReplay") {
-            const shared = mode.sharedReplay;
-            // In dedicated shared replays, start on the shared replay turn.
-            state.replay.segment = shared.turn;
+            // The game's state ("sharedReplayState") sets the leader, the turn, and the rest of
+            // what changes while the replay runs.
             state.replay.shared = {
-              segment: shared.turn,
+              segment: 0,
               useSharedSegments: true,
-              leader: action.leader ?? "",
-              amLeader: action.leader === state.metadata.ourUsername,
-              replayStartedAt: shared.replayStartedAt,
-              spoilerFree: shared.spoilerFree,
-              canPlayAgain: shared.canPlayAgain,
-              restartDeclined: castDraft(
-                playerNamesAt(
-                  state.metadata.playerNames,
-                  shared.restartDecliners,
-                ),
-              ),
+              leader: "",
+              amLeader: false,
+              replayStartedAt: mode.replayStartedAt,
+              spoilerFree: mode.spoilerFree,
+              canPlayAgain: mode.canPlayAgain,
+              restartDeclined: [],
               hypothetical: undefined,
             };
-            state.notes.efficiencyModifier = shared.efficiencyModifier;
           }
           break;
         }
       }
 
+      break;
+    }
+
+    case "sharedReplayState": {
+      const { shared } = state.replay;
+      assertDefined(
+        shared,
+        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+      );
+
+      shared.segment = action.turn;
+      if (shared.useSharedSegments) {
+        state.replay.segment = action.turn;
+      }
+      shared.leader = action.leader;
+      shared.amLeader = action.leader === state.metadata.ourUsername;
+      shared.restartDeclined = castDraft(
+        playerNamesAt(state.metadata.playerNames, action.restartDecliners),
+      );
+      state.notes.efficiencyModifier = action.efficiencyModifier;
       break;
     }
 

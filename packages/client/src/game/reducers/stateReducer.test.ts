@@ -34,16 +34,13 @@ describe("stateReducer", () => {
     expect(state.visibleState).not.toBeUndefined();
   });
   test("joining a shared replay applies its efficiency modifier", () => {
-    const action = init();
-    if (action.mode.type !== "sharedReplay") {
-      throw new Error("Expected a shared replay");
-    }
-    const state = stateReducer(initialState(defaultMetadata), {
-      ...action,
-      mode: {
-        ...action.mode,
-        sharedReplay: { ...action.mode.sharedReplay, efficiencyModifier: 3 },
-      },
+    const joined = stateReducer(initialState(defaultMetadata), init());
+    const state = stateReducer(joined, {
+      type: "sharedReplayState",
+      turn: 0,
+      efficiencyModifier: 3,
+      restartDecliners: [],
+      leader: "alice",
     });
     expect(state.notes.efficiencyModifier).toBe(3);
   });

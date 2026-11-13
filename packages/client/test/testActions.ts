@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import { gameIdSchema, userIdSchema } from "@hanabi-live/data";
+import { gameIdSchema } from "@hanabi-live/data";
 import type {
   ActionHypotheticalAction,
   ActionHypotheticalBack,
@@ -26,17 +26,10 @@ export function init(): ActionInit {
     mode: {
       type: "sharedReplay",
       gameId: gameIdSchema.parse(1),
-      sharedReplay: {
-        owner: { userId: userIdSchema.parse(1), username: "alice" },
-        turn: 0,
-        efficiencyModifier: 0,
-        spoilerFree: false,
-        restartDecliners: [],
-        canPlayAgain: false,
-        replayStartedAt: new Date(0).toString(),
-      },
+      spoilerFree: false,
+      canPlayAgain: false,
+      replayStartedAt: new Date(0).toString(),
     },
-    leader: "",
   };
 }
 

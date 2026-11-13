@@ -1705,7 +1705,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     "gameFinished",
     SERVER_EVENT_SCHEMAS.gameFinished,
   );
-  assertDefined(finished.gameId, "The seeded game was not saved.");
+  assertDefined(finished.view.gameId, "The seeded game was not saved.");
   alice.send("tagAdd", { tableId, tag: TAG });
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
   for (const peer of peers) {
@@ -1716,7 +1716,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     SERVER_EVENT_SCHEMAS.tableRemoved,
     (data) => data.tableId === tableId,
   );
-  return finished.gameId;
+  return finished.view.gameId;
 }
 
 /** A shared replay of a 5-player game that another account leads. */
