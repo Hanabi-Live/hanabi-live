@@ -33,7 +33,7 @@ import {
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { store } from "./store.ts";
-import { getHtmlElement } from "./utils.ts";
+import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
