@@ -139,6 +139,10 @@ video. Show only these screenshots. Do not show screenshots that only check that
 a change, such as a refactor, keeps a screen the same. Check those yourself, and
 report the result in text.
 
+Show game screens in a 5-player game, so that the user sees a crowded table. If
+the state that you need has fewer players, add a 5-player state to
+`packages/testing/src/uiScreenshots.ts`.
+
 When running in WSL, the host app cannot display screenshots or videos you send
 it. Open each one that you show in its Windows app instead:
 `explorer.exe "$(wslpath -w <file>)"`.
