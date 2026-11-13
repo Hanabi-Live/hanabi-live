@@ -14,6 +14,8 @@ of the repository.
   narrows each hand by its own player's notes.
 - In the new game screen, discarded cards and clues in the clue log have
   tooltips that say that clicking them goes to their turn.
+- In the new game screen, the replay controls are now larger and below the
+  hands.
 
 ## November 12th, 2026
 

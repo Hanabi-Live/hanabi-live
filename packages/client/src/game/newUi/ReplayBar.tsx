@@ -1,8 +1,9 @@
-// The controls above the hands while the screen shows a replay: the in-game replay, a finished
+// The controls below the hands while the screen shows a replay: the in-game replay, a finished
 // game, or a hypothetical. They call the same functions as the classic screen's replay controls.
 
 // The bar is a slate panel like the other boxes on the table, with an accent along its left edge
-// that names the mode: blue to look back at the game, violet to try other moves.
+// that names the mode: blue to look back at the game, violet to try other moves. The buttons and
+// the timeline are large, because a player clicks them many times in a row.
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -28,11 +29,11 @@ const ACCENT_CLASS = {
 
 /** A quiet button for the actions that are not the main one. */
 const BUTTON_CLASS =
-  "tw:flex tw:h-9 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-lg tw:border-0 tw:bg-white/8 tw:px-3 tw:text-[14px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
+  "tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
 
 /** The bar's main action: the way back out of the mode. */
 const PRIMARY_BUTTON_CLASS =
-  "tw:flex tw:h-9 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-game-text tw:px-3.5 tw:text-[14px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white";
+  "tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white";
 
 /** How long the turn number takes to roll to the leader's turn, in milliseconds. */
 const TURN_ROLL_MILLISECONDS = 260;
@@ -44,7 +45,7 @@ const TIMELINE_SLIDE_MILLISECONDS = 300;
 const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
 const ICON_BUTTON_CLASS =
-  "tw:flex tw:size-9 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-white/8 tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
+  "tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:text-[17px] tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
 
 /**
  * The bar's buttons, kept together on the right. On a narrow window, they take a row of their own.
@@ -52,7 +53,10 @@ const ICON_BUTTON_CLASS =
 const ACTIONS_CLASS =
   "tw:ml-auto tw:flex tw:flex-wrap tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:w-full tw:narrow-980:*:flex-1";
 
-/** The panel that holds a bar, with the mode's accent along its left edge. */
+/**
+ * The panel that holds a bar, with the mode's accent along its left edge. On a narrow window, the
+ * page scrolls, so the bar goes above the hands, where it is in view.
+ */
 function Bar({
   mode,
   children,
@@ -62,12 +66,12 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:overflow-hidden tw:rounded-[14px] tw:py-2 tw:pr-2.5 tw:pl-5 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
+      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:narrow-980:order-first tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
       role="status"
     >
       <span
         aria-hidden="true"
-        className={`tw:absolute tw:inset-y-0 tw:left-0 tw:w-1 ${ACCENT_CLASS[mode].bg}`}
+        className={`tw:absolute tw:inset-y-0 tw:left-0 tw:w-1 tw:rounded-l-[14px] ${ACCENT_CLASS[mode].bg}`}
       />
       {children}
     </div>
@@ -99,12 +103,12 @@ function Heading({
   return (
     <div className="tw:mr-1 tw:flex tw:shrink-0 tw:flex-col tw:leading-tight">
       <span
-        className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[12px] tw:font-semibold ${ACCENT_CLASS[mode].text}`}
+        className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${ACCENT_CLASS[mode].text}`}
       >
         <i aria-hidden="true" className={`fas ${icon}`} />
         {label}
       </span>
-      <span className="tw:text-[17px] tw:font-bold tw:whitespace-nowrap tw:text-game-text">
+      <span className="tw:text-[22px] tw:font-bold tw:whitespace-nowrap tw:text-game-text">
         Turn <RollingNumber move={leaderMove} value={turn} />
         {lastTurn !== undefined && (
           <span className="tw:font-medium tw:text-game-muted">
@@ -155,7 +159,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className="tw:group tw:relative tw:h-7 tw:min-w-24 tw:flex-1 tw:cursor-pointer tw:touch-none"
+      className="tw:group tw:relative tw:h-11 tw:min-w-12 tw:flex-1 tw:cursor-pointer tw:touch-none"
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -169,9 +173,9 @@ function Timeline({
       role="slider"
       tabIndex={-1}
     >
-      <span className="tw:absolute tw:inset-x-0 tw:top-1/2 tw:h-1.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-white/12" />
+      <span className="tw:absolute tw:inset-x-0 tw:top-1/2 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-white/12" />
       <span
-        className="tw:absolute tw:top-1/2 tw:left-0 tw:h-1.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-replay"
+        className="tw:absolute tw:top-1/2 tw:left-0 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-replay"
         style={{
           width: percent,
           transition: slide
@@ -180,7 +184,7 @@ function Timeline({
         }}
       />
       <span
-        className="tw:absolute tw:top-1/2 tw:size-3.5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_3px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-125"
+        className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-115"
         style={{
           left: percent,
           transition: slide
@@ -286,7 +290,7 @@ function PlayAgain(): React.JSX.Element | undefined {
         Play again
       </button>
       {open && (
-        <div className="tw:absolute tw:top-full tw:right-0 tw:z-20 tw:mt-2 tw:flex tw:w-64 tw:flex-col tw:gap-2 tw:rounded-[14px] tw:bg-game-panel tw:p-3 tw:shadow-lg tw:ring-1 tw:ring-game-line">
+        <div className="tw:absolute tw:right-0 tw:bottom-full tw:z-20 tw:mb-2 tw:narrow-980:top-full tw:narrow-980:bottom-auto tw:narrow-980:mt-2 tw:narrow-980:mb-0 tw:flex tw:w-64 tw:flex-col tw:gap-2 tw:rounded-[14px] tw:bg-game-panel tw:p-3 tw:shadow-lg tw:ring-1 tw:ring-game-line">
           {declined.length > 0 && (
             <div className="tw:text-sm tw:text-game-muted">
               Not ready: {declined.join(", ")}
@@ -503,122 +507,129 @@ function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
       : `Shared replay: ${shared.leader} leads`;
   }
 
+  // The heading and the buttons are on the first row. The timeline has the second row to itself, so
+  // that it is wide enough to pick a turn with the mouse. On a narrow window, the buttons take rows
+  // of their own, so they go below the timeline.
   return (
     <Bar mode="replay">
-      <Heading
-        following={following}
-        icon={shared === undefined ? "fa-history" : "fa-crown"}
-        label={label}
-        lastTurn={spoilerFree ? undefined : lastTurn}
-        leaderMove={move}
-        mode="replay"
-        turn={turn}
-      />
-      {finished && (
+      <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:narrow-980:contents">
+        <Heading
+          following={following}
+          icon={shared === undefined ? "fa-history" : "fa-crown"}
+          label={label}
+          lastTurn={spoilerFree ? undefined : lastTurn}
+          leaderMove={move}
+          mode="replay"
+          turn={turn}
+        />
+        <div className={`${ACTIONS_CLASS} tw:narrow-980:order-last`}>
+          {shared !== undefined
+            && (shared.amLeader ? (
+              <button
+                className={BUTTON_CLASS}
+                onClick={showPassLeaderDialog}
+                ref={tooltipRef(
+                  "Pass the lead of the shared replay to someone else.",
+                )}
+                type="button"
+              >
+                Pass leader
+              </button>
+            ) : (
+              <button
+                className={BUTTON_CLASS}
+                onClick={replay.toggleSharedSegments}
+                type="button"
+              >
+                {sharedTurnsLabel}
+              </button>
+            ))}
+          {canEnterHypothetical && (
+            <button
+              className={BUTTON_CLASS}
+              onClick={hypothetical.startHypothetical}
+              ref={tooltipRef("Try out other moves from this turn.")}
+              type="button"
+            >
+              <i
+                aria-hidden="true"
+                className="fas fa-flask tw:text-game-hypothetical"
+              />
+              Enter hypothetical
+            </button>
+          )}
+          {shared?.canPlayAgain === true
+            && (shared.amLeader ? (
+              <PlayAgain />
+            ) : (
+              <ToggleButton
+                label="Ready"
+                onClick={() => {
+                  restart.decline(
+                    !shared.restartDeclined.includes(
+                      globals.metadata.ourUsername,
+                    ),
+                  );
+                }}
+                pressed={
+                  !shared.restartDeclined.includes(globals.metadata.ourUsername)
+                }
+                tooltip="Whether you will play again if the leader restarts the game."
+              />
+            ))}
+          {!finished && (
+            <button
+              className={PRIMARY_BUTTON_CLASS}
+              onClick={() => {
+                replay.exit();
+              }}
+              type="button"
+            >
+              Back to the game
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="tw:flex tw:w-full tw:items-center tw:gap-2.5 tw:narrow-980:gap-1.5">
+        {finished && (
+          <IconButton
+            disabled={atStart}
+            icon="fa-angle-double-left"
+            label="First turn"
+            onClick={replay.backFull}
+          />
+        )}
         <IconButton
           disabled={atStart}
-          icon="fa-angle-double-left"
-          label="First turn"
-          onClick={replay.backFull}
+          icon="fa-chevron-left"
+          label="Previous turn"
+          onClick={() => {
+            replay.back();
+          }}
         />
-      )}
-      <IconButton
-        disabled={atStart}
-        icon="fa-chevron-left"
-        label="Previous turn"
-        onClick={() => {
-          replay.back();
-        }}
-      />
-      {/* Spoiler-free reviews hide how long the game lasts. */}
-      {spoilerFree ? (
-        <span className="tw:flex-1" />
-      ) : (
-        <Timeline
-          lastSegment={lastSegment}
-          segment={segment}
-          slide={following}
-        />
-      )}
-      <IconButton
-        disabled={atEnd}
-        icon="fa-chevron-right"
-        label="Next turn"
-        onClick={replay.forward}
-      />
-      {finished && !spoilerFree && (
+        {/* Spoiler-free reviews hide how long the game lasts. */}
+        {spoilerFree ? (
+          <span className="tw:flex-1" />
+        ) : (
+          <Timeline
+            lastSegment={lastSegment}
+            segment={segment}
+            slide={following}
+          />
+        )}
         <IconButton
           disabled={atEnd}
-          icon="fa-angle-double-right"
-          label="Last turn"
-          onClick={replay.forwardFull}
+          icon="fa-chevron-right"
+          label="Next turn"
+          onClick={replay.forward}
         />
-      )}
-      <div className={ACTIONS_CLASS}>
-        {shared !== undefined
-          && (shared.amLeader ? (
-            <button
-              className={BUTTON_CLASS}
-              onClick={showPassLeaderDialog}
-              ref={tooltipRef(
-                "Pass the lead of the shared replay to someone else.",
-              )}
-              type="button"
-            >
-              Pass leader
-            </button>
-          ) : (
-            <button
-              className={BUTTON_CLASS}
-              onClick={replay.toggleSharedSegments}
-              type="button"
-            >
-              {sharedTurnsLabel}
-            </button>
-          ))}
-        {canEnterHypothetical && (
-          <button
-            className={BUTTON_CLASS}
-            onClick={hypothetical.startHypothetical}
-            ref={tooltipRef("Try out other moves from this turn.")}
-            type="button"
-          >
-            <i
-              aria-hidden="true"
-              className="fas fa-flask tw:text-game-hypothetical"
-            />
-            Enter hypothetical
-          </button>
-        )}
-        {shared?.canPlayAgain === true
-          && (shared.amLeader ? (
-            <PlayAgain />
-          ) : (
-            <ToggleButton
-              label="Ready"
-              onClick={() => {
-                restart.decline(
-                  !shared.restartDeclined.includes(
-                    globals.metadata.ourUsername,
-                  ),
-                );
-              }}
-              pressed={
-                !shared.restartDeclined.includes(globals.metadata.ourUsername)
-              }
-              tooltip="Whether you will play again if the leader restarts the game."
-            />
-          ))}
-        {!finished && (
-          <button
-            className={PRIMARY_BUTTON_CLASS}
-            onClick={() => {
-              replay.exit();
-            }}
-            type="button"
-          >
-            Back to the game
-          </button>
+        {finished && !spoilerFree && (
+          <IconButton
+            disabled={atEnd}
+            icon="fa-angle-double-right"
+            label="Last turn"
+            onClick={replay.forwardFull}
+          />
         )}
       </div>
     </Bar>

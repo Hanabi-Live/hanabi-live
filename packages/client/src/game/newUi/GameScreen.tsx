@@ -1216,13 +1216,6 @@ export function GameScreen({
             </div>
 
             <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
-              <ReplayBar
-                editingCards={editingCards}
-                onToggleEditCards={() => {
-                  setEditingCards(!editingCards);
-                }}
-                state={state}
-              />
               {pausedBy !== undefined && (
                 <div
                   className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
@@ -1347,6 +1340,15 @@ export function GameScreen({
                   variant={variant}
                 />
               </div>
+              {/* Below the hands, in the same place in every game, because it is clicked many
+                  times in a row. The hands take the free space above it. */}
+              <ReplayBar
+                editingCards={editingCards}
+                onToggleEditCards={() => {
+                  setEditingCards(!editingCards);
+                }}
+                state={state}
+              />
             </div>
 
             <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
