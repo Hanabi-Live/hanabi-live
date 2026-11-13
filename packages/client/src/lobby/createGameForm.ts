@@ -3,10 +3,10 @@
 
 import type { Settings } from "@hanabi-live/data";
 import {
-  DEFAULT_TIME_BASE_SECONDS,
-  DEFAULT_TIME_PER_TURN_SECONDS,
-  MAX_TIME_BASE_SECONDS,
-  MAX_TIME_PER_TURN_SECONDS,
+  DEFAULT_BASE_SECONDS,
+  DEFAULT_PER_TURN_SECONDS,
+  MAX_BASE_SECONDS,
+  MAX_PER_TURN_SECONDS,
   SECONDS_PER_MINUTE,
   defaultSettings,
 } from "@hanabi-live/data";
@@ -45,8 +45,8 @@ const EXTRA_OPTION_NAMES = [
 
 /** The clock that a timed table has unless its creator chooses another. */
 export const DEFAULT_TIME_CONTROL = {
-  baseSeconds: DEFAULT_TIME_BASE_SECONDS,
-  perTurnSeconds: DEFAULT_TIME_PER_TURN_SECONDS,
+  baseSeconds: DEFAULT_BASE_SECONDS,
+  perTurnSeconds: DEFAULT_PER_TURN_SECONDS,
 } as const satisfies TimeControl;
 
 /** A character that the server accepts in a seed. */
@@ -137,8 +137,8 @@ function getTimeBaseError(text: string): string | undefined {
   if (minutes === undefined || toSeconds(minutes) <= 0) {
     return "The base time must be a positive number of minutes.";
   }
-  if (toSeconds(minutes) > MAX_TIME_BASE_SECONDS) {
-    return `The base time cannot be more than ${MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE} minutes.`;
+  if (toSeconds(minutes) > MAX_BASE_SECONDS) {
+    return `The base time cannot be more than ${MAX_BASE_SECONDS / SECONDS_PER_MINUTE} minutes.`;
   }
   return undefined;
 }
@@ -148,8 +148,8 @@ function getTimePerTurnError(text: string): string | undefined {
   if (seconds === undefined || seconds <= 0) {
     return "The time per turn must be a positive whole number of seconds.";
   }
-  if (seconds > MAX_TIME_PER_TURN_SECONDS) {
-    return `The time per turn cannot be more than ${MAX_TIME_PER_TURN_SECONDS} seconds.`;
+  if (seconds > MAX_PER_TURN_SECONDS) {
+    return `The time per turn cannot be more than ${MAX_PER_TURN_SECONDS} seconds.`;
   }
   return undefined;
 }

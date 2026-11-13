@@ -283,12 +283,12 @@ wire_integer! {
 
 wire_integer! {
     /// The starting clock of each player of a timed game, in seconds.
-    BaseSeconds(pub(crate) i64), 0, MAX_TIME_BASE_SECONDS
+    BaseSeconds(pub(crate) i64), 0, MAX_BASE_SECONDS
 }
 
 wire_integer! {
     /// The time that a timed game adds to a player's clock after each of their turns, in seconds.
-    PerTurnSeconds(pub(crate) i64), 0, MAX_TIME_PER_TURN_SECONDS
+    PerTurnSeconds(pub(crate) i64), 0, MAX_PER_TURN_SECONDS
 }
 
 wire_integer! {

@@ -201,9 +201,9 @@ constants! {
     /// The number of seconds in a day.
     pub const SECONDS_PER_DAY: i64 = HOURS_PER_DAY * SECONDS_PER_HOUR;
     /// The longest starting clock a timed game can have, in seconds (one week).
-    @data pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY;
+    @data pub const MAX_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY;
     /// The most time a timed game can add each turn, in seconds (one day).
-    @data pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY;
+    @data pub const MAX_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY;
     /// The loudest volume setting.
     @data pub const MAX_VOLUME: u8 = 100;
     /// The highest level of the H-Group convention guide's learning path.
@@ -211,9 +211,9 @@ constants! {
     /// The volume setting of a new user.
     pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
     /// The starting clock that the "Create Game" form offers for a timed table, in seconds.
-    @data pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
+    @data pub const DEFAULT_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
     /// The time that the "Create Game" form offers for a timed table to add each turn, in seconds.
-    @data pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
+    @data pub const DEFAULT_PER_TURN_SECONDS: i64 = 20;
     /// The rows on a page of a public listing when the request does not name a limit.
     @data pub const DEFAULT_PAGE_LIMIT: i64 = 10;
     /// The most rows that a page of a public listing, a player's game history, or their private
