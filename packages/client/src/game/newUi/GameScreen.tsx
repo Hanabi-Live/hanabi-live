@@ -934,7 +934,7 @@ export function GameScreen({
       && segmentChange > 0
       && segmentChange <= MAX_ANIMATED_SEGMENT_CHANGE
     ) {
-      animateClue(root, newClue.giver);
+      animateClue(root);
     }
     shown.current = {
       settledPositions: positions,

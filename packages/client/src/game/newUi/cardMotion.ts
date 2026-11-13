@@ -297,14 +297,14 @@ function animateSpecialMove(
 
 /**
  * The times of the steps that show a clue, in milliseconds. They all start when the clue is given:
- * the giver's name pops, a rail runs from it to the receiver's name, and a token lands on every
- * touched card at once. The steps are short, and each one ends at rest, so that stepping through a
- * replay stays quick.
+ * a rail runs from the giver's name to the receiver's name, and a token lands on every touched card
+ * at once. The steps are short, and each one ends at rest, so that stepping through a replay stays
+ * quick.
  */
 const CLUE_TIMING = {
-  /** The giver's name grows and springs back. */
+  /** How long the arrowhead, and the note of a clue that touches nothing, take to pop in. */
   pop: 260,
-  /** The rail starts after the pop begins, and draws itself toward the receiver. */
+  /** The rail starts after a short wait, and draws itself toward the receiver. */
   railDelay: 70,
   rail: 240,
   /** The arrowhead starts to pop in this long before the rail reaches the receiver. */
@@ -322,7 +322,7 @@ const CLUE_ANIMATION_ID = "clue";
  * Shows a clue that was just given. The parts are in the page already (see "Hands.tsx" and
  * "Card.tsx"). This only moves them, and each part ends where it rests.
  */
-export function animateClue(root: HTMLElement, giver: number): void {
+export function animateClue(root: HTMLElement): void {
   for (const animation of document.getAnimations()) {
     if (animation.id === CLUE_ANIMATION_ID) {
       animation.finish();
@@ -332,16 +332,6 @@ export function animateClue(root: HTMLElement, giver: number): void {
   const id = CLUE_ANIMATION_ID;
   const t = CLUE_TIMING;
   const railEnd = t.railDelay + t.rail;
-
-  // The giver's name pops.
-  const name = root.querySelector<HTMLElement>(
-    `[data-name-chip="${CSS.escape(giver.toString())}"]`,
-  );
-  name?.animate([{ scale: 1 }, { scale: 1.22, offset: 0.4 }, { scale: 1 }], {
-    id,
-    duration: t.pop,
-    easing: "ease-out",
-  });
 
   // The rail draws itself from the giver to the receiver, and its arrowhead pops in at the end.
   for (const line of root.querySelectorAll("[data-clue-rail-line]")) {

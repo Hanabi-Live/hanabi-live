@@ -1301,7 +1301,8 @@ function getStates({
     },
     // The game from the previous state, after Bob clues the account twice, with the account's
     // discard between the clues. The mouse button is held down on the card that the first clue
-    // touched and the second missed, so the clue log shows only those two clues.
+    // touched and the second missed, so the clue log shows only those two clues. Its video shows
+    // the second clue.
     {
       name: "new-ui-clue-log-press",
       path: "/",
@@ -1314,8 +1315,11 @@ function getStates({
         );
         // The oldest card, which the first clue did not touch.
         await dragCard(page, hand.locator("button").last(), "discard");
-        await clueAccount();
         // The card is orange, which is inverted, so the discard is a misplay, which takes a while.
+        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
+      },
+      record: async (page) => {
+        await clueAccount();
         await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
       },
       // The clue log filters while the mouse button is held down on a card.
