@@ -1,5 +1,10 @@
 # Wire contracts
 
+The messages of [hanab.live](https://hanab.live)'s protocol as Rust types, with
+their JSON schemas. A client such as a bot can depend on this crate to decode
+what the server sends and to build what it accepts. The crate is licensed under
+the MIT license (`LICENSE`), unlike the server that uses it, which is GPL-3.0.
+
 This crate owns every JSON payload exchanged between the server and its clients
 (WebSocket messages and HTTP API bodies) and the format of the game catalog in
 `packages/game/src/json`. It does not own database records, actors, or game

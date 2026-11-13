@@ -2,8 +2,14 @@
 name = "hanabi_protocol"
 version = "0.1.0"
 edition = "2024"
+description = "The messages of hanab.live's protocol (WebSocket and HTTP), typed, with their JSON schemas"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Hanabi-Live/hanabi-live"
+keywords = ["hanabi", "hanab-live", "protocol", "websocket", "json-schema"]
+categories = ["api-bindings", "data-structures"]
+# Not published yet: the name on crates.io has to be free. Remove this line to allow `cargo publish`.
 publish = false
-license = "GPL-3.0-only"
 
 [dependencies]
 anyhow = "1"
