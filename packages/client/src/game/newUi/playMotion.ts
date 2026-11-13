@@ -7,7 +7,6 @@
 // finish them, as it does a card move (see "cardMotion.ts").
 
 import { MAX_STRIKES } from "@hanabi-live/game";
-import { globals } from "../../Globals.ts";
 import { WARNING_COLOR } from "../ui/constants.ts";
 import { getScreenScale, measure } from "./screenScale.ts";
 
@@ -438,9 +437,6 @@ export function animateMisplay(
   const unit = stackRect.height;
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
-  // With reduced motion, the card still moves, but the sparks, smoke, rays, flash, ring, and shake
-  // are left out.
-  const decorate = !globals.settings.reducedMotion;
 
   const start = { ...center(from), scale: from.width / stackRect.width };
   const end = center(to);
@@ -460,9 +456,6 @@ export function animateMisplay(
     spread: number,
     duration: number,
   ) {
-    if (!decorate) {
-      return;
-    }
     for (let i = 0; i < count; i++) {
       addSpark(
         origin,
@@ -478,9 +471,6 @@ export function animateMisplay(
   }
 
   function smoke(smokeStart: number, origin: Point, count: number) {
-    if (!decorate) {
-      return;
-    }
     for (let i = 0; i < count; i++) {
       const x = origin.x + randomBetween(-0.12, 0.12) * unit;
       const drift = randomBetween(-0.18, 0.18) * unit;
@@ -511,9 +501,6 @@ export function animateMisplay(
   }
 
   function rays(raysStart: number, at: Point) {
-    if (!decorate) {
-      return;
-    }
     const duration = RAYS_SECONDS * 1000;
     for (let i = 0; i < NUM_RAYS; i++) {
       const angle = (i / NUM_RAYS) * 2 * Math.PI + randomBetween(0, 0.2);
@@ -636,24 +623,22 @@ export function animateMisplay(
 
   // 4. Boom.
   const explosion = time;
-  if (decorate) {
-    addFlash(
-      blast,
-      unit,
-      FLASH_RADIUS,
-      FLASH_COLOR,
-      FLASH_SECONDS * 1000,
-      explosion * 1000,
-    );
-    addRing(
-      blast,
-      unit,
-      RING_RADIUS,
-      RING_COLOR,
-      RING_SECONDS * 1000,
-      explosion * 1000,
-    );
-  }
+  addFlash(
+    blast,
+    unit,
+    FLASH_RADIUS,
+    FLASH_COLOR,
+    FLASH_SECONDS * 1000,
+    explosion * 1000,
+  );
+  addRing(
+    blast,
+    unit,
+    RING_RADIUS,
+    RING_COLOR,
+    RING_SECONDS * 1000,
+    explosion * 1000,
+  );
   rays(explosion, blast);
   smoke(explosion, blast, 4);
 
@@ -732,7 +717,7 @@ export function animateMisplay(
 
   // Shake the game screen.
   const main = root.querySelector("main");
-  if (decorate && main !== null) {
+  if (main !== null) {
     const duration = SHAKE_SECONDS * 1000;
     animateSampled(
       main,
@@ -839,14 +824,16 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
 
 /**
  * In a replay, a misplayed card only bounces off its play stack into the discard pile, as on the
- * classic screen.
+ * classic screen. A game in progress does this too with the "Reduced motion" setting. Then the next
+ * update of the game does not finish the move, as it does not finish a normal misplay.
  */
-export function animateReplayMisplay(
+export function animateBounceMisplay(
   element: HTMLElement,
   from: DOMRect,
   to: DOMRect,
   stackSlot: HTMLElement,
   stepMilliseconds: number,
+  live = false,
 ): void {
   const stackRect = measure(stackSlot);
   const stack: Pose = {
@@ -875,7 +862,7 @@ export function animateReplayMisplay(
   }
 
   const restore = raiseMovingCard(element);
-  // This is a normal card move, which the next move finishes.
+  // In a replay, this is a normal card move, which the next move finishes.
   const animation = animateSampled(
     element,
     2 * stepMilliseconds,
@@ -887,7 +874,7 @@ export function animateReplayMisplay(
       return { transform: poseTransform(to, pose), transformOrigin: "center" };
     },
     0,
-    CARD_MOVE_ANIMATION_ID,
+    live ? PLAY_EFFECT_ANIMATION_ID : CARD_MOVE_ANIMATION_ID,
   );
   onEnd(animation, restore);
 }

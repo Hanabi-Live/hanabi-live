@@ -3,6 +3,7 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
+import { globals } from "../../Globals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   PLAY_ANIMATION_SECONDS,
@@ -12,8 +13,8 @@ import {
   CARD_MOVE_ANIMATION_ID,
   EASE_OUT_BACK,
   MOVING_CARD_Z_INDEX,
+  animateBounceMisplay,
   animateMisplay,
-  animateReplayMisplay,
   isShowingPlay,
   onEnd,
   raiseMovingCard,
@@ -262,7 +263,7 @@ function animateSpecialMove(
     if (stackSlot === null) {
       return false;
     }
-    if (effects.live) {
+    if (effects.live && !globals.settings.reducedMotion) {
       const strikeBox =
         misplay.strikeIndex === undefined
           ? undefined
@@ -279,12 +280,13 @@ function animateSpecialMove(
         misplay.strikeIndex === MAX_STRIKES - 1,
       );
     } else {
-      animateReplayMisplay(
+      animateBounceMisplay(
         element,
         from,
         to,
         stackSlot,
         CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
+        effects.live,
       );
     }
     return true;

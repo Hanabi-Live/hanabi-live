@@ -180,10 +180,9 @@ export class CardLayout extends Konva.Group {
         );
       };
 
-      const misplayed = layoutChild.doMisplayAnimation;
-      layoutChild.doMisplayAnimation = false;
-      if (misplayed && !globals.lobby.settings.reducedMotion) {
+      if (layoutChild.doMisplayAnimation) {
         // If this card just misplayed, do a special animation.
+        layoutChild.doMisplayAnimation = false;
         layoutChild.misplayAnimation = startMisplayAnimation(
           layoutChild,
           { x: newX, y: 0, scale },

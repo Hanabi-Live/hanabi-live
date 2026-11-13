@@ -1,7 +1,7 @@
 // The "dud rocket" misplay animation: the card launches over its play stack like a firework, its
 // fuse sputters, and then it misfires into the strike tracker, where it explodes and leaves the
-// strike X behind. The scorched card then tumbles into the discard pile. In a replay, the card only
-// bounces off its play stack into the discard pile.
+// strike X behind. The scorched card then tumbles into the discard pile. In a replay, or with the
+// "Reduced motion" setting, the card only bounces off its play stack into the discard pile.
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
@@ -215,8 +215,12 @@ export function startMisplayAnimation(
     });
   }
 
-  // In a replay, the card only bounces off its play stack into the discard pile.
-  if (globals.state.replay.segment !== undefined) {
+  // In a replay, or with reduced motion, the card only bounces off its play stack into the discard
+  // pile.
+  if (
+    globals.state.replay.segment !== undefined
+    || globals.lobby.settings.reducedMotion
+  ) {
     const stackPose: Pose = { ...stackCenter, scale: 1, rotation: 0 };
     timeline.add(0, REPLAY_TO_STACK_SECONDS, (t) => {
       const out = easeOut(t);
