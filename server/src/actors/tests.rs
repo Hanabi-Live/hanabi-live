@@ -353,7 +353,7 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
 }
 
 #[tokio::test]
-async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() -> Result<()> {
+async fn joining_or_reattending_a_review_does_not_restart_its_idle_timer() -> Result<()> {
     let Some((db, store, _)) = fixture_store().await? else {
         return Ok(());
     };
@@ -361,7 +361,8 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         let id = store.allocate_table().await?;
         let mut table = review(id, EndCondition::TerminatedByPlayer)?;
         table.visible = shared;
-        table.game_mut().unwrap().idle_remaining = 1000;
+        let idle_remaining = IDLE_TIMEOUT_MS / 2;
+        table.game_mut().unwrap().idle_remaining = idle_remaining;
         let finished = table.game().unwrap().finished;
         let duration = table.game().unwrap().duration;
         let clocks = table.game().unwrap().clocks.clone();
@@ -394,16 +395,15 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             .await?;
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
+        ensure!(!actor.retired, "Joining a review closed it");
+        // Only activity in the replay, such as the leader moving to another turn, restarts the
+        // idle timer.
         ensure!(
-            !actor.retired,
-            "Joining an old review immediately closed it"
+            actor.table.game().unwrap().idle_remaining < idle_remaining,
+            "Joining a review restarted its idle timer"
         );
         let (restored, _) = store.get(id).await?.context("Review was deleted")?;
         let snapshot = restored.game().context("Missing review")?;
-        ensure!(
-            snapshot.idle_remaining == IDLE_TIMEOUT_MS,
-            "Viewer did not receive a fresh review window"
-        );
         ensure!(
             snapshot.finished == finished
                 && snapshot.duration == duration

@@ -797,7 +797,8 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
     let outcome = async {
         let id = h.store.allocate_table().await?;
         let mut table = tests::review(id, EndCondition::TerminatedByPlayer)?;
-        table.game_mut().unwrap().idle_remaining = 1;
+        let idle_remaining = IDLE_TIMEOUT_MS / 2;
+        table.game_mut().unwrap().idle_remaining = idle_remaining;
         let revision = h.store.save_at(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
@@ -818,7 +819,11 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
             .await?;
         actor.tick().await?;
         ensure!(!actor.retired, "Rejoining a review immediately closed it");
-        ensure!(actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS);
+        // Only the replay's own activity, such as the leader moving a turn, keeps it open longer.
+        ensure!(
+            actor.table.game().unwrap().idle_remaining <= idle_remaining,
+            "Rejoining a review restarted its idle timer"
+        );
         h.users[1].cancel.cancel();
         let now = Instant::now();
         actor.cleanup(now).await?;

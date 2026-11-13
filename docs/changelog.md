@@ -77,6 +77,9 @@ of the repository.
   it.
 - A new "Reduced motion" setting leaves out the fireworks, explosions, shaking,
   and pulses in games. Cards still move.
+- Joining a shared replay no longer keeps it open for another 30 minutes. Only
+  activity in the replay, such as the leader going to another turn or drawing an
+  arrow, or chat, keeps it open.
 
 ## November 11th, 2026
 

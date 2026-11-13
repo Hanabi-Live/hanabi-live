@@ -4,10 +4,9 @@ use super::{
 };
 use crate::errors::CommandResult;
 use crate::{
-    model::{IDLE_TIMEOUT_MS, Phase},
+    model::Phase,
     transport::{Session, frame},
 };
-use anyhow::Context;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{TableJoinRequest, TableJoined, TableRef, TableStage};
@@ -210,9 +209,6 @@ impl TableActor {
         let pregame = matches!(self.table.phase, Phase::Pregame { .. });
         let mut next = self.candidate();
         next.shadows.insert(session.user, shadow);
-        if replay {
-            next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
-        }
         // The user receives the leader with the replay.
         let leader = self.present_leader(&mut next, Some(&session));
         let notice = if pregame && spectating && !self.spectating(session.user) {

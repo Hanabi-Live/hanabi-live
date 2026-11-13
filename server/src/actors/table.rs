@@ -666,7 +666,6 @@ impl TableActor {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         if replay {
             let mut next = self.candidate();
-            next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
             next.shadows.insert(s.user, None);
             self.persist(next).await?;
         }
