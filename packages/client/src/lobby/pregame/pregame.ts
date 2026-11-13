@@ -1,7 +1,6 @@
 // Shows and hides the pre-game screen.
 
 import { globals } from "../../Globals.ts";
-import * as chat from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import { creatingTableChanged, lobbyPanelChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
@@ -41,7 +40,6 @@ export function hide(updateUrl = true): void {
 
   // Clear the typing list.
   store.dispatch(typingCleared());
-  chat.updatePeopleTyping();
 
   // Set the browser address bar.
   if (updateUrl) {

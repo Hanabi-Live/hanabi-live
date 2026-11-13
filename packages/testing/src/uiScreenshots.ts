@@ -1302,7 +1302,7 @@ function getStates({
         await page.locator("#game-chat-input").fill("", { force: true });
       },
       hover: async (page) => {
-        await hoverIfVisible(page, "#game-chat-length-counter > span");
+        await hoverIfVisible(page, "#game-chat-input ~ span");
       },
     },
     // The game from the previous state, after the account plays a card that it does not know. Its
@@ -1491,6 +1491,29 @@ function getStates({
       // Close the note without saving it.
       cleanup: async (page) => {
         await page.keyboard.press("Escape");
+      },
+    },
+    // The same game, with the classic screen's chat window open and a message with an emote and a
+    // link in it.
+    {
+      name: "classic-game-chat",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        const classic = page.getByRole("button", { name: "Classic view" });
+        if (await classic.isVisible()) {
+          await classic.click();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+        await page.keyboard.press("Alt+KeyC");
+        await page.locator("#game-chat-input").waitFor();
+        await page.fill(
+          "#game-chat-input",
+          "Hello Kappa, see https://example.com",
+        );
+        await page.press("#game-chat-input", "Enter");
+        await page.locator("#game-chat-text", { hasText: "Hello" }).waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
     // The same game, back in the new screen, after Bob ends it. It is now a shared replay that Bob

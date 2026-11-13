@@ -32,7 +32,6 @@
         "jquery": "catalog:",
         "keycode-js": "catalog:",
         "konva": "catalog:",
-        "linkify-html": "catalog:",
         "linkifyjs": "catalog:",
         "lodash": "catalog:",
         "react": "catalog:",
@@ -149,7 +148,6 @@
     "keycode-js": "3.1.0",
     "konva": "10.9.1",
     "lightningcss": "1.33.0",
-    "linkify-html": "4.4.0",
     "linkifyjs": "4.4.0",
     "lodash": "4.18.1",
     "playwright": "1.65.0",
@@ -1204,8 +1202,6 @@
     "lightningcss-win32-arm64-msvc": ["lightningcss-win32-arm64-msvc@1.33.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-1K+MPfLSFVpphzpdbfkhlWk6wBrTObBzS2T6db10PNOZgR9GoVsAWzwNyuhUYYbTp23j+4RrncfujZ4uAzXvwA=="],
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.33.0", "", { "os": "win32", "cpu": "x64" }, "sha512-OlEICDx/Xl0FqSp4bry8zFnCvGpig3Gl4gCquvYwHuqJKEC1+n9NgDniFvqHGmMv1ZkqDJrDqKKSykTDX+ehuA=="],
-
-    "linkify-html": ["linkify-html@4.4.0", "", { "peerDependencies": { "linkifyjs": "4.4.0" } }, "sha512-qjcJ0gcY0JDfasIf6tlcla/M367wOKuYS6Yyq2WZejY6Un8ABRWZmypmecFUAFlPxmiMtQLGrFZJY9I/6+f3mg=="],
 
     "linkify-it": ["linkify-it@5.0.2", "", { "dependencies": { "uc.micro": "^2.0.0" } }, "sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q=="],
 

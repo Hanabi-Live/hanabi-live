@@ -1,10 +1,8 @@
 // The chat for the people at the table that we are at, before its game starts.
 
 import { useRef } from "react";
-import { getTypingMessage } from "../../chat.ts";
 import { useAppSelector } from "../../store.ts";
-import { ChatInput, ChatTextBox } from "../chat/ChatBox.tsx";
-import { acceptOptionsFromGuest } from "../createGame.ts";
+import { ChatInput, ChatTextBox, TypingMessage } from "../chat/ChatBox.tsx";
 
 export const PREGAME_CHAT_INPUT_ID = "lobby-chat-pregame-input";
 
@@ -31,30 +29,16 @@ export function PregameChat(): React.JSX.Element {
             const input = inputRef.current!;
             input.value = suggestion.textContent;
             input.focus();
-            return;
-          }
-
-          // A suggestion to the owner to change the table.
-          const button = event.target.closest("button.new-options");
-          if (button instanceof HTMLButtonElement) {
-            const lineElement = button.closest<HTMLElement>("[data-key]");
-            const key = Number(lineElement?.dataset["key"]);
-            const line = lines.find((chatLine) => chatLine.key === key);
-            if (line?.suggestion !== undefined) {
-              acceptOptionsFromGuest(line.suggestion);
-              button.textContent = "sent";
-              button.disabled = true;
-            }
           }
         }}
       />
       <ChatInput id={PREGAME_CHAT_INPUT_ID} ref={inputRef} room="table" />
       <div
         className="tw:relative tw:bottom-[0.3em] tw:h-0 tw:text-[0.75em]"
-        // The message escapes the names.
-        dangerouslySetInnerHTML={{ __html: getTypingMessage(typing) }}
         id="lobby-chat-pregame-istyping"
-      />
+      >
+        <TypingMessage typing={typing} />
+      </div>
     </>
   );
 }

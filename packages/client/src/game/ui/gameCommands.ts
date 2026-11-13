@@ -539,7 +539,11 @@ function suggestTurn(who: string, room: string, segment: number) {
     }
     if (leaderSuggested) {
       sendSelfPmFromServer(
-        "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
+        [
+          "You are the shared replay leader, so you can simply click on the turn number instead of using the ",
+          { code: "/suggest" },
+          " command.",
+        ],
         room,
       );
     }

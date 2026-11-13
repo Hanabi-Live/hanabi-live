@@ -1,4 +1,3 @@
-import * as chat from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import { typingCleared } from "../../lobby/pregame/pregameSlice.ts";
 import { store } from "../../store.ts";
@@ -16,7 +15,6 @@ export function backToLobby(): void {
 
   // Clear the typing list.
   store.dispatch(typingCleared());
-  chat.updatePeopleTyping();
 
   // Update the address bar.
   setBrowserAddressBarPath(PATH.LOBBY);

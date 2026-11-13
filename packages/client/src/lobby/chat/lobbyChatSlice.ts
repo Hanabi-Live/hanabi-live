@@ -3,6 +3,7 @@
 
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import { castDraft } from "immer";
 import type { ChatLine } from "./ChatBox.tsx";
 
 interface LobbyChatState {
@@ -18,7 +19,7 @@ const lobbyChatSlice = createSlice({
   initialState,
   reducers: {
     lobbyChatLineAdded(state, action: PayloadAction<ChatLine>) {
-      state.lines.push(action.payload);
+      state.lines.push(castDraft(action.payload));
     },
     lobbyChatLineDeleted(state, action: PayloadAction<number>) {
       state.lines = state.lines.filter(

@@ -16,6 +16,13 @@ vi.mock("../../modals.ts", () => ({}));
 vi.mock("../../tooltips.ts", () => ({}));
 vi.mock("../createGame.ts", () => ({}));
 
+// The test page has no layout, so it has no ResizeObserver.
+class ResizeObserverStub {
+  observe = vi.fn();
+  disconnect = vi.fn();
+}
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+
 function message(
   fields: Partial<ServerEventData["chat"]>,
 ): ServerEventData["chat"] {

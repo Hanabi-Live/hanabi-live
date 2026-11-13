@@ -38,7 +38,11 @@ export function createJsonFromReplay(room: string): void {
     || segment === undefined
   ) {
     sendSelfPmFromServer(
-      "You can only use the <code>/copy</code> command during the review of a game.",
+      [
+        "You can only use the ",
+        { code: "/copy" },
+        " command during the review of a game.",
+      ],
       room,
       SelfChatMessageType.Error,
     );
@@ -138,10 +142,12 @@ export function createJsonFromReplay(room: string): void {
         room,
         SelfChatMessageType.Info,
       );
-      const urlFix = json.replaceAll('"', String.raw`\'`);
-      const here = String.raw`<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
       sendSelfPmFromServer(
-        `Click ${here} to copy the raw JSON data to your clipboard.`,
+        [
+          "Click ",
+          { copy: json, label: "here" },
+          " to copy the raw JSON data to your clipboard.",
+        ],
         room,
         SelfChatMessageType.Info,
       );

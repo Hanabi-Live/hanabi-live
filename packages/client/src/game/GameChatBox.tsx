@@ -1,0 +1,40 @@
+// The chat box of the game that we are in. The classic screen shows it in its chat window, and the
+// redesigned screen borrows it for its chat panel.
+
+import { useRef } from "react";
+import {
+  ChatInput,
+  ChatTextBox,
+  TypingMessage,
+} from "../lobby/chat/ChatBox.tsx";
+import { renderRoot } from "../renderRoot.tsx";
+import { useAppSelector } from "../store.ts";
+import { getHtmlElement } from "../utils.ts";
+
+export const GAME_CHAT_TEXT_ID = "game-chat-text";
+export const GAME_CHAT_INPUT_ID = "game-chat-input";
+
+function GameChatBox(): React.JSX.Element {
+  const lines = useAppSelector((state) => state.gameChat.lines);
+  const typing = useAppSelector((state) => state.pregame.typing);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <ChatTextBox id={GAME_CHAT_TEXT_ID} lines={lines} />
+      <ChatInput id={GAME_CHAT_INPUT_ID} ref={inputRef} room="table" />
+      {/* It goes in the space below the chat, so that it does not resize the chat. */}
+      <div
+        className="tw:relative tw:bottom-[0.3em] tw:h-0 tw:text-[0.75em]"
+        id="game-chat-istyping"
+      >
+        <TypingMessage typing={typing} />
+      </div>
+    </>
+  );
+}
+
+/** Draws the chat box in the classic screen's chat window. It stays for as long as the page. */
+export function mountGameChatBox(): void {
+  renderRoot(getHtmlElement("#game-chat-modal-white"), <GameChatBox />);
+}

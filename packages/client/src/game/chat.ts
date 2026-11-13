@@ -5,9 +5,12 @@ import interact from "interactjs";
 import { globals } from "../Globals.ts";
 import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants.ts";
 import { getHtmlElement } from "../utils.ts";
+import {
+  GAME_CHAT_INPUT_ID,
+  GAME_CHAT_TEXT_ID,
+  mountGameChatBox,
+} from "./GameChatBox.tsx";
 import * as newUiState from "./newUi/newUiState.ts";
-
-const gameChatText = getHtmlElement("#game-chat-text");
 
 /** The size of the chat modal before the player has moved or resized it, in percent of the page. */
 const DEFAULT_CHAT_MODAL_WIDTH_PERCENT = 20;
@@ -33,6 +36,8 @@ const MIN_CHAT_MODAL_SIZE = {
 } as const;
 
 export function init(): void {
+  mountGameChatBox();
+
   // Make the chat modal draggable (using the InteractJS library). The bundled "interactjs" package
   // references "@interactjs/interactjs" which is not installed as a separate package, so
   // typescript-eslint cannot resolve the interact() type or its event types.
@@ -163,7 +168,7 @@ export function show(focusInput = true): void {
     // The redesigned game screen shows the chat in its side panel instead of in the modal.
     newUiState.setChatOpen(true);
     if (focusInput) {
-      $("#game-chat-input").trigger("focus");
+      getHtmlElement(`#${GAME_CHAT_INPUT_ID}`).focus();
     }
     return;
   }
@@ -212,10 +217,11 @@ export function show(focusInput = true): void {
   }
 
   // Scroll to the bottom of the chat.
-  gameChatText.scrollTop = gameChatText.scrollHeight;
+  const text = getHtmlElement(`#${GAME_CHAT_TEXT_ID}`);
+  text.scrollTop = text.scrollHeight;
 
   if (focusInput) {
-    $("#game-chat-input").trigger("focus");
+    getHtmlElement(`#${GAME_CHAT_INPUT_ID}`).focus();
   }
 }
 

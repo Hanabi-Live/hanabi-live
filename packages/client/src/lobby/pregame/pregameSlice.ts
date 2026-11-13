@@ -4,13 +4,8 @@
 import type { ServerEventData } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { SuggestedSettings } from "../../chatKind.ts";
+import { castDraft } from "immer";
 import type { ChatLine } from "../chat/ChatBox.tsx";
-
-interface PregameChatLine extends ChatLine {
-  /** What the line's button applies to the table, in a suggestion to its owner. */
-  readonly suggestion?: SuggestedSettings;
-}
 
 export type Game = ServerEventData["pregame"];
 
@@ -18,7 +13,7 @@ interface PregameState {
   /** From the "pregame" message. */
   readonly game: Game | undefined;
 
-  readonly chatLines: readonly PregameChatLine[];
+  readonly chatLines: readonly ChatLine[];
 
   /** The people at our table who are typing. The game chat shows them too. */
   readonly typing: readonly string[];
@@ -47,8 +42,8 @@ const pregameSlice = createSlice({
       game: action.payload,
       startGameSent: false,
     }),
-    pregameChatLineAdded(state, action: PayloadAction<PregameChatLine>) {
-      state.chatLines.push(action.payload);
+    pregameChatLineAdded(state, action: PayloadAction<ChatLine>) {
+      state.chatLines.push(castDraft(action.payload));
     },
     pregameChatCleared(state) {
       state.chatLines = [];

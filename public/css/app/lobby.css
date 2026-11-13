@@ -1,52 +1,5 @@
-.lobby-chat-text-box {
-  overflow-y: auto;
-  overflow-wrap: break-word;
-  background-color: var(--chat-bg);
-  border: 1px solid var(--border);
-  margin-bottom: 1em;
-  padding: 0 0.5em 0 0.5em;
-  flex: 1;
-  min-height: 0;
-}
-
 .chat-emote {
   height: 1.6em; /* This is derived from how Twitch does it */
-}
-
-.chat-input-container {
-  position: relative;
-}
-
-.chat-input-container > input[type="text"] {
-  padding-right: 2.5em;
-}
-
-.emoji-button {
-  position: absolute;
-  top: 50%;
-  right: 1em;
-  padding: 0;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text);
-}
-
-.emoji-button:hover {
-  color: var(--text-strong);
-}
-
-.emoji-button > .fas {
-  font-size: 1.6em;
-}
-
-/* The typing indicator goes in the space below the chat, so that it does not resize the chat. */
-.istyping {
-  height: 0;
-  font-size: 0.75em;
-  position: relative;
-  bottom: 0.3em;
 }
 
 #lobby-users-table-tbody a {

@@ -99,7 +99,6 @@ commands.set("chatTyping", (data) => {
   store.dispatch(
     data.typing ? typingStarted(data.username) : typingStopped(data.username),
   );
-  chat.updatePeopleTyping();
 });
 
 // The "chatList" command is sent upon initial connection to give the client a list of past lobby

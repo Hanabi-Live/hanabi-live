@@ -18,8 +18,12 @@ vi.mock("../../chatCommands.ts", () => ({ chatCommands: new Map() }));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("../../tooltips.ts", () => ({}));
 vi.mock("../createGame.ts", () => ({ acceptOptionsFromGuest: vi.fn() }));
-// The game chat, which is not on the page, also shows who is typing.
-vi.stubGlobal("$", () => ({ html: vi.fn() }));
+// The test page has no layout, so it has no ResizeObserver.
+class ResizeObserverStub {
+  observe = vi.fn();
+  disconnect = vi.fn();
+}
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);
 
 const TABLE_ID = tableIdSchema.parse(5);
 

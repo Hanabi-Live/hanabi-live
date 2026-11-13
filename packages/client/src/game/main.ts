@@ -7,9 +7,11 @@ import * as lobbyPage from "../lobby/lobbyPage.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
 import * as sounds from "../sounds.ts";
+import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
+import { gameChatCleared } from "./gameChatSlice.ts";
 import * as newUi from "./newUi/newUi.tsx";
 import { loadGameInit } from "./ui/gameCommands.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
@@ -39,7 +41,7 @@ export function show(justStarted: boolean): void {
   globals.currentScreen = Screen.Game;
   document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
-  $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
+  store.dispatch(gameChatCleared()); // Clear the in-game chat box of any previous content
   // eslint-disable-next-line @typescript-eslint/strict-void-return
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
   // The classic screen keeps running underneath the redesigned one, hidden.

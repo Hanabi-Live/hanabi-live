@@ -11,6 +11,7 @@ import {
   rejectTooLong,
 } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
+import { chatTextHtml } from "../../chatText.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import {
@@ -68,8 +69,7 @@ function unmountNoteCounter(tooltip?: GameTooltipName) {
 }
 
 function prepareContent(rawNote: string): string {
-  const safe = escapeHtml(rawNote);
-  return chat.getPreparedMessage(safe);
+  return chatTextHtml(rawNote);
 }
 
 /** Get the contents of the note tooltip. */

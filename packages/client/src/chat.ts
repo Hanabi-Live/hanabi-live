@@ -3,7 +3,6 @@
 
 import type { ServerEventData, TableId } from "@hanabi-live/data";
 import {
-  CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
   MAX_CHAT_LENGTH,
@@ -12,30 +11,21 @@ import {
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
-import linkifyHtml from "linkify-html";
-import { find as linkifyFind } from "linkifyjs";
 import { mountEmojiPicker } from "./EmojiPicker.tsx";
 import { globals } from "./Globals.ts";
 import type { LengthLimit } from "./LengthCounter.tsx";
-import {
-  countCharacters,
-  mountLengthCounter,
-  rejectTooLong,
-} from "./LengthCounter.tsx";
+import { countCharacters, rejectTooLong } from "./LengthCounter.tsx";
 import { chatCommands } from "./chatCommands.ts";
 import { LobbyChatDeletionState } from "./chatDeletion.ts";
 import type { SuggestedSettings } from "./chatKind.ts";
 import { chatAuthor, chatAuthorName, chatRecipient } from "./chatKind.ts";
-import {
-  FADE_TIME_MS,
-  LOCAL_STORAGE_KEY,
-  TYPED_HISTORY_MAX_LENGTH,
-} from "./constants.ts";
+import { LOCAL_STORAGE_KEY, TYPED_HISTORY_MAX_LENGTH } from "./constants.ts";
+import { gameChatLineAdded } from "./game/gameChatSlice.ts";
+import type { ChatLine, LocalPart } from "./lobby/chat/ChatBox.tsx";
 import {
   lobbyChatLineAdded,
   lobbyChatLineDeleted,
 } from "./lobby/chat/lobbyChatSlice.ts";
-import { acceptOptionsFromGuest } from "./lobby/createGame.ts";
 import {
   pregameChatLineAdded,
   typingStopped,
@@ -43,7 +33,7 @@ import {
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { store } from "./store.ts";
-import { escapeHtml, getHtmlElement, getHtmlInputElement } from "./utils.ts";
+import { getHtmlElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -72,21 +62,12 @@ export enum SelfChatMessageType {
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
-/**
- * The classes of a chat line. The server lists the options that a player proposes as `<span
- * class="cp">` elements, and these put each option on its own indented line.
- */
-export const CHAT_LINE_CLASSES = "tw:block tw:[&_.cp]:block tw:[&_.cp]:pl-13";
-
 /** The limit of a chat message, which the server counts after it trims the message. */
 export const CHAT_LENGTH_LIMIT = {
   max: MAX_CHAT_LENGTH,
   left: (text) => MAX_CHAT_LENGTH - countCharacters(fillEmojis(text.trim())),
   tooLongText: "Message is too long",
 } as const satisfies LengthLimit;
-
-// The heart matches anywhere, but the emotes with colons must be surrounded by whitespace.
-const { "<3": HEART_EMOTE_PATH, ...COLON_EMOTE_PATHS } = CHAT_SPECIAL_EMOTES;
 
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -110,19 +91,7 @@ let activeChatInput: HTMLInputElement | undefined;
 let emojiPickerMounted = false;
 
 export function init(): void {
-  const gameChatInput = getHtmlInputElement("#game-chat-input");
-  attachChatInput(gameChatInput, "table");
-  mountLengthCounter(
-    getHtmlElement("#game-chat-length-counter"),
-    gameChatInput,
-    CHAT_LENGTH_LIMIT,
-    true,
-  );
-  // (The lobby and pre-game chat inputs are React components that attach themselves.)
-  $(".emoji-button[data-target]").on("click", (event) => {
-    const { target } = event.currentTarget.dataset;
-    openEmojiPicker(getHtmlInputElement(`#${target}`));
-  });
+  // (The chat inputs are React components that attach themselves.)
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
   for (const [emojiName, emoji] of Object.entries(emojis)) {
@@ -572,12 +541,12 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   }
 }
 
-/**
- * A chat line that the client writes itself, as HTML, instead of the text of a message from the
- * server. It can carry settings that a button in it applies.
- */
+/** What the client writes itself in a chat line, in place of a message's text. */
 interface LocalLine {
-  readonly html: string;
+  readonly parts?: readonly LocalPart[];
+  readonly tone?: ChatLine["tone"];
+
+  /** The settings that a button in the line applies. */
   readonly suggestion?: SuggestedSettings;
 }
 
@@ -605,10 +574,7 @@ export function addSettingsSuggestion(
     },
     fast,
     true,
-    {
-      html: '<span class="cp"><button class="new-options">click to apply the suggestion</button></span>',
-      suggestion: data.settings,
-    },
+    { suggestion: data.settings },
   );
 }
 
@@ -663,43 +629,49 @@ function addInternal(
     return;
   }
 
-  let rawMsg = local?.html ?? messageHtml(data.text);
-  // Replace chat suggestions with anchors which, when clicked, are chat commands.
-  if (box === "pregame") {
-    rawMsg = mapTextSegments(rawMsg, fillChatSuggestions);
-  }
-  const html = formatChatLine(data, getPreparedMessage(rawMsg));
-
   const key = chatLineNum;
   chatLineNum++;
+  const fromServer = author.type === "server";
+  const line: ChatLine = {
+    key,
+    fadeIn: !fast,
+    time: chatTimeFormatter.format(new Date(data.sentAt)),
+    ...(recipient !== undefined && {
+      privateMessage:
+        recipient === globals.username
+          ? { direction: "from", name: authorName ?? PROJECT_NAME }
+          : { direction: "to", name: recipient },
+    }),
+    ...(!fromServer
+      && recipient === undefined
+      && authorName !== undefined && { author: authorName }),
+    fromServer,
+    text: data.text,
+    ...(local?.parts !== undefined && { localParts: local.parts }),
+    ...(local?.tone !== undefined && { tone: local.tone }),
+    ...(suggestion !== undefined && { suggestion }),
+    // Only the pre-game chat suggests commands.
+    ...(box === "pregame" && { commands: true }),
+  };
   switch (box) {
     case "lobby": {
       store.dispatch(
         lobbyChatLineAdded({
-          key,
+          ...line,
           ...(data.tableId === undefined
             && data.chatId !== undefined && { chatId: data.chatId }),
-          html,
-          fadeIn: !fast,
         }),
       );
       break;
     }
 
     case "pregame": {
-      store.dispatch(
-        pregameChatLineAdded({
-          key,
-          html,
-          fadeIn: !fast,
-          ...(suggestion !== undefined && { suggestion }),
-        }),
-      );
+      store.dispatch(pregameChatLineAdded(line));
       break;
     }
 
     case "game": {
-      appendGameChatLine(key, html, fast, suggestion);
+      store.dispatch(gameChatLineAdded(line));
       break;
     }
   }
@@ -711,95 +683,6 @@ function addInternal(
     && store.getState().pregame.typing.includes(authorName)
   ) {
     store.dispatch(typingStopped(authorName));
-    updatePeopleTyping();
-  }
-}
-
-/**
- * Returns the HTML of a message's text. Each line after the first is indented under it, as the
- * options that a player proposes are.
- */
-function messageHtml(text: string): string {
-  const [first = "", ...rest] = text.split("\n");
-  return [
-    escapeHtml(first),
-    ...rest.map((line) => `<span class="cp">${escapeHtml(line)}</span>`),
-  ].join("");
-}
-
-/** Returns the HTML of a chat line: its time, its author, and the prepared message. */
-function formatChatLine(data: ChatData, msg: string): string {
-  const datetime = chatTimeFormatter.format(new Date(data.sentAt));
-
-  const authorName = chatAuthorName(data);
-  const recipient = chatRecipient(data);
-  const fromServer = chatAuthor(data).type === "server";
-  let line = `[${datetime}]&nbsp; `;
-  if (recipient !== undefined) {
-    line +=
-      recipient === globals.username
-        ? `<span class="red">[PM from <strong>${escapeHtml(authorName ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
-        : `<span class="red">[PM to <strong>${escapeHtml(recipient)}</strong>]</span>&nbsp; `;
-  }
-  if (fromServer || recipient !== undefined || authorName === undefined) {
-    line += msg;
-  } else {
-    line += `&lt;<strong>${escapeHtml(authorName)}</strong>&gt;&nbsp; `;
-    line += msg;
-  }
-  if (fromServer && line.includes("[Server Notice]")) {
-    line = line.replace(
-      "[Server Notice]",
-      '<span class="red">[Server Notice]</span>',
-    );
-  }
-
-  return line;
-}
-
-/** Adds a line to the game chat. */
-function appendGameChatLine(
-  key: number,
-  html: string,
-  fast: boolean,
-  suggestion: SuggestedSettings | undefined,
-) {
-  const chat = $("#game-chat-text");
-  // Find out if we should automatically scroll down after adding the new line of chat:
-  // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
-  // If we are already scrolled to the bottom, then it is ok to automatically scroll. scrollTop can
-  // be a fractional value for some reason. pxEpsilon is an acceptable range defined in pixels (e.g.
-  // +-2 px).
-  const pxEpsilon = 2;
-  const firstChat = chat[0]!;
-  const autoScroll =
-    Math.abs(
-      firstChat.clientHeight + firstChat.scrollTop - firstChat.scrollHeight,
-    ) < pxEpsilon;
-
-  // Add the new line and fade it in.
-  chat.append(
-    `<span id="chat-line-${key}" class="${CHAT_LINE_CLASSES}${fast ? "" : " hidden"}">${html}</span>`,
-  );
-  $(`#chat-line-${key}`).fadeIn(FADE_TIME_MS).css("display", "block");
-  if (suggestion !== undefined) {
-    $(`#chat-line-${key} button.new-options`).on("click", (event) => {
-      acceptOptionsFromGuest(suggestion);
-      $(event.currentTarget).text("sent").prop("disabled", true);
-    });
-  }
-
-  // Automatically scroll down.
-  if (autoScroll) {
-    // From: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div?rq=1
-    // This must be executable asynchronously in order to work properly
-    setTimeout(
-      (element: HTMLElement) => {
-        element.scrollTop = element.scrollHeight;
-      },
-      0,
-      chat[0],
-    );
   }
 }
 
@@ -822,84 +705,6 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
 
   // Ignore table chat if we are not in a pre-game and not in a game.
   return isPm ? "lobby" : undefined;
-}
-
-/**
- * Apply a transformation to the text portions of an HTML string, leaving tags untouched. (Splitting
- * with a capture group makes the segments alternate: even indexes are text and odds indexes are
- * tags.)
- *
- * This is necessary so that a transformation based on regex replacement can never match across
- * existing markup (which would corrupt the markup and allow user-controlled text to escape into
- * attribute position).
- *
- * WARNING: The splitting regex is not a general HTML tokenizer; a ">" inside of a quoted attribute
- * value would be misclassified. It is only sound because of the input contract of
- * `getPreparedMessage`: any tags present are either trusted markup whose attribute values never
- * contain raw angle brackets (built by the client, such as by `sendSelfPmFromServer`) or generated
- * by `fillDiscordEmotes` (whose interpolated values are restricted to word characters). Do not
- * reuse this function on arbitrary HTML (e.g. the output of `linkifyHtml`, whose "href" value
- * contain user-influenced URLs).
- */
-function mapTextSegments(
-  html: string,
-  transform: (text: string) => string,
-): string {
-  const segments = html.split(/(<[^<>]*>)/u);
-  for (let i = 0; i < segments.length; i += 2) {
-    segments[i] = transform(segments[i]!);
-  }
-  return segments.join("");
-}
-
-/**
- * Add links, Discord emotes, and Twitch emotes.
- *
- * The input must already be safe to render as HTML; this function preserves that safety but cannot
- * create it. Specifically, all text from the server must already be HTML-escaped, and any tags must
- * be trusted markup that the client built, whose attribute values never contain raw angle brackets.
- */
-export function getPreparedMessage(rawMsg: string): string {
-  let msg = mapTextSegments(rawMsg, fillDiscordEmotes);
-  msg = mapTextSegments(msg, fillTwitchEmotes);
-
-  // Automatically generate links from any URLs that are present in the message. (We must use
-  // "linkifyjs/html" instead of "linkifyjs/string" because the latter will convert "&gt;" to
-  // "&amp;gt;", and the message is already escaped.)
-  msg = linkifyHtml(msg, {
-    target: "_blank",
-    attributes: {
-      rel: "noopener noreferrer",
-    },
-  });
-
-  return msg;
-}
-
-// Chat suggestions are in the form of: @/command@
-function fillChatSuggestions(text: string): string {
-  const linkSpans = linkifyFind(text);
-
-  return text.replaceAll(
-    /@(\/[^@]*)@/gu,
-    (fullMatch, command: string, offset: number) => {
-      const insideLink = linkSpans.some(
-        (span) => offset < span.end && offset + fullMatch.length > span.start,
-      );
-      return insideLink
-        ? fullMatch
-        : `<a href="#" class="suggestion">${command}</a>`;
-    },
-  );
-}
-
-// Discord emotes are in the form of: <:PogChamp:254683883033853954>
-function fillDiscordEmotes(message: string) {
-  return message.replaceAll(
-    /&lt;:(\w+):(\d+)&gt;/gu,
-    (_fullMatch, name: string, id: string) =>
-      `<img class="chat-emote" src="https://cdn.discordapp.com/emojis/${id}.png" title="${name}" />`,
-  );
 }
 
 export function fillEmojis(message: string): string {
@@ -935,81 +740,16 @@ export function substituteEmoji(text: string): string | undefined {
   return undefined;
 }
 
-function fillTwitchEmotes(message: string) {
-  let filledMessage = message;
-
-  // Search through the text for each emote.
-  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    const emoteArray = [...emotesInCategory];
-    for (const emote of emoteArray) {
-      if (message.includes(emote)) {
-        const re = new RegExp(String.raw`\b${emote}\b`, "g"); // "\b" is a word boundary in regex.
-        const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${categoryName}/${emote}.png" title="${emote}" />`;
-        filledMessage = filledMessage.replace(re, emoteTag);
-      }
-    }
-  }
-
-  // Also handle emotes that have special characters in them.
-  if (filledMessage.includes("&lt;3")) {
-    // The Twitch heart emote.
-    const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${HEART_EMOTE_PATH}.png" title="&lt;3" />`;
-    const re = /&lt;3/gu; // "\b" won't work with a semicolon.
-    filledMessage = filledMessage.replaceAll(re, emoteTag);
-  }
-  for (const [code, emotePath] of Object.entries(COLON_EMOTE_PATHS)) {
-    if (filledMessage.includes(code)) {
-      const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${emotePath}.png" title="${code}" />`;
-      // "\b" won't work with a colon, so the emote must be surrounded by whitespace instead.
-      const re = new RegExp(String.raw`(?<=^|\s)${code}(?=\s|$)`, "gu");
-      filledMessage = filledMessage.replaceAll(re, emoteTag);
-    }
-  }
-
-  return filledMessage;
-}
-
-/** Shows who is typing in the game chat. (The pre-game chat shows them by itself.) */
-export function updatePeopleTyping(): void {
-  $("#game-chat-istyping").html(
-    getTypingMessage(store.getState().pregame.typing),
-  );
-}
-
-/** Returns the HTML that says who is typing. */
-export function getTypingMessage(typing: readonly string[]): string {
-  switch (typing.length) {
-    case 0: {
-      return "";
-    }
-
-    case 1: {
-      return `<strong>${escapeHtml(typing[0]!)}</strong> is typing...`;
-    }
-
-    case 2: {
-      return `<strong>${escapeHtml(typing[0]!)}</strong> and <strong>${escapeHtml(typing[1]!)}</strong> are typing...`;
-    }
-
-    case 3: {
-      return `<strong>${escapeHtml(typing[0]!)}</strong>, <strong>${escapeHtml(typing[1]!)}</strong>, and <strong>${escapeHtml(typing[2]!)}</strong> are typing...`;
-    }
-
-    default: {
-      return "Several people are typing...";
-    }
-  }
-}
-
-// This is used when the client needs to send a chat message to itself.
+/** Shows a private notice that the client writes itself, as if the server sent it. */
 export function sendSelfPmFromServer(
-  msg: string,
+  msg: string | readonly LocalPart[],
   room: string,
   type = SelfChatMessageType.Normal,
 ): void {
   addInternal(
     {
-      text: msg,
+      // The line shows the parts instead.
+      text: "",
       sentAt: new Date().toISOString(),
       ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
       kind: {
@@ -1020,22 +760,18 @@ export function sendSelfPmFromServer(
     },
     false,
     true,
-    { html: formatChatMessage(msg, type) },
+    {
+      parts: typeof msg === "string" ? [msg] : msg,
+      ...(SELF_CHAT_TONES[type] !== undefined && {
+        tone: SELF_CHAT_TONES[type],
+      }),
+    },
   );
 }
 
-function formatChatMessage(msg: string, type: SelfChatMessageType): string {
-  switch (type) {
-    case SelfChatMessageType.Normal: {
-      return msg;
-    }
-
-    case SelfChatMessageType.Info: {
-      return `<span class="green">${msg}</span>`;
-    }
-
-    case SelfChatMessageType.Error: {
-      return `<span class="red">${msg}</span>`;
-    }
-  }
-}
+/** The color of each type of message that the client writes to itself. */
+const SELF_CHAT_TONES = {
+  [SelfChatMessageType.Normal]: undefined,
+  [SelfChatMessageType.Info]: "info",
+  [SelfChatMessageType.Error]: "error",
+} as const satisfies Record<SelfChatMessageType, ChatLine["tone"]>;

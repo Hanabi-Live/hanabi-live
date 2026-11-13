@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
+import { gameChatReducer } from "./game/gameChatSlice.ts";
 import { lobbyChatReducer } from "./lobby/chat/lobbyChatSlice.ts";
 import { historyReducer } from "./lobby/gameHistory/historySlice.ts";
 import { loginReducer } from "./lobby/login/loginSlice.ts";
@@ -11,6 +12,7 @@ import { sessionReducer } from "./sessionSlice.ts";
 
 export const store = configureStore({
   reducer: {
+    gameChat: gameChatReducer,
     history: historyReducer,
     lobbyChat: lobbyChatReducer,
     login: loginReducer,
