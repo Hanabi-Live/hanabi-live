@@ -45,9 +45,6 @@ export class Globals {
   imageLoader: Loader | undefined = undefined;
   ui: HanabiUi | undefined = undefined;
 
-  /** Used to keep track of how many in-game chat messages are currently unread. */
-  chatUnread = 0;
-
   zenModeEnabled = false;
 
   /** Used to keep track of the active element before model warning box. */

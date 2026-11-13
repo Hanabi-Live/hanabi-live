@@ -1,7 +1,6 @@
 import type { GameState } from "@hanabi-live/game";
-import type { Store, Unsubscribe } from "redux";
+import { gameStateSource } from "../../gameStateSource.ts";
 import type { State } from "../../types/State.ts";
-import type { Action } from "../../types/actions.ts";
 import { globals } from "../UiGlobals.ts";
 import { canPassTurnInHypothetical } from "../hypothetical.ts";
 import type { Listener, Selector, Subscription } from "./observeStore.ts";
@@ -29,14 +28,14 @@ import * as turnView from "./views/turnView.ts";
 type Subscriptions = Array<Subscription<State, any>>;
 
 export class StateObserver {
-  private unsubscribe: Unsubscribe | undefined = undefined;
+  private unsubscribe: (() => void) | undefined = undefined;
 
-  constructor(store: Store<State, Action>) {
-    this.registerObservers(store);
+  constructor() {
+    this.registerObservers();
   }
 
-  /** Observe the store, calling different functions when a particular path changes. */
-  registerObservers(store: Store<State, Action>): void {
+  /** Observe the game's state, calling different functions when a particular path changes. */
+  registerObservers(): void {
     // Clean up any existing subscribers.
     this.unregisterObservers();
 
@@ -49,12 +48,13 @@ export class StateObserver {
       ...lateObservers,
     ];
 
-    this.unsubscribe = observeStore(store, subscriptions);
+    this.unsubscribe = observeStore(gameStateSource, subscriptions);
   }
 
   unregisterObservers(): void {
     if (this.unsubscribe !== undefined) {
       this.unsubscribe();
+      this.unsubscribe = undefined;
     }
   }
 }

@@ -1178,7 +1178,10 @@ function getStates({
         await page.evaluate(cycleEmpathy);
       },
       // Press the spacebar again at each size, since the redrawn screen does not keep the view.
+      // Wait first: the pointer's move to the corner can enter the game screen late, and entering
+      // it turns the view off.
       hover: async (page) => {
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
         await page.keyboard.up("Space");
         await page.keyboard.down("Space");
         await page.waitForTimeout(SETTLE_MILLISECONDS);

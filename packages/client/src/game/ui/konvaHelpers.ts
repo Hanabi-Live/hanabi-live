@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { globals } from "./UiGlobals.ts";
 import { HALF_TURN_DEGREES } from "./constants.ts";
 
@@ -84,7 +85,7 @@ export function animate(
         if (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           node === undefined
-          || globals.store === undefined
+          || store.getState().game.current === undefined
         ) {
           return;
         }

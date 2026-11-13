@@ -20,7 +20,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-redux": "catalog:",
-    "redux": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

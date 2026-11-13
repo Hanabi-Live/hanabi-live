@@ -8,7 +8,9 @@ import type {
 } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import { store } from "../../store.ts";
 import { toWireHypotheticalAction } from "../../wire.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
 import type { ActionIncludingHypothetical } from "../types/actions.ts";
@@ -27,12 +29,14 @@ export function startHypothetical(): void {
 
   if (shared === undefined) {
     globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
-    globals.store!.dispatch({
-      type: "hypotheticalStart",
-      shared: false,
-      showDrawnCards: false,
-      actions: [],
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalStart",
+        shared: false,
+        showDrawnCards: false,
+        actions: [],
+      }),
+    );
   } else if (shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
@@ -53,12 +57,14 @@ export function startSharedHypothetical(): void {
   }
 
   globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
-  globals.store!.dispatch({
-    type: "hypotheticalStart",
-    shared: true,
-    showDrawnCards: false,
-    actions: [],
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "hypotheticalStart",
+      shared: true,
+      showDrawnCards: false,
+      actions: [],
+    }),
+  );
 }
 
 export function endHypothetical(): void {
@@ -68,10 +74,12 @@ export function endHypothetical(): void {
   }
 
   if (ownHypothetical !== undefined) {
-    globals.store!.dispatch({
-      type: "hypotheticalEnd",
-      shared: false,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalEnd",
+        shared: false,
+      }),
+    );
     return;
   }
 
@@ -96,10 +104,12 @@ export function finishHypothetical(): void {
     return;
   }
 
-  globals.store!.dispatch({
-    type: "hypotheticalEnd",
-    shared: true,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "hypotheticalEnd",
+      shared: true,
+    }),
+  );
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
@@ -197,11 +207,13 @@ export function sendHypotheticalActionToServer(
       },
     });
   } else {
-    globals.store!.dispatch({
-      type: "hypotheticalAction",
-      shared: false,
-      action: hypoAction,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalAction",
+        shared: false,
+        action: hypoAction,
+      }),
+    );
   }
 }
 
@@ -214,10 +226,12 @@ export function sendHypotheticalBack(): void {
   }
 
   if (globals.state.replay.ownHypothetical !== undefined) {
-    globals.store!.dispatch({
-      type: "hypotheticalBack",
-      shared: false,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalBack",
+        shared: false,
+      }),
+    );
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
@@ -235,11 +249,13 @@ export function toggleRevealed(): void {
   }
 
   if (globals.state.replay.ownHypothetical !== undefined) {
-    globals.store!.dispatch({
-      type: "hypotheticalShowDrawnCards",
-      shared: false,
-      showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalShowDrawnCards",
+        shared: false,
+        showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+      }),
+    );
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,

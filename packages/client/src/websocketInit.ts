@@ -287,7 +287,7 @@ function openConnection(isReconnect: boolean) {
             table.tableId === retained
             && table.stage !== "replay"
             && globals.ui !== undefined
-            && globals.ui.globals.store !== undefined
+            && store.getState().game.current !== undefined
             && !globals.ui.globals.state.finished
           ) {
             conn.send("gameStateLoad", { tableId: retained });
@@ -317,7 +317,7 @@ function openConnection(isReconnect: boolean) {
             tableId: retained,
             ...(!data.playingAtTables.includes(retained) && {
               shadowingPlayerIndex:
-                globals.ui.globals.store !== undefined
+                store.getState().game.current !== undefined
                 && globals.ui.globals.state.shadowing
                   ? globals.ui.globals.metadata.ourPlayerIndex
                   : undefined,

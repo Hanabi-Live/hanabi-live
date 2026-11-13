@@ -1,9 +1,6 @@
 import { draw, getDefaultMetadata } from "@hanabi-live/game";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 
-vi.mock("./uiReducer.ts", () => ({
-  uiReducer: vi.fn(),
-}));
 const { init, replayEnter } = await import("../../../test/testActions.ts");
 const { initialState } = await import("./initialStates/initialState.ts");
 const { stateReducer } = await import("./stateReducer.ts");

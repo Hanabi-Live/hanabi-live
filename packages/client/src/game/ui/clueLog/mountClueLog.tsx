@@ -100,13 +100,13 @@ function isCovered(event: PointerEvent): boolean {
 }
 
 function render() {
-  if (root === undefined || globals.store === undefined) {
+  if (root === undefined || store.getState().game.current === undefined) {
     return;
   }
 
   root.render(
     <StrictMode>
-      <Provider store={globals.store}>
+      <Provider store={store}>
         <ClueLog
           colorblindMode={store.getState().session.settings.colorblindMode}
           hoveredCardOrder={hoveredCardOrder}

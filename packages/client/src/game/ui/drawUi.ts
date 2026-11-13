@@ -28,6 +28,7 @@ import {
 import Konva from "konva";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import { getViewPlayerIndex, isOurSeat } from "../ourSeat.ts";
 import { ActionLog } from "./ActionLog.ts";
 import { ButtonGroup } from "./ButtonGroup.ts";
@@ -773,7 +774,7 @@ export function drawUi(): void {
 export function updateTerminationVotes(): void {
   globals.elements.terminateButton?.setImage(
     globals.imageLoader!.get(
-      globals.terminationVotes?.voted === true ? "skull_vtk" : "skull",
+      store.getState().game.votes?.voted === true ? "skull_vtk" : "skull",
     ),
   );
   globals.elements.terminateMenu?.update();
@@ -2322,10 +2323,12 @@ function timerClick() {
   }
 
   const queued = !globals.state.pause.queued;
-  globals.store!.dispatch({
-    type: "pauseQueue",
-    queued,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "pauseQueue",
+      queued,
+    }),
+  );
   globals.lobby.conn!.send("pauseQueue", { tableId, queued });
 }
 
@@ -2757,10 +2760,12 @@ function drawPreplayArea() {
   });
   globals.layers.UI.add(globals.elements.premoveCancelButton);
   globals.elements.premoveCancelButton.on("click tap", () => {
-    globals.store!.dispatch({
-      type: "premove",
-      premove: undefined,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "premove",
+        premove: undefined,
+      }),
+    );
   });
 }
 

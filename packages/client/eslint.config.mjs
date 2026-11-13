@@ -26,8 +26,8 @@ export default defineConfig(
        * Documentation:
        * https://typescript-eslint.io/rules/no-deprecated/
        *
-       * The hotkeys compare the deprecated `which` key codes, and the game screen's store uses
-       * Redux's deprecated `createStore`.
+       * The hotkeys compare the deprecated `which` key codes, and copying to the clipboard uses the
+       * deprecated `execCommand`.
        */
       "@typescript-eslint/no-deprecated": "off",
 

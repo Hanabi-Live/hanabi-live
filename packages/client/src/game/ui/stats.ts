@@ -2,7 +2,9 @@ import { MAX_EFFICIENCY_MODIFIER } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
 import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { RIGHT_MOUSE_BUTTON } from "./constants.ts";
@@ -13,10 +15,12 @@ const setModifierCurrent = getHtmlElement("#set-modifier-current");
 const setModifierNew = getHtmlInputElement("#set-modifier-new");
 
 export function setEfficiencyModifier(efficiencyModifier: number): void {
-  globals.store!.dispatch({
-    type: "setEfficiencyModifier",
-    efficiencyModifier,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "setEfficiencyModifier",
+      efficiencyModifier,
+    }),
+  );
 
   if (globals.state.visibleState === undefined) {
     return;

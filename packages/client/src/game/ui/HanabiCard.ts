@@ -42,7 +42,6 @@ import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
-import type { UiCard } from "../types/UiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import * as HanabiCardMouse from "./HanabiCardMouse.ts";
 import { LayoutChild } from "./LayoutChild.ts";
@@ -109,7 +108,7 @@ const REVERSED_ARROW_Y = {
 } as const;
 
 /** Represents a single card. It has a `LayoutChild` parent. */
-export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
+export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // ---------------
   // Class variables
   // ---------------
@@ -189,7 +188,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   get state(): CardState {
     return (
       this.cluePreviewState
-      ?? globals.store?.getState().visibleState?.deck[this.order]
+      ?? store.getState().game.current?.visibleState?.deck[this.order]
       ?? this.fallbackState
     );
   }

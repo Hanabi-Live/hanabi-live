@@ -348,7 +348,7 @@ function syncChildren(
     const removedCards = removedCardOrders.map(getCard);
     for (const card of removedCards) {
       const realState =
-        globals.store?.getState().visibleState?.deck[card!.order];
+        store.getState().game.current?.visibleState?.deck[card!.order];
       if (realState === undefined || realState.location === "deck") {
         card!.animateToDeck();
       } else {

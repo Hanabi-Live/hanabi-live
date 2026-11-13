@@ -68,8 +68,5 @@ export function initialState(metadata: GameMetadata): State {
       queued: false,
     },
     spectators: [],
-    UI: {
-      cardDragged: undefined,
-    },
   };
 }

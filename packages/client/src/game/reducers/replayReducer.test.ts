@@ -1,15 +1,12 @@
 import type { CardOrder, GameMetadata, GameState } from "@hanabi-live/game";
 import { draw, rankClue } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
-import { beforeAll, describe, expect, test, vi } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 
 import testGame from "../../../test_data/up_or_down.json";
 import type { ReplayState } from "../types/ReplayState.ts";
 import type { State } from "../types/State.ts";
 
-vi.mock("./uiReducer.ts", () => ({
-  uiReducer: vi.fn(),
-}));
 const { loadGameJson } = await import("../../../test/loadGameJson.ts");
 const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =
   await import("../../../test/testActions.ts");

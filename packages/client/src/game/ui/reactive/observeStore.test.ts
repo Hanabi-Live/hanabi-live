@@ -1,4 +1,4 @@
-import { createStore } from "redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, expect, test } from "vitest";
 import { observeStore } from "./observeStore.ts";
 
@@ -22,7 +22,7 @@ function counterReducer(
 
 describe("observeStore", () => {
   test("applies nested dispatch updates in order without reverting the UI", () => {
-    const store = createStore(stepReducer);
+    const store = configureStore({ reducer: stepReducer });
     const rendered: number[] = [];
 
     const unsubscribe = observeStore(store, [
@@ -52,7 +52,7 @@ describe("observeStore", () => {
   });
 
   test("skips unchanged selectors", () => {
-    const store = createStore(counterReducer);
+    const store = configureStore({ reducer: counterReducer });
     const updates: string[] = [];
 
     const unsubscribe = observeStore(store, [

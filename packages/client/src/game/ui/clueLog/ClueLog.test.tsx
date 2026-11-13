@@ -2,9 +2,9 @@
 
 import type { CardOrder, PlayerIndex, StateClue } from "@hanabi-live/game";
 import { getDefaultVariant } from "@hanabi-live/game";
+import { configureStore } from "@reduxjs/toolkit";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { State } from "../../types/State.ts";
 import { ClueLog } from "./ClueLog.tsx";
@@ -49,7 +49,9 @@ function renderLog(
     },
   } as unknown as State;
   render(
-    <Provider store={createStore(() => state)}>
+    <Provider
+      store={configureStore({ reducer: () => ({ game: { current: state } }) })}
+    >
       <ClueLog
         colorblindMode={options.colorblindMode ?? false}
         hoveredCardOrder={(options.hoveredCardOrder ?? undefined) as CardOrder}

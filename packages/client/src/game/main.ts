@@ -63,7 +63,6 @@ export function show(justStarted: boolean): void {
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   globals.ui = new HanabiUi(globals, gameExports, justStarted);
-  globals.chatUnread = 0;
   if (store.getState().session.settings.newUi) {
     newUi.mount();
   }

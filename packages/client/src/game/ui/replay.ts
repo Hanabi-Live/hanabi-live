@@ -4,8 +4,9 @@ import type { CardOrder } from "@hanabi-live/game";
 import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals.ts";
+import { store } from "../../store.ts";
 import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
-import * as newUiState from "../newUi/newUiState.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -36,7 +37,7 @@ const setTurnInput = getHtmlInputElement("#set-turn-input");
  */
 export function getLastSegment(
   state: State = globals.state,
-  newUi: boolean = newUiState.isActive(),
+  newUi: boolean = store.getState().newUi.shown,
 ): number {
   const finalSegment = state.ongoingGame.turn.segment ?? 0;
   return newUi && state.replay.actions.at(-1)?.type === "playerTimes"
@@ -52,10 +53,12 @@ export function enter(customSegment?: number): void {
   // By default, use the final segment of the ongoing game, or 0
   const segment = customSegment ?? getLastSegment();
 
-  globals.store!.dispatch({
-    type: "replayEnter",
-    segment,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "replayEnter",
+      segment,
+    }),
+  );
 }
 
 export function exit(): void {
@@ -65,9 +68,11 @@ export function exit(): void {
 
   // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent
   // turn.
-  globals.store!.dispatch({
-    type: "replayExit",
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "replayExit",
+    }),
+  );
 }
 
 /** Spoiler-free reviews hide what happens later in the game. */
@@ -136,26 +141,32 @@ export function goToSegment(
     && globals.state.replay.shared.useSharedSegments
     && !globals.state.replay.shared.amLeader
   ) {
-    globals.store!.dispatch({
-      type: "replayUseSharedSegments",
-      useSharedSegments: false,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "replayUseSharedSegments",
+        useSharedSegments: false,
+      }),
+    );
   }
 
-  globals.store!.dispatch({
-    type: "replaySegment",
-    segment: newSegment,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "replaySegment",
+      segment: newSegment,
+    }),
+  );
 
   if (
     globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
-    globals.store!.dispatch({
-      type: "replaySharedSegment",
-      segment: newSegment,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "replaySharedSegment",
+        segment: newSegment,
+      }),
+    );
   }
 }
 
@@ -443,8 +454,10 @@ export function toggleSharedSegments(): void {
     return;
   }
 
-  globals.store!.dispatch({
-    type: "replayUseSharedSegments",
-    useSharedSegments: !globals.state.replay.shared.useSharedSegments,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "replayUseSharedSegments",
+      useSharedSegments: !globals.state.replay.shared.useSharedSegments,
+    }),
+  );
 }

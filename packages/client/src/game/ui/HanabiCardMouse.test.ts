@@ -156,7 +156,6 @@ function pressCard() {
     options: { speedrun: false },
     elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
     layers: { card: cardLayer },
-    store: { dispatch: vi.fn() },
   });
 
   registerMouseHandlers.call(card);

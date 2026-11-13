@@ -2,6 +2,7 @@ import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications.ts";
 import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
@@ -37,10 +38,12 @@ function handlePremove() {
 
   // Make a copy of the premove values and then clear the premove action.
   const oldPremove = { ...premove };
-  globals.store!.dispatch({
-    type: "premove",
-    premove: undefined,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "premove",
+      premove: undefined,
+    }),
+  );
 
   // Perform some validation.
   switch (oldPremove.type) {
@@ -111,10 +114,12 @@ export function end(clientAction: ClientAction): void {
   }
 
   if (store.getState().session.settings.preplay) {
-    globals.store!.dispatch({
-      type: "premove",
-      premove: clientAction,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "premove",
+        premove: clientAction,
+      }),
+    );
   }
 }
 

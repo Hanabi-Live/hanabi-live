@@ -5,9 +5,11 @@ import interact from "interactjs";
 import { globals } from "../Globals.ts";
 import { LOCAL_STORAGE_KEY } from "../constants.ts";
 import { fadeIn, fadeOut, isElementShown } from "../elementVisibility.ts";
+import { store } from "../store.ts";
 import { getHtmlElement } from "../utils.ts";
 import { GAME_CHAT_INPUT_ID, GAME_CHAT_TEXT_ID } from "./GameChatBox.tsx";
-import * as newUiState from "./newUi/newUiState.ts";
+import { gameChatUnreadChanged } from "./gameChatSlice.ts";
+import { newUiChatOpenChanged } from "./newUi/newUiSlice.ts";
 
 /** The size of the chat modal before the player has moved or resized it, in percent of the page. */
 const DEFAULT_CHAT_MODAL_WIDTH_PERCENT = 20;
@@ -144,8 +146,9 @@ export function init(): void {
 
 /** Whether the player can see the in-game chat, in either game screen. */
 export function isOpen(): boolean {
-  return newUiState.isActive()
-    ? newUiState.isChatOpen()
+  const { newUi } = store.getState();
+  return newUi.shown
+    ? newUi.chatOpen
     : isElementShown(getHtmlElement("#game-chat-modal"));
 }
 
@@ -160,9 +163,9 @@ export function toggle(focusInput = true): void {
 export function show(focusInput = true): void {
   markRead();
 
-  if (newUiState.isActive()) {
+  if (store.getState().newUi.shown) {
     // The redesigned game screen shows the chat in its side panel instead of in the modal.
-    newUiState.setChatOpen(true);
+    store.dispatch(newUiChatOpenChanged(true));
     if (focusInput) {
       getHtmlElement(`#${GAME_CHAT_INPUT_ID}`).focus();
     }
@@ -220,8 +223,8 @@ export function show(focusInput = true): void {
 }
 
 export function hide(): void {
-  if (newUiState.isActive()) {
-    newUiState.setChatOpen(false);
+  if (store.getState().newUi.shown) {
+    store.dispatch(newUiChatOpenChanged(false));
     return;
   }
 
@@ -230,11 +233,11 @@ export function hide(): void {
 
 /** Opening the chat counts every message in it as read. */
 function markRead() {
-  if (globals.chatUnread === 0) {
+  if (store.getState().gameChat.unread === 0) {
     return;
   }
 
-  globals.chatUnread = 0;
+  store.dispatch(gameChatUnreadChanged(0));
 
   // We need to notify the server that we have read everything.
   assertDefined(globals.conn, 'The "globals.conn" object is not initialized.');

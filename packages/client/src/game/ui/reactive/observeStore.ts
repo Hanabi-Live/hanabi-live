@@ -1,5 +1,5 @@
 import equal from "fast-deep-equal";
-import type { Action, Store, Unsubscribe } from "redux";
+import type { StateSource } from "../../gameStateSource.ts";
 
 /** A selector returns this to skip its listener. Any other value, including undefined, fires it. */
 export const SKIP = Symbol("skip");
@@ -18,12 +18,15 @@ export interface Subscription<T, U> {
   onChange: Listener<U>;
 }
 
-// Observes a property of type T on a Store<S, A> and calls a listener function when it changes.
-export function observeStore<S, A extends Action, T>(
-  store: Store<S, A>,
+/**
+ * Observes the parts of a state that the subscriptions select, and calls their listeners when they
+ * change. Nothing fires while the source has no state.
+ */
+export function observeStore<S, T>(
+  source: StateSource<S>,
   subscriptions: ReadonlyArray<Subscription<S, T>>,
-): Unsubscribe {
-  let currentState: S;
+): () => void {
+  let currentState: S | undefined;
   let isUpdating = false;
 
   function handleChange() {
@@ -34,8 +37,8 @@ export function observeStore<S, A extends Action, T>(
 
     isUpdating = true;
     try {
-      let nextState = store.getState();
-      while (currentState !== nextState) {
+      let nextState = source.getState();
+      while (nextState !== undefined && currentState !== nextState) {
         const previousState = currentState;
         const snapshot = nextState;
 
@@ -70,14 +73,14 @@ export function observeStore<S, A extends Action, T>(
 
         // Commit only after every callback succeeds, then process any nested dispatch.
         currentState = snapshot;
-        nextState = store.getState();
+        nextState = source.getState();
       }
     } finally {
       isUpdating = false;
     }
   }
 
-  const unsubscribe = store.subscribe(handleChange);
+  const unsubscribe = source.subscribe(handleChange);
   handleChange();
   return unsubscribe;
 }

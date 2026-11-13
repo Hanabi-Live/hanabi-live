@@ -4,6 +4,7 @@ import { globals } from "./Globals.ts";
 import * as chat from "./chat.ts";
 import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
+import { gameChatUnreadChanged } from "./game/gameChatSlice.ts";
 import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
@@ -74,7 +75,7 @@ function acknowledgeChatRead(
       return;
     }
 
-    if (globals.ui.globals.store === undefined) {
+    if (store.getState().game.current === undefined) {
       return;
     }
 
@@ -82,7 +83,9 @@ function acknowledgeChatRead(
     if (UiState.playing || UiState.finished) {
       // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
       // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
-      globals.chatUnread++;
+      store.dispatch(
+        gameChatUnreadChanged(store.getState().gameChat.unread + 1),
+      );
       globals.ui.updateChatLabel();
     } else {
       // The chat window was not open; pop open the chat window every time for spectators.
@@ -113,7 +116,9 @@ commands.set("chatList", (data) => {
     chat.add(message, true); // The second argument is "fast"
   }
   if (table !== undefined && globals.ui !== undefined && !gameChat.isOpen()) {
-    globals.chatUnread += table.numUnread;
+    store.dispatch(
+      gameChatUnreadChanged(store.getState().gameChat.unread + table.numUnread),
+    );
     globals.ui.updateChatLabel();
   }
 });

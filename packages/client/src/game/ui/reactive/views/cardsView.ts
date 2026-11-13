@@ -1,6 +1,7 @@
 import type { CardIdentity, CardOrder, CardState } from "@hanabi-live/game";
 import { getTotalCardsInDeck } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import { gameStateSource } from "../../../gameStateSource.ts";
 import type { State } from "../../../types/State.ts";
 import { HanabiCard } from "../../HanabiCard.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -235,7 +236,7 @@ function subscribeToCardChanges(order: CardOrder) {
     },
   );
 
-  return observeStore(globals.store!, subscriptions);
+  return observeStore(gameStateSource, subscriptions);
 }
 
 function updateBorder(order: CardOrder) {

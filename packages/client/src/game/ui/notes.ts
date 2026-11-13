@@ -12,6 +12,7 @@ import {
 } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
 import { chatTextHtml } from "../../chatText.ts";
+import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import {
@@ -19,6 +20,7 @@ import {
   getHtmlElement,
   getHtmlInputElement,
 } from "../../utils.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
@@ -139,11 +141,13 @@ export function set(order: CardOrder, text: string): void {
     });
   }
 
-  globals.store!.dispatch({
-    type: "editNote",
-    order,
-    text,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "editNote",
+      order,
+      text,
+    }),
+  );
 
   const card = getCardOrStackBase(order);
   if (card) {

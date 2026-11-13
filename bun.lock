@@ -35,7 +35,6 @@
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-redux": "catalog:",
-        "redux": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -149,7 +148,6 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-redux": "9.3.1",
-    "redux": "5.0.1",
     "tailwindcss": "4.3.5",
     "turbo": "2.11.10",
     "typedoc": "0.28.20",

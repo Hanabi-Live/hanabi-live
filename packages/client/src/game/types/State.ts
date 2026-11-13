@@ -4,7 +4,6 @@ import type { ClientAction } from "./ClientAction.ts";
 import type { NotesState } from "./NotesState.ts";
 import type { PauseState } from "./PauseState.ts";
 import type { ReplayState } from "./ReplayState.ts";
-import type { UiState } from "./UiState.ts";
 
 export interface State {
   readonly visibleState: GameState | undefined; // Null during initialization
@@ -33,5 +32,4 @@ export interface State {
   readonly spectators: Spectator[];
 
   readonly notes: NotesState;
-  readonly UI: UiState;
 }

@@ -15,7 +15,6 @@ import type { Action } from "../types/actions.ts";
 import { notesReducer } from "./notesReducer.ts";
 import { replayReducer } from "./replayReducer.ts";
 import { playerNamesAt, shouldStoreSegment } from "./stateReducerHelpers.ts";
-import { uiReducer } from "./uiReducer.ts";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -224,16 +223,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.replay = castDraft(
         replayReducer(state.replay, action, state.finished, state.metadata),
       );
-      break;
-    }
-
-    case "dragStart": {
-      state.UI = uiReducer(state.UI, action);
-      break;
-    }
-
-    case "dragReset": {
-      state.UI = uiReducer(state.UI, action);
       break;
     }
 

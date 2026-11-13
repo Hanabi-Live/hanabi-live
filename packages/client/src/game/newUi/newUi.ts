@@ -1,5 +1,5 @@
 // Shows a game in the redesigned game screen, for players who turned on the "New UI" setting.
-// "App.tsx" renders the screen while it is active.
+// "App.tsx" renders the screen while the store says that it is shown.
 
 // The classic Konva screen still runs, hidden, for every game. It keeps handling the timers, the
 // sounds, the hotkeys, the replays, and the hypotheticals, which change the store that both screens
@@ -7,26 +7,27 @@
 
 import { flushSync } from "react-dom";
 import { fadeIn, hideElement, showElement } from "../../elementVisibility.ts";
+import { store } from "../../store.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { globals } from "../ui/UiGlobals.ts";
-import * as newUiState from "./newUiState.ts";
+import { newUiShownChanged } from "./newUiSlice.ts";
 
 export function mount(): void {
   unmount();
   fadeIn(getHtmlElement("#game-new-ui"));
   // Render at once, so that the code that runs next finds the screen's elements.
   flushSync(() => {
-    newUiState.setActive(true);
+    store.dispatch(newUiShownChanged(true));
   });
 }
 
 export function unmount(): void {
-  if (!newUiState.isActive()) {
+  if (!store.getState().newUi.shown) {
     return;
   }
 
   flushSync(() => {
-    newUiState.setActive(false);
+    store.dispatch(newUiShownChanged(false));
   });
   hideElement(getHtmlElement("#game-new-ui"));
 }
@@ -35,7 +36,7 @@ export function unmount(): void {
 export function switchToClassic(): void {
   // React cannot render again while it is rendering, so wait until it finishes.
   setTimeout(() => {
-    if (!newUiState.isActive()) {
+    if (!store.getState().newUi.shown) {
       return;
     }
 

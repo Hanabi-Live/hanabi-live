@@ -1,6 +1,7 @@
 // The menu that the skull button opens, to vote to end the game or to end it now.
 
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import * as tooltips from "../../tooltips.ts";
 import { globals } from "./UiGlobals.ts";
@@ -174,7 +175,7 @@ export class TerminateMenu extends Konva.Group {
     this.voteName = vote.nameText;
     this.voteDetail = vote.detailText;
     vote.group.on("click tap", () => {
-      terminationVotes.setVote(globals.terminationVotes?.voted !== true);
+      terminationVotes.setVote(store.getState().game.votes?.voted !== true);
       this.close();
     });
 
@@ -199,7 +200,7 @@ export class TerminateMenu extends Konva.Group {
   /** Shows the latest votes. */
   update(): void {
     // The server sends the votes when the game loads, so they are missing only for a moment.
-    const votes = globals.terminationVotes;
+    const { votes } = store.getState().game;
     if (votes === undefined) {
       return;
     }

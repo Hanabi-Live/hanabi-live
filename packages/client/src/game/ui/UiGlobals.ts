@@ -1,4 +1,3 @@
-import type { ServerEventData } from "@hanabi-live/data";
 import type {
   GameAction,
   GameMetadata,
@@ -6,15 +5,15 @@ import type {
   PlayerIndex,
 } from "@hanabi-live/game";
 import { getDefaultVariant } from "@hanabi-live/game";
-import { ReadonlyMap } from "complete-common";
+import { ReadonlyMap, assertDefined } from "complete-common";
 import Konva from "konva";
-import type * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../Globals.ts";
 import type { Loader } from "../../Loader.ts";
+import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
+import { gameCleared } from "../gameSlice.ts";
 import type { GameExports } from "../main.ts";
 import type { State } from "../types/State.ts";
-import type { Action } from "../types/actions.ts";
 import { Elements } from "./Elements.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { Layers } from "./Layers.ts";
@@ -94,10 +93,6 @@ export class UiGlobals {
 
   restartPending = false;
 
-  /** The votes to end the game, as the server last sent them. */
-  terminationVotes: Omit<ServerEventData["votes"], "tableId"> | undefined =
-    undefined;
-
   globalEmpathyEnabled = false;
 
   /** Whether the global empathy view also applies our notes (Ctrl + Space). */
@@ -112,12 +107,15 @@ export class UiGlobals {
   playStartSound = false;
 
   // State information
-  store: Redux.Store<State, Action> | undefined = undefined;
   stateObserver: StateObserver | undefined = undefined;
-  cardSubscriptions: Redux.Unsubscribe[] = [];
+  cardSubscriptions: Array<() => void> = [];
 
+  /** The game's state, which exists once the server has answered "gameInitLoad". */
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- It reads the store.
   get state(): State {
-    return this.store!.getState();
+    const { current } = store.getState().game;
+    assertDefined(current, "The game's state does not exist yet.");
+    return current;
   }
 
   get metadata(): GameMetadata {
@@ -152,13 +150,21 @@ function newStage(): Konva.Stage {
 // eslint-disable-next-line import-x/no-mutable-exports -- "resetGlobals()" replaces it for each game.
 export let globals = new UiGlobals();
 
-/** Releases the previous game's subscriptions and replaces the globals for a new game. */
-export function resetGlobals(): void {
+/** Stops the classic screen's views from observing the game's state. */
+export function releaseSubscriptions(): void {
   globals.stateObserver?.unregisterObservers();
   for (const unsubscribeFunc of globals.cardSubscriptions) {
     unsubscribeFunc();
   }
+  globals.cardSubscriptions = [];
+}
 
+/**
+ * Releases the previous game's subscriptions and state, and replaces the globals for a new game.
+ */
+export function resetGlobals(): void {
+  releaseSubscriptions();
+  store.dispatch(gameCleared());
   globals = new UiGlobals();
   window.globals = globals; // eslint-disable-line unicorn/prefer-global-this
 }

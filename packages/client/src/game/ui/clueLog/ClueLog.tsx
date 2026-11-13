@@ -3,8 +3,7 @@
 import type { CardOrder, StateClue, Variant } from "@hanabi-live/game";
 import { getCharacterNameForPlayer, getClueName } from "@hanabi-live/game";
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import type { State } from "../../types/State.ts";
+import { useAppSelector } from "../../../store.ts";
 import {
   CLUE_LOG,
   FONT_FAMILY,
@@ -55,8 +54,6 @@ const CLUE_NAME_X = TARGET_X + COLUMN.PLAYER_NAME_W + COLUMN.GAP;
 
 const NO_CLUES = [] as const satisfies readonly StateClue[];
 
-const useGameSelector = useSelector.withTypes<State>();
-
 /** How an entry relates to the card under the mouse. */
 type Match = "none" | "positive" | "negative";
 
@@ -76,12 +73,12 @@ export function ClueLog({
   colorblindMode,
   hoveredCardOrder,
 }: ClueLogProps): React.JSX.Element {
-  const clues = useGameSelector(
-    (state) => state.visibleState?.clues ?? NO_CLUES,
+  const clues = useAppSelector(
+    (state) => state.game.current?.visibleState?.clues ?? NO_CLUES,
   );
-  const { playerNames, characterAssignments } = useGameSelector(
-    (state) => state.metadata,
-  );
+  const metadata = useAppSelector((state) => state.game.current?.metadata);
+  const playerNames = metadata?.playerNames ?? [];
+  const characterAssignments = metadata?.characterAssignments ?? [];
 
   const entryWidth = (CLUE_LOG.w - TEXT_INSET * 2) * stageWidth;
   const entryHeight = ENTRY_HEIGHT * stageHeight;

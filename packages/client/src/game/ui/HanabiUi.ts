@@ -6,7 +6,6 @@ import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { GameExports } from "../main.ts";
-import * as newUiState from "../newUi/newUiState.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
@@ -17,7 +16,7 @@ import * as cluesView from "./reactive/views/cluesView.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
 import type { UiGlobals } from "./UiGlobals.ts";
-import { globals, resetGlobals } from "./UiGlobals.ts";
+import { globals, releaseSubscriptions, resetGlobals } from "./UiGlobals.ts";
 
 export class HanabiUi {
   globals: UiGlobals;
@@ -107,9 +106,6 @@ export class HanabiUi {
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   updateChatLabel(): void {
-    // The redesigned game screen shows the unread count on its own chat button.
-    newUiState.notify();
-
     if (globals.elements.chatButton === undefined) {
       return;
     }
@@ -121,8 +117,9 @@ export class HanabiUi {
     } else {
       // eslint-disable-next-line complete/require-ascii
       text += "💬";
-      if (globals.lobby.chatUnread > 0) {
-        text += ` (${globals.lobby.chatUnread})`;
+      const { unread } = store.getState().gameChat;
+      if (unread > 0) {
+        text += ` (${unread})`;
       }
     }
 
@@ -143,6 +140,7 @@ export class HanabiUi {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = undefined;
     }
+    releaseSubscriptions();
     unmountClueLog();
     keyboard.destroy();
     timer.stop();
@@ -226,9 +224,9 @@ export class HanabiUi {
     // Re-register the state observers to bind them to the new UI elements.
     if (
       this.globals.stateObserver !== undefined
-      && this.globals.store !== undefined
+      && store.getState().game.current !== undefined
     ) {
-      this.globals.stateObserver.registerObservers(this.globals.store);
+      this.globals.stateObserver.registerObservers();
     }
     cluesView.refreshArrows(false);
 

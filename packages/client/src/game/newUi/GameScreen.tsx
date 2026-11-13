@@ -24,7 +24,7 @@ import {
 import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
-import { store } from "../../store.ts";
+import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -89,13 +89,10 @@ import {
 } from "./cardMotion.ts";
 import {
   useElementSize,
-  useGameState,
   useMediaQuery,
-  useNewUiVersion,
   useNow,
   useWindowSize,
 } from "./hooks.ts";
-import * as newUiState from "./newUiState.ts";
 import type { Misplay } from "./playMotion.ts";
 import {
   animateFinale,
@@ -711,9 +708,11 @@ export function GameScreen({
 }: {
   readonly onSwitchToClassic: () => void;
 }): React.JSX.Element {
-  useNewUiVersion();
   useNow(CLOCK_TICK_MILLISECONDS);
-  const state = useGameState();
+  const state = useAppSelector((root) => root.game.current);
+  const votes = useAppSelector((root) => root.game.votes);
+  const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
+  const chatUnread = useAppSelector((root) => root.gameChat.unread);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
@@ -1599,7 +1598,7 @@ export function GameScreen({
         </main>
 
         <ChatPanel
-          open={newUiState.isChatOpen()}
+          open={chatOpen}
           overlay={chatOverlay}
           spectators={spectators.map((spectator) =>
             spectator.username === metadata.ourUsername
@@ -1611,7 +1610,7 @@ export function GameScreen({
             state.finished,
             YOU,
           )}
-          unread={globals.lobby.chatUnread}
+          unread={chatUnread}
         />
       </div>
 
@@ -1622,7 +1621,7 @@ export function GameScreen({
           && !state.finished && (
             <EndGameMenu
               numPlayers={metadata.options.numPlayers}
-              votes={globals.terminationVotes}
+              votes={votes}
             />
           )
         }

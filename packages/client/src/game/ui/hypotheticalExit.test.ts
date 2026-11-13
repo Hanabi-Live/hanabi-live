@@ -1,26 +1,36 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { getDefaultMetadata } from "@hanabi-live/game";
-import { createStore } from "redux";
 import type { Mock } from "vitest";
 import { describe, expect, test, vi } from "vitest";
+import type { State } from "../types/State.ts";
+import type { Action } from "../types/actions.ts";
 
 import type { HanabiCard } from "./HanabiCard.ts";
 
-vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
 vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } =
   await import("../reducers/initialStates/initialState.ts");
-const { stateReducer } = await import("../reducers/stateReducer.ts");
 const mouse = await import("./HanabiCardMouse.ts");
 const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
   await import("./hypothetical.ts");
 const { globals } = await import("./UiGlobals.ts");
+const { store: appStore } = await import("../../store.ts");
+const { gameStarted, gameUpdated } = await import("../gameSlice.ts");
+
+/** Starts a game with this state in the store, and reads and changes it like a store of its own. */
+function startGame(state: State) {
+  appStore.dispatch(gameStarted(state));
+  return {
+    getState: (): State => appStore.getState().game.current!,
+    dispatch: (action: Action) => appStore.dispatch(gameUpdated(action)),
+  };
+}
 
 function setup(shared: boolean) {
   const metadata = getDefaultMetadata(2);
   const initial = initialState(metadata);
-  const store = createStore(stateReducer, {
+  const store = startGame({
     ...initial,
     visibleState: initial.ongoingGame,
     playing: false,
@@ -46,7 +56,6 @@ function setup(shared: boolean) {
   });
   const send = vi.fn();
   Object.assign(globals, {
-    store,
     lobby: { tableId: 42, joinedTableId: 42, conn: { send } },
   });
   Object.defineProperty(globals, "state", {

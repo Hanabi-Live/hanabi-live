@@ -20,6 +20,7 @@ import type {
 } from "../game/types/ClientAction.ts";
 import type { ReplayState } from "../game/types/ReplayState.ts";
 import { globals } from "../game/ui/UiGlobals.ts";
+import { store } from "../store.ts";
 import type { GameJson } from "./hypoCompress.ts";
 import { shrink } from "./hypoCompress.ts";
 
@@ -31,7 +32,7 @@ const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 export function createJsonFromReplay(room: string): void {
   const { segment } = globals.state.replay;
   if (
-    globals.store === undefined
+    store.getState().game.current === undefined
     || !globals.state.finished
     || segment === undefined
   ) {

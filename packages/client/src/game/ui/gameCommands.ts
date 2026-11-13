@@ -18,7 +18,6 @@ import {
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
-import { createStore } from "redux";
 import type { Connection } from "../../Connection.ts";
 import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
@@ -34,13 +33,13 @@ import {
   toPlayerTuple,
   toSoundType,
 } from "../../wire.ts";
-import * as newUiState from "../newUi/newUiState.ts";
+import type { Votes } from "../gameSlice.ts";
+import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
 import { initialState } from "../reducers/initialStates/initialState.ts";
-import { stateReducer } from "../reducers/stateReducer.ts";
 import { playerNamesAt } from "../reducers/stateReducerHelpers.ts";
 import { SoundType } from "../types/SoundType.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "./UiGlobals.ts";
+import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
@@ -57,7 +56,6 @@ export const gameCommands = new ServerHandlers();
 
 type GameInit = ReplyData["gameInitLoad"];
 type GameState = ServerEventData["gameState"];
-type Votes = Omit<ServerEventData["votes"], "tableId">;
 type HypotheticalControl = Extract<
   ServerEventData["replayAction"]["action"],
   { type: "hypothetical" }
@@ -88,10 +86,12 @@ function setConnected(connectedList: readonly boolean[]) {
 }
 
 function setCardIdentities(deck: ServerEventData["gameFinished"]["deck"]) {
-  globals.store!.dispatch({
-    type: "cardIdentities",
-    cardIdentities: deck.map(toCardIdentity),
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "cardIdentities",
+      cardIdentities: deck.map(toCardIdentity),
+    }),
+  );
 }
 
 gameCommands.set("gameFinished", (data) => {
@@ -105,10 +105,12 @@ gameCommands.set("gameFinished", (data) => {
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
-  globals.store!.dispatch({
-    type: "setEfficiencyModifier",
-    efficiencyModifier: 0,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "setEfficiencyModifier",
+      efficiencyModifier: 0,
+    }),
+  );
 
   // Set the browser address bar. A game that was not saved has no replay address.
   if (data.view.gameId !== undefined) {
@@ -116,14 +118,16 @@ gameCommands.set("gameFinished", (data) => {
   }
 
   // Begin the process of converting an ongoing game to a shared replay.
-  globals.store!.dispatch({
-    type: "gameFinished",
-    actions: data.events.map(toGameAction),
-    view: data.view,
-    sharedReplay: data.sharedReplay,
-    finishedAt: data.finishedAt,
-    leader: data.sharedReplay.owner.username,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "gameFinished",
+      actions: data.events.map(toGameAction),
+      view: data.view,
+      sharedReplay: data.sharedReplay,
+      finishedAt: data.finishedAt,
+      leader: data.sharedReplay.owner.username,
+    }),
+  );
   timer.hide();
 
   // Now that the game is over, we may see everyone's notes.
@@ -142,10 +146,12 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
         return;
       }
 
-      globals.store!.dispatch({
-        type: "replaySharedSegment",
-        segment: leaderAction.turn,
-      });
+      store.dispatch(
+        gameUpdated({
+          type: "replaySharedSegment",
+          segment: leaderAction.turn,
+        }),
+      );
       break;
     }
 
@@ -209,29 +215,35 @@ function onHypotheticalControl(control: HypotheticalControl) {
 
     case "event": {
       const action = toHypotheticalAction(control.event);
-      globals.store!.dispatch({
-        type: "hypotheticalAction",
-        shared: true,
-        action,
-      });
+      store.dispatch(
+        gameUpdated({
+          type: "hypotheticalAction",
+          shared: true,
+          action,
+        }),
+      );
       hypothetical.checkToggleRevealedButton(action);
       break;
     }
 
     case "back": {
-      globals.store!.dispatch({
-        type: "hypotheticalBack",
-        shared: true,
-      });
+      store.dispatch(
+        gameUpdated({
+          type: "hypotheticalBack",
+          shared: true,
+        }),
+      );
       break;
     }
 
     case "showDrawnCards": {
-      globals.store!.dispatch({
-        type: "hypotheticalShowDrawnCards",
-        shared: true,
-        showDrawnCards: control.show,
-      });
+      store.dispatch(
+        gameUpdated({
+          type: "hypotheticalShowDrawnCards",
+          shared: true,
+          showDrawnCards: control.show,
+        }),
+      );
       break;
     }
   }
@@ -273,11 +285,13 @@ gameCommands.set("note", (data) => {
     return;
   }
 
-  globals.store!.dispatch({
-    type: "receiveNote",
-    order: data.order,
-    note: data.note,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "receiveNote",
+      order: data.order,
+      note: data.note,
+    }),
+  );
 
   // Set the note indicator.
   const card = getCardOrStackBase(data.order);
@@ -291,18 +305,22 @@ gameCommands.set("note", (data) => {
  * for a player of a game in progress.
  */
 function setNotes(playerNotes: GameState["notes"]) {
-  const state = globals.store!.getState();
+  const { state } = globals;
   if (state.playing && !state.finished) {
     // A player gets only their own notes.
-    globals.store!.dispatch({
-      type: "noteListPlayer",
-      texts: playerNotes[0]?.notes ?? [],
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "noteListPlayer",
+        texts: playerNotes[0]?.notes ?? [],
+      }),
+    );
   } else {
-    globals.store!.dispatch({
-      type: "noteList",
-      notes: playerNotes,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "noteList",
+        notes: playerNotes,
+      }),
+    );
   }
 
   setNoteIndicatorAndCheckForSpecialNote();
@@ -314,7 +332,7 @@ gameCommands.set("gameEvent", (data) => {
   modals.closeIdleWarning();
 
   // Update the game state.
-  globals.store!.dispatch(toGameAction(data.event));
+  store.dispatch(gameUpdated(toGameAction(data.event)));
 });
 
 /**
@@ -325,13 +343,15 @@ gameCommands.set("gameState", (data) => {
   const { phase } = data;
   const shared = phase.type === "replay" ? phase.sharedReplay : undefined;
   if (shared !== undefined) {
-    globals.store!.dispatch({
-      type: "sharedReplayState",
-      turn: shared.turn,
-      efficiencyModifier: shared.efficiencyModifier,
-      restartDecliners: shared.restartDecliners,
-      leader: shared.owner.username,
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "sharedReplayState",
+        turn: shared.turn,
+        efficiencyModifier: shared.efficiencyModifier,
+        restartDecliners: shared.restartDecliners,
+        leader: shared.owner.username,
+      }),
+    );
   }
   setEvents(data.events);
   if (phase.type === "replay") {
@@ -344,7 +364,7 @@ gameCommands.set("gameState", (data) => {
     }
     setConnected(phase.connections);
     timer.update(phase.clock);
-    globals.store!.dispatch({ type: "pause", ...phase.pause });
+    store.dispatch(gameUpdated({ type: "pause", ...phase.pause }));
     // We may have missed the idle warning while we were away.
     if (phase.idleRemainingMs !== undefined) {
       showIdleWarning(phase.idleRemainingMs);
@@ -354,12 +374,14 @@ gameCommands.set("gameState", (data) => {
   if (shared?.hypothetical !== undefined) {
     // We are joining a shared replay that plays through a hypothetical line. Play all of its
     // actions so far to catch up with everyone else.
-    globals.store!.dispatch({
-      type: "hypotheticalStart",
-      shared: true,
-      showDrawnCards: shared.hypothetical.showDrawnCards,
-      actions: shared.hypothetical.events.map(toHypotheticalAction),
-    });
+    store.dispatch(
+      gameUpdated({
+        type: "hypotheticalStart",
+        shared: true,
+        showDrawnCards: shared.hypothetical.showDrawnCards,
+        actions: shared.hypothetical.events.map(toHypotheticalAction),
+      }),
+    );
   }
 });
 
@@ -373,10 +395,12 @@ function setEvents(events: GameState["events"]) {
   }
 
   // Send the game events so far to the reducers.
-  globals.store!.dispatch({
-    type: "gameActionList",
-    actions: events.map(toGameAction),
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "gameActionList",
+      actions: events.map(toGameAction),
+    }),
+  );
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:
   // http://localhost/replay/123#5
@@ -417,11 +441,13 @@ gameCommands.set("pause", (data) => {
     );
   }
 
-  globals.store!.dispatch({
-    type: "pause",
-    pausingPlayerIndex: data.pausingPlayerIndex,
-    queued: data.queued,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "pause",
+      pausingPlayerIndex: data.pausingPlayerIndex,
+      queued: data.queued,
+    }),
+  );
 });
 
 gameCommands.set("votes", (data) => {
@@ -429,9 +455,8 @@ gameCommands.set("votes", (data) => {
 });
 
 function setVotes(votes: Votes) {
-  globals.terminationVotes = votes;
+  store.dispatch(votesChanged(votes));
   updateTerminationVotes();
-  newUiState.notify();
 }
 
 // The table's owner leads its shared replay.
@@ -440,10 +465,12 @@ gameCommands.set("tableOwner", (data) => {
     return;
   }
 
-  globals.store!.dispatch({
-    type: "replayLeader",
-    username: data.owner.username,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "replayLeader",
+      username: data.owner.username,
+    }),
+  );
 });
 
 // This is used in shared replays to specify which players will not play again.
@@ -452,13 +479,15 @@ gameCommands.set("tableRestartDecliners", (data) => {
     return;
   }
 
-  globals.store!.dispatch({
-    type: "restartDeclined",
-    restartDeclined: playerNamesAt(
-      globals.metadata.playerNames,
-      data.restartDecliners,
-    ),
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "restartDeclined",
+      restartDeclined: playerNamesAt(
+        globals.metadata.playerNames,
+        data.restartDecliners,
+      ),
+    }),
+  );
 });
 
 // A spectator of a shared replay suggests a turn to its leader.
@@ -476,10 +505,12 @@ gameCommands.set("spectators", (data) => {
 });
 
 function setSpectators(spectators: GameState["spectators"]) {
-  globals.store!.dispatch({
-    type: "spectators",
-    spectators,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "spectators",
+      spectators,
+    }),
+  );
 }
 
 // -----------
@@ -637,26 +668,21 @@ function initStateStore(data: GameInit) {
     customDeal: data.customDeal,
     seed: data.seed,
   };
-  globals.store = createStore(stateReducer, initialState(metadata));
-
-  // The redesigned game screen, if showing, waits for the store before it draws anything.
-  newUiState.notify();
+  // A reconnection can describe the game again, so release the observers of the old state first.
+  releaseSubscriptions();
+  store.dispatch(gameStarted(initialState(metadata)));
 
   // The various UI views subscribe to the state store.
-  globals.stateObserver = new StateObserver(globals.store);
+  globals.stateObserver = new StateObserver();
 
-  // Make the current state available from the JavaScript console (for debugging purposes).
-  globals.store.subscribe(() => {
-    // eslint-disable-next-line unicorn/prefer-global-this
-    window.state = globals.state;
-  });
-
-  globals.store.dispatch({
-    type: "init",
-    mode: data.mode,
-    startedAt: data.startedAt,
-    finishedAt: data.finishedAt,
-  });
+  store.dispatch(
+    gameUpdated({
+      type: "init",
+      mode: data.mode,
+      startedAt: data.startedAt,
+      finishedAt: data.finishedAt,
+    }),
+  );
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We
   // must wait until the game is initialized first, because the "hypoEnter" handler requires there
@@ -667,6 +693,11 @@ function initStateStore(data: GameInit) {
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
-    state: State;
+    readonly state: State | undefined;
   }
 }
+
+// Make the current state available from the JavaScript console (for debugging purposes).
+Object.defineProperty(globalThis, "state", {
+  get: () => store.getState().game.current,
+});

@@ -1,8 +1,8 @@
 import { getDefaultMetadata } from "@hanabi-live/game";
-import { createStore } from "redux";
 import { describe, expect, test, vi } from "vitest";
+import type { State } from "../types/State.ts";
+import type { Action } from "../types/actions.ts";
 
-vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
 vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("./arrows.ts", () => ({}));
@@ -14,15 +14,25 @@ vi.mock("../../utils.ts", () => ({
 }));
 const { initialState } =
   await import("../reducers/initialStates/initialState.ts");
-const { stateReducer } = await import("../reducers/stateReducer.ts");
 const replay = await import("./replay.ts");
 const { globals } = await import("./UiGlobals.ts");
+const { store: appStore } = await import("../../store.ts");
+const { gameStarted, gameUpdated } = await import("../gameSlice.ts");
+
+/** Starts a game with this state in the store, and reads and changes it like a store of its own. */
+function startGame(state: State) {
+  appStore.dispatch(gameStarted(state));
+  return {
+    getState: (): State => appStore.getState().game.current!,
+    dispatch: (action: Action) => appStore.dispatch(gameUpdated(action)),
+  };
+}
 
 function setup(amLeader: boolean) {
   const metadata = getDefaultMetadata(2);
   const initial = initialState(metadata);
   const sharedSegment = 1;
-  const store = createStore(stateReducer, {
+  const store = startGame({
     ...initial,
     visibleState: initial.ongoingGame,
     playing: false,
@@ -48,7 +58,6 @@ function setup(amLeader: boolean) {
       },
     },
   });
-  Object.assign(globals, { store });
   Object.defineProperty(globals, "state", {
     configurable: true,
     get: () => store.getState(),

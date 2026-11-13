@@ -324,7 +324,6 @@ function dragStart(card: HanabiCard) {
   }
 
   card.dragging = true;
-  globals.store!.dispatch({ type: "dragStart", card });
 
   // The note tooltip would cover the card and the place that it is dragged to.
   checkHideNoteTooltip(card);

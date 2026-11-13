@@ -24,7 +24,6 @@ import {
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
-import * as newUiState from "../newUi/newUiState.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
@@ -170,7 +169,7 @@ function keydown(event: KeyboardEvent) {
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
     // Ctrl + Enter = Give a clue / click on the "Give Clue" button. (The redesigned game screen
     // handles the clue hotkeys itself.)
-    if (event.which === KeyCode.KEY_RETURN && !newUiState.isActive()) {
+    if (event.which === KeyCode.KEY_RETURN && !store.getState().newUi.shown) {
       clues.give(); // This function has validation inside of it
       return;
     }
@@ -266,7 +265,6 @@ function keydown(event: KeyboardEvent) {
   ) {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
-        globals.store!.dispatch({ type: "dragReset" });
         replay.back();
         return;
       }
@@ -315,7 +313,6 @@ function keydown(event: KeyboardEvent) {
       }
     }
   } else if (event.which === KeyCode.KEY_LEFT) {
-    globals.store!.dispatch({ type: "dragReset" });
     hypothetical.sendHypotheticalBack();
     return;
   } else if (event.which === KeyCode.KEY_RIGHT) {
@@ -357,7 +354,7 @@ function getNormalGameplayHotkeyFunction(
   const isClueAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
   // The redesigned game screen handles the clue hotkeys itself, on its own clue panel.
-  if (isClueAvailable && !newUiState.isActive()) {
+  if (isClueAvailable && !store.getState().newUi.shown) {
     const hotkeyFunction = hotkeyClueMap.get(keyCode);
     if (hotkeyFunction !== undefined) {
       return hotkeyFunction;
