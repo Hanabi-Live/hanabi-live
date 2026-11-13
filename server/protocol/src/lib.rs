@@ -171,6 +171,36 @@ constants! {
     /// The longest note, in characters, that a player or spectator writes during a game. The server
     /// cuts a longer note to this length.
     @data pub const MAX_NOTE_LENGTH: usize = 300;
+    /// The chat commands that the website runs itself. The server lists them in "/help" and tells
+    /// Discord users to use the website for them.
+    @data pub const WEBSITE_CHAT_COMMANDS: &[&str] = &[
+        "block",
+        "blocked",
+        "copy",
+        "friend",
+        "friends",
+        "link",
+        "links",
+        "msg",
+        "pm",
+        "pmhistory",
+        "setleader",
+        "setvariant",
+        "suggest",
+        "sv",
+        "tag",
+        "tagsdeleteall",
+        "tagsearch",
+        "tell",
+        "terminate",
+        "unblock",
+        "unfriend",
+        "unlink",
+        "untag",
+        "version",
+        "w",
+        "whisper",
+    ];
     /// The longest game tag, in characters.
     pub const MAX_TAG_LENGTH: usize = 100;
     /// The longest table name that a player chooses, in characters. The server cuts a longer name to

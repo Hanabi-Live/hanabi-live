@@ -2,7 +2,7 @@ use super::{Status, TableActor, pending::Completed, setup::options_suggestion};
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
 use crate::{
-    lobby::TableChatCommand,
+    lobby::{ChatCommand, CommandKind, TableChatCommand},
     model::{Phase, TableChat, TableSnapshot},
     transport::{Session, frame},
 };
@@ -126,11 +126,12 @@ pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat
 /// Whether a table chat message asks for a variant search.
 pub(super) fn is_variant_discovery(message: &str) -> bool {
     crate::accounts::normalize_chat(message).is_ok_and(|text| {
-        text.split_whitespace()
-            .next()
-            .and_then(|word| word.strip_prefix('/'))
-            .and_then(|name| TableChatCommand::parse(&name.to_ascii_lowercase()))
-            == Some(TableChatCommand::FindVariant)
+        ChatCommand::parse(&text).is_some_and(|command| {
+            matches!(
+                command.kind,
+                CommandKind::Table(TableChatCommand::FindVariant)
+            )
+        })
     })
 }
 /// A variant search: who asked, and whose scores it compares.
@@ -314,7 +315,8 @@ impl TableActor {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(CommandError::rejected)?;
         self.admit_player_chat(session.user)?;
-        if let Some(response) = crate::lobby::general_response(&text) {
+        let command = ChatCommand::parse(&text);
+        if let Some(response) = command.as_ref().and_then(ChatCommand::general_response) {
             let responses = match response {
                 crate::lobby::GeneralResponse::Private(response) => {
                     let mut e = self.effects();
@@ -325,7 +327,7 @@ impl TableActor {
                 }
                 crate::lobby::GeneralResponse::Public(response) => vec![response],
                 crate::lobby::GeneralResponse::Runtime { command, args } => {
-                    self.info.runtime_response(&command, &args)?
+                    self.info.runtime_response(command, &args)
                 }
             };
             let mut messages = vec![authored_chat(self.table.id, &session.name, &text)];
@@ -350,11 +352,15 @@ impl TableActor {
             return self.publish(e).await;
         }
         // Unknown slash commands are ordinary table messages for bots.
-        if matches!(
-            crate::lobby::classify_chat(&text),
-            crate::lobby::Classification::Public | crate::lobby::Classification::Private
-        ) {
-            return self.chat_command(session, &text).await;
+        if let Some(ChatCommand {
+            kind: CommandKind::Table(table_command),
+            args,
+            ..
+        }) = &command
+        {
+            return self
+                .chat_command(session, &text, *table_command, args)
+                .await;
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
@@ -375,13 +381,11 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         text: &str,
+        command: TableChatCommand,
+        args: &[&str],
     ) -> CommandResult<()> {
-        let mut words = text[1..].split_whitespace();
-        let command = words.next().unwrap_or("").to_ascii_lowercase();
-        let args = words.collect::<Vec<_>>();
-        let parsed = TableChatCommand::parse(&command);
         let mut next = self.candidate();
-        if parsed == Some(TableChatCommand::MissingScores) {
+        if command == TableChatCommand::MissingScores {
             let participants = self.score_participants()?;
             let message = format!(
                 "{}/shared-missing-scores/{}/{}",
@@ -402,7 +406,7 @@ impl TableActor {
             self.add_chat(&mut e, &message);
             return self.publish(e).await;
         }
-        if parsed == Some(TableChatCommand::Tags) {
+        if command == TableChatCommand::Tags {
             let messages = if matches!(self.table.phase, Phase::Replay { .. }) {
                 let id = self
                     .table
@@ -454,7 +458,7 @@ impl TableActor {
             }
             return self.publish(e).await;
         }
-        if parsed == Some(TableChatCommand::Suggest) {
+        if command == TableChatCommand::Suggest {
             ensure_or_reject!(
                 matches!(self.table.phase, Phase::Replay { .. }),
                 "Not a shared replay"
@@ -471,8 +475,8 @@ impl TableActor {
                 )
                 .await;
         }
-        if let Some(TableChatCommand::Split { automatic }) = parsed {
-            return self.split(session, &args, automatic).await;
+        if let TableChatCommand::Split { automatic } = command {
+            return self.split(session, args, automatic).await;
         }
         ensure_or_reject!(
             session.user == self.table.owner.user_id,
@@ -484,8 +488,8 @@ impl TableActor {
         else {
             reject!("This command requires a pregame table");
         };
-        let (notice, kicked_user) = match parsed {
-            Some(TableChatCommand::Kick) => {
+        let (notice, kicked_user) = match command {
+            TableChatCommand::Kick => {
                 ensure_or_reject!(args.len() == 1, "Expected /kick [username]");
                 let index = players
                     .iter()
@@ -503,7 +507,7 @@ impl TableActor {
                     user,
                 )
             }
-            Some(TableChatCommand::Impostor) => {
+            TableChatCommand::Impostor => {
                 ensure_or_reject!(
                     players.len() >= MIN_IMPOSTOR_PLAYERS,
                     "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players"
@@ -529,7 +533,8 @@ impl TableActor {
                 }
                 return self.publish(e).await;
             }
-            _ => reject!("Unknown table chat command: /{command}"),
+            // The table runs the variant search before its chat.
+            _ => bail_internal!("The table chat ran {command:?}"),
         };
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);

@@ -8,8 +8,8 @@ mod settings;
 mod tests;
 
 pub use chat::{
-    Classification, GeneralResponse, TableChatCommand, classify_chat, external_command,
-    general_response, lobby_history, server_chat,
+    ChatCommand, Classification, CommandKind, GeneralResponse, RuntimeCommand, TableChatCommand,
+    classify_chat, external_command, lobby_history, server_chat,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
 use history::{seed_game_count, seed_history_ids};
@@ -72,7 +72,7 @@ pub enum Effect {
     /// A chat command whose reply needs the server's domain or uptime. Public commands are
     /// already persisted; uptime is private and is not.
     RuntimeChat {
-        command: String,
+        command: RuntimeCommand,
         args: Vec<String>,
     },
 }
@@ -110,7 +110,7 @@ pub enum ExternalReply {
     Saved(SavedChat),
     /// The reply needs the server's runtime information.
     Runtime {
-        command: String,
+        command: RuntimeCommand,
         args: Vec<String>,
     },
 }

@@ -476,7 +476,7 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
 }
 
 /// The protocol's constants that a package exports under the same names. A constant of a wire type,
-/// such as `VariantId`, has that type's schema output type.
+/// such as `VariantId`, has that type's schema output type, and a list is read-only.
 fn exported_constants(
     package: hanabi_protocol::ConstantPackage,
     definitions: &BTreeMap<String, Value>,
@@ -494,6 +494,8 @@ fn exported_constants(
                 variable(constant.type_name)
             )
             .expect("writing to a string cannot fail");
+        } else if constant.value.is_array() {
+            value.push_str(" as const");
         }
         writeln!(output, "export const {} = {value};", constant.name)
             .expect("writing to a string cannot fail");

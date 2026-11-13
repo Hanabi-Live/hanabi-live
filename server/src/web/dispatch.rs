@@ -118,8 +118,8 @@ async fn publish(
             Effect::Reply(data) => reply = Some(data),
             Effect::DiscordMirror { chat_id, message } => mirrors.push((chat_id, message)),
             Effect::RuntimeChat { command, args } => {
-                for message in app.info.runtime_response(&command, &args)? {
-                    if command == "uptime" {
+                for message in app.info.runtime_response(command, &args) {
+                    if command == lobby::RuntimeCommand::Uptime {
                         publications.push(lobby::notice_publication(&session.name, &message));
                         continue;
                     }

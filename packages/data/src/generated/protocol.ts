@@ -24,6 +24,34 @@ export const DEFAULT_MAX_PLAYERS = 5;
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
 export const MAX_NOTE_LENGTH = 300;
+export const WEBSITE_CHAT_COMMANDS = [
+  "block",
+  "blocked",
+  "copy",
+  "friend",
+  "friends",
+  "link",
+  "links",
+  "msg",
+  "pm",
+  "pmhistory",
+  "setleader",
+  "setvariant",
+  "suggest",
+  "sv",
+  "tag",
+  "tagsdeleteall",
+  "tagsearch",
+  "tell",
+  "terminate",
+  "unblock",
+  "unfriend",
+  "unlink",
+  "untag",
+  "version",
+  "w",
+  "whisper",
+] as const;
 export const MAX_TABLE_NAME_LENGTH = 45;
 export const SECONDS_PER_MINUTE = 60;
 export const TYPING_TIMEOUT_MS = 2000;

@@ -57,8 +57,12 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
             .await
             .unwrap()
             .unwrap();
-        assert!(matches!(effects.as_slice(),
-            [Effect::RuntimeChat { command, .. }] if command == "uptime"
+        assert!(matches!(
+            effects.as_slice(),
+            [Effect::RuntimeChat {
+                command: RuntimeCommand::Uptime,
+                ..
+            }]
         ));
     }
     assert!(matches!(classify_chat("/UpTiMe"), Classification::Private));

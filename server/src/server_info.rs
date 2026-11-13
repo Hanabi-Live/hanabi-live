@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::lobby::RuntimeCommand;
 use chrono::{DateTime, Utc};
 #[cfg(test)]
 use std::sync::Arc;
@@ -36,9 +36,9 @@ impl ServerInfo {
     }
 
     /// The replies to the chat commands that report on the running server.
-    pub fn runtime_response(&self, command: &str, args: &[String]) -> Result<Vec<String>> {
-        Ok(match command {
-            "uptime" => vec![
+    pub fn runtime_response(&self, command: RuntimeCommand, args: &[String]) -> Vec<String> {
+        match command {
+            RuntimeCommand::Uptime => vec![
                 format!(
                     "The server came online at: {}",
                     self.came_online.format("%a %b %d %H:%M:%S UTC %Y")
@@ -48,7 +48,7 @@ impl ServerInfo {
                     crate::lifecycle::duration(self.started.elapsed().as_secs())
                 ),
             ],
-            "replay" => {
+            RuntimeCommand::Replay => {
                 if args.is_empty() {
                     vec![
                         "The format of the /replay command is: /replay [game ID] [turn number]"
@@ -60,11 +60,11 @@ impl ServerInfo {
                         match argument.parse::<i64>() {
                             Ok(number) => numbers.push(number),
                             Err(_) => {
-                                return Ok(vec![if argument.parse::<f64>().is_ok() {
+                                return vec![if argument.parse::<f64>().is_ok() {
                                     "The /replay command only accepts integers.".into()
                                 } else {
                                     format!("\"{argument}\" is not a number.")
-                                }]);
+                                }];
                             }
                         }
                     }
@@ -78,8 +78,7 @@ impl ServerInfo {
                         ))]
                 }
             }
-            _ => anyhow::bail!("Invalid runtime chat command"),
-        })
+        }
     }
 }
 

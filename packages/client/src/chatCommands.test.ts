@@ -1,3 +1,4 @@
+import { WEBSITE_CHAT_COMMANDS } from "@hanabi-live/data";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("./chat.ts", () => ({
@@ -12,6 +13,7 @@ vi.mock("./lobby/createReplayJson.ts", () => ({
   createJsonFromReplay: vi.fn(),
 }));
 const {
+  chatCommands,
   getVariantFromArgs,
   getVariantNameFromPartial,
   parsePmHistoryCommandArgs,
@@ -102,4 +104,10 @@ describe("functions", () => {
       });
     });
   });
+});
+
+test("runs the chat commands that the server lists as website commands", () => {
+  expect([...chatCommands.keys()].toSorted()).toEqual(
+    [...WEBSITE_CHAT_COMMANDS].toSorted(),
+  );
 });

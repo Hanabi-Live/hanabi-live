@@ -12,7 +12,7 @@ use std::sync::LazyLock;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct SimpleResponse {
+pub struct SimpleResponse {
     command: String,
     response: String,
     #[serde(default)]
@@ -30,24 +30,13 @@ static RESPONSES: LazyLock<Vec<SimpleResponse>> = LazyLock::new(|| {
     .expect("the chat reply commands are valid JSON")
 });
 
-const WEBSITE: &[&str] = &[
-    "block",
-    "blocked",
-    "f",
-    "friend",
-    "friends",
-    "link",
-    "linked",
-    "msg",
-    "pm",
-    "terminate",
-    "unblock",
-    "unfriend",
-    "unlink",
-    "version",
-    "w",
-    "whisper",
-];
+/// The reply to a command that the website runs itself, when it comes from Discord.
+const WEBSITE_ONLY_RESPONSE: &str =
+    "You cannot perform that command from Discord; please use the website instead.";
+
+/// The reply to a table command outside of a table.
+const TABLE_ONLY_RESPONSE: &str = "You can only perform this command while in a game.";
+
 /// A chat command that runs at a table rather than in the lobby.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TableChatCommand {
@@ -83,6 +72,136 @@ const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
     ("impostor", TableChatCommand::Impostor),
 ];
 
+/// A chat command whose reply needs the server's runtime information.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RuntimeCommand {
+    /// Links to a replay. The link needs the server's domain.
+    Replay,
+    /// Says how long the server has run. Only the sender sees it.
+    Uptime,
+}
+
+/// What a chat command does.
+#[derive(Clone, Copy)]
+pub enum CommandKind {
+    /// A fixed reply from `chatReplyCommands.json`.
+    Reply(&'static SimpleResponse),
+    /// A command that the website runs itself, so that only Discord sends it to the server.
+    Website,
+    Table(TableChatCommand),
+    Random,
+    Runtime(RuntimeCommand),
+    /// Gives the sender a new identity token. Only the sender sees it.
+    Token,
+    Unknown,
+}
+
+/// The commands that the server runs in the lobby and at tables.
+const SERVER_COMMANDS: &[(&str, CommandKind)] = &[
+    ("random", CommandKind::Random),
+    ("replay", CommandKind::Runtime(RuntimeCommand::Replay)),
+    ("token", CommandKind::Token),
+    ("uptime", CommandKind::Runtime(RuntimeCommand::Uptime)),
+];
+
+/// How the lobby and Discord treat a chat message.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Classification {
+    /// Not a command.
+    Text,
+    /// A command that everyone sees, with its reply.
+    Public,
+    /// A command that only its sender sees, with its reply.
+    Private,
+    /// A command that the server does not know.
+    Unknown,
+}
+
+pub enum GeneralResponse {
+    Public(String),
+    Private(String),
+    Runtime {
+        command: RuntimeCommand,
+        args: Vec<String>,
+    },
+}
+
+/// A chat message that starts with a slash: the command's lowercase name, what it does, and the
+/// words after it.
+pub struct ChatCommand<'a> {
+    pub name: String,
+    pub kind: CommandKind,
+    pub args: Vec<&'a str>,
+}
+
+impl<'a> ChatCommand<'a> {
+    /// Reads the command of a normalized chat message. Returns `None` for a message that is not a
+    /// command.
+    pub fn parse(message: &'a str) -> Option<Self> {
+        let mut words = message.split_whitespace();
+        let name = words.next()?.strip_prefix('/')?.to_lowercase();
+        if name.is_empty() {
+            return None;
+        }
+        let kind = if let Some(command) = TableChatCommand::parse(&name) {
+            CommandKind::Table(command)
+        } else if let Some(response) = simple(&name) {
+            CommandKind::Reply(response)
+        } else if hanabi_protocol::WEBSITE_CHAT_COMMANDS.contains(&name.as_str()) {
+            CommandKind::Website
+        } else {
+            SERVER_COMMANDS
+                .iter()
+                .find(|(server_name, _)| *server_name == name)
+                .map_or(CommandKind::Unknown, |(_, kind)| *kind)
+        };
+        Some(Self {
+            name,
+            kind,
+            args: words.collect(),
+        })
+    }
+
+    pub fn classification(&self) -> Classification {
+        match self.kind {
+            CommandKind::Token | CommandKind::Runtime(RuntimeCommand::Uptime) => {
+                Classification::Private
+            }
+            CommandKind::Reply(response) if response.private => Classification::Private,
+            CommandKind::Unknown => Classification::Unknown,
+            _ => Classification::Public,
+        }
+    }
+
+    /// The reply to a command that runs the same way in the lobby, at a table, and from Discord.
+    pub fn general_response(&self) -> Option<GeneralResponse> {
+        Some(match self.kind {
+            CommandKind::Reply(response) => {
+                let content = if response.is_help {
+                    format!("\nList of commands:\n{}\n{}", help(), response.response)
+                } else {
+                    response.response.clone()
+                };
+                if response.private {
+                    GeneralResponse::Private(content)
+                } else {
+                    GeneralResponse::Public(content)
+                }
+            }
+            CommandKind::Website => GeneralResponse::Public(WEBSITE_ONLY_RESPONSE.into()),
+            CommandKind::Random => GeneralResponse::Public(random_response(&self.args)),
+            CommandKind::Runtime(RuntimeCommand::Replay) => GeneralResponse::Runtime {
+                command: RuntimeCommand::Replay,
+                args: self.args.iter().map(|arg| (*arg).into()).collect(),
+            },
+            CommandKind::Table(_)
+            | CommandKind::Runtime(RuntimeCommand::Uptime)
+            | CommandKind::Token
+            | CommandKind::Unknown => return None,
+        })
+    }
+}
+
 impl TableChatCommand {
     /// Reads a lowercase command name without its slash.
     pub fn parse(command: &str) -> Option<Self> {
@@ -93,110 +212,31 @@ impl TableChatCommand {
     }
 }
 
-/// Whether a command runs at a table rather than in the lobby.
-fn delegated(command: &str) -> bool {
-    TableChatCommand::parse(command).is_some()
-}
-
-fn parsed(message: &str) -> Option<(String, Vec<&str>)> {
-    let mut parts = message.split(' ');
-    let first = parts.next()?.strip_prefix('/')?;
-    if first.is_empty() {
-        return None;
-    }
-    Some((first.to_lowercase(), parts.collect()))
-}
-
 fn simple(command: &str) -> Option<&'static SimpleResponse> {
     RESPONSES
         .iter()
         .find(|r| r.command == command || r.alias.iter().any(|a| a == command))
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Classification {
-    Text,
-    Public,
-    Private,
-    Unknown,
-}
-
-pub enum GeneralResponse {
-    Public(String),
-    Private(String),
-    Runtime { command: String, args: Vec<String> },
-}
-
-pub fn general_response(message: &str) -> Option<GeneralResponse> {
-    let (command, args) = parsed(message)?;
-    if let Some(response) = simple(&command) {
-        let content = if response.is_help {
-            format!("\nList of commands:\n{}\n{}", help(), response.response)
-        } else {
-            response.response.clone()
-        };
-        return Some(if response.private {
-            GeneralResponse::Private(content)
-        } else {
-            GeneralResponse::Public(content)
-        });
-    }
-    if WEBSITE.contains(&command.as_str()) {
-        return Some(GeneralResponse::Public(
-            "You cannot perform that command from Discord; please use the website instead.".into(),
-        ));
-    }
-    if command == "random" {
-        return Some(GeneralResponse::Public(random_response(&args)));
-    }
-    if command == "replay" {
-        return Some(GeneralResponse::Runtime {
-            command,
-            args: args.iter().map(|arg| (*arg).into()).collect(),
-        });
-    }
-    None
-}
-
 pub fn classify_chat(message: &str) -> Classification {
-    let Some((command, _)) = parsed(message) else {
-        return Classification::Text;
-    };
-    if matches!(command.as_str(), "token" | "uptime") || simple(&command).is_some_and(|r| r.private)
-    {
-        return Classification::Private;
-    }
-    if simple(&command).is_some()
-        || WEBSITE.contains(&command.as_str())
-        || delegated(&command)
-        || ["random", "replay"].contains(&command.as_str())
-    {
-        Classification::Public
-    } else {
-        Classification::Unknown
-    }
+    ChatCommand::parse(message).map_or(Classification::Text, |command| command.classification())
 }
 
 pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<ExternalReply>> {
-    let Some((command, args)) = parsed(message) else {
+    let Some(command) = ChatCommand::parse(message) else {
         return Ok(None);
     };
-    if classify_chat(message) != Classification::Public {
+    if command.classification() != Classification::Public {
         return Ok(None);
     }
-    let response = if let Some(response) = simple(&command) {
-        response.response.clone()
-    } else if WEBSITE.contains(&command.as_str()) {
-        "You cannot perform that command from Discord; please use the website instead.".into()
-    } else if command == "random" {
-        random_response(&args)
-    } else if command == "replay" {
-        return Ok(Some(ExternalReply::Runtime {
-            command,
-            args: args.iter().map(|s| (*s).into()).collect(),
-        }));
-    } else {
-        "You can only perform this command while in a game.".into()
+    let response = match command.general_response() {
+        Some(GeneralResponse::Public(response)) => response,
+        Some(GeneralResponse::Private(_)) => return Ok(None),
+        Some(GeneralResponse::Runtime { command, args }) => {
+            return Ok(Some(ExternalReply::Runtime { command, args }));
+        }
+        // Only the table commands are public and have no general response.
+        None => TABLE_ONLY_RESPONSE.into(),
     };
     Ok(Some(ExternalReply::Saved(
         server_chat(pool, &response).await?,
@@ -204,10 +244,10 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<Ext
 }
 
 fn help() -> String {
-    let mut names: Vec<_> = WEBSITE
+    let mut names: Vec<_> = hanabi_protocol::WEBSITE_CHAT_COMMANDS
         .iter()
         .chain(TABLE_COMMANDS.iter().map(|(name, _)| name))
-        .chain(["random", "replay", "uptime", "token"].iter())
+        .chain(SERVER_COMMANDS.iter().map(|(name, _)| name))
         .map(|s| format!("/{s}"))
         .collect();
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
@@ -382,74 +422,60 @@ pub async fn lobby_chat(
         Ok(message) => message,
         Err(error) => return refused(error),
     };
-    let command = parsed(&message);
-    if let Some((command, args)) = &command
-        && command == "token"
+    let command = ChatCommand::parse(&message);
+    match command
+        .as_ref()
+        .map(|command| (command.kind, command.args.is_empty()))
     {
-        let response = if args.iter().any(|arg| !arg.is_empty()) {
-            "The format of the /token command is: /token".into()
-        } else {
-            let token = regenerate_token(pool, secret, caller.user.get(), &caller.ip).await?;
-            format!(
-                "Identity token (valid until {} UTC): {}",
-                token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
-                token.token
-            )
-        };
-        return Ok(Some(vec![notice(&caller.name, &response)]));
-    }
-    if let Some((command, args)) = &command
-        && command == "uptime"
-    {
-        return Ok(Some(vec![Effect::RuntimeChat {
-            command: command.clone(),
-            args: args.iter().map(|arg| (*arg).into()).collect(),
-        }]));
+        Some((CommandKind::Token, no_args)) => {
+            let response = if no_args {
+                let token = regenerate_token(pool, secret, caller.user.get(), &caller.ip).await?;
+                format!(
+                    "Identity token (valid until {} UTC): {}",
+                    token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
+                    token.token
+                )
+            } else {
+                "The format of the /token command is: /token".into()
+            };
+            return Ok(Some(vec![notice(&caller.name, &response)]));
+        }
+        Some((CommandKind::Runtime(RuntimeCommand::Uptime), _)) => {
+            return Ok(Some(vec![Effect::RuntimeChat {
+                command: RuntimeCommand::Uptime,
+                args: vec![],
+            }]));
+        }
+        _ => {}
     }
     if table.is_some() {
         return Ok(None);
     }
-    let mut private_response = None;
     let mut public_response = None;
     let mut runtime = None;
-    if let Some((command, args)) = &command {
-        if delegated(command) {
-            public_response = Some("You can only perform this command while in a game.".into());
-        } else if let Some(response) = simple(command) {
-            let content = if response.is_help {
-                format!("\nList of commands:\n{}\n{}", help(), response.response)
-            } else {
-                response.response.clone()
-            };
-            if response.private {
-                private_response = Some(content);
-            } else {
-                public_response = Some(content);
+    if let Some(command) = &command {
+        match command.general_response() {
+            // Private commands, including help, do not enter public history.
+            Some(GeneralResponse::Private(response)) => {
+                return Ok(Some(vec![notice(&caller.name, &response)]));
             }
-        } else if WEBSITE.contains(&command.as_str()) {
-            public_response = Some(
-                "You cannot perform that command from Discord; please use the website instead."
-                    .into(),
-            );
-        } else if command == "random" {
-            public_response = Some(random_response(args));
-        } else if command == "replay" {
-            runtime = Some(Effect::RuntimeChat {
-                command: command.clone(),
-                args: args.iter().map(|s| (*s).to_owned()).collect(),
-            });
-        } else {
-            return Ok(Some(vec![notice(
-                &caller.name,
-                &format!(
-                    "The chat command of \"/{command}\" is not valid. Use \"/help\" to get a list of available commands."
-                ),
-            )]));
+            Some(GeneralResponse::Public(response)) => public_response = Some(response),
+            Some(GeneralResponse::Runtime { command, args }) => {
+                runtime = Some(Effect::RuntimeChat { command, args });
+            }
+            None if matches!(command.kind, CommandKind::Table(_)) => {
+                public_response = Some(TABLE_ONLY_RESPONSE.into());
+            }
+            None => {
+                return Ok(Some(vec![notice(
+                    &caller.name,
+                    &format!(
+                        "The chat command of \"/{}\" is not valid. Use \"/help\" to get a list of available commands.",
+                        command.name
+                    ),
+                )]));
+            }
         }
-    }
-    // Private commands, including help, do not enter public history.
-    if let Some(response) = private_response {
-        return Ok(Some(vec![notice(&caller.name, &response)]));
     }
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();
@@ -516,21 +542,17 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<ChatMessage>
         let message: String = row.message.clone();
         // Defend against private commands left in history by older servers.
         if source != "server"
-            && let Some((command, _)) = parsed(&message)
+            && let Some(command) = ChatCommand::parse(&message)
         {
-            if matches!(command.as_str(), "token" | "uptime")
-                || simple(&command).is_some_and(|r| r.private)
-            {
-                continue;
-            }
-
-            let known = simple(&command).is_some()
-                || WEBSITE.contains(&command.as_str())
-                || delegated(&command)
-                || ["random", "replay"].contains(&command.as_str())
-                || (source == "discord"
-                    && ["subscribe", "unsubscribe"].contains(&command.as_str()));
-            if !known {
+            let shown = match command.classification() {
+                Classification::Text | Classification::Public => true,
+                Classification::Private => false,
+                Classification::Unknown => {
+                    source == "discord"
+                        && ["subscribe", "unsubscribe"].contains(&command.name.as_str())
+                }
+            };
+            if !shown {
                 continue;
             }
         }

@@ -523,7 +523,7 @@ impl Bridge {
             Some(ExternalReply::Runtime { command, args }) => {
                 self.available()?;
                 let mut saved = vec![];
-                for response in self.server.info.runtime_response(&command, &args)? {
+                for response in self.server.info.runtime_response(command, &args) {
                     saved.push(lobby::server_chat(&self.pool, &response).await?);
                 }
                 saved
