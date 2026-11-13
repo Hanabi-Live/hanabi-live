@@ -2,6 +2,7 @@ import type { Clue, PlayerIndex, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
+import { KEY_CLASS } from "./surfaces.ts";
 
 interface CluePanelProps {
   readonly variant: Variant;
@@ -60,8 +61,7 @@ function fullNameTooltip(name: string) {
 export const CONTROL_PANEL_CLASS =
   "tw:bg-game-panel tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
 
-const choiceClass =
-  "tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40";
+const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
 /** Until the clue is ready, the "Give clue" button says what the player still has to choose. */
 const GIVE_BUTTON_LABELS = [
@@ -136,7 +136,7 @@ export function CluePanel({
               return (
                 <button
                   aria-pressed={chosen}
-                  className={`tw:h-11 tw:max-w-40 tw:cursor-pointer tw:truncate tw:rounded-full tw:border-0 tw:px-4 tw:text-[16px] tw:font-semibold ${
+                  className={`${KEY_CLASS} tw:h-11 tw:max-w-40 tw:cursor-pointer tw:truncate tw:rounded-full tw:border-0 tw:px-4 tw:text-[16px] tw:font-semibold ${
                     chosen
                       ? "tw:bg-game-text tw:text-card-ink"
                       : "tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
@@ -203,7 +203,7 @@ export function CluePanel({
             </div>
           </div>
           <button
-            className="tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:shadow-[0_3px_10px_rgb(0_0_0/30%)] tw:disabled:cursor-default tw:disabled:bg-game-raised tw:disabled:text-game-muted tw:disabled:shadow-none"
+            className={`tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
             disabled={!canGive}
             onClick={onGive}
             type="button"

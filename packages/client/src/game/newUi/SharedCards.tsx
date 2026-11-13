@@ -14,6 +14,7 @@ import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { Pip } from "./Pip.tsx";
+import { WELL_CLASS } from "./surfaces.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -74,10 +75,10 @@ export interface DiscardView {
 export type ZoneState = "idle" | "available" | "hovered" | "unavailable";
 
 const zoneClasses: Record<ZoneState, string> = {
-  idle: "tw:bg-game-zone",
-  available: "tw:bg-game-zone tw:inset-ring-2 tw:inset-ring-game-line",
+  idle: WELL_CLASS,
+  available: `${WELL_CLASS} tw:inset-ring-2 tw:inset-ring-game-line`,
   hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
-  unavailable: "tw:bg-game-zone tw:opacity-60",
+  unavailable: `${WELL_CLASS} tw:opacity-60`,
 };
 
 function ZoneLabel({
@@ -481,8 +482,7 @@ export const DiscardPile = forwardRef<
  * A bubble for the clue tokens or the strikes: its value, centered. The two bubbles have the same
  * layout, so that their values line up.
  */
-const TOKEN_BUBBLE_CLASS =
-  "tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:justify-center tw:gap-1 tw:rounded-[18px] tw:bg-game-zone tw:px-3 tw:py-5";
+const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:justify-center tw:gap-1 tw:rounded-[18px] tw:px-3 tw:py-5 ${WELL_CLASS}`;
 
 /** The row of a value, as tall as the strike boxes, so that the two values line up. */
 const TOKEN_VALUE_CLASS = "tw:flex tw:h-[32px] tw:items-center";

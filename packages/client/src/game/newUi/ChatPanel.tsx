@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import * as gameChat from "../chat.ts";
+import { KEY_CLASS } from "./surfaces.ts";
 
 /**
  * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
@@ -95,7 +96,7 @@ export function ChatPanel({
           aria-label={
             unread > 0 ? `Open chat, ${unread} unread messages` : "Open chat"
           }
-          className="tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
+          className={`tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
           onClick={() => {
             gameChat.show();
           }}

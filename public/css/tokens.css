@@ -164,8 +164,10 @@
     #215a37 100%
   );
 
-  /* A box on the table, such as the play stacks: a lighter patch of the felt under it. */
+  /* A box on the table, such as your own hand: a lighter patch of the felt under it. */
   --game-screen-zone: rgb(255 255 255 / 7%);
+  /* A readout on the table, such as the clue tokens: a well cut into the felt. */
+  --game-screen-well: rgb(0 0 0 / 18%);
 
   /*
     The panels around the table, such as the bar along the bottom and the chat: darker felt, so that

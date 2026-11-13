@@ -1,9 +1,9 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { useEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { KEY_CLASS } from "./surfaces.ts";
 
-const BUTTON_CLASS =
-  "tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm";
+const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const VIEW_AS_TOOLTIP =
   "Watch the game from a player's seat. You can also right-click a player's name.";

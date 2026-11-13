@@ -16,6 +16,7 @@ import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
 import * as restart from "../ui/restart.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
+import { KEY_CLASS } from "./surfaces.ts";
 
 type Mode = "replay" | "hypothetical";
 
@@ -25,12 +26,10 @@ const ACCENT_TEXT_CLASS = {
 } as const satisfies Record<Mode, string>;
 
 /** A quiet button for the actions that are not the main one. */
-const BUTTON_CLASS =
-  "tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
+const BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
 
 /** The bar's main action: the way back out of the mode. */
-const PRIMARY_BUTTON_CLASS =
-  "tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white";
+const PRIMARY_BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white ${KEY_CLASS}`;
 
 /** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
 const TIMELINE_SLIDE_MILLISECONDS = 300;
@@ -38,8 +37,7 @@ const TIMELINE_SLIDE_MILLISECONDS = 300;
 /** A fast start and a soft stop, so that a slide reads as a move to a place. */
 const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
-const ICON_BUTTON_CLASS =
-  "tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:text-[17px] tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8";
+const ICON_BUTTON_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:text-[17px] tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
 
 /**
  * The bar's buttons, kept together on the right. On a narrow window, they take a row of their own.

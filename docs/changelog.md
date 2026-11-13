@@ -37,6 +37,8 @@ of the repository.
   pick.
 - In the new game screen, the turn shows once, in the bar along the bottom. In a
   replay, it also shows the last turn, such as "5 / 21".
+- In the new game screen, buttons stand out from the table like keys, and the
+  clue tokens, strikes, and piles sit in it.
 
 ## November 12th, 2026
 

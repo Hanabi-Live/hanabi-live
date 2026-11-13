@@ -126,6 +126,14 @@ const STACK_CARD_SELECTOR = "#game-new-ui [data-play-stack]";
 const DISCARD_CARD_SELECTOR = '#game-new-ui [data-card-place^="discard-"]';
 
 /** Replaces the note on a card of the New UI, or deletes it with empty text. */
+/** Chooses the "1" clue in the New UI, or clears it when it is already chosen. */
+async function clickRankOneClue(page: Page) {
+  await page
+    .locator('#game-new-ui [aria-label="Give a clue"]')
+    .getByRole("button", { name: "1", exact: true })
+    .click();
+}
+
 async function writeNote(page: Page, card: Locator, text: string) {
   await card.click({ button: "right" });
   await page.getByRole("textbox", { name: "Note" }).fill(text);
@@ -1352,6 +1360,19 @@ function getStates({
       },
       hover: async (page) => {
         await hoverIfVisible(page, "#game-chat-input ~ span");
+      },
+    },
+    // The game from the previous state, with a clue chosen, so that "Give clue" can be pressed.
+    {
+      name: "new-ui-clue-chosen",
+      path: "/",
+      loggedIn: true,
+      // Clicking the clue again clears the choice.
+      prepare: async (page) => {
+        await clickRankOneClue(page);
+      },
+      cleanup: async (page) => {
+        await clickRankOneClue(page);
       },
     },
     // The game from the previous state, after the account plays a card that it does not know. Its

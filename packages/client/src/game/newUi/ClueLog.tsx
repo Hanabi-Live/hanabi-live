@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import { getClueMarkerColor } from "./Card.tsx";
+import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
 const CLUE_DISC_SIZE = 20;
@@ -121,11 +122,10 @@ export function ClueLog({
   }, [entries.length, filtered, pressedCard]);
 
   return (
-    // The log is a record to consult, not an object on the table, so it sits sunken into the felt.
-    // The discard pile above it and the clue tokens and strikes below it stand out more.
+    // The log is a record to consult, so it sits sunken into the felt, like the other readouts.
     <section
       aria-label="Clue log"
-      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-[rgb(0_0_0/18%)] tw:shadow-[inset_0_1px_4px_rgb(0_0_0/35%)] tw:narrow-980:h-[320px] tw:narrow-980:flex-none"
+      className={`tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:narrow-980:h-[320px] tw:narrow-980:flex-none ${WELL_CLASS}`}
     >
       {/* The whole log needs no heading: its rows are clearly clues. A heading shows only when the
           log is narrowed to one card, so that the missing rows do not look lost. */}

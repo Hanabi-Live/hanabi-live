@@ -50,6 +50,7 @@
 
   --color-game-bg: var(--game-screen-bg);
   --color-game-zone: var(--game-screen-zone);
+  --color-game-well: var(--game-screen-well);
   --color-game-panel: var(--game-screen-panel);
   --color-game-raised: var(--game-screen-raised);
   --color-game-line: var(--game-screen-line);
