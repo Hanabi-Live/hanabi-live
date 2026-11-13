@@ -177,17 +177,21 @@ export function ClueLog({
               >
                 <button
                   aria-current={shown ? "step" : undefined}
-                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:rounded-lg tw:border-0 tw:border-l-4 tw:border-solid tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
+                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:relative tw:rounded-lg tw:border-0 tw:py-1 tw:pr-2 tw:pl-3 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
                   ref={tooltipRef("Click to go to the turn of this clue.")}
-                  style={{
-                    borderLeftColor: shown ? color : "transparent",
-                    lineHeight: `${ROW_LINE_HEIGHT}px`,
-                  }}
+                  style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
                   type="button"
                 >
+                  {shown && (
+                    <span
+                      aria-hidden
+                      className="tw:absolute tw:inset-y-1.5 tw:left-1 tw:w-1 tw:rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                  )}
                   <span className="tw:text-[13px] tw:text-game-muted">
                     #{entry.turn}
                   </span>
