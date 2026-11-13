@@ -4,8 +4,10 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CARD_HEIGHT_PER_WIDTH,
-  CLUE_TOKEN_REACH_PER_WIDTH,
   CardFace,
+  CLUE_TOKEN_REACH_PER_WIDTH,
+  CLUED_BORDER_WIDTH,
+  CLUED_RAISE_PER_WIDTH,
   describeCard,
   getClueMarkerColor,
 } from "./Card.tsx";
@@ -297,6 +299,29 @@ const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
 
 /** The space between cards in a hand, in CSS pixels. */
 export const CARD_GAP = 10;
+
+/**
+ * The space in a hand's box above a raised clued card: its border, and a little more so that the
+ * border does not touch the box.
+ */
+export const HAND_BOX_TOP_SPACE = CLUED_BORDER_WIDTH + 2;
+
+/**
+ * The space in a hand's box above its cards, for a clued card, which is raised. It is no more than
+ * that, because with many players, the height limits the size of the cards.
+ */
+function getHandBoxTopPadding(cardWidth: number): number {
+  return cardWidth * CLUED_RAISE_PER_WIDTH + HAND_BOX_TOP_SPACE;
+}
+
+/**
+ * The space in a hand's box below its cards, for the outline around a card that a chosen clue would
+ * touch.
+ */
+export const HAND_BOX_BOTTOM_PADDING = 8;
+
+/** The space between a player's name and their cards, when the name is beside them. */
+export const NAME_GAP = 16;
 
 /**
  * The most width that the column with each player's name takes, in CSS pixels. Below it, the column
@@ -613,20 +638,23 @@ function Hand({
   return (
     <div
       aria-label={`${seat.name}'s hand`}
-      className={`tw:relative tw:flex tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${
+      className={`tw:relative tw:flex tw:rounded-2xl tw:px-4 ${
         props.nameColumnWidth === undefined
           ? "tw:flex-col tw:items-start"
-          : "tw:items-center tw:gap-4"
+          : "tw:items-center"
       } ${boxClass}`}
       data-hand={seat.playerIndex}
       role="group"
       // With the name above the cards, the gap leaves room for the clue tokens, so that they do not
       // cover the name.
-      style={
-        props.nameColumnWidth === undefined
-          ? { gap: props.cardWidth * CLUE_TOKEN_REACH_PER_WIDTH }
-          : undefined
-      }
+      style={{
+        paddingTop: getHandBoxTopPadding(props.cardWidth),
+        paddingBottom: HAND_BOX_BOTTOM_PADDING,
+        gap:
+          props.nameColumnWidth === undefined
+            ? props.cardWidth * CLUE_TOKEN_REACH_PER_WIDTH
+            : NAME_GAP,
+      }}
     >
       <div
         className="tw:flex tw:max-w-full tw:shrink-0"
@@ -772,12 +800,13 @@ function Hand({
 
 /**
  * Every hand, one row each: the viewer's own first, then the others in the order that they play.
+ * Each row is only as wide as its cards, so that a row of small cards does not end in empty space.
  */
 export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
       aria-label="Hands"
-      className="tw:relative tw:flex tw:flex-col tw:justify-center tw:gap-2"
+      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center tw:gap-1.5"
       onPointerDown={(event) => {
         const order = getCardOrderAt(event.target);
         if (event.button === 0 && order !== undefined) {

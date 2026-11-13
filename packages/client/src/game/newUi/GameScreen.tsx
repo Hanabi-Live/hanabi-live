@@ -42,7 +42,11 @@ import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import * as turn from "../ui/turn.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { ClueMarkerView } from "./Card.tsx";
-import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
+import {
+  CARD_HEIGHT_PER_WIDTH,
+  CardFace,
+  CLUED_RAISE_PER_WIDTH,
+} from "./Card.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueLog } from "./ClueLog.tsx";
@@ -52,8 +56,11 @@ import type { Seat } from "./Hands.tsx";
 import {
   CARD_GAP,
   EMPATHY_TOGGLE_SPACE,
+  HAND_BOX_BOTTOM_PADDING,
+  HAND_BOX_TOP_SPACE,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
+  NAME_GAP,
   NameColumnSizer,
 } from "./Hands.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
@@ -68,12 +75,12 @@ import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
-  MAX_ANIMATED_SEGMENT_CHANGE,
-  MOVE_BATCH_MILLISECONDS,
   animateCardMoves,
   animateClue,
   areCardsMoving,
+  MAX_ANIMATED_SEGMENT_CHANGE,
   measureCards,
+  MOVE_BATCH_MILLISECONDS,
   stopCardMoves,
 } from "./cardMotion.ts";
 import {
@@ -143,10 +150,8 @@ const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
 /** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
 const STACKED_PLAY_AREA_OTHER_WIDTH = 48;
 
-/** The space in each hand's box around its cards: padding above (for raised cards) and below. */
-const HAND_BOX_VERTICAL_PADDING = 24;
 const HAND_BOX_HORIZONTAL_PADDING = 32;
-const HAND_ROW_GAP = 8;
+const HAND_ROW_GAP = 6;
 
 /**
  * The height in the play area that is not cards: its padding, its heading, and the deck's label.
@@ -639,15 +644,17 @@ function getHandCardWidth(
 ): number {
   const widthForCards =
     handsWidth
-    - (nameColumnWidth ?? 0)
+    - (nameColumnWidth === undefined ? 0 : nameColumnWidth + NAME_GAP)
     - HAND_BOX_HORIZONTAL_PADDING
-    - CARD_GAP * cardsPerHand;
+    - CARD_GAP * (cardsPerHand - 1);
   const byWidth = widthForCards / cardsPerHand;
   const rowHeight =
     (handsHeight - HAND_ROW_GAP * (numPlayers - 1)) / numPlayers;
   const byHeight = stacked
     ? Infinity
-    : (rowHeight - HAND_BOX_VERTICAL_PADDING) / CARD_HEIGHT_PER_WIDTH;
+    : // The padding above the cards grows with them (see "getHandBoxTopPadding").
+      (rowHeight - HAND_BOX_BOTTOM_PADDING - HAND_BOX_TOP_SPACE)
+      / (CARD_HEIGHT_PER_WIDTH + CLUED_RAISE_PER_WIDTH);
   return clamp(
     Math.floor(Math.min(byWidth, byHeight)),
     HAND_CARD_WIDTH.MIN,

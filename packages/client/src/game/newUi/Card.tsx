@@ -15,7 +15,10 @@ export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
 const TRASH_CARD_OPACITY = 0.3;
 
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
-const CLUED_RAISE_PER_WIDTH = 0.12;
+export const CLUED_RAISE_PER_WIDTH = 0.12;
+
+/** The width of the border in the clue color around a clued card (`tw:ring-4`), in CSS pixels. */
+export const CLUED_BORDER_WIDTH = 4;
 
 /**
  * The width of the token that marks a card that a clue touched, as a fraction of the card's width.
