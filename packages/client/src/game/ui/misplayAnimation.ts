@@ -5,6 +5,7 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import type { Point } from "../motion.ts";
 import {
   bezier,
@@ -218,7 +219,7 @@ export function startMisplayAnimation(
   // pile.
   if (
     globals.state.replay.segment !== undefined
-    || globals.lobby.settings.reducedMotion
+    || store.getState().session.settings.reducedMotion
   ) {
     const stackPose: Pose = { ...stackCenter, scale: 1, rotation: 0 };
     timeline.add(0, REPLAY_TO_STACK_SECONDS, (t) => {

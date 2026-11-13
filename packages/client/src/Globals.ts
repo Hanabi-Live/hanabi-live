@@ -1,31 +1,10 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type {
-  ServerEventData,
-  Settings,
-  TableId,
-  UserId,
-} from "@hanabi-live/data";
+import type { ServerEventData, TableId, UserId } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import type { Connection } from "./Connection.ts";
 import type { Loader } from "./Loader.ts";
 import type { HanabiUi } from "./game/ui/HanabiUi.ts";
-import { totalGamesChanged } from "./lobby/gameHistory/historySlice.ts";
-import type { Game } from "./lobby/pregame/pregameSlice.ts";
-import { gameChanged } from "./lobby/pregame/pregameSlice.ts";
-import type { Table } from "./lobby/tables/tablesSlice.ts";
-import { selectTable, selectTables } from "./lobby/tables/tablesSlice.ts";
-import type { Screen } from "./lobby/types/Screen.ts";
-import {
-  blockedChanged,
-  errorOccurredChanged,
-  friendsChanged,
-  screenChanged,
-  settingsChanged,
-  userIdChanged,
-  usernameChanged,
-} from "./sessionSlice.ts";
-import { store } from "./store.ts";
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
@@ -36,105 +15,6 @@ export class Globals {
   // ----------------------------------------
 
   muted = false;
-
-  // ----------------------------------------------------------------
-  // Values that React components read (which are stored in "store.ts")
-  // ----------------------------------------------------------------
-
-  /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
-
-  /** From the "welcome" message, or `undefined` before it. */
-  get userId(): UserId | undefined {
-    return store.getState().session.userId;
-  }
-
-  set userId(userId: UserId | undefined) {
-    store.dispatch(userIdChanged(userId));
-  }
-
-  /** From the "welcome" message. */
-  get username(): string {
-    return store.getState().session.username;
-  }
-
-  set username(username: string) {
-    store.dispatch(usernameChanged(username));
-  }
-
-  /** From the "welcome" and "friends" messages. */
-  get friends(): readonly string[] {
-    return store.getState().session.friends;
-  }
-
-  set friends(friends: readonly string[]) {
-    store.dispatch(friendsChanged(friends));
-  }
-
-  /** From the "welcome" and "blocked" messages. */
-  get blocked(): readonly string[] {
-    return store.getState().session.blocked;
-  }
-
-  set blocked(blocked: readonly string[]) {
-    store.dispatch(blockedChanged(blocked));
-  }
-
-  /**
-   * From the "welcome" message. The "Settings" page and the "Create Game" page change them. Replace
-   * the whole object to change one, because the store freezes it.
-   */
-  get settings(): Settings {
-    return store.getState().session.settings;
-  }
-
-  set settings(settings: Settings) {
-    store.dispatch(settingsChanged(settings));
-  }
-
-  get currentScreen(): Screen {
-    return store.getState().session.screen;
-  }
-
-  set currentScreen(screen: Screen) {
-    store.dispatch(screenChanged(screen));
-  }
-
-  /** From the "welcome" and "lobbyStatus" messages. */
-  get totalGames(): number | undefined {
-    return store.getState().history.totalGames;
-  }
-
-  set totalGames(totalGames: number | undefined) {
-    store.dispatch(totalGamesChanged(totalGames));
-  }
-
-  /** From the "tableList", "table", and "tableRemoved" messages. */
-  get tables(): readonly Table[] {
-    return selectTables(store.getState());
-  }
-
-  getTable(tableId: number): Table | undefined {
-    return selectTable(store.getState(), tableId);
-  }
-
-  /** From the "pregame" message. */
-  get game(): Game | undefined {
-    return store.getState().pregame.game;
-  }
-
-  set game(game: Game | undefined) {
-    store.dispatch(gameChanged(game));
-  }
-
-  get errorOccurred(): boolean {
-    return store.getState().session.errorOccurred;
-  }
-
-  set errorOccurred(errorOccurred: boolean) {
-    store.dispatch(errorOccurredChanged(errorOccurred));
-  }
-
-  /* eslint-enable @typescript-eslint/class-methods-use-this */
 
   // -----------------------
   // Miscellaneous variables

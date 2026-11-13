@@ -8,6 +8,7 @@ import {
 import { ReadonlyMap, assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
+import { store } from "../../../../store.ts";
 import type { HanabiCard } from "../../HanabiCard.ts";
 import type { LayoutChild } from "../../LayoutChild.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -127,7 +128,7 @@ export function onStackCompletionDataChanged(
   if (
     previousData === undefined
     || globals.animateFast
-    || globals.lobby.settings.reducedMotion
+    || store.getState().session.settings.reducedMotion
     || globals.state.replay.segment !== undefined
   ) {
     return;
@@ -180,7 +181,7 @@ export function onMaxScoreOrDiscardStacksChanged(
   if (
     globals.animateFast
     || data.maxScore > previousData.maxScore
-    || globals.lobby.settings.reducedMotion
+    || store.getState().session.settings.reducedMotion
   ) {
     return;
   }

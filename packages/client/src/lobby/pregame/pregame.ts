@@ -2,7 +2,11 @@
 
 import { globals } from "../../Globals.ts";
 import { PATH } from "../../constants.ts";
-import { creatingTableChanged, lobbyPanelChanged } from "../../sessionSlice.ts";
+import {
+  creatingTableChanged,
+  lobbyPanelChanged,
+  screenChanged,
+} from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import * as lobbyPage from "../lobbyPage.ts";
@@ -11,7 +15,7 @@ import { pregameChatCleared, typingCleared } from "./pregameSlice.ts";
 
 export function show(): void {
   lobbyPage.hide();
-  globals.currentScreen = Screen.PreGame;
+  store.dispatch(screenChanged(Screen.PreGame));
 
   // Small screens show the table first.
   store.dispatch(lobbyPanelChanged("tables"));
@@ -33,7 +37,7 @@ export function show(): void {
 
 export function hide(updateUrl = true): void {
   lobbyPage.hide();
-  globals.currentScreen = Screen.Lobby;
+  store.dispatch(screenChanged(Screen.Lobby));
 
   // Small screens show the tables first.
   store.dispatch(lobbyPanelChanged("tables"));

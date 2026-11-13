@@ -7,6 +7,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
+import { store } from "../../../../store.ts";
 import { getViewPlayerIndex, isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -98,7 +99,7 @@ export function onChanged(
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
   let specialText = "";
-  if (!globals.lobby.settings.realLifeMode) {
+  if (!store.getState().session.settings.realLifeMode) {
     // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the
     // user.
     const unadjustedClueTokens = getUnadjustedClueTokens(
@@ -114,14 +115,14 @@ export function onChanged(
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.lobby.settings.hGroupConventions
+      store.getState().session.settings.hGroupConventions
       && isHandLocked(currentPlayerHand, globals.state.ongoingGame.deck)
     ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
       globals.state.ongoingGame.stats.doubleDiscardCard !== undefined
-      && globals.lobby.settings.hGroupConventions
+      && store.getState().session.settings.hGroupConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill(DOUBLE_DISCARD_COLOR);
@@ -241,7 +242,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
 
   const centerPos = hand.getAbsoluteCenterPos();
 
-  if (globals.lobby.settings.keldonMode) {
+  if (store.getState().session.settings.keldonMode) {
     // Make sure that the arrow points to an imaginary person behind the hand of cards.
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = IMAGINARY_PLAYER_DISTANCE * winH;

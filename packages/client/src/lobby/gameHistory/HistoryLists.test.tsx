@@ -5,7 +5,7 @@ import { gameSummarySchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { globals } from "../../Globals.ts";
+import { usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { HistoryList, OtherScoresList } from "./HistoryLists.tsx";
 import {
@@ -14,6 +14,7 @@ import {
   moreOtherScoresRequested,
   otherScoresReceived,
   otherScoresRequested,
+  totalGamesChanged,
 } from "./historySlice.ts";
 
 vi.mock("../history.ts", () => ({
@@ -70,14 +71,14 @@ function firstCells(): readonly string[] {
 }
 
 beforeEach(() => {
-  globals.username = "me";
+  store.dispatch(usernameChanged("me"));
 });
 
 afterEach(cleanup);
 
 describe("HistoryList", () => {
   test("says that it is loading, then lists the newest games first", () => {
-    globals.totalGames = 2;
+    store.dispatch(totalGamesChanged(2));
     act(() => {
       store.dispatch(historyRequested());
     });
@@ -99,7 +100,7 @@ describe("HistoryList", () => {
     expect(screen.queryByText("Show More History")).toBeNull();
 
     act(() => {
-      globals.totalGames = 3;
+      store.dispatch(totalGamesChanged(3));
     });
     expect(screen.getByText("Show More History")).toBeDefined();
   });

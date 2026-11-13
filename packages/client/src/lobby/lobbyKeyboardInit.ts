@@ -1,8 +1,8 @@
 // Lobby keyboard shortcuts
 
 import * as KeyCode from "keycode-js";
-import { globals } from "../Globals.ts";
 import { isModalVisible } from "../modals.ts";
+import { store } from "../store.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 import { Screen } from "./types/Screen.ts";
 
@@ -45,52 +45,52 @@ export function lobbyKeyboardInit(): void {
     // key.
     if (event.altKey && event.which === KeyCode.KEY_J) {
       // Alt + j.
-      if (globals.currentScreen === Screen.Lobby) {
+      if (store.getState().session.screen === Screen.Lobby) {
         // Click on the first "Join" button in the table list.
         clickElement(".lobby-games-join-first-table-button");
-      } else if (globals.currentScreen === Screen.PreGame) {
+      } else if (store.getState().session.screen === Screen.PreGame) {
         // Click on the "Join Game" button.
         clickElement("#nav-buttons-pregame-join");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
       // Alt + n. Click the "Create Game" button.
-      if (globals.currentScreen === Screen.Lobby) {
+      if (store.getState().session.screen === Screen.Lobby) {
         clickElement("#nav-buttons-lobby-create-game");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_H) {
       // Alt + h. Click the "Show History" button.
-      if (globals.currentScreen === Screen.Lobby) {
+      if (store.getState().session.screen === Screen.Lobby) {
         clickElement("#nav-buttons-lobby-history");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_A) {
       // Alt + a. Click on the "Watch Specific Replay" button. (We can't use "Alt + w" because that
       // conflicts with LastPass.)
-      if (globals.currentScreen === Screen.Lobby) {
+      if (store.getState().session.screen === Screen.Lobby) {
         clickElement("#nav-buttons-lobby-replay");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_O) {
       // Alt + o. Click the "Sign Out" button.
-      if (globals.currentScreen === Screen.Lobby) {
+      if (store.getState().session.screen === Screen.Lobby) {
         clickElement("#nav-buttons-lobby-sign-out");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_S) {
       // Alt + s. Click on the "Start Game" button.
-      if (globals.currentScreen === Screen.PreGame) {
+      if (store.getState().session.screen === Screen.PreGame) {
         clickElement("#nav-buttons-pregame-start");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_P) {
       // Alt + p. Click on the "Spectate Game" button.
-      if (globals.currentScreen === Screen.PreGame) {
+      if (store.getState().session.screen === Screen.PreGame) {
         clickElement("#nav-buttons-pregame-spectate");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
       // Alt + c. Click on the "Change Options" button.
-      if (globals.currentScreen === Screen.PreGame) {
+      if (store.getState().session.screen === Screen.PreGame) {
         clickElement("#nav-buttons-pregame-change-options");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
       // Alt + l. Click on the "Leave Game" button.
-      if (globals.currentScreen === Screen.PreGame) {
+      if (store.getState().session.screen === Screen.PreGame) {
         clickElement("#nav-buttons-pregame-leave");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_R) {
@@ -107,7 +107,7 @@ export function lobbyKeyboardInit(): void {
 function clickReturnToLobby() {
   // Click on the "Return to Lobby" button. (Either at the "game" screen or the "history" screen or
   // the "scores" screen.)
-  switch (globals.currentScreen) {
+  switch (store.getState().session.screen) {
     case Screen.PreGame: {
       clickElement("#nav-buttons-pregame-unattend");
       break;

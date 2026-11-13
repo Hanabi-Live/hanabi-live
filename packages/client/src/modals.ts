@@ -14,6 +14,7 @@ import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
 import type { MessageModal } from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
+import { errorOccurredChanged } from "./sessionSlice.ts";
 import { store } from "./store.ts";
 import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
@@ -262,7 +263,7 @@ function morphInGameCancelButton(card: HanabiCard | undefined) {
 export function showWarning(msg: string): void {
   // An error stops the connection and can only be left by reloading, so a later (or delayed)
   // warning must not replace it.
-  if (globals.errorOccurred) {
+  if (store.getState().session.errorOccurred) {
     return;
   }
 
@@ -279,7 +280,7 @@ export function showIdleWarning(
   remainingMs: number,
   onKeepPlaying: (() => void) | undefined,
 ): void {
-  if (globals.errorOccurred) {
+  if (store.getState().session.errorOccurred) {
     return;
   }
 
@@ -321,7 +322,7 @@ export function askForConfirmation(
   onCancel?: () => void,
 ): void {
   // An error stops the connection and can only be left by reloading.
-  if (globals.errorOccurred) {
+  if (store.getState().session.errorOccurred) {
     onCancel?.();
     return;
   }
@@ -353,11 +354,11 @@ export function showDowntime(msg: string): void {
 
 export function showError(msg: string): void {
   // Do nothing if we are already showing the error modal.
-  if (globals.errorOccurred) {
+  if (store.getState().session.errorOccurred) {
     return;
   }
   // This also clears the buttons of the navigation bar.
-  globals.errorOccurred = true;
+  store.dispatch(errorOccurredChanged(true));
 
   showMessageModal(
     {

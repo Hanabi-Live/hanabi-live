@@ -26,6 +26,7 @@ import {
   tupleKeys,
 } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import { getViewPlayerIndex, isOurSeat } from "../ourSeat.ts";
 import { ActionLog } from "./ActionLog.ts";
@@ -830,7 +831,7 @@ function initReusableObjects() {
 }
 
 function drawActionLog() {
-  actionLogValues = globals.lobby.settings.keldonMode
+  actionLogValues = store.getState().session.settings.keldonMode
     ? KELDON_ACTION_LOG
     : BGA_ACTION_LOG;
 
@@ -866,7 +867,7 @@ function drawActionLog() {
   });
 
   // The action log
-  const maxLines = globals.lobby.settings.keldonMode
+  const maxLines = store.getState().session.settings.keldonMode
     ? KELDON_ACTION_LOG_LINES
     : ACTION_LOG_LINES;
   const textHeight = (actionLogValues.h! - ACTION_LOG_TEXT_INSET.y * 2) * winH;
@@ -999,8 +1000,9 @@ function drawPlayStacks() {
 
   // In BGA mode, a full row of stacks spreads out to the width of the action log.
   const fillsActionLogWidth =
-    !globals.lobby.settings.keldonMode && numSuits >= fullSizeStackSlots;
-  if (!globals.lobby.settings.keldonMode) {
+    !store.getState().session.settings.keldonMode
+    && numSuits >= fullSizeStackSlots;
+  if (!store.getState().session.settings.keldonMode) {
     playStackValues.x = actionLogValues.x;
     playStackValues.y =
       actionLogValues.y + actionLogValues.h! + PLAY_STACKS.bgaGapY;
@@ -1082,7 +1084,7 @@ function drawPlayStacks() {
       let text = suit.displayName;
 
       if (
-        globals.lobby.settings.colorblindMode
+        store.getState().session.settings.colorblindMode
         && suit.clueColors.length === 2
       ) {
         const colorList = suit.clueColors
@@ -1170,7 +1172,7 @@ function drawBottomLeftButtons() {
 
   // The "New UI" button goes above the column. The Keldon layout has a hand in that place, so there
   // it goes at the top of the column instead, and the four buttons share the height of three.
-  const { newUi, keldonMode } = globals.lobby.settings;
+  const { newUi, keldonMode } = store.getState().session.settings;
   const newUiInColumn = newUi && keldonMode;
   const columnH =
     BOTTOM_LEFT_BUTTON.h * BOTTOM_LEFT_BUTTON_ROWS
@@ -1433,7 +1435,7 @@ function drawScoreArea() {
     w: SCORE_AREA.w,
     h: SCORE_AREA.h,
   };
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     scoreAreaValues.x = deckValues.x + deckValues.w! + BOTTOM_LEFT_GAP;
     scoreAreaValues.y = SCORE_AREA.bgaY;
   }
@@ -1638,7 +1640,7 @@ function drawScoreArea() {
   // Add an animation to signify that discarding at 8 clues is illegal. With reduced motion, the
   // count only turns red, and does not grow.
   if (!globals.isResizing) {
-    const grow = !globals.lobby.settings.reducedMotion;
+    const grow = !store.getState().session.settings.reducedMotion;
     globals.elements.cluesNumberLabelPulse = new Konva.Tween({
       node: cluesNumberLabel,
       fill: WARNING_COLOR,
@@ -1802,7 +1804,7 @@ function drawSpectators() {
     x: scoreAreaValues.x + KELDON_SPECTATORS_OFFSET.x,
     y: scoreAreaValues.y + KELDON_SPECTATORS_OFFSET.y,
   };
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     // Position it to the bottom-right of the score area.
     spectatorsLabelValues.x =
       scoreAreaValues.x + scoreAreaValues.w! + BOTTOM_LEFT_GAP;
@@ -1880,7 +1882,7 @@ function drawSharedReplay() {
   globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
   // Add an animation to alert everyone when shared replay leadership has been transferred.
-  if (!globals.isResizing && !globals.lobby.settings.reducedMotion) {
+  if (!globals.isResizing && !store.getState().session.settings.reducedMotion) {
     globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
       node: sharedReplayLeaderLabel,
       // Grow from the center of the crown.
@@ -1915,7 +1917,7 @@ function drawSharedReplay() {
 
 // A notification that shows it is your turn.
 function drawYourTurn() {
-  if (globals.lobby.settings.keldonMode) {
+  if (store.getState().session.settings.keldonMode) {
     return;
   }
 
@@ -2106,14 +2108,15 @@ function drawStatistics() {
     // - "Easy" variants use the default color (off-white).
     // - "Hard" variants use pink.
     fill:
-      globals.metadata.hardVariant && globals.lobby.settings.hGroupConventions
+      globals.metadata.hardVariant
+      && store.getState().session.settings.hGroupConventions
         ? HARD_VARIANT_EFFICIENCY_COLOR
         : LABEL_COLOR,
     // If colorblindMode is activated, indicate make font bold if "Hard".
     fontStyle:
       globals.metadata.hardVariant
-      && globals.lobby.settings.hGroupConventions
-      && globals.lobby.settings.colorblindMode
+      && store.getState().session.settings.hGroupConventions
+      && store.getState().session.settings.colorblindMode
         ? "bold"
         : "normal",
     listening: true,
@@ -2197,7 +2200,11 @@ function drawDiscardArea() {
 
 function drawArrows() {
   repeat(MAX_CARDS_PER_HAND, () => {
-    const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
+    const arrow = new Arrow(
+      winW,
+      winH,
+      store.getState().session.settings.colorblindMode,
+    );
     globals.layers.arrow.add(arrow);
     globals.elements.arrows.push(arrow);
   });
@@ -2212,14 +2219,14 @@ function drawTimers() {
   if (
     globals.state.finished
     || (globals.options.timeControl === undefined
-      && !globals.lobby.settings.showTimerInUntimed)
+      && !store.getState().session.settings.showTimerInUntimed)
   ) {
     return;
   }
 
   const timerValues = {
     ...TIMER,
-    ...(globals.lobby.settings.keldonMode
+    ...(store.getState().session.settings.keldonMode
       ? {
           x1: KELDON_TIMERS.x1,
           x2: KELDON_TIMERS.x2,
@@ -2291,7 +2298,7 @@ function drawTimers() {
   globals.layers.timer.add(globals.elements.timer2);
   if (
     globals.options.timeControl !== undefined
-    || globals.lobby.settings.showTimerInUntimed
+    || store.getState().session.settings.showTimerInUntimed
   ) {
     globals.elements.timer2.tooltipName = "time-taken";
     initKonvaTooltips(globals.elements.timer2, true, false);
@@ -2334,7 +2341,7 @@ function drawClueArea() {
     clueAreaValues.y += CLUE_AREA.suitNamesOffsetY;
   }
   // In BGA mode, we can afford to put a bit more spacing to make it look less packed together.
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     clueAreaValues.y += CLUE_AREA.bgaOffsetY;
   }
   globals.elements.clueArea = new Konva.Group({
@@ -2346,7 +2353,7 @@ function drawClueArea() {
 
   // Player buttons
   const { numPlayers } = globals.options;
-  const playerButtonH = globals.lobby.settings.keldonMode
+  const playerButtonH = store.getState().session.settings.keldonMode
     ? CLUE_TARGET_BUTTON.keldonH
     : CLUE_TARGET_BUTTON.bgaH;
   const playerButtonSpacing = CLUE_TARGET_BUTTON.spacing;

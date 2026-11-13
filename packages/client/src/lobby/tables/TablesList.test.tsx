@@ -11,7 +11,7 @@ import {
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { globals } from "../../Globals.ts";
+import { friendsChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { TablesList } from "./TablesList.tsx";
 import type { Table } from "./tablesSlice.ts";
@@ -75,8 +75,8 @@ beforeEach(() => {
     },
   );
 
-  globals.username = "me";
-  globals.friends = [];
+  store.dispatch(usernameChanged("me"));
+  store.dispatch(friendsChanged([]));
   store.dispatch(tablesCleared());
 });
 
@@ -128,7 +128,7 @@ describe("TablesList", () => {
     ).toBe("join-4");
 
     act(() => {
-      globals.friends = ["bob"];
+      store.dispatch(friendsChanged(["bob"]));
     });
 
     expect(rowNames()).toStrictEqual([

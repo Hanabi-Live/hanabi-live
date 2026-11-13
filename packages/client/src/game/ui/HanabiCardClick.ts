@@ -4,6 +4,7 @@ import type { CardIdentity } from "@hanabi-live/game";
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -25,7 +26,8 @@ export function HanabiCardClick(
   // Speedrunning overrides the normal card clicking behavior. (But only use the speedrunning
   // behavior if we are an active player.)
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
+    (globals.options.speedrun
+      || store.getState().session.settings.speedrunFeatures)
     && globals.state.playing
   ) {
     return;

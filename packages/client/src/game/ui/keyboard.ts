@@ -11,6 +11,7 @@ import * as KeyCode from "keycode-js";
 import type Konva from "konva";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
+import { store } from "../../store.ts";
 import {
   copyStringToClipboard,
   getHtmlElement,
@@ -111,7 +112,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   // visible modal. (Not being in a game should not be possible, as the handler gets unregistered
   // upon going back to the lobby, but double check just in case.)
   if (
-    globals.lobby.currentScreen !== Screen.Game
+    store.getState().session.screen !== Screen.Game
     || globals.editingNote !== undefined
     || isModalVisible()
   ) {

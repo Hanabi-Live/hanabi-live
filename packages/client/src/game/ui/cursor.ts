@@ -1,4 +1,5 @@
 import type Konva from "konva";
+import { store } from "../../store.ts";
 import { getHtmlElement } from "../../utils.ts";
 import type { Deck } from "./Deck.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
@@ -20,7 +21,8 @@ export function set(cursorType: CursorType): void {
 
   // Do not show any custom cursors if we are an active player in a speedrun.
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
+    (globals.options.speedrun
+      || store.getState().session.settings.speedrunFeatures)
     && globals.state.playing
   ) {
     return;

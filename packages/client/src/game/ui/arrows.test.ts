@@ -1,6 +1,9 @@
+import { defaultSettings } from "@hanabi-live/data";
 import { getDefaultVariant } from "@hanabi-live/game";
 import type Konva from "konva";
 import { describe, expect, test, vi } from "vitest";
+import { settingsChanged } from "../../sessionSlice.ts";
+import { store } from "../../store.ts";
 
 import type { Arrow } from "./controls/Arrow.ts";
 
@@ -60,10 +63,12 @@ describe("clue arrow suit pips", () => {
       height: () => 50,
     } as unknown as Konva.Node;
     const variant = getDefaultVariant();
+    store.dispatch(
+      settingsChanged({ ...defaultSettings, colorblindMode: true }),
+    );
     Object.assign(globals, {
       elements: { arrows: [arrow], deck },
       layers: { arrow: { batchDraw: vi.fn() } },
-      lobby: { settings: { colorblindMode: true } },
       // Character ID 34 is Quacker; player 1 has no character.
       metadata: { characterAssignments: [34, undefined] },
       variant,

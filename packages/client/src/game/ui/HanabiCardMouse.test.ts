@@ -1,4 +1,7 @@
+import { defaultSettings } from "@hanabi-live/data";
 import { describe, expect, test, vi } from "vitest";
+import { settingsChanged } from "../../sessionSlice.ts";
+import { store } from "../../store.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 
 vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
@@ -97,7 +100,6 @@ describe("hypothetical empathy mouse handling", () => {
         replay: { hypothetical: { startingPlayerIndex: 0 } },
       },
       options: { speedrun: false },
-      lobby: { settings: { speedrunFeatures: false } },
       elements: { playerHands: [hand] },
     });
 
@@ -148,10 +150,10 @@ function pressCard() {
       handlers.set(event, handler);
     }),
   } as unknown as HanabiCard;
+  store.dispatch(settingsChanged({ ...defaultSettings, keldonMode: true }));
   Object.assign(globals, {
     state: { replay: { hypothetical: { startingPlayerIndex: undefined } } },
     options: { speedrun: false },
-    lobby: { settings: { speedrunFeatures: false, keldonMode: true } },
     elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
     layers: { card: cardLayer },
     store: { dispatch: vi.fn() },

@@ -3,6 +3,7 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
 import { Screen } from "../types/Screen.ts";
 import type { Table } from "./tablesSlice.ts";
 
@@ -11,8 +12,8 @@ export function tableSpectate(
   shadowingPlayerIndex?: PlayerIndex,
 ): void {
   if (
-    globals.currentScreen !== Screen.Lobby
-    && globals.currentScreen !== Screen.PreGame
+    store.getState().session.screen !== Screen.Lobby
+    && store.getState().session.screen !== Screen.PreGame
   ) {
     return;
   }
@@ -26,8 +27,8 @@ export function tableSpectate(
 
 export function tableJoin(table: Table): void {
   if (
-    globals.currentScreen !== Screen.Lobby
-    && globals.currentScreen !== Screen.PreGame
+    store.getState().session.screen !== Screen.Lobby
+    && store.getState().session.screen !== Screen.PreGame
   ) {
     return;
   }
@@ -43,7 +44,7 @@ export function tableJoin(table: Table): void {
 }
 
 export function tableReattend(table: Table): void {
-  if (globals.currentScreen !== Screen.Lobby) {
+  if (store.getState().session.screen !== Screen.Lobby) {
     return;
   }
 

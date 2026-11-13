@@ -24,6 +24,7 @@ import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { mountMessageModal } from "./mountMessageModal.tsx";
 import * as sounds from "./sounds.ts";
+import { store } from "./store.ts";
 import * as tooltips from "./tooltips.ts";
 import { setBrowserAddressBarPath } from "./utils.ts";
 
@@ -57,10 +58,10 @@ $(document).ready(() => {
     }
 
     const { hash } = globalThis.location;
-    if (globals.currentScreen === Screen.Game) {
+    if (store.getState().session.screen === Screen.Game) {
       backToLobby();
       setBrowserAddressBarPath(PATH.LOBBY, hash);
-    } else if (globals.currentScreen === Screen.PreGame) {
+    } else if (store.getState().session.screen === Screen.PreGame) {
       lobbyPregame.hide(false);
       globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
       globals.tableId = undefined;
@@ -73,8 +74,8 @@ $(document).ready(() => {
         lobbyHistory.showOtherScores(seed);
       }
     } else if (
-      globals.currentScreen === Screen.History
-      || globals.currentScreen === Screen.HistoryOtherScores
+      store.getState().session.screen === Screen.History
+      || store.getState().session.screen === Screen.HistoryOtherScores
     ) {
       lobbyHistory.hide();
     }
@@ -82,7 +83,10 @@ $(document).ready(() => {
 
   // Set an event handler for when the entire window loses focus.
   $(globalThis).blur(() => {
-    if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
+    if (
+      store.getState().session.screen === Screen.Game
+      && globals.ui !== undefined
+    ) {
       globals.ui.focusLost();
     }
   });

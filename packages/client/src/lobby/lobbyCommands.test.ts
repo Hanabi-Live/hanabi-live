@@ -1,5 +1,7 @@
 import { tableIdSchema } from "@hanabi-live/data";
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { screenChanged } from "../sessionSlice.ts";
+import { store } from "../store.ts";
 import { Screen } from "./types/Screen.ts";
 
 vi.mock("../Globals.ts", () => ({
@@ -39,7 +41,7 @@ describe('the "tableLeft" command', () => {
   ] as const)(
     "on the %s screen hides the pre-game %i times and the game %i times",
     (screen, pregameCalls, gameCalls) => {
-      globals.currentScreen = Screen[screen];
+      store.dispatch(screenChanged(Screen[screen]));
 
       lobbyCommands.get("tableLeft")?.({ tableId: TABLE_ID });
 
@@ -50,7 +52,7 @@ describe('the "tableLeft" command', () => {
   );
 
   test("ignores a table that we are not at", () => {
-    globals.currentScreen = Screen.Game;
+    store.dispatch(screenChanged(Screen.Game));
 
     lobbyCommands.get("tableLeft")?.({ tableId: tableIdSchema.parse(2) });
 

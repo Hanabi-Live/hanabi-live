@@ -3,6 +3,7 @@
 
 import type { Globals as LobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
+import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { GameExports } from "../main.ts";
 import * as newUiState from "../newUi/newUiState.ts";
@@ -51,7 +52,7 @@ export class HanabiUi {
     // Add a window resize listener.
     this.resizeHandler = () => {
       if (
-        this.globals.lobby.currentScreen !== Screen.Game
+        store.getState().session.screen !== Screen.Game
         || this.globals.loading
       ) {
         return;
@@ -87,7 +88,7 @@ export class HanabiUi {
     // colors.
     this.themeChangeHandler = () => {
       if (
-        this.globals.lobby.currentScreen !== Screen.Game
+        store.getState().session.screen !== Screen.Game
         || this.globals.loading
         || this.liveResizeActive
       ) {

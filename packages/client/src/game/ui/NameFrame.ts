@@ -2,6 +2,7 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { isValidPlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { globals } from "./UiGlobals.ts";
@@ -138,7 +139,7 @@ export class NameFrame extends Konva.Group {
     this.on("mouseover touchstart", function mouseOver(this: NameFrame) {
       // Do not do anything if the tooltip is currently disabled.
       if (
-        globals.lobby.settings.speedrunFeatures
+        store.getState().session.settings.speedrunFeatures
         || globals.options.speedrun
         || globals.playerTimes[this.playerIndex] === undefined
         || globals.state.finished

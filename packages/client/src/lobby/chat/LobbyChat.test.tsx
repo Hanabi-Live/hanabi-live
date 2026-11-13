@@ -6,7 +6,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { add, removeDeletedLobbyMessage } from "../../chat.ts";
-import { globals } from "../../Globals.ts";
+import { screenChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { Screen } from "../types/Screen.ts";
 import { LobbyChat } from "./LobbyChat.tsx";
@@ -41,8 +41,8 @@ function lineTexts(): readonly string[] {
 }
 
 beforeEach(() => {
-  globals.username = "me";
-  globals.currentScreen = Screen.Lobby;
+  store.dispatch(usernameChanged("me"));
+  store.dispatch(screenChanged(Screen.Lobby));
   render(
     <Provider store={store}>
       <LobbyChat />

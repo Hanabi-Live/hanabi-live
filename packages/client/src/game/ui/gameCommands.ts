@@ -25,6 +25,7 @@ import { PATH } from "../../constants.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import * as modals from "../../modals.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
+import { store } from "../../store.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
   toCardIdentity,
@@ -241,7 +242,7 @@ function showsTable(conn: Connection, tableId: number): boolean {
   const { lobby } = globals;
   return (
     lobby.conn === conn
-    && lobby.currentScreen === Screen.Game
+    && store.getState().session.screen === Screen.Game
     && lobby.ui !== undefined
     && lobby.joinedTableId === tableId
   );
@@ -617,7 +618,7 @@ function initStateStore(data: GameInit) {
   );
   const hardVariant = isHardVariant(globals.variant, minEfficiency);
   const metadata: GameMetadata = {
-    ourUsername: globals.lobby.username,
+    ourUsername: store.getState().session.username,
     options,
     playerNames,
     ourPlayerIndex:

@@ -1,5 +1,6 @@
 import type { Spectator } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
+import { store } from "../../store.ts";
 import { escapeHtml } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -23,7 +24,7 @@ export function getSpectatorsTooltip(
     let nameEntry = "<li>";
     if (us) {
       nameEntry += `<span class="tw:text-name-me">${name}</span>`;
-    } else if (globals.lobby.friends.includes(spectator.username)) {
+    } else if (store.getState().session.friends.includes(spectator.username)) {
       nameEntry += `<span class="tw:text-friend">${name}</span>`;
     } else {
       nameEntry += name;

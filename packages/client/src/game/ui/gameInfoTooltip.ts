@@ -6,6 +6,8 @@ import {
   secondsToClockString,
 } from "@hanabi-live/game";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
+import { selectTable } from "../../lobby/tables/tablesSlice.ts";
+import { store } from "../../store.ts";
 import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -18,7 +20,10 @@ export function getGameInfoTooltip(showLengths = true): string {
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
-  const currentTable = globals.lobby.getTable(globals.lobby.joinedTableId);
+  const currentTable = selectTable(
+    store.getState(),
+    globals.lobby.joinedTableId,
+  );
   if (currentTable !== undefined) {
     content += tooltipField(
       "fas fa-signature",

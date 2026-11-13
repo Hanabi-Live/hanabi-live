@@ -1,4 +1,5 @@
 import type { PlayerIndex } from "@hanabi-live/game";
+import { store } from "../../../../store.ts";
 import { isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -14,7 +15,7 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
   }
 
   const { ourPlayerIndex, options } = state.metadata;
-  const { speedrunFeatures, preplay } = globals.lobby.settings;
+  const { speedrunFeatures, preplay } = store.getState().session.settings;
   const ourTurn = isOurSeat(
     state.ongoingGame.turn.currentPlayerIndex,
     state.metadata,

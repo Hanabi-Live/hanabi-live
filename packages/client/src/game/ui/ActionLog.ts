@@ -1,6 +1,7 @@
 import type { LogEntry } from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { globals } from "./UiGlobals.ts";
 import { FitText } from "./controls/FitText.ts";
 
@@ -72,7 +73,7 @@ export class ActionLog extends Konva.Group {
       Math.abs(shift) === 1
       && globals.state.replay.segment !== undefined
       && !globals.animateFast
-      && !globals.lobby.settings.reducedMotion
+      && !store.getState().session.settings.reducedMotion
       && this.texts.every((text, i) => {
         // Every visible line that stays on the screen must keep its text. Do not check the hidden
         // lines: the hidden line below is empty before a new log line arrives.

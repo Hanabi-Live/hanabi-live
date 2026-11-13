@@ -7,12 +7,14 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
+import { friendsChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import type { Table } from "../tables/tablesSlice.ts";
 import { tableChanged } from "../tables/tablesSlice.ts";
 import { userChanged } from "../users/usersSlice.ts";
 import { Pregame } from "./Pregame.tsx";
 import type { Game } from "./pregameSlice.ts";
+import { gameChanged } from "./pregameSlice.ts";
 
 const TABLE_ID = tableIdSchema.parse(5);
 
@@ -61,8 +63,8 @@ const table = {
 const send = vi.fn();
 
 beforeEach(() => {
-  globals.username = "me";
-  globals.friends = ["dave"];
+  store.dispatch(usernameChanged("me"));
+  store.dispatch(friendsChanged(["dave"]));
   globals.tableId = TABLE_ID;
   globals.conn = { send } as unknown as Connection;
   send.mockClear();
@@ -78,7 +80,7 @@ beforeEach(() => {
       inactive: false,
     }),
   );
-  globals.game = game;
+  store.dispatch(gameChanged(game));
   render(
     <Provider store={store}>
       <Pregame />
@@ -88,7 +90,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  globals.game = undefined;
+  store.dispatch(gameChanged(undefined));
 });
 
 describe("Pregame", () => {

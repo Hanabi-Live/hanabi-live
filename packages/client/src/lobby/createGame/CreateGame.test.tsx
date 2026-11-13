@@ -14,8 +14,15 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
+import {
+  screenChanged,
+  settingsChanged,
+  userIdChanged,
+  usernameChanged,
+} from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import type { Game } from "../pregame/pregameSlice.ts";
+import { gameChanged } from "../pregame/pregameSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import { CreateGame } from "./CreateGame.tsx";
 
@@ -82,11 +89,11 @@ function showPage() {
 
 beforeEach(() => {
   globals.conn = { send } as unknown as Connection;
-  globals.username = "Alice";
-  globals.userId = OUR_USER_ID;
-  globals.settings = defaultSettings;
-  globals.game = undefined;
-  globals.currentScreen = Screen.Lobby;
+  store.dispatch(usernameChanged("Alice"));
+  store.dispatch(userIdChanged(OUR_USER_ID));
+  store.dispatch(settingsChanged(defaultSettings));
+  store.dispatch(gameChanged(undefined));
+  store.dispatch(screenChanged(Screen.Lobby));
   send.mockClear();
   hide.mockClear();
   openErrors.clear();
@@ -143,9 +150,11 @@ describe("CreateGame", () => {
     click("createTableOneExtraCard");
 
     expect(getInput("createTableOneLessCard").disabled).toBe(true);
-    expect(globals.settings.createTable.options.oneExtraCard).toBe(true);
+    expect(
+      store.getState().session.settings.createTable.options.oneExtraCard,
+    ).toBe(true);
     expect(send).toHaveBeenCalledWith("settings", {
-      settings: { createTable: globals.settings.createTable },
+      settings: { createTable: store.getState().session.settings.createTable },
     });
   });
 
@@ -159,23 +168,25 @@ describe("CreateGame", () => {
     });
 
     expect(getInput("create-game-variant-dropdown1").value).toBe("6 Suits");
-    expect(globals.settings.createTable.options.variantId).toBe(
-      getVariant("6 Suits").id,
-    );
+    expect(
+      store.getState().session.settings.createTable.options.variantId,
+    ).toBe(getVariant("6 Suits").id);
   });
 
   test("a guest suggests the options of the table to its owner", () => {
-    globals.currentScreen = Screen.PreGame;
+    store.dispatch(screenChanged(Screen.PreGame));
     globals.tableId = TABLE_ID;
-    globals.game = {
-      owner: { userId: 2 as UserId, name: "Bob" },
-      settings: {
-        name: "Bob's game",
-        maxPlayers: 4,
-        options: { ...defaultSettings.createTable.options },
-        deal: { type: "replay", gameId: 12, turn: 2 },
-      },
-    } as unknown as Game;
+    store.dispatch(
+      gameChanged({
+        owner: { userId: 2 as UserId, name: "Bob" },
+        settings: {
+          name: "Bob's game",
+          maxPlayers: 4,
+          options: { ...defaultSettings.createTable.options },
+          deal: { type: "replay", gameId: 12, turn: 2 },
+        },
+      } as unknown as Game),
+    );
     showPage();
 
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(

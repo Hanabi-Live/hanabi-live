@@ -1,5 +1,5 @@
-// State about our own session that React components read. The jQuery code reads and writes it
-// through the accessors on `globals`.
+// State about our own session. React components read it with `useAppSelector`, and other code reads
+// it with `store.getState()`.
 
 import type { Settings, UserId } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";

@@ -1,5 +1,6 @@
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
+import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { HanabiCardClick } from "./HanabiCardClick.ts";
@@ -265,7 +266,8 @@ function checkHideNoteTooltip(card: HanabiCard) {
 
 function useSpeedrunClickHandlers() {
   return (
-    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
+    (globals.options.speedrun
+      || store.getState().session.settings.speedrunFeatures)
     && globals.state.playing
   );
 }
@@ -341,7 +343,7 @@ function dragStart(card: HanabiCard) {
   if (
     globals.state.replay.hypothetical !== undefined
     && card.layout.parent !== null
-    && globals.lobby.settings.keldonMode
+    && store.getState().session.settings.keldonMode
   ) {
     const { parent } = card.layout;
     const rotation = card.layout.rotation();

@@ -2,6 +2,7 @@ import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
 import { MAX_PLAYERS, getCardsPerHand, getCharacter } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { CardLayout } from "./CardLayout.ts";
 import { NameFrame } from "./NameFrame.ts";
@@ -480,7 +481,7 @@ export function drawHands(winW: number, winH: number): void {
 
   // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
   const handPosBga: HandConfig[][] = [];
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     let leftX = BGA_ACTION_LOG.x + BGA_ACTION_LOG.w + HAND_LOG_GAP;
     const rightX = CLUE_LOG.x - HAND_LOG_GAP;
     let topY: number = BGA_HANDS.topY;
@@ -641,7 +642,7 @@ export function drawHands(winW: number, winH: number): void {
     },
   ];
 
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     const i = numPlayers;
     const { nameFrameGapY } = BGA_HANDS;
     namePosBga[i] = [];
@@ -667,7 +668,7 @@ export function drawHands(winW: number, winH: number): void {
 
     let playerHandPos = handPos;
     let playerNamePos = namePos;
-    if (!globals.lobby.settings.keldonMode) {
+    if (!store.getState().session.settings.keldonMode) {
       playerHandPos = handPosBga;
       playerNamePos = namePosBga;
     }
@@ -692,7 +693,7 @@ export function drawHands(winW: number, winH: number): void {
     });
     globals.layers.card.add(globals.elements.playerHands[i]);
 
-    if (globals.lobby.settings.keldonMode) {
+    if (store.getState().session.settings.keldonMode) {
       // In Keldon mode, we want to show a helper element that indicates which side of the hand is
       // the oldest.
       const blackLineGroup = new Konva.Group({
@@ -794,7 +795,7 @@ function drawDetrimentalCharacters(
   j: number,
 ) {
   let playerNamePos = namePos;
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     playerNamePos = namePosBga;
   }
 
@@ -867,11 +868,11 @@ function isHandReversed(j: number) {
     // first card, which should be on the right.)
     reverse = true;
   }
-  if (!globals.lobby.settings.keldonMode) {
+  if (!store.getState().session.settings.keldonMode) {
     // In BGA mode, we need to reverse every hand.
     reverse = true;
   }
-  if (globals.lobby.settings.reverseHands) {
+  if (store.getState().session.settings.reverseHands) {
     // If the "Reverse hand direction" option is turned on, then we need to flip the direction of
     // every hand.
     reverse = !reverse;

@@ -13,6 +13,12 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { globals } from "../../Globals.ts";
 import { DIMMED_OPACITY } from "../../constants.ts";
+import {
+  blockedChanged,
+  friendsChanged,
+  screenChanged,
+  usernameChanged,
+} from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { tablesCleared, tablesListed } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
@@ -100,10 +106,10 @@ function rowNames(): readonly string[] {
 }
 
 beforeEach(() => {
-  globals.username = "me";
-  globals.friends = ["zed", "Bob"];
-  globals.blocked = [];
-  globals.currentScreen = Screen.Lobby;
+  store.dispatch(usernameChanged("me"));
+  store.dispatch(friendsChanged(["zed", "Bob"]));
+  store.dispatch(blockedChanged([]));
+  store.dispatch(screenChanged(Screen.Lobby));
   store.dispatch(usersCleared());
   store.dispatch(botsShownChanged(false));
   store.dispatch(tablesCleared());
@@ -201,7 +207,7 @@ describe("UsersList", () => {
       username: "Alice",
     });
     act(() => {
-      globals.blocked = ["Alice"];
+      store.dispatch(blockedChanged(["Alice"]));
     });
     fireEvent.click(screen.getByText("Alice"));
     expect(screen.getByText("Unblock")).toBeDefined();
@@ -224,7 +230,7 @@ describe("UsersList", () => {
     expect(tableJoin).toHaveBeenCalledWith(table);
 
     act(() => {
-      globals.currentScreen = Screen.PreGame;
+      store.dispatch(screenChanged(Screen.PreGame));
     });
     expect(screen.getByText("Pre-Game").tagName).toBe("TD");
   });

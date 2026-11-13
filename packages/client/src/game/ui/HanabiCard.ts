@@ -36,6 +36,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
@@ -619,7 +620,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
 
     // In Real-Life mode, always show the vanilla card back if the card is not fully revealed.
     if (
-      globals.lobby.settings.realLifeMode
+      store.getState().session.settings.realLifeMode
       && (suitToShow === undefined || rankToShow === undefined)
       && !this.isStackBase
     ) {
@@ -737,7 +738,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   ): void {
     // Show or hide the pips.
     const pipsHidden =
-      globals.lobby.settings.realLifeMode || morphedBlank || this.isStackBase;
+      store.getState().session.settings.realLifeMode
+      || morphedBlank
+      || this.isStackBase;
     this.pipsAllowed = {
       suit: !pipsHidden && suitToShow === undefined,
       rank: !pipsHidden && rankToShow === undefined,
@@ -870,7 +873,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   setStatus(): void {
     const { visibleState } = globals.state;
     // Do not show any status in real life mode.
-    if (visibleState === undefined || globals.lobby.settings.realLifeMode) {
+    if (
+      visibleState === undefined
+      || store.getState().session.settings.realLifeMode
+    ) {
       return;
     }
 
@@ -923,7 +929,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
       dda
       && !this.shouldShowClueBorder()
       && this.trashcan.isVisible() === false
-      && globals.lobby.settings.hGroupConventions
+      && store.getState().session.settings.hGroupConventions
       && !globals.metadata.hardVariant
     );
   }
@@ -1010,7 +1016,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     return (
       this.shouldShowClueBorder()
       && !this.layout.isDragging()
-      && (!globals.lobby.settings.keldonMode || shouldShowOnKeldonMode)
+      && (!store.getState().session.settings.keldonMode
+        || shouldShowOnKeldonMode)
     );
   }
 

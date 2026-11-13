@@ -6,8 +6,14 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
+import {
+  screenChanged,
+  userIdChanged,
+  usernameChanged,
+} from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import type { Game } from "../pregame/pregameSlice.ts";
+import { gameChanged } from "../pregame/pregameSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import { Nav } from "./Nav.tsx";
 
@@ -41,13 +47,13 @@ function button(id: string) {
 }
 
 beforeEach(() => {
-  globals.userId = userIdSchema.parse(1);
-  globals.username = "alice";
+  store.dispatch(userIdChanged(userIdSchema.parse(1)));
+  store.dispatch(usernameChanged("alice"));
   globals.tableId = TABLE_ID;
   globals.conn = { send } as unknown as Connection;
-  globals.currentScreen = Screen.PreGame;
+  store.dispatch(screenChanged(Screen.PreGame));
   send.mockClear();
-  globals.game = makeGame(2);
+  store.dispatch(gameChanged(makeGame(2)));
   render(
     <Provider store={store}>
       <Nav />
@@ -57,7 +63,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  globals.game = undefined;
+  store.dispatch(gameChanged(undefined));
 });
 
 describe("Nav", () => {
@@ -81,22 +87,22 @@ describe("Nav", () => {
     expect(button("start")!.classList).toContain("disabled");
 
     act(() => {
-      globals.game = makeGame(2);
+      store.dispatch(gameChanged(makeGame(2)));
     });
     expect(button("start")!.classList).not.toContain("disabled");
   });
 
   test("a spectator can join only while the table has room", () => {
     act(() => {
-      globals.userId = userIdSchema.parse(2);
-      globals.username = "me";
+      store.dispatch(userIdChanged(userIdSchema.parse(2)));
+      store.dispatch(usernameChanged("me"));
     });
     expect(button("start")!.classList).toContain("disabled");
     expect(button("spectate")).toBeNull();
     expect(button("join")!.classList).toContain("disabled");
 
     act(() => {
-      globals.game = makeGame(3);
+      store.dispatch(gameChanged(makeGame(3)));
     });
     expect(button("join")!.classList).not.toContain("disabled");
   });

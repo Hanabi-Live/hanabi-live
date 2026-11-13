@@ -1,3 +1,4 @@
+import { store } from "../../../../store.ts";
 import { globals } from "../../UiGlobals.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants.ts";
 import {
@@ -24,7 +25,7 @@ export function onCardsRemainingChanged(
     cardsRemainingInTheDeck === 0
     && previousCardsRemaining === 1
     && !globals.animateFast
-    && !globals.lobby.settings.reducedMotion
+    && !store.getState().session.settings.reducedMotion
     && globals.state.replay.segment === undefined
   ) {
     startEmptyDeckAnimation(CARD_ANIMATION_LENGTH_SECONDS);

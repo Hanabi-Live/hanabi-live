@@ -1,5 +1,6 @@
 import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications.ts";
+import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
@@ -18,7 +19,7 @@ export function begin(): void {
     return;
   }
 
-  if (globals.lobby.settings.desktopNotification) {
+  if (store.getState().session.settings.desktopNotification) {
     notifications.send("It is your turn.", "turn");
   }
 
@@ -109,7 +110,7 @@ export function end(clientAction: ClientAction): void {
     return;
   }
 
-  if (globals.lobby.settings.preplay) {
+  if (store.getState().session.settings.preplay) {
     globals.store!.dispatch({
       type: "premove",
       premove: clientAction,

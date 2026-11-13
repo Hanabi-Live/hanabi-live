@@ -3,6 +3,7 @@
 import { DEFAULT_PAGE_LIMIT } from "@hanabi-live/data";
 import { HISTORY_HASH, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
+import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import {
@@ -23,7 +24,7 @@ import { Screen } from "./types/Screen.ts";
 const HISTORY_PAGE_SIZE = DEFAULT_PAGE_LIMIT;
 
 export function show(requestHistory = true): void {
-  globals.currentScreen = Screen.History;
+  store.dispatch(screenChanged(Screen.History));
   if (
     globalThis.location.pathname === PATH.LOBBY
     && globalThis.location.hash === ""
@@ -38,7 +39,7 @@ export function show(requestHistory = true): void {
 
 /** Asks for the next page of our history. */
 export function showMore(): void {
-  if (globals.currentScreen === Screen.History) {
+  if (store.getState().session.screen === Screen.History) {
     requestPage(selectShownGameCount(store.getState()));
   }
 }
@@ -56,7 +57,7 @@ function requestPage(offset: number) {
 }
 
 export function hide(): void {
-  globals.currentScreen = Screen.Lobby;
+  store.dispatch(screenChanged(Screen.Lobby));
   setBrowserAddressBarPath(PATH.LOBBY, undefined);
 }
 
@@ -70,14 +71,14 @@ export function showOtherScores(seed: string): void {
   store.dispatch(otherScoresRequested(seed));
   requestOtherScoresPage(seed, 0);
 
-  globals.currentScreen = Screen.HistoryOtherScores;
+  store.dispatch(screenChanged(Screen.HistoryOtherScores));
 }
 
 /** Asks for the next page of the other scores that we show. */
 export function showMoreOtherScores(): void {
   const shown = store.getState().history.otherScores;
   if (
-    globals.currentScreen === Screen.HistoryOtherScores
+    store.getState().session.screen === Screen.HistoryOtherScores
     && shown !== undefined
     && !shown.loading
   ) {
@@ -99,6 +100,6 @@ function requestOtherScoresPage(seed: string, offset: number) {
 }
 
 export function hideOtherScores(): void {
-  globals.currentScreen = Screen.History;
+  store.dispatch(screenChanged(Screen.History));
   setBrowserAddressBarPath(PATH.LOBBY, HISTORY_HASH, "push");
 }

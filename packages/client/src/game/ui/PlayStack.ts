@@ -1,5 +1,6 @@
 import { eRange } from "complete-common";
 import Konva from "konva";
+import { store } from "../../store.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
@@ -35,7 +36,9 @@ export class PlayStack extends Konva.Group {
     // Instead of fading out, the card is sucked into the hole; it is hidden once it has vanished.
     // With reduced motion, it fades out.
     const vortex =
-      hidden && !globals.animateFast && !globals.lobby.settings.reducedMotion;
+      hidden
+      && !globals.animateFast
+      && !store.getState().session.settings.reducedMotion;
     if (vortex) {
       layoutChild.card.vortex(PLAY_ANIMATION_SECONDS, () => {
         layoutChild.opacity(0);

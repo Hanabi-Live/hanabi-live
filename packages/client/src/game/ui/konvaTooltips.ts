@@ -1,6 +1,7 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen.ts";
+import { store } from "../../store.ts";
 import { TOOLTIP_DELAY_IN_MILLISECONDS } from "../../Tooltip.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
@@ -71,7 +72,7 @@ export function show(element: NodeWithTooltip): void {
   // Do not do anything if we are no longer in the game or if the user has moved the mouse away in
   // the meantime.
   if (
-    globals.lobby.currentScreen !== Screen.Game
+    store.getState().session.screen !== Screen.Game
     || globals.activeHover !== element
   ) {
     return;

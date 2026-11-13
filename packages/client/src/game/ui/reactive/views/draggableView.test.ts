@@ -1,11 +1,10 @@
+import { defaultSettings } from "@hanabi-live/data";
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { settingsChanged } from "../../../../sessionSlice.ts";
+import { store } from "../../../../store.ts";
 import type { State } from "../../../types/State.ts";
 
-const settings = vi.hoisted(() => ({
-  speedrunFeatures: false,
-  preplay: false,
-}));
-vi.mock("../../UiGlobals.ts", () => ({ globals: { lobby: { settings } } }));
+vi.mock("../../UiGlobals.ts", () => ({ globals: {} }));
 const { draggablePlayerIndex } = await import("./draggableView.ts");
 
 const OUR_PLAYER_INDEX = 1;
@@ -41,7 +40,7 @@ function makeState({
 
 describe("draggablePlayerIndex", () => {
   beforeEach(() => {
-    settings.preplay = false;
+    store.dispatch(settingsChanged(defaultSettings));
   });
 
   test("allows our cards on our turn", () => {
@@ -52,7 +51,7 @@ describe("draggablePlayerIndex", () => {
     const state = makeState({ currentPlayerIndex: OTHER_PLAYER_INDEX });
     expect(draggablePlayerIndex(state)).toBeUndefined();
 
-    settings.preplay = true;
+    store.dispatch(settingsChanged({ ...defaultSettings, preplay: true }));
     expect(draggablePlayerIndex(state)).toBe(OUR_PLAYER_INDEX);
   });
 

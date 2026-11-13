@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import { globals } from "./UiGlobals.ts";
 import { BGA_ACTION_LOG, THIN_STROKE_WIDTH } from "./constants.ts";
@@ -71,7 +72,7 @@ const REPLAY_BOTTOM_BUTTON = {
 } as const;
 
 export function drawReplayArea(winW: number, winH: number): void {
-  const { keldonMode } = globals.lobby.settings;
+  const { keldonMode } = store.getState().session.settings;
   const replayAreaValues = keldonMode ? REPLAY_AREA.keldon : REPLAY_AREA.bga;
 
   globals.elements.replayArea = new Konva.Group({

@@ -180,19 +180,20 @@ const SUBMIT_LABELS = {
  */
 function rememberedTimeControl(): NonNullable<GameOptions["timeControl"]> {
   return (
-    globals.settings.createTable.options.timeControl ?? DEFAULT_TIME_CONTROL
+    store.getState().session.settings.createTable.options.timeControl
+    ?? DEFAULT_TIME_CONTROL
   );
 }
 
 function getDefaultTableName(): string {
-  return `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
+  return `${store.getState().session.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
 }
 
 /** The form from our last table, or from the options of the table that we are at. */
 function getInitialForm(mode: Mode): CreateGameForm {
-  const { game } = globals;
+  const { game } = store.getState().pregame;
   if (mode === "create" || game === undefined) {
-    const { createTable } = globals.settings;
+    const { createTable } = store.getState().session.settings;
     return {
       name:
         localStorage.getItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME)
@@ -241,11 +242,13 @@ const TABLE_NAME_LENGTH_LIMIT = {
 } as const satisfies LengthLimit;
 
 function getMode(): Mode {
-  const { game } = globals;
-  if (game === undefined || globals.currentScreen === Screen.Lobby) {
+  const { game } = store.getState().pregame;
+  if (game === undefined || store.getState().session.screen === Screen.Lobby) {
     return "create";
   }
-  return game.owner.userId === globals.userId ? "change" : "suggest";
+  return game.owner.userId === store.getState().session.userId
+    ? "change"
+    : "suggest";
 }
 
 export function CreateGame(): React.JSX.Element {

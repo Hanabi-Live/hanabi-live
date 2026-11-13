@@ -11,8 +11,9 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { globals } from "../../Globals.ts";
 import { SoundType } from "../../game/types/SoundType.ts";
 import * as notifications from "../../notifications.ts";
+import { settingsChanged } from "../../sessionSlice.ts";
 import { SOUNDS_PATH } from "../../sounds.ts";
-import { useAppSelector } from "../../store.ts";
+import { store, useAppSelector } from "../../store.ts";
 import * as theme from "../../theme.ts";
 
 /** How long "Saved" stays beside a setting before it fades out. */
@@ -260,8 +261,9 @@ function HGroupLevelRow() {
           const level = parseIntSafe(event.target.value);
           if (level === undefined) {
             // A level that we did not choose is absent from our settings.
-            const { hGroupLevel: _cleared, ...settings } = globals.settings;
-            globals.settings = settings;
+            const { hGroupLevel: _cleared, ...settings } =
+              store.getState().session.settings;
+            store.dispatch(settingsChanged(settings));
             globals.conn!.send("settings", {
               settings: {},
               cleared: ["hGroupLevel"],
@@ -303,7 +305,9 @@ function RowLabel({
 
 /** Changes our settings here and on the server. */
 function changeSetting(changed: Partial<Settings>) {
-  globals.settings = { ...globals.settings, ...changed };
+  store.dispatch(
+    settingsChanged({ ...store.getState().session.settings, ...changed }),
+  );
   globals.conn!.send("settings", { settings: changed });
 }
 

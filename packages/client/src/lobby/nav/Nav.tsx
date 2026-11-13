@@ -16,7 +16,7 @@ import * as pregame from "../pregame/pregame.ts";
 import { startGameSentChanged } from "../pregame/pregameSlice.ts";
 import { signOut } from "../signOut.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
-import { isPlayer } from "../tables/tablesSlice.ts";
+import { isPlayer, selectTable, selectTables } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import * as watchReplay from "../watchReplay/WatchReplay.tsx";
 
@@ -449,7 +449,8 @@ function startGame() {
     {
       tableId: globals.joinedTableId,
       intendedPlayerIds:
-        globals.game?.players.map((player) => player.userId) ?? [],
+        store.getState().pregame.game?.players.map((player) => player.userId)
+        ?? [],
     },
     () => {
       // The started game arrives before the reply. A start that the server refused or ignored, such
@@ -460,14 +461,15 @@ function startGame() {
 }
 
 function joinGame() {
-  const table = globals.getTable(globals.joinedTableId);
+  const table = selectTable(store.getState(), globals.joinedTableId);
   if (table === undefined) {
     return;
   }
 
-  const oldTable = globals.tables.find(
+  const oldTable = selectTables(store.getState()).find(
     (value) =>
-      isPlayer(value, globals.username) && value.phase.type !== "sharedReplay",
+      isPlayer(value, store.getState().session.username)
+      && value.phase.type !== "sharedReplay",
   );
   if (oldTable !== undefined) {
     if (oldTable.phase.type !== "pregame") {
@@ -482,7 +484,7 @@ function joinGame() {
 }
 
 function spectateGame() {
-  const table = globals.getTable(globals.joinedTableId);
+  const table = selectTable(store.getState(), globals.joinedTableId);
   if (table === undefined) {
     return;
   }
@@ -499,14 +501,14 @@ function returnToLobby() {
 
 function leaveGame() {
   // "Leave Game" and "Return to Lobby" are the same for spectators.
-  const table = globals.getTable(globals.joinedTableId);
+  const table = selectTable(store.getState(), globals.joinedTableId);
   if (table === undefined) {
     return;
   }
 
   if (
     table.spectators.some(
-      (spectator) => spectator.username === globals.username,
+      (spectator) => spectator.username === store.getState().session.username,
     )
   ) {
     returnToLobby();

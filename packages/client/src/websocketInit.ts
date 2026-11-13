@@ -23,6 +23,11 @@ import { usersCleared } from "./lobby/users/usersSlice.ts";
 import * as modals from "./modals.ts";
 import { reloadOutdatedClient } from "./outdatedClient.ts";
 import { ReconnectBackoff } from "./reconnect.ts";
+import {
+  blockedChanged,
+  friendsChanged,
+  settingsChanged,
+} from "./sessionSlice.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as theme from "./theme.ts";
@@ -262,15 +267,15 @@ function openConnection(isReconnect: boolean) {
       store.dispatch(usersCleared());
       store.dispatch(tablesCleared());
       if (
-        globals.currentScreen === Screen.Game
+        store.getState().session.screen === Screen.Game
         && globals.ui !== undefined
-        && data.userId === globals.userId
+        && data.userId === store.getState().session.userId
       ) {
         globals.muted = data.muted;
-        globals.settings = data.settings;
-        globals.friends = data.friends;
-        globals.blocked = data.blocked;
-        theme.setDarkMode(globals.settings.darkMode);
+        store.dispatch(settingsChanged(data.settings));
+        store.dispatch(friendsChanged(data.friends));
+        store.dispatch(blockedChanged(data.blocked));
+        theme.setDarkMode(store.getState().session.settings.darkMode);
         const retained = globals.joinedTableId;
         conn.on("tableJoined", (table) => {
           if (!isCurrentConnection(conn)) {
@@ -431,7 +436,7 @@ function gameCallback<Command extends ServerEvent>(
     // Ignore game events outside a loaded game, or while the UI is loading.
     if (
       !isCurrentConnection(conn)
-      || globals.currentScreen !== Screen.Game
+      || store.getState().session.screen !== Screen.Game
       || globals.ui === undefined
     ) {
       return;

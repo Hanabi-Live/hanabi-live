@@ -1,12 +1,12 @@
 // The lobby area that shows all of the current logged-in users.
 
 import { StatusText } from "@hanabi-live/data";
-import { globals } from "../../Globals.ts";
 import { DIMMED_OPACITY } from "../../constants.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { TAB_CLASS_NAME } from "../../tabClassName.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
+import { selectTable } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import { UserLink } from "./UserMenu.tsx";
 import type { UserRow } from "./usersSlice.ts";
@@ -185,7 +185,7 @@ function goToTable(user: UserRow["user"]) {
   if (!("tableId" in activity)) {
     return;
   }
-  const table = globals.getTable(activity.tableId);
+  const table = selectTable(store.getState(), activity.tableId);
   if (table === undefined) {
     return;
   }

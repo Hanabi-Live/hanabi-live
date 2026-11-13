@@ -9,9 +9,9 @@ import {
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
 import type { z } from "zod";
-import { globals } from "../Globals.ts";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
+import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { getUrlFromPath } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
@@ -257,8 +257,8 @@ export function hide(firstTimeUser: boolean): void {
 
   // Show the lobby. During the tutorial, the server can already have sent us to a pre-game screen,
   // so only leave the login screen.
-  if (globals.currentScreen === Screen.Login) {
-    globals.currentScreen = Screen.Lobby;
+  if (store.getState().session.screen === Screen.Login) {
+    store.dispatch(screenChanged(Screen.Lobby));
   }
   $("#lobby").removeClass("hidden");
   $("#lobby-chat-input").trigger("focus");

@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
+import { store } from "../../../store.ts";
 import { globals } from "../UiGlobals.ts";
 import { ClueLog } from "./ClueLog.tsx";
 
@@ -107,7 +108,7 @@ function render() {
     <StrictMode>
       <Provider store={globals.store}>
         <ClueLog
-          colorblindMode={globals.lobby.settings.colorblindMode}
+          colorblindMode={store.getState().session.settings.colorblindMode}
           hoveredCardOrder={hoveredCardOrder}
           stageHeight={globals.stage.height()}
           stageWidth={globals.stage.width()}

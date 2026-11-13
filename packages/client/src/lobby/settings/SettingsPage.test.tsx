@@ -12,6 +12,7 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
+import { settingsChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { SettingsPage } from "./SettingsPage.tsx";
 
@@ -27,7 +28,7 @@ function getInput(id: string) {
 beforeEach(() => {
   vi.useFakeTimers();
   globals.conn = { send } as unknown as Connection;
-  globals.settings = defaultSettings;
+  store.dispatch(settingsChanged(defaultSettings));
   send.mockClear();
   render(
     <Provider store={store}>
@@ -46,7 +47,7 @@ describe("SettingsPage", () => {
     act(() => {
       getInput("colorblindMode")!.click();
     });
-    expect(globals.settings.colorblindMode).toBe(true);
+    expect(store.getState().session.settings.colorblindMode).toBe(true);
     expect(send).toHaveBeenCalledWith("settings", {
       settings: { colorblindMode: true },
     });
@@ -69,12 +70,12 @@ describe("SettingsPage", () => {
     act(() => {
       fireEvent.change(getInput("hGroupLevel")!, { target: { value: "3" } });
     });
-    expect(globals.settings.hGroupLevel).toBe(3);
+    expect(store.getState().session.settings.hGroupLevel).toBe(3);
 
     act(() => {
       fireEvent.change(getInput("hGroupLevel")!, { target: { value: "" } });
     });
-    expect(globals.settings).not.toHaveProperty("hGroupLevel");
+    expect(store.getState().session.settings).not.toHaveProperty("hGroupLevel");
     expect(send).toHaveBeenLastCalledWith("settings", {
       settings: {},
       cleared: ["hGroupLevel"],
@@ -92,7 +93,7 @@ describe("SettingsPage", () => {
     act(() => {
       fireEvent.change(slider, { target: { value: "80" } });
     });
-    expect(globals.settings.volume).toBe(80);
+    expect(store.getState().session.settings.volume).toBe(80);
     expect(send).toHaveBeenCalledWith("settings", { settings: { volume: 80 } });
   });
 });

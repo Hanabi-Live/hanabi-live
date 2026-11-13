@@ -56,13 +56,13 @@ function acknowledgeChatRead(
     return;
   }
 
-  if (globals.currentScreen === Screen.PreGame) {
+  if (store.getState().session.screen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received.
     globals.conn!.send("chatRead", {
       tableId: globals.joinedTableId,
     });
   } else if (
-    globals.currentScreen === Screen.Game
+    store.getState().session.screen === Screen.Game
     && globals.ui !== undefined
   ) {
     if (gameChat.isOpen()) {

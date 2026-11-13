@@ -3,7 +3,7 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
-import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   PLAY_ANIMATION_SECONDS,
@@ -263,7 +263,7 @@ function animateSpecialMove(
     if (stackSlot === null) {
       return false;
     }
-    if (effects.live && !globals.settings.reducedMotion) {
+    if (effects.live && !store.getState().session.settings.reducedMotion) {
       const strikeBox =
         misplay.strikeIndex === undefined
           ? undefined

@@ -10,6 +10,7 @@ import {
 import * as createGame from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
 import { getOnlineUserId } from "./onlineUsers.ts";
+import { store } from "./store.ts";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +36,9 @@ function friend(room: string, args: readonly string[]) {
 
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
-  if (username.toLowerCase() === globals.username.toLowerCase()) {
+  if (
+    username.toLowerCase() === store.getState().session.username.toLowerCase()
+  ) {
     sendSelfPmFromServer("You cannot friend yourself.", room);
   }
 
@@ -48,9 +51,9 @@ chatCommands.set("friend", friend);
 // /friends
 function friends(room: string) {
   const msg =
-    globals.friends.length === 0
+    store.getState().session.friends.length === 0
       ? "Currently, you do not have any friends on your friends list."
-      : `Current friends: ${globals.friends.join(", ")}`;
+      : `Current friends: ${store.getState().session.friends.join(", ")}`;
   sendSelfPmFromServer(msg, room);
 }
 chatCommands.set("friends", friends);
@@ -69,7 +72,9 @@ function link(room: string, args: readonly string[]) {
 
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
-  if (username.toLowerCase() === globals.username.toLowerCase()) {
+  if (
+    username.toLowerCase() === store.getState().session.username.toLowerCase()
+  ) {
     sendSelfPmFromServer("You cannot link yourself.", room);
   }
 
@@ -92,7 +97,9 @@ function unlink(room: string, args: readonly string[]) {
 
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
-  if (username.toLowerCase() === globals.username.toLowerCase()) {
+  if (
+    username.toLowerCase() === store.getState().session.username.toLowerCase()
+  ) {
     sendSelfPmFromServer("You cannot unlink yourself.", room);
   }
 
@@ -137,9 +144,9 @@ chatCommands.set("unblock", blockCommand("unblock"));
 // /blocked
 chatCommands.set("blocked", (room: string) => {
   const msg =
-    globals.blocked.length === 0
+    store.getState().session.blocked.length === 0
       ? "Currently, you have not blocked anyone."
-      : `Currently blocked players: ${globals.blocked.join(", ")}`;
+      : `Currently blocked players: ${store.getState().session.blocked.join(", ")}`;
   sendSelfPmFromServer(msg, room);
 });
 
@@ -159,7 +166,9 @@ function pm(room: string, args: readonly string[]) {
   }
 
   // Validate that they are not sending a private message to themselves.
-  if (recipient.toLowerCase() === globals.username.toLowerCase()) {
+  if (
+    recipient.toLowerCase() === store.getState().session.username.toLowerCase()
+  ) {
     sendSelfPmFromServer(
       "You cannot send a private message to yourself.",
       room,
@@ -331,7 +340,7 @@ function setVariant(room: string, args: readonly string[]) {
     return;
   }
 
-  const { game } = globals;
+  const { game } = store.getState().pregame;
   if (game === undefined) {
     sendSelfPmFromServer(
       "You can only change the variant before the game starts.",
@@ -509,7 +518,9 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
 
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
-  if (username.toLowerCase() === globals.username.toLowerCase()) {
+  if (
+    username.toLowerCase() === store.getState().session.username.toLowerCase()
+  ) {
     sendSelfPmFromServer(
       "You cannot unfriend yourself.",
       room,

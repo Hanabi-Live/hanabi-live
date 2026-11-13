@@ -8,17 +8,28 @@ import * as spectatorsView from "../game/ui/reactive/views/spectatorsView.ts";
 import * as modals from "../modals.ts";
 import { noticeHtml } from "../notice.ts";
 import { ServerHandlers } from "../serverHandlers.ts";
+import {
+  blockedChanged,
+  friendsChanged,
+  settingsChanged,
+  userIdChanged,
+  usernameChanged,
+} from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
 import * as theme from "../theme.ts";
 import {
   historyReceived,
   lobbyStatusReceived,
+  totalGamesChanged,
 } from "./gameHistory/historySlice.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
-import { startGameCooldownChanged } from "./pregame/pregameSlice.ts";
+import {
+  gameChanged,
+  startGameCooldownChanged,
+} from "./pregame/pregameSlice.ts";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice.ts";
 import { Screen } from "./types/Screen.ts";
 import * as url from "./url.ts";
@@ -40,16 +51,19 @@ lobbyCommands.set("lobbyStatus", (data) => {
 });
 
 lobbyCommands.set("blocked", (data) => {
-  globals.blocked = data.blocked;
+  store.dispatch(blockedChanged(data.blocked));
 });
 
 lobbyCommands.set("friends", (data) => {
   // The server has sent us a new list of our friends; store this locally.
-  globals.friends = [...data.friends];
+  store.dispatch(friendsChanged([...data.friends]));
 
   // Since our list of friends has changed, we need to redraw the spectators of the game so that
   // users that happen to be our friend will be shown in the correct color.
-  if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
+  if (
+    store.getState().session.screen === Screen.Game
+    && globals.ui !== undefined
+  ) {
     spectatorsView.onSpectatorsChanged({
       spectators: globals.ui.globals.state.spectators,
       finished: globals.ui.globals.state.finished,
@@ -58,12 +72,19 @@ lobbyCommands.set("friends", (data) => {
 });
 
 lobbyCommands.set("pregame", (data) => {
-  const previous = globals.game;
+  const previous = store.getState().pregame.game;
   const previousPlayers = previous?.players;
-  if (shouldPlayJoinSound(previous, data, globals.userId, Date.now())) {
+  if (
+    shouldPlayJoinSound(
+      previous,
+      data,
+      store.getState().session.userId,
+      Date.now(),
+    )
+  ) {
     sounds.play(SoundType.SomeoneJoined);
   }
-  globals.game = data;
+  store.dispatch(gameChanged(data));
   globals.tableId = data.tableId;
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
@@ -78,8 +99,9 @@ lobbyCommands.set("pregame", (data) => {
 lobbyCommands.set("gameHistoryAdded", (data) => {
   // We just finished a game, so add it to our history and our total.
   store.dispatch(historyReceived([data]));
-  if (globals.totalGames !== undefined) {
-    globals.totalGames++;
+  const { totalGames } = store.getState().history;
+  if (totalGames !== undefined) {
+    store.dispatch(totalGamesChanged(totalGames + 1));
   }
 });
 
@@ -92,7 +114,10 @@ lobbyCommands.set("tableJoined", (data) => {
     pregame.show();
     return;
   }
-  if (data.stage !== "replay" && globals.currentScreen === Screen.PreGame) {
+  if (
+    data.stage !== "replay"
+    && store.getState().session.screen === Screen.PreGame
+  ) {
     pregame.hide(false);
   }
   gameMain.show(data.stage === "justStarted");
@@ -106,9 +131,9 @@ lobbyCommands.set("tableLeft", (data) => {
   if (data.tableId !== globals.tableId) {
     return;
   }
-  if (globals.currentScreen === Screen.PreGame) {
+  if (store.getState().session.screen === Screen.PreGame) {
     pregame.hide();
-  } else if (globals.currentScreen === Screen.Game) {
+  } else if (store.getState().session.screen === Screen.Game) {
     gameMain.hide();
   }
   globals.tableId = undefined;
@@ -125,7 +150,7 @@ lobbyCommands.set("tableRemoved", (data) => {
 
   // If we were spectating the pre-game of this table, return to the lobby.
   if (
-    globals.currentScreen === Screen.PreGame
+    store.getState().session.screen === Screen.PreGame
     && globals.tableId === data.tableId
   ) {
     pregame.hide();
@@ -133,7 +158,7 @@ lobbyCommands.set("tableRemoved", (data) => {
   }
 
   // If we followed a link to this table, it no longer exists, so stay in the lobby.
-  if (globals.currentScreen === Screen.Lobby) {
+  if (store.getState().session.screen === Screen.Lobby) {
     url.leaveTableLink(data.tableId);
   }
 });
@@ -164,20 +189,25 @@ lobbyCommands.set("userRemoved", (data) => {
 // Received by the client upon first connecting.
 lobbyCommands.set("welcome", (data) => {
   // Store some variables (mostly relating to our user account).
-  globals.userId = data.userId;
+  store.dispatch(userIdChanged(data.userId));
   setTabAccount(data.userId);
-  globals.username = data.username; // We might have logged-in with a different stylization
-  globals.totalGames = undefined;
+  store.dispatch(usernameChanged(data.username)); // We might have logged-in with a different stylization
+  store.dispatch(totalGamesChanged(undefined));
   globals.muted = data.muted;
-  globals.settings = data.settings;
-  globals.friends = data.friends;
-  globals.blocked = data.blocked;
+  store.dispatch(settingsChanged(data.settings));
+  store.dispatch(friendsChanged(data.friends));
+  store.dispatch(blockedChanged(data.blocked));
 
-  if (theme.takeLegacyDarkMode() && !globals.settings.darkMode) {
-    globals.settings = { ...globals.settings, darkMode: true };
+  if (
+    theme.takeLegacyDarkMode()
+    && !store.getState().session.settings.darkMode
+  ) {
+    store.dispatch(
+      settingsChanged({ ...store.getState().session.settings, darkMode: true }),
+    );
     globals.conn!.send("settings", { settings: { darkMode: true } });
   }
-  theme.setDarkMode(globals.settings.darkMode);
+  theme.setDarkMode(store.getState().session.settings.darkMode);
 
   // The "lobbyStatus" message reports the total number of games once the statistics load.
   lobbyLogin.hide(data.firstTimeUser);

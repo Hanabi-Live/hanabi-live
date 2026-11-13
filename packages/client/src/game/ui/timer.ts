@@ -4,6 +4,7 @@ import type { ServerEventData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
+import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
@@ -194,12 +195,12 @@ function setTickingDownTime(timer: TimerDisplay | undefined) {
   // frequently than once per tick.
   if (
     timed
-    && globals.lobby.settings.soundTimer
+    && store.getState().session.settings.soundTimer
     && milliseconds > 0
     && milliseconds <= LOW_TIME_WARNING_MILLISECONDS
     && Math.abs(elapsedTime - TICK_MILLISECONDS) < TICK_TOLERANCE_MILLISECONDS
     && globals.state.pause.pausingPlayerIndex === undefined
-    && !globals.lobby.errorOccurred
+    && !store.getState().session.errorOccurred
   ) {
     timer.toggleWarningFlash();
     globals.game!.sounds.play(SoundType.Tone);
@@ -209,7 +210,10 @@ function setTickingDownTime(timer: TimerDisplay | undefined) {
 /** Update the tooltip that appears when you hover over a player's name. */
 function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex) {
   // This tooltip is disabled in speedrun mode.
-  if (globals.lobby.settings.speedrunFeatures || globals.options.speedrun) {
+  if (
+    store.getState().session.settings.speedrunFeatures
+    || globals.options.speedrun
+  ) {
     return;
   }
 
@@ -231,7 +235,7 @@ function setTickingDownTimeCurrentPlayerTooltip() {
   const { clockPlayerIndex } = globals;
   if (
     (globals.options.timeControl === undefined
-      && !globals.lobby.settings.showTimerInUntimed)
+      && !store.getState().session.settings.showTimerInUntimed)
     || clockPlayerIndex === undefined
   ) {
     return;

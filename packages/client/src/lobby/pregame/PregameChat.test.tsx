@@ -7,7 +7,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { add, addSettingsSuggestion } from "../../chat.ts";
-import { globals } from "../../Globals.ts";
+import { screenChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
 import { Screen } from "../types/Screen.ts";
@@ -40,8 +40,8 @@ function message(
 }
 
 beforeEach(() => {
-  globals.username = "me";
-  globals.currentScreen = Screen.PreGame;
+  store.dispatch(usernameChanged("me"));
+  store.dispatch(screenChanged(Screen.PreGame));
   store.dispatch(pregameChatCleared());
   render(
     <Provider store={store}>

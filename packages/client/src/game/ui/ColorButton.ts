@@ -2,6 +2,7 @@ import type { Clue, Suit, Variant } from "@hanabi-live/game";
 import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
+import { store } from "../../store.ts";
 import { globals } from "./UiGlobals.ts";
 import {
   BUTTON_CORNER_RADIUS,
@@ -67,7 +68,7 @@ export class ColorButton extends Konva.Group {
     });
     this.add(backgroundColor);
 
-    if (globals.lobby.settings.colorblindMode) {
+    if (store.getState().session.settings.colorblindMode) {
       if (isDualColor(globals.variant)) {
         // For Dual-Color variants, draw the color abbreviation (as text).
         const text = new Konva.Text({

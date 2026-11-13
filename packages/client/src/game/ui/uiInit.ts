@@ -1,6 +1,7 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import { globals } from "./UiGlobals.ts";
 import {
@@ -116,8 +117,8 @@ function finishedDownloadingImages() {
   // we have the colorblind UI feature enabled).
   globals.cardImages = drawCards(
     globals.variant,
-    globals.lobby.settings.colorblindMode,
-    globals.lobby.settings.styleNumbers,
+    store.getState().session.settings.colorblindMode,
+    store.getState().session.settings.styleNumbers,
     true,
     drawCardsBrowser.cardRendererBackend,
   );

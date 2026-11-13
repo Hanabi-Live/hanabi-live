@@ -6,6 +6,7 @@ import {
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import { store } from "../../../../store.ts";
 import { setBrowserAddressBarPath } from "../../../../utils.ts";
 import { globals } from "../../UiGlobals.ts";
 import * as arrows from "../../arrows.ts";
@@ -75,7 +76,7 @@ export function onCurrentPlayerIndexChanged(
   if (currentPlayerIndex === undefined) {
     // The game has ended. Ensure that the clue UI is not showing.
     arrows.hideAll();
-  } else if (globals.lobby.settings.keldonMode) {
+  } else if (store.getState().session.settings.keldonMode) {
     // In addition to bolding the player's name, change the color of their black line to signify
     // that it is their turn.
     for (const rect of globals.elements.playerHandBlackLines) {
@@ -118,13 +119,13 @@ export function onScoreOrMaxScoreChanged(data: {
     globals.variant.suits.length * LOW_SCORE_PHASE_CARDS_PER_SUIT;
   const lowScorePhase = data.score < lowScorePhaseThreshold;
   const scoreLabelColor =
-    lowScorePhase && globals.lobby.settings.hGroupConventions
+    lowScorePhase && store.getState().session.settings.hGroupConventions
       ? "cyan"
       : LABEL_COLOR;
   const scoreLabelStyle =
     lowScorePhase
-    && globals.lobby.settings.hGroupConventions
-    && globals.lobby.settings.colorblindMode
+    && store.getState().session.settings.hGroupConventions
+    && store.getState().session.settings.colorblindMode
       ? "bold"
       : "normal";
   scoreLabel.fontStyle(scoreLabelStyle);
@@ -176,7 +177,7 @@ export function onClueTokensChanged(clueTokens: number): void {
   ).toString();
   globals.elements.cluesNumberLabel?.text(cluesTokensText);
 
-  if (!globals.lobby.settings.realLifeMode) {
+  if (!store.getState().session.settings.realLifeMode) {
     const noCluesAvailable = clueTokens < getClueCost(globals.variant);
     const oneClueAvailable = clueTokens === getClueCost(globals.variant);
     const maxCluesAvailable = isAtMaxClueTokens(clueTokens, globals.variant);
@@ -211,7 +212,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   clueTokens: number;
   doubleDiscard: number | undefined;
 }): void {
-  if (globals.lobby.settings.realLifeMode) {
+  if (store.getState().session.settings.realLifeMode) {
     return;
   }
 
@@ -224,7 +225,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   // Show a yellow border around the discard pile (to reinforce that this is a "Double Discard"
   // situation).
   globals.elements.noDoubleDiscardBorder?.visible(
-    globals.lobby.settings.hGroupConventions
+    store.getState().session.settings.hGroupConventions
       && !noDiscard
       && data.doubleDiscard !== undefined,
   );

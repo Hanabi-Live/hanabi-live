@@ -20,6 +20,7 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { z } from "zod";
+import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { CardLayout } from "./CardLayout.ts";
@@ -82,7 +83,10 @@ function getClueArrowColor(
   }
 
   // if H-Group features are enabled, use a different color for cards that have been chop-moved
-  if (globals.lobby.settings.hGroupConventions && element.note.chopMoved) {
+  if (
+    store.getState().session.settings.hGroupConventions
+    && element.note.chopMoved
+  ) {
     return ARROW_COLOR.CM_TOUCHED;
   }
 
@@ -153,9 +157,9 @@ export function set(
       rot = element.parent.parent.origRotation;
     }
     if (
-      (!globals.lobby.settings.keldonMode
+      (!store.getState().session.settings.keldonMode
         && element.state.location === getViewPlayerIndex(globals.metadata))
-      || (globals.lobby.settings.keldonMode
+      || (store.getState().session.settings.keldonMode
         && element.state.location !== getViewPlayerIndex(globals.metadata)
         && isCardInPlayerHand(element.state))
     ) {
@@ -220,7 +224,7 @@ export function set(
             arrow.circle.fill(clueColor.fill);
 
             // Additionally, draw the suit pip in colorblind mode.
-            if (globals.lobby.settings.colorblindMode) {
+            if (store.getState().session.settings.colorblindMode) {
               if (typeof clue.value === "number") {
                 throw new TypeError(
                   "The clue value was a number for a color clue.",
@@ -263,7 +267,7 @@ export function set(
           arrow.circle.stroke("white");
           arrow.circle.fill("black");
 
-          if (globals.lobby.settings.colorblindMode) {
+          if (store.getState().session.settings.colorblindMode) {
             arrow.suitPip!.hide();
           }
 

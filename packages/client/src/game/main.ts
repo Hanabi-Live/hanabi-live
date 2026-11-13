@@ -6,6 +6,7 @@ import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat.tsx";
 import * as lobbyPage from "../lobby/lobbyPage.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
+import { screenChanged } from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
@@ -24,7 +25,10 @@ let screenBeforeGame = Screen.Lobby;
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
-    if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
+    if (
+      store.getState().session.screen === Screen.Game
+      && globals.ui !== undefined
+    ) {
       globals.ui.focusLost();
     }
   });
@@ -37,22 +41,22 @@ export function show(justStarted: boolean): void {
 
   tooltips.clearPlayerTimeTooltips();
   lobbyPage.hide();
-  screenBeforeGame = globals.currentScreen;
-  globals.currentScreen = Screen.Game;
+  screenBeforeGame = store.getState().session.screen;
+  store.dispatch(screenChanged(Screen.Game));
   document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
   store.dispatch(gameChatCleared()); // Clear the in-game chat box of any previous content
   // eslint-disable-next-line @typescript-eslint/strict-void-return
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
   // The classic screen keeps running underneath the redesigned one, hidden.
-  if (!globals.settings.newUi) {
+  if (!store.getState().session.settings.newUi) {
     $("#game").fadeIn(FADE_TIME_MS);
   }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   globals.ui = new HanabiUi(globals, gameExports, justStarted);
   globals.chatUnread = 0;
-  if (globals.settings.newUi) {
+  if (store.getState().session.settings.newUi) {
     newUi.mount();
   }
 
@@ -75,13 +79,16 @@ export function hide(): void {
 
   // We could be going back to one of the history screens, since we can enter a solo replay from
   // them.
-  globals.currentScreen =
-    screenBeforeGame === Screen.History
-    || screenBeforeGame === Screen.HistoryOtherScores
-      ? screenBeforeGame
-      : Screen.Lobby;
+  store.dispatch(
+    screenChanged(
+      screenBeforeGame === Screen.History
+        || screenBeforeGame === Screen.HistoryOtherScores
+        ? screenBeforeGame
+        : Screen.Lobby,
+    ),
+  );
   if (
-    globals.currentScreen !== Screen.Lobby
+    store.getState().session.screen !== Screen.Lobby
     && historyHash !== ""
     && globalThis.location.pathname === PATH.LOBBY
   ) {

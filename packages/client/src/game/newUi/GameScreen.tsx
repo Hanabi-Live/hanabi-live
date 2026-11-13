@@ -24,6 +24,7 @@ import {
 import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -282,7 +283,7 @@ function getSeats(
 ): readonly Seat[] {
   const visibleState = state.visibleState!;
   const { metadata } = state;
-  const { settings } = globals.lobby;
+  const { settings } = store.getState().session;
   const { numPlayers } = metadata.options;
   const hasSeat = state.playing || state.shadowing;
   // In the replay of a game that we played, our hand stays first.
@@ -451,7 +452,7 @@ function getClueMarker(
 /** The clues of the game so far, for the clue log. */
 function getClueLogEntries(state: State): readonly ClueLogEntry[] {
   const { playerNames, characterAssignments } = state.metadata;
-  const { colorblindMode } = globals.lobby.settings;
+  const { colorblindMode } = store.getState().session.settings;
   return state.visibleState!.clues.map((clue) => ({
     segment: clue.segment,
     turn: clue.segment + 1,
@@ -1035,7 +1036,7 @@ export function GameScreen({
         effects,
       );
 
-      if (!globals.lobby.settings.reducedMotion) {
+      if (!store.getState().session.settings.reducedMotion) {
         animateScoreChanges(
           root,
           previous.shownState,
@@ -1074,7 +1075,7 @@ export function GameScreen({
 
   const { visibleState, metadata, ongoingGame } = state;
   const { variant } = globals;
-  const { settings } = globals.lobby;
+  const { settings } = store.getState().session;
   const { options } = metadata;
   const inReplay = state.replay.segment !== undefined;
   const hypo = state.replay.hypothetical;

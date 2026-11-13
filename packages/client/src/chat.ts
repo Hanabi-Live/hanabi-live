@@ -569,7 +569,7 @@ export function addSettingsSuggestion(
       kind: {
         type: "private",
         author: { type: "server" },
-        recipient: globals.username,
+        recipient: store.getState().session.username,
       },
     },
     fast,
@@ -619,7 +619,7 @@ function addInternal(
   if (
     updateLiveState
     && author.type === "user"
-    && recipient === globals.username
+    && recipient === store.getState().session.username
   ) {
     lastPrivateMessageSender = author.username;
   }
@@ -638,7 +638,7 @@ function addInternal(
     time: chatTimeFormatter.format(new Date(data.sentAt)),
     ...(recipient !== undefined && {
       privateMessage:
-        recipient === globals.username
+        recipient === store.getState().session.username
           ? { direction: "from", name: authorName ?? PROJECT_NAME }
           : { direction: "to", name: recipient },
     }),
@@ -695,11 +695,11 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
     return "lobby";
   }
 
-  if (globals.currentScreen === Screen.PreGame) {
+  if (store.getState().session.screen === Screen.PreGame) {
     return "pregame";
   }
 
-  if (globals.currentScreen === Screen.Game) {
+  if (store.getState().session.screen === Screen.Game) {
     return "game";
   }
 
@@ -755,7 +755,7 @@ export function sendSelfPmFromServer(
       kind: {
         type: "private",
         author: { type: "server" },
-        recipient: globals.username,
+        recipient: store.getState().session.username,
       },
     },
     false,

@@ -1,5 +1,6 @@
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
+import { store } from "../../../../store.ts";
 import { isOurSeat } from "../../../ourSeat.ts";
 import { SoundType } from "../../../types/SoundType.ts";
 import { isOurTurn } from "../../isOurTurn.ts";
@@ -22,7 +23,7 @@ export function onNewSoundEffect(
       }
     | undefined,
 ): void {
-  const { soundMove } = globals.lobby.settings;
+  const { soundMove } = store.getState().session.settings;
 
   // On the first load, only play a sound if the game started just now (and not after a refresh or
   // when joining a game in progress). Use the flag once so that observer re-registration cannot
@@ -101,7 +102,7 @@ function getAdjustedSoundType(
       || soundType === SoundType.DiscardClued
       || soundType === SoundType.DoubleDiscard
       || soundType === SoundType.DoubleDiscardCause)
-      && !globals.lobby.settings.hGroupConventions
+      && !store.getState().session.settings.hGroupConventions
       // Disable special sounds in "Throw It in a Hole" variants because they leak information.
       && !globals.variant.throwItInAHole
       ? standardSoundType
