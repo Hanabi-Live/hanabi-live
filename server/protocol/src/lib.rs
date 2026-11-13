@@ -60,8 +60,6 @@ mod integers;
 mod lobby;
 mod replay;
 mod requests;
-#[cfg(feature = "http")]
-mod website;
 pub use catalog::*;
 pub use chat::*;
 pub use game::*;
@@ -70,8 +68,6 @@ pub use integers::*;
 pub use lobby::*;
 pub use replay::*;
 pub use requests::*;
-#[cfg(feature = "http")]
-pub use website::*;
 
 /// Defines the protocol's constants. `@data` or `@game` before a constant also exports it to
 /// TypeScript under the same name, from the data package or from the game library, which

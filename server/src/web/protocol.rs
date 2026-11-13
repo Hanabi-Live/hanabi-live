@@ -81,10 +81,9 @@ mod tests {
     }
     #[test]
     fn shared_client_compatibility_fixtures() {
-        let cases: Vec<Value> = serde_json::from_str(include_str!(
-            "../../../libs/protocol/fixtures/compatibility.json"
-        ))
-        .unwrap();
+        let cases: Vec<Value> =
+            serde_json::from_str(include_str!("../../protocol/fixtures/compatibility.json"))
+                .unwrap();
         for case in cases.iter().filter(|case| case["direction"] == "client") {
             let result = request(case["command"].as_str().unwrap(), &case["input"]);
             let valid = case["nativeValid"]

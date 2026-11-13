@@ -9,7 +9,7 @@ license = "GPL-3.0-only"
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
-hanabi_protocol = { path = "../../libs/protocol" }
+hanabi_protocol = { path = "../protocol" }
 
 [lints]
 workspace = true

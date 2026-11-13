@@ -125,7 +125,7 @@ export const hanabiConfigBase = defineConfig(
 
   // @template-customization-start
 
-  // The wire contracts generated from "libs/protocol" keep the line breaks of their Rust doc
+  // The wire contracts generated from "server/protocol" keep the line breaks of their Rust doc
   // comments, and their enums have the values that the wire sends.
   {
     files: ["**/src/generated/**"],

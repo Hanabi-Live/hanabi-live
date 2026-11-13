@@ -125,17 +125,8 @@ macro_rules! exported_types {
             TableId, GameId, UserId, ChatId, RequestId, Settings, Spectator, GameSummary,
             GamePage,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
-            UserRef, NoticeCode,
-        }
-    };
-}
-
-/// The bodies of the HTTP routes that the website uses (feature `http`), exported like the types above.
-#[cfg(feature = "http")]
-macro_rules! http_types {
-    ($apply:ident) => {
-        $apply! {
-            PasswordHashRequest, PasswordHashResponse, VariantNames, ScoreFrequency, GameListColumn,
+            UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
+            VariantNames, ScoreFrequency, GameListColumn,
         }
     };
 }
@@ -215,8 +206,6 @@ pub fn schemas() -> BTreeMap<String, Value> {
     request_contracts!(requests);
     event_contracts!(payloads);
     exported_types!(insert);
-    #[cfg(feature = "http")]
-    http_types!(insert);
     game_library_types!(insert);
     schemas
 }
@@ -227,14 +216,12 @@ pub fn exported() -> BTreeSet<&'static str> {
     macro_rules! names {
         ($($ty:ident),+ $(,)?) => { [$(stringify!($ty)),+] };
     }
-    let exported = request_contracts()
+    request_contracts()
         .into_values()
         .chain(reply_contracts().into_values())
         .chain(event_contracts().into_values())
-        .chain(exported_types!(names));
-    #[cfg(feature = "http")]
-    let exported = exported.chain(http_types!(names));
-    exported.collect()
+        .chain(exported_types!(names))
+        .collect()
 }
 
 /// The names of the types that the game library exports.

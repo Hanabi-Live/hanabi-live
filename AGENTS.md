@@ -22,7 +22,7 @@ justified, explain the use case and why a fixed behavior is insufficient.
 Name a limit, timeout, or protocol value once and refer to it everywhere,
 including in error messages that state it. Derive related values (such as
 `MAX_DECK_SIZE + 1`) instead of writing the result. Put values shared with
-clients or the game catalog in `libs/protocol`. A literal used once whose
+clients or the game catalog in `server/protocol`. A literal used once whose
 meaning is obvious from context can stay inline.
 
 ## Styling
@@ -228,7 +228,7 @@ payloads, or arbitrary exception strings through public errors or telemetry.
 The production server is Rust in `server/`; its binary is `hanabi-live`.
 `server/engine` owns native game rules.
 
-`libs/protocol` owns every JSON payload exchanged between the server and its
+`server/protocol` owns every JSON payload exchanged between the server and its
 clients, and the format of the game catalog in `packages/game/src/json`. It has
 no database, actor, or game-engine dependencies. Clients use only the generated
 schemas and their inferred types; do not hand-write TypeScript interfaces for

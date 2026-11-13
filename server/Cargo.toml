@@ -6,7 +6,7 @@ publish = false
 license = "GPL-3.0-only"
 
 [workspace]
-members = ["engine", "../libs/protocol"]
+members = ["engine", "protocol"]
 resolver = "3"
 
 # Every lint set here is an error rather than a warning: a warning that does not fail the build is
@@ -83,7 +83,7 @@ hmac = "0.13"
 hex = "0.4"
 hyper-util = { version = "0.1", features = ["tokio"] }
 hanabi_engine = { path = "engine" }
-hanabi_protocol = { path = "../libs/protocol", features = ["http"] }
+hanabi_protocol = { path = "protocol" }
 minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"

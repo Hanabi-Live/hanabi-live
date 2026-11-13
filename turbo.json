@@ -125,9 +125,7 @@
         "scripts/dev/generate-protocol.sh",
         "scripts/lint/check-rust.sh",
         "server/**",
-        "!server/**/target/**",
-        "libs/**",
-        "!libs/**/target/**"
+        "!server/**/target/**"
       ],
       "env": [
         "CARGO_BUILD_TARGET",
@@ -157,7 +155,6 @@
         "!install/**",
         "!packages/scripts/**",
         "!packages/testing/**",
-        "!libs/**",
         "!public/**",
         "!server/**"
       ],
