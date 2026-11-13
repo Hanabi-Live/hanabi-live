@@ -35,6 +35,8 @@ of the repository.
   the card's note tab shows this.
 - In the new game screen, the "Give clue" button says what you still have to
   pick.
+- In the new game screen, the turn shows once, in the bar along the bottom. In a
+  replay, it also shows the last turn, such as "5 / 21".
 
 ## November 12th, 2026
 

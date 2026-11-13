@@ -36,6 +36,12 @@ const PACE_HELP_LABEL =
 
 interface StatusStripProps {
   readonly turn: number;
+
+  /**
+   * The last turn of the game, while the screen shows a replay, so that the turn reads as "5 / 21".
+   * It is `undefined` in the game as it stands, in a hypothetical, and in a spoiler-free replay.
+   */
+  readonly lastTurn: number | undefined;
   readonly score: number;
   readonly maxScore: number;
   readonly pace: string;
@@ -172,6 +178,7 @@ const buttonClass =
  */
 export function StatusStrip({
   turn,
+  lastTurn,
   score,
   maxScore,
   pace,
@@ -193,7 +200,15 @@ export function StatusStrip({
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
-        <Stat label="Turn">{turn}</Stat>
+        <Stat label="Turn">
+          <span data-turn>
+            {lastTurn === undefined ? (
+              turn
+            ) : (
+              <OutOf max={lastTurn} value={turn} />
+            )}
+          </span>
+        </Stat>
         <Stat label="Score" size="large" truncate={false}>
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span className="tw:inline-block" data-score>

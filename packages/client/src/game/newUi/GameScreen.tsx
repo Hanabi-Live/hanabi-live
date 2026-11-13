@@ -1632,6 +1632,15 @@ export function GameScreen({
           efficiencyModifier,
         )}
         gameInfoTooltip={getGameInfoTooltip(false)}
+        // The replay bar has no turn of its own, so the turn here says how far into the game it is.
+        // A spoiler-free replay hides how long the game lasts.
+        lastTurn={
+          (state.replay.segment !== undefined || state.finished)
+          && state.replay.hypothetical === undefined
+          && state.replay.shared?.spoilerFree !== true
+            ? state.ongoingGame.turn.turnNum + 1
+            : undefined
+        }
         maxScore={visibleState.stats.maxScore}
         minEfficiency={metadata.minEfficiency.toFixed(
           EFFICIENCY_DECIMAL_PLACES,

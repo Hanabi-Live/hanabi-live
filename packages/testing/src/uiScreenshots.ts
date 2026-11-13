@@ -1738,7 +1738,9 @@ function getStates({
           .first();
         if (await card.isVisible()) {
           await dragCard(page, card, "play");
-          await page.getByText("Turn 2", { exact: true }).waitFor();
+          await page
+            .locator("#game-new-ui [data-turn]", { hasText: /^2$/u })
+            .waitFor();
         }
         await page.getByRole("button", { name: "Edit cards" }).click();
         await page.waitForTimeout(SETTLE_MILLISECONDS);

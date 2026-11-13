@@ -1,9 +1,9 @@
 // The controls below the hands while the screen shows a replay: the in-game replay, a finished
 // game, or a hypothetical. They call the same functions as the classic screen's replay controls.
 
-// The bar is a slate panel like the other boxes on the table. The color of its heading names the
-// mode: blue to look back at the game, violet to try other moves. The buttons and the timeline are
-// large, because a player clicks them many times in a row.
+// The bar is a dark felt panel like the other boxes on the table. The color of its heading names
+// the mode: blue to look back at the game, violet to try other moves. The buttons and the timeline
+// are large, because a player clicks them many times in a row.
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -66,47 +66,26 @@ function Bar({
   );
 }
 
-/** The mode's icon and name, over the turn on screen, like the numbers along the bottom. */
+/**
+ * The mode's icon and name. The turn on screen is in the bar along the bottom, with the other
+ * numbers about the game.
+ */
 function Heading({
   mode,
   icon,
   label,
-  turn,
-  lastTurn,
-  leaderMove,
-  following = false,
 }: {
   readonly mode: Mode;
   readonly icon: string;
   readonly label: string;
-  readonly turn: number;
-  readonly lastTurn: number | undefined;
-
-  /** The shared replay leader's last move, which the direction icon shows. */
-  readonly leaderMove?: LeaderMove | undefined;
-
-  /** Whether we follow the leader, so that the icon of their direction has a place. */
-  readonly following?: boolean;
 }): React.JSX.Element {
   return (
-    <div className="tw:mr-1 tw:flex tw:shrink-0 tw:flex-col tw:leading-tight">
-      <span
-        className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${ACCENT_TEXT_CLASS[mode]}`}
-      >
-        <i aria-hidden="true" className={`fas ${icon}`} />
-        {label}
-      </span>
-      <span className="tw:text-[22px] tw:font-bold tw:whitespace-nowrap tw:text-game-text">
-        Turn {turn}
-        {lastTurn !== undefined && (
-          <span className="tw:font-medium tw:text-game-muted">
-            {" "}
-            / {lastTurn}
-          </span>
-        )}
-        {following && <DirectionFlash move={leaderMove} />}
-      </span>
-    </div>
+    <span
+      className={`tw:mr-1 tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:text-[15px] tw:font-semibold ${ACCENT_TEXT_CLASS[mode]}`}
+    >
+      <i aria-hidden="true" className={`fas ${icon}`} />
+      {label}
+    </span>
   );
 }
 
@@ -124,9 +103,13 @@ function Timeline({
   segment,
   lastSegment,
   slide,
+  leaderMove,
 }: {
   readonly segment: number;
   readonly lastSegment: number;
+
+  /** The shared replay leader's last move, which flashes over the knob while we follow them. */
+  readonly leaderMove: LeaderMove | undefined;
 
   /** Whether the knob slides to a new turn instead of moving at once, for a leader's moves. */
   readonly slide: boolean;
@@ -190,6 +173,18 @@ function Timeline({
             : undefined,
         }}
       />
+      {slide && (
+        // Above the knob, and it moves with the knob.
+        <span
+          className="tw:pointer-events-none tw:absolute tw:bottom-[calc(50%+16px)] tw:flex tw:-translate-x-1/2"
+          style={{
+            left: knobLeft,
+            transition: `left ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}`,
+          }}
+        >
+          <DirectionFlash move={leaderMove} />
+        </span>
+      )}
     </div>
   );
 }
@@ -347,7 +342,6 @@ function HypotheticalBar({
   readonly onToggleEditCards: () => void;
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical!;
-  const turn = state.visibleState!.turn.turnNum + 1;
   const { shared } = state.replay;
 
   // A hypothetical in a shared replay is the leader's, like the replay around it.
@@ -361,13 +355,7 @@ function HypotheticalBar({
   if (!controlsHypothetical(state)) {
     return (
       <Bar>
-        <Heading
-          icon="fa-flask"
-          label={label}
-          lastTurn={undefined}
-          mode="hypothetical"
-          turn={turn}
-        />
+        <Heading icon="fa-flask" label={label} mode="hypothetical" />
         <button
           className={`${PRIMARY_BUTTON_CLASS} tw:ml-auto`}
           onClick={replay.toggleSharedSegments}
@@ -384,13 +372,7 @@ function HypotheticalBar({
 
   return (
     <Bar>
-      <Heading
-        icon="fa-flask"
-        label={label}
-        lastTurn={undefined}
-        mode="hypothetical"
-        turn={turn}
-      />
+      <Heading icon="fa-flask" label={label} mode="hypothetical" />
       <div className={ACTIONS_CLASS}>
         <IconButton
           disabled={hypo.states.length <= 1}
@@ -475,14 +457,13 @@ export function TurnsBar({
 }: {
   readonly state: State;
 }): React.JSX.Element {
-  const { replay: replayState, finished, ongoingGame, visibleState } = state;
+  const { replay: replayState, finished, visibleState } = state;
   if (visibleState === undefined) {
     throw new Error("A replay bar needs a turn on screen.");
   }
   const { shared } = replayState;
   const spoilerFree = shared?.spoilerFree === true;
   const turn = visibleState.turn.turnNum + 1;
-  const lastTurn = ongoingGame.turn.turnNum + 1;
   const segment = visibleState.turn.segment ?? 0;
   const lastSegment = replay.getLastSegment(state, true);
   // The buttons and the timeline step through segments, as the classic screen's do.
@@ -516,13 +497,9 @@ export function TurnsBar({
     <Bar>
       <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:narrow-980:contents">
         <Heading
-          following={following}
           icon={shared === undefined ? "fa-history" : "fa-crown"}
           label={label}
-          lastTurn={spoilerFree ? undefined : lastTurn}
-          leaderMove={move}
           mode="replay"
-          turn={turn}
         />
         <div className={`${ACTIONS_CLASS} tw:narrow-980:order-last`}>
           {shared !== undefined
@@ -609,12 +586,16 @@ export function TurnsBar({
             replay.back();
           }}
         />
-        {/* Spoiler-free reviews hide how long the game lasts. */}
+        {/* Spoiler-free reviews hide how long the game lasts, so the leader's moves flash in the
+            middle of the row instead of over the knob. */}
         {spoilerFree ? (
-          <span className="tw:flex-1" />
+          <span className="tw:flex tw:flex-1 tw:justify-center">
+            {following && <DirectionFlash move={move} />}
+          </span>
         ) : (
           <Timeline
             lastSegment={lastSegment}
+            leaderMove={move}
             segment={segment}
             slide={following}
           />
@@ -682,7 +663,7 @@ const DIRECTION_FLASH_MILLISECONDS = 1000;
 const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 /**
- * A forward or back icon beside the turn number, which pops in on each of the leader's moves and
+ * A forward or back icon over the timeline's knob, which pops in on each of the leader's moves and
  * fades out, as the classic screen's arrow does over the board.
  */
 function DirectionFlash({
@@ -718,7 +699,7 @@ function DirectionFlash({
   return (
     <i
       aria-hidden="true"
-      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:ml-2 tw:inline-block tw:text-[15px] tw:text-game-replay tw:opacity-0`}
+      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:inline-block tw:text-[15px] tw:text-game-replay tw:opacity-0`}
       key={move?.key}
       ref={ref}
     />
