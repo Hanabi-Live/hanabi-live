@@ -548,8 +548,11 @@ mod tests {
                 }),
             ),
             test_frame(
-                "noteList",
-                serde_json::json!({"tableId":42,"notes":all_notes}),
+                "gameState",
+                serde_json::json!({
+                    "tableId":42,"events":[],"notes":all_notes,"spectators":[],
+                    "phase":{"type":"replay","deck":[]},
+                }),
             ),
             test_frame(
                 "gameState",

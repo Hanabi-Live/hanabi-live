@@ -122,6 +122,11 @@ gameCommands.set("gameFinished", (data) => {
     datetimeFinished: data.finishedAt,
     leader: data.sharedReplay.owner.username,
   });
+  timer.hide();
+
+  // Now that the game is over, we may see everyone's notes.
+  setNotes(data.notes);
+
   if (
     globals.state.replay.actions.some(
       (action) => action.type === "clue" && action.clue.type === undefined,
@@ -270,45 +275,30 @@ export function loadGameInit(conn: Connection, tableId: number): void {
   });
 }
 
-// Received when spectating a game.
+// Received when spectating a game, when someone else changes a note that we may see.
 gameCommands.set("note", (data) => {
   // If we are an active player and we got this message, something has gone wrong.
   if (globals.state.playing) {
     return;
   }
 
-  // The server also sends us our own notes, which we have already read.
-  const oldNotes = globals.state.notes.allNotes[data.order] ?? [];
-  const othersChanged = data.notes.some(
-    (note) =>
-      note.username !== globals.metadata.ourUsername
-      && note.text
-        !== (oldNotes.find((oldNote) => oldNote.username === note.username)
-          ?.text ?? ""),
-  );
-
   globals.store!.dispatch({
     type: "receiveNote",
     order: data.order,
-    notes: data.notes,
+    note: data.note,
   });
 
   // Set the note indicator.
   const card = getCardOrStackBase(data.order);
   if (card) {
-    card.setNoteIndicator(othersChanged);
+    card.setNoteIndicator(true);
   }
 });
 
 /**
- * Received when a game ends, with the notes that everyone wrote. A spectator or a replay viewer
- * gets the notes of all the players and spectators. A player in a game in progress gets only their
- * own notes.
+ * Sets the notes that we may see: everyone's for a spectator or a replay viewer, and only our own
+ * for a player of a game in progress.
  */
-gameCommands.set("noteList", (data) => {
-  setNotes(data.notes);
-});
-
 function setNotes(playerNotes: GameState["notes"]) {
   const state = globals.store!.getState();
   if (state.playing && !state.finished) {

@@ -115,6 +115,8 @@ pub struct GameFinished {
     /// the cards that were hidden from it.
     #[schemars(length(max = MAX_DECK_SIZE))]
     pub deck: Vec<CardIdentity>,
+    /// Every player's and spectator's notes, which the recipient may now all see.
+    pub notes: Vec<AuthorNotes>,
     pub shared_replay: SharedReplayState,
 }
 
@@ -151,28 +153,18 @@ pub struct AuthorNotes {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AuthorNote {
-    /// The person setting the note.
     pub username: Username,
     pub text: String,
     pub spectator: bool,
 }
 
-/// The notes that the recipient may see: everyone's for spectators and replay viewers, and their own
-/// for a player.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct NoteList {
-    pub table_id: TableId,
-    pub notes: Vec<AuthorNotes>,
-}
-
-/// The notes on one card after someone changes theirs, sent to spectators.
+/// A note that someone else changed, sent to the spectators who may see it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Note {
     pub table_id: TableId,
     pub order: CardOrder,
-    pub notes: Vec<AuthorNote>,
+    pub note: AuthorNote,
 }
 
 /// The type of a clue.
@@ -322,7 +314,8 @@ pub struct GameEventMessage {
 pub struct GameState {
     pub table_id: TableId,
     pub events: Vec<GameEvent>,
-    /// The notes that the recipient may see, as in `noteList`.
+    /// The notes that the recipient may see: everyone's for spectators and replay viewers, and
+    /// their own for a player.
     pub notes: Vec<AuthorNotes>,
     pub spectators: Vec<Spectator>,
     pub phase: GamePhase,

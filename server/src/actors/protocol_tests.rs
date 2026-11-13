@@ -2247,10 +2247,11 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 names == BTreeSet::from(["Alice", "Bob", "Observer"]),
                 "Finished-game players were missing from replay leader candidates"
             );
-            let clock = h.receive(index, "clock").await?;
+            // The client stops the clocks when the game finishes, so no clock follows.
+            let (before, _) = h.receive_after(index, "gameFinished").await?;
             ensure!(
-                clock.get("currentPlayerIndex").is_none() && clock["turnElapsedMs"] == 0,
-                "Completion did not stop the active clock"
+                !before.iter().any(|name| name == "clock"),
+                "The finish sent a clock"
             );
         }
         ensure!(
@@ -3433,6 +3434,96 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
                 .iter()
                 .any(|event| event["type"] == "gameOver" && event.get("playerIndex").is_none()),
             "The replay lost the saved actions: {history}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn a_note_goes_only_to_the_spectators_who_may_see_it_and_the_finish_carries_all_notes()
+-> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Shadow"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Notes", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        let (table, _) = h.snapshot(id).await?;
+        let alice_seat = table
+            .players()
+            .iter()
+            .position(|player| player.is(h.users[0].user))
+            .context("Alice has no seat")?;
+        h.send(2, "tableSpectate", json!({"tableId":id})).await?;
+        // The shadow watches Bob, so it may not see Alice's notes or the observer's.
+        h.send(
+            3,
+            "tableSpectate",
+            json!({"tableId":id,"shadowingPlayerIndex":1 - alice_seat}),
+        )
+        .await?;
+        for index in 0..4 {
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
+        }
+        h.barrier(0).await?;
+        for index in 0..4 {
+            h.frames(index);
+        }
+        let notes = |h: &mut Harness, index: usize| {
+            h.frames(index)
+                .into_iter()
+                .filter(|(name, _)| name == "note")
+                .map(|(_, body)| body)
+                .collect::<Vec<_>>()
+        };
+
+        h.send(0, "note", json!({"tableId":id,"order":1,"text":"alice"}))
+            .await?;
+        h.barrier(0).await?;
+        ensure!(
+            notes(&mut h, 2)
+                == [json!({"tableId":id,"order":1,"note":{"username":"Alice","text":"alice","spectator":false}})],
+            "The observer did not get only Alice's note"
+        );
+        ensure!(notes(&mut h, 3).is_empty(), "The shadow saw another seat's note");
+        ensure!(notes(&mut h, 0).is_empty(), "A player got a note event");
+
+        h.send(2, "note", json!({"tableId":id,"order":1,"text":"observer"}))
+            .await?;
+        h.barrier(2).await?;
+        ensure!(notes(&mut h, 2).is_empty(), "The author got their own note back");
+        ensure!(notes(&mut h, 3).is_empty(), "The shadow saw another spectator's note");
+
+        h.send(3, "note", json!({"tableId":id,"order":2,"text":"shadow"}))
+            .await?;
+        h.barrier(3).await?;
+        ensure!(
+            notes(&mut h, 2)
+                == [json!({"tableId":id,"order":2,"note":{"username":"Shadow","text":"shadow","spectator":true}})],
+            "The observer did not get the shadow's note"
+        );
+
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        let (_, finished) = h.receive_after(1, "gameFinished").await?;
+        let authors = finished["notes"]
+            .as_array()
+            .context("gameFinished has no notes")?
+            .iter()
+            .map(|notes| notes["username"].as_str().unwrap_or_default().to_owned())
+            .collect::<std::collections::BTreeSet<_>>();
+        ensure!(
+            authors == ["Alice", "Bob", "Observer", "Shadow"].map(String::from).into(),
+            "A player did not get everyone's notes when the game finished: {authors:?}"
+        );
+        h.barrier(1).await?;
+        let after = h.frames(1);
+        ensure!(
+            after.iter().all(|(name, _)| name != "clock" && name != "noteList"),
+            "The finish sent more than gameFinished: {after:?}"
         );
         Ok(())
     }

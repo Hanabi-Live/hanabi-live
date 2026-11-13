@@ -66,17 +66,16 @@ catalog_entry! {
         // --------------------
         #[schemars(length(min = 1))]
         pub name: String,
-        /// The suit ID is a two character string:
-        /// - Normal suits have a single capital letter. (e.g. "R" for "Red")
-        /// - Special suits have a two character ID with a lowercase letter. (e.g. "Bk" for "Black")
-        /// - Combination suits have a four character ID. (e.g. `BrRa` for "Muddy Rainbow")
-        /// - Dark suits have a capital D prefix. (e.g. `DRa` for "Dark Rainbow")
-        /// - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
-        /// - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for
-        ///   "Tomato VA")
-        /// - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for
-        ///   "Ice EA")
-        /// - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
+        /// A short code that names the suit:
+        /// - A normal suit has one capital letter, such as `R` for Red.
+        /// - A special suit has a capital letter and a lowercase letter, such as `Bk` for Black.
+        /// - A combination suit joins two special suits, such as `BrRa` for Muddy Rainbow.
+        /// - A dark suit adds `1` to the ID of its light suit, such as `Ra1` for Dark Rainbow.
+        /// - An ambiguous suit has `A` and the letter of its color, then a number, such as `AR1`
+        ///   for Tomato. An extremely ambiguous suit begins with `E` instead, such as `EB1` for
+        ///   Ice EA.
+        /// - A dual-color suit has `D` and the letters of its colors, sometimes with a number, such
+        ///   as `DRY` for Tangerine.
         #[schemars(length(min = 1))]
         pub id: String,
         /// The symbol that represents this suit: a pip name, "auto", or "none".

@@ -101,7 +101,10 @@ commands.set("chatTyping", (data) => {
 // messages, with the table's ID and the number of unread messages.
 commands.set("chatList", (data) => {
   for (const line of data.messages) {
-    chat.add(line, true); // The second argument is "fast"
+    // The list names its table once, not in each message.
+    const message =
+      data.tableId === undefined ? line : { ...line, tableId: data.tableId };
+    chat.add(message, true); // The second argument is "fast"
   }
   if (
     data.numUnread !== undefined

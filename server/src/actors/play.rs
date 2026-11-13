@@ -15,9 +15,9 @@ use anyhow::Context;
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::MAX_NOTE_LENGTH;
-use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
 use hanabi_protocol::{ClientRequest, ReplyData};
+use hanabi_protocol::{PlayerIndex, UserId};
 use std::sync::Arc;
 
 /// What a `pause` or `pauseQueue` request changes.
@@ -189,24 +189,14 @@ impl TableActor {
                             game_id: s.game_id,
                             finished_at: finished_at.clone(),
                             deck: deck.clone(),
+                            notes: self.observer_notes(a),
                             shared_replay: self
                                 .shared_replay_state(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
                         },
                     ),
                 ));
-                e.messages.push((
-                    a.session.clone(),
-                    frame(
-                        hanabi_protocol::event::NOTE_LIST,
-                        hanabi_protocol::NoteList {
-                            table_id: self.table.id,
-                            notes: self.observer_notes(a),
-                        },
-                    ),
-                ));
             }
-            self.add_all(&mut e, hanabi_protocol::event::CLOCK, self.clock()?);
         } else {
             self.add_all(&mut e, hanabi_protocol::event::CLOCK, self.clock()?);
             if s.paused() {
@@ -386,7 +376,7 @@ impl TableActor {
         let size = s.game.deck.len() + s.game.stacks.len();
         ensure_or_reject!(order < size, "Invalid note order");
         if let Some(seat) = seat {
-            s.notes[seat][order] = text;
+            s.notes[seat][order].clone_from(&text);
         } else {
             s.spectator_notes
                 .entry(session.user)
@@ -394,33 +384,43 @@ impl TableActor {
                     name: session.name.clone(),
                     notes: vec![String::new(); size],
                 })
-                .notes[order] = text;
+                .notes[order]
+                .clone_from(&text);
         }
         self.persist(next).await?;
         let mut e = self.effects();
-        for a in self.audience().filter(|a| a.spectator) {
-            let notes = self
-                .observer_notes(a)
-                .into_iter()
-                .map(|n| hanabi_protocol::AuthorNote {
-                    text: n.notes.get(order).cloned().unwrap_or_default(),
-                    username: n.username,
-                    spectator: n.spectator,
-                })
-                .collect();
-            e.messages.push((
-                a.session.clone(),
-                frame(
-                    hanabi_protocol::event::NOTE,
-                    hanabi_protocol::Note {
-                        table_id: self.table.id,
-                        order: card,
-                        notes,
-                    },
-                ),
-            ));
+        let message = frame(
+            hanabi_protocol::event::NOTE,
+            hanabi_protocol::Note {
+                table_id: self.table.id,
+                order: card,
+                note: hanabi_protocol::AuthorNote {
+                    username: session.name.as_str().into(),
+                    text,
+                    spectator: seat.is_none(),
+                },
+            },
+        );
+        for a in self.audience().filter(|a| {
+            a.spectator
+                && a.session.user != session.user
+                && seat.map_or_else(
+                    || Self::sees_spectator_notes(a, session.user),
+                    |seat| self.sees_player_notes(a, seat),
+                )
+        }) {
+            e.messages.push((a.session.clone(), message.clone()));
         }
         self.publish(e).await
+    }
+    /// Whether `a` may see the notes of the player in `seat`.
+    fn sees_player_notes(&self, a: &Attendance, seat: usize) -> bool {
+        a.shadow.is_none_or(|shadow| shadow.index() == seat)
+            || matches!(self.table.phase, Phase::Replay { .. })
+    }
+    /// Whether `a` may see the notes of the spectator `user`.
+    fn sees_spectator_notes(a: &Attendance, user: UserId) -> bool {
+        user == a.session.user || a.shadow.is_none()
     }
     pub(super) fn observer_notes(&self, a: &Attendance) -> Vec<hanabi_protocol::AuthorNotes> {
         let Some(s) = self.table.game() else {
@@ -428,9 +428,7 @@ impl TableActor {
         };
         let mut notes = vec![];
         for (i, p) in s.players.iter().enumerate() {
-            if a.shadow.is_none_or(|shadow| shadow.index() == i)
-                || matches!(self.table.phase, Phase::Replay { .. })
-            {
+            if self.sees_player_notes(a, i) {
                 notes.push(hanabi_protocol::AuthorNotes {
                     username: p.name.clone().into(),
                     notes: s.notes[i].clone(),
@@ -439,7 +437,7 @@ impl TableActor {
             }
         }
         for (id, n) in &s.spectator_notes {
-            if *id == a.session.user || a.shadow.is_none() {
+            if Self::sees_spectator_notes(a, *id) {
                 notes.push(hanabi_protocol::AuthorNotes {
                     username: n.name.clone().into(),
                     notes: n.notes.clone(),

@@ -35,16 +35,8 @@ const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
  */
 export function update(data: Omit<ServerEventData["clock"], "tableId">): void {
   stop();
-  // Absent if the game just ended.
+  // Absent when the game has no active player.
   const { currentPlayerIndex } = data;
-
-  if (globals.state.finished) {
-    globals.clockPlayerIndex = undefined;
-    globals.elements.timer1?.hide();
-    globals.elements.timer2?.hide();
-    globals.layers.timer.batchDraw();
-    return;
-  }
 
   // We do not need to update the timers if the game is paused. (The server will send another
   // "clock" message when the game becomes unpaused.)
@@ -133,6 +125,15 @@ function updateTimerDisplays(
   // Clear the low-time warning from both timers.
   timer1.clearWarningFlash();
   timer2.clearWarningFlash();
+}
+
+/** Stops and hides the timers when the game ends. */
+export function hide(): void {
+  stop();
+  globals.clockPlayerIndex = undefined;
+  globals.elements.timer1?.hide();
+  globals.elements.timer2?.hide();
+  globals.layers.timer.batchDraw();
 }
 
 export function stop(): void {

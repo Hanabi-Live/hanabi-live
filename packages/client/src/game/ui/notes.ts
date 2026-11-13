@@ -373,7 +373,7 @@ export function openEditTooltip(
  */
 export function setAllCardIndicators(): void {
   // We iterate through the whole deck instead of using the index of the last drawn card to avoid
-  // race conditions where we can get the "noteList" before the "actionList" is finished processing.
+  // race conditions where we can get the notes before the "actionList" is finished processing.
   for (const card of globals.deck) {
     card.setNoteIndicator();
   }

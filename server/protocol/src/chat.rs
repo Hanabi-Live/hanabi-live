@@ -31,7 +31,7 @@ pub struct Chat {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// The table whose chat shows the message. Absent means the lobby, or the recipient's current
-    /// chat for a private message.
+    /// chat for a private message. Absent in a `chatList`, which names its table once.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     pub kind: ChatKind,
@@ -165,6 +165,7 @@ pub struct ChatDeleted {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatList {
+    /// The messages, without their `tableId`.
     pub messages: Vec<Chat>,
     /// The table whose chat this is. Absent for the lobby's chat.
     #[serde(skip_serializing_if = "Option::is_none")]

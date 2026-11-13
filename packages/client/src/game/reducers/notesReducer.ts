@@ -70,8 +70,18 @@ function notesReducerFunction(
     }
 
     case "receiveNote": {
-      // Add in the notes received from server.
-      notes.allNotes[action.order] = castDraft(action.notes);
+      // Replace the author's note on the card, or add it if they had none.
+      const cardNotes = notes.allNotes[action.order];
+      const existing = cardNotes?.find(
+        (note) => note.username === action.note.username,
+      );
+      if (existing !== undefined) {
+        existing.text = action.note.text;
+      } else if (cardNotes === undefined) {
+        notes.allNotes[action.order] = [castDraft(action.note)];
+      } else {
+        cardNotes.push(castDraft(action.note));
+      }
       break;
     }
 

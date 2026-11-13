@@ -96,7 +96,7 @@ export interface ActionEditNote {
 export interface ActionReceiveNote {
   readonly type: "receiveNote";
   readonly order: CardOrder;
-  readonly notes: readonly AuthorNote[];
+  readonly note: AuthorNote;
 }
 
 export interface ActionNoteListPlayer {

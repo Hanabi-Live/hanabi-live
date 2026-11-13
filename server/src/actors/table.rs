@@ -14,8 +14,7 @@ use crate::routing::{Route, route};
 use crate::store::{Commit, Outcome, Saved};
 use crate::{
     model::{
-        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
-        TableSnapshot,
+        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableSnapshot,
     },
     server_info::ServerInfo,
     store::Store,
@@ -416,7 +415,13 @@ impl TableActor {
                     self.table
                         .chat
                         .iter()
-                        .map(TableChat::wire_message)
+                        // The list names its table once, not in each message.
+                        .map(|chat| {
+                            chat.wire_message().map(|chat| Chat {
+                                table_id: None,
+                                ..chat
+                            })
+                        })
                         .collect::<Result<_>>()?,
                     hanabi_protocol::Count::try_from(self.table.chat.len().saturating_sub(read))?,
                 ),

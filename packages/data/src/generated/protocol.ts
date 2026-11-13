@@ -198,7 +198,7 @@ export const chatSchema = z
     sentAt: z.iso.datetime({ precision: 3 }),
     /**
      * The table whose chat shows the message. Absent means the lobby, or the recipient's current
-     * chat for a private message.
+     * chat for a private message. Absent in a `chatList`, which names its table once.
      */
     tableId: tableIdSchema.optional(),
     /**
@@ -222,6 +222,9 @@ const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
  */
 export const chatListSchema = z
   .strictObject({
+    /**
+     * The messages, without their `tableId`.
+     */
     messages: z.array(chatSchema).readonly(),
     /**
      * How many of the messages the recipient has not read. Present with `tableId`, as the server
@@ -384,6 +387,10 @@ export const gameFinishedSchema = z
      * Absent when the game was not saved.
      */
     gameId: gameIdSchema.optional(),
+    /**
+     * Every player's and spectator's notes, which the recipient may now all see.
+     */
+    notes: z.array(authorNotesSchema).readonly(),
     sharedReplay: sharedReplayStateSchema,
     tableId: tableIdSchema,
   })
@@ -680,7 +687,8 @@ export const gameStateSchema = z
   .strictObject({
     events: z.array(gameEventSchema).readonly(),
     /**
-     * The notes that the recipient may see, as in `noteList`.
+     * The notes that the recipient may see: everyone's for spectators and replay viewers, and
+     * their own for a player.
      */
     notes: z.array(authorNotesSchema).readonly(),
     phase: gamePhaseSchema,
@@ -813,23 +821,12 @@ export const loginRequestSchema = z
   .readonly();
 
 /**
- * The notes on one card after someone changes theirs, sent to spectators.
+ * A note that someone else changed, sent to the spectators who may see it.
  */
 export const noteSchema = z
   .strictObject({
-    notes: z.array(authorNoteSchema).readonly(),
+    note: authorNoteSchema,
     order: cardOrderSchema,
-    tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
- * The notes that the recipient may see: everyone's for spectators and replay viewers, and their own
- * for a player.
- */
-export const noteListSchema = z
-  .strictObject({
-    notes: z.array(authorNotesSchema).readonly(),
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1765,7 +1762,6 @@ export const SERVER_EVENT_SCHEMAS = {
   idleWarning: idleWarningSchema,
   lobbyStatus: lobbyStatusSchema,
   note: noteSchema,
-  noteList: noteListSchema,
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: replayActionSchema,

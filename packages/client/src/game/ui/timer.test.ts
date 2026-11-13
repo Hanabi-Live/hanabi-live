@@ -19,7 +19,7 @@ vi.mock("./UiGlobals.ts", () => ({
 }));
 const { globals } = await import("./UiGlobals.ts");
 const tooltips = await import("../../tooltips.ts");
-const { resumeAfterResize, stop, update } = await import("./timer.ts");
+const { hide, resumeAfterResize, stop, update } = await import("./timer.ts");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -31,7 +31,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test("a late live clock cannot restart timers in a finished replay", () => {
+test("finishing a game stops and hides the timers", () => {
   globals.timerId = 123;
   const clear = vi.spyOn(globalThis, "clearInterval");
   const start = vi.spyOn(globalThis, "setInterval");
@@ -41,11 +41,7 @@ test("a late live clock cannot restart timers in a finished replay", () => {
   assertDefined(second, "Missing second timer fixture.");
   const hideFirst = vi.spyOn(first, "hide");
   const hideSecond = vi.spyOn(second, "hide");
-  update({
-    playerTimesMs: [10_000, 20_000],
-    currentPlayerIndex: 0,
-    turnElapsedMs: 100,
-  });
+  hide();
   expect(clear).toHaveBeenCalledWith(123);
   expect(start).not.toHaveBeenCalled();
   expect(globals.timerId).toBeUndefined();

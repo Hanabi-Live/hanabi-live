@@ -89,7 +89,6 @@ macro_rules! event_contracts {
             TABLE_RESTART_DECLINERS "tableRestartDecliners" => TableRestartDecliners;
             TABLE_SUGGESTION "tableSuggestion" => TableSuggestion;
             NOTE "note" => Note;
-            NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_STATE "gameState" => GameState;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
