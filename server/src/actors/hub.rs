@@ -598,7 +598,7 @@ impl Hub {
             frame(
                 hanabi_protocol::event::ERROR,
                 hanabi_protocol::Notice::new(format!(
-                    "{}<br />Please reconnect after the server restarts.",
+                    "{}\nPlease reconnect after the server restarts.",
                     crate::lifecycle::MAINTENANCE_NOTICE
                 )),
             )

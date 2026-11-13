@@ -1,6 +1,5 @@
 // The initial login page.
 
-import type { noticeCodeSchema } from "@hanabi-live/data";
 import {
   VERSION,
   errorDetails,
@@ -76,6 +75,18 @@ export function signIn(
         }
         return;
       }
+      if ("outdated" in login) {
+        store.dispatch(
+          loginFailed({ message: "", latestVersion: login.outdated }),
+        );
+        return;
+      }
+      if ("passwordReset" in login) {
+        store.dispatch(
+          loginFailed({ message: login.passwordReset, passwordReset: true }),
+        );
+        return;
+      }
       // We successfully got a cookie; attempt to establish a WebSocket connection.
       setTabAccountFromLogin(login.body);
       websocketInit();
@@ -86,37 +97,51 @@ export function signIn(
 }
 
 /**
- * Resolves to undefined when the page is reloading to update an outdated client, and to "noAccount"
- * when the username has no account and we did not ask to create one.
+ * Resolves to undefined when the page is reloading to update an outdated client, to "noAccount"
+ * when the username has no account and we did not ask to create one, to the server's message when
+ * the account needs a password reset, and to the server's release when a reload did not update an
+ * outdated client.
  */
 async function requestLogin(
   url: string,
   data: z.output<typeof loginRequestSchema>,
-): Promise<"noAccount" | { body: unknown } | undefined> {
+): Promise<
+  | "noAccount"
+  | { body: unknown }
+  | { passwordReset: string }
+  | { outdated: string }
+  | undefined
+> {
   const response = await fetch(url, {
     method: "POST",
     body: loginRequestBody(data),
   });
   if (!response.ok) {
-    const code = await errorCode(response);
-    if (code === "outdatedClient" && reloadOutdatedClient()) {
-      return undefined;
+    const notice = await errorNotice(response);
+    const code = notice?.code;
+    if (code === "outdatedClient") {
+      return reloadOutdatedClient()
+        ? undefined
+        : { outdated: notice!.latestVersion ?? "" };
     }
     if (code === "noAccount") {
       return code;
+    }
+    if (code === "passwordResetRequired") {
+      return { passwordReset: notice!.message };
     }
     throw await httpError(response, "Logging in");
   }
   return { body: await response.json() };
 }
 
-/** The `code` of an HTTP error response, if it has one. */
-async function errorCode(
+/** The notice of an HTTP error response, if it has one. */
+async function errorNotice(
   response: Response,
-): Promise<z.output<typeof noticeCodeSchema> | undefined> {
+): Promise<z.output<typeof noticeSchema> | undefined> {
   try {
     const parsed = noticeSchema.safeParse(await response.clone().json());
-    return parsed.success ? parsed.data.code : undefined;
+    return parsed.success ? parsed.data : undefined;
   } catch {
     return undefined;
   }

@@ -79,15 +79,6 @@ fn clean_chat(input: &str) -> Result<String, String> {
     Ok(message.to_owned())
 }
 
-pub fn escape_html(input: &str) -> String {
-    input
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&#34;")
-        .replace('\'', "&#39;")
-}
-
 /// The shortest username, in bytes.
 pub const MIN_USERNAME_LENGTH: usize = 2;
 /// The longest username, in bytes.

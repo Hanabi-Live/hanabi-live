@@ -10,6 +10,10 @@ interface LoginAlert {
   readonly message: string;
   /** Whether the check of our saved session failed, which a button can try again. */
   readonly retry: boolean;
+  /** Whether the account needs a password reset, so that the alert links to the instructions. */
+  readonly passwordReset: boolean;
+  /** The server's release, when the client is outdated, so that the alert lists both releases. */
+  readonly latestVersion?: string;
   /** Counts the alerts, so that each one fades in and scrolls into view. */
   readonly count: number;
 }
@@ -45,12 +49,21 @@ const loginSlice = createSlice({
     },
     loginFailed(
       state,
-      action: PayloadAction<{ message: string; retry?: boolean }>,
+      action: PayloadAction<{
+        message: string;
+        retry?: boolean;
+        passwordReset?: boolean;
+        latestVersion?: string;
+      }>,
     ) {
       state.busy = false;
       state.alert = {
         message: action.payload.message,
         retry: action.payload.retry ?? false,
+        passwordReset: action.payload.passwordReset ?? false,
+        ...(action.payload.latestVersion !== undefined && {
+          latestVersion: action.payload.latestVersion,
+        }),
         count: (state.alert?.count ?? 0) + 1,
       };
     },

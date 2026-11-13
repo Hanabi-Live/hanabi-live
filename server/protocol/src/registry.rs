@@ -96,6 +96,7 @@ macro_rules! event_contracts {
             CHAT_DELETED "chatDeleted" => ChatDeleted;
             CHAT_LIST "chatList" => ChatList;
             CHAT_TYPING "chatTyping" => ChatTyping;
+            TABLE_SETTINGS_SUGGESTION "tableSettingsSuggestion" => TableSettingsSuggestion;
             TABLE_JOINED "tableJoined" => TableJoined;
             TABLE_LEFT "tableLeft" => TableRef;
             TABLE_REMOVED "tableRemoved" => TableRef;

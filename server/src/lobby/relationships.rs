@@ -1,5 +1,5 @@
 use super::{Effect, Publication, notice, refused};
-use crate::accounts::{escape_html, normalize_string};
+use crate::accounts::normalize_string;
 use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
 use hanabi_protocol::{UserId, Username};
@@ -137,14 +137,7 @@ pub async fn linked_list(pool: &PgPool, caller: &Identity) -> Result<Vec<Effect>
     let message = if names.is_empty() {
         "Currently, you do not have any linked accounts.".into()
     } else {
-        format!(
-            "Currently linked accounts: {}",
-            names
-                .iter()
-                .map(|n| escape_html(n))
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
+        format!("Currently linked accounts: {}", names.join(", "))
     };
     Ok(vec![notice(&caller.name, &message)])
 }
@@ -176,7 +169,6 @@ pub async fn relationship(
             "The username of \"{name}\" does not exist in the database."
         ));
     };
-    let escaped = escape_html(name);
     if matches!(change, Change::Block | Change::Unblock) {
         return block(pool, caller, target, name, change == Change::Block).await;
     }
@@ -215,7 +207,7 @@ pub async fn relationship(
         });
     }
     let message = format!(
-        "Successfully {} \"{escaped}\" {} your {}.",
+        "Successfully {} \"{name}\" {} your {}.",
         if add { "added" } else { "removed" },
         if add { "to" } else { "from" },
         if friend {
@@ -267,13 +259,12 @@ async fn block(
             format!("\"{name}\" is not blocked, so you cannot unblock them.")
         });
     }
-    let escaped = escape_html(name);
     let message = if add {
         format!(
-            "Successfully blocked \"{escaped}\". You can no longer join or spectate each other's tables or send each other private messages."
+            "Successfully blocked \"{name}\". You can no longer join or spectate each other's tables or send each other private messages."
         )
     } else {
-        format!("Successfully unblocked \"{escaped}\".")
+        format!("Successfully unblocked \"{name}\".")
     };
     Ok(vec![
         notice(&caller.name, &message),

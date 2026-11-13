@@ -6,6 +6,7 @@ import * as gameMain from "../game/main.ts";
 import { SoundType } from "../game/types/SoundType.ts";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView.ts";
 import * as modals from "../modals.ts";
+import { noticeHtml } from "../notice.ts";
 import { ServerHandlers } from "../serverHandlers.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
@@ -34,7 +35,7 @@ export const lobbyCommands = new ServerHandlers();
 lobbyCommands.set("lobbyStatus", (data) => {
   store.dispatch(lobbyStatusReceived(data));
   if (data.type === "error") {
-    modals.showWarning(data.message);
+    modals.showWarning(noticeHtml(data));
   }
 });
 

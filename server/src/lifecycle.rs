@@ -176,13 +176,13 @@ impl StopReason {
             _ => None,
         }
     }
-    /// HTML shown to connected users when an administrator explained the downtime.
+    /// The text shown to connected users when an administrator explained the downtime.
     fn user_notice(&self) -> Option<String> {
-        let reason = crate::accounts::escape_html(self.message()?);
+        let reason = self.message()?;
         Some(if matches!(self, Self::Restart(_)) {
-            format!("The server is restarting and will be back shortly.<br />Reason: {reason}")
+            format!("The server is restarting and will be back shortly.\nReason: {reason}")
         } else {
-            format!("{MAINTENANCE_NOTICE}<br />Reason: {reason}")
+            format!("{MAINTENANCE_NOTICE}\nReason: {reason}")
         })
     }
 }

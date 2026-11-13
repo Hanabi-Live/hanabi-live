@@ -5,8 +5,7 @@ This crate owns every JSON payload exchanged between the server and its clients
 `packages/game/src/json`. It does not own database records, actors, or game
 state, and has no dependencies on those implementations. The WebSocket frames
 around these payloads are described in `packages/data/src/functions/frames.ts`.
-Authorization, normalization, HTML escaping, and business rules remain in the
-server.
+Authorization, normalization, and business rules remain in the server.
 
 Clients use only the generated schemas and the types inferred from them. Do not
 write TypeScript interfaces for these payloads.
@@ -47,6 +46,8 @@ generation rather than silently losing validation.
   `null`; explicit null is always rejected.
 - Missing fields with defaults are normalized identically. Empty strings are not
   automatically replaced, trimmed, or escaped.
+- Text is plain text, never HTML. Clients escape it. A newline starts a new
+  line.
 - Integer bounds remain JavaScript-safe. An integer type with `brand` in
   `src/integers.rs` has a branded TypeScript type.
 - Timestamps are RFC 3339 strings in UTC with milliseconds. The generated

@@ -978,6 +978,54 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn format_20_chat_becomes_plain_text() -> Result<()> {
+        let mut table = pregame(TableId::new(1).unwrap());
+        let chat = |text: &str| TableChat {
+            id: None,
+            user: None,
+            message: hanabi_protocol::Chat::server(
+                text,
+                hanabi_protocol::Timestamp::from(Utc::now()),
+            ),
+        };
+        // Each message as format 20 held it, and as format 21 holds it.
+        let messages = [
+            (
+                "Bob &lt;&amp;&gt; said &#34;hi&#34; &#39;now&#39;",
+                "Bob <&> said \"hi\" 'now'",
+            ),
+            (
+                "Bob proposes the following options:<span class=\"cp\">Variant: <b>6 Suits</b></span><span class=\"cp\">Max Players: <b>2</b></span>",
+                "Bob proposes the following options:\nVariant: 6 Suits\nMax Players: 2",
+            ),
+            (
+                "Restarting.<br />Reason: &amp;lt;db&amp;gt;",
+                "Restarting.\nReason: &lt;db&gt;",
+            ),
+        ];
+        table.chat = messages.iter().map(|(_, text)| chat(text)).collect();
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-20");
+        let mut parts = encoded.changes.written;
+        for (key, part) in &mut parts {
+            if let Some(index) = key.strip_prefix("chat/") {
+                let mut message: Value = serde_json::from_str(part)?;
+                message["message"]["text"] = json!(messages[index.parse::<usize>()?].0);
+                *part = message.to_string();
+            }
+        }
+        let head = head.to_string();
+        ensure!(crate::checkpoint::is_outdated(&head));
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(
+            serde_json::to_value(&decoded)? == expected,
+            "A format 20 table's chat did not become plain text"
+        );
+        Ok(())
+    }
+    #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId::new(1).unwrap());
         terminal(&mut table)?;

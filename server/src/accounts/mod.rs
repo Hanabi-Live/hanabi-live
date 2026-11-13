@@ -15,9 +15,9 @@ pub use crypto::{
 #[cfg(test)]
 pub use normalization::normalize_username;
 pub use normalization::{
-    MAX_CONSECUTIVE_MARKS, MAX_USERNAME_LENGTH, USERNAME_SPECIAL_CHARACTERS, escape_html,
-    max_consecutive_marks, normalize_chat, normalize_discord_chat, normalize_string,
-    remove_disallowed_characters, truncate_to_max_chars, validate_username,
+    MAX_CONSECUTIVE_MARKS, MAX_USERNAME_LENGTH, USERNAME_SPECIAL_CHARACTERS, max_consecutive_marks,
+    normalize_chat, normalize_discord_chat, normalize_string, remove_disallowed_characters,
+    truncate_to_max_chars, validate_username,
 };
 pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;
@@ -216,19 +216,17 @@ pub fn validate_client_version(version: &str, current: &str) -> Result<(), Strin
     }
     Err(format!(
         concat!(
-            "You are running an outdated version of the client code.",
-            "<ul>",
-            "<li>You are on: <strong>{}</strong></li>",
-            "<li>The latest: <strong>{}</strong></li>",
-            "</ul>",
-            "Please perform a refresh to get the latest version. ",
+            "You are running an outdated version of the client code.\n",
+            "You are on: {}\n",
+            "The latest: {}\n",
+            "Please perform a refresh to get the latest version.",
         ),
-        escape_html(if version.is_empty() {
+        if version.is_empty() {
             "unknown"
         } else {
             version
-        }),
-        escape_html(current)
+        },
+        current
     ))
 }
 
@@ -303,10 +301,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         &state.config.version,
     ) && input.client == ClientKind::Web
     {
-        let error = Notice {
-            code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
-            ..Notice::new(message)
-        };
+        let error = Notice::outdated_client(message, &state.config.version);
         return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
     }
     let mut attempt = match state.limits.begin(ip) {
@@ -326,9 +321,11 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             return Ok(too_many_attempts(wait));
         }
         let Some(original) = user.password_hash else {
-            return Ok(unauthorized(
-                "This account requires a password reset. Please follow the <a href=\"/password-reset\">password reset instructions</a>.",
-            ));
+            let error = Notice {
+                code: Some(hanabi_protocol::NoticeCode::PasswordResetRequired),
+                ..Notice::new("This account requires a password reset.")
+            };
+            return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         };
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
             attempt.keep();
@@ -371,17 +368,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         .await?;
         if let Some(similar) = similar {
             return Ok(unauthorized(format!(
-                "That username is too similar to the existing user of \"{}\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
-                escape_html(&similar)
+                "That username is too similar to the existing user of \"{similar}\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
             )));
         }
         if !input.create_account {
             let error = Notice {
                 code: Some(hanabi_protocol::NoticeCode::NoAccount),
-                ..Notice::new(format!(
-                    "There is no account named \"{}\".",
-                    escape_html(username)
-                ))
+                ..Notice::new(format!("There is no account named \"{username}\"."))
             };
             return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         }

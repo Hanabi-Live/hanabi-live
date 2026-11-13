@@ -63,10 +63,7 @@ impl ServerInfo {
                                 return Ok(vec![if argument.parse::<f64>().is_ok() {
                                     "The /replay command only accepts integers.".into()
                                 } else {
-                                    format!(
-                                        "\"{}\" is not a number.",
-                                        crate::accounts::escape_html(argument)
-                                    )
+                                    format!("\"{argument}\" is not a number.")
                                 }]);
                             }
                         }

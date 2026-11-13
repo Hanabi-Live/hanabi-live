@@ -25,12 +25,7 @@ import {
 import { chatCommands } from "./chatCommands.ts";
 import { LobbyChatDeletionState } from "./chatDeletion.ts";
 import type { SuggestedSettings } from "./chatKind.ts";
-import {
-  chatAuthor,
-  chatAuthorName,
-  chatRecipient,
-  chatSuggestion,
-} from "./chatKind.ts";
+import { chatAuthor, chatAuthorName, chatRecipient } from "./chatKind.ts";
 import {
   FADE_TIME_MS,
   LOCAL_STORAGE_KEY,
@@ -48,7 +43,7 @@ import {
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { store } from "./store.ts";
-import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
+import { escapeHtml, getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -569,21 +564,43 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
 }
 
 /**
- * Return the HTML-safe version of plain text input (usually a message author name, because the
- * server takes care of message content HTML processing).
- *
- * If `payload` is undefined, returns the empty string.
+ * A chat line that the client writes itself, as HTML, instead of the text of a message from the
+ * server. It can carry settings that a button in it applies.
  */
-function textToHtml(payload?: string): string {
-  const sanEl = document.createElement("span");
-  if (payload !== undefined) {
-    sanEl.textContent = payload;
-  }
-  return sanEl.innerHTML;
+interface LocalLine {
+  readonly html: string;
+  readonly suggestion?: SuggestedSettings;
 }
 
 export function add(data: ChatData, fast: boolean): void {
   addInternal(data, fast, true);
+}
+
+/**
+ * Shows the owner of a table the settings that the server suggests, with a button to apply them.
+ */
+export function addSettingsSuggestion(
+  data: ServerEventData["tableSettingsSuggestion"],
+  fast: boolean,
+): void {
+  addInternal(
+    {
+      text: "settings suggestion",
+      sentAt: new Date().toISOString(),
+      tableId: data.tableId,
+      kind: {
+        type: "private",
+        author: { type: "server" },
+        recipient: globals.username,
+      },
+    },
+    fast,
+    true,
+    {
+      html: '<span class="cp"><button class="new-options">click to apply the suggestion</button></span>',
+      suggestion: data.settings,
+    },
+  );
 }
 
 export function removeDeletedLobbyMessage(chatId: number): void {
@@ -609,7 +626,12 @@ export function showPmHistory(messages: readonly ChatData[]): void {
   }
 }
 
-function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
+function addInternal(
+  data: ChatData,
+  fast: boolean,
+  updateLiveState: boolean,
+  local?: LocalLine,
+) {
   if (lobbyChatDeletionState.shouldSkipMessage(data.tableId, data.chatId)) {
     return;
   }
@@ -618,7 +640,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   const author = chatAuthor(data);
   const authorName = chatAuthorName(data);
   const recipient = chatRecipient(data);
-  const suggestion = chatSuggestion(data);
+  const suggestion = local?.suggestion;
   if (
     updateLiveState
     && author.type === "user"
@@ -632,7 +654,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     return;
   }
 
-  let rawMsg = data.text;
+  let rawMsg = local?.html ?? messageHtml(data.text);
   // Replace chat suggestions with anchors which, when clicked, are chat commands.
   if (box === "pregame") {
     rawMsg = mapTextSegments(rawMsg, fillChatSuggestions);
@@ -684,6 +706,18 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   }
 }
 
+/**
+ * Returns the HTML of a message's text. Each line after the first is indented under it, as the
+ * options that a player proposes are.
+ */
+function messageHtml(text: string): string {
+  const [first = "", ...rest] = text.split("\n");
+  return [
+    escapeHtml(first),
+    ...rest.map((line) => `<span class="cp">${escapeHtml(line)}</span>`),
+  ].join("");
+}
+
 /** Returns the HTML of a chat line: its time, its author, and the prepared message. */
 function formatChatLine(data: ChatData, msg: string): string {
   const datetime = chatTimeFormatter.format(new Date(data.sentAt));
@@ -695,13 +729,13 @@ function formatChatLine(data: ChatData, msg: string): string {
   if (recipient !== undefined) {
     line +=
       recipient === globals.username
-        ? `<span class="red">[PM from <strong>${textToHtml(authorName ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
-        : `<span class="red">[PM to <strong>${textToHtml(recipient)}</strong>]</span>&nbsp; `;
+        ? `<span class="red">[PM from <strong>${escapeHtml(authorName ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
+        : `<span class="red">[PM to <strong>${escapeHtml(recipient)}</strong>]</span>&nbsp; `;
   }
   if (fromServer || recipient !== undefined || authorName === undefined) {
     line += msg;
   } else {
-    line += `&lt;<strong>${textToHtml(authorName)}</strong>&gt;&nbsp; `;
+    line += `&lt;<strong>${escapeHtml(authorName)}</strong>&gt;&nbsp; `;
     line += msg;
   }
   if (fromServer && line.includes("[Server Notice]")) {
@@ -793,10 +827,10 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
  * WARNING: The splitting regex is not a general HTML tokenizer; a ">" inside of a quoted attribute
  * value would be misclassified. It is only sound because of the input contract of
  * `getPreparedMessage`: any tags present are either trusted markup whose attribute values never
- * contain raw angle brackets (built by the server or by `sendSelfPmFromServer`) or generated by
- * `fillDiscordEmotes` (whose interpolated values are restricted to word characters). Do not reuse
- * this function on arbitrary HTML (e.g. the output of `linkifyHtml`, whose "href" value contain
- * user-influenced URLs).
+ * contain raw angle brackets (built by the client, such as by `sendSelfPmFromServer`) or generated
+ * by `fillDiscordEmotes` (whose interpolated values are restricted to word characters). Do not
+ * reuse this function on arbitrary HTML (e.g. the output of `linkifyHtml`, whose "href" value
+ * contain user-influenced URLs).
  */
 function mapTextSegments(
   html: string,
@@ -813,9 +847,8 @@ function mapTextSegments(
  * Add links, Discord emotes, and Twitch emotes.
  *
  * The input must already be safe to render as HTML; this function preserves that safety but cannot
- * create it. Specifically, all user text must already be HTML-escaped, and any tags must be trusted
- * markup whose attribute values never contain raw angle brackets (e.g. the links in server
- * messages).
+ * create it. Specifically, all text from the server must already be HTML-escaped, and any tags must
+ * be trusted markup that the client built, whose attribute values never contain raw angle brackets.
  */
 export function getPreparedMessage(rawMsg: string): string {
   let msg = mapTextSegments(rawMsg, fillDiscordEmotes);
@@ -823,7 +856,7 @@ export function getPreparedMessage(rawMsg: string): string {
 
   // Automatically generate links from any URLs that are present in the message. (We must use
   // "linkifyjs/html" instead of "linkifyjs/string" because the latter will convert "&gt;" to
-  // "&amp;gt;", and the server has already escaped HTML input.)
+  // "&amp;gt;", and the message is already escaped.)
   msg = linkifyHtml(msg, {
     target: "_blank",
     attributes: {
@@ -942,15 +975,15 @@ export function getTypingMessage(typing: readonly string[]): string {
     }
 
     case 1: {
-      return `<strong>${textToHtml(typing[0])}</strong> is typing...`;
+      return `<strong>${escapeHtml(typing[0]!)}</strong> is typing...`;
     }
 
     case 2: {
-      return `<strong>${textToHtml(typing[0])}</strong> and <strong>${textToHtml(typing[1])}</strong> are typing...`;
+      return `<strong>${escapeHtml(typing[0]!)}</strong> and <strong>${escapeHtml(typing[1]!)}</strong> are typing...`;
     }
 
     case 3: {
-      return `<strong>${textToHtml(typing[0])}</strong>, <strong>${textToHtml(typing[1])}</strong>, and <strong>${textToHtml(typing[2])}</strong> are typing...`;
+      return `<strong>${escapeHtml(typing[0]!)}</strong>, <strong>${escapeHtml(typing[1]!)}</strong>, and <strong>${escapeHtml(typing[2]!)}</strong> are typing...`;
     }
 
     default: {
@@ -965,10 +998,9 @@ export function sendSelfPmFromServer(
   room: string,
   type = SelfChatMessageType.Normal,
 ): void {
-  const message = formatChatMessage(msg, type);
-  add(
+  addInternal(
     {
-      text: message,
+      text: msg,
       sentAt: new Date().toISOString(),
       ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
       kind: {
@@ -978,6 +1010,8 @@ export function sendSelfPmFromServer(
       },
     },
     false,
+    true,
+    { html: formatChatMessage(msg, type) },
   );
 }
 

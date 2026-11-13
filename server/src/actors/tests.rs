@@ -219,7 +219,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
             table.max_players,
             &ExtraOptions::default()
         ),
-        "<span class=\"cp\">Timed: <b>150 / 20</b></span>"
+        "\nTimed: 150 / 20"
     );
     options.time_control = time(120, 30);
     assert!(
@@ -241,7 +241,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
             table.max_players,
             &ExtraOptions::default()
         ),
-        "<span class=\"cp\">Timed: <b>No</b></span>"
+        "\nTimed: No"
     );
     table.options.time_control = None;
     options.time_control = time(120, 30);
@@ -272,10 +272,10 @@ fn option_summaries_include_only_changes_and_escape_values() {
         ..ExtraOptions::default()
     };
     let summary = option_changes(&table, &options, "<new>", 2, &extra);
-    assert!(summary.contains("Table Name: <b>&lt;new&gt;</b>"));
-    assert!(summary.contains("Seed: <b>match-1</b>"));
-    assert!(summary.contains("Replay: <b>Game #7 from turn 5</b>"));
-    assert!(summary.contains("Max Players: <b>2</b>"));
+    assert!(summary.contains("\nTable Name: <new>"));
+    assert!(summary.contains("\nSeed: match-1"));
+    assert!(summary.contains("\nReplay: Game #7 from turn 5"));
+    assert!(summary.contains("\nMax Players: 2"));
     assert!(!summary.contains("Timed:"));
     for label in [
         "Bottom-Deck",
@@ -286,7 +286,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         "Speedrun",
         "Detrimental Characters",
     ] {
-        assert!(summary.contains(&format!("{label}: <b>Yes</b>")));
+        assert!(summary.contains(&format!("\n{label}: Yes")));
     }
     table.options = options.clone();
     options.deck_plays = false;
@@ -298,7 +298,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
             table.max_players,
             &ExtraOptions::default()
         ),
-        "<span class=\"cp\">Bottom-Deck: <b>No</b></span>"
+        "\nBottom-Deck: No"
     );
 }
 

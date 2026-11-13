@@ -42,8 +42,8 @@ pub(super) fn command_failure(error: CommandError, command: Option<&str>) -> Com
         CommandError::Rejected { message, silent } => {
             return CommandFailure {
                 notice: hanabi_protocol::Notice {
-                    message: accounts::escape_html(&message),
                     code: silent.then_some(hanabi_protocol::NoticeCode::CommandIgnored),
+                    ..hanabi_protocol::Notice::new(message)
                 },
                 silent,
                 report: None,

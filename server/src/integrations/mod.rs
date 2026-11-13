@@ -154,7 +154,7 @@ impl Integrations {
     pub async fn render(&self, text: &str) -> String {
         match &self.discord {
             Some(bridge) => bridge.render(text).await,
-            None => crate::accounts::escape_html(text),
+            None => text.to_owned(),
         }
     }
 }

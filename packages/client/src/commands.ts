@@ -7,6 +7,7 @@ import * as gameChat from "./game/chat.ts";
 import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
+import { noticeHtml } from "./notice.ts";
 import { ServerHandlers } from "./serverHandlers.ts";
 import { store } from "./store.ts";
 
@@ -15,12 +16,12 @@ export const commands = new ServerHandlers();
 
 commands.set("warning", (data) => {
   console.warn(data.message);
-  modals.showWarning(data.message);
+  modals.showWarning(noticeHtml(data));
 });
 
 commands.set("error", (data) => {
   console.error(data.message);
-  modals.showError(data.message);
+  modals.showError(noticeHtml(data));
 
   // Disconnect from the server, if connected.
   if (globals.conn !== undefined) {
@@ -33,6 +34,11 @@ commands.set("error", (data) => {
 commands.set("chat", (data) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.tableId, chatRecipient(data));
+});
+
+// Received by a table's owner when the server suggests settings for the table.
+commands.set("tableSettingsSuggestion", (data) => {
+  chat.addSettingsSuggestion(data, false);
 });
 
 commands.set("chatDeleted", (data) => {

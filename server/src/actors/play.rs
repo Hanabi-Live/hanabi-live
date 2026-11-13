@@ -105,7 +105,7 @@ impl TableActor {
             next,
             &format!(
                 "{} {}paused the game.",
-                crate::accounts::escape_html(name),
+                name,
                 if paused { "" } else { "un" }
             ),
         )?;

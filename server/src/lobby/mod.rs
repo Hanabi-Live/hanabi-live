@@ -18,7 +18,7 @@ pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::get_settings;
 use settings::set_settings;
 
-use crate::accounts::{escape_html, normalize_string};
+use crate::accounts::normalize_string;
 use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Result, ensure};
@@ -275,7 +275,7 @@ pub async fn dispatch(
                 .join(", ");
             vec![notice(
                 &caller.name,
-                &format!("Games matching \"{}\": {list}", escape_html(&tag)),
+                &format!("Games matching \"{tag}\": {list}"),
             )]
         }
         _ => unreachable!("the route check admits only lobby commands"),

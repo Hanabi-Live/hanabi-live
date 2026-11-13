@@ -76,11 +76,11 @@
     "valid": false
   },
   {
-    "name": "chat preserves escaped text",
+    "name": "chat keeps markup as text",
     "direction": "request",
     "command": "chat",
     "input": {
-      "text": "&lt;hello&gt;"
+      "text": "<hello> &amp;"
     },
     "valid": true
   },
@@ -302,41 +302,29 @@
   {
     "name": "a settings suggestion carries the settings that it applies",
     "direction": "event",
-    "command": "chat",
+    "command": "tableSettingsSuggestion",
     "input": {
-      "text": "apply",
-      "sentAt": "2026-01-01T12:00:00.000Z",
       "tableId": 1,
-      "kind": {
-        "type": "settingsSuggestion",
-        "recipient": "Alice",
-        "settings": {
-          "name": "Table",
-          "maxPlayers": 5,
-          "options": {}
-        }
+      "settings": {
+        "name": "Table",
+        "maxPlayers": 5,
+        "options": {}
       }
     },
     "normalized": {
-      "text": "apply",
-      "sentAt": "2026-01-01T12:00:00.000Z",
       "tableId": 1,
-      "kind": {
-        "type": "settingsSuggestion",
-        "recipient": "Alice",
-        "settings": {
-          "name": "Table",
-          "maxPlayers": 5,
-          "options": {
-            "variantId": 0,
-            "speedrun": false,
-            "deckPlays": false,
-            "emptyClues": false,
-            "oneExtraCard": false,
-            "oneLessCard": false,
-            "allOrNothing": false,
-            "detrimentalCharacters": false
-          }
+      "settings": {
+        "name": "Table",
+        "maxPlayers": 5,
+        "options": {
+          "variantId": 0,
+          "speedrun": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false
         }
       }
     },

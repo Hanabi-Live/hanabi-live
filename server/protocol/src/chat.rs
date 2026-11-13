@@ -23,7 +23,7 @@ named_enum! {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Chat {
-    /// Pre-escaped HTML, not an instruction to escape or normalize again.
+    /// Plain text, which the client escapes. A newline starts a new line.
     #[schemars(length(min = 1))]
     pub text: String,
     pub sent_at: Timestamp,
@@ -52,12 +52,6 @@ pub enum ChatKind {
     Private {
         author: ChatAuthor,
         recipient: Username,
-    },
-    /// A message from the server to a table's owner, with a button that applies these settings to
-    /// the table.
-    SettingsSuggestion {
-        recipient: Username,
-        settings: TableSettings,
     },
 }
 
@@ -149,9 +143,18 @@ impl Chat {
     pub const fn author(&self) -> &ChatAuthor {
         match &self.kind {
             ChatKind::Public { author } | ChatKind::Private { author, .. } => author,
-            ChatKind::SettingsSuggestion { .. } => &ChatAuthor::Server {},
         }
     }
+}
+
+/// Settings for a table that the server suggests to its owner, such as a variant from
+/// `/findvariant` or the options that another player proposes. The client shows them in the
+/// table's chat with a button that applies them.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableSettingsSuggestion {
+    pub table_id: TableId,
+    pub settings: TableSettings,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

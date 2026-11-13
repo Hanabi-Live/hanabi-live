@@ -5,6 +5,7 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
 import { FADE_TIME_MS } from "../../constants.ts";
+import { outdatedClientHtml } from "../../notice.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { acceptFirefoxWarning, retryAutomaticLogin, signIn } from "../login.ts";
 import { confirmingUsernameCleared, loginFailed } from "./loginSlice.ts";
@@ -322,13 +323,29 @@ function LoginAlert() {
 
   return (
     <p
-      className="tw:mb-4 tw:rounded-(--radius) tw:border tw:border-solid tw:border-(--login-alert-border) tw:bg-(--login-alert-bg) tw:p-[0.9em] tw:text-(--login-alert-text) tw:transition-opacity tw:starting:opacity-0"
+      className="tw:mb-4 tw:whitespace-pre-line tw:rounded-(--radius) tw:border tw:border-solid tw:border-(--login-alert-border) tw:bg-(--login-alert-bg) tw:p-[0.9em] tw:text-(--login-alert-text) tw:transition-opacity tw:starting:opacity-0"
       id="login-alert"
       key={alert.count}
       ref={ref}
       style={{ transitionDuration: `${FADE_TIME_MS}ms` }}
     >
-      {alert.message}
+      {alert.latestVersion === undefined ? (
+        alert.message
+      ) : (
+        <span
+          // The HTML escapes both releases.
+          dangerouslySetInnerHTML={{
+            __html: outdatedClientHtml(alert.latestVersion),
+          }}
+        />
+      )}
+      {alert.passwordReset && (
+        <>
+          {" "}
+          Please follow the{" "}
+          <a href="/password-reset">password reset instructions</a>.
+        </>
+      )}
       {alert.retry && (
         <>
           {" "}

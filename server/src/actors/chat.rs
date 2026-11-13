@@ -39,7 +39,7 @@ pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
     Chat {
         table_id: Some(id),
         ..Chat::public(
-            crate::accounts::escape_html(message),
+            message,
             ChatAuthor::User {
                 username: name.into(),
             },
@@ -275,7 +275,6 @@ impl TableActor {
             options.variant_name = variant;
             let proposal = options_suggestion(
                 self.table.id,
-                &owner.session.name,
                 &options,
                 &self.table.name,
                 self.table.max_players,
@@ -283,7 +282,7 @@ impl TableActor {
             );
             effects.messages.push((
                 owner.session.clone(),
-                frame(hanabi_protocol::event::CHAT, proposal),
+                frame(hanabi_protocol::event::TABLE_SETTINGS_SUGGESTION, proposal),
             ));
         }
         self.publish(effects).await
@@ -423,9 +422,11 @@ impl TableActor {
                 } else {
                     let mut lines =
                         vec!["The list of tags for this game are as follows:".to_owned()];
-                    lines.extend(tags.iter().enumerate().map(|(index, tag)| {
-                        format!("{}) {}", index + 1, crate::accounts::escape_html(tag))
-                    }));
+                    lines.extend(
+                        tags.iter()
+                            .enumerate()
+                            .map(|(index, tag)| format!("{}) {}", index + 1, tag)),
+                    );
                     lines
                 }
             } else {
@@ -495,10 +496,7 @@ impl TableActor {
                 let user = player.user()?;
                 kicked.push(user);
                 (
-                    format!(
-                        "Successfully kicked \"{}\" from the game.",
-                        crate::accounts::escape_html(&player.name)
-                    ),
+                    format!("Successfully kicked \"{}\" from the game.", player.name),
                     user,
                 )
             }

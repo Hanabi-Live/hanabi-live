@@ -400,7 +400,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     )
     .await;
     let message = self_data(&effects, "chat");
-    assert_eq!(message["text"], "&lt;secret&gt;");
+    assert_eq!(message["text"], "<secret>");
     assert_eq!(message["kind"]["recipient"], "Bob");
     assert!(message.get("chatId").is_none());
     assert_eq!(effects.len(), 2);
@@ -438,7 +438,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     .await;
     let history = self_data(&result, "chatPmHistory");
     assert_eq!(history["messages"].as_array().unwrap().len(), 1);
-    assert_eq!(history["messages"][0]["text"], "&lt;secret&gt;");
+    assert_eq!(history["messages"][0]["text"], "<secret>");
     let carol = caller(c, "Carol");
     let result = run(
         &db.pool,
@@ -469,7 +469,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         self_data(&result, "chat")["text"]
             .as_str()
             .unwrap()
-            .contains("<code>")
+            .starts_with("Identity token")
     );
     assert!(
         dispatch(
@@ -517,7 +517,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     let result = run(&db.pool, &who, &[], "chat", json!({"text":"<plain>"})).await;
     assert!(
         result.iter().any(
-            |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["text"]=="&lt;plain&gt;")
+            |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["text"]=="<plain>")
         )
     );
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")

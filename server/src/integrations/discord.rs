@@ -4,7 +4,7 @@
 use super::{Server, alerts::Alerts};
 use crate::transport::Outgoing;
 use crate::{
-    accounts::{escape_html, normalize_discord_chat},
+    accounts::normalize_discord_chat,
     actors::{HubCommand, request},
     lobby::{self, ExternalReply, SavedChat},
 };
@@ -357,7 +357,7 @@ impl Bridge {
             rendered
         } else {
             self.degrade();
-            escape_html(text)
+            text.to_owned()
         }
     }
 
@@ -375,7 +375,7 @@ impl Bridge {
                 continue;
             };
             let matched = capture.get(0).expect("group 0 is the whole match");
-            result.push_str(&escape_html(&text[offset..matched.start()]));
+            result.push_str(&text[offset..matched.start()]);
             let name = match &capture[1] {
                 "#" => format!(
                     "#{}",
@@ -393,11 +393,11 @@ impl Bridge {
                 ),
                 _ => format!("@{}", self.nickname(id.cast()).await),
             };
-            result.push_str(&escape_html(&name));
+            result.push_str(&name);
             offset = matched.end();
         }
-        result.push_str(&escape_html(&text[offset..]));
-        spoilers(&result)
+        result.push_str(&text[offset..]);
+        result
     }
 
     async fn send(&self, text: &str, roles: bool) -> Result<String> {
@@ -453,9 +453,7 @@ impl Bridge {
             return Ok(());
         }
         let message: String = row.message.clone();
-        // Lobby chat is stored as HTML; Discord shows the decoded text.
-        let persisted = decode_html(&message);
-        let raw = supplied.unwrap_or(&persisted);
+        let raw = supplied.unwrap_or(&message);
         if supplied.is_some() {
             let rendered = if source == "user" {
                 self.render(raw).await
@@ -538,9 +536,8 @@ impl Bridge {
     /// lobby chat and posts it to the lobby channel.
     async fn announce(&self, message: &str, lobby: bool) -> Result<()> {
         self.available()?;
-        let plain = decode_html(message);
         if !lobby {
-            self.send_to(self.config.development, &plain, true)
+            self.send_to(self.config.development, message, true)
                 .await
                 .context("Sending lifecycle announcement to the development channel")?;
             return Ok(());
@@ -549,7 +546,7 @@ impl Bridge {
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
         let (lobby, development) = tokio::join!(
             self.publish_saved(vec![saved]),
-            self.send_to(self.config.development, &plain, true),
+            self.send_to(self.config.development, message, true),
         );
         lobby.context("Sending lifecycle announcement to the lobby channel")?;
         development.context("Sending lifecycle announcement to the development channel")?;
@@ -874,18 +871,6 @@ pub async fn link_copy(pool: &PgPool, chat_id: i32, id: &str) -> Result<bool> {
     Ok(deleted)
 }
 
-fn decode_html(text: &str) -> String {
-    regex!(r"&(?:amp|apos|gt|lt|quot|#34|#39);")
-        .replace_all(text, |captures: &regex::Captures<'_>| match &captures[0] {
-            "&amp;" => "&",
-            "&lt;" => "<",
-            "&gt;" => ">",
-            "&quot;" | "&#34;" => "\"",
-            _ => "'",
-        })
-        .into_owned()
-}
-
 /// A message as Discord shows it, after its author's name, if it has one.
 fn outbound_text(name: Option<&str>, text: &str) -> String {
     let content = text
@@ -914,59 +899,16 @@ fn outbound_text(name: Option<&str>, text: &str) -> String {
     format!("<**{safe}**> {content}")
 }
 
-/// Discord's delimiter on each side of a spoiler.
-const SPOILER: &str = "||";
-
-fn spoilers(text: &str) -> String {
-    let width = SPOILER.len();
-    let mut result = String::new();
-    let mut offset = 0;
-    while let Some(start) = text[offset..].find(SPOILER).map(|i| i + offset) {
-        if start > 0 && text.as_bytes()[start - 1] != b' ' {
-            result.push_str(&text[offset..start + width]);
-            offset = start + width;
-            continue;
-        }
-        let Some(end) = text[start + width..]
-            .find(SPOILER)
-            .map(|i| i + start + width)
-        else {
-            break;
-        };
-        if end == start + width
-            || (end + width < text.len() && text.as_bytes()[end + width] != b' ')
-        {
-            result.push_str(&text[offset..end + width]);
-            offset = end + width;
-            continue;
-        }
-        result.push_str(&text[offset..start]);
-        result.push_str("<span class=\"spoiler\">");
-        result.push_str(&text[start + width..end]);
-        result.push_str("</span>");
-        offset = end + width;
-    }
-    result.push_str(&text[offset..]);
-    result
-}
-
-/// Announcements are stored as lobby chat HTML, so the administrator's text is escaped.
+/// The administrator's reason for the downtime, if they gave one.
 fn downtime_reason(message: Option<&str>) -> String {
-    message.map_or_else(String::new, |message| {
-        format!(" Reason: {}", escape_html(message))
-    })
+    message.map_or_else(String::new, |message| format!(" Reason: {message}"))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn rendering_does_not_double_decode_or_allow_mentions_through_names() {
-        assert_eq!(decode_html("&amp;lt;secret&amp;gt;"), "&lt;secret&gt;");
-        assert_eq!(
-            spoilers("x ||&lt;safe&gt;|| y"),
-            "x <span class=\"spoiler\">&lt;safe&gt;</span> y"
-        );
+    fn outbound_names_cannot_mention_or_format() {
         assert_eq!(
             outbound_text(Some("a*\\\nb"), "https://example.invalid/path"),
             "<**a\\*\\\\b**> <https://example.invalid/path>"

@@ -210,16 +210,14 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
 }
 
 #[test]
-fn client_version_validation_rejects_missing_versions_and_escapes_html() {
+fn client_version_validation_rejects_missing_versions() {
     let error = validate_client_version("", "42").unwrap_err();
     assert!(error.contains("perform a refresh"));
     assert!(error.contains("unknown"));
     assert!(validate_client_version("", "").is_err());
-    let error = validate_client_version("<old>", "<current>").unwrap_err();
-    assert!(error.contains("&lt;old&gt;"));
-    assert!(error.contains("&lt;current&gt;"));
-    assert!(!error.contains("<old>"));
-    assert!(!error.contains("<current>"));
+    let error = validate_client_version("old", "current").unwrap_err();
+    assert!(error.contains("You are on: old\n"));
+    assert!(error.contains("The latest: current\n"));
 }
 
 #[tokio::test]
@@ -249,7 +247,10 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         assert!(!headers.contains_key(header::SET_COOKIE));
         let error: Notice = serde_json::from_str(&body).unwrap();
         assert!(error.message.contains("requires a password reset"));
-        assert!(error.message.contains("href=\"/password-reset\""));
+        assert_eq!(
+            error.code,
+            Some(hanabi_protocol::NoticeCode::PasswordResetRequired)
+        );
     }
     let stored: Option<String> =
         sqlx::query_scalar!("SELECT password_hash FROM users WHERE id=$1", id)

@@ -26,6 +26,11 @@ export function escapeHtml(unsafe: string): string {
     .replaceAll("'", "&#039;");
 }
 
+/** The HTML of plain text from the server, where a newline starts a new line. */
+export function textToHtml(text: string): string {
+  return escapeHtml(text).replaceAll("\n", "<br />");
+}
+
 export function getHtmlElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 

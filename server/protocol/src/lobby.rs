@@ -14,7 +14,8 @@ use super::*;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ServerShutdown {
-    /// HTML explaining the downtime, present only when an administrator gave a reason.
+    /// Plain text explaining the downtime, present only when an administrator gave a reason. A
+    /// newline starts a new line.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub message: Option<String>,
@@ -94,8 +95,8 @@ pub struct Blocked {
 
 /// A problem that the client shows: an `error` message, after which the connection closes, a
 /// recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
-/// text may contain HTML. A server failure also names its typed cause, and its text ends with the
-/// diagnostic ID that its log entry carries.
+/// text is plain text, which the client escapes; a newline starts a new line. A server failure
+/// also names its typed cause, and its text ends with the diagnostic ID that its log entry carries.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Notice {
@@ -104,14 +105,29 @@ pub struct Notice {
     /// The typed cause of a server failure.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<NoticeCode>,
+    /// The server's client release, with the code `outdatedClient`, so that the client can show
+    /// both releases.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub latest_version: Option<String>,
 }
 
 impl Notice {
+    /// A notice that the client is from another release than `latest`.
+    pub fn outdated_client(message: impl Into<String>, latest: impl Into<String>) -> Self {
+        Self {
+            code: Some(NoticeCode::OutdatedClient),
+            latest_version: Some(latest.into()),
+            ..Self::new(message)
+        }
+    }
+
     /// A notice without a typed cause, such as a refused command.
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
             code: None,
+            latest_version: None,
         }
     }
 }
@@ -538,6 +554,9 @@ named_enum! {
         PasswordProcessingFailed => "passwordProcessingFailed",
         // A password check that waits for earlier ones from the same address.
         PasswordRateLimited => "passwordRateLimited",
+        // A login to an account without a password. The client links to the password reset
+        // instructions.
+        PasswordResetRequired => "passwordResetRequired",
         PersistenceUncertain => "persistenceUncertain",
         RecordNotFound => "recordNotFound",
         SavedGameInconsistentPlayers => "savedGameInconsistentPlayers",

@@ -17,7 +17,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-20";
+pub const FORMAT: &str = "hanabi-live-21";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

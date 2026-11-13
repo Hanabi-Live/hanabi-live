@@ -1,5 +1,5 @@
 use super::{Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, refused};
-use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
+use crate::accounts::{is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
@@ -129,11 +129,7 @@ pub fn general_response(message: &str) -> Option<GeneralResponse> {
     let (command, args) = parsed(message)?;
     if let Some(response) = simple(&command) {
         let content = if response.is_help {
-            format!(
-                "<br>List of commands:<br>{}<br>{}",
-                help(),
-                response.response
-            )
+            format!("\nList of commands:\n{}\n{}", help(), response.response)
         } else {
             response.response.clone()
         };
@@ -215,7 +211,7 @@ fn help() -> String {
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
     names.sort();
     names.dedup();
-    names.join(", ").replace('-', "&#8209;")
+    names.join(", ")
 }
 
 fn random_response(args: &[&str]) -> String {
@@ -230,7 +226,7 @@ fn random_response(args: &[&str]) -> String {
                 return if arg.parse::<f64>().is_ok() {
                     "The /random command only accepts integers.".into()
                 } else {
-                    format!("\"{}\" is not an integer.", escape_html(arg))
+                    format!("\"{arg}\" is not an integer.")
                 };
             }
         }
@@ -281,7 +277,6 @@ pub async fn private_message(
             target.identity.name
         ));
     }
-    let message = escape_html(&message);
     let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)
          RETURNING id, datetime_sent",
@@ -394,7 +389,7 @@ pub async fn lobby_chat(
         } else {
             let token = regenerate_token(pool, secret, caller.user.get(), &caller.ip).await?;
             format!(
-                "Identity token (valid until {} UTC): <code>{}</code>",
+                "Identity token (valid until {} UTC): {}",
                 token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
                 token.token
             )
@@ -420,11 +415,7 @@ pub async fn lobby_chat(
             public_response = Some("You can only perform this command while in a game.".into());
         } else if let Some(response) = simple(command) {
             let content = if response.is_help {
-                format!(
-                    "<br>List of commands:<br>{}<br>{}",
-                    help(),
-                    response.response
-                )
+                format!("\nList of commands:\n{}\n{}", help(), response.response)
             } else {
                 response.response.clone()
             };
@@ -449,8 +440,7 @@ pub async fn lobby_chat(
             return Ok(Some(vec![notice(
                 &caller.name,
                 &format!(
-                    "The chat command of <code>/{}</code> is not valid. Use <code>/help</code> to get a list of available commands.",
-                    escape_html(command)
+                    "The chat command of \"/{command}\" is not valid. Use \"/help\" to get a list of available commands."
                 ),
             )]));
         }
@@ -465,7 +455,7 @@ pub async fn lobby_chat(
         Some(caller.user),
         "user",
         Some(caller.name.as_str()),
-        rendered.map_or_else(|| escape_html(&message), str::to_owned),
+        rendered.map_or_else(|| message.clone(), str::to_owned),
         message.clone(),
     ))
     .chain(public_response.map(|r| (None, "server", None, r.clone(), r)))

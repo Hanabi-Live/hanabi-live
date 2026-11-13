@@ -572,7 +572,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         pm["kind"],
         json!({"type":"private","author":{"type":"user","username":"Alicè"},"recipient":"Bob"})
     );
-    assert_eq!(pm["text"], "private &lt;content&gt;");
+    assert_eq!(pm["text"], "private <content>");
     assert!(pm.get("chatId").is_none());
     assert!(pm.get("tableId").is_none());
     let echo = receive(&mut alice, "chat").await;
@@ -580,7 +580,12 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     send(&mut alice, 4, "chat", json!({"text":"/token"})).await;
     let token = receive(&mut alice, "chat").await;
     assert_eq!(token["kind"]["recipient"], "Alicè");
-    assert!(token["text"].as_str().unwrap().contains("<code>"));
+    assert!(
+        token["text"]
+            .as_str()
+            .unwrap()
+            .starts_with("Identity token")
+    );
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='user'")
             .fetch_one(&fixture.db.pool)
@@ -838,7 +843,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         "INSERT INTO chat_log(user_id,source,message)
          SELECT $1,'user',$2 FROM generate_series(1,50)",
         alice,
-        accounts::escape_html(&"\"".repeat(300))
+        &"\"".repeat(300)
     )
     .execute(&fixture.db.pool)
     .await

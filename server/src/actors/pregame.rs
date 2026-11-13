@@ -34,13 +34,7 @@ const SPLIT_GROUPS: usize = 2;
 
 /// Posts that a pregame has a new owner.
 pub(super) fn new_owner_notice(table: &mut TableSnapshot, name: &str) -> Option<Chat> {
-    table_notice(
-        table,
-        &format!(
-            "{} is the new table owner.",
-            crate::accounts::escape_html(name)
-        ),
-    )
+    table_notice(table, &format!("{name} is the new table owner."))
 }
 
 pub(super) fn remove_pregame_players(
@@ -71,12 +65,7 @@ pub(super) fn remove_pregame_players(
     }
     let mut notices = names
         .into_iter()
-        .filter_map(|name| {
-            table_notice(
-                table,
-                &format!("{} left the game.", crate::accounts::escape_html(&name)),
-            )
-        })
+        .filter_map(|name| table_notice(table, &format!("{name} left the game.")))
         .collect::<Vec<_>>();
     if let Some(owner) = new_owner {
         notices.extend(new_owner_notice(table, &owner.name));
@@ -148,10 +137,7 @@ impl TableActor {
             self.admit_player_chat(session.user)?;
             let message = server_chat(
                 self.table.id,
-                &format!(
-                    "{} proposes the following options:{changes}",
-                    crate::accounts::escape_html(&session.name)
-                ),
+                &format!("{} proposes the following options:{changes}", session.name),
             );
             let mut next = self.candidate();
             push_chat(&mut next, [(None, message.clone())])?;
@@ -159,17 +145,14 @@ impl TableActor {
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
             if let Some(owner) = self.attendees.get(&self.table.owner.user_id) {
-                let suggestion = options_suggestion(
-                    self.table.id,
-                    &owner.session.name,
-                    &options,
-                    &name,
-                    max_players,
-                    &extra,
-                );
+                let suggestion =
+                    options_suggestion(self.table.id, &options, &name, max_players, &extra);
                 e.messages.push((
                     owner.session.clone(),
-                    frame(hanabi_protocol::event::CHAT, suggestion),
+                    frame(
+                        hanabi_protocol::event::TABLE_SETTINGS_SUGGESTION,
+                        suggestion,
+                    ),
                 ));
             }
             return self.publish(e).await;
@@ -193,10 +176,7 @@ impl TableActor {
         }
         let message = table_notice(
             &mut next,
-            &format!(
-                "{} has changed game options.",
-                crate::accounts::escape_html(&session.name),
-            ),
+            &format!("{} has changed game options.", session.name),
         );
         self.persist(next).await?;
         let mut e = self.effects();
@@ -496,17 +476,14 @@ impl TableActor {
         }
         let names = selected
             .iter()
-            .map(|p| crate::accounts::escape_html(&p.name))
+            .map(|p| p.name.as_str())
             .collect::<Vec<_>>()
             .join(", ");
         let mut notices = vec![];
         if !retire {
             notices.extend(table_notice(
                 &mut source,
-                &format!(
-                    "{} split {names} into a new lobby.",
-                    crate::accounts::escape_html(&session.name)
-                ),
+                &format!("{} split {names} into a new lobby.", session.name),
             ));
             if let Some(owner) = new_owner {
                 notices.extend(new_owner_notice(&mut source, &owner.name));
@@ -532,10 +509,7 @@ impl TableActor {
         destination.shadows.clear();
         table_notice(
             &mut destination,
-            &format!(
-                "This lobby was created by splitting {}.",
-                crate::accounts::escape_html(&self.table.name)
-            ),
+            &format!("This lobby was created by splitting {}.", self.table.name),
         );
         let moving = self
             .audience()

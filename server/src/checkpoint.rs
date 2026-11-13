@@ -370,8 +370,10 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 /// The formats that older servers wrote, each with the format after it and the upgrade between
 /// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
 /// only once no deployed server writes its format. Format 19 is the oldest that a server reads.
-const UPGRADES: &[(&str, &str, Upgrade)] =
-    &[("hanabi-live-19", "hanabi-live-20", flat_best_scores)];
+const UPGRADES: &[(&str, &str, Upgrade)] = &[
+    ("hanabi-live-19", "hanabi-live-20", flat_best_scores),
+    ("hanabi-live-20", "hanabi-live-21", plain_chat),
+];
 
 /// Format 19 listed a player's best score at every player count, with the score and whether it is
 /// modified in `best`, which was absent at a count without a game. Format 20 lists only the counts
@@ -398,6 +400,39 @@ fn flat_best_scores(head: &mut Value, _: &mut [(String, String)]) -> Result<()> 
         }
     }
     Ok(())
+}
+
+/// Format 20 held each chat message's text as HTML: user text escaped, and server notices with
+/// line breaks, bold names, and indented lines for the changes of a proposal. Format 21 holds plain
+/// text, where a newline starts a new line.
+fn plain_chat(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    for (key, part) in parts {
+        if !key.starts_with(&format!("{CHAT}/")) {
+            continue;
+        }
+        let mut chat: Value = serde_json::from_str(part)?;
+        let Some(Value::String(text)) = chat.pointer_mut("/message/text") else {
+            bail!("A chat part has no text");
+        };
+        *text = html_to_text(text);
+        *part = chat.to_string();
+    }
+    Ok(())
+}
+
+/// The plain text of a format 20 chat message.
+fn html_to_text(html: &str) -> String {
+    let lines = regex!(r#"<br ?/?>|<span class="cp">"#).replace_all(html, "\n");
+    let text = regex!("<[^>]*>").replace_all(&lines, "");
+    regex!("&(?:amp|lt|gt|quot|#34|#39);")
+        .replace_all(&text, |entity: &regex::Captures<'_>| match &entity[0] {
+            "&amp;" => "&",
+            "&lt;" => "<",
+            "&gt;" => ">",
+            "&#39;" => "'",
+            _ => "\"",
+        })
+        .into_owned()
 }
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.

@@ -26,7 +26,7 @@ import { ReconnectBackoff } from "./reconnect.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as theme from "./theme.ts";
-import { escapeHtml } from "./utils.ts";
+import { escapeHtml, textToHtml } from "./utils.ts";
 
 const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
@@ -243,7 +243,7 @@ function openConnection(isReconnect: boolean) {
       sounds.play(SoundType.Shutdown);
       // An administrator's reason for the downtime stays open through the reconnect.
       if (message !== undefined) {
-        modals.showDowntime(message);
+        modals.showDowntime(textToHtml(message));
       }
     }
   });

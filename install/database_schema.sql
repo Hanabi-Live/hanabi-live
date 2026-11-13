@@ -314,6 +314,7 @@ CREATE TABLE chat_log (
     discord_name        TEXT         NULL,     /* Only used if it is a Discord message. */
     discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */
     deleted_at          TIMESTAMPTZ  NULL,     /* Tombstone: do not show or restore removed messages. */
+    /* Plain text. Table chat from before migration 178 is escaped HTML. */
     message             TEXT         NOT NULL,
     datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     table_id            BIGINT       NULL,     /* The table whose chat this is; NULL for the lobby. */

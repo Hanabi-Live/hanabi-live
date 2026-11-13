@@ -75,12 +75,12 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         message,
                         reply,
                     } => {
-                        // Users see the administrator's reason as escaped HTML.
+                        // Users see the administrator's reason as plain text.
                         assert!(reconnect);
                         let expected = if restart {
-                            "The server is restarting and will be back shortly.<br />Reason: Upgrading &lt;db&gt;"
+                            "The server is restarting and will be back shortly.\nReason: Upgrading <db>"
                         } else {
-                            "The server is going down for maintenance. Your game progress has been saved.<br />Reason: Upgrading &lt;db&gt;"
+                            "The server is going down for maintenance. Your game progress has been saved.\nReason: Upgrading <db>"
                         };
                         assert_eq!(message.as_deref(), successful.then_some(expected));
                         seen.fetch_add(1, Ordering::Relaxed);

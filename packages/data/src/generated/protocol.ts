@@ -106,63 +106,6 @@ const chatAuthorSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * A saved game's ID.
- */
-export const gameIdSchema = z
-  .number()
-  .int()
-  .min(1)
-  .max(2_147_483_647)
-  .brand<"GameId">();
-
-/**
- * The deal that a table requests: a seed that it chooses, or the deal of a finished game.
- */
-const dealSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      /**
-       * The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
-       */
-      suffix: z.string().min(1),
-      type: z.literal("seed"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      gameId: gameIdSchema,
-      /**
-       * The turn that the game starts from. Absent starts from the first turn.
-       */
-      turn: turnSchema.optional(),
-      type: z.literal("replay"),
-    })
-    .readonly(),
-]);
-
-/**
- * A number of players.
- */
-const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
-
-/**
- * A table's name, player limit, options, and deal, as its owner sets them and as tables report
- * them.
- */
-const tableSettingsSchema = z
-  .strictObject({
-    /**
-     * The deal that the table requests. Absent when the server deals the next seed that none of
-     * the players have played.
-     */
-    deal: dealSchema.optional(),
-    maxPlayers: numPlayersSchema,
-    name: z.string(),
-    options: gameOptionsSchema,
-  })
-  .readonly();
-
-/**
  * Who a chat message is for, and who wrote it.
  */
 const chatKindSchema = z.discriminatedUnion("type", [
@@ -174,13 +117,6 @@ const chatKindSchema = z.discriminatedUnion("type", [
       author: chatAuthorSchema,
       recipient: z.string().min(1),
       type: z.literal("private"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      recipient: z.string().min(1),
-      settings: tableSettingsSchema,
-      type: z.literal("settingsSuggestion"),
     })
     .readonly(),
 ]);
@@ -202,7 +138,7 @@ export const chatSchema = z
      */
     tableId: tableIdSchema.optional(),
     /**
-     * Pre-escaped HTML, not an instruction to escape or normalize again.
+     * Plain text, which the client escapes. A newline starts a new line.
      */
     text: z.string().min(1),
   })
@@ -326,6 +262,16 @@ export const friendsSchema = z
 export const gameEventMessageSchema = z
   .strictObject({ event: gameEventSchema, tableId: tableIdSchema })
   .readonly();
+
+/**
+ * A saved game's ID.
+ */
+export const gameIdSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(2_147_483_647)
+  .brand<"GameId">();
 
 /**
  * How far a shared replay's leader moved the count of cards that the efficiency uses.
@@ -759,6 +705,7 @@ export const noticeCodeSchema = z.enum([
   "passwordProcessingBusy",
   "passwordProcessingFailed",
   "passwordRateLimited",
+  "passwordResetRequired",
   "persistenceUncertain",
   "recordNotFound",
   "savedGameInconsistentPlayers",
@@ -790,6 +737,11 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
        * The typed cause of a server failure.
        */
       code: noticeCodeSchema.optional(),
+      /**
+       * The server's client release, with the code `outdatedClient`, so that the client can show
+       * both releases.
+       */
+      latestVersion: z.string().min(1).optional(),
       message: z.string().min(1),
       type: z.literal("error"),
     })
@@ -858,8 +810,8 @@ export const noteRequestSchema = z
 /**
  * A problem that the client shows: an `error` message, after which the connection closes, a
  * recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
- * text may contain HTML. A server failure also names its typed cause, and its text ends with the
- * diagnostic ID that its log entry carries.
+ * text is plain text, which the client escapes; a newline starts a new line. A server failure
+ * also names its typed cause, and its text ends with the diagnostic ID that its log entry carries.
  */
 export const noticeSchema = z
   .strictObject({
@@ -867,6 +819,11 @@ export const noticeSchema = z
      * The typed cause of a server failure.
      */
     code: noticeCodeSchema.optional(),
+    /**
+     * The server's client release, with the code `outdatedClient`, so that the client can show
+     * both releases.
+     */
+    latestVersion: z.string().min(1).optional(),
     message: z.string().min(1),
   })
   .readonly();
@@ -954,6 +911,11 @@ export const playerActionRequestSchema = z
   .readonly();
 
 /**
+ * A number of players.
+ */
+const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
+
+/**
  * A player's best score on a variant at one player count.
  */
 const pregameBestScoreSchema = z
@@ -996,6 +958,48 @@ const pregamePlayerSchema = z
     stats: pregameStatsSchema,
     userId: userIdSchema,
     username: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * The deal that a table requests: a seed that it chooses, or the deal of a finished game.
+ */
+const dealSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      /**
+       * The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
+       */
+      suffix: z.string().min(1),
+      type: z.literal("seed"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      gameId: gameIdSchema,
+      /**
+       * The turn that the game starts from. Absent starts from the first turn.
+       */
+      turn: turnSchema.optional(),
+      type: z.literal("replay"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A table's name, player limit, options, and deal, as its owner sets them and as tables report
+ * them.
+ */
+const tableSettingsSchema = z
+  .strictObject({
+    /**
+     * The deal that the table requests. Absent when the server deals the next seed that none of
+     * the players have played.
+     */
+    deal: dealSchema.optional(),
+    maxPlayers: numPlayersSchema,
+    name: z.string(),
+    options: gameOptionsSchema,
   })
   .readonly();
 
@@ -1258,7 +1262,8 @@ export const seedGamesRequestSchema = z
 export const serverShutdownSchema = z
   .strictObject({
     /**
-     * HTML explaining the downtime, present only when an administrator gave a reason.
+     * Plain text explaining the downtime, present only when an administrator gave a reason. A
+     * newline starts a new line.
      */
     message: z.string().min(1).optional(),
   })
@@ -1559,6 +1564,15 @@ export const tableSetOwnerRequestSchema = z
   .readonly();
 
 /**
+ * Settings for a table that the server suggests to its owner, such as a variant from
+ * `/findvariant` or the options that another player proposes. The client shows them in the
+ * table's chat with a button that applies them.
+ */
+export const tableSettingsSuggestionSchema = z
+  .strictObject({ settings: tableSettingsSchema, tableId: tableIdSchema })
+  .readonly();
+
+/**
  * A table to spectate, and the seat to shadow there, if any.
  */
 export const tableSpectateRequestSchema = z
@@ -1788,6 +1802,7 @@ export const SERVER_EVENT_SCHEMAS = {
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
   tableRestartDecliners: tableRestartDeclinersSchema,
+  tableSettingsSuggestion: tableSettingsSuggestionSchema,
   tableSuggestion: tableSuggestionSchema,
   user: userSchema,
   userList: userListSchema,

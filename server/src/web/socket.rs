@@ -149,7 +149,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     initial.push(frame(
         hanabi_protocol::event::CHAT,
         hanabi_protocol::Chat::server(
-            "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
+            "Find teammates and discuss strategy in the Discord chat: https://discord.gg/FADvkJp",
             hanabi_protocol::Timestamp::from(Utc::now()),
         ),
     ));
@@ -374,10 +374,10 @@ pub(super) async fn websocket(
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
                             // Clients reload on this error's code, and show its message when a
                             // reload did not help.
-                            let notice = hanabi_protocol::Notice {
-                                code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
-                                ..hanabi_protocol::Notice::new(message)
-                            };
+                            let notice = hanabi_protocol::Notice::outdated_client(
+                                message,
+                                &*app.public.client_version,
+                            );
                             tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
                                 // Pages that predate JSON frames read only `command JSON`, so
                                 // they get this error in that form first. Current clients ignore

@@ -14,7 +14,7 @@ use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
-    Chat, ChatKind, Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, Turn,
+    Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableSettingsSuggestion, Turn,
 };
 use std::{collections::BTreeMap, fmt::Write as _};
 
@@ -182,25 +182,17 @@ fn replay_turn(extra: &ExtraOptions) -> Option<Turn> {
     let replay = extra.replay.filter(|replay| replay.turns > 0)?;
     Turn::new(replay.turns)
 }
-/// A private message to a table's owner, with a button that applies the suggested options.
+/// Settings that the client offers a table's owner to apply.
 pub(super) fn options_suggestion(
     id: TableId,
-    owner: &str,
     options: &Options,
     name: &str,
     max_players: usize,
     extra: &ExtraOptions,
-) -> Chat {
-    Chat {
-        table_id: Some(id),
-        ..Chat::new(
-            "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",
-            ChatKind::SettingsSuggestion {
-                recipient: owner.into(),
-                settings: table_settings(name, max_players, options, extra),
-            },
-            super::chat::chat_time(),
-        )
+) -> TableSettingsSuggestion {
+    TableSettingsSuggestion {
+        table_id: id,
+        settings: table_settings(name, max_players, options, extra),
     }
 }
 pub(super) fn option_changes(
@@ -212,13 +204,9 @@ pub(super) fn option_changes(
 ) -> String {
     let current = &table.options;
     let mut changes = String::new();
+    // Each change is on its own line.
     let mut add = |label: &str, value: &str| {
-        write!(
-            changes,
-            "<span class=\"cp\">{label}: <b>{}</b></span>",
-            crate::accounts::escape_html(value)
-        )
-        .expect("writing to a string cannot fail");
+        write!(changes, "\n{label}: {value}").expect("writing to a string cannot fail");
     };
     if name != table.name {
         add("Table Name", name);
@@ -442,13 +430,7 @@ pub(super) async fn prepare_table(
             shadows: BTreeMap::new(),
         };
         // Records when the table was created, for players who join later.
-        table_notice(
-            &mut table,
-            &format!(
-                "{} created the table.",
-                crate::accounts::escape_html(&session.name)
-            ),
-        );
+        table_notice(&mut table, &format!("{} created the table.", session.name));
         let mut saved = Saved::default();
         store.save(&mut table, &mut saved).await?;
         Ok((table, saved, vec![]))

@@ -121,13 +121,7 @@ impl TableActor {
             players.push(player);
         }
         next.shadows.remove(&session.user);
-        let message = table_notice(
-            &mut next,
-            &format!(
-                "{} joined the game.",
-                crate::accounts::escape_html(&session.name)
-            ),
-        );
+        let message = table_notice(&mut next, &format!("{} joined the game.", session.name));
         self.persist(next).await?;
         self.initialize(session.clone(), vec![]).await?;
         let mut e = self.effects();
@@ -154,10 +148,7 @@ impl TableActor {
         let mut next = self.candidate();
         let message = table_notice(
             &mut next,
-            &format!(
-                "{} tried to join, but the table is full.",
-                crate::accounts::escape_html(&session.name)
-            ),
+            &format!("{} tried to join, but the table is full.", session.name),
         );
         self.persist(next).await?;
         let mut e = self.effects();
@@ -214,10 +205,7 @@ impl TableActor {
         let notice = if pregame && spectating && !self.spectating(session.user) {
             table_notice(
                 &mut next,
-                &format!(
-                    "{} joined the game (as a spectator).",
-                    crate::accounts::escape_html(&session.name)
-                ),
+                &format!("{} joined the game (as a spectator).", session.name),
             )
         } else {
             None
@@ -324,10 +312,7 @@ impl TableActor {
             if self.spectating(session.user) {
                 notices.extend(table_notice(
                     &mut next,
-                    &format!(
-                        "{} left the game (as a spectator).",
-                        crate::accounts::escape_html(&session.name)
-                    ),
+                    &format!("{} left the game (as a spectator).", session.name),
                 ));
             } else if remove {
                 notices = remove_pregame_players(&mut next, &HashSet::from([session.user]));

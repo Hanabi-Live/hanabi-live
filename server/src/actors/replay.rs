@@ -119,7 +119,7 @@ impl TableActor {
                 ensure_or_reject!(
                     !replay || !exists(&s.tags, tag),
                     "You have already tagged this game with \"{}\".",
-                    crate::accounts::escape_html(tag)
+                    tag
                 );
                 if !replay {
                     s.tags.retain(|t| t.tag != *tag);
@@ -133,34 +133,26 @@ impl TableActor {
                 ensure_or_reject!(
                     exists(&s.tags, tag),
                     "The tag of \"{}\" does not exist on this game yet.",
-                    crate::accounts::escape_html(tag)
+                    tag
                 );
                 s.tags
                     .retain(|t| t.tag != *tag || (replay && t.user != session.user));
             }
             TagEdit::DeleteAll => s.tags.retain(|t| t.user != session.user),
         }
-        let name = crate::accounts::escape_html(&session.name);
+        let name = &session.name;
         let text = match (&edit, replay) {
-            (TagEdit::Add(tag), true) => format!(
-                "{name} has added a game tag of \"{}\".",
-                crate::accounts::escape_html(tag)
-            ),
-            (TagEdit::Delete(tag), true) => format!(
-                "{name} has deleted a game tag of \"{}\".",
-                crate::accounts::escape_html(tag)
-            ),
+            (TagEdit::Add(tag), true) => format!("{name} has added a game tag of \"{tag}\"."),
+            (TagEdit::Delete(tag), true) => {
+                format!("{name} has deleted a game tag of \"{tag}\".")
+            }
             (TagEdit::DeleteAll, true) => {
                 format!("{name} has deleted all their tags for this game.")
             }
-            (TagEdit::Add(tag), false) => format!(
-                "Successfully added a tag of \"{}\".",
-                crate::accounts::escape_html(tag)
-            ),
-            (TagEdit::Delete(tag), false) => format!(
-                "Successfully deleted the tag of \"{}\".",
-                crate::accounts::escape_html(tag)
-            ),
+            (TagEdit::Add(tag), false) => format!("Successfully added a tag of \"{tag}\"."),
+            (TagEdit::Delete(tag), false) => {
+                format!("Successfully deleted the tag of \"{tag}\".")
+            }
             (TagEdit::DeleteAll, false) => {
                 "Successfully deleted all your tags for this game.".into()
             }
@@ -248,8 +240,7 @@ impl TableActor {
             &mut next,
             &format!(
                 "{} has passed table ownership to: {}",
-                crate::accounts::escape_html(&session.name),
-                crate::accounts::escape_html(&target.1)
+                session.name, target.1
             ),
         );
         self.persist(next).await?;

@@ -1,5 +1,5 @@
 use super::discord::*;
-use crate::{accounts::escape_html, web::test_support::Fixture};
+use crate::web::test_support::Fixture;
 use axum::{
     body::Bytes,
     extract::State,
@@ -355,8 +355,7 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         2,
         "Lobby lifecycle notices must also remain in lobby history"
     );
-    // Lobby chat is HTML, so the administrator's reason is stored escaped.
-    assert!(messages[1].ends_with("Reason: Upgrading &lt;the&gt; database &amp; &#39;more&#39;"));
+    assert!(messages[1].ends_with("Reason: Upgrading <the> database & 'more'"));
     sqlx::query!(
         "UPDATE chat_log SET datetime_sent=datetime_sent-INTERVAL '150 seconds'
          WHERE source='server'"
@@ -478,10 +477,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     .fetch_one(&fixture.db.pool)
     .await
     .unwrap();
-    assert_eq!(
-        stored,
-        "hello @Nick &lt;@333333333333333333&gt; <span class=\"spoiler\">hidden</span>"
-    );
+    assert_eq!(stored, "hello @Nick <@333333333333333333> ||hidden||");
     assert!(
         !mock
             .requests
@@ -508,7 +504,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     let id: i32 = sqlx::query_scalar!(
         "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user',$2) RETURNING id",
         alice,
-        escape_html(raw)
+        raw
     )
     .fetch_one(&fixture.db.pool)
     .await

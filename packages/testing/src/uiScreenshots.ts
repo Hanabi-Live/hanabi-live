@@ -604,12 +604,12 @@ function getStates({
                   // The message of "validate_client_version" on the server.
                   message: [
                     "You are running an outdated version of the client code.",
-                    "<ul>",
-                    "<li>You are on: <strong>old</strong></li>",
-                    "<li>The latest: <strong>new</strong></li>",
-                    "</ul>",
+                    "You are on: old",
+                    "The latest: new",
                     "Please perform a refresh to get the latest version.",
-                  ].join(""),
+                  ].join("\n"),
+                  code: "outdatedClient",
+                  latestVersion: "new",
                 }),
               );
             } else {
@@ -636,6 +636,32 @@ function getStates({
         await page.fill("#login-password", "password");
         await page.click("#login-button");
         await page.locator("#login-no-account").waitFor();
+      },
+    },
+    // The account has no password, so the alert links to the password reset instructions.
+    {
+      name: "login-password-reset",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.route("**/login", async (route) => {
+          await route.fulfill({
+            status: 401,
+            contentType: "application/json",
+            body: JSON.stringify({
+              message: "This account requires a password reset.",
+              code: "passwordResetRequired",
+            }),
+          });
+        });
+        await page.fill("#login-username", "Nobody");
+        await page.fill("#login-password", "password");
+        await page.click("#login-button");
+        await page.locator("#login-alert").waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
+      cleanup: async (page) => {
+        await page.unroute("**/login");
       },
     },
     {

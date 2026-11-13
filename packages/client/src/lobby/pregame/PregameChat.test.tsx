@@ -6,7 +6,7 @@ import { defaultOptions } from "@hanabi-live/game";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { add } from "../../chat.ts";
+import { add, addSettingsSuggestion } from "../../chat.ts";
 import { globals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
@@ -49,6 +49,17 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("PregameChat", () => {
+  test("shows a message's markup as text, on as many lines as it has", () => {
+    act(() => {
+      add(message({ text: "<b>bold</b>\nnext" }), true);
+    });
+
+    const text = document.querySelector("#lobby-chat-pregame-text");
+    expect(text?.querySelector("b")).toBeNull();
+    expect(text?.textContent).toContain("<b>bold</b>");
+    expect(text?.querySelector(".cp")?.textContent).toBe("next");
+  });
+
   test("shows the table's messages and who is typing", () => {
     act(() => {
       store.dispatch(typingStarted("alice"));
@@ -79,17 +90,7 @@ describe("PregameChat", () => {
         }),
         true,
       );
-      add(
-        message({
-          kind: {
-            type: "settingsSuggestion",
-            recipient: "alice",
-            settings: suggestion,
-          },
-          text: '<button class="new-options">click to apply the suggestion</button>',
-        }),
-        true,
-      );
+      addSettingsSuggestion({ tableId: TABLE_ID, settings: suggestion }, true);
     });
 
     act(() => {
