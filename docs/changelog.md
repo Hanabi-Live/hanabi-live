@@ -25,6 +25,7 @@ of the repository.
 - In the new game screen, the play stacks, discards, deck, clues, strikes, and
   clue log no longer have text labels. The discard pile shows a trash can, and
   the clue count and the strikes have icons.
+- In the new game screen, pace has a help icon that explains it.
 
 ## November 12th, 2026
 

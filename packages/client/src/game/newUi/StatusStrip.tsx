@@ -22,6 +22,18 @@ const EFFICIENCY_HELP = `
 const EFFICIENCY_HELP_LABEL =
   "About efficiency: the first number is the efficiency that the team needs from now on in order to win, and the second number is the efficiency needed over the whole game, for this variant and number of players.";
 
+/** Explains pace, in the words of the classic screen's tooltip. */
+const PACE_HELP = `
+  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:narrow-980:max-w-[15em]">
+    Pace is a measure of how many discards can happen while still having a
+    chance to get the maximum score.
+  </p>
+`;
+
+/** The plain text of `PACE_HELP`, for screen readers. */
+const PACE_HELP_LABEL =
+  "About pace: pace is a measure of how many discards can happen while still having a chance to get the maximum score.";
+
 interface StatusStripProps {
   readonly turn: number;
   readonly score: number;
@@ -191,7 +203,15 @@ export function StatusStrip({
       </div>
       <GroupDivider />
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
-        <Stat label="Pace" size="small">
+        <Stat
+          label={
+            <>
+              Pace
+              <HelpIcon label={PACE_HELP_LABEL} tooltip={PACE_HELP} />
+            </>
+          }
+          size="small"
+        >
           <span style={{ color: paceColor }}>{pace}</span>
         </Stat>
         <Stat

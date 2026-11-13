@@ -1431,6 +1431,12 @@ function getStates({
       loggedIn: true,
       hover: '#game-new-ui [aria-label^="About efficiency"]',
     },
+    {
+      name: "new-ui-pace-tooltip",
+      path: "/",
+      loggedIn: true,
+      hover: '#game-new-ui [aria-label^="About pace"]',
+    },
     // The tooltips of a discarded card and of a clue in the clue log wait for the pointer to rest.
     {
       name: "new-ui-discard-tooltip",
