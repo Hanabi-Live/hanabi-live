@@ -33,6 +33,9 @@ import {
   stopChild,
 } from "./mainProcessSupport.ts";
 
+/** `LOBBY_READ_CONNECTIONS` in "server/src/store.rs". */
+const LOBBY_READ_CONNECTIONS = 4;
+
 databaseDescribe("compiled application entry point (rust)", () => {
   test.each([
     ["completes real WebSocket gameplay on localhost", "localhost", undefined],
@@ -137,8 +140,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
           .parse(await metrics.json());
         expect(reports.database.maxConnections).toBe(14);
         expect(reports.database.totalConnections).toBeLessThanOrEqual(14);
-        expect(reports.lobbyDatabase.maxConnections).toBe(2);
-        expect(reports.lobbyDatabase.totalConnections).toBeLessThanOrEqual(2);
+        expect(reports.lobbyDatabase.maxConnections).toBe(
+          LOBBY_READ_CONNECTIONS,
+        );
+        expect(reports.lobbyDatabase.totalConnections).toBeLessThanOrEqual(
+          LOBBY_READ_CONNECTIONS,
+        );
         const aliceCookie = await login(address, "SmokeAlice");
         const alice = socketClient(address, aliceCookie);
         sockets.push(alice.socket);
