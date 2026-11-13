@@ -610,6 +610,23 @@ fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> u
     count
 }
 
+/// The idle time left that each published `gameState` carries.
+fn game_state_idle_remaining(notifications: &mut mpsc::Receiver<HubCommand>) -> Vec<Option<i64>> {
+    let mut remaining = Vec::new();
+    while let Ok(notification) = notifications.try_recv() {
+        if let HubCommand::Effects(effects) = notification {
+            for (_, message) in &effects.messages {
+                if let Some((name, data)) = crate::transport::event(message)
+                    && name == "gameState"
+                {
+                    remaining.push(data["phase"]["idleRemainingMs"].as_i64());
+                }
+            }
+        }
+    }
+    remaining
+}
+
 #[tokio::test]
 async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     let Some((db, store, _state)) = fixture_store().await? else {
@@ -712,6 +729,16 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
         "The table was not warned exactly once"
     );
 
+    // A player who loads the game again, such as after a reload, still sees the warning.
+    actor.info(alice.clone(), GameInfo::State).await?;
+    ensure!(
+        matches!(
+            game_state_idle_remaining(&mut notifications).as_slice(),
+            [Some(remaining)] if (1..=IDLE_WARNING_MS).contains(remaining)
+        ),
+        "The game state did not carry the idle warning"
+    );
+
     // Only players can keep the game going.
     let idle_reset = || client_message("idleReset", &json!({"tableId":id}));
     ensure!(
@@ -729,6 +756,11 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     ensure!(
         published(&mut notifications, "idleReset") == 2,
         "The table was not told that the game was kept going"
+    );
+    actor.info(alice.clone(), GameInfo::State).await?;
+    ensure!(
+        game_state_idle_remaining(&mut notifications) == [None],
+        "The game state kept an idle warning after the game was kept going"
     );
 
     // The warning is sent again the next time the game is about to end.

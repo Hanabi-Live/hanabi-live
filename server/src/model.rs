@@ -6,11 +6,10 @@ use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
+pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS};
 use hanabi_protocol::{
-    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex,
-    PregameStats, UserRef,
+    Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex, PregameStats, UserRef,
 };
-pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -19,8 +18,6 @@ use std::{
 };
 
 pub const FORMAT: &str = "hanabi-live-20";
-/// How long before an idle game ends to warn its table.
-pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

@@ -354,6 +354,10 @@ gameCommands.set("gameState", (data) => {
     setConnected(phase.connections);
     timer.update(phase.clock);
     globals.store!.dispatch({ type: "pause", ...phase.pause });
+    // We may have missed the idle warning while we were away.
+    if (phase.idleRemainingMs !== undefined) {
+      showIdleWarning(phase.idleRemainingMs);
+    }
   }
   setSpectators(data.spectators);
   if (phase.type === "replay" && phase.hypothetical !== undefined) {
@@ -391,8 +395,13 @@ function setEvents(events: GameState["events"]) {
 }
 
 gameCommands.set("idleWarning", (data) => {
+  showIdleWarning(data.remainingMs);
+});
+
+/** Warns that the game ends soon from inactivity. A player can keep it going. */
+function showIdleWarning(remainingMs: number) {
   modals.showIdleWarning(
-    data.remainingMs,
+    remainingMs,
     globals.state.playing
       ? () => {
           globals.lobby.conn!.send("idleReset", {
@@ -401,7 +410,7 @@ gameCommands.set("idleWarning", (data) => {
         }
       : undefined,
   );
-});
+}
 
 // Received when a player keeps an idle game going.
 gameCommands.set("idleReset", () => {

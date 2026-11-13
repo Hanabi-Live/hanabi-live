@@ -629,6 +629,11 @@ const gamePhaseSchema = z.discriminatedUnion("type", [
     .strictObject({
       clock: clockStateSchema,
       connections: playerConnectionsSchema,
+      /**
+       * How long until the game ends because nobody took a turn, as in `idleWarning`. Present
+       * only after the table was warned.
+       */
+      idleRemainingMs: millisecondsSchema.optional(),
       pause: pauseStateSchema,
       type: z.literal("playing"),
       /**
@@ -691,7 +696,7 @@ export const idleWarningSchema = z
   .strictObject({
     /**
      * How long until the game ends, unless someone takes a turn or keeps it going. At most
-     * `IDLE_TIMEOUT_MS`.
+     * `IDLE_WARNING_MS`.
      */
     remainingMs: millisecondsSchema,
     tableId: tableIdSchema,

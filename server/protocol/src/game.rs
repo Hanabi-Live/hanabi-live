@@ -48,7 +48,7 @@ pub struct Connections {
 pub struct IdleWarning {
     pub table_id: TableId,
     /// How long until the game ends, unless someone takes a turn or keeps it going. At most
-    /// `IDLE_TIMEOUT_MS`.
+    /// `IDLE_WARNING_MS`.
     pub remaining_ms: Milliseconds,
 }
 
@@ -346,6 +346,10 @@ pub enum GamePhase {
         /// Present for a player of the game.
         #[serde(skip_serializing_if = "Option::is_none")]
         votes: Option<VoteState>,
+        /// How long until the game ends because nobody took a turn, as in `idleWarning`. Present
+        /// only after the table was warned.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        idle_remaining_ms: Option<Milliseconds>,
     },
     /// A finished game.
     Replay {

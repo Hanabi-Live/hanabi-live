@@ -590,6 +590,7 @@ impl TableActor {
                     pause: pause_state(s, &session),
                     connections: self.connections().connections,
                     votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
+                    idle_remaining_ms: self.idle_warning_remaining(),
                 },
             };
             let state = hanabi_protocol::GameState {

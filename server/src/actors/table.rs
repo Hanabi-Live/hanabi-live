@@ -503,6 +503,19 @@ impl TableActor {
         }
     }
     /// Whether a game was warned that it is about to end for inactivity. `None` outside a game.
+    /// How long until the game ends from inactivity, once the table was warned.
+    pub(super) fn idle_warning_remaining(&self) -> Option<hanabi_protocol::Milliseconds> {
+        let Phase::Live { runtime, .. } = &self.table.phase else {
+            return None;
+        };
+        if !runtime.idle_warned {
+            return None;
+        }
+        let timers = self.timers()?;
+        Some(hanabi_protocol::Milliseconds::saturating(
+            timers.idle_remaining,
+        ))
+    }
     pub(super) fn idle_warned(&mut self) -> Option<&mut bool> {
         match &mut self.table.phase {
             Phase::Live { runtime, .. } => Some(&mut runtime.idle_warned),

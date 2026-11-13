@@ -188,6 +188,8 @@ constants! {
     pub const CLOCK_UNITS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND;
     /// How long a game can go without a move before it ends.
     pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+    /// How long before an idle game ends to warn its table.
+    pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
     /// How long a typing indicator lasts without another keystroke, in milliseconds.
     @data pub const TYPING_TIMEOUT_MS: i64 = 2 * CLOCK_UNITS_PER_SECOND;
     /// The number of minutes in an hour.
