@@ -63,7 +63,7 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:narrow-980:order-first tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
+      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:narrow-980:-order-2 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
       role="status"
     >
       <span

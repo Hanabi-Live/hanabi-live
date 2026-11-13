@@ -1335,21 +1335,6 @@ export function GameScreen({
                   {pausedBy} paused the game.
                 </div>
               )}
-              {showCluePanel && (
-                <CluePanel
-                  canClue={canClue}
-                  canGive={canGive}
-                  clue={clue}
-                  colorblindMode={settings.colorblindMode}
-                  onChooseClue={setClue}
-                  onChooseTarget={setClueTarget}
-                  onGive={giveClue}
-                  target={clueTarget}
-                  targets={clueTargets}
-                  variant={variant}
-                  waitingText={waitingText}
-                />
-              )}
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
                 ref={setHandsElement}
@@ -1451,8 +1436,24 @@ export function GameScreen({
                   variant={variant}
                 />
               </div>
-              {/* Below the hands, in the same place in every game, because it is clicked many
-                  times in a row. The hands take the free space above it. */}
+              {/* The controls are below the hands, nearer the middle of the screen, and in the same
+                  place in every game. The hands take the free space above them. In a hypothetical,
+                  the replay bar is the lower one, so that it stays where it is in a replay. */}
+              {showCluePanel && (
+                <CluePanel
+                  canClue={canClue}
+                  canGive={canGive}
+                  clue={clue}
+                  colorblindMode={settings.colorblindMode}
+                  onChooseClue={setClue}
+                  onChooseTarget={setClueTarget}
+                  onGive={giveClue}
+                  target={clueTarget}
+                  targets={clueTargets}
+                  variant={variant}
+                  waitingText={waitingText}
+                />
+              )}
               <ReplayBar
                 editingCards={editingCards}
                 onToggleEditCards={() => {
