@@ -285,7 +285,13 @@ function ClueDisc({
         background: getClueMarkerColor(marker),
       }}
     >
-      {marker.type === "rank" ? clueName : ""}
+      {/* The number's box is trimmed to the height of the digits, so that the digits are centered
+          and not the font's space above and below them. */}
+      {marker.type === "rank" && (
+        <span className="tw:block tw:[text-box:trim-both_cap_alphabetic]">
+          {clueName}
+        </span>
+      )}
     </span>
   );
 }
