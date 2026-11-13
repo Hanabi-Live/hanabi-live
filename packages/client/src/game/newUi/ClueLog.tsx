@@ -13,8 +13,31 @@ const CLUE_DISC_SIZE = 20;
  */
 const BOTTOM_SLOP = 2;
 
+/**
+ * The height of a line in a row of the log, in CSS pixels. It does not change with the size of a
+ * name that is made smaller to fit.
+ */
+const ROW_LINE_HEIGHT = 21;
+
+/** The size of a name in the log, in CSS pixels, if it fits in its column. */
+const NAME_FONT_SIZE = 14;
+
 /** How a clue relates to the card that the mouse button is held on. */
 type Match = "none" | "positive" | "negative";
+
+/** The background of a row in the filtered log, for each match. */
+const MATCH_BACKGROUND = {
+  none: "",
+  positive: "tw:bg-[rgb(74_222_128/16%)] tw:hover:bg-[rgb(74_222_128/26%)]",
+  negative: "tw:bg-[rgb(248_113_113/16%)] tw:hover:bg-[rgb(248_113_113/26%)]",
+} as const satisfies Record<Match, string>;
+
+/** What the label of a clue in the filtered log adds, for each match. */
+const MATCH_LABEL_SUFFIX = {
+  none: "",
+  positive: ", touched it",
+  negative: ", did not touch it",
+} as const satisfies Record<Match, string>;
 
 export interface ClueLogEntry {
   /** The segment on which the clue was given. */
@@ -45,14 +68,16 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
 }
 
 /**
- * The clues of the game so far, newest at the bottom, like the classic screen's clue log. Each one
- * is a button that shows the turn after it. The clue of the turn on screen stands out, in the same
- * color as its rail beside the hands.
+ * The clues of the game so far, newest at the bottom, like the classic screen's clue log. They are
+ * in columns: the turn, the giver, an arrow, the receiver, and the clue. A name that is too long
+ * for its column is made smaller to fit, not cut off. Each one is a button that shows the turn
+ * after it. The clue of the turn on screen stands out, in the same color as its rail beside the
+ * hands.
  *
  * While the mouse button is held down on a card in a hand, the log shows only the clues about that
- * card: the ones that touched it, and the ones to its hand that did not (with a cross). So all of
- * them fit, however old the card is. It does not filter on hover, so that the log does not change
- * as the mouse passes over the hands.
+ * card: the ones that touched it (on green), and the ones to its hand that did not (on red). So all
+ * of them fit, however old the card is. It does not filter on hover, so that the log does not
+ * change as the mouse passes over the hands.
  */
 export function ClueLog({
   entries,
@@ -113,7 +138,7 @@ export function ClueLog({
         <ol
           // A thin scrollbar in the screen's colors has no arrow buttons, and the list stops short
           // of the panel's rounded corner, so that the corner does not cut the scrollbar off.
-          className={`tw:m-0 tw:mr-1 tw:mb-2.5 tw:flex tw:min-h-0 tw:flex-1 tw:list-none tw:flex-col tw:gap-px tw:overflow-y-auto tw:px-2 tw:py-1.5 tw:[scrollbar-color:var(--game-screen-line)_transparent] tw:[scrollbar-width:thin] ${
+          className={`tw:m-0 tw:mr-1 tw:mb-2.5 tw:grid tw:min-h-0 tw:flex-1 tw:list-none tw:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto] tw:content-start tw:gap-y-px tw:overflow-y-auto tw:px-2 tw:py-1.5 tw:[scrollbar-color:var(--game-screen-line)_transparent] tw:[scrollbar-width:thin] ${
             scrolledDown
               ? "tw:[mask-image:linear-gradient(to_bottom,transparent_0,#000_28px)]"
               : ""
@@ -135,39 +160,42 @@ export function ClueLog({
           {rows.map(({ entry, match }) => {
             const shown = entry.segment === shownSegment;
             const color = getClueMarkerColor(entry.marker);
-            const missed = match === "negative";
+            const background =
+              match === "none"
+                ? `tw:hover:bg-game-raised ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
+                : MATCH_BACKGROUND[match];
             return (
-              <li key={entry.segment}>
+              <li
+                className="tw:col-span-full tw:grid tw:grid-cols-subgrid"
+                key={entry.segment}
+              >
                 <button
                   aria-current={shown ? "step" : undefined}
-                  className={`tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-lg tw:border-0 tw:border-l-4 tw:border-solid tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:leading-normal tw:hover:bg-game-raised ${
-                    shown ? "tw:bg-game-raised" : "tw:bg-transparent"
-                  } ${missed ? "tw:text-game-muted" : "tw:text-game-text"}`}
+                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:rounded-lg tw:border-0 tw:border-l-4 tw:border-solid tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
                   ref={tooltipRef("Click to go to the turn of this clue.")}
-                  style={{ borderLeftColor: shown ? color : "transparent" }}
+                  style={{
+                    borderLeftColor: shown ? color : "transparent",
+                    lineHeight: `${ROW_LINE_HEIGHT}px`,
+                  }}
                   type="button"
                 >
-                  <span className="tw:w-8 tw:shrink-0 tw:text-[13px] tw:text-game-muted">
+                  <span className="tw:text-[13px] tw:text-game-muted">
                     #{entry.turn}
                   </span>
-                  <span className="tw:min-w-0 tw:truncate">
-                    {entry.giverName}
-                  </span>
+                  <FitName name={entry.giverName} />
                   <i
                     aria-label="told"
-                    className="fas fa-arrow-right tw:shrink-0 tw:text-[11px] tw:text-game-muted"
+                    className="fas fa-arrow-right tw:text-[11px] tw:text-game-muted"
                     role="img"
                   />
-                  <span className="tw:min-w-0 tw:truncate">
-                    {entry.targetName}
-                  </span>
+                  <FitName name={entry.targetName} />
                   <ClueDisc
                     clueName={entry.clueName}
                     marker={entry.marker}
-                    missed={missed}
+                    match={match}
                   />
                 </button>
               </li>
@@ -180,44 +208,78 @@ export function ClueLog({
 }
 
 /**
+ * A name on one line that fills its column. If it is too long for the column, its text is made
+ * smaller until it fits, instead of being cut off.
+ */
+function FitName({ name }: { readonly name: string }): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const span = ref.current;
+    if (span === null) {
+      return undefined;
+    }
+
+    // The width of the span comes from its column, not from its text, and its line height is fixed.
+    // So a new font size does not resize the span and make it fit again.
+    let fittedWidth: number | undefined;
+    function fit() {
+      if (span === null || span.clientWidth === fittedWidth) {
+        return;
+      }
+      fittedWidth = span.clientWidth;
+      span.style.fontSize = `${NAME_FONT_SIZE}px`;
+      if (span.scrollWidth > span.clientWidth) {
+        const fitted = (NAME_FONT_SIZE * span.clientWidth) / span.scrollWidth;
+        span.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
+      }
+    }
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(span);
+    return () => {
+      observer.disconnect();
+    };
+  }, [name]);
+
+  return (
+    <span
+      className="tw:overflow-hidden tw:whitespace-nowrap"
+      ref={ref}
+      style={{ fontSize: NAME_FONT_SIZE }}
+    >
+      {name}
+    </span>
+  );
+}
+
+/**
  * The clue as a small disc, like the tokens on the cards: the clue's color, or a white disc with
- * the clue's number. A color clue also has its name beside the disc. A clue that did not touch the
- * card under the mouse has a cross before it and a faded disc.
+ * the clue's number. Its label also says whether the clue touched the card under the mouse.
  */
 function ClueDisc({
   marker,
   clueName,
-  missed,
+  match,
 }: {
   readonly marker: ClueMarkerView;
   readonly clueName: string;
-  readonly missed: boolean;
+  readonly match: Match;
 }): React.JSX.Element {
-  const isRank = marker.type === "rank";
+  const label = `${clueName}${MATCH_LABEL_SUFFIX[match]}`;
   return (
-    <span className="tw:ml-auto tw:flex tw:shrink-0 tw:items-center tw:gap-1.5">
-      {!isRank && <span className="tw:text-game-muted">{clueName}</span>}
-      {missed && (
-        <i
-          aria-label="did not touch it"
-          className="fas fa-times tw:text-[13px] tw:text-game-muted"
-          role="img"
-        />
-      )}
-      <span
-        aria-label={isRank ? clueName : undefined}
-        className={`tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:text-[12px] tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black] ${
-          missed ? "tw:opacity-60" : ""
-        }`}
-        role={isRank ? "img" : undefined}
-        style={{
-          width: CLUE_DISC_SIZE,
-          height: CLUE_DISC_SIZE,
-          background: getClueMarkerColor(marker),
-        }}
-      >
-        {isRank ? clueName : ""}
-      </span>
+    <span
+      aria-label={label}
+      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:text-[12px] tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black]"
+      role="img"
+      style={{
+        width: CLUE_DISC_SIZE,
+        height: CLUE_DISC_SIZE,
+        background: getClueMarkerColor(marker),
+      }}
+    >
+      {marker.type === "rank" ? clueName : ""}
     </span>
   );
 }
