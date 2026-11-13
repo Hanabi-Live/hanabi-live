@@ -590,7 +590,7 @@ async fn reserve_chat(
     );
     for (&index, id) in pending.iter().zip(ids) {
         let chat = &mut table.chat[index];
-        chat.message.sent_at = hanabi_protocol::Timestamp::from(chat.sent()?);
+        chat.message.message.sent_at = hanabi_protocol::Timestamp::from(chat.sent()?);
         chat.id = Some(i32::try_from(id)?);
     }
     Ok(pending)
@@ -606,13 +606,13 @@ async fn archive_chat(
         ids.push(entry.id.context("Missing chat identity")?);
         // Server messages have no author.
         users.push(entry.user.map(UserId::get));
-        messages.push(entry.message.text.clone());
+        messages.push(entry.message.message.text.clone());
         let table = entry
             .message
             .table_id
             .context("Invalid archived chat room")?;
         tables.push(i64::try_from(table.get())?);
-        sources.push(match entry.message.author().source() {
+        sources.push(match entry.message.message.author().source() {
             ChatSource::User => "user",
             ChatSource::Server => "server",
             ChatSource::Discord => bail!("Invalid table chat source"),
@@ -833,13 +833,14 @@ mod tests {
         table.chat.push(TableChat {
             id: Some(7),
             user: Some(UserId::new(1).unwrap()),
-            message: hanabi_protocol::Chat::public(
+            message: hanabi_protocol::ChatMessage::public(
                 "hello",
                 hanabi_protocol::ChatAuthor::User {
                     username: "Alice".into(),
                 },
                 hanabi_protocol::Timestamp::from(Utc::now()),
-            ),
+            )
+            .into(),
         });
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
@@ -914,13 +915,14 @@ mod tests {
         let message = |id: i32| TableChat {
             id: Some(id),
             user: Some(UserId::new(1).unwrap()),
-            message: hanabi_protocol::Chat::public(
+            message: hanabi_protocol::ChatMessage::public(
                 format!("message {id}"),
                 hanabi_protocol::ChatAuthor::User {
                     username: "Alice".into(),
                 },
                 hanabi_protocol::Timestamp::from(Utc::now()),
-            ),
+            )
+            .into(),
         };
         let keys = |encoded: &crate::checkpoint::Encoded| {
             encoded
@@ -1573,7 +1575,7 @@ mod tests {
                 .revision;
             ensure!(
                 table.chat.iter().all(|chat| chat.id.is_some())
-                    && table.chat[0].message.sent_at.as_str() == "2026-11-02T20:00:00.123Z",
+                    && table.chat[0].message.message.sent_at.as_str() == "2026-11-02T20:00:00.123Z",
                 "Archived messages lack their identities or stored timestamps"
             );
             store

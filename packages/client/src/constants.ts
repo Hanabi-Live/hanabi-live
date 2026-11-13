@@ -8,6 +8,9 @@ export const DIMMED_OPACITY = 0.3;
 
 export const TYPED_HISTORY_MAX_LENGTH = 250;
 
+/** What follows our name to name a table when we do not choose a name. */
+export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
+
 /** Where each level of the H-Group convention guide is, followed by the level number. */
 export const H_GROUP_LEVEL_URL_PREFIX = "https://hanabi.github.io/level-";
 

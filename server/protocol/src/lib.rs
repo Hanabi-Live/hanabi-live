@@ -127,8 +127,6 @@ constants! {
     @game pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
     /// The ID of `DEFAULT_VARIANT_NAME` in `variants.json`.
     @game pub const DEFAULT_VARIANT_ID: VariantId = VariantId(0);
-    /// What follows the creator's name to name a table whose creator did not choose a name.
-    @data pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
     /// The most suits a variant can have.
     @game pub const MAX_SUITS: usize = 6;
     /// The highest suit index.
@@ -182,16 +180,17 @@ constants! {
     pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
     /// The number of seconds in a minute.
     @data pub const SECONDS_PER_MINUTE: i64 = 60;
-    /// Player clocks and idle timers hold milliseconds; time options hold seconds.
-    pub const CLOCK_UNITS_PER_SECOND: i64 = 1000;
-    /// The clock units in a minute.
-    pub const CLOCK_UNITS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND;
+    /// The milliseconds in a second. Player clocks and idle timers hold milliseconds; time options
+    /// hold seconds.
+    pub const MS_PER_SECOND: i64 = 1000;
+    /// The milliseconds in a minute.
+    pub const MS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * MS_PER_SECOND;
     /// How long a game can go without a move before it ends.
-    pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+    pub const IDLE_TIMEOUT_MS: i64 = 30 * MS_PER_MINUTE;
     /// How long before an idle game ends to warn its table.
-    pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
+    pub const IDLE_WARNING_MS: i64 = 5 * MS_PER_MINUTE;
     /// How long a typing indicator lasts without another keystroke, in milliseconds.
-    @data pub const TYPING_TIMEOUT_MS: i64 = 2 * CLOCK_UNITS_PER_SECOND;
+    @data pub const TYPING_TIMEOUT_MS: i64 = 2 * MS_PER_SECOND;
     /// The number of minutes in an hour.
     pub const MINUTES_PER_HOUR: i64 = 60;
     /// The number of seconds in an hour.

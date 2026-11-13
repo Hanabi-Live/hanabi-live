@@ -12,7 +12,7 @@ use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::Game,
-    model::{CLOCK_UNITS_PER_SECOND, Phase, Player, Snapshot, TableSnapshot, engine_options},
+    model::{MS_PER_SECOND, Phase, Player, Snapshot, TableSnapshot, engine_options},
     transport::{Session, frame},
 };
 use anyhow::Context;
@@ -282,7 +282,7 @@ impl TableActor {
             clocks: vec![
                 options
                     .time_control
-                    .map_or(0, |time| time.base_seconds.get() * CLOCK_UNITS_PER_SECOND);
+                    .map_or(0, |time| time.base_seconds.get() * MS_PER_SECOND);
                 n
             ],
             ..Snapshot::new(

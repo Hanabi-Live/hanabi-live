@@ -129,12 +129,12 @@ fn notice(recipient: &str, message: &str) -> Effect {
 pub(crate) fn notice_publication(recipient: &str, message: &str) -> Publication {
     Publication::ToSelf(Outgoing::new(
         hanabi_protocol::event::CHAT,
-        hanabi_protocol::Chat::private(
+        hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::private(
             message,
             hanabi_protocol::ChatAuthor::Server {},
             recipient,
             hanabi_protocol::Timestamp::from(chrono::Utc::now()),
-        ),
+        )),
     ))
 }
 

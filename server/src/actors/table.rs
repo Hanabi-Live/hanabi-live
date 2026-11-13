@@ -13,9 +13,7 @@ use crate::errors::{CommandError, CommandResult};
 use crate::routing::{Route, route};
 use crate::store::{Commit, Outcome, Saved};
 use crate::{
-    model::{
-        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableSnapshot,
-    },
+    model::{IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MS_PER_SECOND, Phase, Snapshot, TableSnapshot},
     server_info::ServerInfo,
     store::Store,
     transport::{Outgoing, Session, frame},
@@ -416,12 +414,7 @@ impl TableActor {
                         .chat
                         .iter()
                         // The list names its table once, not in each message.
-                        .map(|chat| {
-                            chat.wire_message().map(|chat| Chat {
-                                table_id: None,
-                                ..chat
-                            })
-                        })
+                        .map(|chat| chat.wire_message().map(|chat| chat.message))
                         .collect::<Result<_>>()?,
                     hanabi_protocol::Count::try_from(self.table.chat.len().saturating_sub(read))?,
                 ),
@@ -884,7 +877,7 @@ impl TableActor {
             && !s.maintenance_applied
         {
             for clock in &mut s.clocks {
-                *clock += MAINTENANCE_CLOCK_ALLOWANCE_SECONDS * CLOCK_UNITS_PER_SECOND;
+                *clock += MAINTENANCE_CLOCK_ALLOWANCE_SECONDS * MS_PER_SECOND;
             }
             s.maintenance_applied = true;
         }

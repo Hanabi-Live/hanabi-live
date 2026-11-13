@@ -19,10 +19,33 @@ named_enum! {
     }
 }
 
-/// A chat message.
+/// A chat message, and the table whose chat shows it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Chat {
+    /// The table whose chat shows the message. Absent for a message that belongs to no table: a
+    /// message in the lobby, or a private message, which shows in the chat that the recipient has
+    /// open.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table_id: Option<TableId>,
+    #[serde(flatten)]
+    pub message: ChatMessage,
+}
+
+impl From<ChatMessage> for Chat {
+    /// A message that belongs to no table.
+    fn from(message: ChatMessage) -> Self {
+        Self {
+            table_id: None,
+            message,
+        }
+    }
+}
+
+/// A chat message, without the chat that shows it. A list of messages names their chat once.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChatMessage {
     /// Plain text, which the client escapes. A newline starts a new line.
     #[schemars(length(min = 1))]
     pub text: String,
@@ -30,10 +53,6 @@ pub struct Chat {
     /// Absent for a message that the chat log does not keep, or does not keep yet.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// The table whose chat shows the message. Absent means the lobby, or the recipient's current
-    /// chat for a private message. Absent in a `chatList`, which names its table once.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
     pub kind: ChatKind,
 }
 
@@ -97,13 +116,12 @@ impl ChatAuthor {
     }
 }
 
-impl Chat {
+impl ChatMessage {
     pub fn new(text: impl Into<String>, kind: ChatKind, sent_at: impl Into<Timestamp>) -> Self {
         Self {
             text: text.into(),
             sent_at: sent_at.into(),
             chat_id: None,
-            table_id: None,
             kind,
         }
     }
@@ -168,8 +186,7 @@ pub struct ChatDeleted {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatList {
-    /// The messages, without their `tableId`.
-    pub messages: Vec<Chat>,
+    pub messages: Vec<ChatMessage>,
     /// The table whose chat this is. Absent for the lobby's chat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table: Option<ChatListTable>,
@@ -187,7 +204,7 @@ pub struct ChatListTable {
 
 impl ChatList {
     /// The lobby's past messages.
-    pub const fn lobby(messages: Vec<Chat>) -> Self {
+    pub const fn lobby(messages: Vec<ChatMessage>) -> Self {
         Self {
             messages,
             table: None,
@@ -195,7 +212,7 @@ impl ChatList {
     }
 
     /// A table's past messages, and how many of them the recipient has not read.
-    pub const fn table(table_id: TableId, messages: Vec<Chat>, num_unread: Count) -> Self {
+    pub const fn table(table_id: TableId, messages: Vec<ChatMessage>, num_unread: Count) -> Self {
         Self {
             messages,
             table: Some(ChatListTable {
@@ -209,7 +226,7 @@ impl ChatList {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmHistory {
-    pub messages: Vec<Chat>,
+    pub messages: Vec<ChatMessage>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

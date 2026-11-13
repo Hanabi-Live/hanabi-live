@@ -148,19 +148,19 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     ));
     initial.push(frame(
         hanabi_protocol::event::CHAT,
-        hanabi_protocol::Chat::server(
+        hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::server(
             "Find teammates and discuss strategy in the Discord chat: https://discord.gg/FADvkJp",
             hanabi_protocol::Timestamp::from(Utc::now()),
-        ),
+        )),
     ));
     let motd = app.public.root.join("motd.txt");
     match tokio::fs::read_to_string(motd).await {
         Ok(text) if !text.trim().is_empty() => initial.push(frame(
             hanabi_protocol::event::CHAT,
-            hanabi_protocol::Chat::server(
+            hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::server(
                 format!("[Server Notice] {}", text.trim()),
                 hanabi_protocol::Timestamp::from(Utc::now()),
-            ),
+            )),
         )),
         Ok(_) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}

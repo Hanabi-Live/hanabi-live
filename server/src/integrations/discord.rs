@@ -656,16 +656,16 @@ impl Bridge {
                 } else {
                     self.broadcast(vec![Outgoing::new(
                         hanabi_protocol::event::CHAT,
-                        hanabi_protocol::Chat {
+                        hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage {
                             chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
-                            ..hanabi_protocol::Chat::public(
+                            ..hanabi_protocol::ChatMessage::public(
                                 rendered,
                                 hanabi_protocol::ChatAuthor::Discord {
                                     username: Some(name.clone().into()),
                                 },
                                 hanabi_protocol::Timestamp::from(time),
                             )
-                        },
+                        }),
                     )])
                     .await?;
                     if class == lobby::Classification::Public {
@@ -749,14 +749,14 @@ impl Bridge {
         if let Some((id, time)) = insert_message(&self.pool, None, &rendered, None).await? {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::event::CHAT,
-                hanabi_protocol::Chat {
+                hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage {
                     chat_id: Some(hanabi_protocol::ChatId::try_from(id)?),
-                    ..hanabi_protocol::Chat::public(
+                    ..hanabi_protocol::ChatMessage::public(
                         rendered,
                         hanabi_protocol::ChatAuthor::Discord { username: None },
                         hanabi_protocol::Timestamp::from(time),
                     )
-                },
+                }),
             )])
             .await?;
         }

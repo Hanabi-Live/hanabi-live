@@ -2,7 +2,6 @@
 // that we created last time, or from the options of the table that we are at.
 
 import {
-  DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
   MAX_TABLE_NAME_LENGTH,
   defaultSettings,
@@ -23,7 +22,11 @@ import {
   parseIntSafe,
 } from "complete-common";
 import { memo, useEffect, useRef, useState } from "react";
-import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../../constants.ts";
+import {
+  DEFAULT_TABLE_NAME_SUFFIX,
+  DIMMED_OPACITY,
+  LOCAL_STORAGE_KEY,
+} from "../../constants.ts";
 import { globals } from "../../Globals.ts";
 import type { LengthLimit } from "../../LengthCounter.tsx";
 import {

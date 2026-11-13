@@ -21,7 +21,6 @@ import {
 import * as z from "zod";
 
 export const DEFAULT_MAX_PLAYERS = 5;
-export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
 export const MAX_NOTE_LENGTH = 300;
@@ -122,7 +121,7 @@ const chatKindSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * A chat message.
+ * A chat message, and the table whose chat shows it.
  */
 export const chatSchema = z
   .strictObject({
@@ -133,8 +132,9 @@ export const chatSchema = z
     kind: chatKindSchema,
     sentAt: z.iso.datetime({ precision: 3 }),
     /**
-     * The table whose chat shows the message. Absent means the lobby, or the recipient's current
-     * chat for a private message. Absent in a `chatList`, which names its table once.
+     * The table whose chat shows the message. Absent for a message that belongs to no table: a
+     * message in the lobby, or a private message, which shows in the chat that the recipient has
+     * open.
      */
     tableId: tableIdSchema.optional(),
     /**
@@ -167,15 +167,30 @@ const chatListTableSchema = z
   .readonly();
 
 /**
+ * A chat message, without the chat that shows it. A list of messages names their chat once.
+ */
+const chatMessageSchema = z
+  .strictObject({
+    /**
+     * Absent for a message that the chat log does not keep, or does not keep yet.
+     */
+    chatId: chatIdSchema.optional(),
+    kind: chatKindSchema,
+    sentAt: z.iso.datetime({ precision: 3 }),
+    /**
+     * Plain text, which the client escapes. A newline starts a new line.
+     */
+    text: z.string().min(1),
+  })
+  .readonly();
+
+/**
  * The past messages of the lobby's chat or of a table's chat, which a client receives when it
  * connects or joins the table.
  */
 export const chatListSchema = z
   .strictObject({
-    /**
-     * The messages, without their `tableId`.
-     */
-    messages: z.array(chatSchema).readonly(),
+    messages: z.array(chatMessageSchema).readonly(),
     /**
      * The table whose chat this is. Absent for the lobby's chat.
      */
@@ -183,7 +198,7 @@ export const chatListSchema = z
   })
   .readonly();
 export const chatPmHistorySchema = z
-  .strictObject({ messages: z.array(chatSchema).readonly() })
+  .strictObject({ messages: z.array(chatMessageSchema).readonly() })
   .readonly();
 
 /**

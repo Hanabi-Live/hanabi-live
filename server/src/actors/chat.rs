@@ -9,7 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, ChatAuthor, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
+use hanabi_protocol::{Chat, ChatAuthor, ChatMessage, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
 use std::{
     collections::HashSet,
     sync::Arc,
@@ -23,28 +23,31 @@ const TYPING_TIMEOUT: Duration =
 const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
 pub(super) fn server_chat(id: TableId, message: &str) -> Chat {
-    Chat {
-        table_id: Some(id),
-        ..Chat::server(message, chat_time())
-    }
+    table_chat(id, ChatMessage::server(message, chat_time()))
 }
 /// A message from the server to one user at the table.
 pub(super) fn private_server_chat(id: TableId, recipient: &str, message: &str) -> Chat {
-    Chat {
-        table_id: Some(id),
-        ..Chat::private(message, ChatAuthor::Server {}, recipient, chat_time())
-    }
+    table_chat(
+        id,
+        ChatMessage::private(message, ChatAuthor::Server {}, recipient, chat_time()),
+    )
 }
 pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
-    Chat {
-        table_id: Some(id),
-        ..Chat::public(
+    table_chat(
+        id,
+        ChatMessage::public(
             message,
             ChatAuthor::User {
                 username: name.into(),
             },
             chat_time(),
-        )
+        ),
+    )
+}
+const fn table_chat(id: TableId, message: ChatMessage) -> Chat {
+    Chat {
+        table_id: Some(id),
+        message,
     }
 }
 pub(super) fn chat_time() -> hanabi_protocol::Timestamp {

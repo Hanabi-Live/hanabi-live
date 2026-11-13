@@ -6,10 +6,10 @@ use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS};
 use hanabi_protocol::{
     Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex, PregameStats, UserRef,
 };
+pub use hanabi_protocol::{IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MS_PER_SECOND};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -266,17 +266,18 @@ pub struct TableChat {
 impl TableChat {
     /// When the message was sent.
     pub fn sent(&self) -> Result<DateTime<Utc>> {
-        Ok(DateTime::parse_from_rfc3339(self.message.sent_at.as_str())
-            .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
-            .with_timezone(&Utc))
+        Ok(
+            DateTime::parse_from_rfc3339(self.message.message.sent_at.as_str())
+                .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
+                .with_timezone(&Utc),
+        )
     }
     /// The message as the wire carries it. Checkpoints keep each message's timestamp as it was
     /// archived, which messages from before timestamps had one form may write with microseconds.
     pub fn wire_message(&self) -> Result<Chat> {
-        Ok(Chat {
-            sent_at: hanabi_protocol::Timestamp::from(self.sent()?),
-            ..self.message.clone()
-        })
+        let mut chat = self.message.clone();
+        chat.message.sent_at = hanabi_protocol::Timestamp::from(self.sent()?);
+        Ok(chat)
     }
 }
 /// The serialized size of a hypothetical's actions, which checkpoints store as JSON text.
@@ -832,10 +833,13 @@ mod tests {
             .unwrap(),
         };
         assert_eq!(
-            chat.wire_message().unwrap().sent_at.as_str(),
+            chat.wire_message().unwrap().message.sent_at.as_str(),
             "2026-11-02T20:00:00.123Z"
         );
-        assert_eq!(chat.message.sent_at.as_str(), "2026-11-02T20:00:00.123456Z");
+        assert_eq!(
+            chat.message.message.sent_at.as_str(),
+            "2026-11-02T20:00:00.123456Z"
+        );
     }
 
     #[test]

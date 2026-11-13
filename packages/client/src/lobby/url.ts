@@ -1,9 +1,5 @@
 import type { ServerEventData } from "@hanabi-live/data";
-import {
-  DEFAULT_MAX_PLAYERS,
-  DEFAULT_TABLE_NAME_SUFFIX,
-  tableIdSchema,
-} from "@hanabi-live/data";
+import { DEFAULT_MAX_PLAYERS, tableIdSchema } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -12,7 +8,12 @@ import {
   isValidPlayerIndex,
 } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
-import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
+import {
+  DEFAULT_TABLE_NAME_SUFFIX,
+  HISTORY_HASH,
+  LOCAL_STORAGE_KEY,
+  PATH,
+} from "../constants.ts";
 import { globals } from "../Globals.ts";
 import * as modals from "../modals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";

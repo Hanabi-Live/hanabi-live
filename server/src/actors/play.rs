@@ -8,7 +8,7 @@ use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
 use crate::store::Commit;
 use crate::{
-    model::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, NoteOwner, Phase, wire_options},
+    model::{IDLE_TIMEOUT_MS, MS_PER_SECOND, NoteOwner, Phase, wire_options},
     transport::{Session, frame},
 };
 use anyhow::Context;
@@ -70,7 +70,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         if let Some(time) = s.game.options.time_control {
-            s.clocks[seat] += time.per_turn_seconds.get() * CLOCK_UNITS_PER_SECOND;
+            s.clocks[seat] += time.per_turn_seconds.get() * MS_PER_SECOND;
         }
         let timing = CompletionTiming {
             player_times: s.clocks.clone(),

@@ -632,10 +632,10 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
                 generation: 2,
                 message: Outgoing::new(
                     hanabi_protocol::event::CHAT,
-                    hanabi_protocol::Chat::server(
+                    hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::server(
                         "must not reroute to replacement",
                         chrono::DateTime::from_timestamp(1_794_009_600, 0).unwrap(),
-                    ),
+                    )),
                 ),
             }],
             reply,

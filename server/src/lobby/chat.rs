@@ -3,7 +3,9 @@ use crate::accounts::{is_muted, normalize_chat, normalize_string, regenerate_tok
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
-use hanabi_protocol::{Chat, ChatAuthor, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId};
+use hanabi_protocol::{
+    Chat, ChatAuthor, ChatMessage, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId,
+};
 use serde::Deserialize;
 use sqlx::PgPool;
 use std::sync::LazyLock;
@@ -286,14 +288,14 @@ pub async fn private_message(
     )
     .fetch_one(pool)
     .await?;
-    let data = Chat::private(
+    let data = Chat::from(ChatMessage::private(
         message,
         ChatAuthor::User {
             username: caller.name.clone().into(),
         },
         target.identity.name.clone(),
         hanabi_protocol::Timestamp::from(row.datetime_sent),
-    );
+    ));
     Ok(vec![
         Effect::to_self(Outgoing::new(hanabi_protocol::event::CHAT, data.clone())),
         Publication::ToUser {
@@ -343,7 +345,7 @@ pub async fn private_history(
     .await?;
     let mut list = Vec::new();
     for row in rows.iter().rev() {
-        list.push(Chat::private(
+        list.push(ChatMessage::private(
             row.message.clone(),
             ChatAuthor::User {
                 username: row
@@ -472,9 +474,9 @@ pub async fn lobby_chat(
         let chat_id: i32 = row.id;
         effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::event::CHAT,
-            Chat {
+            Chat::from(ChatMessage {
                 chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
-                ..Chat::public(
+                ..ChatMessage::public(
                     content,
                     ChatAuthor::new(
                         ChatSource::from_name(source).context("Unknown chat source")?,
@@ -483,7 +485,7 @@ pub async fn lobby_chat(
                     .context("Invalid chat author")?,
                     hanabi_protocol::Timestamp::from(row.datetime_sent),
                 )
-            },
+            }),
         )));
         effects.push(Effect::DiscordMirror {
             chat_id,
@@ -497,7 +499,7 @@ pub async fn lobby_chat(
     Ok(Some(effects))
 }
 
-pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
+pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<ChatMessage>> {
     ensure!(count >= 0, "Invalid history count");
     let rows = sqlx::query!(
         "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,
@@ -537,9 +539,9 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             "discord" => row.discord_name.clone(),
             _ => row.username.clone(),
         };
-        result.push(Chat {
+        result.push(ChatMessage {
             chat_id: Some(hanabi_protocol::ChatId::try_from(row.id)?),
-            ..Chat::public(
+            ..ChatMessage::public(
                 message,
                 ChatAuthor::new(
                     ChatSource::from_name(&source).context("Unknown chat source")?,
@@ -567,10 +569,10 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         chat_id,
         broadcast: Outgoing::new(
             hanabi_protocol::event::CHAT,
-            Chat {
+            Chat::from(ChatMessage {
                 chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
-                ..Chat::server(message, hanabi_protocol::Timestamp::from(row.datetime_sent))
-            },
+                ..ChatMessage::server(message, hanabi_protocol::Timestamp::from(row.datetime_sent))
+            }),
         ),
         message: message.into(),
     })

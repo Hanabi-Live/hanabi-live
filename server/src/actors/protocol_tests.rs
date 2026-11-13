@@ -691,7 +691,10 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 "Leader notice leaked outside the table"
             );
             let table = h.snapshot(id).await?.0;
-            ensure!(table.chat.len() == before + 1 && table.chat[before].message.text == expected);
+            ensure!(
+                table.chat.len() == before + 1
+                    && table.chat[before].message.message.text == expected
+            );
             ensure!(
                 h.send(
                     2,
@@ -1182,7 +1185,7 @@ fn notices(table: &TableSnapshot) -> Vec<String> {
         .chat
         .iter()
         .filter(|c| c.user.is_none())
-        .map(|c| c.message.text.clone())
+        .map(|c| c.message.message.text.clone())
         .collect()
 }
 
@@ -1401,7 +1404,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
         let notices = table
             .chat
             .iter()
-            .filter(|c| c.message.text.contains("tried to join"))
+            .filter(|c| c.message.message.text.contains("tried to join"))
             .count();
         ensure!(notices == 1, "The table was told {notices} times");
         Ok(())
@@ -1596,7 +1599,7 @@ async fn default_table_names_keep_the_creator_and_remain_editable() -> Result<()
     };
     let outcome = async {
         for (index, name) in names.iter().enumerate() {
-            let expected = format!("{name}{}", hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX);
+            let expected = format!("{name}'s table");
             let id = h.create(index, &expected, json!({})).await?;
             ensure!(
                 h.snapshot(id).await?.0.name == expected,
@@ -2487,7 +2490,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                     snapshot.chat.len() == before + 1,
                     "Command was not persisted"
                 );
-                ensure!(snapshot.chat[before].message.text == expected);
+                ensure!(snapshot.chat[before].message.message.text == expected);
                 ensure!(
                     chat_messages(&h.frames(2)).is_empty(),
                     "Outsider received chat"
@@ -2542,8 +2545,8 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         let table = h.snapshot(id).await?.0;
         ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
         let message = &table.chat.last().context("Summary was not persisted")?.message;
-        ensure!(message.text.contains("\nVariant: 6 Suits"));
-        ensure!(matches!(message.kind, hanabi_protocol::ChatKind::Public { .. }));
+        ensure!(message.message.text.contains("\nVariant: 6 Suits"));
+        ensure!(matches!(message.message.kind, hanabi_protocol::ChatKind::Public { .. }));
         let before = table.chat.len();
         let error = h.send(1, "tableUpdate", json!({"tableId":id,"settings":{"name":"Original"}}))
             .await.expect_err("Unchanged options should be rejected");
