@@ -101,7 +101,7 @@ interface ActionGameFinished extends Readonly<
   readonly actions: readonly GameAction[];
 
   /** The server does not send this; the client records when it received the message. */
-  readonly datetimeFinished: string;
+  readonly finishedAt: string;
 
   /** The name of the shared replay's leader, which the server sends as a user ID. */
   readonly leader: string;

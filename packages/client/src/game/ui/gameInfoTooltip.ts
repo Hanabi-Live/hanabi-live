@@ -51,27 +51,26 @@ export function getGameInfoTooltip(showLengths = true): string {
     );
   }
 
-  if (globals.state.finished && globals.state.datetimeFinished !== undefined) {
-    const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
-    const formattedDatetimeFinished =
-      dateTimeFormatter.format(datetimeFinishedDate);
+  if (globals.state.finished && globals.state.finishedAt !== undefined) {
+    const finishedDate = new Date(globals.state.finishedAt);
+    const formattedFinishedAt = dateTimeFormatter.format(finishedDate);
     content += tooltipField(
       "fas fa-calendar",
       "Date Played",
-      `<strong>${formattedDatetimeFinished}</strong>`,
+      `<strong>${formattedFinishedAt}</strong>`,
     );
   }
 
-  // "datetimeStarted" and "datetimeFinished" are initialized to strings from the reply to
-  // "gameInitLoad", so they should never be undefined.
+  // "startedAt" and "finishedAt" are initialized to strings from the reply to "gameInitLoad", so
+  // they should never be undefined.
   if (
     showLengths
-    && globals.state.datetimeStarted !== undefined
-    && globals.state.datetimeFinished !== undefined
+    && globals.state.startedAt !== undefined
+    && globals.state.finishedAt !== undefined
   ) {
-    const startedDate = new Date(globals.state.datetimeStarted);
+    const startedDate = new Date(globals.state.startedAt);
     const finishedDate = globals.state.finished
-      ? new Date(globals.state.datetimeFinished)
+      ? new Date(globals.state.finishedAt)
       : new Date();
     const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
@@ -84,7 +83,7 @@ export function getGameInfoTooltip(showLengths = true): string {
 
   const sharedReplay = globals.state.replay.shared;
   if (showLengths && sharedReplay !== undefined) {
-    const startedDate = new Date(sharedReplay.datetimeReplayStarted);
+    const startedDate = new Date(sharedReplay.replayStartedAt);
     const elapsedMilliseconds = Date.now() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
     content += tooltipField(

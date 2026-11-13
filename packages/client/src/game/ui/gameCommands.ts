@@ -120,7 +120,7 @@ gameCommands.set("gameFinished", (data) => {
     actions: data.events.map(toGameAction),
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
-    datetimeFinished: data.finishedAt,
+    finishedAt: data.finishedAt,
     leader: data.sharedReplay.owner.username,
   });
   timer.hide();

@@ -7,7 +7,7 @@ export interface SharedReplayState {
   readonly amLeader: boolean;
 
   /** When the shared replay began. We do not use a `Date` object to speed up state copying. */
-  readonly datetimeReplayStarted: string;
+  readonly replayStartedAt: string;
 
   /**
    * Hides what happens later in the game: the turn slider, jumping to the end, and future strikes.

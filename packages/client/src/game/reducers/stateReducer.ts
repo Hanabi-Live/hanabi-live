@@ -86,7 +86,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // Mark that this game is now finished. The finished view will take care of enabling the UI
       // elements for a shared replay.
       state.finished = true;
-      state.datetimeFinished = action.datetimeFinished;
+      state.finishedAt = action.finishedAt;
 
       // Record the database ID of the game, if it was saved.
       state.replay.gameId = action.gameId;
@@ -123,7 +123,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         useSharedSegments: !inInGameReplay,
         leader: action.leader,
         amLeader: action.leader === state.metadata.ourUsername,
-        datetimeReplayStarted: shared.replayStartedAt,
+        replayStartedAt: shared.replayStartedAt,
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
         restartDeclined: castDraft(
@@ -136,8 +136,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "init": {
-      state.datetimeStarted = action.startedAt;
-      state.datetimeFinished = action.finishedAt;
+      state.startedAt = action.startedAt;
+      state.finishedAt = action.finishedAt;
 
       const { mode } = action;
       switch (mode.type) {
@@ -173,7 +173,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               useSharedSegments: true,
               leader: action.leader ?? "",
               amLeader: action.leader === state.metadata.ourUsername,
-              datetimeReplayStarted: shared.replayStartedAt,
+              replayStartedAt: shared.replayStartedAt,
               spoilerFree: shared.spoilerFree,
               canPlayAgain: shared.canPlayAgain,
               restartDeclined: castDraft(

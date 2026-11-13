@@ -24,8 +24,8 @@ export interface State {
   readonly metadata: GameMetadata;
 
   // We do not use a `Date` object for dates in order to speed up state copying.
-  readonly datetimeStarted: string | undefined;
-  readonly datetimeFinished: string | undefined;
+  readonly startedAt: string | undefined;
+  readonly finishedAt: string | undefined;
 
   readonly cardIdentities: readonly CardIdentity[];
   readonly premove: ClientAction | undefined;

@@ -35,7 +35,7 @@ function setup(shared: boolean) {
             useSharedSegments: true,
             leader: metadata.ourUsername,
             amLeader: true,
-            datetimeReplayStarted: "2026-01-01T00:00:00.000Z",
+            replayStartedAt: "2026-01-01T00:00:00.000Z",
             spoilerFree: false,
             canPlayAgain: false,
             restartDeclined: [],

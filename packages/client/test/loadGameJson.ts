@@ -246,8 +246,8 @@ export function loadGameJson(gameJson: JsonGame): State {
       efficiencyModifier: 0,
     },
 
-    datetimeStarted: undefined,
-    datetimeFinished: undefined,
+    startedAt: undefined,
+    finishedAt: undefined,
 
     metadata,
     premove: undefined,

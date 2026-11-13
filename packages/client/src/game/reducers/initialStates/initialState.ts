@@ -34,8 +34,8 @@ export function initialState(metadata: GameMetadata): State {
     shadowing: false,
     finished: false,
 
-    datetimeStarted: undefined,
-    datetimeFinished: undefined,
+    startedAt: undefined,
+    finishedAt: undefined,
 
     notes: {
       ourNotes: newArray(numNoteOrders, {
