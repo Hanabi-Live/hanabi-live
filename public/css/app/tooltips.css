@@ -44,6 +44,20 @@
   --link: var(--game-screen-link);
 }
 
+/* A tooltip like a sheet of paper, white in both themes, for card notes (see "Tooltip.ts"). It comes
+   after the game screen's colors, so that it replaces them. */
+.tooltip-bubble.tooltip-paper {
+  --tooltip-background: white;
+  --tooltip-border-width: 1px;
+  --tooltip-border-color: rgb(0 0 0 / 25%);
+  --surface: white;
+  --text: var(--card-ink);
+  --text-strong: var(--card-ink);
+  /* The link color of the light theme, which is also white. */
+  --link: blue;
+  --note-title-line: rgb(0 0 0 / 35%);
+}
+
 .tooltip-bubble[data-side="bottom"] {
   padding: var(--tooltip-arrow-size) 0 0;
   transform: translateY(var(--tooltip-slide));

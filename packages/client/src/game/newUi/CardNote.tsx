@@ -130,6 +130,7 @@ export function CardNote({
       // While the box is open, it shows the note instead.
       ref={tooltipRefHtml(
         editing ? "" : (cardNotes.notesHtml.get(order) ?? ""),
+        { paper: true },
       )}
       style={style}
     >
@@ -192,7 +193,7 @@ function NoteEditor({
 
   return (
     <div
-      className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-[10px] tw:bg-game-text tw:p-1.5 tw:shadow-lg"
+      className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-[10px] tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-black/25"
       ref={boxRef}
       style={{ width: NOTE_EDITOR_WIDTH, marginLeft: shift }}
     >

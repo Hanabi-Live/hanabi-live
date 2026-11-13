@@ -39,6 +39,12 @@ interface TooltipOptions {
   readonly interactive?: boolean;
 
   readonly centered?: boolean;
+
+  /**
+   * Whether the tooltip is white with dark text, like a sheet of paper, in both themes. Card notes
+   * use it, as they do on the classic screen.
+   */
+  readonly paper?: boolean;
 }
 
 export class Tooltip {
@@ -59,6 +65,7 @@ export class Tooltip {
       "tooltip-interactive",
       options.interactive === true,
     );
+    this.bubble.classList.toggle("tooltip-paper", options.paper === true);
     this.bubble.style.setProperty(
       "--tooltip-open-duration",
       `${OPEN_DURATION_IN_MILLISECONDS}ms`,

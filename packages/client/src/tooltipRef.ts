@@ -24,6 +24,9 @@ interface TooltipRefOptions {
    * buttons, and the tooltip would otherwise pop up as the pointer passes over them.
    */
   readonly instant?: boolean;
+
+  /** Whether the tooltip is white with dark text, like a sheet of paper (see `Tooltip`). */
+  readonly paper?: boolean;
 }
 
 /** The tooltip of each element, which lasts while the element has a tooltip ref. */
@@ -49,7 +52,10 @@ export function tooltipRefHtml(
 
     let entry = elementTooltips.get(element);
     if (entry === undefined) {
-      const tooltip = new Tooltip(element, { content: "" });
+      const tooltip = new Tooltip(element, {
+        content: "",
+        paper: options.paper === true,
+      });
       tooltip.openOnHover(options.instant !== true);
       entry = { tooltip, content: "", refs: 0 };
       elementTooltips.set(element, entry);
