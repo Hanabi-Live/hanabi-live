@@ -363,6 +363,18 @@ function showRestartDialog() {
   layers.UI2.batchDraw();
 }
 
+/** Runs in the page. Opens the modal that changes the efficiency modifier. */
+function showSetModifierModal() {
+  const { elements } = (
+    globalThis as unknown as {
+      globals: {
+        elements: { efficiencyNumberLabel: { fire: (event: string) => void } };
+      };
+    }
+  ).globals;
+  elements.efficiencyNumberLabel.fire("dbltap");
+}
+
 /**
  * Runs in the page. Shows the second hand of the classic game screen (the largest) as its player
  * sees it, and gives each card a different set of possibility rows. The variant has five suits and
@@ -1089,6 +1101,30 @@ function getStates({
         await leaveReplay(page);
       },
     },
+    // The modal that goes to a turn of the replay (Alt + t).
+    {
+      name: "set-turn-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+        await page.keyboard.press("Alt+t");
+        await page.locator("#set-turn-modal").waitFor();
+      },
+      cleanup: leaveReplay,
+    },
+    // The modal that changes the efficiency modifier, which a double tap on the efficiency opens.
+    {
+      name: "set-modifier-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+        await page.evaluate(showSetModifierModal);
+        await page.locator("#set-modifier-modal").waitFor();
+      },
+      cleanup: leaveReplay,
+    },
     // A hypothetical in the replay, with "Edit cards" checked and the other checkboxes not.
     {
       name: "hypothetical",
@@ -1459,6 +1495,23 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // The same game, after Bob gives a clue, with the modal that asks which card to play (the "a"
+    // hotkey).
+    {
+      name: "play-discard-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clueAccount();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await page.keyboard.press("a");
+        await page.locator("#play-discard-modal").waitFor();
+      },
+      cleanup: async (page) => {
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
     // The same game, with a note that is too long on the account's first card. The classic screen
     // draws its hands again when the window resizes, which closes the note, so each width opens it.
     {
@@ -1566,6 +1619,22 @@ function getStates({
       prepare: async (page) => {
         passLeader();
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
+      },
+    },
+    // The modal that passes the lead of the shared replay to someone else. Loading the page passes
+    // the lead back to Bob, as in the next state.
+    {
+      name: "set-leader-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        passLeader();
+        await page.getByRole("button", { name: "Pass leader" }).click();
+        await page.locator("#set-leader-modal").waitFor();
+      },
+      cleanup: async (page) => {
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
     // A hypothetical that the account leads, from the first turn, after a player plays a card in

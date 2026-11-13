@@ -9,6 +9,10 @@ const dom = new JSDOM(`<!doctype html><body>
     <button id="morph-modal-button-ok"></button>
     <p id="morph-modal-description"></p>
     <input id="morph-modal-textbox" />
+    <div id="set-leader-modal"><h2></h2></div>
+    <div id="set-turn-modal"><h2></h2></div>
+    <div id="play-discard-modal"><h2></h2></div>
+    <div id="set-modifier-modal"><h2></h2></div>
   </div>
 </body>`);
 // The "jsdom" library does not open or close dialogs.

@@ -36,6 +36,8 @@ export function showPassLeaderDialog(): void {
       setLeader(userId);
     });
     button.type = "submit";
+    // The dialog would otherwise focus its close button, which comes first.
+    button.autofocus = leaderPlaceholder.childElementCount === 0;
 
     leaderPlaceholder.append(button);
   }

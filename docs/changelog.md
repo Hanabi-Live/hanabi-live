@@ -19,7 +19,8 @@ of the repository.
 - In the new game screen, a perfect score now sets off the fireworks finale.
 - In the new game screen, a completed stack and a lower maximum score now have
   the same animations as in the classic screen.
-- The emote and emoji picker have a close button.
+- The emote and emoji picker, and the modals that ask for a turn, a card, an
+  efficiency modifier, or a new replay leader, have a close button.
 - In the new game screen, the clue controls are now larger and below the hands.
 
 ## November 12th, 2026

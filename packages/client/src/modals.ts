@@ -4,6 +4,10 @@ import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { globals } from "./Globals.ts";
+import {
+  CLOSE_BUTTON_CLASS_NAME,
+  MODAL_HEADER_CLASS_NAME,
+} from "./closeButton.ts";
 import { START_CARD_RANK_LABEL } from "./constants.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
@@ -35,6 +39,33 @@ const morphModalButtonOk = getHtmlElement("#morph-modal-button-ok");
 const morphModalDescription = getHtmlElement("#morph-modal-description");
 const morphModalTextbox = getHtmlInputElement("#morph-modal-textbox");
 
+/** The prompts that have no Cancel button, so they get an X beside their heading. */
+const PROMPTS_WITHOUT_CANCEL = [
+  "#set-leader-modal",
+  "#set-turn-modal",
+  "#play-discard-modal",
+  "#set-modifier-modal",
+] as const;
+
+function addCloseButton(modal: HTMLElement) {
+  const heading = modal.querySelector(":scope > h2");
+  if (heading === null) {
+    throw new Error(`Failed to find the heading of: #${modal.id}`);
+  }
+  const button = document.createElement("button");
+  button.ariaLabel = "Close";
+  button.className = CLOSE_BUTTON_CLASS_NAME;
+  button.type = "button";
+  const icon = document.createElement("i");
+  icon.className = "fas fa-times";
+  button.append(icon);
+  button.addEventListener("click", closeModals);
+  const header = document.createElement("div");
+  header.className = MODAL_HEADER_CLASS_NAME;
+  heading.replaceWith(header);
+  header.append(heading, button);
+}
+
 function getModalDialog(): HTMLDialogElement {
   const element = document.querySelector("#modal-dialog");
   if (!(element instanceof HTMLDialogElement)) {
@@ -44,6 +75,10 @@ function getModalDialog(): HTMLDialogElement {
 }
 
 export function init(): void {
+  for (const selector of PROMPTS_WITHOUT_CANCEL) {
+    addCloseButton(getHtmlElement(selector));
+  }
+
   // The dialog covers the screen, so a click on the dialog itself is a click beside the modal.
   modalDialog.addEventListener("pointerdown", (event) => {
     if (event.target === modalDialog) {

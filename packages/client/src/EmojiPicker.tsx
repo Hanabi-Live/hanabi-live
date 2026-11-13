@@ -3,6 +3,10 @@
 
 import { CHAT_EMOJI_GROUPS, CHAT_EMOTES } from "@hanabi-live/data";
 import { useState } from "react";
+import {
+  CLOSE_BUTTON_CLASS_NAME,
+  MODAL_HEADER_CLASS_NAME,
+} from "./closeButton.ts";
 import { renderRoot } from "./renderRoot.tsx";
 import { TAB_CLASS_NAME } from "./tabClassName.ts";
 import { tooltipRef } from "./tooltipRef.ts";
@@ -99,11 +103,11 @@ function EmojiPicker({
 
   return (
     <div className="tw:w-[min(34em,70vw)]">
-      <div className="tw:flex tw:items-start tw:justify-between tw:gap-4">
+      <div className={MODAL_HEADER_CLASS_NAME}>
         <h2>Select Emote / Emoji</h2>
         <button
           aria-label="Close"
-          className="tw:-mr-2 tw:flex tw:size-10 tw:shrink-0 tw:cursor-pointer tw:appearance-none tw:items-center tw:justify-center tw:rounded tw:border-0 tw:bg-transparent tw:p-0 tw:text-[1.5em] tw:text-text-label tw:hover:bg-surface-sunken tw:hover:text-text-strong"
+          className={CLOSE_BUTTON_CLASS_NAME}
           onClick={onClose}
           type="button"
         >
