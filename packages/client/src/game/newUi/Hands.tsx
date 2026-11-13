@@ -255,7 +255,7 @@ function ClueRail({
       className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:size-full tw:overflow-visible"
       ref={ref}
     >
-      {/* The edge keeps the rail visible on the dark table: white, or dark around a white rail. */}
+      {/* The edge keeps the rail visible on the table: white, or dark around a white rail. */}
       <path
         className={edgeClass}
         data-clue-rail-edge
@@ -611,7 +611,7 @@ function Hand({
 
   let boxClass = "tw:ring-1 tw:ring-game-raised";
   if (seat.active) {
-    boxClass = "tw:bg-white/5 tw:ring-2 tw:ring-game-text";
+    boxClass = "tw:bg-game-turn/10 tw:ring-3 tw:ring-game-turn";
   } else if (chosen) {
     boxClass = "tw:bg-clue/10 tw:ring-2 tw:ring-clue";
   } else if (seat.you) {

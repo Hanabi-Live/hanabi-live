@@ -26,6 +26,8 @@ of the repository.
   clue log no longer have text labels. The discard pile shows a trash can, and
   the clue count and the strikes have icons.
 - In the new game screen, pace has a help icon that explains it.
+- The new game screen is now brighter: the table is green felt, the empty play
+  stacks show their suit colors, and a gold ring marks whose turn it is.
 
 ## November 12th, 2026
 

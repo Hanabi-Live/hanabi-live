@@ -12,7 +12,7 @@ export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
  * How opaque a trash card is. It fades more than on the classic screen (`CARD_FADE`), so that it
  * stands further apart from the cards that still matter.
  */
-const TRASH_CARD_OPACITY = 0.3;
+const TRASH_CARD_OPACITY = 0.4;
 
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 export const CLUED_RAISE_PER_WIDTH = 0.12;
@@ -406,11 +406,12 @@ export function CardFace({
   const showRankPips = possibleRanks.length > 1;
 
   // Clued cards get a thick border in the clue color, with a dark line inside it so that it stands
-  // out against faces of a similar color. Cards that a chosen clue would touch get a white outline
+  // out against faces of a similar color. Other cards get a dark line and a shadow, so that they
+  // stand out against the green felt. Cards that a chosen clue would touch get a white outline
   // outside of it.
   const border = clued
     ? "tw:ring-4 tw:ring-clue tw:inset-ring-2 tw:inset-ring-card-ink"
-    : "tw:ring-1 tw:ring-black/35";
+    : "tw:ring-1 tw:ring-black/45";
   const outline = highlighted
     ? "tw:outline-4 tw:outline-offset-4 tw:outline-white"
     : "";
@@ -418,7 +419,7 @@ export function CardFace({
   return (
     <div
       // A card that a clue newly touches slides up to its raised place, without a bounce.
-      className={`tw:relative tw:shrink-0 tw:transition-transform tw:duration-200 tw:ease-out tw:select-none ${border} ${outline} ${faceColors.className}`}
+      className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out tw:select-none ${border} ${outline} ${faceColors.className}`}
       // A played card that its holder did not know turns over on its way to the stack (see
       // "playMotion.ts").
       data-card-face

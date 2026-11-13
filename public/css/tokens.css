@@ -151,30 +151,37 @@
     The redesigned game screen ("New UI"). It is dark in both themes, like the classic game screen
     is always green felt, so the dark theme does not change these.
   */
-  --game-screen-bg: #26313a;
+  --game-screen-bg: #1d4630;
 
   /*
-    The table behind the cards: dark, muted felt that is lighter toward the middle, like a lit card
-    table. It is much darker than the green suit, so that green cards stand out on it.
+    The table behind the cards: bright green felt that is lighter toward the middle, like a lit card
+    table. Cards have a dark outline and a shadow, so that green cards still stand out on it.
   */
   --game-screen-table: radial-gradient(
     120% 95% at 42% 42%,
-    #25463b 0%,
-    #1b3229 52%,
-    #12221c 100%
+    #3f8f5c 0%,
+    #2e7448 55%,
+    #215a37 100%
   );
 
   /* A box on the table, such as the play stacks: a lighter patch of the felt under it. */
-  --game-screen-zone: rgb(255 255 255 / 5%);
-  --game-screen-panel: #1f2930;
-  --game-screen-raised: #3a4752;
-  --game-screen-line: #4a5864;
+  --game-screen-zone: rgb(255 255 255 / 7%);
+
+  /*
+    The panels around the table, such as the bar along the bottom and the chat: darker felt, so that
+    the whole screen reads as one table.
+  */
+  --game-screen-panel: #173d29;
+  --game-screen-raised: #24563a;
+  --game-screen-line: #6c9c7e;
   --game-screen-text: #eef1f3;
-  --game-screen-muted: #b3bdc5;
+  --game-screen-muted: #c3d8ca;
   --game-screen-link: #8fb2ff;
   /* The accents of the bar above the hands: looking back in a replay, or trying moves in a hypothetical. */
   --game-screen-replay: #8fb2ff;
   --game-screen-hypothetical: #c3a6ff;
+  /* The warm accent that marks the player whose turn it is. */
+  --game-screen-turn: #ffd04a;
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;

@@ -1,4 +1,10 @@
-import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  Rank,
+  Suit,
+  SuitIndex,
+  Variant,
+} from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
@@ -12,6 +18,33 @@ const DISCARD_OVERLAP_PER_WIDTH = 0.4;
 
 /** How far each row of the discard pile covers the row above, as a fraction of a card's height. */
 const DISCARD_ROW_OVERLAP_PER_HEIGHT = 0.42;
+
+/** How much of the suit's color tints an empty play stack, in percent. */
+const EMPTY_STACK_TINT_PERCENT = 45;
+
+/**
+ * The look of an empty play stack: a soft fill and an edge in its suit's color, as on the classic
+ * screen, so that the fireworks are in color before anyone plays them.
+ */
+function getEmptyStackStyle(
+  suit: Suit,
+  colorblindMode: boolean,
+): React.CSSProperties {
+  const colors = suit.fillColors ?? [
+    colorblindMode ? suit.fillColorblind : suit.fill,
+  ];
+  const tints = colors.map(
+    (color) =>
+      `color-mix(in srgb, ${color} ${EMPTY_STACK_TINT_PERCENT}%, transparent)`,
+  );
+  return {
+    background:
+      tints.length === 1
+        ? tints[0]
+        : `linear-gradient(135deg, ${tints.join(", ")})`,
+    borderColor: colors.length === 1 ? colors[0] : "white",
+  };
+}
 
 export interface StackView {
   readonly suitIndex: SuitIndex;
@@ -108,12 +141,17 @@ export const PlayArea = forwardRef<
               const below =
                 stack.belowRank === undefined ? (
                   <div
-                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
-                    style={{ width: cardWidth, height }}
+                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-solid tw:border-game-line"
+                    style={{
+                      width: cardWidth,
+                      height,
+                      ...(suit !== undefined
+                        && getEmptyStackStyle(suit, colorblindMode)),
+                    }}
                   >
                     {suit !== undefined && (
                       <Pip
-                        size={cardWidth * 0.45}
+                        size={cardWidth * 0.6}
                         suit={suit}
                         variant={variant}
                       />
@@ -352,7 +390,7 @@ export const DiscardPile = forwardRef<
         {/* A faint trash can behind the cards names the pile without a heading. */}
         <i
           aria-hidden="true"
-          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-50"
+          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text tw:opacity-20"
           style={{ fontSize: cardWidth * 1.125 }}
         />
         <div

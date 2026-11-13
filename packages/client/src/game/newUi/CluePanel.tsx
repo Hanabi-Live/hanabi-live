@@ -54,7 +54,7 @@ function fullNameTooltip(name: string) {
 /**
  * The surface of the controls below the hands: a solid panel that sits above the table, like the
  * bar along the bottom and the chat, so that it reads as something to operate and not as part of
- * the game. When the viewer can give a clue, a white ring marks it, like the current player's hand.
+ * the game. When the viewer can give a clue, a gold ring marks it, like the current player's hand.
  * Otherwise, a thin line edges it.
  */
 export const CONTROL_PANEL_CLASS =
@@ -87,7 +87,7 @@ export function CluePanel({
     <section
       aria-label="Give a clue"
       className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-[14px] tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
-        canClue ? "tw:ring-2 tw:ring-game-text" : "tw:ring-1 tw:ring-game-line"
+        canClue ? "tw:ring-3 tw:ring-game-turn" : "tw:ring-1 tw:ring-game-line"
       }`}
     >
       {!canClue && (
@@ -179,7 +179,7 @@ export function CluePanel({
             </div>
           </div>
           <button
-            className="tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-40"
+            className="tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:shadow-[0_3px_10px_rgb(0_0_0/30%)] tw:disabled:cursor-default tw:disabled:bg-game-raised tw:disabled:text-game-muted tw:disabled:shadow-none"
             disabled={!canGive}
             onClick={onGive}
             type="button"
