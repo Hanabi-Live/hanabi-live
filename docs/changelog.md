@@ -41,6 +41,7 @@ of the repository.
   clue tokens, strikes, and piles sit in it.
 - In the new game screen, all tooltips are white, and card notes show as soon as
   the pointer is over the card.
+- In the new game screen, the bomb next to the strikes has a tooltip.
 
 ## November 12th, 2026
 

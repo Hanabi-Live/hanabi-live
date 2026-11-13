@@ -1871,6 +1871,29 @@ function getStates({
         fivePlayerReplay = undefined;
       },
     },
+    // The same replay, with the tooltip of the bomb next to the strikes.
+    {
+      name: "new-ui-strikes-tooltip",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        fivePlayerReplay = await spectateFivePlayerReplay(page);
+        fivePlayerReplay.goTo(fivePlayerReplay.clueStep);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+      hover: async (page) => {
+        await page
+          .locator('#game-new-ui [aria-label="Strikes"] svg')
+          .first()
+          .hover();
+        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        fivePlayerReplay?.close();
+        fivePlayerReplay = undefined;
+      },
+    },
     // A game that another account starts one play before a perfect score, which the account joins.
     // Its video shows the last play and the finale.
     {

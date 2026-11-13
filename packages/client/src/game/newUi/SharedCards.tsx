@@ -703,7 +703,10 @@ export function TableTokens({
           className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
           role="group"
         >
-          <BombIcon />
+          {/* The tooltip sits on the bomb, not the bubble, since each strike box has its own. */}
+          <span className="tw:flex" ref={tooltipRef("Strikes")}>
+            <BombIcon />
+          </span>
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
             const struck = i < strikes;
