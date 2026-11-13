@@ -8,8 +8,6 @@ readme = "README.md"
 repository = "https://github.com/Hanabi-Live/hanabi-live"
 keywords = ["hanabi", "hanab-live", "protocol", "websocket", "json-schema"]
 categories = ["api-bindings", "data-structures"]
-# Not published yet: the name on crates.io has to be free. Remove this line to allow `cargo publish`.
-publish = false
 
 [dependencies]
 anyhow = "1"
