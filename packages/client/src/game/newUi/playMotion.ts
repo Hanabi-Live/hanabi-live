@@ -32,10 +32,10 @@ export const MOVING_CARD_Z_INDEX = "30";
 const PLAYED_CARD_Z_INDEX = "40";
 
 /** The effects go over everything on the screen. */
-const EFFECT_Z_INDEX = "60";
+export const EFFECT_Z_INDEX = "60";
 
 /** The corners of a card face, as a fraction of its width (as in "Card.tsx"). */
-const CARD_CORNER_PER_WIDTH = 0.14;
+export const CARD_CORNER_PER_WIDTH = 0.14;
 
 // The misplay is a copy of the classic screen's, so its numbers are the same.
 
@@ -95,9 +95,9 @@ const RAYS_SECONDS = 0.38;
 const NUM_RAYS = 12;
 
 /** How large a flash or a ring is when it starts, and how thick a ring is (as on the classic). */
-const FLASH_START_RADIUS = 0.05;
-const RING_START_RADIUS = 0.08;
-const RING_STROKE = { start: 0.066, end: 0.006 } as const;
+export const FLASH_START_RADIUS = 0.05;
+export const RING_START_RADIUS = 0.08;
+export const RING_STROKE = { start: 0.066, end: 0.006 } as const;
 
 /** The flash of the strike that ends the game. */
 const STRIKEOUT_RING_RADIUS = 0.27;
@@ -132,11 +132,11 @@ function easeIn(t: number): number {
   return t * t;
 }
 
-function easeOut(t: number): number {
+export function easeOut(t: number): number {
   return t * (2 - t);
 }
 
-function interpolate(a: number, b: number, t: number): number {
+export function interpolate(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
@@ -148,7 +148,7 @@ function bezier(a: Point, control: Point, b: Point, t: number): Point {
   };
 }
 
-function randomBetween(min: number, max: number): number {
+export function randomBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
@@ -182,7 +182,7 @@ export function isShowingPlay(element: HTMLElement): boolean {
  * Animates an element along a path that a function gives for each moment, from 0 to `duration`
  * milliseconds. The animation has evenly spaced keyframes, since a path can have any shape.
  */
-function animateSampled(
+export function animateSampled(
   element: Element,
   duration: number,
   frame: (time: number) => Keyframe,

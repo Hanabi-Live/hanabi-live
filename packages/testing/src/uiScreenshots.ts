@@ -16,7 +16,11 @@
 
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
-import type { replayGameSchema, UserId } from "@hanabi-live/data";
+import type {
+  playerActionRequestSchema,
+  replayGameSchema,
+  UserId,
+} from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
@@ -39,6 +43,7 @@ import {
   isValidClueRank,
   MAX_CLUES,
   MAX_RANK,
+  MAX_STRIKES,
   START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -155,6 +160,31 @@ const FIVE_PLAYER_HAND_SIZE = 4;
 
 /** The moves of that game, enough to step through and jump across. */
 const FIVE_PLAYER_NUM_MOVES = 20;
+
+/** The variant of the game that ends with a perfect score. It has few cards, so it ends quickly. */
+const PERFECT_VARIANT_NAME = "3 Suits";
+
+/** The accounts that play that game first, to save its deal and moves. */
+const PERFECT_PLAYER_NAMES = ["Ivan", "Judy"] as const;
+
+/** How many seeds to try for a game that its players can finish with a perfect score. */
+const MAX_PERFECT_SEEDS = 20;
+
+/** More moves than a game of that variant can take, in case the players get stuck. */
+const MAX_PERFECT_MOVES = 200;
+
+/**
+ * The table where the accounts of the perfect game complete a stack, lose a card, and strike out.
+ */
+const STACK_SIGNALS_TABLE_NAME = "Stack signals";
+
+/**
+ * How long a stack completion, a drop of the maximum score, or a misplay takes, with time to spare.
+ */
+const SIGNAL_MILLISECONDS = 2500;
+
+/** How long the perfect score finale lasts, with time to spare. */
+const FINALE_MILLISECONDS = 6000;
 
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
@@ -485,6 +515,15 @@ const LEADER_MOVE_WAIT_MILLISECONDS = 1200;
 /** How long the video waits after the leader's last move, until the screen is still. */
 const LEADER_SETTLE_MILLISECONDS = 1500;
 
+/** Leaves the classic game screen for the new one, if the game shows the classic one. */
+async function showNewUi(page: Page) {
+  const hands = page.locator('#game-new-ui [aria-label="Hands"]');
+  if (!(await hands.isVisible())) {
+    await clickCanvasElement(page, ["newUiButton"]);
+  }
+  await hands.waitFor();
+}
+
 /** Plays a card from the account's hand, if it has one of the kind. */
 async function playAccountCard(page: Page, order: CardOrder | undefined) {
   if (order === undefined) {
@@ -510,6 +549,8 @@ function getStates({
   leaderGoTo,
   lastClueSegment,
   showFivePlayerReplay,
+  showPerfectScore,
+  showStackSignals,
 }: Pick<
   Seed,
   | "replayId"
@@ -523,12 +564,20 @@ function getStates({
   | "leaderGoTo"
   | "lastClueSegment"
   | "showFivePlayerReplay"
+  | "showPerfectScore"
+  | "showStackSignals"
 >): readonly State[] {
   // Ends the shared replay of the "prism-unknown-rank" state.
   let closePrismReplay: (() => void) | undefined;
 
   // The shared replay of the "new-ui-shared-replay-five-players" state.
   let fivePlayerReplay: FivePlayerReplay | undefined;
+
+  // The game of the "new-ui-perfect-score" state.
+  let perfectScore: PerfectScore | undefined;
+
+  // The game of the "stack-signals" state.
+  let stackSignals: StackSignals | undefined;
 
   // The card in the account's hand that the clue log shows the clues about.
   let cluedCard: CardOrder | undefined;
@@ -1575,6 +1624,102 @@ function getStates({
         fivePlayerReplay = undefined;
       },
     },
+    // A game that another account starts one play before a perfect score, which the account joins.
+    // Its video shows the last play and the finale.
+    {
+      name: "new-ui-perfect-score",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        perfectScore = await showPerfectScore();
+        const lobbyButton = page.getByRole("button", {
+          name: "Lobby",
+          exact: true,
+        });
+        if (await lobbyButton.isVisible()) {
+          await lobbyButton.click();
+        }
+        await page.locator("#lobby").waitFor();
+        // The "new-ui-game" state turns on "New UI", unless this state runs without it.
+        await clickNav(page, "settings");
+        if (!(await page.locator("#newUi").first().isChecked())) {
+          // The checkbox itself is hidden behind its styled label.
+          await page.locator('label[for="newUi"]').first().click();
+        }
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        // As in the "prism-unknown-rank" state, join from the row once it has settled.
+        const row = page.locator("#lobby-games-table-tbody tr", {
+          hasText: PERFECT_PLAYER_NAMES[0],
+        });
+        await row.waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await row.click({ force: true });
+        await page.locator("#lobby-pregame").waitFor();
+        const join = page.locator("#nav-buttons-pregame-join");
+        if (await join.isVisible()) {
+          await join.click();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+        await perfectScore.start();
+        await page.locator("#lobby").waitFor({ state: "hidden" });
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await showNewUi(page);
+      },
+      record: async (page) => {
+        await perfectScore?.playLast(page);
+        await page.waitForTimeout(FINALE_MILLISECONDS);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        perfectScore?.close();
+        perfectScore = undefined;
+      },
+    },
+    // A game on the classic screen that the account watches. Its video shows a stack that a play
+    // completes, a lost card that lowers the maximum score, and three misplays, the last of which
+    // ends the game.
+    {
+      name: "stack-signals",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        stackSignals = await showStackSignals();
+        const lobbyButton = page.getByRole("button", {
+          name: "Lobby",
+          exact: true,
+        });
+        if (await lobbyButton.isVisible()) {
+          await lobbyButton.click();
+        }
+        await page.locator("#lobby").waitFor();
+        // The "new-ui-game" state turns on "New UI", which this state turns off.
+        await clickNav(page, "settings");
+        if (await page.locator("#newUi").first().isChecked()) {
+          // The checkbox itself is hidden behind its styled label.
+          await page.locator('label[for="newUi"]').first().click();
+        }
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
+        const row = page.locator("#lobby-games-table-tbody tr", {
+          hasText: STACK_SIGNALS_TABLE_NAME,
+        });
+        await row.waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await row.click({ force: true });
+        await page.waitForSelector(".konvajs-content");
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
+      record: async (page) => {
+        await stackSignals?.play(page);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        stackSignals?.close();
+        stackSignals = undefined;
+      },
+    },
   ];
 }
 
@@ -1762,6 +1907,24 @@ interface FivePlayerReplay {
   readonly close: () => void;
 }
 
+/** A game, one play before a perfect score, that another account starts with the browser's. */
+interface PerfectScore {
+  /** Starts the game, once the browser's account has joined its table. */
+  readonly start: () => Promise<void>;
+  /** Makes the last play: the other account's, or the browser's account's, after `start`. */
+  readonly playLast: (page: Page) => Promise<void>;
+  /** Disconnects the other account. */
+  readonly close: () => void;
+}
+
+/** A game that another account's teammates play, which the browser's account can watch. */
+interface StackSignals {
+  /** Completes a stack, loses a card that the team needs, and then strikes out. */
+  readonly play: (page: Page) => Promise<void>;
+  /** Disconnects the players. */
+  readonly close: () => void;
+}
+
 interface Seed {
   readonly replayId: number;
   /** Starts the game at Bob's table, where the browser's account must be a player. */
@@ -1792,6 +1955,16 @@ interface Seed {
    * joins.
    */
   readonly showFivePlayerReplay: () => Promise<FivePlayerReplay>;
+  /**
+   * Has two other accounts play a game to a perfect score. Then one of them opens a table that
+   * deals the game again, one play before its end, for the browser's account to join.
+   */
+  readonly showPerfectScore: () => Promise<PerfectScore>;
+  /**
+   * Has the accounts of the perfect game play it again, from the play before one of its stacks is
+   * complete, at a table that the browser's account can watch.
+   */
+  readonly showStackSignals: () => Promise<StackSignals>;
   /** Bob, as the leader of the shared replay at his table, shows a segment to everyone there. */
   readonly leaderGoTo: (segment: number) => void;
   /** The segment of the shared replay at Bob's table that shows the game's last clue. */
@@ -2195,8 +2368,585 @@ async function seed(address: string): Promise<Seed> {
     };
   }
 
+  /** The cards that a set of events shows, by order. Each player sees the other's cards. */
+  function cardIdentities(
+    views: readonly GameEvents[],
+  ): ReadonlyMap<CardOrder, { suitIndex: number; rank: number }> {
+    const identities = new Map<
+      CardOrder,
+      { suitIndex: number; rank: number }
+    >();
+    for (const events of views) {
+      for (const event of events) {
+        if (
+          (event.type === "draw"
+            || event.type === "play"
+            || event.type === "discard")
+          && event.identity !== undefined
+        ) {
+          identities.set(event.order, event.identity);
+        }
+      }
+    }
+    return identities;
+  }
+
+  interface Seat {
+    readonly peer: Peer;
+    readonly index: number | undefined;
+  }
+
+  /** The events of a game, as each player sees them. */
+  async function loadViews(
+    seats: readonly Seat[],
+    gameTableId: number,
+  ): Promise<readonly GameEvents[]> {
+    return await Promise.all(
+      seats.map(async ({ peer }) => {
+        peer.send("gameStateLoad", { tableId: gameTableId });
+        const { events } = await peer.receive(
+          "gameState",
+          SERVER_EVENT_SCHEMAS.gameState,
+        );
+        return events;
+      }),
+    );
+  }
+
+  /**
+   * The state of a game of `PERFECT_VARIANT_NAME` that two players see, where each sees the other's
+   * cards. Returns undefined if the game is over.
+   */
+  function readGame(views: readonly GameEvents[]) {
+    const variant = getVariant(PERFECT_VARIANT_NAME);
+    const identities = cardIdentities(views);
+    const [events] = views;
+    assertDefined(events, "There are no events.");
+    const hands = new Map<number, CardOrder[]>();
+    const stacks = variant.suits.map(() => 0);
+    const discarded = new Map<string, number>();
+    let clues = MAX_CLUES;
+    // The first seat goes first. A turn event comes only after the first move.
+    let turn = { turn: 0, currentPlayerIndex: 0 };
+    for (const event of events) {
+      switch (event.type) {
+        case "draw": {
+          hands.set(event.playerIndex, [
+            ...(hands.get(event.playerIndex) ?? []),
+            event.order,
+          ]);
+          break;
+        }
+
+        case "play":
+        case "discard":
+        case "misplay": {
+          hands.set(
+            event.playerIndex,
+            (hands.get(event.playerIndex) ?? []).filter(
+              (order) => order !== event.order,
+            ),
+          );
+          const identity = identities.get(event.order);
+          if (identity === undefined) {
+            break;
+          }
+          if (event.type === "play") {
+            stacks[identity.suitIndex] = identity.rank;
+            if (identity.rank === variant.stackSize && clues < MAX_CLUES) {
+              clues++;
+            }
+          } else {
+            const key = `${identity.suitIndex}-${identity.rank}`;
+            discarded.set(key, (discarded.get(key) ?? 0) + 1);
+            if (event.type === "discard") {
+              clues++;
+            }
+          }
+          break;
+        }
+
+        case "clue": {
+          clues--;
+          break;
+        }
+
+        case "turn": {
+          if (event.currentPlayerIndex !== undefined) {
+            turn = {
+              turn: event.turn,
+              currentPlayerIndex: event.currentPlayerIndex,
+            };
+          }
+          break;
+        }
+
+        case "gameOver": {
+          return undefined;
+        }
+
+        default: {
+          break;
+        }
+      }
+    }
+
+    function identityOf(order: CardOrder) {
+      const identity = identities.get(order);
+      assertDefined(identity, `No player sees card ${order}.`);
+      return identity;
+    }
+
+    /** Whether the team needs a card, and has no other copy of it. */
+    function isCritical(order: CardOrder) {
+      const { suitIndex, rank } = identityOf(order);
+      const lost = discarded.get(`${suitIndex}-${rank}`) ?? 0;
+      return (
+        rank > (stacks[suitIndex] ?? 0) && numCopies(rank as Rank) - lost === 1
+      );
+    }
+
+    function isPlayable(order: CardOrder) {
+      const { suitIndex, rank } = identityOf(order);
+      return stacks[suitIndex] === rank - 1;
+    }
+    const player = turn.currentPlayerIndex;
+    const receiverIndex = hands.keys().find((index) => index !== player);
+    assertDefined(receiverIndex, "There is no other player.");
+    return {
+      variant,
+      hands,
+      stacks,
+      discarded,
+      clues,
+      strikes: events.filter((event) => event.type === "misplay").length,
+      turn: turn.turn,
+      player,
+      hand: hands.get(player) ?? [],
+      receiverIndex: receiverIndex as PlayerIndex,
+      identityOf,
+      isCritical,
+      isPlayable,
+    };
+  }
+  type Game = NonNullable<ReturnType<typeof readGame>>;
+
+  /** A rank clue from the player whose turn it is to the other player, about their first card. */
+  function rankClue(game: Game) {
+    const [first] = game.hands.get(game.receiverIndex) ?? [];
+    assertDefined(first, `Player ${game.receiverIndex} has no cards.`);
+    return {
+      type: "clue" as const,
+      receiverIndex: game.receiverIndex,
+      clue: {
+        type: "rank" as const,
+        rank: game.identityOf(first).rank as ClueRank,
+      },
+    };
+  }
+
+  /**
+   * The next move of a player who knows every card in the hands: a play if they can, or else a rank
+   * clue to the other player, or else a discard of a card that the team does not need. Returns
+   * undefined if every card would be needed, or if the game is over.
+   */
+  function perfectGameMove(views: readonly GameEvents[]) {
+    const game = readGame(views);
+    if (game === undefined) {
+      return undefined;
+    }
+    const {
+      variant,
+      hands,
+      stacks,
+      discarded,
+      clues,
+      player,
+      hand,
+      identityOf,
+      isPlayable,
+    } = game;
+    const score = stacks.reduce((sum, rank) => sum + rank, 0);
+
+    const playable = hand.find((order) => isPlayable(order));
+    if (playable !== undefined) {
+      return {
+        player,
+        turn: game.turn,
+        action: { type: "play" as const, order: playable },
+        rank: identityOf(playable).rank,
+        last: score + 1 === variant.maxScore,
+      };
+    }
+
+    if (clues > 0) {
+      return {
+        player,
+        turn: game.turn,
+        action: rankClue(game),
+        rank: undefined,
+        last: false,
+      };
+    }
+
+    // A card that is already played, or one with another copy in the hands, or else one with
+    // another copy that is not discarded.
+    const inHands = [...hands.values()].flat();
+    function sameCards(order: CardOrder) {
+      const { suitIndex, rank } = identityOf(order);
+      return inHands.filter((other) => {
+        const identity = identityOf(other);
+        return identity.suitIndex === suitIndex && identity.rank === rank;
+      }).length;
+    }
+    const discard =
+      hand.find((order) => {
+        const { suitIndex, rank } = identityOf(order);
+        return rank <= (stacks[suitIndex] ?? 0);
+      })
+      ?? hand.find((order) => sameCards(order) > 1)
+      ?? hand.find((order) => {
+        const { suitIndex, rank } = identityOf(order);
+        const lost = discarded.get(`${suitIndex}-${rank}`) ?? 0;
+        return numCopies(rank as Rank) - lost > 1;
+      });
+    if (discard === undefined) {
+      return undefined;
+    }
+    return {
+      player,
+      turn: game.turn,
+      action: { type: "discard" as const, order: discard },
+      rank: undefined,
+      last: false,
+    };
+  }
+
+  /**
+   * Plays a game of a seed, until it ends with a perfect score. Returns the game, the turn of its
+   * last play, the player who made it, and the card, or undefined if the players could not get a
+   * perfect score.
+   */
+  async function playPerfectGame(suffix: string) {
+    const players = await Promise.all(
+      PERFECT_PLAYER_NAMES.map(async (name) => await connect(address, name)),
+    );
+    const [owner, other] = players;
+    assertDefined(owner, "There is no owner.");
+    assertDefined(other, "There is no other player.");
+    owner.send("tableCreate", {
+      settings: {
+        name: "Perfect game",
+        maxPlayers: DEFAULT_MAX_PLAYERS,
+        options: { variantId: getVariant(PERFECT_VARIANT_NAME).id },
+        deal: { type: "seed", suffix },
+      },
+    });
+    const { tableId: perfectTableId } = await owner.receive(
+      "tableJoined",
+      SERVER_EVENT_SCHEMAS.tableJoined,
+    );
+    other.send("tableJoin", { tableId: perfectTableId });
+    await other.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+    owner.send("tableStart", {
+      tableId: perfectTableId,
+      intendedPlayerIds: players.map((peer) => peer.userId),
+    });
+    const seats = await Promise.all(
+      players.map(async (peer) => {
+        await peer.receive(
+          "tableJoined",
+          SERVER_EVENT_SCHEMAS.tableJoined,
+          entersGame,
+        );
+        const init = await peer.request("gameInitLoad", {
+          tableId: perfectTableId,
+        });
+        peer.send("gameStateLoad", { tableId: perfectTableId });
+        await peer.receive("gameState", SERVER_EVENT_SCHEMAS.gameState);
+        peer.send("gameLoaded", { tableId: perfectTableId });
+        return { peer, index: ourPlayerIndex(init) };
+      }),
+    );
+
+    interface Play {
+      readonly turn: number;
+      readonly player: number;
+      readonly order: CardOrder;
+    }
+    let result: { gameId: number; last: Play; stackDone: Play } | undefined;
+    // The first play that completes a stack, before the last play.
+    let stackDone: Play | undefined;
+    for (let move = 0; move < MAX_PERFECT_MOVES; move++) {
+      const next = perfectGameMove(await loadViews(seats, perfectTableId));
+      if (next === undefined) {
+        break;
+      }
+      const seat = seats.find(({ index }) => index === next.player);
+      assertDefined(seat, `No account sits in seat ${next.player}.`);
+      seat.peer.send("playerAction", {
+        tableId: perfectTableId,
+        action: next.action,
+      });
+      if (next.action.type === "play") {
+        const play = {
+          turn: next.turn,
+          player: next.player,
+          order: next.action.order,
+        };
+        if (next.last) {
+          const finished = await seat.peer.receive(
+            "gameFinished",
+            SERVER_EVENT_SCHEMAS.gameFinished,
+          );
+          assertDefined(
+            finished.view.gameId,
+            "The perfect game was not saved.",
+          );
+          if (stackDone !== undefined) {
+            result = { gameId: finished.view.gameId, last: play, stackDone };
+          }
+          break;
+        }
+        if (next.rank === getVariant(PERFECT_VARIANT_NAME).stackSize) {
+          stackDone ??= play;
+        }
+      }
+      await seat.peer.receive(
+        "gameEvent",
+        SERVER_EVENT_SCHEMAS.gameEvent,
+        // Each move starts the next turn. The events of earlier moves can still be waiting.
+        (data) =>
+          data.event.type === "turn" && data.event.turn === next.turn + 1,
+      );
+    }
+
+    if (result === undefined && stackDone === undefined) {
+      owner.send("tableTerminate", { tableId: perfectTableId });
+      await owner.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
+    }
+    // The players are now in a shared replay of the game. Leave it, so that it closes.
+    for (const { peer } of seats) {
+      peer.send("tableUnattend", { tableId: perfectTableId });
+    }
+    await owner.receive(
+      "tableRemoved",
+      SERVER_EVENT_SCHEMAS.tableRemoved,
+      (data) => data.tableId === perfectTableId,
+    );
+    for (const peer of players) {
+      peer.socket.close();
+    }
+    return result;
+  }
+
+  let perfectGame: ReturnType<typeof findPerfectGame> | undefined;
+
+  /** Plays seeds until a game ends with a perfect score. */
+  async function findPerfectGame() {
+    for (let suffix = 1; suffix <= MAX_PERFECT_SEEDS; suffix++) {
+      const game = await playPerfectGame(suffix.toString());
+      if (game !== undefined) {
+        return game;
+      }
+    }
+    throw new Error(
+      `No seed of the first ${MAX_PERFECT_SEEDS} gives a perfect score.`,
+    );
+  }
+
+  async function showPerfectScore(): Promise<PerfectScore> {
+    perfectGame ??= findPerfectGame();
+    const { gameId, last } = await perfectGame;
+    const { turn, player, order } = last;
+
+    const [ownerName] = PERFECT_PLAYER_NAMES;
+    const owner = await connect(address, ownerName);
+    owner.send("tableCreate", {
+      settings: {
+        name: "Perfect score",
+        maxPlayers: DEFAULT_MAX_PLAYERS,
+        options: {},
+        deal: { type: "replay", gameId, turn },
+      },
+    });
+    const { tableId: ownerTableId } = await owner.receive(
+      "tableJoined",
+      SERVER_EVENT_SCHEMAS.tableJoined,
+    );
+
+    let ownerIndex: number | undefined;
+    async function start() {
+      owner.send("tableStart", {
+        tableId: ownerTableId,
+        intendedPlayerIds: [owner.userId, cookieUserId(cookie)],
+      });
+      await owner.receive(
+        "tableJoined",
+        SERVER_EVENT_SCHEMAS.tableJoined,
+        entersGame,
+      );
+      const init = await owner.request("gameInitLoad", {
+        tableId: ownerTableId,
+      });
+      ownerIndex = ourPlayerIndex(init);
+      owner.send("gameStateLoad", { tableId: ownerTableId });
+      await owner.receive("gameState", SERVER_EVENT_SCHEMAS.gameState);
+      owner.send("gameLoaded", { tableId: ownerTableId });
+    }
+
+    async function playLast(page: Page) {
+      if (ownerIndex !== player) {
+        await playAccountCard(page, order);
+        return;
+      }
+      owner.send("playerAction", {
+        tableId: ownerTableId,
+        action: { type: "play", order },
+      });
+      await owner.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
+    }
+
+    return {
+      start,
+      playLast,
+      close: () => {
+        owner.socket.close();
+      },
+    };
+  }
+
+  /**
+   * Has the two accounts of the perfect game play it again, from the play before a stack is
+   * complete, at a table that the browser's account can watch. `play` completes the stack, then
+   * loses a card that the team needs, then misplays three times, which ends the game.
+   */
+  async function showStackSignals(): Promise<StackSignals> {
+    perfectGame ??= findPerfectGame();
+    const { gameId, stackDone } = await perfectGame;
+    const players = await Promise.all(
+      PERFECT_PLAYER_NAMES.map(async (name) => await connect(address, name)),
+    );
+    const [owner, other] = players;
+    assertDefined(owner, "There is no owner.");
+    assertDefined(other, "There is no other player.");
+    owner.send("tableCreate", {
+      settings: {
+        name: STACK_SIGNALS_TABLE_NAME,
+        maxPlayers: DEFAULT_MAX_PLAYERS,
+        options: {},
+        deal: { type: "replay", gameId, turn: stackDone.turn },
+      },
+    });
+    const { tableId: signalsTableId } = await owner.receive(
+      "tableJoined",
+      SERVER_EVENT_SCHEMAS.tableJoined,
+    );
+    other.send("tableJoin", { tableId: signalsTableId });
+    await other.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+    owner.send("tableStart", {
+      tableId: signalsTableId,
+      intendedPlayerIds: players.map((peer) => peer.userId),
+    });
+    const seats = await Promise.all(
+      players.map(async (peer) => {
+        await peer.receive(
+          "tableJoined",
+          SERVER_EVENT_SCHEMAS.tableJoined,
+          entersGame,
+        );
+        const init = await peer.request("gameInitLoad", {
+          tableId: signalsTableId,
+        });
+        peer.send("gameStateLoad", { tableId: signalsTableId });
+        await peer.receive("gameState", SERVER_EVENT_SCHEMAS.gameState);
+        peer.send("gameLoaded", { tableId: signalsTableId });
+        return { peer, index: ourPlayerIndex(init) };
+      }),
+    );
+
+    async function readSignalsGame() {
+      const game = readGame(await loadViews(seats, signalsTableId));
+      assertDefined(game, "The game ended too soon.");
+      return game;
+    }
+
+    /** Makes a move for the player whose turn it is, and waits until the server has made it. */
+    async function move(
+      game: Game,
+      action: z.input<typeof playerActionRequestSchema>["action"],
+      endsGame = false,
+    ) {
+      const seat = seats.find(({ index }) => index === game.player);
+      assertDefined(seat, `No account sits in seat ${game.player}.`);
+      seat.peer.send("playerAction", { tableId: signalsTableId, action });
+      await (endsGame
+        ? seat.peer.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished)
+        : seat.peer.receive(
+            "gameEvent",
+            SERVER_EVENT_SCHEMAS.gameEvent,
+            (data) =>
+              data.event.type === "turn" && data.event.turn === game.turn + 1,
+          ));
+    }
+
+    async function play(page: Page) {
+      // The play completes a stack.
+      await move(await readSignalsGame(), {
+        type: "play",
+        order: stackDone.order,
+      });
+      await page.waitForTimeout(SIGNAL_MILLISECONDS);
+
+      // A card that the team needs is lost, which lowers the maximum score. Until a player has one,
+      // and the team has a clue to get back, the players give clues and discard other cards.
+      for (let i = 0; i < MAX_PERFECT_MOVES; i++) {
+        const game = await readSignalsGame();
+        const critical = game.hand.find((order) => game.isCritical(order));
+        if (critical !== undefined && game.clues < MAX_CLUES) {
+          await move(game, { type: "discard", order: critical });
+          break;
+        }
+        const trash = game.hand.find((order) => !game.isCritical(order));
+        await move(
+          game,
+          game.clues > 0 || trash === undefined
+            ? rankClue(game)
+            : { type: "discard", order: trash },
+        );
+      }
+      await page.waitForTimeout(SIGNAL_MILLISECONDS);
+
+      // Three misplays end the game.
+      for (let i = 0; i < MAX_PERFECT_MOVES; i++) {
+        const game = await readSignalsGame();
+        const unplayable = game.hand.filter((order) => !game.isPlayable(order));
+        const order =
+          unplayable.find((card) => !game.isCritical(card)) ?? unplayable[0];
+        assertDefined(order, `Player ${game.player} has no card to misplay.`);
+        const last = game.strikes === MAX_STRIKES - 1;
+        await move(game, { type: "play", order }, last);
+        await page.waitForTimeout(SIGNAL_MILLISECONDS);
+        if (last) {
+          break;
+        }
+      }
+    }
+
+    return {
+      play,
+      close: () => {
+        for (const peer of players) {
+          peer.socket.close();
+        }
+      },
+    };
+  }
+
   return {
     showFivePlayerReplay,
+    showPerfectScore,
+    showStackSignals,
     replayId,
     startGame,
     endGame,

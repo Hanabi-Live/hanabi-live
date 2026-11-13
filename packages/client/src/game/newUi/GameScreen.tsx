@@ -76,6 +76,7 @@ import {
   measureCards,
   stopCardMoves,
 } from "./cardMotion.ts";
+import { animateFinale } from "./finaleMotion.ts";
 import {
   useElementSize,
   useGameState,
@@ -515,6 +516,28 @@ function getMoveEffects(
   };
 }
 
+/** The card that was just played onto a stack, if there is one. */
+function getLastPlayedCard(
+  root: HTMLElement,
+  before: GameState,
+  after: GameState,
+): HTMLElement | undefined {
+  for (const [suitIndex, stack] of after.playStacks.entries()) {
+    const order = stack.at(-1);
+    if (
+      order !== undefined
+      && stack.length > (before.playStacks[suitIndex]?.length ?? 0)
+    ) {
+      return (
+        root.querySelector<HTMLElement>(
+          `[data-card-order="${CSS.escape(order.toString())}"]`,
+        ) ?? undefined
+      );
+    }
+  }
+  return undefined;
+}
+
 /**
  * For each strike box, the segment of its strike, as the classic screen's strike boxes have them.
  * In a replay, the boxes also stand for the strikes that come later, except in a spoiler-free
@@ -921,13 +944,36 @@ export function GameScreen({
     const segmentChange =
       (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
     if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
+      const effects = getMoveEffects(
+        state,
+        move.startState,
+        shownState,
+        segmentChange,
+      );
       animateCardMoves(
         root,
         move.startPositions,
         positions,
         segmentChange > 0,
-        getMoveEffects(state, move.startState, shownState, segmentChange),
+        effects,
       );
+
+      // A play that gives the team a perfect score sets off the finale, as on the classic screen.
+      // The server sends the play in several updates, so it starts on the one that changes the
+      // score.
+      const { maxScore } = globals.variant;
+      if (
+        effects.live
+        && !globals.lobby.settings.reducedMotion
+        && previous.shownState.score < maxScore
+        && shownState.score === maxScore
+      ) {
+        animateFinale(
+          root,
+          globals.variant.suits,
+          getLastPlayedCard(root, previous.shownState, shownState),
+        );
+      }
     }
 
     // A clue that was just given flies in from its giver, when the game moves forward a turn.

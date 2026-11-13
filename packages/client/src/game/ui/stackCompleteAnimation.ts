@@ -3,14 +3,60 @@
 // to the clue count, which goes up when the spark arrives.
 
 // When the card gives the team a perfect score, a finale plays instead: a rocket climbs from each
-// stack and bursts in its suit's colors, and then one large firework bursts over the stacks.
+// stack and bursts in its suit's colors, and then one large firework bursts over the stacks. The
+// new game screen plays the same finale (see "../newUi/finaleMotion.ts"), so its numbers are in
+// "fireworkConfig.ts".
 
-import type { Suit } from "@hanabi-live/game";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
 import type { PlayStack } from "./PlayStack.ts";
 import { globals } from "./UiGlobals.ts";
 import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
+import type { BurstConfig } from "./fireworkConfig.ts";
+import {
+  CARD_GLOW_SECONDS,
+  CRACKLE_AREA,
+  CRACKLE_BURST,
+  CRACKLE_COLORS,
+  CRACKLE_STAGGER_SECONDS,
+  EMBER_COLORS,
+  EMBER_DRIFT,
+  EMBER_FALL,
+  EMBER_RADIUS,
+  EMBER_SECONDS,
+  FINALE_BURST,
+  FINALE_HEIGHT,
+  FINALE_PAUSE_SECONDS,
+  FINALE_ROCKET_SECONDS,
+  FINALE_SCORE_GLOW_SECONDS,
+  FLASH_SECONDS,
+  GOLD,
+  NUM_CRACKLES,
+  RING_SECONDS,
+  ROCKET_DRIFT,
+  ROCKET_EMBER_INTERVAL,
+  ROCKET_GLOW,
+  ROCKET_HEIGHT,
+  ROCKET_RADIUS,
+  ROCKET_SECONDS,
+  ROCKET_STREAK_LAG,
+  ROCKET_STREAK_WIDTH,
+  ROCKET_WOBBLE,
+  ROCKET_WOBBLE_RADIANS,
+  SCORE_POP_SCALE,
+  SCORE_POP_SECONDS,
+  SPARK_FADE_START,
+  SPARK_FALL,
+  SPARK_RADIUS,
+  SPARK_TAIL_WIDTH,
+  VOLLEY_BURST,
+  VOLLEY_DELAY_SECONDS,
+  VOLLEY_REACH_SPREAD,
+  VOLLEY_STAGGER_SECONDS,
+  WHITE_HOT,
+  burstColors,
+  suitColors,
+} from "./fireworkConfig.ts";
 import type { Point } from "./fireworks.ts";
 import {
   EffectTimeline,
@@ -27,22 +73,11 @@ import {
 } from "./fireworks.ts";
 import { onClueTokensChanged } from "./reactive/views/gameInfoView.ts";
 
-interface BurstConfig {
-  sparks: number;
-  reach: number;
-  seconds: number;
-  flashRadius: number;
-  ringRadius: number;
-}
-
 export interface StackCompleteAnimation {
   /** Ends the animation and shows the current clue count. */
   stop: () => void;
 }
 
-const GOLD = "#ffd166";
-const WHITE_HOT = "#fff8e1";
-const EMBER_COLORS = [GOLD, "#ffad3b", WHITE_HOT] as const;
 const CLUE_GREEN = "#6cff73";
 const CLUE_BURST_COLORS = [CLUE_GREEN, WHITE_HOT] as const;
 
@@ -63,14 +98,6 @@ const CLUE_BURST = {
   flashRadius: 0.15,
   ringRadius: 0.3,
 } as const satisfies BurstConfig;
-const FLASH_SECONDS = 0.22;
-const RING_SECONDS = 0.45;
-const SPARK_RADIUS = { min: 0.026, max: 0.04 } as const;
-const SPARK_TAIL_WIDTH = 0.022;
-/** How far the sparks fall by the end of the burst. */
-const SPARK_FALL = 0.5;
-/** The part of the burst after which the sparks fade out. */
-const SPARK_FADE_START = 0.6;
 
 /** The spark waits for the burst to open before it leaves. */
 const COMET_DELAY_SECONDS = 0.06;
@@ -81,69 +108,12 @@ const COMET_GLOW = 0.13;
 const COMET_CONTROL_POINT = { x: 0.3, y: -0.15 } as const;
 /** How often (as a fraction of the flight) the spark leaves an ember behind it. */
 const EMBER_INTERVAL = 0.025;
-const EMBER_SECONDS = 0.4;
-const EMBER_RADIUS = { min: 0.018, max: 0.033 } as const;
-const EMBER_FALL = 0.13;
-const EMBER_DRIFT = 0.06;
 
 const CLUE_POP_SECONDS = 0.35;
 const CLUE_POP_SCALE = 1.7;
 /** The part of the pop during which the clue count is green. */
 const CLUE_POP_GREEN = 0.55;
 const SCORE_GLOW_SECONDS = 0.4;
-const CARD_GLOW_SECONDS = 0.5;
-
-// The perfect score finale.
-/** The first rocket leaves after the card lands. The others follow, one stack at a time. */
-const VOLLEY_DELAY_SECONDS = 0.15;
-const VOLLEY_STAGGER_SECONDS = 0.2;
-const ROCKET_SECONDS = 0.45;
-/** How far above the center of its stack a rocket bursts. */
-const ROCKET_HEIGHT = { min: 1.2, max: 1.65 } as const;
-const ROCKET_DRIFT = 0.1;
-const ROCKET_RADIUS = 0.033;
-const ROCKET_GLOW = 0.09;
-const ROCKET_STREAK_WIDTH = 0.022;
-/** How far (as a fraction of the flight) the streak trails behind the rocket. */
-const ROCKET_STREAK_LAG = 0.2;
-const ROCKET_WOBBLE = 0.015;
-const ROCKET_WOBBLE_RADIANS = 16;
-const ROCKET_EMBER_INTERVAL = 0.06;
-const VOLLEY_BURST = {
-  sparks: 34,
-  reach: 0.81,
-  seconds: 1,
-  flashRadius: 0.4,
-  ringRadius: 0.8,
-} as const satisfies BurstConfig;
-const VOLLEY_REACH_SPREAD = 0.11;
-/** The pause between the last burst of the volley and the launch of the last rocket. */
-const FINALE_PAUSE_SECONDS = 0.35;
-const FINALE_ROCKET_SECONDS = 0.35;
-/** How far above the center of the stacks the large firework bursts. */
-const FINALE_HEIGHT = 1.3;
-const FINALE_BURST = {
-  sparks: 64,
-  reach: 1.85,
-  seconds: 1.4,
-  flashRadius: 0.8,
-  ringRadius: 1.6,
-} as const satisfies BurstConfig;
-const CRACKLE_BURST = {
-  sparks: 10,
-  reach: 0.3,
-  seconds: 0.45,
-  flashRadius: 0.12,
-  ringRadius: 0.3,
-} as const satisfies BurstConfig;
-const CRACKLE_COLORS = [WHITE_HOT, GOLD] as const;
-const NUM_CRACKLES = 4;
-const CRACKLE_STAGGER_SECONDS = 0.16;
-/** Where crackles go off, relative to the large firework. */
-const CRACKLE_AREA = { x: 1.33, top: -0.3, bottom: 0.52 } as const;
-const SCORE_POP_SECONDS = 0.6;
-const SCORE_POP_SCALE = 1.8;
-const FINALE_SCORE_GLOW_SECONDS = 1.1;
 
 /**
  * Celebrates the card that completed a play stack. The card is already moving to the stack.
@@ -240,14 +210,6 @@ export function startStackCompleteAnimation(
       showClues();
     },
   };
-}
-
-function suitColors(suit: Suit): readonly string[] {
-  return suit.fillColors ?? [suit.fill];
-}
-
-function burstColors(colors: readonly string[]): readonly string[] {
-  return [...colors, "#ffffff", GOLD];
 }
 
 /**

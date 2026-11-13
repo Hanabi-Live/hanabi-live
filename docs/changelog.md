@@ -16,6 +16,7 @@ of the repository.
   tooltips that say that clicking them goes to their turn.
 - In the new game screen, the replay controls are now larger and below the
   hands.
+- In the new game screen, a perfect score now sets off the fireworks finale.
 
 ## November 12th, 2026
 
