@@ -355,13 +355,6 @@ export const DiscardPile = forwardRef<
           className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-50"
           style={{ fontSize: cardWidth * 1.125 }}
         />
-        {atMaxClues && zoneState === "idle" && (
-          // On the bottom edge of the pile, in its padding, so that it covers no card and the cards
-          // do not move when it shows.
-          <span className="tw:absolute tw:bottom-0.5 tw:left-1/2 tw:-translate-x-1/2 tw:text-[13px] tw:font-medium tw:whitespace-nowrap tw:text-clue">
-            No discards at max clues
-          </span>
-        )}
         <div
           className="tw:relative tw:flex tw:flex-col"
           style={{ height: rowsHeight }}
