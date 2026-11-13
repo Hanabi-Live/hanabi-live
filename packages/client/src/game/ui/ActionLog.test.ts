@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const globals = vi.hoisted(() => {
   const replay: { segment: number | undefined } = { segment: 0 };
-  return { animateFast: false, state: { replay } };
+  const settings = { reducedMotion: false };
+  return { animateFast: false, lobby: { settings }, state: { replay } };
 });
 vi.mock("./UiGlobals.ts", () => ({ globals }));
 vi.mock("./controls/FitText.ts", async () => {
@@ -39,6 +40,7 @@ function makeActionLog() {
 describe("ActionLog", () => {
   beforeEach(() => {
     globals.state.replay.segment = 0;
+    globals.lobby.settings.reducedMotion = false;
   });
 
   test("slides when a new line arrives", () => {
@@ -50,6 +52,14 @@ describe("ActionLog", () => {
 
   test("does not slide during an ongoing game", () => {
     globals.state.replay.segment = undefined;
+    const { actionLog, lines } = makeActionLog();
+    actionLog.update(makeLog(5));
+    actionLog.update(makeLog(6));
+    expect(lines.y()).toBe(0);
+  });
+
+  test("does not slide with reduced motion", () => {
+    globals.lobby.settings.reducedMotion = true;
     const { actionLog, lines } = makeActionLog();
     actionLog.update(makeLog(5));
     actionLog.update(makeLog(6));

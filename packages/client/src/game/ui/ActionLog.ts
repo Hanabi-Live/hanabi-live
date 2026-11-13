@@ -10,8 +10,8 @@ const SLIDE_DURATION = 0.2;
 /**
  * The small action log that shows the most recent log lines. When the visible lines move by one
  * line in a replay, the text slides up or down. It does not slide during an ongoing game, so that
- * it does not take attention away from the game. The parent must clip this group to the visible
- * area.
+ * it does not take attention away from the game. It also does not slide with reduced motion. The
+ * parent must clip this group to the visible area.
  *
  * The group holds one hidden line above and one hidden line below the visible lines. A slide draws
  * the new lines, offsets them by one line so that they look like the old lines, and then moves them
@@ -72,6 +72,7 @@ export class ActionLog extends Konva.Group {
       Math.abs(shift) === 1
       && globals.state.replay.segment !== undefined
       && !globals.animateFast
+      && !globals.lobby.settings.reducedMotion
       && this.texts.every((text, i) => {
         // Every visible line that stays on the screen must keep its text. Do not check the hidden
         // lines: the hidden line below is empty before a new log line arrives.
