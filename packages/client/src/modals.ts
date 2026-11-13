@@ -9,6 +9,7 @@ import {
   MODAL_HEADER_CLASS_NAME,
 } from "./closeButton.ts";
 import { START_CARD_RANK_LABEL } from "./constants.ts";
+import { emojiPickerClosed } from "./emojiPickerSlice.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
@@ -32,6 +33,7 @@ let morphDragArea: DragAreaType;
 
 /** The modal that "MessageModal.tsx" renders the content of. */
 const MESSAGE_MODAL_ID = "message-modal";
+export const EMOJI_MODAL_ID = "emoji-modal";
 
 const modalDialog = getModalDialog();
 const modalsContainer = getHtmlElement("#modals-container");
@@ -418,6 +420,9 @@ export function closeModals(): void {
   idleModalKeepPlaying = undefined;
   if (currentModal?.id === MESSAGE_MODAL_ID) {
     store.dispatch(messageModalClosed());
+  }
+  if (currentModal?.id === EMOJI_MODAL_ID) {
+    store.dispatch(emojiPickerClosed());
   }
   if (currentModal !== undefined) {
     currentModal.classList.add("hidden");

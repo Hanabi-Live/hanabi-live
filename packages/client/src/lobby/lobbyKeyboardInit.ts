@@ -7,8 +7,23 @@ the hotkeys on French keyboards. */
 import * as KeyCode from "keycode-js";
 import { isModalVisible } from "../modals.ts";
 import { store } from "../store.ts";
+import * as createGame from "./createGame.ts";
+import * as history from "./history.ts";
 import * as lobbyPage from "./lobbyPage.ts";
+import {
+  joinGame,
+  leaveGame,
+  returnToLobby,
+  selectCanStartGame,
+  selectJoinButton,
+  spectateGame,
+  startGame,
+} from "./nav/navActions.ts";
+import { signOut } from "./signOut.ts";
+import { tableJoin } from "./tables/tableActions.ts";
+import { selectTableRows } from "./tables/tablesSlice.ts";
 import { Screen } from "./types/Screen.ts";
+import * as watchReplay from "./watchReplay/WatchReplay.tsx";
 
 export function lobbyKeyboardInit(): void {
   document.addEventListener("keydown", (event) => {
@@ -34,7 +49,7 @@ export function lobbyKeyboardInit(): void {
         event.which === KeyCode.KEY_ESCAPE
         || (event.altKey && event.which === KeyCode.KEY_R)
       ) {
-        clickElement("#nav-buttons-page-return");
+        lobbyPage.hide();
       }
       return;
     }
@@ -47,83 +62,93 @@ export function lobbyKeyboardInit(): void {
 
     // We also account for macOS special characters that are inserted when you hold down the option
     // key.
+    const state = store.getState();
+    const { screen } = state.session;
     if (event.altKey && event.which === KeyCode.KEY_J) {
-      // Alt + j.
-      if (store.getState().session.screen === Screen.Lobby) {
-        // Click on the first "Join" button in the table list.
-        clickElement(".lobby-games-join-first-table-button");
-      } else if (store.getState().session.screen === Screen.PreGame) {
-        // Click on the "Join Game" button.
-        clickElement("#nav-buttons-pregame-join");
+      // Alt + j. Join the first table that we can join, or the table that we are at.
+      if (screen === Screen.Lobby) {
+        const row = selectTableRows(state).find((value) => value.firstJoinable);
+        if (row !== undefined) {
+          tableJoin(row.table);
+        }
+      } else if (screen === Screen.PreGame) {
+        const joinButton = selectJoinButton(state);
+        if (joinButton.type === "join" && joinButton.enabled) {
+          joinGame();
+        }
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
-      // Alt + n. Click the "Create Game" button.
-      if (store.getState().session.screen === Screen.Lobby) {
-        clickElement("#nav-buttons-lobby-create-game");
+      // Alt + n. Create a game.
+      if (screen === Screen.Lobby && !state.session.creatingTable) {
+        createGame.show();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_H) {
-      // Alt + h. Click the "Show History" button.
-      if (store.getState().session.screen === Screen.Lobby) {
-        clickElement("#nav-buttons-lobby-history");
+      // Alt + h. Show the history.
+      if (screen === Screen.Lobby) {
+        history.show();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_A) {
-      // Alt + a. Click on the "Watch Specific Replay" button. (We can't use "Alt + w" because that
-      // conflicts with LastPass.)
-      if (store.getState().session.screen === Screen.Lobby) {
-        clickElement("#nav-buttons-lobby-replay");
+      // Alt + a. Watch a specific replay. (We can't use "Alt + w" because that conflicts with
+      // LastPass.)
+      if (screen === Screen.Lobby) {
+        watchReplay.show();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_O) {
-      // Alt + o. Click the "Sign Out" button.
-      if (store.getState().session.screen === Screen.Lobby) {
-        clickElement("#nav-buttons-lobby-sign-out");
+      // Alt + o. Sign out.
+      if (screen === Screen.Lobby) {
+        signOut();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_S) {
-      // Alt + s. Click on the "Start Game" button.
-      if (store.getState().session.screen === Screen.PreGame) {
-        clickElement("#nav-buttons-pregame-start");
+      // Alt + s. Start the game.
+      if (screen === Screen.PreGame && selectCanStartGame(state)) {
+        startGame();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_P) {
-      // Alt + p. Click on the "Spectate Game" button.
-      if (store.getState().session.screen === Screen.PreGame) {
-        clickElement("#nav-buttons-pregame-spectate");
+      // Alt + p. Spectate the game instead of playing it.
+      const joinButton = selectJoinButton(state);
+      if (
+        screen === Screen.PreGame
+        && joinButton.type === "spectate"
+        && joinButton.enabled
+      ) {
+        spectateGame();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
-      // Alt + c. Click on the "Change Options" button.
-      if (store.getState().session.screen === Screen.PreGame) {
-        clickElement("#nav-buttons-pregame-change-options");
+      // Alt + c. Change the options.
+      if (screen === Screen.PreGame) {
+        createGame.show();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
-      // Alt + l. Click on the "Leave Game" button.
-      if (store.getState().session.screen === Screen.PreGame) {
-        clickElement("#nav-buttons-pregame-leave");
+      // Alt + l. Leave the game.
+      if (screen === Screen.PreGame) {
+        leaveGame();
       }
-    } else if (event.altKey && event.which === KeyCode.KEY_R) {
-      // Alt + r
-      clickReturnToLobby();
-    } else if (event.which === KeyCode.KEY_ESCAPE) {
+    } else if (
+      (event.altKey && event.which === KeyCode.KEY_R)
       // If a modal is open, pressing escape should close it. Otherwise, pressing escape should go
       // "back" one screen.
-      clickReturnToLobby();
+      || event.which === KeyCode.KEY_ESCAPE
+    ) {
+      returnFromScreen(screen);
     }
   });
 }
 
-function clickReturnToLobby() {
-  // Click on the "Return to Lobby" button. (Either at the "game" screen or the "history" screen or
-  // the "scores" screen.)
-  switch (store.getState().session.screen) {
+/** Returns to the lobby from the pregame screen or from a history screen. */
+function returnFromScreen(screen: Screen) {
+  switch (screen) {
     case Screen.PreGame: {
-      clickElement("#nav-buttons-pregame-unattend");
+      returnToLobby();
       break;
     }
 
     case Screen.History: {
-      clickElement("#nav-buttons-history-return");
+      history.hide();
       break;
     }
 
     case Screen.HistoryOtherScores: {
-      clickElement("#nav-buttons-history-other-scores-return");
+      history.hideOtherScores();
       break;
     }
 
@@ -131,9 +156,4 @@ function clickReturnToLobby() {
       break;
     }
   }
-}
-
-/** Clicks an element, if it is on the page. */
-function clickElement(selector: string) {
-  document.querySelector<HTMLElement>(selector)?.click();
 }

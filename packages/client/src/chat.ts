@@ -11,7 +11,6 @@ import {
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
-import { mountEmojiPicker } from "./EmojiPicker.tsx";
 import { globals } from "./Globals.ts";
 import type { LengthLimit } from "./LengthCounter.tsx";
 import { countCharacters, rejectTooLong } from "./LengthCounter.tsx";
@@ -33,7 +32,6 @@ import {
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { store } from "./store.ts";
-import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -87,8 +85,6 @@ let typedChatHistoryBrowse:
 let tabCompleteWordListIndex: number | undefined;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
-let activeChatInput: HTMLInputElement | undefined;
-let emojiPickerMounted = false;
 
 export function init(): void {
   // (The chat inputs are React components that attach themselves.)
@@ -137,75 +133,32 @@ export function init(): void {
   }
 }
 
-function pickChatSymbol(text: string) {
-  if (activeChatInput) {
-    activeChatInput.value += text;
-    activeChatInput.focus();
-  }
-  modals.closeModals();
-}
-
-/** Opens the emote and emoji picker, which adds what we pick to a chat input. */
-export function openEmojiPicker(chatInput: HTMLInputElement): void {
-  activeChatInput = chatInput;
-  // Most users never open the picker, so it is drawn when it first opens.
-  if (!emojiPickerMounted) {
-    mountEmojiPicker(
-      getHtmlElement("#emoji-picker"),
-      pickChatSymbol,
-      modals.closeModals,
-    );
-    emojiPickerMounted = true;
-  }
-  // The search input comes after the close button, so the dialog would focus the button instead.
-  modals.showPrompt(
-    "#emoji-modal",
-    undefined,
-    getHtmlInputElement("#emoji-picker input"),
-  );
-}
-
-/**
- * Handles typing in a chat input: sending, commands, typed history, tab completion, and emoji.
- * Returns a function that removes the handlers.
- */
-export function attachChatInput(
+/** Handles a change to a chat input's text. */
+export function onChatInput(
   element: HTMLInputElement,
   room: "lobby" | "table",
-): () => void {
-  const controller = new AbortController();
-  const { signal } = controller;
-  element.addEventListener(
-    "input",
-    () => {
-      input(element, room);
-    },
-    { signal },
-  );
-  element.addEventListener(
-    "keypress",
-    (event) => {
-      // We have typed a new character, so reset the tab-complete variables.
-      tabResetAutoCompleteList();
-      typedChatHistoryBrowse = undefined;
+): void {
+  // We have typed something new, so reset the tab-complete variables.
+  tabResetAutoCompleteList();
+  typedChatHistoryBrowse = undefined;
+  input(element, room);
+}
 
-      if (event.key === "Enter") {
-        send(room, element);
-      }
-    },
-    { signal },
-  );
-  element.addEventListener(
-    "keydown",
-    (event) => {
-      keydown(element, event);
-    },
-    { signal },
-  );
-
-  return () => {
-    controller.abort();
-  };
+/** Handles a key in a chat input: Enter sends, and the arrows and Tab browse and complete. */
+export function onChatKeyDown(
+  element: HTMLInputElement,
+  room: "lobby" | "table",
+  event: KeyboardEvent,
+): void {
+  // Enter also ends the composition of an input method, which must not send the message.
+  if (event.key === "Enter" && !event.isComposing) {
+    // Sending can open a modal, which focuses its button. Without this, the key press that follows
+    // would press that button.
+    event.preventDefault();
+    send(room, element);
+    return;
+  }
+  keydown(element, event);
 }
 
 function input(element: HTMLInputElement, room: "lobby" | "table") {

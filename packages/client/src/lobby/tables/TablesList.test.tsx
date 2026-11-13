@@ -15,7 +15,12 @@ import { friendsChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { TablesList } from "./TablesList.tsx";
 import type { Table } from "./tablesSlice.ts";
-import { tableChanged, tablesCleared, tablesListed } from "./tablesSlice.ts";
+import {
+  selectTableRows,
+  tableChanged,
+  tablesCleared,
+  tablesListed,
+} from "./tablesSlice.ts";
 
 vi.mock("../../tooltips.ts", () => ({ showCopied: vi.fn() }));
 vi.mock("./tableActions.ts", () => ({
@@ -124,8 +129,9 @@ describe("TablesList", () => {
       "replay",
     ]);
     expect(
-      document.querySelector(".lobby-games-join-first-table-button")?.id,
-    ).toBe("join-4");
+      selectTableRows(store.getState()).find((row) => row.firstJoinable)?.table
+        .tableId,
+    ).toBe(4);
 
     act(() => {
       store.dispatch(friendsChanged(["bob"]));

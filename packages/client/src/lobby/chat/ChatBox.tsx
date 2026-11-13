@@ -1,12 +1,9 @@
 // The parts that the lobby chat, the pre-game chat, and the game chat share.
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { openEmojiPicker } from "../../EmojiPicker.tsx";
 import { LengthCounter } from "../../LengthCounter.tsx";
-import {
-  CHAT_LENGTH_LIMIT,
-  attachChatInput,
-  openEmojiPicker,
-} from "../../chat.ts";
+import { CHAT_LENGTH_LIMIT, onChatInput, onChatKeyDown } from "../../chat.ts";
 import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatSegment, ChatTextOptions } from "../../chatText.ts";
 import { chatSegments } from "../../chatText.ts";
@@ -378,14 +375,18 @@ export function ChatInput({
   readonly room: "lobby" | "table";
   readonly ref: React.RefObject<HTMLInputElement | null>;
 }): React.JSX.Element {
-  useEffect(() => attachChatInput(ref.current!, room), [ref, room]);
-
   return (
     <div className="tw:relative">
       <input
         autoComplete="off"
         className="tw:pr-10"
         id={id}
+        onInput={(event) => {
+          onChatInput(event.currentTarget, room);
+        }}
+        onKeyDown={(event) => {
+          onChatKeyDown(event.currentTarget, room, event.nativeEvent);
+        }}
         placeholder="Chat"
         ref={ref}
         type="text"
@@ -393,7 +394,7 @@ export function ChatInput({
       <button
         className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text tw:hover:text-text-strong"
         onClick={() => {
-          openEmojiPicker(ref.current!);
+          openEmojiPicker(id);
         }}
         type="button"
       >

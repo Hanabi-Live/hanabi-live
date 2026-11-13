@@ -6,6 +6,9 @@ import { createSlice } from "@reduxjs/toolkit";
 /** What the login box shows: a wait, a warning for Firefox users, or the form. */
 type LoginStage = "loading" | "firefoxWarning" | "signIn";
 
+/** What the page shows before a game: the login screen, the tutorial, or the lobby. */
+export type LoginPage = "login" | "tutorial" | "lobby";
+
 interface LoginAlert {
   readonly message: string;
   /** Whether the check of our saved session failed, which a button can try again. */
@@ -19,6 +22,7 @@ interface LoginAlert {
 }
 
 interface LoginState {
+  readonly page: LoginPage;
   readonly stage: LoginStage;
   /** Whether a login request is on its way. */
   readonly busy: boolean;
@@ -31,6 +35,7 @@ interface LoginState {
 }
 
 const initialState: LoginState = {
+  page: "login",
   stage: "loading",
   busy: false,
   alert: undefined,
@@ -41,6 +46,9 @@ const loginSlice = createSlice({
   name: "login",
   initialState,
   reducers: {
+    loginPageChanged(state, action: PayloadAction<LoginPage>) {
+      state.page = action.payload;
+    },
     loginStageChanged(state, action: PayloadAction<LoginStage>) {
       state.stage = action.payload;
     },
@@ -82,6 +90,7 @@ const loginSlice = createSlice({
 });
 
 export const {
+  loginPageChanged,
   loginStageChanged,
   loginStarted,
   loginFailed,

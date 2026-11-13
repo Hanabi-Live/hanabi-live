@@ -93,7 +93,6 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
         for id in ["emoji-modal", "morph-modal"] {
             assert_eq!(parents[id].as_deref(), Some("modals-container"));
         }
-        assert_eq!(parents["emoji-picker"].as_deref(), Some("emoji-modal"));
         assert!(body.contains(if development {
             "http://localhost:5173/src/main.ts"
         } else {

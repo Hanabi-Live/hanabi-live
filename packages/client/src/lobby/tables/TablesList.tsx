@@ -95,7 +95,7 @@ export function TablesList(): React.JSX.Element {
 }
 
 function TableRowView({
-  row: { table, joined, action, hasFriends, firstJoinable },
+  row: { table, joined, action, hasFriends },
 }: {
   readonly row: TableRow;
 }) {
@@ -111,9 +111,6 @@ function TableRowView({
       table.playerNames.length === table.settings.maxPlayers
       || (action === "join" && table.playerNames.length >= MAX_PLAYERS);
     classNames.push(full ? FULL_CURSOR : JOIN_CURSOR);
-  }
-  if (firstJoinable) {
-    classNames.push("lobby-games-join-first-table-button");
   }
 
   const status = getStatus(table);

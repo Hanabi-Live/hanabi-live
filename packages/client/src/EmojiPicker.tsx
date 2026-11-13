@@ -3,13 +3,17 @@
 
 import { CHAT_EMOJI_GROUPS, CHAT_EMOTES } from "@hanabi-live/data";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import {
   CLOSE_BUTTON_CLASS_NAME,
   MODAL_HEADER_CLASS_NAME,
 } from "./closeButton.ts";
-import { renderRoot } from "./renderRoot.tsx";
+import { emojiPickerOpened } from "./emojiPickerSlice.ts";
+import { closeModals, EMOJI_MODAL_ID, showPrompt } from "./modals.ts";
+import { store } from "./store.ts";
 import { TAB_CLASS_NAME } from "./tabClassName.ts";
 import { tooltipRef } from "./tooltipRef.ts";
+import { getHtmlInputElement } from "./utils.ts";
 
 /** Searching for a short string matches most symbols, and drawing them all would be slow. */
 const MAX_SEARCH_RESULTS = 100;
@@ -74,21 +78,33 @@ const ALL_SYMBOLS: readonly ChatSymbol[] = TABS.flatMap((tab) => tab.symbols);
 const BUTTON_CLASS_NAME =
   "tw:flex tw:h-10 tw:min-w-10 tw:cursor-pointer tw:appearance-none tw:items-center tw:justify-center tw:rounded tw:border-0 tw:bg-transparent tw:p-1 tw:hover:bg-surface-sunken";
 
-/** Renders the picker into an element. `onPick` receives the text to add to the chat input. */
-export function mountEmojiPicker(
-  container: HTMLElement,
-  onPick: (text: string) => void,
-  onClose: () => void,
-): void {
-  renderRoot(container, <EmojiPicker onClose={onClose} onPick={onPick} />);
+/** Opens the picker, which adds what we pick to a chat input. */
+export function openEmojiPicker(inputId: string): void {
+  // Draw the picker at once, so that the dialog can focus its search input. The search input comes
+  // after the close button, so the dialog would focus the button instead.
+  flushSync(() => {
+    store.dispatch(emojiPickerOpened(inputId));
+  });
+  showPrompt(
+    `#${EMOJI_MODAL_ID}`,
+    undefined,
+    getHtmlInputElement(`#${EMOJI_MODAL_ID} input`),
+  );
 }
 
-function EmojiPicker({
-  onPick,
-  onClose,
+/** Adds a picked symbol to the chat input, and closes the picker. */
+function pick(inputId: string, text: string) {
+  const input = getHtmlInputElement(`#${inputId}`);
+  input.value += text;
+  input.focus();
+  closeModals();
+}
+
+/** The emote and emoji picker, which adds what we pick to the chat input with this ID. */
+export function EmojiPicker({
+  inputId,
 }: {
-  readonly onPick: (text: string) => void;
-  readonly onClose: () => void;
+  readonly inputId: string;
 }): React.JSX.Element {
   const [tabIndex, setTabIndex] = useState(0);
   const [search, setSearch] = useState("");
@@ -102,13 +118,13 @@ function EmojiPicker({
         ).slice(0, MAX_SEARCH_RESULTS);
 
   return (
-    <div className="tw:w-[min(34em,70vw)]">
+    <div className="tw:w-[min(34em,70vw)]" id="emoji-picker">
       <div className={MODAL_HEADER_CLASS_NAME}>
         <h2>Select Emote / Emoji</h2>
         <button
           aria-label="Close"
           className={CLOSE_BUTTON_CLASS_NAME}
-          onClick={onClose}
+          onClick={closeModals}
           type="button"
         >
           <i className="fas fa-times" />
@@ -155,7 +171,7 @@ function EmojiPicker({
               className={BUTTON_CLASS_NAME}
               key={symbol.title}
               onClick={() => {
-                onPick(symbol.text);
+                pick(inputId, symbol.text);
               }}
               ref={tooltipRef(symbol.title)}
               type="button"

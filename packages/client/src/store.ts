@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
+import { emojiPickerReducer } from "./emojiPickerSlice.ts";
 import { gameChatReducer } from "./game/gameChatSlice.ts";
 import {
   gameSliceReducer,
@@ -18,6 +19,7 @@ import { sessionReducer } from "./sessionSlice.ts";
 
 export const store = configureStore({
   reducer: {
+    emojiPicker: emojiPickerReducer,
     game: gameSliceReducer,
     gameChat: gameChatReducer,
     history: historyReducer,

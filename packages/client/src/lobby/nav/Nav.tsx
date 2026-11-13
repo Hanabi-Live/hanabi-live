@@ -1,24 +1,27 @@
 // The navigation bar at the top of the lobby. Its buttons depend on the screen.
 
-import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { Children } from "react";
 import { PATH } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
-import { showWarning } from "../../modals.ts";
 import type { RootState } from "../../store.ts";
-import { store, useAppSelector } from "../../store.ts";
+import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import * as createGame from "../createGame.ts";
 import { ShownGameCount } from "../gameHistory/HistoryLists.tsx";
 import * as history from "../history.ts";
 import * as lobbyPage from "../lobbyPage.ts";
-import * as pregame from "../pregame/pregame.ts";
-import { startGameSentChanged } from "../pregame/pregameSlice.ts";
 import { signOut } from "../signOut.ts";
-import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
-import { isPlayer, selectTable, selectTables } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import * as watchReplay from "../watchReplay/WatchReplay.tsx";
+import {
+  joinGame,
+  leaveGame,
+  returnToLobby,
+  selectCanStartGame,
+  selectJoinButton,
+  spectateGame,
+  startGame,
+} from "./navActions.ts";
 
 const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 
@@ -407,112 +410,4 @@ function Hotkey({ children }: { readonly children: React.ReactNode }) {
       {children}
     </span>
   );
-}
-
-function selectCanStartGame(state: RootState): boolean {
-  const { game, startGameSent, startGameCooldown } = state.pregame;
-  return (
-    game !== undefined
-    && game.owner.userId === state.session.userId
-    && game.players.length >= MIN_PLAYERS
-    && game.players.length <= MAX_PLAYERS
-    && !startGameSent
-    && !startGameCooldown
-  );
-}
-
-/** A spectator can join the game, and a player can spectate it instead. */
-function selectJoinButton(state: RootState): {
-  readonly type: "join" | "spectate";
-  readonly enabled: boolean;
-} {
-  const { game } = state.pregame;
-  if (game === undefined) {
-    return { type: "join", enabled: false };
-  }
-
-  const seated = game.players.some(
-    (player) => player.username === state.session.username,
-  );
-  return seated
-    ? { type: "spectate", enabled: game.players.length >= MIN_PLAYERS }
-    : {
-        type: "join",
-        enabled: game.players.length < game.settings.maxPlayers,
-      };
-}
-
-function startGame() {
-  store.dispatch(startGameSentChanged(true));
-  globals.conn!.send(
-    "tableStart",
-    {
-      tableId: globals.joinedTableId,
-      intendedPlayerIds:
-        store.getState().pregame.game?.players.map((player) => player.userId)
-        ?? [],
-    },
-    () => {
-      // The started game arrives before the reply. A start that the server refused or ignored, such
-      // as one from an outdated view, can be sent again.
-      store.dispatch(startGameSentChanged(false));
-    },
-  );
-}
-
-function joinGame() {
-  const table = selectTable(store.getState(), globals.joinedTableId);
-  if (table === undefined) {
-    return;
-  }
-
-  const oldTable = selectTables(store.getState()).find(
-    (value) =>
-      isPlayer(value, store.getState().session.username)
-      && value.phase.type !== "sharedReplay",
-  );
-  if (oldTable !== undefined) {
-    if (oldTable.phase.type !== "pregame") {
-      showWarning(
-        "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
-      );
-      return;
-    }
-    globals.conn!.send("tableLeave", { tableId: oldTable.tableId });
-  }
-  tableJoin(table);
-}
-
-function spectateGame() {
-  const table = selectTable(store.getState(), globals.joinedTableId);
-  if (table === undefined) {
-    return;
-  }
-
-  globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
-  tableSpectate(table);
-}
-
-function returnToLobby() {
-  pregame.hide();
-  globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
-  globals.tableId = undefined;
-}
-
-function leaveGame() {
-  // "Leave Game" and "Return to Lobby" are the same for spectators.
-  const table = selectTable(store.getState(), globals.joinedTableId);
-  if (table === undefined) {
-    return;
-  }
-
-  if (
-    table.spectators.some(
-      (spectator) => spectator.username === store.getState().session.username,
-    )
-  ) {
-    returnToLobby();
-  } else {
-    globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
-  }
 }

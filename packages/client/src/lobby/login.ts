@@ -8,19 +8,19 @@ import {
   noticeSchema,
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
+import { flushSync } from "react-dom";
 import type { z } from "zod";
 import { HTTP_STATUS } from "../constants.ts";
-import { fadeIn, hideElement } from "../elementVisibility.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
 import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
-import { getHtmlElement, getUrlFromPath } from "../utils.ts";
+import { getUrlFromPath } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
-import { scrollLobbyChatToBottom } from "./chat/LobbyChat.tsx";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe.ts";
 import {
   loginAlertCleared,
   loginFailed,
+  loginPageChanged,
   loginStageChanged,
   loginStarted,
   noAccountFound,
@@ -235,38 +235,18 @@ function show() {
   store.dispatch(loginStageChanged("signIn"));
 }
 
+/** Leaves the login screen for the tutorial or, for a user who has seen it, for the lobby. */
 export function hide(firstTimeUser: boolean): void {
-  // Hide the login screen
-  hideElement(getHtmlElement("#login"));
-
-  if (firstTimeUser) {
-    fadeIn(getHtmlElement("#tutorial"));
-    return;
-  }
-  hideElement(getHtmlElement("#tutorial"));
-
-  // Disable scroll bars. Even with height and width 100%, the scroll bar can pop up when going back
-  // from a game to the lobby. It also can show up in-game if a tooltip animates off of the edge of
-  // the screen. So we can set "overflow" to explicitly prevent this from occurring. We do not want
-  // to set this in the stylesheets because there should be scrolling enabled on the login screen.
-  // We need to scroll to the top of the screen before disabling the scroll bars or else the lobby
-  // can become misaligned when logging in from a scroll-down state. The login screen can scroll the
-  // body element itself rather than the window, so reset both.
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-  document.body.style.overflow = "hidden";
-
-  // Show the lobby. During the tutorial, the server can already have sent us to a pre-game screen,
-  // so only leave the login screen.
-  if (store.getState().session.screen === Screen.Login) {
+  if (!firstTimeUser && store.getState().session.screen === Screen.Login) {
+    // During the tutorial, the server can already have sent us to a pre-game screen, so only leave
+    // the login screen.
     store.dispatch(screenChanged(Screen.Lobby));
   }
-  getHtmlElement("#lobby").classList.remove("hidden");
-  document.querySelector<HTMLElement>("#lobby-chat-input")?.focus();
 
-  // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the
-  // tutorial.)
-  scrollLobbyChatToBottom();
+  // "App.tsx" shows the page at once, so that the code that runs next finds the lobby.
+  flushSync(() => {
+    store.dispatch(loginPageChanged(firstTimeUser ? "tutorial" : "lobby"));
+  });
 }
 
 function formError(message: string) {
