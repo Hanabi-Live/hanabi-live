@@ -111,11 +111,10 @@ add `--compare <git ref>`: it reports every computed style that differs from the
 stylesheets of that ref. If a screen or state that you need is missing, add it
 to `packages/testing/src/uiScreenshots.ts`. Keep one state for each screen or
 main element. Do not commit a state that only checks one change, such as a
-variant of a screen that another state shows.
-
-To show an animation, show a video, not still frames. Give the state a `record`
-step that starts the animation and waits for it to end. The command then saves a
-video of that step to `dist/ui-screenshots/<state>.webm`.
+variant of a screen that another state shows. Make each state set up what it
+shows, so that `--state` can run it alone. Mark it `isolated` unless it shows
+the lobby, so that it runs in parallel with its own accounts. Wait for what the
+page does, not for a fixed time.
 
 When other authenticated browser checks need test accounts, use the existing
 shared accounts: `test` / `test`, `test2` / `test2`, and so on (username /
@@ -135,17 +134,16 @@ result in text.
 
 Before you commit a change that adds or modifies a UI element, take a screenshot
 of each new or changed element with `bun run ui-screenshots` and show it to the
-user, so that they can decide on it. For a new or changed animation, show its
-video. Show only these screenshots. Do not show screenshots that only check that
-a change, such as a refactor, keeps a screen the same. Check those yourself, and
-report the result in text.
+user, so that they can decide on it. Show only these screenshots. Do not show
+screenshots that only check that a change, such as a refactor, keeps a screen
+the same. Check those yourself, and report the result in text.
 
 Show game screens in a 5-player game, so that the user sees a crowded table. If
 the state that you need has fewer players, add a 5-player state to
 `packages/testing/src/uiScreenshots.ts`.
 
-When running in WSL, the host app cannot display screenshots or videos you send
-it. Open each one that you show in its Windows app instead:
+When running in WSL, the host app cannot display screenshots that you send it.
+Open each one that you show in its Windows app instead:
 `explorer.exe "$(wslpath -w <file>)"`.
 
 ## Delivering changes

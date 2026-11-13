@@ -4,19 +4,19 @@
 // builds the server and the client: `bun run ui-screenshots [options]`.
 
 // Options:
-// - `--state <name>`: Only this state. Repeat it for more than one. A state of Bob's game first
-//   runs the states of that game before it, without screenshots.
+// - `--state <name>`: Only this state. Repeat it for more than one.
 // - `--width <pixels>`: Only this width. Repeat it for more than one.
 // - `--theme <light|dark>`: Only this theme.
 // - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
 //   that ref, and take a screenshot with them wherever a difference shows.
 
-// A state with a `record` step also saves a video of that step, at the first width, such as
-// "new-ui-play.webm".
+// Each state sets up what it shows, so that it can run alone. The states that show the lobby run
+// first, one at a time, since they show every account that is online and every table. The isolated
+// states then run in several browser pages at once. Each page uses its own accounts.
 
-/* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
+/* eslint-disable no-await-in-loop -- A browser page visits its states one at a time. */
 
-import type { UserId } from "@hanabi-live/data";
+import type { playerActionRequestSchema, UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
@@ -41,14 +41,13 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
-import { setTimeout } from "node:timers/promises";
 import { parseArgs, promisify } from "node:util";
 import type { BrowserContext, Locator, Page } from "playwright";
 import { chromium } from "playwright";
+import type * as z from "zod";
 import { evaluationDatabase } from "./database.ts";
 import {
   buildRust,
-  cookieUserId,
   entersGame,
   installSchema,
   login,
@@ -95,19 +94,52 @@ type Theme = (typeof THEMES)[number];
 /** States are set up at this size, so that every button is visible. */
 const SETUP_SIZE = SIZES[0];
 
-/** Long enough for the transitions of the stylesheets to finish. */
-const SETTLE_MILLISECONDS = 400;
+/** How many browser pages take the screenshots of the isolated states at once. */
+const NUM_WORKERS = 4;
 
-/** How long to rest the pointer on an element, so that its tooltip opens after its delay. */
-const TOOLTIP_WAIT_MILLISECONDS = 1000;
+/**
+ * The longest time to wait for a page's animations to end, so that one that never ends cannot stop
+ * the run.
+ */
+const MAX_ANIMATION_WAIT_MILLISECONDS = 10_000;
+
+/** How often to check whether the fireworks, which a canvas draws, have ended. */
+const FIREWORKS_CHECK_MILLISECONDS = 100;
+
+/**
+ * How long the classic game screen takes to draw a change. It draws on a canvas, so its animations
+ * cannot be seen from the page.
+ */
+const CANVAS_SETTLE_MILLISECONDS = 400;
+
+/**
+ * How long the lobby ignores clicks on a row of its table list after the row appears or moves
+ * (`MOVED_ROW_CLICK_DELAY_MS` in "TablesList.tsx"), with time to spare.
+ */
+const ROW_CLICK_DELAY_MILLISECONDS = 700;
+
+/**
+ * How long a click on a row of the lobby's table list can take to open the table, and how many
+ * times to click before giving up.
+ */
+const ROW_CLICK_WAIT_MILLISECONDS = 3000;
+const MAX_ROW_CLICKS = 5;
+
+/** The tooltip that the site shows, once it is open. */
+const TOOLTIP_SELECTOR = ".tooltip-bubble:popover-open";
 
 /** Cards of the account's own hand, and the cards on the play stacks and in the discards. */
 const OWN_FIRST_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-0"]';
 const OWN_SECOND_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-1"]';
 const STACK_CARD_SELECTOR = "#game-new-ui [data-play-stack]";
 const DISCARD_CARD_SELECTOR = '#game-new-ui [data-card-place^="discard-"]';
+const NEXT_HAND_FIRST_CARD_SELECTOR =
+  '#game-new-ui [data-card-place="hand-1-0"]';
 
-/** Replaces the note on a card of the New UI, or deletes it with empty text. */
+/** The notes that the account writes on the next player's first card and on a play stack. */
+const NEXT_HAND_NOTE = "r1 maybe :D";
+const STACK_NOTE = "played early";
+
 /** Chooses the "1" clue in the New UI, or clears it when it is already chosen. */
 async function clickRankOneClue(page: Page) {
   await page
@@ -138,15 +170,6 @@ async function chooseClueThatTouchesNothing(page: Page) {
   throw new Error("Every clue touches a card in Bob's hand.");
 }
 
-/** Clears the chosen clue in the New UI. */
-async function clearClue(page: Page) {
-  await page
-    .locator(
-      '#game-new-ui [aria-label="Give a clue"] button[aria-pressed="true"]',
-    )
-    .click();
-}
-
 async function writeNote(page: Page, card: Locator, text: string) {
   await card.click({ button: "right" });
   await page.getByRole("textbox", { name: "Note" }).fill(text);
@@ -159,21 +182,32 @@ const MAX_ESCAPES = 3;
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
 
+/**
+ * How many games the seed saves. Each has the next seed, from the first. The replay states show the
+ * last one.
+ */
+const NUM_SEEDED_GAMES = 3;
+
 /** The tag that the seeded games have, for the tagged games pages. */
 const TAG = "layered finesse";
 
-/** The accounts that watch the open table. */
+/** The accounts that watch the open table, and Bob's game. */
 const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
+
+/** The account that owns the open table and plays Bob's game with the browser's account. */
+const BOB = "Bob";
 
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
+/**
+ * The seed of Bob's game, so that every state deals the same cards. Each player has a card that the
+ * team can play, and the account has one that it cannot.
+ */
+const BOBS_GAME_SEED_SUFFIX = "1";
+
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
-
-/** How many times to check whether it is Bob's turn, and how long to wait between checks. */
-const MAX_TURN_CHECKS = 50;
-const TURN_CHECK_MILLISECONDS = 100;
 
 /** The account that the browser logs in with. Others play the seeded games. */
 const USERNAME = "Alice";
@@ -182,26 +216,92 @@ interface State {
   readonly name: string;
   readonly path: string;
   readonly loggedIn: boolean;
+  /**
+   * Whether the state shows only what its own accounts do, so that it can run at the same time as
+   * other isolated states. The other states run first, one at a time, with the seeded accounts.
+   */
+  readonly isolated?: boolean;
+  /**
+   * Runs before the page loads, such as to set up a game that the page then shows. The page is
+   * blank, so that the browser's account is not connected.
+   */
+  readonly setup?: (cast: Cast) => Promise<void>;
   /** Runs at the setup size, after the page loads. */
-  readonly prepare?: (page: Page) => Promise<void>;
+  readonly prepare?: (page: Page, cast: Cast) => Promise<void>;
   /** Runs after the screenshots, so that the next state starts from the lobby. */
   readonly cleanup?: (page: Page) => Promise<void>;
   /**
    * The element that the pointer rests on during the screenshots, such as one with a tooltip: a
    * selector, or a function that moves the pointer.
    */
-  readonly hover?: string | ((page: Page) => Promise<void>);
-  /**
-   * Runs after `prepare`, while a video records the page, so that an animation can be seen. It
-   * should wait until the animation ends.
-   */
-  readonly record?: (page: Page) => Promise<void>;
-  /**
-   * Whether the state shows Bob's game, which the states before it move along. When `--state`
-   * leaves out those states, the tool still runs their steps, without screenshots, so that the game
-   * is the same as in a full run.
-   */
-  readonly bobsGame?: boolean;
+  readonly hover?: string | ((page: Page, cast: Cast) => Promise<void>);
+}
+
+/**
+ * Runs in the page. Waits until no animation runs that ends on its own, including the fireworks
+ * that the New UI draws on a canvas over the page. Two frames first let a change of style start its
+ * transitions.
+ */
+async function waitForAnimations({
+  maxMilliseconds,
+  fireworksCheckMilliseconds,
+}: {
+  readonly maxMilliseconds: number;
+  readonly fireworksCheckMilliseconds: number;
+}) {
+  const deadline = performance.now() + maxMilliseconds;
+  for (;;) {
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
+    const running = document
+      .getAnimations()
+      .filter(
+        (animation) =>
+          animation.playState === "running"
+          && animation.effect?.getComputedTiming().endTime !== Infinity,
+      );
+    const fireworks = document.querySelector("body > canvas") !== null;
+    const remaining = deadline - performance.now();
+    if ((running.length === 0 && !fireworks) || remaining <= 0) {
+      return;
+    }
+    await Promise.race([
+      fireworks
+        ? new Promise((resolve) => {
+            setTimeout(resolve, fireworksCheckMilliseconds);
+          })
+        : Promise.allSettled(
+            running.map(async (animation) => await animation.finished),
+          ),
+      new Promise((resolve) => {
+        setTimeout(resolve, remaining);
+      }),
+    ]);
+  }
+}
+
+/**
+ * Waits until the page is still: its animations have ended, and the classic game screen has drawn
+ * itself again after a resize.
+ */
+async function settle(page: Page) {
+  await page.evaluate(waitForAnimations, {
+    maxMilliseconds: MAX_ANIMATION_WAIT_MILLISECONDS,
+    fireworksCheckMilliseconds: FIREWORKS_CHECK_MILLISECONDS,
+  });
+  if (await page.locator(".konvajs-content").isVisible()) {
+    await page.waitForFunction(isGameScreenResized);
+    await page.waitForTimeout(CANVAS_SETTLE_MILLISECONDS);
+  }
+}
+
+/** Rests the pointer on an element and waits for its tooltip. */
+async function hoverForTooltip(page: Page, element: Locator) {
+  await element.hover();
+  await page.locator(TOOLTIP_SELECTOR).waitFor();
 }
 
 /** Hovers over an element, unless the screen is too small to show it, such as a chat in a tab. */
@@ -221,7 +321,7 @@ function longText(length: number) {
 async function signInNewAccount(page: Page, username: string) {
   await page.goto(`${new URL(page.url()).origin}/?login=${username}`);
   await page.locator("#tutorial-yes").waitFor();
-  await page.waitForTimeout(SETTLE_MILLISECONDS);
+  await settle(page);
 }
 
 /**
@@ -238,12 +338,12 @@ async function signOutOfNewAccount(page: Page) {
 /** Clicks a button that switches between the halves of the lobby on small screens. */
 async function clickPanelButton(page: Page, panel: string) {
   await page.locator(`#lobby-toggle-show-${panel}`).dispatchEvent("click");
-  await page.waitForTimeout(SETTLE_MILLISECONDS);
+  await settle(page);
 }
 
 async function clickNav(page: Page, id: string) {
   await page.click(`#nav-buttons-lobby-${id}`);
-  await page.waitForTimeout(SETTLE_MILLISECONDS);
+  await settle(page);
 }
 
 /**
@@ -255,7 +355,7 @@ async function openReplay(page: Page, replayId: number) {
   await page.fill("#replay-id", replayId.toString());
   await page.click("#replay-submit");
   await page.waitForSelector(".konvajs-content");
-  await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+  await settle(page);
 }
 
 /**
@@ -266,7 +366,7 @@ async function leaveReplay(page: Page) {
   const lobby = page.locator("#lobby");
   for (let i = 0; i < MAX_ESCAPES && !(await lobby.isVisible()); i++) {
     await page.keyboard.press("Escape");
-    await page.waitForTimeout(SETTLE_MILLISECONDS);
+    await settle(page);
   }
   await lobby.waitFor();
 }
@@ -327,8 +427,7 @@ async function hoverCanvasElement(
   page: Page,
   elementPath: ReadonlyArray<string | number>,
 ) {
-  await page.waitForTimeout(SETTLE_MILLISECONDS);
-  await page.waitForFunction(isGameScreenResized);
+  await settle(page);
   const { x, y } = await page.evaluate(getCanvasElementCenter, elementPath);
   await page.mouse.move(x, y);
 }
@@ -341,27 +440,20 @@ async function clickCanvasElement(
   await hoverCanvasElement(page, elementPath);
   await page.mouse.down();
   await page.mouse.up();
-  await page.waitForTimeout(SETTLE_MILLISECONDS);
+  await settle(page);
 }
-
-/** Long enough for a play or a misplay to finish its animation. */
-const PLAY_ANIMATION_MILLISECONDS = 3000;
 
 /** How many moves a drag takes, so that the game screen sees the pointer travel. */
 const DRAG_STEPS = 10;
 
-/** Drags a card from a hand onto the play stacks or the discard pile, as a player would. */
-async function dragCard(page: Page, card: Locator, zone: "play" | "discard") {
+/** Drags a card from a hand onto the play stacks, as a player would. */
+async function playCard(page: Page, card: Locator) {
   const from = await card.boundingBox();
   const to = await page
-    .locator(
-      zone === "play"
-        ? "#game-new-ui [data-play-stacks]"
-        : '#game-new-ui [aria-label="Discards"]',
-    )
+    .locator("#game-new-ui [data-play-stacks]")
     .boundingBox();
   if (from === null || to === null) {
-    throw new Error(`The card or the ${zone} zone is not on the screen.`);
+    throw new Error("The card or the play stacks are not on the screen.");
   }
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
   await page.mouse.down();
@@ -371,52 +463,7 @@ async function dragCard(page: Page, card: Locator, zone: "play" | "discard") {
   await page.mouse.up();
 }
 
-/** How long the video of a shared replay leader's moves waits after each one, to see it. */
-const LEADER_MOVE_WAIT_MILLISECONDS = 1200;
-
-/** How long the video waits after the leader's last move, until the screen is still. */
-const LEADER_SETTLE_MILLISECONDS = 1500;
-
-/** Plays a card from the account's hand, if it has one of the kind. */
-async function playAccountCard(page: Page, order: CardOrder | undefined) {
-  if (order === undefined) {
-    throw new Error("The account has no card of the kind to play.");
-  }
-  await dragCard(
-    page,
-    page.locator(`#game-new-ui [data-card-order="${order}"] button`),
-    "play",
-  );
-  await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
-}
-
-function getStates({
-  replayId,
-  startGame,
-  endGame,
-  passLeader,
-  clueAccount,
-  findAccountCard,
-  playBobCard,
-  identityNote,
-  leaderGoTo,
-  lastClueSegment,
-}: Pick<
-  Seed,
-  | "replayId"
-  | "startGame"
-  | "endGame"
-  | "passLeader"
-  | "clueAccount"
-  | "findAccountCard"
-  | "playBobCard"
-  | "identityNote"
-  | "leaderGoTo"
-  | "lastClueSegment"
->): readonly State[] {
-  // The card in the account's hand that the clue log shows the clues about.
-  let cluedCard: CardOrder | undefined;
-
+function getStates(): readonly State[] {
   return [
     { name: "login", path: "/", loggedIn: false },
     { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
@@ -452,7 +499,7 @@ function getStates({
       prepare: async (page) => {
         await page.click("#login-button");
         await page.locator("#login-alert").waitFor();
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await settle(page);
       },
     },
     // A new account sees the tutorial. These states sign in after the check that skips it.
@@ -460,6 +507,8 @@ function getStates({
       name: "tutorial",
       path: "/",
       loggedIn: false,
+      // The new account shows in the lobby's list of the accounts that are online.
+      isolated: true,
       prepare: async (page) => {
         await signInNewAccount(page, "TutorialFirst");
       },
@@ -509,7 +558,7 @@ function getStates({
         await page.fill("#lobby-chat-input", "/r hi");
         await page.press("#lobby-chat-input", "Enter");
         await page.locator("#warning-modal").waitFor();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
     },
     {
@@ -548,7 +597,7 @@ function getStates({
         await page.fill("#createTableTimeBaseMinutes", "0");
         await page.click('label[for="createTableOneExtraCard"]');
         await page.fill("#create-game-seed", "a b!");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
       // The form remembers its options, which the other states need to be the defaults.
       cleanup: async (page) => {
@@ -556,7 +605,7 @@ function getStates({
         await page.click('label[for="createTableTimed"]');
         await page.click('label[for="createTableOneExtraCard"]');
         await page.fill("#create-game-variant-dropdown2", "No Variant");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
     },
     {
@@ -601,15 +650,17 @@ function getStates({
           globalThis.history.replaceState(undefined, "", "/lobby");
           globalThis.location.hash = `#history-other-scores-${otherScoresSeed}`;
         }, SEED);
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
     },
     {
       name: "replay",
       path: "/",
       loggedIn: true,
-      prepare: async (page) => {
-        await openReplay(page, replayId);
+      isolated: true,
+      setup: useClassicScreen,
+      prepare: async (page, cast) => {
+        await openReplay(page, cast.replayId);
       },
       cleanup: leaveReplay,
     },
@@ -618,8 +669,10 @@ function getStates({
       name: "replay-tooltip",
       path: "/",
       loggedIn: true,
-      prepare: async (page) => {
-        await openReplay(page, replayId);
+      isolated: true,
+      setup: useClassicScreen,
+      prepare: async (page, cast) => {
+        await openReplay(page, cast.replayId);
       },
       hover: async (page) => {
         await hoverCanvasElement(page, ["deck"]);
@@ -632,12 +685,14 @@ function getStates({
       name: "morph-modal",
       path: "/",
       loggedIn: true,
-      prepare: async (page) => {
-        await openReplay(page, replayId);
+      isolated: true,
+      setup: useClassicScreen,
+      prepare: async (page, cast) => {
+        await openReplay(page, cast.replayId);
         await hoverCanvasElement(page, ["enterHypoButton"]);
         await page.mouse.down();
         await page.mouse.up();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
         // An Alt + right-click on a card morphs it.
         await hoverCanvasElement(page, ["playerHands", 0, "children", 0]);
         await page.keyboard.down("Alt");
@@ -648,7 +703,7 @@ function getStates({
       },
       cleanup: async (page) => {
         await page.click("#morph-modal-button-cancel");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
         await leaveReplay(page);
       },
     },
@@ -657,15 +712,24 @@ function getStates({
       name: "hypothetical",
       path: "/",
       loggedIn: true,
-      prepare: async (page) => {
-        await openReplay(page, replayId);
+      isolated: true,
+      setup: useClassicScreen,
+      prepare: async (page, cast) => {
+        await openReplay(page, cast.replayId);
         await clickCanvasElement(page, ["enterHypoButton"]);
         await clickCanvasElement(page, ["editCardsCheckbox"]);
       },
       cleanup: leaveReplay,
     },
-    // Joining a table keeps the account in it, so these states come last.
-    { name: "pregame", path: "/", loggedIn: true, prepare: joinTable },
+    // The account joins the open table, and leaves it again at the end, so that the lobby stays the
+    // same for the other states.
+    {
+      name: "pregame",
+      path: "/",
+      loggedIn: true,
+      prepare: joinTable,
+      cleanup: leaveTable,
+    },
     {
       name: "pregame-chat",
       path: "/",
@@ -677,191 +741,170 @@ function getStates({
         await page
           .locator("#lobby-toggle-show-game-chat")
           .dispatchEvent("click");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
+      cleanup: leaveTable,
     },
-    // Starting the game ends the pregame, so this state comes after the pregame states.
+    // Bob's game: Bob and the account play at a table that four accounts watch. If Bob goes first,
+    // he clues the account's newest card.
     {
       name: "new-ui-game",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        // The settings are only in the lobby, so leave the pregame screen to turn on "New UI".
-        await joinTable(page);
-        await page.click("#nav-buttons-pregame-unattend");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
-        await clickNav(page, "settings");
-        // The checkbox itself is hidden behind its styled label.
-        await page.locator('label[for="newUi"]').first().click();
-        await page.keyboard.press("Escape");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
-        await joinTable(page);
-        // Clicking the table's row joins it as a player when there is room, but only spectates it
-        // when the account is already watching.
-        const join = page.locator("#nav-buttons-pregame-join");
-        if (await join.isVisible()) {
-          await join.click();
-          await page.waitForTimeout(SETTLE_MILLISECONDS);
-        }
-        await startGame();
-        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
       },
     },
-    // The game from the previous state, with a clue chosen, so that "Give clue" can be pressed.
+    // A clue is chosen, so that "Give clue" can be pressed.
     {
       name: "new-ui-clue-chosen",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      // Clicking the clue again clears the choice.
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
+      },
       prepare: async (page) => {
         await clickRankOneClue(page);
       },
-      cleanup: async (page) => {
-        await clickRankOneClue(page);
-      },
     },
-    // The game from the previous state, with a clue chosen that touches no cards in Bob's hand, so
-    // that "Give clue" says why it cannot be pressed.
+    // A clue is chosen that touches no cards in Bob's hand, so that "Give clue" says why it cannot
+    // be pressed.
     {
       name: "new-ui-clue-touches-nothing",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await chooseClueThatTouchesNothing(page);
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
       },
-      cleanup: async (page) => {
-        await clearClue(page);
-      },
+      prepare: chooseClueThatTouchesNothing,
     },
-    // The game from the previous state, after the account plays a card that it does not know. Its
-    // video shows the play.
+    // After the account plays a card that it does not know.
     {
       name: "new-ui-play",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
-      },
-      record: async (page) => {
-        await playAccountCard(page, await findAccountCard(true));
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.play("account", true);
       },
     },
-    // The game from the previous state, after Bob plays a card and the account misplays one. Its
-    // video shows the misplay. Bob then plays another card, so that it is the account's turn again.
+    // After the account plays a card, Bob plays one, and the account misplays one.
     {
       name: "new-ui-misplay",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
-        await playBobCard();
-        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
-      },
-      record: async (page) => {
-        await playAccountCard(page, await findAccountCard(false));
-      },
-      cleanup: async () => {
-        await playBobCard();
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
       },
     },
-    // The game from the previous state, after the account plays a card and steps back over it in
-    // the in-game replay. Its video shows the step back, where the drawn card goes back to the
-    // deck.
+    // After the account plays a card and steps back over it in the in-game replay, where the drawn
+    // card goes back to the deck.
     {
       name: "new-ui-replay",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        // A card that the team can play, so that the game does not reach its last strike.
-        await playAccountCard(page, await findAccountCard(true));
-        await page.getByRole("button", { name: "Replay" }).click();
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.play("account", true);
       },
-      record: async (page) => {
+      prepare: async (page) => {
+        await page.getByRole("button", { name: "Replay" }).click();
         await page.getByRole("button", { name: "Previous turn" }).click();
-        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
+        await settle(page);
       },
     },
-    // The game from the previous state, after Bob clues the account twice, with the account's
-    // discard between the clues. The mouse button is held down on the card that the first clue
-    // touched and the second missed, so the clue log shows only those two clues. Its video shows
-    // the second clue.
+    // After Bob clues the account twice, with the account's discard between the clues. The mouse
+    // button is held down on the card that the first clue touched and the second missed, so the
+    // clue log shows only those two clues.
     {
       name: "new-ui-clue-log-press",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
-        cluedCard = await clueAccount();
-        const hand = page.locator(
-          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.clueTwice();
+      },
+      hover: async (page, cast) => {
+        await page.mouse.up();
+        await hoverIfVisible(
+          page,
+          `#game-new-ui [data-card-order="${cast.bobsGame().cluedCard()}"]`,
         );
-        // The oldest card, which the first clue did not touch.
-        await dragCard(page, hand.locator("button").last(), "discard");
-        // The card is orange, which is inverted, so the discard is a misplay, which takes a while.
-        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
-      },
-      record: async (page) => {
-        await clueAccount();
-        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
-      },
-      // The clue log filters while the mouse button is held down on a card.
-      hover: async (page) => {
-        if (cluedCard !== undefined) {
-          await page.mouse.up();
-          await hoverIfVisible(
-            page,
-            `#game-new-ui [data-card-order="${cluedCard}"]`,
-          );
-          await page.mouse.down();
-          await page.waitForTimeout(SETTLE_MILLISECONDS);
-        }
+        await page.mouse.down();
+        await settle(page);
       },
     },
     {
       name: "new-ui-tooltip",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      hover: '#game-new-ui [aria-label^="About efficiency"]',
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
+      },
+      hover: async (page) => {
+        await hoverForTooltip(
+          page,
+          page.locator('#game-new-ui [aria-label^="About efficiency"]'),
+        );
+      },
     },
-    // The same game, while the account types a note on the first card of the next player's hand.
+    // The account types a note on the first card of the next player's hand.
     {
       name: "new-ui-note-editor",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
+      },
       prepare: async (page) => {
         await page
-          .locator('#game-new-ui [data-card-place="hand-1-0"]')
+          .locator(NEXT_HAND_FIRST_CARD_SELECTOR)
           .click({ button: "right" });
-        await page.keyboard.type("r1 maybe :D");
-      },
-      // Save the note, for the next state.
-      cleanup: async (page) => {
-        await page.keyboard.press("Enter");
+        await page.keyboard.type(NEXT_HAND_NOTE);
       },
     },
-    // The same game, after the account writes a note on the first card of its own hand that makes
-    // it show as its real identity, which the clues always allow, so that its badge shows a pencil.
-    // Other notes are on its second card and on a discarded card. The pointer is over the first
-    // card.
+    // The account's notes: on the first card of its own hand, one that makes it show as its real
+    // identity, which the clues always allow, so that its badge shows a pencil. Other notes are on
+    // its second card, on the next player's first card, on a play stack, and on a discarded card.
+    // The pointer is over the first card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
         const first = page.locator(OWN_FIRST_CARD_SELECTOR);
         const order = Number(await first.getAttribute("data-card-order"));
-        await writeNote(page, first, await identityNote(order as CardOrder));
+        await writeNote(
+          page,
+          first,
+          await cast.bobsGame().identityNote(order as CardOrder),
+        );
         await writeNote(page, page.locator(OWN_SECOND_CARD_SELECTOR), "chop?");
+        await writeNote(
+          page,
+          page.locator(NEXT_HAND_FIRST_CARD_SELECTOR),
+          NEXT_HAND_NOTE,
+        );
+        await writeNote(
+          page,
+          page.locator(STACK_CARD_SELECTOR).first(),
+          STACK_NOTE,
+        );
         await writeNote(
           page,
           page.locator(DISCARD_CARD_SELECTOR).first(),
@@ -869,58 +912,46 @@ function getStates({
         );
       },
       hover: async (page) => {
-        await page.locator(OWN_FIRST_CARD_SELECTOR).hover();
-        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
-      },
-      // Delete the notes.
-      cleanup: async (page) => {
-        for (const card of [
-          page.locator(OWN_FIRST_CARD_SELECTOR),
-          page.locator(OWN_SECOND_CARD_SELECTOR),
-          page.locator('#game-new-ui [data-card-place="hand-1-0"]'),
-          page.locator(STACK_CARD_SELECTOR).first(),
-          page.locator(DISCARD_CARD_SELECTOR).first(),
-        ]) {
-          await writeNote(page, card, "");
-        }
+        await hoverForTooltip(page, page.locator(OWN_FIRST_CARD_SELECTOR));
       },
     },
-    // The same game, with the menu of the "End game" button open.
+    // The menu of the "End game" button.
     {
       name: "new-ui-end-game-menu",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
+      },
       prepare: async (page) => {
         await page
           .getByRole("button", { name: "End game", exact: true })
           .click();
       },
     },
-    // The same game, after the account switches to the classic screen.
+    // After the account switches to the classic screen.
     {
       name: "new-ui-classic",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await page.getByRole("button", { name: "Classic view" }).click();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
       },
+      prepare: showClassic,
     },
-    // The same game, with the classic screen's chat window open and a message with an emote and a
-    // link in it.
+    // The classic screen's chat window, with a message with an emote and a link in it.
     {
       name: "classic-game-chat",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame();
+      },
       prepare: async (page) => {
-        const classic = page.getByRole("button", { name: "Classic view" });
-        if (await classic.isVisible()) {
-          await classic.click();
-          await page.waitForTimeout(SETTLE_MILLISECONDS);
-        }
+        await showClassic(page);
         await page.keyboard.press("Alt+KeyC");
         await page.locator("#game-chat-input").waitFor();
         await page.fill(
@@ -929,115 +960,113 @@ function getStates({
         );
         await page.press("#game-chat-input", "Enter");
         await page.locator("#game-chat-text", { hasText: "Hello" }).waitFor();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
     },
-    // The same game, back in the new screen, after Bob ends it. It is now a shared replay that Bob
-    // leads.
+    // After Bob ends the game. It is now a shared replay that Bob leads.
     {
       name: "new-ui-shared-replay",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        const hands = page.locator('#game-new-ui [aria-label="Hands"]');
-        if (!(await hands.isVisible())) {
-          await clickCanvasElement(page, ["newUiButton"]);
-        }
-        await hands.waitFor();
-        await endGame();
-        await page.getByRole("button", { name: "Ready" }).waitFor();
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
       },
     },
-    // Bob leads the shared replay while the account follows. Its video shows how each of his moves
-    // looks: a step forward to his last clue and back again (where no card moves), a jump to the
-    // first turn, a step on from there, and a jump to the last turn.
-    {
-      name: "new-ui-shared-replay-leader-moves",
-      path: "/",
-      loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
-        leaderGoTo((await lastClueSegment()) - 1);
-        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
-      },
-      record: async (page) => {
-        const clue = await lastClueSegment();
-        // The timeline's turns count from 1, and its segments from 0.
-        const lastTurn = await page
-          .getByRole("slider", { name: "Turn" })
-          .getAttribute("aria-valuemax");
-        const lastSegment = Number(lastTurn) - 1;
-        for (const segment of [clue, clue - 1, 0, 1]) {
-          leaderGoTo(segment);
-          await page.waitForTimeout(LEADER_MOVE_WAIT_MILLISECONDS);
-        }
-        leaderGoTo(lastSegment);
-        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
-      },
-    },
+    // Bob passes the lead of the shared replay to the account.
     {
       name: "new-ui-shared-replay-leader",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        passLeader();
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().passLeader();
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
       },
     },
     // A hypothetical that the account leads, from the first turn, after a player plays a card in
-    // it, with "Edit cards" on. Loading the page leaves the shared replay for a moment, which
-    // passes the lead back to Bob, so he passes it again.
+    // it, with "Edit cards" on.
     {
       name: "new-ui-hypothetical",
       path: "/",
       loggedIn: true,
-      bobsGame: true,
-      prepare: async (page) => {
-        passLeader();
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().passLeader();
         // Only the leader can start a hypothetical, so wait until the lead reaches the account.
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
-        // The button is disabled when the replay already shows the first turn.
-        const firstTurn = page.getByRole("button", { name: "First turn" });
-        if (await firstTurn.isEnabled()) {
-          await firstTurn.click();
-        }
+        await page.getByRole("button", { name: "First turn" }).click();
         await page
           .locator('#game-new-ui button[aria-label="First turn"]:disabled')
           .waitFor();
         await page.getByRole("button", { name: "Enter hypothetical" }).click();
-        // Whoever goes first plays the first card in their hand. When the game ended before anyone
-        // moved (without the "new-ui-replay" state), the hypothetical is already over.
-        const card = page
-          .locator(
-            '#game-new-ui button[aria-label$="the play stacks or the discard pile"]',
-          )
-          .first();
-        if (await card.isVisible()) {
-          await dragCard(page, card, "play");
-          await page
-            .locator("#game-new-ui [data-turn]", { hasText: /^2$/u })
-            .waitFor();
-        }
+        // Whoever goes first plays the first card in their hand.
+        await playCard(
+          page,
+          page
+            .locator(
+              '#game-new-ui button[aria-label$="the play stacks or the discard pile"]',
+            )
+            .first(),
+        );
+        await page
+          .locator("#game-new-ui [data-turn]", { hasText: /^2$/u })
+          .waitFor();
         await page.getByRole("button", { name: "Edit cards" }).click();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
       },
     },
   ];
 }
 
+/** Makes the account see the classic screen, as a setup step. */
+async function useClassicScreen(cast: Cast) {
+  await cast.setNewUi(false);
+}
+
+/** Switches the New UI to the classic screen. */
+async function showClassic(page: Page) {
+  await page.getByRole("button", { name: "Classic view" }).click();
+  await page.waitForSelector(".konvajs-content");
+  await settle(page);
+}
+
+/** Bob ends his game, which makes it a shared replay that he leads. */
+async function endBobsGame(page: Page, cast: Cast) {
+  await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+  await cast.bobsGame().end();
+  await page.getByRole("button", { name: "Ready" }).waitFor();
+}
+
+/** Leaves the table of the pregame screen. */
+async function leaveTable(page: Page) {
+  await page.click("#nav-buttons-pregame-leave");
+  await page.locator("#lobby-pregame").waitFor({ state: "hidden" });
+  await settle(page);
+}
+
 /** Joins the first table, unless the account is already at one. */
 async function joinTable(page: Page) {
   const pregame = page.locator("#lobby-pregame");
-  // The row of the first table that can be joined animates, so it is never stable.
   const row = page.locator("#lobby-games-table-tbody tr").first();
   await pregame.or(row).filter({ visible: true }).first().waitFor();
   if (!(await pregame.isVisible())) {
-    await row.click({ force: true });
+    await clickRow(page, row, pregame, "visible");
   }
-  await pregame.waitFor();
 }
 
 /** Bundles the stylesheets of the current checkout into the directory that the server serves. */
@@ -1117,6 +1146,56 @@ async function linkPublicFiles(directory: string) {
   );
 }
 
+/** Bob's game with the browser's account. */
+interface BobsGame {
+  /**
+   * The player whose turn it is plays a card that the team can play now, or one that it cannot. The
+   * account can move only until the page loads.
+   */
+  readonly play: (
+    player: "account" | "bob",
+    playable: boolean,
+  ) => Promise<void>;
+  /** The account plays a card, Bob plays one, and the account misplays one. */
+  readonly playAndMisplay: () => Promise<void>;
+  /**
+   * Bob gives the account a rank clue that touches its newest card, the account discards its oldest
+   * card, and Bob gives a clue that misses the newest card.
+   */
+  readonly clueTwice: () => Promise<void>;
+  /** The card that the first clue of `clueTwice` touched. */
+  readonly cluedCard: () => CardOrder | undefined;
+  /** A note that names a card's identity, such as "r3". */
+  readonly identityNote: (order: CardOrder) => Promise<string>;
+  /** Bob ends the game, which turns it into a shared replay that he leads. */
+  readonly end: () => Promise<void>;
+  /** Makes the browser's account the leader of the shared replay. */
+  readonly passLeader: () => void;
+}
+
+/**
+ * The accounts of one browser page, which it uses for the isolated states, and the games that they
+ * set up. Each cast has names of its own, so that casts can run at the same time.
+ */
+interface Cast {
+  /** The session cookie of the browser's account. */
+  readonly cookie: string;
+  /**
+   * A saved game of the browser's account, which deals the same cards as the last seeded game, and
+   * has the same moves.
+   */
+  readonly replayId: number;
+  /** Sets whether the browser's account sees the New UI. */
+  readonly setNewUi: (newUi: boolean) => Promise<void>;
+  /** Starts Bob's game, where the browser's account plays. */
+  readonly startBobsGame: () => Promise<BobsGame>;
+  readonly bobsGame: () => BobsGame;
+  /** Disconnects the browser's account after the setup of a state, so that the page can connect. */
+  readonly disconnectAccount: () => void;
+  /** Closes the table of the last state and disconnects its accounts. */
+  readonly closeState: () => Promise<void>;
+}
+
 type Peer = ReturnType<typeof socketClient> & { readonly userId: UserId };
 
 async function connect(
@@ -1132,13 +1211,79 @@ async function connect(
   return { ...peer, userId };
 }
 
-/** Plays one turn of a game between two players and ends it, so that it is saved. */
-async function playGame(alice: Peer, bob: Peer): Promise<number> {
+/** The events of a game, as a peer sees them. A spectator sees every card. */
+async function loadEvents(peer: Peer, tableId: number) {
+  peer.send("gameStateLoad", { tableId });
+  const { events } = await peer.receive(
+    "gameState",
+    SERVER_EVENT_SCHEMAS.gameState,
+  );
+  return events;
+}
+type GameEvents = Awaited<ReturnType<typeof loadEvents>>;
+
+/** Starts a table's game and loads it for each of its players. Returns each player's seat. */
+async function startTable(
+  owner: Peer,
+  players: readonly Peer[],
+  tableId: number,
+): Promise<ReadonlyMap<Peer, number>> {
+  owner.send("tableStart", {
+    tableId,
+    intendedPlayerIds: players.map((peer) => peer.userId),
+  });
+  const seats = await Promise.all(
+    players.map(async (peer) => {
+      await peer.receive(
+        "tableJoined",
+        SERVER_EVENT_SCHEMAS.tableJoined,
+        entersGame,
+      );
+      const init = await peer.request("gameInitLoad", { tableId });
+      peer.send("gameStateLoad", { tableId });
+      await peer.receive("gameState", SERVER_EVENT_SCHEMAS.gameState);
+      peer.send("gameLoaded", { tableId });
+      const index = ourPlayerIndex(init);
+      assertDefined(index, "The game has no seat for the account.");
+      return [peer, index] as const;
+    }),
+  );
+  return new Map(seats);
+}
+
+/**
+ * Makes every account leave a table, which closes it. The first account must still attend it, and
+ * gets the lobby's message that the table is gone.
+ */
+async function closeTable(peers: readonly Peer[], tableId: number) {
+  for (const peer of peers) {
+    peer.send("tableUnattend", { tableId });
+  }
+  const [first] = peers;
+  assertDefined(first, "No account attends the table.");
+  await first.receive(
+    "tableRemoved",
+    SERVER_EVENT_SCHEMAS.tableRemoved,
+    (data) => data.tableId === tableId,
+  );
+}
+
+/**
+ * Plays one turn of a game between two players and ends it, so that it is saved. The pages of tags
+ * show it if it has the tag.
+ */
+async function playGame(
+  alice: Peer,
+  bob: Peer,
+  suffix: string,
+  tag: boolean,
+): Promise<number> {
   alice.send("tableCreate", {
     settings: {
       name: "Seeded game",
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {},
+      deal: { type: "seed", suffix },
     },
   });
   const { tableId } = await alice.receive(
@@ -1147,421 +1292,479 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   );
   bob.send("tableJoin", { tableId });
   await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
-  alice.send("tableStart", {
-    tableId,
-    intendedPlayerIds: [alice.userId, bob.userId],
-  });
-  const peers = [alice, bob];
-  const games = await Promise.all(
-    peers.map(async (peer) => {
-      await peer.receive(
-        "tableJoined",
-        SERVER_EVENT_SCHEMAS.tableJoined,
-        entersGame,
-      );
-      const init = await peer.request("gameInitLoad", { tableId });
-      peer.send("gameStateLoad", { tableId });
-      const history = await peer.receive(
-        "gameState",
-        SERVER_EVENT_SCHEMAS.gameState,
-      );
-      peer.send("gameLoaded", { tableId });
-      return { peer, init, history };
-    }),
-  );
-  const first = games.find((game) => ourPlayerIndex(game.init) === 0);
+  const seats = await startTable(alice, [alice, bob], tableId);
+  const first = [...seats].find(([, index]) => index === 0)?.[0];
   assertDefined(first, "Neither player goes first.");
-  const card = first.history.events.find(
+  const events = await loadEvents(first, tableId);
+  const card = events.find(
     (action) => action.type === "draw" && action.playerIndex === 0,
   );
   if (card?.type !== "draw") {
     throw new Error("The first player has no cards.");
   }
-  first.peer.send("playerAction", {
+  first.send("playerAction", {
     tableId,
     action: { type: "play", order: card.order },
   });
-  await first.peer.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
+  await first.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
   alice.send("tableTerminate", { tableId });
   const finished = await alice.receive(
     "gameFinished",
     SERVER_EVENT_SCHEMAS.gameFinished,
   );
   assertDefined(finished.view.gameId, "The seeded game was not saved.");
-  alice.send("tagAdd", { tableId, tag: TAG });
-  // The players are now in a shared replay of the game. Leave it, or the browser would join it.
-  for (const peer of peers) {
-    peer.send("tableUnattend", { tableId });
+  if (tag) {
+    alice.send("tagAdd", { tableId, tag: TAG });
   }
-  await bob.receive(
-    "tableRemoved",
-    SERVER_EVENT_SCHEMAS.tableRemoved,
-    (data) => data.tableId === tableId,
-  );
+  // The players are now in a shared replay of the game. Leave it, or the browser would join it.
+  await closeTable([bob, alice], tableId);
   return finished.view.gameId;
 }
 
-/** A shared replay of a 5-player game that another account leads. */
 interface Seed {
+  /** The last game that the seed saved. */
   readonly replayId: number;
-  /** Starts the game at Bob's table, where the browser's account must be a player. */
-  readonly startGame: () => Promise<void>;
-  /** Ends the game at Bob's table, which turns it into a shared replay that Bob leads. */
-  readonly endGame: () => Promise<void>;
-  /** Makes the browser's account the leader of the shared replay at Bob's table. */
-  readonly passLeader: () => void;
-  /**
-   * When it is his turn, Bob gives the browser's account a rank clue. The first clue touches its
-   * newest card, and later clues miss that card. Returns that card, if Bob could give the clue.
-   */
-  readonly clueAccount: () => Promise<CardOrder | undefined>;
-  /** Returns a card in the account's hand that the team can play now, or one that it cannot. */
-  readonly findAccountCard: (
-    playable: boolean,
-  ) => Promise<CardOrder | undefined>;
-  /** When it is his turn, Bob plays a card that the team can play. */
-  readonly playBobCard: () => Promise<void>;
-  /** A note that names the real identity of a card in the account's hand, such as "y2". */
-  readonly identityNote: (order: CardOrder) => Promise<string>;
-  /** Bob, as the leader of the shared replay at his table, shows a segment to everyone there. */
-  readonly leaderGoTo: (segment: number) => void;
-  /** The segment of the shared replay at Bob's table that shows the game's last clue. */
-  readonly lastClueSegment: () => Promise<number>;
+  /** The session cookie of the browser's account in the states that are not isolated. */
   readonly cookie: string;
+  /**
+   * Closes the open table and disconnects the accounts there, so that casts can use their names.
+   */
+  readonly closeOpenTable: () => Promise<void>;
   readonly peers: readonly Peer[];
 }
 
 /**
- * Saves a few games. Leaves another account at an open table that has options and a spectator, and
- * a bot online, so that the lobby shows a lobby chat message and the tabs of the online users list.
+ * Saves a few games. Leaves another account at an open table that has options and spectators, and a
+ * bot online, so that the lobby shows a lobby chat message and the tabs of the online users list.
  */
 async function seed(address: string): Promise<Seed> {
   let replayId = 0;
   // Each game gets new connections, so that the server's messages about one game cannot affect the
   // next.
-  for (let i = 0; i < 3; i++) {
+  for (let i = 1; i <= NUM_SEEDED_GAMES; i++) {
     const alice = await connect(address, USERNAME);
-    const bob = await connect(address, "Bob");
-    replayId = await playGame(alice, bob);
+    const bob = await connect(address, BOB);
+    replayId = await playGame(alice, bob, i.toString(), true);
     alice.socket.close();
     bob.socket.close();
   }
 
-  const bob = await connect(address, "Bob");
+  const bob = await connect(address, BOB);
+  const tableId = await createBobsTable(bob, `${BOB}'s table`);
+  bob.send("chat", { text: "Hello from the seeded lobby." });
+  const spectators = await spectate(address, SPECTATOR_NAMES, tableId);
+  const bot = await connect(address, "Robot", true);
+  const cookie = await login(address, USERNAME);
+
+  return {
+    replayId,
+    cookie,
+    closeOpenTable: async () => {
+      bob.send("tableLeave", { tableId });
+      await bob.receive(
+        "tableRemoved",
+        SERVER_EVENT_SCHEMAS.tableRemoved,
+        (data) => data.tableId === tableId,
+      );
+      for (const peer of [bob, ...spectators]) {
+        peer.socket.close();
+      }
+    },
+    peers: [bob, ...spectators, bot],
+  };
+}
+
+/**
+ * Bob creates his table: a speedrun of a variant with a long name and six suits, so that the
+ * screens show how they fit both. Returns the table.
+ */
+async function createBobsTable(
+  bob: Peer,
+  name: string,
+  deal?: { readonly type: "seed"; readonly suffix: string },
+): Promise<number> {
   bob.send("settings", {
     settings: { hGroupConventions: true, hGroupLevel: H_GROUP_LEVEL },
   });
   bob.send("tableCreate", {
     settings: {
-      name: "Bob's table",
+      name,
       maxPlayers: DEFAULT_MAX_PLAYERS,
-      // A long variant name with six suits, so that the screens show how they fit both.
       options: {
         speedrun: true,
         deckPlays: true,
         variantId: getVariant(LONG_VARIANT_NAME).id,
       },
+      ...(deal !== undefined && { deal }),
     },
   });
   const { tableId } = await bob.receive(
     "tableJoined",
     SERVER_EVENT_SCHEMAS.tableJoined,
   );
-  bob.send("chat", { text: "Hello from the seeded lobby." });
-  // More spectators than the game screen's chat header names, so that it offers to show the rest.
+  return tableId;
+}
+
+/**
+ * Has accounts watch a table. There are more than the game screen's chat header names, so that it
+ * offers to show the rest.
+ */
+async function spectate(
+  address: string,
+  names: readonly string[],
+  tableId: number,
+): Promise<readonly Peer[]> {
   const spectators: Peer[] = [];
-  for (const name of SPECTATOR_NAMES) {
+  for (const name of names) {
     const spectator = await connect(address, name);
     spectator.send("tableSpectate", { tableId });
     await spectator.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
     spectators.push(spectator);
   }
-  const bot = await connect(address, "Robot", true);
+  return spectators;
+}
 
-  let bobIndex: number | undefined;
-  let clueTarget: { order: CardOrder; rank: ClueRank } | undefined;
+/** The name of an account in a cast. The first cast has the plain names. */
+function castName(name: string, castIndex: number): string {
+  return castIndex === 0 ? name : `${name}${castIndex + 1}`;
+}
 
-  async function startGame() {
-    bob.send("tableStart", {
-      tableId,
-      intendedPlayerIds: [bob.userId, cookieUserId(cookie)],
-    });
-    await bob.receive(
-      "tableJoined",
-      SERVER_EVENT_SCHEMAS.tableJoined,
-      entersGame,
-    );
-    const init = await bob.request("gameInitLoad", { tableId });
-    bobIndex = ourPlayerIndex(init);
-    bob.send("gameStateLoad", { tableId });
-    const { events } = await bob.receive(
-      "gameState",
-      SERVER_EVENT_SCHEMAS.gameState,
-    );
-    bob.send("gameLoaded", { tableId });
-
-    // When Bob goes first, he clues the newest card of the browser's account, so that its hand
-    // shows a clued card.
-    if (ourPlayerIndex(init) !== 0) {
+/**
+ * Clicks a row of the lobby's table list until the click opens its table: until an element shows or
+ * hides. The lobby ignores a click on a row that has just appeared or moved, and the tables of
+ * other states can move it at any time. The row animates, so it is never stable.
+ */
+async function clickRow(
+  page: Page,
+  row: Locator,
+  opened: Locator,
+  state: "visible" | "hidden",
+) {
+  await row.waitFor();
+  for (let attempt = 1; ; attempt++) {
+    await page.waitForTimeout(ROW_CLICK_DELAY_MILLISECONDS);
+    const visible = await opened.isVisible();
+    if (visible === (state === "visible")) {
       return;
     }
-    const newest = events.findLast(
-      (event) => event.type === "draw" && event.playerIndex !== 0,
-    );
-    if (newest?.type !== "draw") {
+    await row.click({ force: true });
+    try {
+      await opened.waitFor({ state, timeout: ROW_CLICK_WAIT_MILLISECONDS });
       return;
+    } catch (error) {
+      if (attempt === MAX_ROW_CLICKS) {
+        throw error;
+      }
     }
-    const rank = newest.identity?.rank;
-    if (rank === undefined || rank === START_CARD_RANK) {
-      return;
-    }
-    // A rank clue, since the variant's clue colors do not match its suits one to one.
-    bob.send("playerAction", {
-      tableId,
-      action: {
-        type: "clue",
-        receiverIndex: newest.playerIndex,
-        clue: { type: "rank", rank },
-      },
+  }
+}
+
+/** The turn of a game, and the seat of the player whose turn it is. */
+function readTurn(events: GameEvents) {
+  const turn = events.findLast((event) => event.type === "turn");
+  return turn?.type === "turn"
+    ? { turn: turn.turn, player: turn.currentPlayerIndex ?? 0 }
+    : { turn: 0, player: 0 };
+}
+
+/** Creates the accounts of a cast. */
+async function createCast(
+  address: string,
+  castIndex: number,
+  seeded: Pick<Seed, "replayId">,
+): Promise<Cast> {
+  function name(base: string) {
+    return castName(base, castIndex);
+  }
+  const accountName = name(USERNAME);
+  const cookie = await login(address, accountName);
+  let { replayId } = seeded;
+  // The first cast has the names of the seeded games, so it watches the last one.
+  if (castIndex > 0) {
+    const alice = await connect(address, accountName);
+    const bob = await connect(address, name(BOB));
+    replayId = await playGame(alice, bob, NUM_SEEDED_GAMES.toString(), false);
+    alice.socket.close();
+    bob.socket.close();
+  }
+
+  /** The accounts that the last state connected, besides the browser's. */
+  let peers: Peer[] = [];
+  /** The connection of the browser's account, before the page loads. */
+  let account: Peer | undefined;
+  /**
+   * The table of the last state, which the browser's account is at, and the first account there.
+   */
+  let table: { readonly id: number; readonly owner: Peer } | undefined;
+  /** Ends the game of the last state, if it is not over. */
+  let endGame: (() => Promise<void>) | undefined;
+  let currentBobsGame: BobsGame | undefined;
+
+  async function connectPeer(username: string) {
+    const peer = await connect(address, username);
+    peers.push(peer);
+    return peer;
+  }
+
+  async function connectAccount(newUi: boolean) {
+    account ??= await connect(address, accountName);
+    account.send("settings", { settings: { newUi } });
+    // The server does not answer a change of settings. It runs the requests of the lobby in order,
+    // so a reply to the next one shows that the change is saved.
+    await account.request("chatPmHistory", { limit: 1 });
+    return account;
+  }
+
+  function disconnectAccount() {
+    account?.socket.close();
+    account = undefined;
+  }
+
+  async function setNewUi(newUi: boolean) {
+    await connectAccount(newUi);
+    disconnectAccount();
+  }
+
+  async function startBobsGame(): Promise<BobsGame> {
+    const you = await connectAccount(true);
+    const bob = await connectPeer(name(BOB));
+    const tableId = await createBobsTable(bob, `${name(BOB)}'s table`, {
+      type: "seed",
+      suffix: BOBS_GAME_SEED_SUFFIX,
     });
-    await bob.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
-  }
-
-  // The browser logs in as Alice, with a session of its own.
-  const cookie = await login(address, USERNAME);
-  async function endGame() {
-    bob.send("tableTerminate", { tableId });
-    await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
-  }
-
-  function passLeader() {
-    bob.send("tableSetOwner", { tableId, userId: cookieUserId(cookie) });
-  }
-
-  function leaderGoTo(segment: number) {
-    bob.send("replayAction", {
+    const spectators = await spectate(
+      address,
+      SPECTATOR_NAMES.map(name),
       tableId,
-      action: {
-        type: "turn",
-        turn: segment,
-      },
-    });
-  }
-
-  /** Each move is a segment, so the move's position among the moves is the segment after it. */
-  async function lastClueSegment() {
-    const events = await loadEvents();
-    const moves = events.filter(
-      (event) =>
-        event.type === "play"
-        || event.type === "discard"
-        || event.type === "misplay"
-        || event.type === "clue",
     );
-    const index = moves.findLastIndex((event) => event.type === "clue");
-    if (index < 1) {
-      throw new Error(
-        "The game at Bob's table has no clue after its first move.",
+    peers.push(...spectators);
+    const [firstSpectator] = spectators;
+    assertDefined(firstSpectator, "There is no spectator to see every card.");
+    const viewer: Peer = firstSpectator;
+    you.send("tableJoin", { tableId });
+    await you.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+    const seats = await startTable(bob, [bob, you], tableId);
+    table = { id: tableId, owner: bob };
+    let over = false;
+    endGame = async () => {
+      if (!over) {
+        await end();
+      }
+    };
+
+    function seat(player: "account" | "bob") {
+      const index = seats.get(player === "bob" ? bob : you);
+      assertDefined(index, `The ${player} has no seat.`);
+      return index;
+    }
+
+    /** Whose turn it is. */
+    async function turnOf(): Promise<"account" | "bob"> {
+      const { player } = readTurn(await loadEvents(viewer, tableId));
+      return player === seat("bob") ? "bob" : "account";
+    }
+
+    /** Makes a move for a player, and waits until the server has made it. */
+    async function move(
+      player: "account" | "bob",
+      action: z.input<typeof playerActionRequestSchema>["action"],
+    ) {
+      const { turn } = readTurn(await loadEvents(viewer, tableId));
+      if (player === "account") {
+        assertDefined(
+          account,
+          "The account can only move before the page loads.",
+        );
+      }
+      (player === "bob" ? bob : you).send("playerAction", { tableId, action });
+      await viewer.receive(
+        "gameEvent",
+        SERVER_EVENT_SCHEMAS.gameEvent,
+        (data) => data.event.type === "turn" && data.event.turn === turn + 1,
       );
     }
-    return index + 1;
-  }
 
-  /** The events of the game, as a peer sees them. A spectator sees every card. */
-  async function loadEvents(peer: Peer = bob) {
-    peer.send("gameStateLoad", { tableId });
-    const { events } = await peer.receive(
-      "gameState",
-      SERVER_EVENT_SCHEMAS.gameState,
-    );
-    return events;
-  }
-  type GameEvents = Awaited<ReturnType<typeof loadEvents>>;
-
-  function isBobsTurn(events: GameEvents) {
-    const turn = events.findLast((event) => event.type === "turn");
-    return turn?.type === "turn" && turn.currentPlayerIndex === bobIndex;
-  }
-
-  /** The account's last move reaches Bob on another connection, so this waits for his turn. */
-  async function waitForBobsTurn() {
-    let events = await loadEvents();
-    for (
-      let attempt = 1;
-      attempt < MAX_TURN_CHECKS && !isBobsTurn(events);
-      attempt++
-    ) {
-      await setTimeout(TURN_CHECK_MILLISECONDS);
-      events = await loadEvents();
+    /** The cards in a player's hand, oldest first, with what they are. */
+    async function hand(player: "account" | "bob"): Promise<
+      ReadonlyArray<{
+        readonly order: CardOrder;
+        readonly suitIndex: number;
+        readonly rank: number;
+        readonly playable: boolean;
+      }>
+    > {
+      const events = await loadEvents(viewer, tableId);
+      const gone = new Set<CardOrder>();
+      for (const event of events) {
+        if (
+          event.type === "play"
+          || event.type === "discard"
+          || event.type === "misplay"
+        ) {
+          gone.add(event.order);
+        }
+      }
+      const stacks = new Map<number, number>();
+      for (const event of events) {
+        if (event.type === "play" && event.identity !== undefined) {
+          stacks.set(event.identity.suitIndex, event.identity.rank);
+        }
+      }
+      const cards: Array<{
+        readonly order: CardOrder;
+        readonly suitIndex: number;
+        readonly rank: number;
+        readonly playable: boolean;
+      }> = [];
+      for (const event of events) {
+        if (
+          event.type === "draw"
+          && event.playerIndex === seat(player)
+          && !gone.has(event.order)
+          && event.identity !== undefined
+        ) {
+          const { suitIndex, rank } = event.identity;
+          cards.push({
+            order: event.order,
+            suitIndex,
+            rank,
+            playable: rank === (stacks.get(suitIndex) ?? 0) + 1,
+          });
+        }
+      }
+      return cards;
     }
-    return events;
-  }
 
-  /**
-   * Returns a card in a hand that the team can play now, or one that it cannot, from the events
-   * that show it.
-   */
-  function findCard(
-    events: GameEvents,
-    inHand: (playerIndex: number) => boolean,
-    playable: boolean,
-  ): CardOrder | undefined {
-    const variant = getVariant(LONG_VARIANT_NAME);
-    const gone = new Set<CardOrder>();
-    const stacks = new Map<number, number>();
-    for (const event of events) {
-      if (
-        event.type === "play"
-        || event.type === "discard"
-        || event.type === "misplay"
-      ) {
-        gone.add(event.order);
+    async function play(player: "account" | "bob", playable: boolean) {
+      if ((await turnOf()) !== player) {
+        throw new Error(`It is not the turn of the ${player}.`);
       }
-      if (event.type === "play" && event.identity !== undefined) {
-        stacks.set(event.identity.suitIndex, event.identity.rank);
-      }
-    }
-    for (const event of events) {
-      if (
-        event.type !== "draw"
-        || !inHand(event.playerIndex)
-        || gone.has(event.order)
-        || event.identity === undefined
-      ) {
-        continue;
-      }
-      const { suitIndex, rank } = event.identity;
+      const variant = getVariant(LONG_VARIANT_NAME);
       // A play of a card of an inverted suit, such as orange, discards it instead.
-      if (variant.suits[suitIndex]?.inverted === true) {
-        continue;
-      }
-      if ((rank === (stacks.get(suitIndex) ?? 0) + 1) === playable) {
-        return event.order;
-      }
+      const cards = await hand(player);
+      const card = cards.find(
+        (other) =>
+          other.playable === playable
+          && variant.suits[other.suitIndex]?.inverted !== true,
+      );
+      assertDefined(
+        card,
+        `The ${player} has no card to ${playable ? "play" : "misplay"}. Choose another seed for Bob's game.`,
+      );
+      await move(player, { type: "play", order: card.order });
     }
-    return undefined;
-  }
 
-  async function findAccountCard(
-    playable: boolean,
-  ): Promise<CardOrder | undefined> {
-    return findCard(
-      await loadEvents(),
-      (playerIndex) => playerIndex !== bobIndex,
-      playable,
-    );
-  }
+    let clueTarget: { order: CardOrder; rank: number } | undefined;
 
-  async function identityNote(order: CardOrder) {
-    const events = await loadEvents();
-    const draw = events.find(
-      (event) => event.type === "draw" && event.order === order,
-    );
-    if (draw?.type !== "draw" || draw.identity === undefined) {
-      throw new Error(`Bob does not see the card ${order}.`);
-    }
-    const { suitIndex, rank } = draw.identity;
-    const abbreviation =
-      getVariant(LONG_VARIANT_NAME).suitAbbreviations[suitIndex];
-    assertDefined(abbreviation, `The suit ${suitIndex} has no abbreviation.`);
-    return `${abbreviation.toLowerCase()}${rank}`;
-  }
-
-  /** When it is his turn, Bob plays a card that the team can play. */
-  async function playBobCard() {
-    await waitForBobsTurn();
-    // Bob does not see his own cards, but a spectator does.
-    const spectator = spectators[0];
-    assertDefined(spectator, "There is no spectator to see Bob's cards.");
-    const order = findCard(
-      await loadEvents(spectator),
-      (playerIndex) => playerIndex === bobIndex,
-      true,
-    );
-    assertDefined(order, "Bob has no card that the team can play.");
-    bob.send("playerAction", { tableId, action: { type: "play", order } });
-    await bob.receive(
-      "gameEvent",
-      SERVER_EVENT_SCHEMAS.gameEvent,
-      (data) => data.event.type === "play" && data.event.order === order,
-    );
-  }
-
-  async function clueAccount(): Promise<CardOrder | undefined> {
-    const events = await waitForBobsTurn();
-
-    const gone = new Set<CardOrder>();
-    for (const event of events) {
-      if (
-        event.type === "play"
-        || event.type === "discard"
-        || event.type === "misplay"
-      ) {
-        gone.add(event.order);
+    /** Bob gives the account a rank clue. */
+    async function clueAccount() {
+      const handCards = await hand("account");
+      const cards = handCards.filter((card) => isValidClueRank(card.rank));
+      let card: (typeof cards)[number] | undefined;
+      if (clueTarget === undefined) {
+        card = cards.at(-1);
+        clueTarget = card;
+      } else {
+        const { rank } = clueTarget;
+        card = cards.find((other) => other.rank !== rank);
       }
+      assertDefined(card, "The account has no card for Bob to clue.");
+      await move("bob", {
+        type: "clue",
+        receiverIndex: seat("account") as PlayerIndex,
+        clue: { type: "rank", rank: card.rank as ClueRank },
+      });
     }
-    const hand: Array<{
-      order: CardOrder;
-      rank: ClueRank;
-      target: PlayerIndex;
-    }> = [];
-    for (const event of events) {
-      if (
-        event.type === "draw"
-        && event.playerIndex !== bobIndex
-        && !gone.has(event.order)
-        && isValidClueRank(event.identity?.rank)
-      ) {
-        hand.push({
-          order: event.order,
-          rank: event.identity.rank,
-          target: event.playerIndex,
+
+    async function end() {
+      bob.send("tableTerminate", { tableId });
+      await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
+      over = true;
+    }
+
+    // When Bob goes first, he clues the newest card of the browser's account, so that its hand
+    // shows a clued card, and it is the account's turn.
+    if ((await turnOf()) === "bob") {
+      const cards = await hand("account");
+      const newest = cards.at(-1);
+      if (newest !== undefined && newest.rank !== START_CARD_RANK) {
+        await move("bob", {
+          type: "clue",
+          receiverIndex: seat("account") as PlayerIndex,
+          clue: { type: "rank", rank: newest.rank as ClueRank },
         });
       }
     }
-    let card: (typeof hand)[number] | undefined;
-    if (clueTarget === undefined) {
-      card = hand.at(-1);
-      if (card !== undefined) {
-        clueTarget = card;
-      }
-    } else {
-      const { rank } = clueTarget;
-      card = hand.find((other) => other.rank !== rank);
-    }
-    if (card === undefined) {
-      return undefined;
-    }
-    bob.send("playerAction", {
-      tableId,
-      action: {
-        type: "clue",
-        receiverIndex: card.target,
-        clue: { type: "rank", rank: card.rank },
+
+    currentBobsGame = {
+      play,
+      playAndMisplay: async () => {
+        await play("account", true);
+        await play("bob", true);
+        await play("account", false);
       },
-    });
-    await bob.receive(
-      "gameEvent",
-      SERVER_EVENT_SCHEMAS.gameEvent,
-      (data) =>
-        data.event.type === "clue" && data.event.playerIndex === bobIndex,
-    );
-    return clueTarget?.order;
+      clueTwice: async () => {
+        if ((await turnOf()) === "account") {
+          await play("account", true);
+        }
+        await clueAccount();
+        // The oldest card, which the first clue did not touch.
+        const [oldest] = await hand("account");
+        assertDefined(oldest, "The account has no cards.");
+        await move("account", { type: "discard", order: oldest.order });
+        await clueAccount();
+      },
+      cluedCard: () => clueTarget?.order,
+      identityNote: async (order) => {
+        const cards = await hand("account");
+        const card = cards.find((other) => other.order === order);
+        assertDefined(card, `The card ${order} is not in the account's hand.`);
+        const abbreviation =
+          getVariant(LONG_VARIANT_NAME).suitAbbreviations[card.suitIndex];
+        assertDefined(
+          abbreviation,
+          `The suit ${card.suitIndex} has no abbreviation.`,
+        );
+        return `${abbreviation.toLowerCase()}${card.rank}`;
+      },
+      end,
+      passLeader: () => {
+        bob.send("tableSetOwner", { tableId, userId: you.userId });
+      },
+    };
+    return currentBobsGame;
   }
 
   return {
-    replayId,
-    startGame,
-    endGame,
-    passLeader,
-    clueAccount,
-    findAccountCard,
-    playBobCard,
-    identityNote,
-    leaderGoTo,
-    lastClueSegment,
     cookie,
-    peers: [bob, ...spectators, bot],
+    replayId,
+    setNewUi,
+    startBobsGame,
+    bobsGame: () => {
+      assertDefined(currentBobsGame, "The state did not start Bob's game.");
+      return currentBobsGame;
+    },
+    disconnectAccount,
+    closeState: async () => {
+      if (table !== undefined) {
+        await endGame?.();
+        // The browser's account is still at the table, and would return to it.
+        const you = await connect(address, accountName);
+        await closeTable(
+          [table.owner, ...peers.filter((peer) => peer !== table?.owner), you],
+          table.id,
+        );
+        you.socket.close();
+      }
+      disconnectAccount();
+      for (const peer of peers) {
+        peer.socket.close();
+      }
+      peers = [];
+      table = undefined;
+      endGame = undefined;
+      currentBobsGame = undefined;
+    },
   };
 }
 
@@ -1716,11 +1919,12 @@ interface Results {
   readonly errors: string[];
 }
 
+/** Takes the screenshots of states, one at a time, in a new page of a browser context. */
 async function capture(
   context: BrowserContext,
   address: string,
   states: readonly State[],
-  setupOnly: ReadonlySet<State>,
+  cast: Cast,
   options: Options,
   compareBundle: string | undefined,
   results: Results,
@@ -1735,14 +1939,52 @@ async function capture(
     });
   }
 
+  for (const state of states) {
+    try {
+      await captureState(
+        page,
+        address,
+        state,
+        cast,
+        options,
+        compareBundle,
+        results,
+      );
+    } catch (error) {
+      // The page as the state left it, to see why it failed.
+      await page.screenshot({
+        path: path.join(OUTPUT_DIRECTORY, `${state.name}-failed.png`),
+      });
+      throw error;
+    }
+    console.info(`Captured: ${state.name}`);
+  }
+
+  await page.close();
+}
+
+/** Takes the screenshots of a state. */
+async function captureState(
+  page: Page,
+  address: string,
+  state: State,
+  cast: Cast,
+  options: Options,
+  compareBundle: string | undefined,
+  results: Results,
+) {
   const bundleHref = `/public/css/${BUNDLE_FILENAME}`;
   const sizes = SIZES.filter(
     (size) =>
       options.widths.length === 0 || options.widths.includes(size.width),
   );
-
-  for (const state of states) {
+  {
     await page.setViewportSize(SETUP_SIZE);
+    if (state.setup !== undefined) {
+      await page.goto("about:blank");
+      await state.setup(cast);
+      cast.disconnectAccount();
+    }
     const response = await page.goto(`${address}${state.path}`);
     if (response === null || !response.ok()) {
       throw new Error(
@@ -1752,30 +1994,11 @@ async function capture(
     // The critical CSS is a copy of some of the bundle's rules, so leave it out. Otherwise, it
     // would hide the rules that only it applies.
     await page.evaluate(useStylesheet, bundleHref);
-    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-    // The server shows a tutorial to accounts that were created a few seconds ago.
-    const skipTutorial = page.locator("#tutorial-no");
-    if (await skipTutorial.isVisible()) {
-      await skipTutorial.click();
-      await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-    }
-    await state.prepare?.(page);
-    if (setupOnly.has(state)) {
-      await state.record?.(page);
-    } else if (state.record !== undefined) {
-      const video = path.join(OUTPUT_DIRECTORY, `${state.name}.webm`);
-      await page.screencast.start({ path: video, size: SETUP_SIZE });
-      await state.record(page);
-      await page.screencast.stop();
-    }
+    await settle(page);
+    await state.prepare?.(page, cast);
     // Keep the pointer off of the page, so that no element shows its hover style.
     await page.mouse.move(0, SETUP_SIZE.height - 1);
-    await page.waitForTimeout(SETTLE_MILLISECONDS);
-    if (setupOnly.has(state)) {
-      await state.cleanup?.(page);
-      console.info(`Set up: ${state.name}`);
-      continue;
-    }
+    await settle(page);
 
     for (const size of sizes) {
       await page.setViewportSize(size);
@@ -1786,14 +2009,15 @@ async function capture(
           await page.mouse.move(0, size.height - 1);
           await (typeof state.hover === "string"
             ? page.hover(state.hover)
-            : state.hover(page));
+            : state.hover(page, cast));
         }
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await settle(page);
         const file = path.join(
           OUTPUT_DIRECTORY,
           `${state.name}-${size.width}-${theme}`,
         );
-        await page.screenshot({ path: `${file}.png` });
+        // Animations that never end, such as a pulse, show their first frame.
+        await page.screenshot({ path: `${file}.png`, animations: "disabled" });
 
         if (compareBundle !== undefined) {
           // A difference counts only if it shows twice, because a page can still change on its own
@@ -1802,17 +2026,20 @@ async function capture(
           for (let i = 0; i < 2 && differences?.length !== 0; i++) {
             await page.evaluate(compareStyles, false);
             await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
-            await page.waitForTimeout(SETTLE_MILLISECONDS);
+            await settle(page);
             const found = await page.evaluate(compareStyles, true);
             if (found.length > 0) {
-              await page.screenshot({ path: `${file}.compare.png` });
+              await page.screenshot({
+                path: `${file}.compare.png`,
+                animations: "disabled",
+              });
             }
             differences =
               differences === undefined
                 ? found
                 : differences.filter((line) => found.includes(line));
             await page.evaluate(useStylesheet, bundleHref);
-            await page.waitForTimeout(SETTLE_MILLISECONDS);
+            await settle(page);
           }
           if (differences === undefined || differences.length === 0) {
             await rm(`${file}.compare.png`, { force: true });
@@ -1827,10 +2054,11 @@ async function capture(
       }
     }
     await state.cleanup?.(page);
-    console.info(`Captured: ${state.name}`);
+    if (state.isolated === true) {
+      await page.goto("about:blank");
+      await cast.closeState();
+    }
   }
-
-  await page.close();
 }
 
 async function writeReports(options: Options, results: Results) {
@@ -1878,39 +2106,40 @@ async function main() {
     const { port } = new URL(localAddress);
     const address = `http://${DOMAIN}:${port}`;
 
-    seeded = await seed(localAddress);
-    const allStates = getStates(seeded);
-    const chosen = allStates.filter(
+    const seedResult = await seed(localAddress);
+    seeded = seedResult;
+    const allStates = getStates();
+    const states = allStates.filter(
       (state) =>
         options.states.length === 0 || options.states.includes(state.name),
     );
     const unknown = options.states.filter((name) =>
-      chosen.every((state) => state.name !== name),
+      states.every((state) => state.name !== name),
     );
     if (unknown.length > 0) {
       throw new Error(
-        `Unknown states: ${unknown.join(", ")}. The states are: ${getStates(
-          seeded,
-        )
+        `Unknown states: ${unknown.join(", ")}. The states are: ${allStates
           .map((state) => state.name)
           .join(", ")}`,
       );
     }
-    // The states of Bob's game before the last chosen one, which bring the game to that point.
-    const lastBobsGame = allStates.findLastIndex(
-      (state) => state.bobsGame === true && chosen.includes(state),
-    );
-    const setupOnly = new Set(
-      allStates.filter(
-        (state, index) =>
-          state.bobsGame === true
-          && index < lastBobsGame
-          && !chosen.includes(state),
+    // One cast for each page that takes the screenshots of the isolated states that are signed in,
+    // and one for the page of those that are signed out.
+    const allCasts = await Promise.all(
+      Array.from(
+        { length: NUM_WORKERS + 1 },
+        async (_cast, index) =>
+          await createCast(localAddress, index, seedResult),
       ),
     );
-    const states = allStates.filter(
-      (state) => chosen.includes(state) || setupOnly.has(state),
-    );
+    const casts = allCasts.slice(0, NUM_WORKERS);
+    const signedOutCast = allCasts.at(-1);
+    assertDefined(signedOutCast, "There is no cast.");
+    // The server shows the tutorial to an account that is a few seconds old, and the browser's
+    // accounts are not new.
+    const sql = database.connect();
+    await sql`UPDATE users SET datetime_created = datetime_created - interval '1 day'`;
+    await sql.end();
 
     await run(process.execPath, [
       "x",
@@ -1924,41 +2153,77 @@ async function main() {
     await using browser = await chromium.launch({
       args: ["--mute-audio", `--host-resolver-rules=MAP ${DOMAIN} 127.0.0.1`],
     });
-    const [name = "", value] = seeded.cookie.split("=", 2);
-    assertDefined(value, "The session cookie has no value.");
-    const contexts = {
-      loggedOut: await browser.newContext({ colorScheme: "light" }),
+    /** A browser context that is signed in with a session cookie, or signed out. */
+    async function newContext(cookie: string | undefined) {
       // Without the permission, the lobby shows a modal that asks for it.
-      loggedIn: await browser.newContext({
+      const context = await browser.newContext({
         colorScheme: "light",
-        permissions: ["notifications"],
-      }),
-    };
-    await contexts.loggedIn.addCookies([
-      { name, value, domain: DOMAIN, path: "/" },
-    ]);
+        permissions: cookie === undefined ? [] : ["notifications"],
+      });
+      if (cookie !== undefined) {
+        const [name = "", value] = cookie.split("=", 2);
+        assertDefined(value, "The session cookie has no value.");
+        await context.addCookies([{ name, value, domain: DOMAIN, path: "/" }]);
+      }
+      return context;
+    }
     const results: Results = {
       comparison: [],
       errors: [],
     };
-    await capture(
-      contexts.loggedOut,
-      address,
-      states.filter((state) => !state.loggedIn),
-      setupOnly,
-      options,
-      compareBundle,
-      results,
-    );
-    await capture(
-      contexts.loggedIn,
-      address,
-      states.filter((state) => state.loggedIn),
-      setupOnly,
-      options,
-      compareBundle,
-      results,
-    );
+    const [firstCast] = casts;
+    assertDefined(firstCast, "There is no cast.");
+    const shared = states.filter((state) => state.isolated !== true);
+    const isolated = states.filter((state) => state.isolated === true);
+    const signedIn = isolated.filter((state) => state.loggedIn);
+    // The pages that are signed out do not show who is online, so they can run with the lobby's.
+    const signedOutContext = await newContext(undefined);
+    const lobbyContext = await newContext(seedResult.cookie);
+    await Promise.all([
+      capture(
+        signedOutContext,
+        address,
+        shared.filter((state) => !state.loggedIn),
+        firstCast,
+        options,
+        compareBundle,
+        results,
+      ),
+      capture(
+        lobbyContext,
+        address,
+        shared.filter((state) => state.loggedIn),
+        firstCast,
+        options,
+        compareBundle,
+        results,
+      ),
+    ]);
+
+    // The first cast uses the names of the accounts at the open table.
+    await seedResult.closeOpenTable();
+    await Promise.all([
+      ...casts.map(async (cast, index) => {
+        await capture(
+          await newContext(cast.cookie),
+          address,
+          signedIn.filter((_state, i) => i % casts.length === index),
+          cast,
+          options,
+          compareBundle,
+          results,
+        );
+      }),
+      capture(
+        signedOutContext,
+        address,
+        isolated.filter((state) => !state.loggedIn),
+        signedOutCast,
+        options,
+        compareBundle,
+        results,
+      ),
+    ]);
     await writeReports(options, results);
     console.info(`Screenshots: ${OUTPUT_DIRECTORY}`);
   } finally {
