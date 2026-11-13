@@ -39,6 +39,8 @@ of the repository.
   replay, it also shows the last turn, such as "5 / 21".
 - In the new game screen, buttons stand out from the table like keys, and the
   clue tokens, strikes, and piles sit in it.
+- In the new game screen, all tooltips are white, and card notes show as soon as
+  the pointer is over the card.
 
 ## November 12th, 2026
 

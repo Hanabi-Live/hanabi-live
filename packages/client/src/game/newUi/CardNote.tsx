@@ -127,10 +127,11 @@ export function CardNote({
               }
             }
       }
-      // While the box is open, it shows the note instead.
+      // While the box is open, it shows the note instead. The note opens at once, as on the classic
+      // screen, so that players can read the notes by moving the pointer along a hand.
       ref={tooltipRefHtml(
         editing ? "" : (cardNotes.notesHtml.get(order) ?? ""),
-        { paper: true },
+        { instant: true },
       )}
       style={style}
     >

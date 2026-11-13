@@ -19,7 +19,7 @@ const CLOSE_DURATION_IN_MILLISECONDS = 80;
 /** How far a tooltip slides toward its anchor as it opens. */
 const SLIDE_IN_PIXELS = 4;
 
-/** The redesigned game screen, whose tooltips keep its dark colors in the light theme too. */
+/** The redesigned game screen, whose tooltips are white in both themes. */
 const GAME_SCREEN_SELECTOR = "#game-new-ui";
 
 /** The closest that a tooltip comes to the edge of the window. */
@@ -39,12 +39,6 @@ interface TooltipOptions {
   readonly interactive?: boolean;
 
   readonly centered?: boolean;
-
-  /**
-   * Whether the tooltip is white with dark text, like a sheet of paper, in both themes. Card notes
-   * use it, as they do on the classic screen.
-   */
-  readonly paper?: boolean;
 }
 
 export class Tooltip {
@@ -65,7 +59,6 @@ export class Tooltip {
       "tooltip-interactive",
       options.interactive === true,
     );
-    this.bubble.classList.toggle("tooltip-paper", options.paper === true);
     this.bubble.style.setProperty(
       "--tooltip-open-duration",
       `${OPEN_DURATION_IN_MILLISECONDS}ms`,
@@ -136,7 +129,7 @@ export class Tooltip {
     if (!this.bubble.isConnected) {
       document.body.append(this.bubble);
     }
-    // The redesigned game screen looks the same in both themes, so its tooltips do too.
+    // The redesigned game screen looks the same in both themes, so its tooltips are white in both.
     this.bubble.classList.toggle(
       "tooltip-game-screen",
       this.anchor.closest(GAME_SCREEN_SELECTOR) !== null,
