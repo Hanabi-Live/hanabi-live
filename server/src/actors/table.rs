@@ -1010,7 +1010,7 @@ impl TableActor {
         s.game
             .identities()
             .iter()
-            .map(|card| super::wire::card_identity(card.suit_index, card.rank))
+            .map(|card| hanabi_engine::card_identity(card.suit_index, card.rank))
             .collect()
     }
     pub(super) fn clock(&self) -> CommandResult<hanabi_protocol::Clock> {

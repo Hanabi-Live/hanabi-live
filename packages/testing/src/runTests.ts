@@ -191,7 +191,8 @@ async function buildServer() {
   // revision the server is built from.
   await run("bash", [path.join(ROOT, "scripts/dev/set-version.sh")]);
   // A debug build reuses most of what "cargo test" compiles. The catalog test compares the variants
-  // that the rules derive with the game library's.
+  // that the rules derive with the game library's, and the engine test compares the games that they
+  // play.
   await run(
     "cargo",
     [
@@ -205,6 +206,8 @@ async function buildServer() {
       "hanabi_engine",
       "--example",
       "catalog",
+      "--example",
+      "games",
     ],
     {
       cwd: path.join(ROOT, "server"),

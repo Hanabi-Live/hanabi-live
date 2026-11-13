@@ -24,6 +24,7 @@ mod rules;
 mod setup;
 mod types;
 mod visibility;
+mod wire;
 
 mod random;
 
@@ -37,3 +38,4 @@ pub use rules::{
 pub use setup::*;
 pub use types::*;
 pub use visibility::*;
+pub use wire::{card_identity, wire_event};
