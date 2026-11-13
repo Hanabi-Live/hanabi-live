@@ -281,15 +281,8 @@ function Deck({
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const edges = getDeckEdges(cardsInDeck);
   const empty = cardsInDeck === 0;
-  // Whoever draws the last card starts the final round, so it stands out, and its label says so.
-  // Otherwise the pile has no label: the count on its top card is enough.
+  // Whoever draws the last card starts the final round, so its count stands out.
   const lastCard = cardsInDeck === 1;
-  let label: string | undefined;
-  if (lastCard) {
-    label = "Last card";
-  } else if (empty) {
-    label = "Final round";
-  }
 
   return (
     <div
@@ -346,14 +339,6 @@ function Deck({
           </span>
         </div>
       </div>
-      {label !== undefined && (
-        <span
-          className={`tw:text-[13px] tw:whitespace-nowrap ${lastCard ? "tw:font-bold" : "tw:text-game-muted"}`}
-          style={{ color: lastCard ? PACE_HIGH_RISK_COLOR : undefined }}
-        >
-          {label}
-        </span>
-      )}
     </div>
   );
 }

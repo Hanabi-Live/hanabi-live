@@ -42,6 +42,7 @@ of the repository.
 - In the new game screen, all tooltips are white, and card notes show as soon as
   the pointer is over the card.
 - In the new game screen, the bomb next to the strikes has a tooltip.
+- In the new game screen, the deck no longer says "Last card" or "Final round".
 
 ## November 12th, 2026
 
