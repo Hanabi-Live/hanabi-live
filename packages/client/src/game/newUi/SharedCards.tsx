@@ -98,9 +98,6 @@ export const PlayArea = forwardRef<
           data-play-stacks
           ref={ref}
         >
-          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
-            Play stacks
-          </h2>
           <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
             {stacks.map((stack) => {
               const suit = variant.suits[stack.suitIndex];
@@ -226,8 +223,9 @@ function Deck({
   const edges = getDeckEdges(cardsInDeck);
   const empty = cardsInDeck === 0;
   // Whoever draws the last card starts the final round, so it stands out, and its label says so.
+  // Otherwise the pile has no label: the count on its top card is enough.
   const lastCard = cardsInDeck === 1;
-  let label = "In deck";
+  let label: string | undefined;
   if (lastCard) {
     label = "Last card";
   } else if (empty) {
@@ -238,6 +236,7 @@ function Deck({
     <div
       aria-label={`${cardsInDeck} cards in the deck`}
       className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
+      ref={tooltipRef("Cards left in the deck")}
       role="img"
     >
       <div
@@ -288,12 +287,14 @@ function Deck({
           </span>
         </div>
       </div>
-      <span
-        className={`tw:text-[13px] tw:whitespace-nowrap ${lastCard ? "tw:font-bold" : "tw:text-game-muted"}`}
-        style={{ color: lastCard ? PACE_HIGH_RISK_COLOR : undefined }}
-      >
-        {label}
-      </span>
+      {label !== undefined && (
+        <span
+          className={`tw:text-[13px] tw:whitespace-nowrap ${lastCard ? "tw:font-bold" : "tw:text-game-muted"}`}
+          style={{ color: lastCard ? PACE_HIGH_RISK_COLOR : undefined }}
+        >
+          {label}
+        </span>
+      )}
     </div>
   );
 }
@@ -348,17 +349,16 @@ export const DiscardPile = forwardRef<
         }`}
         ref={ref}
       >
-        <div className="tw:flex tw:items-baseline tw:justify-between tw:gap-2">
-          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
-            Discards
-          </h2>
-          {atMaxClues && zoneState === "idle" && (
-            <span className="tw:text-[13px] tw:font-medium tw:text-clue">
-              No discards at max clues
-            </span>
-          )}
-        </div>
-        <div className="tw:flex tw:flex-col" style={{ height: rowsHeight }}>
+        {/* A faint trash can behind the cards names the pile without a heading. */}
+        <i
+          aria-hidden="true"
+          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-40"
+          style={{ fontSize: cardWidth * 0.9 }}
+        />
+        <div
+          className="tw:relative tw:flex tw:flex-col"
+          style={{ height: rowsHeight }}
+        >
           {rows.map((row, rowIndex) => (
             <div
               className="tw:flex"
@@ -410,8 +410,8 @@ export const DiscardPile = forwardRef<
 );
 
 /**
- * A bubble for the clue tokens or the strikes: a label, and its value below it, centered. The two
- * bubbles have the same layout, so that their labels and values line up.
+ * A bubble for the clue tokens or the strikes: its value, centered. The two bubbles have the same
+ * layout, so that their values line up.
  */
 const TOKEN_BUBBLE_CLASS =
   "tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:justify-center tw:gap-1 tw:rounded-[18px] tw:bg-game-zone tw:px-3 tw:py-5";
@@ -497,13 +497,17 @@ export function TableTokens({
   readonly onShowStrike: (segment: number) => void;
 }): React.JSX.Element {
   return (
-    // Two bubbles side by side. They share their height, so that their labels and values line up.
+    // Two bubbles side by side. They share their height, so that their values line up.
     <div className="tw:flex tw:shrink-0 tw:gap-3">
-      <section aria-label="Clue tokens" className={TOKEN_BUBBLE_CLASS}>
-        <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
+      <section
+        aria-label="Clue tokens"
+        className={TOKEN_BUBBLE_CLASS}
+        ref={tooltipRef("Clue tokens")}
+      >
         {/* One large number: the count that players check most. It stands out only at the
             limits, where the rules change what the team can do: in the color of clues at the
-            maximum, when someone must clue, and gray with none, when no one can. */}
+            maximum, when someone must clue, and gray with none, when no one can. The color says
+            it, so the bubble has no text. */}
         <span
           className={`${TOKEN_VALUE_CLASS} tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
           // A spark flies to the count when a completed stack gives a clue back (see
@@ -512,25 +516,12 @@ export function TableTokens({
         >
           {clues}
         </span>
-        {(atMaxClues || outOfClues) && (
-          // A badge on the bottom edge of the bubble, so that the count stays centered.
-          <span
-            className={`tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
-              atMaxClues
-                ? "tw:bg-clue tw:text-card-ink"
-                : "tw:bg-game-raised tw:text-game-text"
-            }`}
-          >
-            {atMaxClues ? "No discards" : "No clues"}
-          </span>
-        )}
       </section>
       {/* Strikes are danger: the bubble turns red as they add up, and stays quiet without them. */}
       <section
         aria-label="Strikes"
         className={`${TOKEN_BUBBLE_CLASS} ${getStrikeBubbleClass(strikes)}`}
       >
-        <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
           className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
