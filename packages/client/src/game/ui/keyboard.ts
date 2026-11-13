@@ -154,7 +154,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
-    // Ctrl + Space = Empathy that also applies our notes.
+    // Ctrl + Space = Empathy that also applies notes (in a replay, those of each hand's player).
     setGlobalEmpathy(true, event.ctrlKey);
     return;
   }

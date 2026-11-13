@@ -10,6 +10,8 @@ of the repository.
 ## November 13th, 2026
 
 - "Reduced motion" also stops the action log from sliding in replays.
+- In a replay, or when you spectate without shadowing a player, Ctrl + Space
+  narrows each hand by its own player's notes.
 
 ## November 12th, 2026
 

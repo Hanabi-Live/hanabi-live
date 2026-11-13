@@ -25,6 +25,7 @@ import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
 import * as gameChat from "../chat.ts";
+import { getEmpathyNote } from "../empathyNote.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
@@ -256,7 +257,7 @@ function editCard(order: CardOrder) {
 /**
  * Returns the seats in the order that the screen shows them. The hands of the players in
  * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
- * `empathyIncludesNotes`, that view also applies the viewer's notes.
+ * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses.
  */
 function getSeats(
   state: State,
@@ -308,7 +309,10 @@ function getSeats(
             suitIndex: undefined,
             rank: undefined,
           },
-          note: state.notes.ourNotes[order] ?? BLANK_NOTE,
+          note:
+            empathy && empathyIncludesNotes
+              ? getEmpathyNote(state, globals.variant, order)
+              : (state.notes.ourNotes[order] ?? BLANK_NOTE),
           variant: globals.variant,
           empathy,
           empathyIncludesNotes: empathy && empathyIncludesNotes,
