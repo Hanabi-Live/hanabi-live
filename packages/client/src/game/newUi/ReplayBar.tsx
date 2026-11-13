@@ -1,9 +1,9 @@
 // The controls below the hands while the screen shows a replay: the in-game replay, a finished
 // game, or a hypothetical. They call the same functions as the classic screen's replay controls.
 
-// The bar is a slate panel like the other boxes on the table, with an accent along its left edge
-// that names the mode: blue to look back at the game, violet to try other moves. The buttons and
-// the timeline are large, because a player clicks them many times in a row.
+// The bar is a slate panel like the other boxes on the table. The color of its heading names the
+// mode: blue to look back at the game, violet to try other moves. The buttons and the timeline are
+// large, because a player clicks them many times in a row.
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -19,13 +19,10 @@ import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 
 type Mode = "replay" | "hypothetical";
 
-const ACCENT_CLASS = {
-  replay: { text: "tw:text-game-replay", bg: "tw:bg-game-replay" },
-  hypothetical: {
-    text: "tw:text-game-hypothetical",
-    bg: "tw:bg-game-hypothetical",
-  },
-} as const satisfies Record<Mode, { text: string; bg: string }>;
+const ACCENT_TEXT_CLASS = {
+  replay: "tw:text-game-replay",
+  hypothetical: "tw:text-game-hypothetical",
+} as const satisfies Record<Mode, string>;
 
 /** A quiet button for the actions that are not the main one. */
 const BUTTON_CLASS =
@@ -51,25 +48,19 @@ const ACTIONS_CLASS =
   "tw:ml-auto tw:flex tw:flex-wrap tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:w-full tw:narrow-980:*:flex-1";
 
 /**
- * The panel that holds a bar, with the mode's accent along its left edge. On a narrow window, the
- * page scrolls, so the bar goes above the hands, where it is in view.
+ * The panel that holds a bar. On a narrow window, the page scrolls, so the bar goes above the
+ * hands, where it is in view.
  */
 function Bar({
-  mode,
   children,
 }: {
-  readonly mode: Mode;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
+      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-4 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
       role="status"
     >
-      <span
-        aria-hidden="true"
-        className={`tw:absolute tw:inset-y-0 tw:left-0 tw:w-1 tw:rounded-l-[14px] ${ACCENT_CLASS[mode].bg}`}
-      />
       {children}
     </div>
   );
@@ -100,7 +91,7 @@ function Heading({
   return (
     <div className="tw:mr-1 tw:flex tw:shrink-0 tw:flex-col tw:leading-tight">
       <span
-        className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${ACCENT_CLASS[mode].text}`}
+        className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${ACCENT_TEXT_CLASS[mode]}`}
       >
         <i aria-hidden="true" className={`fas ${icon}`} />
         {label}
@@ -369,7 +360,7 @@ function HypotheticalBar({
 
   if (!controlsHypothetical(state)) {
     return (
-      <Bar mode="hypothetical">
+      <Bar>
         <Heading
           icon="fa-flask"
           label={label}
@@ -392,7 +383,7 @@ function HypotheticalBar({
   }
 
   return (
-    <Bar mode="hypothetical">
+    <Bar>
       <Heading
         icon="fa-flask"
         label={label}
@@ -522,7 +513,7 @@ export function TurnsBar({
   // that it is wide enough to pick a turn with the mouse. On a narrow window, the buttons take rows
   // of their own, so they go below the timeline.
   return (
-    <Bar mode="replay">
+    <Bar>
       <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:narrow-980:contents">
         <Heading
           following={following}
