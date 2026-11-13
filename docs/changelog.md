@@ -19,7 +19,7 @@ of the repository.
 - In the new game screen, a perfect score now sets off the fireworks finale.
 - In the new game screen, a completed stack and a lower maximum score now have
   the same animations as in the classic screen.
-- The emote and emoji picker has a close button.
+- The emote and emoji picker have a close button.
 
 ## November 12th, 2026
 
