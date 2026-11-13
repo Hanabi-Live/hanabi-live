@@ -64,12 +64,6 @@ const choiceClass =
   "tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40";
 
 /**
- * The panel's place in the column: below the hands, or above them on a narrow window, where the
- * page scrolls. There, it comes after the replay bar, as it does below the hands.
- */
-const PLACE_CLASS = "tw:shrink-0 tw:narrow-980:-order-1";
-
-/**
  * The controls for giving a clue: pick a player (with their button here, or by clicking their
  * hand), then a color or a rank. The buttons are large, because a player clicks them every turn.
  */
@@ -92,7 +86,7 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-[14px] tw:px-4 tw:py-3 ${PLACE_CLASS} ${CONTROL_PANEL_CLASS} ${
+      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-[14px] tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
         canClue ? "tw:ring-2 tw:ring-game-text" : "tw:ring-1 tw:ring-game-line"
       }`}
     >

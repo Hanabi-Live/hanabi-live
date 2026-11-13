@@ -63,7 +63,7 @@ import {
   NAME_GAP,
   NameColumnSizer,
 } from "./Hands.tsx";
-import { ReplayBar } from "./ReplayBar.tsx";
+import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
 import {
   DECK_PILE_DEPTH,
@@ -215,6 +215,11 @@ function isInside(element: HTMLElement | null, x: number, y: number): boolean {
 
   const rect = element.getBoundingClientRect();
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+/** The handlers of the hidden copy of the clue panel, which no one can use. */
+function ignore() {
+  // The copy only holds the panel's space.
 }
 
 /** Plays the move in the game, or in the hypothetical when there is one. */
@@ -1092,9 +1097,16 @@ export function GameScreen({
       : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
   const clueAvailable = actionState.clueTokens >= getClueCost(variant);
-  const canClue = ourTurn && clueAvailable && !editingCards;
+  const pausedBy =
+    state.pause.pausingPlayerIndex === undefined
+      ? undefined
+      : metadata.playerNames[state.pause.pausingPlayerIndex];
+  // A hypothetical goes on while the game is paused.
+  const paused = hypo === undefined && pausedBy !== undefined;
+  const canClue = ourTurn && clueAvailable && !editingCards && !paused;
   const showCluePanel =
     hypo === undefined ? state.playing && !inReplay : controlsHypo;
+  const showReplayBar = inReplay || state.finished;
 
   const empathyPlayers = new Set<PlayerIndex>(
     globalEmpathy
@@ -1227,6 +1239,8 @@ export function GameScreen({
     } else if (!clueAvailable) {
       waitingText = "The team has no clues. Play or discard a card.";
     }
+  } else if (paused && !inReplay) {
+    waitingText = `${pausedBy} paused the game.`;
   } else if (!ourTurn) {
     const currentName =
       ongoingGame.turn.currentPlayerIndex === undefined
@@ -1288,11 +1302,6 @@ export function GameScreen({
           .find((seat) => seat.acting)
           ?.cards.find((card) => card.order === ghost.order);
 
-  const pausedBy =
-    state.pause.pausingPlayerIndex === undefined
-      ? undefined
-      : metadata.playerNames[state.pause.pausingPlayerIndex];
-
   // Only the efficiency of the game as it stands includes the player's own modifier.
   const efficiencyModifier =
     visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
@@ -1327,14 +1336,6 @@ export function GameScreen({
             </div>
 
             <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
-              {pausedBy !== undefined && (
-                <div
-                  className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
-                  role="status"
-                >
-                  {pausedBy} paused the game.
-                </div>
-              )}
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
                 ref={setHandsElement}
@@ -1437,30 +1438,74 @@ export function GameScreen({
                 />
               </div>
               {/* The controls are below the hands, nearer the middle of the screen, and in the same
-                  place in every game. The hands take the free space above them. In a hypothetical,
-                  the replay bar is the lower one, so that it stays where it is in a replay. */}
-              {showCluePanel && (
-                <CluePanel
-                  canClue={canClue}
-                  canGive={canGive}
-                  clue={clue}
-                  colorblindMode={settings.colorblindMode}
-                  onChooseClue={setClue}
-                  onChooseTarget={setClueTarget}
-                  onGive={giveClue}
-                  target={clueTarget}
-                  targets={clueTargets}
-                  variant={variant}
-                  waitingText={waitingText}
-                />
-              )}
-              <ReplayBar
-                editingCards={editingCards}
-                onToggleEditCards={() => {
-                  setEditingCards(!editingCards);
-                }}
-                state={state}
-              />
+                  place in every game. They are in one slot that is always as tall as both the clue
+                  panel and the replay bar: a hidden copy holds the space of the one not shown. So
+                  the hands above it keep their place and size when the game pauses, ends, or goes
+                  in and out of a replay. Only a hypothetical with both moves them: its bar is the
+                  lower one, so that it stays where it is in a replay. On a narrow window, the page
+                  scrolls and the controls go above the hands, with the replay bar first. */}
+              <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
+                {!showCluePanel && (
+                  <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
+                    <CluePanel
+                      canClue={false}
+                      canGive={false}
+                      clue={undefined}
+                      colorblindMode={settings.colorblindMode}
+                      onChooseClue={ignore}
+                      onChooseTarget={ignore}
+                      onGive={ignore}
+                      target={undefined}
+                      targets={clueTargets}
+                      variant={variant}
+                      waitingText=""
+                    />
+                  </div>
+                )}
+                {!showReplayBar && (
+                  <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
+                    <TurnsBar state={state} />
+                  </div>
+                )}
+                {showCluePanel && (
+                  <div className="tw:grid tw:[grid-area:1/1]">
+                    <CluePanel
+                      canClue={canClue}
+                      canGive={canGive}
+                      clue={clue}
+                      colorblindMode={settings.colorblindMode}
+                      onChooseClue={setClue}
+                      onChooseTarget={setClueTarget}
+                      onGive={giveClue}
+                      target={clueTarget}
+                      targets={clueTargets}
+                      variant={variant}
+                      waitingText={waitingText}
+                    />
+                  </div>
+                )}
+                {!showCluePanel && !inReplay && pausedBy !== undefined && (
+                  <div
+                    className="tw:self-center tw:justify-self-center tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink tw:[grid-area:1/1]"
+                    role="status"
+                  >
+                    {pausedBy} paused the game.
+                  </div>
+                )}
+                {showReplayBar && (
+                  <div
+                    className={`tw:grid tw:narrow-980:-order-1 ${hypo !== undefined && showCluePanel ? "" : "tw:[grid-area:1/1]"}`}
+                  >
+                    <ReplayBar
+                      editingCards={editingCards}
+                      onToggleEditCards={() => {
+                        setEditingCards(!editingCards);
+                      }}
+                      state={state}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">

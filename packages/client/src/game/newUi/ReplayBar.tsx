@@ -63,7 +63,7 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:narrow-980:-order-2 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
+      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:rounded-[14px] tw:py-3 tw:pr-3 tw:pl-5 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
       role="status"
     >
       <span
@@ -469,7 +469,11 @@ export function ReplayBar({
 }
 
 /** The bar of a replay that is not a hypothetical, with the controls to move through its turns. */
-function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
+export function TurnsBar({
+  state,
+}: {
+  readonly state: State;
+}): React.JSX.Element {
   const { replay: replayState, finished, ongoingGame, visibleState } = state;
   if (visibleState === undefined) {
     throw new Error("A replay bar needs a turn on screen.");
