@@ -49,6 +49,7 @@ import {
   CardFace,
   CLUED_RAISE_PER_WIDTH,
 } from "./Card.tsx";
+import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
@@ -412,15 +413,15 @@ function getDiscardRows(state: State): ReadonlyArray<readonly DiscardView[]> {
     .filter((row: readonly DiscardView[]) => row.length > 0);
 }
 
-/** The notes that the tooltip of each card in the hands shows, for the cards that have notes. */
-function getNotesHtml(seats: readonly Seat[]): ReadonlyMap<CardOrder, string> {
+/** The notes that the tooltip of each card shows, for the cards that have notes. */
+function getNotesHtml(
+  orders: Iterable<CardOrder>,
+): ReadonlyMap<CardOrder, string> {
   const notesHtml = new Map<CardOrder, string>();
-  for (const seat of seats) {
-    for (const card of seat.cards) {
-      const html = notes.getShownNoteHtml(card.order);
-      if (html !== "") {
-        notesHtml.set(card.order, html);
-      }
+  for (const order of orders) {
+    const html = notes.getShownNoteHtml(order);
+    if (html !== "") {
+      notesHtml.set(order, html);
     }
   }
   return notesHtml;
@@ -1144,7 +1145,30 @@ export function GameScreen({
     globalEmpathy && globalEmpathyNotes,
   );
   const shownClue = getClueForTurn(visibleState);
-  const notesHtml = getNotesHtml(seats);
+  const stacks = getStacks(state);
+  const discardRows = getDiscardRows(state);
+  const cardNotes: CardNotes = {
+    // The cards on the screen: in the hands, on top of the play stacks, and in the discard pile.
+    notesHtml: getNotesHtml([
+      ...seats.flatMap((seat) => seat.cards.map((card) => card.order)),
+      ...stacks
+        .map((stack) => stack.topOrder)
+        .filter((order) => order !== undefined),
+      ...discardRows.flat().map((card) => card.order),
+    ]),
+    noteCard,
+    // Notes are only for games that are still going.
+    onRightClickCard: state.finished
+      ? undefined
+      : (event, order) => {
+          if (rightClickNote(event, order)) {
+            setNoteCard(order);
+          }
+        },
+    onCloseNote: () => {
+      setNoteCard(undefined);
+    },
+  };
 
   // The chat lists everyone who is watching, with us first as "You": our own name alone in a replay
   // would read as if the game were ours.
@@ -1351,8 +1375,9 @@ export function GameScreen({
                 cardsInDeck={visibleState.cardsRemainingInTheDeck}
                 cardWidth={tableCardWidth}
                 colorblindMode={settings.colorblindMode}
+                notes={cardNotes}
                 ref={playZoneRef}
-                stacks={getStacks(state)}
+                stacks={stacks}
                 variant={variant}
                 zoneState={playZoneState}
               />
@@ -1399,8 +1424,7 @@ export function GameScreen({
                   }
                   menuCard={menuCard}
                   nameColumnWidth={nameColumnWidth}
-                  noteCard={noteCard}
-                  notesHtml={notesHtml}
+                  notes={cardNotes}
                   onCardPointerDown={(event, order) => {
                     if (canMoveCards && !tapToMove && event.button === 0) {
                       pendingDrag.current = {
@@ -1415,9 +1439,6 @@ export function GameScreen({
                       current === order ? undefined : order,
                     );
                   }}
-                  onCloseNote={() => {
-                    setNoteCard(undefined);
-                  }}
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {
@@ -1431,16 +1452,6 @@ export function GameScreen({
                     sendAction({ type: "play", order });
                   }}
                   onPressCard={setPressedCard}
-                  onRightClickCard={
-                    // Notes are only for games that are still going.
-                    state.finished
-                      ? undefined
-                      : (event, order) => {
-                          if (rightClickNote(event, order)) {
-                            setNoteCard(order);
-                          }
-                        }
-                  }
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {
@@ -1551,9 +1562,10 @@ export function GameScreen({
                 atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
                 cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
                 colorblindMode={settings.colorblindMode}
+                notes={cardNotes}
                 onShowDiscard={showDiscard}
                 ref={discardZoneRef}
-                rows={getDiscardRows(state)}
+                rows={discardRows}
                 variant={variant}
                 zoneState={discardZoneState}
               />

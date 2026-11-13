@@ -83,6 +83,7 @@ interface CardFaceProps {
    * suit or rank that the face shows, and "note" for any other note.
    */
   readonly noteBadge?: NoteBadgeKind;
+  readonly noteBadgePlacement?: NoteBadgePlacement;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -216,28 +217,45 @@ const NOTE_BADGES = {
 >;
 
 /**
- * The badge on the bottom-right corner of a card that has a note. A pencil shows that the note
- * changes the suit or rank on the face, so that the player does not take it for a known card. The
- * badge sits half off the card, so that it covers little of the possibilities.
+ * The size of the badge of a card with a note, as a fraction of the card's width. Centered on the
+ * card's corner, it stays inside the space that the rounded corner leaves, so that it does not
+ * cover the possibilities, which keep `POSSIBILITIES.inset` from the edges.
+ */
+const NOTE_BADGE_SIZE_PER_WIDTH = 0.2;
+
+/**
+ * Where the badge of a card with a note goes: on the bottom-right corner, or on the middle of the
+ * top edge, for a card whose corner another card covers (as in the discard pile).
+ */
+type NoteBadgePlacement = "corner" | "top";
+
+/**
+ * The badge of a card that has a note. A pencil shows that the note changes the suit or rank on the
+ * face, so that the player does not take it for a known card.
  */
 function NoteBadge({
   kind,
+  placement,
   width,
 }: {
   readonly kind: NoteBadgeKind;
+  readonly placement: NoteBadgePlacement;
   readonly width: number;
 }): React.JSX.Element {
-  const size = width * 0.26;
+  const size = width * NOTE_BADGE_SIZE_PER_WIDTH;
   const { icon, label } = NOTE_BADGES[kind];
+  const position: React.CSSProperties =
+    placement === "corner"
+      ? { right: -size / 2, bottom: -size / 2 }
+      : { left: (width - size) / 2, top: -size / 2 };
   return (
     <span
       aria-label={label}
-      className="tw:pointer-events-none tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-game-text tw:text-card-ink"
+      className="tw:pointer-events-none tw:absolute tw:z-10 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-game-text tw:text-card-ink"
       data-note-badge={kind}
       role="img"
       style={{
-        right: -size * 0.3,
-        bottom: -size * 0.3,
+        ...position,
         width: size,
         height: size,
         fontSize: size * 0.55,
@@ -449,6 +467,7 @@ export function CardFace({
   possibleRanks = [],
   clueMarker,
   noteBadge,
+  noteBadgePlacement = "corner",
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -519,7 +538,13 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {noteBadge !== undefined && <NoteBadge kind={noteBadge} width={width} />}
+      {noteBadge !== undefined && (
+        <NoteBadge
+          kind={noteBadge}
+          placement={noteBadgePlacement}
+          width={width}
+        />
+      )}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities

@@ -1,8 +1,8 @@
-// The note on a card in a hand. Hovering over the card shows its notes, and a right-click edits the
-// viewer's own note, as on the classic screen.
+// The note on a card. Hovering over the card shows its notes, and a right-click edits the viewer's
+// own note, as on the classic screen.
 
 import type { CardOrder } from "@hanabi-live/game";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
@@ -14,9 +14,13 @@ import {
 import { globals } from "../ui/UiGlobals.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
+import { toScreenPixels } from "./screenScale.ts";
 
 /** The width of the box to type a note in, in CSS pixels. */
 const NOTE_EDITOR_WIDTH = 260;
+
+/** The least space between the box to type a note in and the edge of the window, in CSS pixels. */
+const NOTE_EDITOR_WINDOW_MARGIN = 8;
 
 /**
  * Applies a right-click on a card to its note. It returns whether the viewer now types in the note,
@@ -27,7 +31,11 @@ export function rightClickNote(
   event: React.MouseEvent,
   order: CardOrder,
 ): boolean {
-  const action = getRightClickNoteAction(event, false);
+  // Both a plain right-click and Ctrl + right-click (the way to edit a note in speedruns on the
+  // classic screen) edit the note, since a right-click does nothing else on this screen.
+  const action =
+    getRightClickNoteAction(event, false)
+    ?? getRightClickNoteAction(event, true);
   const ourNote = notes.getOurNote(order);
   switch (action?.type) {
     case "append": {
@@ -62,47 +70,56 @@ export function rightClickNote(
   }
 }
 
+/** The notes of the cards on the screen, and how the viewer edits them. */
+export interface CardNotes {
+  /** The notes that each card's tooltip shows, as HTML. Cards without notes are not in it. */
+  readonly notesHtml: ReadonlyMap<CardOrder, string>;
+
+  /** The card whose note the viewer is typing. */
+  readonly noteCard: CardOrder | undefined;
+
+  /** Handles a right-click on a card, or is `undefined` when the viewer cannot write notes. */
+  readonly onRightClickCard:
+    ((event: React.MouseEvent, order: CardOrder) => void) | undefined;
+
+  readonly onCloseNote: () => void;
+}
+
 /**
- * Wraps a card in a hand. It shows the card's notes on hover, and the box to type the viewer's note
- * in while `editing`.
+ * Wraps a card. It shows the card's notes on hover, and the box to type the viewer's note in while
+ * the viewer edits it.
  */
 export function CardNote({
   order,
-  noteHtml,
-  editing,
-  onRightClick,
-  onCloseEditor,
+  notes: cardNotes,
+  className = "",
+  style,
   children,
 }: {
   readonly order: CardOrder;
-
-  /** The notes that the tooltip shows, as HTML. It is empty when the card has no note. */
-  readonly noteHtml: string;
-
-  readonly editing: boolean;
-
-  /** Handles a right-click on the card, or is `undefined` when the viewer cannot write notes. */
-  readonly onRightClick: ((event: React.MouseEvent) => void) | undefined;
-
-  readonly onCloseEditor: () => void;
+  readonly notes: CardNotes;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
+  const { onRightClickCard } = cardNotes;
+  const editing = cardNotes.noteCard === order;
   return (
     <div
-      className={`tw:relative ${editing ? "tw:z-20" : ""}`}
+      className={`tw:relative ${editing ? "tw:z-20" : ""} ${className}`}
       onContextMenu={
-        onRightClick === undefined
+        onRightClickCard === undefined
           ? undefined
           : (event) => {
               event.preventDefault();
-              onRightClick(event);
+              onRightClickCard(event, order);
             }
       }
       // On some systems, the right-click event comes when the button goes down, before the press
       // moves the focus to the card. The press would then take the focus from the note box, which
       // closes it.
       onMouseDown={
-        onRightClick === undefined
+        onRightClickCard === undefined
           ? undefined
           : (event) => {
               if (event.button === RIGHT_MOUSE_BUTTON) {
@@ -111,10 +128,13 @@ export function CardNote({
             }
       }
       // While the box is open, it shows the note instead.
-      ref={tooltipRefHtml(editing ? "" : noteHtml)}
+      ref={tooltipRefHtml(
+        editing ? "" : (cardNotes.notesHtml.get(order) ?? ""),
+      )}
+      style={style}
     >
       {children}
-      {editing && <NoteEditor onClose={onCloseEditor} order={order} />}
+      {editing && <NoteEditor onClose={cardNotes.onCloseNote} order={order} />}
     </div>
   );
 }
@@ -131,6 +151,22 @@ function NoteEditor({
   readonly onClose: () => void;
 }): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  // The box is centered below its card, but moves sideways to stay in the window, such as for a
+  // play stack at the edge of the screen.
+  const [shift, setShift] = useState(0);
+  useLayoutEffect(() => {
+    const rect = boxRef.current!.getBoundingClientRect();
+    const tooFarLeft = NOTE_EDITOR_WINDOW_MARGIN - rect.left;
+    const tooFarRight =
+      rect.right - (globalThis.innerWidth - NOTE_EDITOR_WINDOW_MARGIN);
+    if (tooFarLeft > 0) {
+      setShift(toScreenPixels(tooFarLeft));
+    } else if (tooFarRight > 0) {
+      setShift(-toScreenPixels(tooFarRight));
+    }
+  }, []);
   // The note when the box opened. The box adds a separator after it, so that the player can add to
   // it, until a key that edits the note itself (such as Backspace) or a click removes the
   // separator.
@@ -157,7 +193,8 @@ function NoteEditor({
   return (
     <div
       className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-[10px] tw:bg-game-text tw:p-1.5 tw:shadow-lg"
-      style={{ width: NOTE_EDITOR_WIDTH }}
+      ref={boxRef}
+      style={{ width: NOTE_EDITOR_WIDTH, marginLeft: shift }}
     >
       <span className="tw:relative tw:block">
         <input

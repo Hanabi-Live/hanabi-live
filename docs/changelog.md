@@ -12,8 +12,8 @@ of the repository.
 - "Reduced motion" also stops the action log from sliding in replays.
 - In a replay, or when you spectate without shadowing a player, Ctrl + Space
   narrows each hand by its own player's notes.
-- In the new game screen, discarded cards and clues in the clue log have
-  tooltips that say that clicking them goes to their turn.
+- In the new game screen, clues in the clue log have tooltips that say that
+  clicking them goes to their turn.
 - In the new game screen, the replay controls are now larger and below the
   hands.
 - In the new game screen, a perfect score now sets off the fireworks finale.
@@ -28,8 +28,8 @@ of the repository.
 - In the new game screen, pace has a help icon that explains it.
 - The new game screen is now brighter: the table is green felt, the empty play
   stacks show their suit colors, and a gold ring marks whose turn it is.
-- In the new game screen, you can right-click a card in a hand to write a note
-  on it, and hover over the card to read its notes.
+- In the new game screen, you can right-click a card to write a note on it, and
+  hover over the card to read its notes.
 - In the new game screen, your notes on your own cards now apply, as in the
   classic screen: a note such as "r1" shows the card as a red 1, and a pencil on
   the card's note badge shows this.

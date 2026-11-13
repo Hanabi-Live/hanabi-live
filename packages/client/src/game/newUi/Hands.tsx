@@ -11,6 +11,7 @@ import {
   describeCard,
   getClueMarkerColor,
 } from "./Card.tsx";
+import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { measure } from "./screenScale.ts";
 import type { CardView } from "./tableView.ts";
@@ -99,17 +100,7 @@ interface HandsProps {
   readonly onPlay: (order: CardOrder) => void;
   readonly onDiscard: (order: CardOrder) => void;
 
-  /** The notes that each card's tooltip shows, as HTML. Cards without notes are not in it. */
-  readonly notesHtml: ReadonlyMap<CardOrder, string>;
-
-  /** The card whose note the viewer is typing. */
-  readonly noteCard: CardOrder | undefined;
-
-  /** Handles a right-click on a card, or is `undefined` when the viewer cannot write notes. */
-  readonly onRightClickCard:
-    ((event: React.MouseEvent, order: CardOrder) => void) | undefined;
-
-  readonly onCloseNote: () => void;
+  readonly notes: CardNotes;
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
@@ -473,7 +464,7 @@ function OwnCard({
       clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
-      noteBadge={getNoteBadge(card, props.notesHtml)}
+      noteBadge={getNoteBadge(card, props.notes.notesHtml)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
       raiseClued
@@ -595,7 +586,7 @@ function EditableCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
-        noteBadge={getNoteBadge(card, props.notesHtml)}
+        noteBadge={getNoteBadge(card, props.notes.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -675,7 +666,7 @@ function HandCard({
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         highlighted={props.touchedCards.has(card.order)}
-        noteBadge={getNoteBadge(card, props.notesHtml)}
+        noteBadge={getNoteBadge(card, props.notes.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -823,20 +814,7 @@ function Hand({
         }}
       >
         {seat.cards.map((card, i) => (
-          <CardNote
-            editing={props.noteCard === card.order}
-            key={card.order}
-            noteHtml={props.notesHtml.get(card.order) ?? ""}
-            onCloseEditor={props.onCloseNote}
-            onRightClick={
-              props.onRightClickCard === undefined
-                ? undefined
-                : (event) => {
-                    props.onRightClickCard?.(event, card.order);
-                  }
-            }
-            order={card.order}
-          >
+          <CardNote key={card.order} notes={props.notes} order={card.order}>
             <HandCard
               card={card}
               editing={editing}

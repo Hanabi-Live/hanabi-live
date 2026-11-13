@@ -11,6 +11,8 @@ import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
+import type { CardNotes } from "./CardNote.tsx";
+import { CardNote } from "./CardNote.tsx";
 import { Pip } from "./Pip.tsx";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
@@ -114,10 +116,19 @@ export const PlayArea = forwardRef<
     readonly cardWidth: number;
     readonly cardsInDeck: number;
     readonly zoneState: ZoneState;
+    readonly notes: CardNotes;
   }
 >(
   (
-    { stacks, variant, colorblindMode, cardWidth, cardsInDeck, zoneState },
+    {
+      stacks,
+      variant,
+      colorblindMode,
+      cardWidth,
+      cardsInDeck,
+      zoneState,
+      notes,
+    },
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -188,13 +199,22 @@ export const PlayArea = forwardRef<
                       data-card-place={`stack-${stack.suitIndex}`}
                       data-play-stack
                     >
-                      <CardFace
-                        colorblindMode={colorblindMode}
-                        rank={stack.topRank}
-                        suitIndex={stack.suitIndex}
-                        variant={variant}
-                        width={cardWidth}
-                      />
+                      {stack.topOrder === undefined ? undefined : (
+                        <CardNote notes={notes} order={stack.topOrder}>
+                          <CardFace
+                            colorblindMode={colorblindMode}
+                            noteBadge={
+                              notes.notesHtml.has(stack.topOrder)
+                                ? "note"
+                                : undefined
+                            }
+                            rank={stack.topRank}
+                            suitIndex={stack.suitIndex}
+                            variant={variant}
+                            width={cardWidth}
+                          />
+                        </CardNote>
+                      )}
                     </div>
                   )}
                 </div>
@@ -354,6 +374,7 @@ export const DiscardPile = forwardRef<
     /** Whether the team has every clue token, so that no one can discard. */
     readonly atMaxClues: boolean;
     readonly onShowDiscard: (order: CardOrder) => void;
+    readonly notes: CardNotes;
   }
 >(
   (
@@ -365,6 +386,7 @@ export const DiscardPile = forwardRef<
       zoneState,
       atMaxClues,
       onShowDiscard,
+      notes,
     },
     ref,
   ): React.JSX.Element => {
@@ -407,32 +429,39 @@ export const DiscardPile = forwardRef<
               }}
             >
               {row.map((card, i) => (
-                <button
-                  aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                  className="tw:relative tw:shrink-0 tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
-                  data-card-order={card.order}
-                  data-card-place={`discard-${rowIndex}-${i}`}
+                <CardNote
+                  className="tw:shrink-0"
                   key={card.order}
-                  onClick={() => {
-                    onShowDiscard(card.order);
-                  }}
-                  ref={tooltipRef(
-                    "Click to go to the turn this card was discarded.",
-                  )}
+                  notes={notes}
+                  order={card.order}
                   style={{
                     marginLeft:
                       i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,
                   }}
-                  type="button"
                 >
-                  <CardFace
-                    colorblindMode={colorblindMode}
-                    rank={card.rank}
-                    suitIndex={card.suitIndex}
-                    variant={variant}
-                    width={cardWidth}
-                  />
-                </button>
+                  <button
+                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                    className="tw:relative tw:block tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
+                    data-card-order={card.order}
+                    data-card-place={`discard-${rowIndex}-${i}`}
+                    onClick={() => {
+                      onShowDiscard(card.order);
+                    }}
+                    type="button"
+                  >
+                    <CardFace
+                      colorblindMode={colorblindMode}
+                      noteBadge={
+                        notes.notesHtml.has(card.order) ? "note" : undefined
+                      }
+                      noteBadgePlacement="top"
+                      rank={card.rank}
+                      suitIndex={card.suitIndex}
+                      variant={variant}
+                      width={cardWidth}
+                    />
+                  </button>
+                </CardNote>
               ))}
             </div>
           ))}

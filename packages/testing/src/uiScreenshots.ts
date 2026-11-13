@@ -119,6 +119,19 @@ const SETTLE_MILLISECONDS = 400;
 /** How long to rest the pointer on an element, so that its tooltip opens after its delay. */
 const TOOLTIP_WAIT_MILLISECONDS = 1000;
 
+/** Cards of the account's own hand, and the cards on the play stacks and in the discards. */
+const OWN_FIRST_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-0"]';
+const OWN_SECOND_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-1"]';
+const STACK_CARD_SELECTOR = "#game-new-ui [data-play-stack]";
+const DISCARD_CARD_SELECTOR = '#game-new-ui [data-card-place^="discard-"]';
+
+/** Replaces the note on a card of the New UI, or deletes it with empty text. */
+async function writeNote(page: Page, card: Locator, text: string) {
+  await card.click({ button: "right" });
+  await page.getByRole("textbox", { name: "Note" }).fill(text);
+  await page.keyboard.press("Enter");
+}
+
 /** How many times to press Escape to go from the deepest screen back to the lobby. */
 const MAX_ESCAPES = 3;
 
@@ -1437,19 +1450,7 @@ function getStates({
       loggedIn: true,
       hover: '#game-new-ui [aria-label^="About pace"]',
     },
-    // The tooltips of a discarded card and of a clue in the clue log wait for the pointer to rest.
-    {
-      name: "new-ui-discard-tooltip",
-      path: "/",
-      loggedIn: true,
-      hover: async (page) => {
-        await page
-          .locator('#game-new-ui [data-card-place^="discard-"]')
-          .first()
-          .hover();
-        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
-      },
-    },
+    // The tooltip of a clue in the clue log waits for the pointer to rest.
     {
       name: "new-ui-clue-log-tooltip",
       path: "/",
@@ -1478,31 +1479,54 @@ function getStates({
         await page.keyboard.press("Enter");
       },
     },
+    // The same game, while the account types a note on the first play stack. The box moves to stay
+    // in the window.
+    {
+      name: "new-ui-note-editor-stack",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page
+          .locator(STACK_CARD_SELECTOR)
+          .first()
+          .click({ button: "right" });
+        await page.keyboard.type("played early");
+      },
+      // Save the note, for the next state.
+      cleanup: async (page) => {
+        await page.keyboard.press("Enter");
+      },
+    },
     // The same game, after the account writes a note on the first card of its own hand that makes
-    // it show as a red 1, so that its badge shows a pencil. The pointer is over that card.
+    // it show as a yellow 2, so that its badge shows a pencil, and other notes on its second card
+    // and on a discarded card. The pointer is over the first card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await page
-          .locator('#game-new-ui [data-card-place="hand-0-0"]')
-          .click({ button: "right" });
-        await page.keyboard.type("r1");
-        await page.keyboard.press("Enter");
+        await writeNote(page, page.locator(OWN_FIRST_CARD_SELECTOR), "y2");
+        await writeNote(page, page.locator(OWN_SECOND_CARD_SELECTOR), "chop?");
+        await writeNote(
+          page,
+          page.locator(DISCARD_CARD_SELECTOR).first(),
+          "misplayed",
+        );
       },
       hover: async (page) => {
-        await page.locator('#game-new-ui [data-card-place="hand-0-0"]').hover();
+        await page.locator(OWN_FIRST_CARD_SELECTOR).hover();
         await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
       },
       // Delete the notes.
       cleanup: async (page) => {
-        for (const place of ["hand-0-0", "hand-1-0"]) {
-          await page
-            .locator(`#game-new-ui [data-card-place="${place}"]`)
-            .click({ button: "right" });
-          await page.getByRole("textbox", { name: "Note" }).fill("");
-          await page.keyboard.press("Enter");
+        for (const card of [
+          page.locator(OWN_FIRST_CARD_SELECTOR),
+          page.locator(OWN_SECOND_CARD_SELECTOR),
+          page.locator('#game-new-ui [data-card-place="hand-1-0"]'),
+          page.locator(STACK_CARD_SELECTOR).first(),
+          page.locator(DISCARD_CARD_SELECTOR).first(),
+        ]) {
+          await writeNote(page, card, "");
         }
       },
     },
