@@ -66,13 +66,6 @@ type HypotheticalControl = Extract<
 // Command handlers
 // ----------------
 
-// Received when the server wants to force the client to go back to the lobby
-gameCommands.set("tableBooted", () => {
-  modals.closeIdleWarning();
-  timer.stop();
-  globals.game!.hide();
-});
-
 // Updates the clocks to show how much time people are taking or how much time people have left.
 gameCommands.set("clock", (data) => {
   timer.update(data);

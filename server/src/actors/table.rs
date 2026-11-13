@@ -1266,7 +1266,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::event::TABLE_BOOTED,
+                    hanabi_protocol::event::TABLE_LEFT,
                     TableRef {
                         table_id: self.table.id,
                     },

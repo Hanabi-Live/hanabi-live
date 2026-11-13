@@ -1951,7 +1951,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             let frames = h.frames(index);
             let booted = frames
                 .iter()
-                .position(|(command, _)| command == "tableBooted");
+                .position(|(command, _)| command == "tableLeft");
             let joined = frames.iter().position(|(command, data)| {
                 command == "tableJoined" && data == &json!({"tableId":id,"stage":"pregame"})
             });

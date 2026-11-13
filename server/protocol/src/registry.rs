@@ -92,7 +92,6 @@ macro_rules! event_contracts {
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_STATE "gameState" => GameState;
-            TABLE_BOOTED "tableBooted" => TableRef;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
             CHAT_DELETED "chatDeleted" => ChatDeleted;

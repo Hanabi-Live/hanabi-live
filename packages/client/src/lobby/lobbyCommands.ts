@@ -97,12 +97,20 @@ lobbyCommands.set("tableJoined", (data) => {
   gameMain.show(data.stage === "justStarted");
 });
 
-lobbyCommands.set("tableLeft", () => {
-  // We left a table, so transition between screens. (The server also sends this after we leave a
-  // game or replay, by which point we have already returned to the lobby or a history screen.)
+// Received when we leave a table, or when the server takes us out of one, such as when the owner
+// kicks us or the table fails.
+lobbyCommands.set("tableLeft", (data) => {
+  // After we leave a table ourselves, we have already returned to the lobby or a history screen,
+  // and we may have joined another table since.
+  if (data.tableId !== globals.tableId) {
+    return;
+  }
   if (globals.currentScreen === Screen.PreGame) {
     pregame.hide();
+  } else if (globals.currentScreen === Screen.Game) {
+    gameMain.hide();
   }
+  globals.tableId = undefined;
 });
 
 // Received by the client when a table is created or modified.

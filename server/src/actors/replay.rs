@@ -514,7 +514,7 @@ impl TableActor {
         // Everyone leaves the replay first, then enters the next game or its pregame.
         let mut e = self.effects();
         let boot = frame(
-            hanabi_protocol::event::TABLE_BOOTED,
+            hanabi_protocol::event::TABLE_LEFT,
             TableRef {
                 table_id: self.table.id,
             },

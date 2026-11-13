@@ -911,7 +911,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
                 HubCommand::Effects(effects) => {
                     observer_booted |= effects.messages.iter().any(|(session, message)| {
                         session.user == UserId::new(2).unwrap()
-                            && crate::transport::is_event(message, "tableBooted")
+                            && crate::transport::is_event(message, "tableLeft")
                     });
                 }
                 _ => {}
@@ -1270,7 +1270,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
                 .any(|f: &String| crate::transport::is_event(f, "tableRemoved"))
                 && seen
                     .iter()
-                    .any(|f| crate::transport::is_event(f, "tableBooted"))
+                    .any(|f| crate::transport::is_event(f, "tableLeft"))
                 && seen
                     .iter()
                     .any(|f| crate::transport::is_event(f, "warning"))

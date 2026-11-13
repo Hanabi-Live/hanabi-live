@@ -5,6 +5,7 @@ import { globals } from "../Globals.ts";
 import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat.tsx";
 import * as lobbyPage from "../lobby/lobbyPage.ts";
 import { Screen } from "../lobby/types/Screen.ts";
+import * as modals from "../modals.ts";
 import * as sounds from "../sounds.ts";
 import * as tooltips from "../tooltips.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
@@ -66,7 +67,10 @@ function showNewUi() {
   newUi.mount();
 }
 
-function hide() {
+/** Leaves the game screen for the screen that was open before it. */
+export function hide(): void {
+  modals.closeIdleWarning();
+
   // We could be going back to one of the history screens, since we can enter a solo replay from
   // them.
   globals.currentScreen =

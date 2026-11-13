@@ -1767,7 +1767,6 @@ export const SERVER_EVENT_SCHEMAS = {
   serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
   table: tableSchema,
-  tableBooted: tableRefSchema,
   tableJoined: tableJoinedSchema,
   tableLeft: tableRefSchema,
   tableList: tableListSchema,

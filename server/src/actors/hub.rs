@@ -188,7 +188,7 @@ impl Hub {
             ));
         }
         let boot = frame(
-            hanabi_protocol::event::TABLE_BOOTED,
+            hanabi_protocol::event::TABLE_LEFT,
             TableRef { table_id: id },
         );
         let warning = frame(hanabi_protocol::event::WARNING, report.notice());
