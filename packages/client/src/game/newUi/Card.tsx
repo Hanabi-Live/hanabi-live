@@ -91,9 +91,24 @@ export function getClueMarkerColor(marker: ClueMarkerView): string {
   return marker.type === "color" ? marker.fill : "white";
 }
 
-function roundToEven(value: number): number {
-  return 2 * Math.round(value / 2);
-}
+/**
+ * The shape of a clue token, in a box 100 units wide: a disc with a point under it. The sides of
+ * the point touch the disc at a tangent, so that the outline runs smoothly from one to the other.
+ */
+const PIN_RADIUS = 50;
+const PIN_TIP_Y = 120;
+const PIN_PATH = (() => {
+  const cos = PIN_RADIUS / (PIN_TIP_Y - PIN_RADIUS);
+  const x = PIN_RADIUS * Math.sqrt(1 - cos * cos);
+  const y = PIN_RADIUS + PIN_RADIUS * cos;
+  return `M ${PIN_RADIUS} ${PIN_TIP_Y} L ${PIN_RADIUS - x} ${y} A ${PIN_RADIUS} ${PIN_RADIUS} 0 1 1 ${PIN_RADIUS + x} ${y} Z`;
+})();
+
+/** The radius of the disc in the clue's color, inside the white ring, in the same units. */
+const PIN_DISC_RADIUS = 40;
+
+/** The width of the dark outline around a clue token, in CSS pixels. */
+const PIN_OUTLINE_WIDTH = 2;
 
 /**
  * A token that sits on the top edge of a card that a clue touched, with a point toward the card. It
@@ -107,17 +122,7 @@ function ClueMarker({
   readonly marker: ClueMarkerView;
   readonly width: number;
 }): React.JSX.Element {
-  // Whole, even sizes, and a left edge on a whole pixel, keep the point centered under the disc.
-  // The browser snaps the disc to whole pixels, but draws the rotated point where it falls.
-  const size = roundToEven(width * CLUE_TOKEN_SIZE_PER_WIDTH);
-  const point = roundToEven(size * 0.34);
-  const color = getClueMarkerColor(marker);
-  const pointStyle = {
-    width: point,
-    height: point,
-    bottom: -point * 0.38,
-    marginLeft: -point / 2,
-  };
+  const size = Math.round(width * CLUE_TOKEN_SIZE_PER_WIDTH);
   let label = "";
   if (marker.type === "rank") {
     ({ label } = marker);
@@ -128,35 +133,43 @@ function ClueMarker({
   return (
     <span
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:z-10"
+      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
       data-clue-marker
       style={{
         top: -size * CLUE_TOKEN_PART_ABOVE_CARD,
-        left: `round(down, calc(50% - ${size / 2}px), 1px)`,
+        marginLeft: -size / 2,
         width: size,
         height: size,
       }}
     >
+      {/* One path for the whole outline, so that the disc and the point share it. The stroke is
+          drawn first and is twice as wide, so the fill covers its inner half. */}
+      <svg
+        className="tw:absolute tw:top-0 tw:left-0 tw:overflow-visible tw:drop-shadow-[0_3px_8px_rgb(0_0_0/60%)]"
+        height={(size * PIN_TIP_Y) / (2 * PIN_RADIUS)}
+        viewBox={`0 0 ${2 * PIN_RADIUS} ${PIN_TIP_Y}`}
+        width={size}
+      >
+        <path
+          className="tw:fill-white tw:stroke-card-ink"
+          d={PIN_PATH}
+          paintOrder="stroke"
+          strokeWidth={2 * PIN_OUTLINE_WIDTH}
+          vectorEffect="non-scaling-stroke"
+        />
+        <circle
+          cx={PIN_RADIUS}
+          cy={PIN_RADIUS}
+          r={PIN_DISC_RADIUS}
+          style={{ fill: getClueMarkerColor(marker) }}
+        />
+      </svg>
       <span
-        className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:shadow-[0_0_0_2px_var(--card-ink)]"
-        style={pointStyle}
-      />
-      <span
-        className="tw:absolute tw:inset-0 tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-solid tw:border-white tw:font-extrabold tw:leading-none tw:text-card-ink tw:shadow-[0_0_0_2px_var(--card-ink),0_3px_8px_rgb(0_0_0/60%)]"
-        style={{
-          borderWidth: size * 0.1,
-          background: color,
-          fontSize: size * 0.66,
-        }}
+        className="tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:font-extrabold tw:leading-none tw:text-card-ink"
+        style={{ fontSize: size * 0.66 }}
       >
         {label}
       </span>
-      {/* The lower part of the point again, over the disc, so that the disc's ring and shadow do
-          not cross the point. Its outline comes from the point below, so the two outlines join. */}
-      <span
-        className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:[clip-path:polygon(85%_0,100%_0,100%_100%,0_100%,0_85%)]"
-        style={pointStyle}
-      />
     </span>
   );
 }

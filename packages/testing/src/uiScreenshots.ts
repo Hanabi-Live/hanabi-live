@@ -1811,23 +1811,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        fivePlayerReplay = await showFivePlayerReplay();
-        await page.getByRole("button", { name: "Lobby", exact: true }).click();
-        await page.locator("#lobby").waitFor();
-        // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
-        const row = page.locator("#lobby-games-table-tbody tr", {
-          hasText: FIVE_PLAYER_LEADER_NAME,
-        });
-        await row.waitFor();
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-        await row.click({ force: true });
-        const hands = page.locator('#game-new-ui [aria-label="Hands"]');
-        await page.locator("#lobby").waitFor({ state: "hidden" });
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-        if (!(await hands.isVisible())) {
-          await clickCanvasElement(page, ["newUiButton"]);
-        }
-        await hands.waitFor();
+        fivePlayerReplay = await spectateFivePlayerReplay(page);
         fivePlayerReplay.goTo(fivePlayerReplay.clueStep - 1);
         await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
       },
@@ -1841,6 +1825,23 @@ function getStates({
           await page.waitForTimeout(LEADER_MOVE_WAIT_MILLISECONDS);
         }
         fivePlayerReplay.goTo(lastSegment);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        fivePlayerReplay?.close();
+        fivePlayerReplay = undefined;
+      },
+    },
+    // The same replay on the color clue that comes right after another clue, which marks the cards
+    // that it touched.
+    {
+      name: "new-ui-five-player-color-clue",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        fivePlayerReplay = await spectateFivePlayerReplay(page);
+        fivePlayerReplay.goTo(fivePlayerReplay.clueStep);
         await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
       },
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -1938,6 +1939,34 @@ function getStates({
       },
     },
   ];
+
+  /** Starts a 5-player shared replay and spectates it from the lobby on the New UI. */
+  async function spectateFivePlayerReplay(
+    page: Page,
+  ): Promise<FivePlayerReplay> {
+    const replay = await showFivePlayerReplay();
+    // The account is still in the table of the state before, unless this state runs alone.
+    const lobby = page.getByRole("button", { name: "Lobby", exact: true });
+    if (await lobby.isVisible()) {
+      await lobby.click();
+    }
+    await page.locator("#lobby").waitFor();
+    // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
+    const row = page.locator("#lobby-games-table-tbody tr", {
+      hasText: FIVE_PLAYER_LEADER_NAME,
+    });
+    await row.waitFor();
+    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+    await row.click({ force: true });
+    const hands = page.locator('#game-new-ui [aria-label="Hands"]');
+    await page.locator("#lobby").waitFor({ state: "hidden" });
+    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+    if (!(await hands.isVisible())) {
+      await clickCanvasElement(page, ["newUiButton"]);
+    }
+    await hands.waitFor();
+    return replay;
+  }
 
   /**
    * Has the accounts of the perfect game play it again at a new table, and makes the account watch
@@ -3775,8 +3804,9 @@ try {
 /**
  * A 5-player game of No Variant with a deck in rank order, so that the first hands hold the 1s. On
  * each turn, the player plays a card that the team can play, or else clues the next player about
- * the rank of their first card, or else discards their first card. Also returns a segment that
- * shows a clue right after another clue.
+ * their first card, or else discards their first card. A clue right after another clue is about the
+ * card's color, and any other clue is about its rank. Also returns a segment that shows a clue
+ * right after another clue.
  */
 function fivePlayerGame() {
   const variant = getVariant(DEFAULT_VARIANT_NAME);
@@ -3835,12 +3865,17 @@ function fivePlayerGame() {
       const [first] = handOf(receiver);
       assertDefined(first, `Player ${receiver} has no cards.`);
       clues--;
+      // In No Variant, each suit has the color with the same index.
+      const afterClue = actions.at(-1)?.type === "clue";
+      const { suitIndex, rank } = cardAt(first);
       actions.push({
         type: "clue",
         receiverIndex: receiver as PlayerIndex,
-        clue: { type: "rank", rank: cardAt(first).rank as ClueRank },
+        clue: afterClue
+          ? { type: "color", color: suitIndex }
+          : { type: "rank", rank: rank as ClueRank },
       });
-      if (clueStep === undefined && actions.at(-2)?.type === "clue") {
+      if (clueStep === undefined && afterClue) {
         clueStep = actions.length;
       }
       continue;
