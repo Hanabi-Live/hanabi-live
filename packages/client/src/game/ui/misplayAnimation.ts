@@ -5,6 +5,14 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
+import type { Point } from "../motion.ts";
+import {
+  bezier,
+  easeIn,
+  easeOut,
+  interpolate,
+  randomBetween,
+} from "../motion.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import {
@@ -14,16 +22,7 @@ import {
   QUARTER_TURN_DEGREES,
 } from "./constants.ts";
 import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
-import type { Point } from "./fireworks.ts";
-import {
-  EffectTimeline,
-  absoluteCenter,
-  bezier,
-  easeIn,
-  easeOut,
-  interpolate,
-  randomBetween,
-} from "./fireworks.ts";
+import { EffectTimeline, absoluteCenter } from "./fireworks.ts";
 import { degreesToRadians } from "./konvaHelpers.ts";
 import {
   areStrikesHidden,

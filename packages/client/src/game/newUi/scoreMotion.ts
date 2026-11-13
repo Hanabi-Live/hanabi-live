@@ -18,6 +18,15 @@
 
 import type { Suit } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
+import type { Point } from "../motion.ts";
+import {
+  bezier,
+  easeInOut,
+  easeOut,
+  interpolate,
+  randomBetween,
+  rectCenter,
+} from "../motion.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   PLAY_ANIMATION_SECONDS,
@@ -101,17 +110,9 @@ import {
   CARD_CORNER_PER_WIDTH,
   EFFECT_Z_INDEX,
   animateSampled,
-  easeOut,
-  interpolate,
   onEnd,
-  randomBetween,
 } from "./playMotion.ts";
 import { toScreenPixels } from "./screenScale.ts";
-
-interface Point {
-  readonly x: number;
-  readonly y: number;
-}
 
 /** Something that the canvas draws for a while, starting at a time in seconds. */
 interface Track {
@@ -143,22 +144,9 @@ const SCORE_SIGNAL_ANIMATION_ID = "score-signal";
  */
 const signalFireworks = new Set<Fireworks>();
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-function bezier(a: Point, control: Point, b: Point, t: number): Point {
-  const u = 1 - t;
-  return {
-    x: u * u * a.x + 2 * u * t * control.x + t * t * b.x,
-    y: u * u * a.y + 2 * u * t * control.y + t * t * b.y,
-  };
-}
-
 /** The center of an element, in the window's pixels. */
 function center(element: Element): Point {
-  const rect = element.getBoundingClientRect();
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  return rectCenter(element.getBoundingClientRect());
 }
 
 /**

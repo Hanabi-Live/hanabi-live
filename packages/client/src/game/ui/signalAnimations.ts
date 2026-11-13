@@ -2,6 +2,7 @@
 // last strike, and the deck runs out.
 
 import Konva from "konva";
+import { interpolate } from "../motion.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants.ts";
@@ -20,7 +21,6 @@ import {
   addCardGlow,
   addLabelPop,
   addScoreGlow,
-  interpolate,
   textCenter,
 } from "./fireworks.ts";
 import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView.ts";

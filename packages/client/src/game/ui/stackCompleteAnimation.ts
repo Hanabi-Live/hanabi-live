@@ -8,6 +8,14 @@
 // in "effectConfig.ts".
 
 import Konva from "konva";
+import type { Point } from "../motion.ts";
+import {
+  bezier,
+  easeInOut,
+  easeOut,
+  interpolate,
+  randomBetween,
+} from "../motion.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import type { PlayStack } from "./PlayStack.ts";
 import { globals } from "./UiGlobals.ts";
@@ -72,18 +80,12 @@ import {
   burstColors,
   suitColors,
 } from "./effectConfig.ts";
-import type { Point } from "./fireworks.ts";
 import {
   EffectTimeline,
   absoluteCenter,
   addCardGlow,
   addLabelPop,
   addScoreGlow,
-  bezier,
-  easeInOut,
-  easeOut,
-  interpolate,
-  randomBetween,
   textCenter,
 } from "./fireworks.ts";
 import { onClueTokensChanged } from "./reactive/views/gameInfoView.ts";

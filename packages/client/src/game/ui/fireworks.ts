@@ -2,6 +2,8 @@
 // and the flash and the shock ring of an explosion.
 
 import Konva from "konva";
+import type { Point } from "../motion.ts";
+import { easeInOut, easeOut, interpolate } from "../motion.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
@@ -15,11 +17,6 @@ import {
   SHEEN_WIDTH,
 } from "./effectConfig.ts";
 
-export interface Point {
-  x: number;
-  y: number;
-}
-
 /** Something that runs for a while, starting at a fixed time in the animation. */
 interface Track {
   start: number;
@@ -29,38 +26,10 @@ interface Track {
   ended: boolean;
 }
 
-export function easeIn(t: number): number {
-  return t * t;
-}
-
-export function easeOut(t: number): number {
-  return t * (2 - t);
-}
-
-export function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-export function interpolate(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
-
-export function bezier(a: Point, control: Point, b: Point, t: number): Point {
-  const u = 1 - t;
-  return {
-    x: u * u * a.x + 2 * u * t * control.x + t * t * b.x,
-    y: u * u * a.y + 2 * u * t * control.y + t * t * b.y,
-  };
-}
-
 export function absoluteCenter(node: Konva.Node): Point {
   return node
     .getAbsoluteTransform()
     .point({ x: node.width() / 2, y: node.height() / 2 });
-}
-
-export function randomBetween(min: number, max: number): number {
-  return min + Math.random() * (max - min);
 }
 
 /**

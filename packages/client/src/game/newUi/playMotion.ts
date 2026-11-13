@@ -7,6 +7,15 @@
 // finish them, as it does a card move (see "cardMotion.ts").
 
 import { MAX_STRIKES } from "@hanabi-live/game";
+import type { Point } from "../motion.ts";
+import {
+  bezier,
+  easeIn,
+  easeOut,
+  interpolate,
+  randomBetween,
+  rectCenter,
+} from "../motion.ts";
 import { WARNING_COLOR } from "../ui/constants.ts";
 import {
   FLASH_START_RADIUS,
@@ -107,11 +116,6 @@ const STRIKEOUT_FLASHES = 2;
 const STRIKEOUT_OPACITY = 0.6;
 const STRIKEOUT_GLOW = 0.1;
 
-interface Point {
-  readonly x: number;
-  readonly y: number;
-}
-
 /**
  * Where a moving card is: its center, its size relative to its size where it rests, and its turn in
  * degrees.
@@ -128,39 +132,11 @@ export interface Misplay {
   readonly strikeIndex: number | undefined;
 }
 
-function easeIn(t: number): number {
-  return t * t;
-}
-
-export function easeOut(t: number): number {
-  return t * (2 - t);
-}
-
-export function interpolate(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
-
-function bezier(a: Point, control: Point, b: Point, t: number): Point {
-  const u = 1 - t;
-  return {
-    x: u * u * a.x + 2 * u * t * control.x + t * t * b.x,
-    y: u * u * a.y + 2 * u * t * control.y + t * t * b.y,
-  };
-}
-
-export function randomBetween(min: number, max: number): number {
-  return min + Math.random() * (max - min);
-}
-
 function uniform(scale: number): {
   readonly scaleX: number;
   readonly scaleY: number;
 } {
   return { scaleX: scale, scaleY: scale };
-}
-
-function center(rect: DOMRect): Point {
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
 /** The progress (from 0 to 1) of a step that starts at `start` and lasts `duration`. */
@@ -254,7 +230,7 @@ export function raiseMovingCard(
 
 /** The transform that puts an element that rests at `rest` in a pose. */
 function poseTransform(rest: DOMRect, pose: Pose): string {
-  const { x, y } = center(rest);
+  const { x, y } = rectCenter(rest);
   return `translate(${pose.x - x}px, ${pose.y - y}px) rotate(${pose.rotation}deg) scale(${pose.scaleX}, ${pose.scaleY})`;
 }
 
@@ -438,15 +414,16 @@ export function animateMisplay(
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
 
-  const start = { ...center(from), scale: from.width / stackRect.width };
-  const end = center(to);
+  const start = { ...rectCenter(from), scale: from.width / stackRect.width };
+  const end = rectCenter(to);
   const endScale = 1 / stackScale;
-  const stackCenter = center(stackRect);
+  const stackCenter = rectCenter(stackRect);
   // Unlike on the classic screen, the card sputters on its stack, not above it: the stacks are in a
   // column, so above a stack is the stack before it.
   const hover = stackCenter;
   const fuse = { x: hover.x, y: hover.y - unit / 2 };
-  const blast = strikeBox === undefined ? hover : center(measure(strikeBox));
+  const blast =
+    strikeBox === undefined ? hover : rectCenter(measure(strikeBox));
 
   function sparks(
     sparksStart: number,
@@ -779,7 +756,7 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
   for (const box of boxes) {
     const rect = measure(box);
     addRing(
-      center(rect),
+      rectCenter(rect),
       unit,
       STRIKEOUT_RING_RADIUS,
       WARNING_COLOR,
@@ -837,19 +814,19 @@ export function animateBounceMisplay(
 ): void {
   const stackRect = measure(stackSlot);
   const stack: Pose = {
-    ...center(stackRect),
+    ...rectCenter(stackRect),
     scaleX: stackRect.width / to.width,
     scaleY: stackRect.width / to.width,
     rotation: 0,
   };
   const startScale = from.width / to.width;
   const start: Pose = {
-    ...center(from),
+    ...rectCenter(from),
     scaleX: startScale,
     scaleY: startScale,
     rotation: 0,
   };
-  const end: Pose = { ...center(to), scaleX: 1, scaleY: 1, rotation: 0 };
+  const end: Pose = { ...rectCenter(to), scaleX: 1, scaleY: 1, rotation: 0 };
   function between(a: Pose, b: Pose, t: number): Pose {
     const out = easeOut(t);
     return {
