@@ -14,7 +14,6 @@ import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
 import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
-import * as restart from "../ui/restart.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
 
@@ -212,6 +211,29 @@ function IconButton({
   );
 }
 
+/**
+ * A check box for a button that stays pressed while its setting is on. The site only bundles the
+ * solid icons, so the box is drawn instead of using an icon.
+ */
+export function Checkbox({
+  checked,
+}: {
+  readonly checked: boolean;
+}): React.JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={`tw:box-border tw:flex tw:size-4 tw:items-center tw:justify-center tw:rounded tw:border-2 tw:border-solid ${
+        checked
+          ? "tw:border-game-text tw:bg-game-text tw:text-card-ink"
+          : "tw:border-game-muted"
+      }`}
+    >
+      {checked && <i className="fas fa-check tw:text-[9px]" />}
+    </span>
+  );
+}
+
 /** A button that stays pressed while its setting is on, with a check box to show it. */
 function ToggleButton({
   label,
@@ -236,97 +258,9 @@ function ToggleButton({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      {/* The site only bundles the solid icons, so the box is drawn instead of using an icon. */}
-      <span
-        aria-hidden="true"
-        className={`tw:box-border tw:flex tw:size-4 tw:items-center tw:justify-center tw:rounded tw:border-2 tw:border-solid ${
-          pressed
-            ? "tw:border-game-text tw:bg-game-text tw:text-card-ink"
-            : "tw:border-game-muted"
-        }`}
-      >
-        {pressed && <i className="fas fa-check tw:text-[9px]" />}
-      </span>
+      <Checkbox checked={pressed} />
       {label}
     </button>
-  );
-}
-
-/** The leader's button to play the game again, with the choices of how. */
-function PlayAgain(): React.JSX.Element | undefined {
-  const [open, setOpen] = useState(false);
-  const { shared } = globals.state.replay;
-  if (shared === undefined) {
-    return undefined;
-  }
-
-  const declined = restart.declinedPlayers(shared);
-  const canRestart = restart.canRestart(shared, globals.metadata.playerNames);
-
-  return (
-    <div className="tw:relative tw:flex">
-      <button
-        aria-expanded={open}
-        className={`${PRIMARY_BUTTON_CLASS} tw:flex-1`}
-        onClick={() => {
-          // In a speedrun, when everyone will play again, there is nothing to choose.
-          if (globals.options.speedrun && declined.length === 0) {
-            restart.request(true);
-          } else {
-            setOpen(!open);
-          }
-        }}
-        type="button"
-      >
-        Play again
-      </button>
-      {open && (
-        <div className="tw:absolute tw:right-0 tw:bottom-full tw:z-20 tw:mb-2 tw:narrow-980:top-full tw:narrow-980:bottom-auto tw:narrow-980:mt-2 tw:narrow-980:mb-0 tw:flex tw:w-64 tw:flex-col tw:gap-2 tw:rounded-[14px] tw:bg-game-panel tw:p-3 tw:shadow-lg tw:ring-1 tw:ring-game-line">
-          {declined.length > 0 && (
-            <div className="tw:text-sm tw:text-game-muted">
-              Not ready: {declined.join(", ")}
-            </div>
-          )}
-          <button
-            className={BUTTON_CLASS}
-            disabled={declined.length > 0}
-            onClick={() => {
-              setOpen(false);
-              restart.request(true);
-            }}
-            ref={tooltipRef(
-              "Start a new game right away, with the same players and options.",
-            )}
-            type="button"
-          >
-            Restart game
-          </button>
-          <button
-            className={BUTTON_CLASS}
-            disabled={!canRestart}
-            onClick={() => {
-              setOpen(false);
-              restart.request(false);
-            }}
-            ref={tooltipRef(
-              "Make a new table with the same players and options, so that people can join or leave first.",
-            )}
-            type="button"
-          >
-            Remake table
-          </button>
-          <button
-            className={BUTTON_CLASS}
-            onClick={() => {
-              setOpen(false);
-            }}
-            type="button"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -535,25 +469,6 @@ export function TurnsBar({
               Enter hypothetical
             </button>
           )}
-          {shared?.canPlayAgain === true
-            && (shared.amLeader ? (
-              <PlayAgain />
-            ) : (
-              <ToggleButton
-                label="Ready"
-                onClick={() => {
-                  restart.decline(
-                    !shared.restartDeclined.includes(
-                      globals.metadata.ourUsername,
-                    ),
-                  );
-                }}
-                pressed={
-                  !shared.restartDeclined.includes(globals.metadata.ourUsername)
-                }
-                tooltip="Whether you will play again if the leader restarts the game."
-              />
-            ))}
           {!finished && (
             <button
               className={PRIMARY_BUTTON_CLASS}

@@ -67,6 +67,7 @@ import {
   NAME_GAP,
   NameColumnSizer,
 } from "./Hands.tsx";
+import { PlayAgain } from "./PlayAgain.tsx";
 import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
 import {
@@ -1622,15 +1623,6 @@ export function GameScreen({
 
       <StatusStrip
         canOpenReplay={!inReplay}
-        endGameMenu={
-          state.playing
-          && !state.finished && (
-            <EndGameMenu
-              numPlayers={metadata.options.numPlayers}
-              votes={votes}
-            />
-          )
-        }
         finished={state.finished}
         futureEfficiency={formatFutureEfficiency(
           visibleState.stats,
@@ -1670,6 +1662,23 @@ export function GameScreen({
             : getPaceRiskColor(visibleState.stats.paceRisk)
         }
         score={visibleState.score}
+        tableMenu={
+          state.playing && !state.finished ? (
+            <EndGameMenu
+              numPlayers={metadata.options.numPlayers}
+              votes={votes}
+            />
+          ) : (
+            state.replay.shared?.canPlayAgain === true && (
+              <PlayAgain
+                ourUsername={metadata.ourUsername}
+                playerNames={metadata.playerNames}
+                shared={state.replay.shared}
+                speedrun={metadata.options.speedrun}
+              />
+            )
+          )
+        }
         turn={visibleState.turn.turnNum + 1}
         variantName={globals.variant.name}
         viewAsMenu={

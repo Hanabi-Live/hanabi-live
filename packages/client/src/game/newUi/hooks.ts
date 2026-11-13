@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 /** The current time, updated at the given interval, for clocks that count down. */
@@ -74,4 +75,39 @@ export function useMediaQuery(query: string): boolean {
     subscribe,
     () => globalThis.matchMedia(query).matches,
   );
+}
+
+/** Closes an open menu when the player clicks outside of its container or presses Escape. */
+export function useCloseOnOutsideClick(
+  open: boolean,
+  containerRef: RefObject<HTMLElement | null>,
+  setOpen: (open: boolean) => void,
+): void {
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    function onPointerDown(event: PointerEvent) {
+      if (
+        event.target instanceof Node
+        && containerRef.current?.contains(event.target) !== true
+      ) {
+        setOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, containerRef, setOpen]);
 }

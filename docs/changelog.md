@@ -47,6 +47,8 @@ of the repository.
   so, such as "No 4s in that hand".
 - In the new game screen, the table is grained felt that is darker toward the
   edges, and the piles, clue log, and hands sit deeper in it.
+- In the new game screen, "Play again" and "Ready" are now in the bottom bar,
+  where "End game" is during the game.
 
 ## November 12th, 2026
 

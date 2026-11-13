@@ -1,6 +1,7 @@
 import type { PlayerIndex } from "@hanabi-live/game";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { useCloseOnOutsideClick } from "./hooks.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
@@ -32,34 +33,7 @@ export function ViewAsMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // A click elsewhere, or the Escape key, closes the menu.
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    function onPointerDown(event: PointerEvent) {
-      if (
-        event.target instanceof Node
-        && containerRef.current?.contains(event.target) !== true
-      ) {
-        setOpen(false);
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+  useCloseOnOutsideClick(open, containerRef, setOpen);
 
   const viewedName =
     viewedSeat === undefined ? undefined : playerNames[viewedSeat];

@@ -1,6 +1,7 @@
 import type { ServerEventData } from "@hanabi-live/data";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
+import { useCloseOnOutsideClick } from "./hooks.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /** Our own vote to end the game. The server does not tell us how the others voted. */
@@ -28,34 +29,7 @@ export function EndGameMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // A click elsewhere, or the Escape key, closes the menu.
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    function onPointerDown(event: PointerEvent) {
-      if (
-        event.target instanceof Node
-        && containerRef.current?.contains(event.target) !== true
-      ) {
-        setOpen(false);
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+  useCloseOnOutsideClick(open, containerRef, setOpen);
 
   const voted = votes?.voted === true;
 
