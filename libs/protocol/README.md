@@ -1,19 +1,24 @@
 # hanabi_protocol
 
-The messages of [hanab.live](https://hanab.live)'s protocol as Rust types, with their JSON schemas: what the server and a client
-(the website, a bot) send each other over the WebSocket, and the bodies of its HTTP routes. A client decodes with
-`ClientRequest::decode` / `ServerEvent` and the typed `event`, `reply` and `request_contracts` constants, and gets an error where the
-server would refuse a message, instead of a message it does not understand.
+The messages of [hanab.live](https://hanab.live)'s protocol as Rust types, with
+their JSON schemas: what the server and a client (the website, a bot) send each
+other over the WebSocket, and the bodies of its HTTP routes. A client decodes
+with `ClientRequest::decode` / `ServerEvent` and the typed `event`, `reply` and
+`request_contracts` constants, and gets an error where the server would refuse a
+message, instead of a message it does not understand.
 
-Licensed under the MIT license (`LICENSE`), unlike the server that uses it (GPL-3.0).
+Licensed under the MIT license (`LICENSE`), unlike the server that uses it
+(GPL-3.0).
 
 ## Features
 
-- *(none)*: everything a client of the WebSocket needs, and the `/login` form and the `/ws` query.
-- `http`: the payloads of the other HTTP routes, which only the website and the server use (identity tokens, password hashes, public
-  variants, the game list). The server turns it on.
-- `generate`: builds the `generate` binary, which writes the TypeScript schemas of the clients (`scripts/dev/generate-protocol.sh`).
-  Implies `http`.
+- _(none)_: everything a client of the WebSocket needs, and the `/login` form
+  and the `/ws` query.
+- `http`: the payloads of the other HTTP routes, which only the website and the
+  server use (identity tokens, password hashes, public variants, the game list).
+  The server turns it on.
+- `generate`: builds the `generate` binary, which writes the TypeScript schemas
+  of the clients (`scripts/dev/generate-protocol.sh`). Implies `http`.
 
 ## Wire contracts
 
