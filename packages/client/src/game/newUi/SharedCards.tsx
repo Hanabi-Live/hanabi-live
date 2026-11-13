@@ -515,35 +515,54 @@ function ClueTokenIcon(): React.JSX.Element {
 /** The color of the body of the bomb icon: blue, like the bombs in "The Legend of Zelda". */
 const BOMB_BODY_COLOR = "#3d6fe0";
 
+/**
+ * The color of the outline, cap, and fuse of the bomb icon: a dark navy that stands out on the
+ * green table and suits the blue body.
+ */
+const BOMB_INK_COLOR = "#0b1a3a";
+
 /** The color of the lit spark on the fuse of the bomb icon. */
 const BOMB_SPARK_COLOR = "#ffd43b";
 
+/** The cap of the bomb icon, which joins the body below the fuse. */
+function BombCap(props: React.SVGProps<SVGRectElement>): React.JSX.Element {
+  return (
+    <rect
+      height={3.6}
+      rx={1}
+      transform="rotate(45 16 8)"
+      width={5}
+      x={13.5}
+      y={6.2}
+      {...props}
+    />
+  );
+}
+
 /**
- * A bomb, the usual name for a strike: a round blue body with a shine, a gray cap, and a lit fuse.
+ * A bomb, the usual name for a strike: a round blue body with a shine, a dark cap, and a lit fuse.
+ * One dark outline goes around the body and the cap together, so that the bomb stands out on the
+ * green table without a line where the two parts meet.
  */
 function BombIcon(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className="tw:mr-0.5 tw:size-[26px] tw:text-game-muted"
+      className="tw:mr-0.5 tw:size-[26px]"
       viewBox="0 0 24 24"
     >
       <path
         d="M17.2 6.8Q18.4 3.2 21.2 3.4"
         fill="none"
-        stroke="currentColor"
+        stroke={BOMB_INK_COLOR}
         strokeLinecap="round"
         strokeWidth={1.6}
       />
-      <rect
-        fill="currentColor"
-        height={3.6}
-        rx={1}
-        transform="rotate(45 16 8)"
-        width={5}
-        x={13.5}
-        y={6.2}
-      />
+      <g stroke={BOMB_INK_COLOR} strokeLinejoin="round" strokeWidth={3}>
+        <BombCap fill={BOMB_INK_COLOR} />
+        <circle cx={10.5} cy={14} fill={BOMB_INK_COLOR} r={8} />
+      </g>
+      <BombCap fill={BOMB_INK_COLOR} />
       <circle cx={10.5} cy={14} fill={BOMB_BODY_COLOR} r={8} />
       <ellipse
         cx={7.6}
