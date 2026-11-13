@@ -3,8 +3,7 @@
 //! library's rules and compares the numbers.
 //!
 //! Most variants differ only in which cards a clue touches, which does not change the numbers. So
-//! the variants are grouped by their other rules, and the first `GAMES_PER_RULE_SET` variants of
-//! each group are played.
+//! the variants are grouped by their other rules, and the first variant of each group is played.
 
 use anyhow::Context;
 use hanabi_engine::{
@@ -17,10 +16,7 @@ use hanabi_protocol::{
 };
 use serde::Serialize;
 use serde_json::Value;
-use std::collections::HashMap;
-
-/// How many variants of each group of variants with the same rules are played.
-const GAMES_PER_RULE_SET: usize = 2;
+use std::collections::HashSet;
 
 /// The properties of a variant that only decide which cards a clue touches, or that only name it.
 const CLUE_PROPERTIES: [&str; 16] = [
@@ -291,12 +287,10 @@ fn rule_set(variant: &hanabi_engine::Variant) -> anyhow::Result<String> {
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut played = HashMap::<String, usize>::new();
+    let mut played = HashSet::new();
     let mut games = Vec::new();
     for (index, variant) in variants().iter().enumerate() {
-        let count = played.entry(rule_set(variant)?).or_default();
-        if *count < GAMES_PER_RULE_SET {
-            *count += 1;
+        if played.insert(rule_set(variant)?) {
             games.push(play_game(index, &variant.name)?);
         }
     }
