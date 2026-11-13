@@ -276,7 +276,8 @@ function editCard(order: CardOrder) {
 /**
  * Returns the seats in the order that the screen shows them. The hands of the players in
  * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
- * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses.
+ * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses. The
+ * viewer's own hand always applies the viewer's notes.
  */
 function getSeats(
   state: State,
@@ -334,7 +335,9 @@ function getSeats(
               : (state.notes.ourNotes[order] ?? BLANK_NOTE),
           variant: globals.variant,
           empathy,
-          empathyIncludesNotes: empathy && empathyIncludesNotes,
+          // Our own notes always apply to our own hand, as on the classic screen: a note can show a
+          // card's identity and remove possibilities.
+          empathyIncludesNotes: empathy && (empathyIncludesNotes || you),
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
         }),

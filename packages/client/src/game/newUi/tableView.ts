@@ -20,6 +20,7 @@ import {
   getCardPipPresentation,
   getEfficiency,
   isCardClued,
+  isCardIdentityFromNote,
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
@@ -55,6 +56,9 @@ export interface CardView {
    */
   readonly possibleSuitIndexes: readonly SuitIndex[];
   readonly possibleRanks: readonly Rank[];
+
+  /** Whether the viewer's note changes the suit or rank that the card face shows. */
+  readonly identityFromNote: boolean;
 }
 
 /**
@@ -100,7 +104,7 @@ export function getCardView({
   finished,
   realLifeMode,
 }: CardViewOptions): CardView {
-  const { suitIndex, rank } = getCardIdentityToShow({
+  const identityOptions = {
     cardIdentity,
     state: cardState,
     note,
@@ -108,7 +112,8 @@ export function getCardView({
     empathyIncludesNotes,
     isStackBase: false,
     finished,
-  });
+  };
+  const { suitIndex, rank } = getCardIdentityToShow(identityOptions);
 
   const status =
     suitIndex === undefined || rank === undefined
@@ -153,6 +158,7 @@ export function getCardView({
     trashIcon,
     possibleSuitIndexes,
     possibleRanks,
+    identityFromNote: isCardIdentityFromNote(identityOptions),
   };
 }
 

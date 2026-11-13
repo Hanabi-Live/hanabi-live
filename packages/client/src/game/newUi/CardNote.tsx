@@ -12,6 +12,7 @@ import {
   prependTurnToNote,
 } from "../noteShortcuts.ts";
 import { globals } from "../ui/UiGlobals.ts";
+import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
 
 /** The width of the box to type a note in, in CSS pixels. */
@@ -95,6 +96,18 @@ export function CardNote({
           : (event) => {
               event.preventDefault();
               onRightClick(event);
+            }
+      }
+      // On some systems, the right-click event comes when the button goes down, before the press
+      // moves the focus to the card. The press would then take the focus from the note box, which
+      // closes it.
+      onMouseDown={
+        onRightClick === undefined
+          ? undefined
+          : (event) => {
+              if (event.button === RIGHT_MOUSE_BUTTON) {
+                event.preventDefault();
+              }
             }
       }
       // While the box is open, it shows the note instead.

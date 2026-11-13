@@ -30,6 +30,9 @@ of the repository.
   stacks show their suit colors, and a gold ring marks whose turn it is.
 - In the new game screen, you can right-click a card in a hand to write a note
   on it, and hover over the card to read its notes.
+- In the new game screen, your notes on your own cards now apply, as in the
+  classic screen: a note such as "r1" shows the card as a red 1, and a pencil on
+  the card's note badge shows this.
 
 ## November 12th, 2026
 

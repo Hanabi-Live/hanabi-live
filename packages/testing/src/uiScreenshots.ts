@@ -1478,22 +1478,32 @@ function getStates({
         await page.keyboard.press("Enter");
       },
     },
-    // The same game, with the pointer over the card with the note.
+    // The same game, after the account writes a note on the first card of its own hand that makes
+    // it show as a red 1, so that its badge shows a pencil. The pointer is over that card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
+      prepare: async (page) => {
+        await page
+          .locator('#game-new-ui [data-card-place="hand-0-0"]')
+          .click({ button: "right" });
+        await page.keyboard.type("r1");
+        await page.keyboard.press("Enter");
+      },
       hover: async (page) => {
-        await page.locator('#game-new-ui [data-card-place="hand-1-0"]').hover();
+        await page.locator('#game-new-ui [data-card-place="hand-0-0"]').hover();
         await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
       },
-      // Delete the note.
+      // Delete the notes.
       cleanup: async (page) => {
-        await page
-          .locator('#game-new-ui [data-card-place="hand-1-0"]')
-          .click({ button: "right" });
-        await page.getByRole("textbox", { name: "Note" }).fill("");
-        await page.keyboard.press("Enter");
+        for (const place of ["hand-0-0", "hand-1-0"]) {
+          await page
+            .locator(`#game-new-ui [data-card-place="${place}"]`)
+            .click({ button: "right" });
+          await page.getByRole("textbox", { name: "Note" }).fill("");
+          await page.keyboard.press("Enter");
+        }
       },
     },
     // The same game, with the menu of the "End game" button open.

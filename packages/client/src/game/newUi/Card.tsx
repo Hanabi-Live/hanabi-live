@@ -78,8 +78,11 @@ interface CardFaceProps {
   /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
   readonly clueMarker?: ClueMarkerView;
 
-  /** Whether the card has a note, which its tooltip shows. */
-  readonly hasNote?: boolean;
+  /**
+   * The badge of a card with a note, which its tooltip shows: "identity" when the note changes the
+   * suit or rank that the face shows, and "note" for any other note.
+   */
+  readonly noteBadge?: NoteBadgeKind;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -199,17 +202,38 @@ function StatusBadge({
   );
 }
 
+export type NoteBadgeKind = "note" | "identity";
+
+const NOTE_BADGES = {
+  note: { icon: "fa-sticky-note", label: "Has a note" },
+  identity: {
+    icon: "fa-pencil-alt",
+    label: "Has a note that sets the suit or rank shown",
+  },
+} as const satisfies Record<
+  NoteBadgeKind,
+  { readonly icon: string; readonly label: string }
+>;
+
 /**
- * The badge on the bottom-right corner of a card that has a note. It sits half off the card, so
- * that it covers little of the possibilities.
+ * The badge on the bottom-right corner of a card that has a note. A pencil shows that the note
+ * changes the suit or rank on the face, so that the player does not take it for a known card. The
+ * badge sits half off the card, so that it covers little of the possibilities.
  */
-function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
+function NoteBadge({
+  kind,
+  width,
+}: {
+  readonly kind: NoteBadgeKind;
+  readonly width: number;
+}): React.JSX.Element {
   const size = width * 0.26;
+  const { icon, label } = NOTE_BADGES[kind];
   return (
     <span
-      aria-label="Has a note"
+      aria-label={label}
       className="tw:pointer-events-none tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-game-text tw:text-card-ink"
-      data-note-badge
+      data-note-badge={kind}
       role="img"
       style={{
         right: -size * 0.3,
@@ -220,7 +244,7 @@ function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
         boxShadow: "0 0 0 1.5px black",
       }}
     >
-      <i aria-hidden="true" className="fas fa-sticky-note" />
+      <i aria-hidden="true" className={`fas ${icon}`} />
     </span>
   );
 }
@@ -424,7 +448,7 @@ export function CardFace({
   possibleSuitIndexes = [],
   possibleRanks = [],
   clueMarker,
-  hasNote = false,
+  noteBadge,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -495,7 +519,7 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {hasNote && <NoteBadge width={width} />}
+      {noteBadge !== undefined && <NoteBadge kind={noteBadge} width={width} />}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities

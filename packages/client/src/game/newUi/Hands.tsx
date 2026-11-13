@@ -1,7 +1,7 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
-import type { ClueMarkerView } from "./Card.tsx";
+import type { ClueMarkerView, NoteBadgeKind } from "./Card.tsx";
 import {
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
@@ -473,7 +473,7 @@ function OwnCard({
       clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
-      hasNote={props.notesHtml.has(card.order)}
+      noteBadge={getNoteBadge(card, props.notesHtml)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
       raiseClued
@@ -595,7 +595,7 @@ function EditableCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
-        hasNote={props.notesHtml.has(card.order)}
+        noteBadge={getNoteBadge(card, props.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -608,6 +608,17 @@ function EditableCard({
       />
     </button>
   );
+}
+
+/** The badge of a card that has a note. */
+function getNoteBadge(
+  card: CardView,
+  notesHtml: ReadonlyMap<CardOrder, string>,
+): NoteBadgeKind | undefined {
+  if (card.identityFromNote) {
+    return "identity";
+  }
+  return notesHtml.has(card.order) ? "note" : undefined;
 }
 
 /** A card in a hand, as its seat and the screen's mode show it. */
@@ -663,8 +674,8 @@ function HandCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
-        hasNote={props.notesHtml.has(card.order)}
         highlighted={props.touchedCards.has(card.order)}
+        noteBadge={getNoteBadge(card, props.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
