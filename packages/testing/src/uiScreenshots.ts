@@ -1501,15 +1501,13 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
-    // The same game, after Bob gives a clue, with the modal that asks which card to play (the "a"
-    // hotkey).
+    // The same game, with the modal that asks which card to play (the "a" hotkey). Bob's clue in
+    // the video of the "new-ui-clue-log-press" state made it the account's turn.
     {
       name: "play-discard-modal",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await clueAccount();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
         await page.keyboard.press("a");
         await page.locator("#play-discard-modal").waitFor();
       },
