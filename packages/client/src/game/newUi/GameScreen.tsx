@@ -1203,6 +1203,10 @@ export function GameScreen({
     && clueTarget !== undefined
     && clue !== undefined
     && isClueAllowed(clue, touched.length, variant, options);
+  const clueTouchesNothing =
+    clueTarget !== undefined
+    && clue !== undefined
+    && !isClueAllowed(clue, touched.length, variant, options);
 
   const clueTargets = otherPlayers.map((seat) => ({
     playerIndex: seat.playerIndex,
@@ -1499,6 +1503,7 @@ export function GameScreen({
                       canClue={false}
                       canGive={false}
                       clue={undefined}
+                      clueTouchesNothing={false}
                       colorblindMode={settings.colorblindMode}
                       onChooseClue={ignore}
                       onChooseTarget={ignore}
@@ -1521,6 +1526,7 @@ export function GameScreen({
                       canClue={canClue}
                       canGive={canGive}
                       clue={clue}
+                      clueTouchesNothing={clueTouchesNothing}
                       colorblindMode={settings.colorblindMode}
                       onChooseClue={setClue}
                       onChooseTarget={setClueTarget}

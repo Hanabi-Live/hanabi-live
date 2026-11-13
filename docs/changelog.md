@@ -43,6 +43,8 @@ of the repository.
   the pointer is over the card.
 - In the new game screen, the bomb next to the strikes has a tooltip.
 - In the new game screen, the deck no longer says "Last card" or "Final round".
+- In the new game screen, when a clue would touch no cards, the clue button says
+  so, such as "No 4s in that hand".
 
 ## November 12th, 2026
 

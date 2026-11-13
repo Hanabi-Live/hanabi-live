@@ -135,6 +135,37 @@ async function clickRankOneClue(page: Page) {
     .click();
 }
 
+/**
+ * Chooses the first clue in the New UI that touches no cards in Bob's hand. The game has two
+ * players, so the panel has no player buttons, and its pressed buttons are clues.
+ */
+async function chooseClueThatTouchesNothing(page: Page) {
+  const panel = page.locator('#game-new-ui [aria-label="Give a clue"]');
+  for (const clue of await panel.locator("button[aria-pressed]").all()) {
+    await clue.click();
+    if (
+      (await panel
+        .getByRole("button", { name: /^No .* in that hand$/u })
+        .count()) > 0
+    ) {
+      return;
+    }
+
+    await clue.click();
+  }
+
+  throw new Error("Every clue touches a card in Bob's hand.");
+}
+
+/** Clears the chosen clue in the New UI. */
+async function clearClue(page: Page) {
+  await page
+    .locator(
+      '#game-new-ui [aria-label="Give a clue"] button[aria-pressed="true"]',
+    )
+    .click();
+}
+
 async function writeNote(page: Page, card: Locator, text: string) {
   await card.click({ button: "right" });
   await page.getByRole("textbox", { name: "Note" }).fill(text);
@@ -1388,6 +1419,20 @@ function getStates({
       },
       cleanup: async (page) => {
         await clickRankOneClue(page);
+      },
+    },
+    // The game from the previous state, with a clue chosen that touches no cards in Bob's hand, so
+    // that "Give clue" says why it cannot be pressed.
+    {
+      name: "new-ui-clue-touches-nothing",
+      path: "/",
+      loggedIn: true,
+      bobsGame: true,
+      prepare: async (page) => {
+        await chooseClueThatTouchesNothing(page);
+      },
+      cleanup: async (page) => {
+        await clearClue(page);
       },
     },
     // The game from the previous state, after the account plays a card that it does not know. Its

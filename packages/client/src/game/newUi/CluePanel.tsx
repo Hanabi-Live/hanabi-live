@@ -31,6 +31,9 @@ interface CluePanelProps {
   readonly clue: Clue | undefined;
   readonly onChooseClue: (clue: Clue | undefined) => void;
   readonly canGive: boolean;
+
+  /** Whether the chosen clue touches no cards in the chosen hand, and the rules forbid that. */
+  readonly clueTouchesNothing: boolean;
   readonly onGive: () => void;
 }
 
@@ -63,17 +66,24 @@ export const CONTROL_PANEL_CLASS =
 
 const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
-/** Until the clue is ready, the "Give clue" button says what the player still has to choose. */
-const GIVE_BUTTON_LABELS = [
-  "Pick a player",
-  "Pick a color or number",
-  "Give clue",
-] as const;
+/** Says that a clue touches no cards in the chosen hand. */
+function getTouchesNothingLabel(clue: Clue): string {
+  if (clue.type === "color") {
+    return `No ${clue.value.name.toLowerCase()} cards in that hand`;
+  }
 
+  return `No ${clue.value}s in that hand`;
+}
+
+/**
+ * Until the clue is ready, the "Give clue" button says what the player still has to choose, or why
+ * they cannot give the chosen clue.
+ */
 function getGiveButtonLabel(
   target: PlayerIndex | undefined,
   clue: Clue | undefined,
-): (typeof GIVE_BUTTON_LABELS)[number] {
+  clueTouchesNothing: boolean,
+): string {
   if (target === undefined) {
     return "Pick a player";
   }
@@ -82,7 +92,22 @@ function getGiveButtonLabel(
     return "Pick a color or number";
   }
 
-  return "Give clue";
+  return clueTouchesNothing ? getTouchesNothingLabel(clue) : "Give clue";
+}
+
+/** Every label that the "Give clue" button can show in this variant. */
+function getGiveButtonLabels(variant: Variant): readonly string[] {
+  return [
+    "Pick a player",
+    "Pick a color or number",
+    "Give clue",
+    ...variant.clueColors.map((color) =>
+      getTouchesNothingLabel(newColorClue(color)),
+    ),
+    ...variant.clueRanks.map((rank) =>
+      getTouchesNothingLabel(newRankClue(rank)),
+    ),
+  ];
 }
 
 /**
@@ -100,9 +125,10 @@ export function CluePanel({
   clue,
   onChooseClue,
   canGive,
+  clueTouchesNothing,
   onGive,
 }: CluePanelProps): React.JSX.Element {
-  const label = getGiveButtonLabel(target, clue);
+  const label = getGiveButtonLabel(target, clue, clueTouchesNothing);
 
   // While the viewer cannot clue, the buttons keep their place, hidden behind the reason. So the
   // panel is the same size on every turn, and the hands above it do not change size. On a narrow
@@ -210,8 +236,8 @@ export function CluePanel({
           >
             {/* Every label sits in the same cell, so the button is as wide as the longest one and
                 does not change size as the player chooses. */}
-            <span className="tw:grid">
-              {GIVE_BUTTON_LABELS.map((buttonLabel) => (
+            <span className="tw:grid tw:items-center">
+              {getGiveButtonLabels(variant).map((buttonLabel) => (
                 <span
                   className={`tw:[grid-area:1/1] ${buttonLabel === label ? "" : "tw:invisible"}`}
                   key={buttonLabel}
