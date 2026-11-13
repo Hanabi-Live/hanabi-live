@@ -382,6 +382,11 @@ export const gameFinishedSchema = z
      * the cards that were hidden from it.
      */
     deck: z.array(cardIdentitySchema).max(60).readonly(),
+    /**
+     * Every event of the game, with nothing hidden. A player saw some clues without their type
+     * or value, as in a "Duck" variant, and the replay shows them in full.
+     */
+    events: z.array(gameEventSchema).readonly(),
     finishedAt: z.iso.datetime({ precision: 3 }),
     /**
      * Absent when the game was not saved.
@@ -706,7 +711,7 @@ export const idleWarningSchema = z
      * How long until the game ends, unless someone takes a turn or keeps it going. At most
      * `IDLE_WARNING_MS`.
      */
-    remainingMs: millisecondsSchema,
+    idleRemainingMs: millisecondsSchema,
     tableId: tableIdSchema,
   })
   .readonly();

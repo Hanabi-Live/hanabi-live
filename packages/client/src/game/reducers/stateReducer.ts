@@ -63,13 +63,14 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "gameFinished": {
       if (state.playing || state.shadowing) {
         // We were playing in a game that just ended. Recalculate the whole game as a spectator to
-        // fix card possibilities.
+        // fix card possibilities, from the actions with the clues that we saw only in part.
         state.playing = false;
         state.shadowing = false;
+        state.replay.actions = castDraft(action.actions);
 
         const initialGameState = getInitialGameState(state.metadata);
         const { game, states } = reduceGameActions(
-          state.replay.actions,
+          action.actions,
           initialGameState,
           state.playing,
           state.shadowing,

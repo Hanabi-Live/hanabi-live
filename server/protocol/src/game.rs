@@ -49,7 +49,7 @@ pub struct IdleWarning {
     pub table_id: TableId,
     /// How long until the game ends, unless someone takes a turn or keeps it going. At most
     /// `IDLE_WARNING_MS`.
-    pub remaining_ms: Milliseconds,
+    pub idle_remaining_ms: Milliseconds,
 }
 
 /// Whether the game is paused, as one player sees it.
@@ -115,6 +115,9 @@ pub struct GameFinished {
     /// the cards that were hidden from it.
     #[schemars(length(max = MAX_DECK_SIZE))]
     pub deck: Vec<CardIdentity>,
+    /// Every event of the game, with nothing hidden. A player saw some clues without their type
+    /// or value, as in a "Duck" variant, and the replay shows them in full.
+    pub events: Vec<GameEvent>,
     /// Every player's and spectator's notes, which the recipient may now all see.
     pub notes: Vec<AuthorNotes>,
     pub shared_replay: SharedReplayState,

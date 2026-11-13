@@ -44,19 +44,6 @@ export function createJsonFromReplay(room: string): void {
     );
     return;
   }
-  if (
-    globals.state.replay.actions.some(
-      (action) => action.type === "clue" && action.clue.type === undefined,
-    )
-  ) {
-    sendSelfPmFromServer(
-      "The completed clue history is still loading. Please try again after it loads.",
-      room,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-
   // Copy the entire deck.
   const deck: Array<NonNullable<GameJson["deck"]>[number]> = [];
   for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {

@@ -117,6 +117,7 @@ gameCommands.set("gameFinished", (data) => {
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
     type: "gameFinished",
+    actions: data.events.map(toGameAction),
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     datetimeFinished: data.finishedAt,
@@ -126,17 +127,6 @@ gameCommands.set("gameFinished", (data) => {
 
   // Now that the game is over, we may see everyone's notes.
   setNotes(data.notes);
-
-  if (
-    globals.state.replay.actions.some(
-      (action) => action.type === "clue" && action.clue.type === undefined,
-    )
-  ) {
-    // Completed replays may reveal clues; replace the restricted history before exporting it.
-    globals.lobby.conn!.send("gameStateLoad", {
-      tableId: globals.lobby.joinedTableId,
-    });
-  }
 });
 
 // The shared replay leader's actions, which the server relays to everyone watching.
@@ -385,7 +375,7 @@ function setEvents(events: GameState["events"]) {
 }
 
 gameCommands.set("idleWarning", (data) => {
-  showIdleWarning(data.remainingMs);
+  showIdleWarning(data.idleRemainingMs);
 });
 
 /** Warns that the game ends soon from inactivity. A player can keep it going. */

@@ -1220,14 +1220,15 @@ impl TableActor {
                 .idle_warned()
                 .is_some_and(|warned| !std::mem::replace(warned, true))
         {
-            let remaining_ms = hanabi_protocol::Milliseconds::saturating(timers.idle_remaining);
+            let idle_remaining_ms =
+                hanabi_protocol::Milliseconds::saturating(timers.idle_remaining);
             let mut e = self.effects();
             self.add_all(
                 &mut e,
                 hanabi_protocol::event::IDLE_WARNING,
                 IdleWarning {
                     table_id: self.table.id,
-                    remaining_ms,
+                    idle_remaining_ms,
                 },
             );
             self.publish(e).await?;

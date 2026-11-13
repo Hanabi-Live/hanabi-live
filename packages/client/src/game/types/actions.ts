@@ -97,6 +97,9 @@ interface ActionGameFinished extends Readonly<
 > {
   readonly type: "gameFinished";
 
+  /** Every action of the game, with the clues that a player saw only in part. */
+  readonly actions: readonly GameAction[];
+
   /** The server does not send this; the client records when it received the message. */
   readonly datetimeFinished: string;
 

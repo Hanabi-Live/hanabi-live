@@ -629,9 +629,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         );
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..5 {
-            h.send(index, "gameStateLoad", json!({"tableId":id})).await?;
-            let history = h.receive(index, "gameState").await?;
-            let clues = history["events"]
+            let finished = h.receive(index, "gameFinished").await?;
+            let clues = finished["events"]
                 .as_array()
                 .unwrap()
                 .iter()

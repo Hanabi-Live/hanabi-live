@@ -162,6 +162,7 @@ impl TableActor {
                 s.finished.context("A finished game has no finish time")?,
             );
             let deck = Self::card_identities(s);
+            let events = game_events(&s.game.state().events);
             for a in self.audience() {
                 e.statuses.push((
                     a.session.clone(),
@@ -189,6 +190,7 @@ impl TableActor {
                             game_id: s.game_id,
                             finished_at: finished_at.clone(),
                             deck: deck.clone(),
+                            events: events.clone(),
                             notes: self.observer_notes(a),
                             shared_replay: self
                                 .shared_replay_state(s, &a.session)
