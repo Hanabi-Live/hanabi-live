@@ -28,6 +28,8 @@ of the repository.
 - In the new game screen, pace has a help icon that explains it.
 - The new game screen is now brighter: the table is green felt, the empty play
   stacks show their suit colors, and a gold ring marks whose turn it is.
+- In the new game screen, you can right-click a card in a hand to write a note
+  on it, and hover over the card to read its notes.
 
 ## November 12th, 2026
 

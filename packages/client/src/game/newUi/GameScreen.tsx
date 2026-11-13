@@ -37,6 +37,7 @@ import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
+import * as notes from "../ui/notes.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
@@ -48,6 +49,7 @@ import {
   CardFace,
   CLUED_RAISE_PER_WIDTH,
 } from "./Card.tsx";
+import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueLog } from "./ClueLog.tsx";
@@ -407,6 +409,20 @@ function getDiscardRows(state: State): ReadonlyArray<readonly DiscardView[]> {
     .filter((row: readonly DiscardView[]) => row.length > 0);
 }
 
+/** The notes that the tooltip of each card in the hands shows, for the cards that have notes. */
+function getNotesHtml(seats: readonly Seat[]): ReadonlyMap<CardOrder, string> {
+  const notesHtml = new Map<CardOrder, string>();
+  for (const seat of seats) {
+    for (const card of seat.cards) {
+      const html = notes.getShownNoteHtml(card.order);
+      if (html !== "") {
+        notesHtml.set(card.order, html);
+      }
+    }
+  }
+  return notesHtml;
+}
+
 /** The clue that led to the turn that shows, if the last move was a clue. */
 function getClueForTurn(gameState: GameState): StateClue | undefined {
   const { segment } = gameState.turn;
@@ -736,6 +752,8 @@ export function GameScreen({
     };
   }, [drop]);
   const [editingCards, setEditingCards] = useState(false);
+  // The card whose note the viewer is typing.
+  const [noteCard, setNoteCard] = useState<CardOrder>();
 
   const pendingDrag = useRef<{ order: CardOrder; x: number; y: number }>(
     undefined,
@@ -1123,6 +1141,7 @@ export function GameScreen({
     globalEmpathy && globalEmpathyNotes,
   );
   const shownClue = getClueForTurn(visibleState);
+  const notesHtml = getNotesHtml(seats);
 
   // The chat lists everyone who is watching, with us first as "You": our own name alone in a replay
   // would read as if the game were ours.
@@ -1377,6 +1396,8 @@ export function GameScreen({
                   }
                   menuCard={menuCard}
                   nameColumnWidth={nameColumnWidth}
+                  noteCard={noteCard}
+                  notesHtml={notesHtml}
                   onCardPointerDown={(event, order) => {
                     if (canMoveCards && !tapToMove && event.button === 0) {
                       pendingDrag.current = {
@@ -1391,6 +1412,9 @@ export function GameScreen({
                       current === order ? undefined : order,
                     );
                   }}
+                  onCloseNote={() => {
+                    setNoteCard(undefined);
+                  }}
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {
@@ -1404,6 +1428,16 @@ export function GameScreen({
                     sendAction({ type: "play", order });
                   }}
                   onPressCard={setPressedCard}
+                  onRightClickCard={
+                    // Notes are only for games that are still going.
+                    state.finished
+                      ? undefined
+                      : (event, order) => {
+                          if (rightClickNote(event, order)) {
+                            setNoteCard(order);
+                          }
+                        }
+                  }
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {

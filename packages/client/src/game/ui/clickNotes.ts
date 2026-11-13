@@ -1,4 +1,8 @@
-import { noop } from "complete-common";
+import {
+  appendToNote,
+  getRightClickNoteAction,
+  prependTurnToNote,
+} from "../noteShortcuts.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as notes from "./notes.ts";
@@ -13,57 +17,39 @@ export function clickRightCheckAddNote(
     return;
   }
 
-  // Ctrl + shift + alt + right-click is a "kt" note. (This is a common abbreviation for "this card
-  // is known trash".)
-  if (event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
-    card.appendNote("kt");
-    return;
-  }
+  const action = getRightClickNoteAction(event, isSpeedrun);
+  const ourNote = globals.state.notes.ourNotes[card.order]?.text ?? "";
+  switch (action?.type) {
+    case "append": {
+      const note = appendToNote(globals.variant, ourNote, action.text);
+      if (note !== undefined) {
+        card.setNote(note);
+      }
+      break;
+    }
 
-  // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered.
-  // (This must be above the other note code because of the modifiers.)
-  if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
-    card.setNote(globals.lastNote);
-    return;
-  }
+    case "repeatLast": {
+      card.setNote(globals.lastNote);
+      break;
+    }
 
-  // Ctrl + alt + right-click is prepend turn count.
-  if (event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    card.prependTurnCountNote(`#${globals.elements.turnNumberLabel?.text()}`);
-    return;
-  }
+    case "prependTurn": {
+      // The turn that shows, counted from 1, as the "Turn" label shows it.
+      const turnNum = globals.state.visibleState?.turn.turnNum ?? 0;
+      const note = prependTurnToNote(globals.variant, ourNote, turnNum + 1);
+      if (note !== undefined) {
+        card.setNote(note);
+      }
+      break;
+    }
 
-  // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
-  if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
-    card.appendNote("f");
-    return;
-  }
+    case "edit": {
+      notes.openEditTooltip(card);
+      break;
+    }
 
-  // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
-  // moved".)
-  if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    card.appendNote("cm");
-    return;
+    case undefined: {
+      break;
+    }
   }
-
-  // Shift + alt + right-click is a "ptd" note. (This is a common abbreviation for "this card has
-  // permission to discard").
-  if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
-    card.appendNote("ptd");
-    return;
-  }
-
-  // A normal right-click is edit a note. (But in speedruns, this is ctrl + right-click.)
-  if (
-    event.ctrlKey === isSpeedrun
-    && !event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-  ) {
-    notes.openEditTooltip(card);
-    return;
-  }
-
-  // Do nothing in the default case. (We need a function to satisfy the early return pattern.)
-  noop();
 }

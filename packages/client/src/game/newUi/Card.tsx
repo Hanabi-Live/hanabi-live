@@ -77,6 +77,9 @@ interface CardFaceProps {
 
   /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
   readonly clueMarker?: ClueMarkerView;
+
+  /** Whether the card has a note, which its tooltip shows. */
+  readonly hasNote?: boolean;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -192,6 +195,32 @@ function StatusBadge({
       }}
     >
       {critical ? "!" : <i aria-hidden="true" className="fas fa-trash-alt" />}
+    </span>
+  );
+}
+
+/**
+ * The badge on the bottom-right corner of a card that has a note. It sits half off the card, so
+ * that it covers little of the possibilities.
+ */
+function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
+  const size = width * 0.26;
+  return (
+    <span
+      aria-label="Has a note"
+      className="tw:pointer-events-none tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-game-text tw:text-card-ink"
+      data-note-badge
+      role="img"
+      style={{
+        right: -size * 0.3,
+        bottom: -size * 0.3,
+        width: size,
+        height: size,
+        fontSize: size * 0.55,
+        boxShadow: "0 0 0 1.5px black",
+      }}
+    >
+      <i aria-hidden="true" className="fas fa-sticky-note" />
     </span>
   );
 }
@@ -395,6 +424,7 @@ export function CardFace({
   possibleSuitIndexes = [],
   possibleRanks = [],
   clueMarker,
+  hasNote = false,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -464,6 +494,8 @@ export function CardFace({
       {(critical || trashIcon) && (
         <StatusBadge critical={critical} width={width} />
       )}
+
+      {hasNote && <NoteBadge width={width} />}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities

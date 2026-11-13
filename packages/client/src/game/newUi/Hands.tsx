@@ -11,6 +11,7 @@ import {
   describeCard,
   getClueMarkerColor,
 } from "./Card.tsx";
+import { CardNote } from "./CardNote.tsx";
 import { measure } from "./screenScale.ts";
 import type { CardView } from "./tableView.ts";
 
@@ -97,6 +98,18 @@ interface HandsProps {
   readonly canDiscard: boolean;
   readonly onPlay: (order: CardOrder) => void;
   readonly onDiscard: (order: CardOrder) => void;
+
+  /** The notes that each card's tooltip shows, as HTML. Cards without notes are not in it. */
+  readonly notesHtml: ReadonlyMap<CardOrder, string>;
+
+  /** The card whose note the viewer is typing. */
+  readonly noteCard: CardOrder | undefined;
+
+  /** Handles a right-click on a card, or is `undefined` when the viewer cannot write notes. */
+  readonly onRightClickCard:
+    ((event: React.MouseEvent, order: CardOrder) => void) | undefined;
+
+  readonly onCloseNote: () => void;
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
@@ -460,6 +473,7 @@ function OwnCard({
       clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
+      hasNote={props.notesHtml.has(card.order)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
       raiseClued
@@ -581,6 +595,7 @@ function EditableCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
+        hasNote={props.notesHtml.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -592,6 +607,75 @@ function EditableCard({
         width={props.cardWidth}
       />
     </button>
+  );
+}
+
+/** A card in a hand, as its seat and the screen's mode show it. */
+function HandCard({
+  card,
+  slot,
+  seat,
+  editing,
+  props,
+}: {
+  readonly card: CardView;
+  /** The card's slot, counted from 1 on the left. */
+  readonly slot: number;
+  readonly seat: Seat;
+  readonly editing: boolean;
+  readonly props: HandsProps;
+}): React.JSX.Element {
+  const place = `hand-${seat.playerIndex}-${slot - 1}`;
+  if (editing) {
+    return (
+      <EditableCard
+        card={card}
+
+        place={place}
+        props={props}
+      />
+    );
+  }
+
+  if (seat.you || seat.acting) {
+    return (
+      <OwnCard
+        card={card}
+
+        movable={props.canMoveCards && seat.acting}
+        place={place}
+        props={props}
+        slot={slot}
+      />
+    );
+  }
+
+  return (
+    <div
+      aria-label={describeCard(props.variant, card.suitIndex, card.rank)}
+      data-card-order={card.order}
+      data-card-place={place}
+
+      role="img"
+    >
+      <CardFace
+        clued={card.clued}
+        clueMarker={props.clueMarkers.get(card.order)}
+        colorblindMode={props.colorblindMode}
+        critical={card.critical}
+        hasNote={props.notesHtml.has(card.order)}
+        highlighted={props.touchedCards.has(card.order)}
+        possibleRanks={card.possibleRanks}
+        possibleSuitIndexes={card.possibleSuitIndexes}
+        raiseClued
+        rank={card.rank}
+        suitIndex={card.suitIndex}
+        trash={card.trash}
+        trashIcon={card.trashIcon}
+        variant={props.variant}
+        width={props.cardWidth}
+      />
+    </div>
   );
 }
 
@@ -727,63 +811,30 @@ function Hand({
           cursor: empathyHold ? EMPATHY_CURSOR : undefined,
         }}
       >
-        {seat.cards.map((card, i) => {
-          const place = `hand-${seat.playerIndex}-${i}`;
-          if (editing) {
-            return (
-              <EditableCard
-                card={card}
-                key={card.order}
-                place={place}
-                props={props}
-              />
-            );
-          }
-
-          if (seat.you || seat.acting) {
-            return (
-              <OwnCard
-                card={card}
-                key={card.order}
-                movable={props.canMoveCards && seat.acting}
-                place={place}
-                props={props}
-                slot={i + 1}
-              />
-            );
-          }
-
-          return (
-            <div
-              aria-label={describeCard(
-                props.variant,
-                card.suitIndex,
-                card.rank,
-              )}
-              data-card-order={card.order}
-              data-card-place={place}
-              key={card.order}
-              role="img"
-            >
-              <CardFace
-                clued={card.clued}
-                clueMarker={props.clueMarkers.get(card.order)}
-                colorblindMode={props.colorblindMode}
-                critical={card.critical}
-                highlighted={props.touchedCards.has(card.order)}
-                possibleRanks={card.possibleRanks}
-                possibleSuitIndexes={card.possibleSuitIndexes}
-                raiseClued
-                rank={card.rank}
-                suitIndex={card.suitIndex}
-                trash={card.trash}
-                trashIcon={card.trashIcon}
-                variant={props.variant}
-                width={props.cardWidth}
-              />
-            </div>
-          );
-        })}
+        {seat.cards.map((card, i) => (
+          <CardNote
+            editing={props.noteCard === card.order}
+            key={card.order}
+            noteHtml={props.notesHtml.get(card.order) ?? ""}
+            onCloseEditor={props.onCloseNote}
+            onRightClick={
+              props.onRightClickCard === undefined
+                ? undefined
+                : (event) => {
+                    props.onRightClickCard?.(event, card.order);
+                  }
+            }
+            order={card.order}
+          >
+            <HandCard
+              card={card}
+              editing={editing}
+              props={props}
+              seat={seat}
+              slot={i + 1}
+            />
+          </CardNote>
+        ))}
       </div>
       {props.emptyClueTarget === seat.playerIndex && (
         // A badge on the top edge of the hand, where the markers would be.

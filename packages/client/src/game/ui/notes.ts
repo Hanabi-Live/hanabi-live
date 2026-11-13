@@ -23,7 +23,8 @@ import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 
-const REMOVE_PIPE_KEYS = new ReadonlySet([
+/** The keys that remove the separator that editing adds, when they are the first key pressed. */
+export const REMOVE_PIPE_KEYS = new ReadonlySet([
   "ArrowDown",
   "ArrowLeft",
   "ArrowRight",
@@ -37,9 +38,9 @@ const CLOSE_NOTE_KEYS = new ReadonlySet(["Enter", "Escape"]);
 const META_KEYS = new ReadonlySet(["Alt", "Control", "Shift"]);
 
 /** The separator that editing adds after a note, so that the player can add to it. */
-const NOTE_SEPARATOR = " | ";
+export const NOTE_SEPARATOR = " | ";
 
-const NOTE_LENGTH_LIMIT = {
+export const NOTE_LENGTH_LIMIT = {
   max: MAX_NOTE_LENGTH,
   left: (text) => MAX_NOTE_LENGTH - countCharacters(savedNote(text)),
   tooLongText: "Note is too long",
@@ -50,7 +51,7 @@ let noteCounter:
   { readonly tooltip: GameTooltipName; readonly root: Root } | undefined;
 
 /** The note that the text of a note input saves. */
-function savedNote(text: string): string {
+export function savedNote(text: string): string {
   return chat.fillEmojis(trimSuffix(text, NOTE_SEPARATOR));
 }
 
@@ -84,7 +85,7 @@ function get(order: CardOrder, our: boolean, process = false) {
 
   // Build a string that shows the combined notes from the players & spectators.
   let content = "";
-  const noteObjectArray = globals.state.notes.allNotes[order]!;
+  const noteObjectArray = globals.state.notes.allNotes[order] ?? [];
   let firstSpectator = false;
   for (const noteObject of noteObjectArray) {
     const text = processFunc(noteObject.text);
@@ -104,6 +105,19 @@ function get(order: CardOrder, our: boolean, process = false) {
   content = trimSuffix(content, "<br />");
 
   return content;
+}
+
+/** The viewer's own note on a card. */
+export function getOurNote(order: CardOrder): string {
+  return get(order, true);
+}
+
+/**
+ * The HTML of the notes that the tooltip of a card shows: the viewer's own note when they play in
+ * the game, and otherwise the notes of every player and spectator.
+ */
+export function getShownNoteHtml(order: CardOrder): string {
+  return get(order, false, true);
 }
 
 /**

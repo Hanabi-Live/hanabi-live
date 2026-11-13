@@ -1462,6 +1462,40 @@ function getStates({
         await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
       },
     },
+    // The same game, while the account types a note on the first card of the next player's hand.
+    {
+      name: "new-ui-note-editor",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page
+          .locator('#game-new-ui [data-card-place="hand-1-0"]')
+          .click({ button: "right" });
+        await page.keyboard.type("r1 maybe :D");
+      },
+      // Save the note, for the next state.
+      cleanup: async (page) => {
+        await page.keyboard.press("Enter");
+      },
+    },
+    // The same game, with the pointer over the card with the note.
+    {
+      name: "new-ui-note-tooltip",
+      path: "/",
+      loggedIn: true,
+      hover: async (page) => {
+        await page.locator('#game-new-ui [data-card-place="hand-1-0"]').hover();
+        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
+      },
+      // Delete the note.
+      cleanup: async (page) => {
+        await page
+          .locator('#game-new-ui [data-card-place="hand-1-0"]')
+          .click({ button: "right" });
+        await page.getByRole("textbox", { name: "Note" }).fill("");
+        await page.keyboard.press("Enter");
+      },
+    },
     // The same game, with the menu of the "End game" button open.
     {
       name: "new-ui-end-game-menu",

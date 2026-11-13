@@ -42,11 +42,6 @@ import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
-import {
-  noteEqual,
-  noteHasMeaning,
-  parseNote,
-} from "../reducers/notesReducer.ts";
 import type { UiCard } from "../types/UiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import * as HanabiCardMouse from "./HanabiCardMouse.ts";
@@ -1281,106 +1276,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     if (note !== "") {
       notes.show(this);
     }
-  }
-
-  protectedNote(noteString: string): string {
-    const currentNote = parseNote(this.variant, noteString);
-    const bracketNoteString = `[${noteString}]`;
-    // Protect notes like 'k3' whose meaning is preserved by bracketing: '[k3]'
-    if (
-      noteHasMeaning(this.variant, currentNote)
-      && noteEqual(currentNote, parseNote(this.variant, bracketNoteString))
-    ) {
-      return bracketNoteString;
-    }
-    return noteString;
-  }
-
-  /**
-   * Strips all content from a note string that is not inside square brackets.
-   * e.g. "[cm] some prose [r4] more prose" --> "[cm] [r4]"
-   */
-  static stripProse(noteString: string): string {
-    // Consume an unterminated suffix instead of retrying at each opening bracket.
-    const brackets = noteString.match(/\[[^\]]*\]?/gu) ?? [];
-    return brackets.filter((bracket) => bracket.endsWith("]")).join(" ");
-  }
-
-  isBorderAffecting(noteString: string): boolean {
-    const parsed = parseNote(this.variant, noteString);
-    return parsed.chopMoved || parsed.finessed || parsed.discardPermission;
-  }
-
-  updateNote(
-    noteAdded: string,
-    updateFunc: (a: string, b: string) => string, // how to combine last pipe section and noteAdded
-    keepLast = false, // true to repeat (and add to) the last pipe section
-    protect = true, // true to add [] to meaningful updates
-    stripProse = false, // true to strip prose and conflicting border tokens
-  ): void {
-    const existingNote = globals.state.notes.ourNotes[this.order]?.text ?? "";
-    const noteText = existingNote.trim();
-    const note = protect ? this.protectedNote(noteAdded) : noteAdded;
-    const lastPipe = noteText.lastIndexOf("|");
-    const currentNoteString = noteText.slice(lastPipe + 1).trim();
-    const noteString = this.protectedNote(currentNoteString);
-    const currentNote = parseNote(this.variant, noteString);
-    let newNoteString = updateFunc(noteString, note);
-
-    if (stripProse) {
-      newNoteString = HanabiCard.stripProse(newNoteString);
-      if (this.isBorderAffecting(note)) {
-        newNoteString = newNoteString
-          .split(/(?<=\])\s+(?=\[)/u)
-          .filter((token) => token === note || !this.isBorderAffecting(token))
-          .join(" ");
-      }
-    }
-
-    const newNoteText = keepLast
-      ? noteText
-      : noteText.slice(0, Math.max(lastPipe, 0)).trim();
-    // Case of: updating note does not change note meaning.
-    if (
-      noteHasMeaning(this.variant, parseNote(this.variant, note))
-      && noteEqual(currentNote, parseNote(this.variant, newNoteString))
-    ) {
-      return;
-    }
-    this.setNote(
-      `${newNoteText}${newNoteText === "" ? "" : " | "}${newNoteString}`,
-    );
-  }
-
-  prependTurnCountNote(noteAdded: string): void {
-    this.updateNote(noteAdded, (a: string, b: string): string => {
-      const turnStripped = a.replace(/^#\d+ /u, "");
-      return `${b} ${turnStripped}`;
-    });
-  }
-
-  prependNote(noteAdded: string): void {
-    this.updateNote(noteAdded, (a: string, b: string): string => `${b} ${a}`);
-  }
-
-  appendNoteOnly(noteAdded: string): void {
-    this.updateNote(
-      noteAdded,
-      (a: string, b: string): string => `${a} ${b}`,
-      false,
-      true,
-      true,
-    );
-  }
-
-  appendNote(noteAdded: string): void {
-    this.updateNote(
-      noteAdded,
-      (a: string, b: string): string => `${a} ${b}`,
-      true,
-      true,
-      true,
-    );
   }
 
   checkSpecialNote(): void {
