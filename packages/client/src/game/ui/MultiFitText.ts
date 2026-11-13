@@ -18,12 +18,14 @@ export class MultiFitText extends Konva.Group {
     this.maxLines = maxLines;
 
     for (const i of eRange(this.maxLines)) {
-      const newConfig = $.extend({}, config);
-
-      newConfig.listening = false;
-      newConfig.height = config.height / this.maxLines;
-      newConfig.x = 0;
-      newConfig.y = i * newConfig.height;
+      const height = config.height / this.maxLines;
+      const newConfig = {
+        ...config,
+        listening: false,
+        height,
+        x: 0,
+        y: i * height,
+      };
 
       const childText = new FitText(newConfig);
       this.add(childText);

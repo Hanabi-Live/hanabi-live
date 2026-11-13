@@ -9,8 +9,8 @@ export function lobbyIdleInit(): void {
   setInterval(timerIncrement, MINUTE_IN_MILLISECONDS);
 
   // Zero the idle timer on mouse movement or keyboard inputs.
-  $(document).mousemove(mousemoveOrKeypress);
-  $(document).keypress(mousemoveOrKeypress);
+  document.addEventListener("mousemove", mousemoveOrKeypress);
+  document.addEventListener("keypress", mousemoveOrKeypress);
 }
 
 function mousemoveOrKeypress() {

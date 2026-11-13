@@ -351,7 +351,7 @@ export function websocketInit(): void {
   }
 
   // Ensure that we are connecting to the right URL.
-  const domain = $("#domain").html();
+  const domain = document.querySelector("#domain")?.textContent;
   if (globalThis.location.hostname !== domain) {
     modals.showError(`You are supposed to connect using the URL of: ${domain}`);
     return;

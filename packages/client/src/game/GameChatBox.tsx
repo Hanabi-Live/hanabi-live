@@ -7,14 +7,12 @@ import {
   ChatTextBox,
   TypingMessage,
 } from "../lobby/chat/ChatBox.tsx";
-import { renderRoot } from "../renderRoot.tsx";
 import { useAppSelector } from "../store.ts";
-import { getHtmlElement } from "../utils.ts";
 
 export const GAME_CHAT_TEXT_ID = "game-chat-text";
 export const GAME_CHAT_INPUT_ID = "game-chat-input";
 
-function GameChatBox(): React.JSX.Element {
+export function GameChatBox(): React.JSX.Element {
   const lines = useAppSelector((state) => state.gameChat.lines);
   const typing = useAppSelector((state) => state.pregame.typing);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,9 +30,4 @@ function GameChatBox(): React.JSX.Element {
       </div>
     </>
   );
-}
-
-/** Draws the chat box in the classic screen's chat window. It stays for as long as the page. */
-export function mountGameChatBox(): void {
-  renderRoot(getHtmlElement("#game-chat-modal-white"), <GameChatBox />);
 }

@@ -1,5 +1,9 @@
 // Functions for handling all of the keyboard shortcuts.
 
+/* eslint-disable unicorn/prefer-keyboard-event-key -- The hotkeys compare key codes. On macOS,
+Alt + B gives a symbol in `event.key`, not "b". And `event.code` names the physical key, which moves
+the hotkeys on French keyboards. */
+
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getClueCost,
@@ -9,6 +13,7 @@ import {
 import { parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
+import { isElementShown } from "../../elementVisibility.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
 import { store } from "../../store.ts";
@@ -18,6 +23,7 @@ import {
   getHtmlInputElement,
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
+import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as newUiState from "../newUi/newUiState.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
@@ -98,16 +104,16 @@ export function init(): void {
   hotkeyDiscardMap.set(KeyCode.KEY_SUBTRACT, discard); // For numpad users
 
   // Enable all of the keyboard hotkeys.
-  $(document).keydown(keydown);
-  $(document).keyup(keyup);
+  document.addEventListener("keydown", keydown);
+  document.addEventListener("keyup", keyup);
 }
 
 export function destroy(): void {
-  $(document).unbind("keydown", keydown);
-  $(document).unbind("keyup", keyup);
+  document.removeEventListener("keydown", keydown);
+  document.removeEventListener("keyup", keyup);
 }
 
-function keydown(event: JQuery.KeyDownEvent) {
+function keydown(event: KeyboardEvent) {
   // Disable hotkeys if we not currently in a game, if we are editing a note, or if there's a
   // visible modal. (Not being in a game should not be possible, as the handler gets unregistered
   // upon going back to the lobby, but double check just in case.)
@@ -127,7 +133,7 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
 
     // Escape = If the chat is open, close it.
-    if ($("#game-chat-modal").is(":visible")) {
+    if (isElementShown(getHtmlElement("#game-chat-modal"))) {
       globals.game!.chat.hide();
       return;
     }
@@ -151,7 +157,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   if (event.which === KeyCode.KEY_SPACE) {
     // Space bar. Do not activate global empathy if we are typing in the in-game chat.
-    if ($("#game-chat-input").is(":focus")) {
+    if (isGameChatInputFocused()) {
       return;
     }
 
@@ -174,7 +180,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       event.which === KeyCode.KEY_C
       && globals.state.finished
       // Account for users copying text from the chat window.
-      && !$("#game-chat-modal").is(":visible")
+      && !isElementShown(getHtmlElement("#game-chat-modal"))
     ) {
       if (globals.state.replay.gameId !== undefined) {
         copyStringToClipboard(globals.state.replay.gameId.toString());
@@ -233,7 +239,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat or if a
   // modifier key is pressed.
   if (
-    $("#game-chat-input").is(":focus")
+    isGameChatInputFocused()
     || event.ctrlKey
     || event.shiftKey
     || event.altKey
@@ -372,7 +378,17 @@ function getNormalGameplayHotkeyFunction(
   return hotkeyPlayMap.get(keyCode);
 }
 
-function keyup(event: JQuery.KeyUpEvent) {
+/** Whether the player is typing in the game's chat, as jQuery's ":focus" selector. */
+function isGameChatInputFocused(): boolean {
+  const { activeElement } = document;
+  return (
+    document.hasFocus()
+    && activeElement !== null
+    && activeElement.id === GAME_CHAT_INPUT_ID
+  );
+}
+
+function keyup(event: KeyboardEvent) {
   if (event.which === KeyCode.KEY_SPACE) {
     // Space bar
     setGlobalEmpathy(false);

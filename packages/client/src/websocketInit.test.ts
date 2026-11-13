@@ -39,7 +39,6 @@ const mockedGlobalNames = [
   "location",
   "sessionStorage",
   "addEventListener",
-  "$",
 ] as const;
 const savedGlobalDescriptors = new Map<
   string,
@@ -114,7 +113,11 @@ beforeEach(() => {
     },
     document: {
       configurable: true,
-      value: { visibilityState: "visible", addEventListener: vi.fn() },
+      value: {
+        visibilityState: "visible",
+        addEventListener: vi.fn(),
+        querySelector: () => ({ textContent: "localhost" }),
+      },
     },
     location: {
       configurable: true,
@@ -132,10 +135,6 @@ beforeEach(() => {
     addEventListener: {
       configurable: true,
       value: vi.fn(),
-    },
-    $: {
-      configurable: true,
-      value: () => ({ html: () => "localhost" }),
     },
   });
 });

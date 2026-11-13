@@ -1,6 +1,7 @@
 // The Hanabi game UI.
 
-import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants.ts";
+import { HISTORY_HASH, PATH } from "../constants.ts";
+import { fadeIn, hideElement } from "../elementVisibility.ts";
 import { globals } from "../Globals.ts";
 import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat.tsx";
 import * as lobbyPage from "../lobby/lobbyPage.ts";
@@ -10,10 +11,10 @@ import { screenChanged } from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
-import { setBrowserAddressBarPath } from "../utils.ts";
+import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
 import { gameChatCleared } from "./gameChatSlice.ts";
-import * as newUi from "./newUi/newUi.tsx";
+import * as newUi from "./newUi/newUi.ts";
 import { loadGameInit } from "./ui/gameCommands.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
 
@@ -24,14 +25,22 @@ let historyHash = "";
 let screenBeforeGame = Screen.Lobby;
 
 export function init(): void {
-  $("#game").on("mouseenter mouseleave", () => {
-    if (
-      store.getState().session.screen === Screen.Game
-      && globals.ui !== undefined
-    ) {
-      globals.ui.focusLost();
-    }
-  });
+  const gameElement = getHtmlElement("#game");
+  for (const type of ["mouseenter", "mouseleave"]) {
+    gameElement.addEventListener(type, () => {
+      if (
+        store.getState().session.screen === Screen.Game
+        && globals.ui !== undefined
+      ) {
+        globals.ui.focusLost();
+      }
+    });
+  }
+}
+
+/** Keeps the browser's menu from opening when a player right-clicks the game screen. */
+function preventContextMenu(event: MouseEvent) {
+  event.preventDefault();
 }
 
 export function show(justStarted: boolean): void {
@@ -44,13 +53,12 @@ export function show(justStarted: boolean): void {
   screenBeforeGame = store.getState().session.screen;
   store.dispatch(screenChanged(Screen.Game));
   document.body.dataset["screen"] = "game";
-  $("#page-wrapper").hide(); // We can't fade this out as it will overlap
+  hideElement(getHtmlElement("#page-wrapper")); // We can't fade this out as it will overlap
   store.dispatch(gameChatCleared()); // Clear the in-game chat box of any previous content
-  // eslint-disable-next-line @typescript-eslint/strict-void-return
-  $("body").on("contextmenu", () => false); // Disable the right-click context menu
+  document.body.addEventListener("contextmenu", preventContextMenu);
   // The classic screen keeps running underneath the redesigned one, hidden.
   if (!store.getState().session.settings.newUi) {
-    $("#game").fadeIn(FADE_TIME_MS);
+    fadeIn(getHtmlElement("#game"));
   }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
@@ -68,8 +76,8 @@ export function show(justStarted: boolean): void {
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
 function showNewUi() {
   // The new screen has its own chat panel, which takes the chat box from the classic chat window.
-  $("#game-chat-modal").hide();
-  $("#game").hide();
+  hideElement(getHtmlElement("#game-chat-modal"));
+  hideElement(getHtmlElement("#game"));
   newUi.mount();
 }
 
@@ -102,12 +110,12 @@ export function hide(): void {
     globals.ui = undefined;
   }
 
-  $("#game").hide(); // We can't fade this out as it will overlap
-  $("body").off("contextmenu"); // Enable the right-click context menu
-  $("#page-wrapper").fadeIn(FADE_TIME_MS);
+  hideElement(getHtmlElement("#game")); // We can't fade this out as it will overlap
+  document.body.removeEventListener("contextmenu", preventContextMenu);
+  fadeIn(getHtmlElement("#page-wrapper"));
 
   // Make sure that there are not any game-related modals showing.
-  $("#game-chat-modal").hide();
+  hideElement(getHtmlElement("#game-chat-modal"));
 
   // Make sure that there are not any game-related tooltips showing.
   tooltips.closeAllTooltips();

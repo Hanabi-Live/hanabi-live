@@ -257,9 +257,8 @@ export function openEditTooltip(
     ),
   };
 
-  const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
-  noteTextbox.on("keydown", (event) => {
+  inputElement.addEventListener("keydown", (event) => {
     event.stopPropagation();
     const { key } = event;
 
@@ -270,7 +269,7 @@ export function openEditTooltip(
         if (key !== "Home") {
           event.preventDefault();
         }
-        noteTextbox.val(note);
+        inputElement.value = note;
       }
       shouldRemovePipe = false;
     }
@@ -291,12 +290,7 @@ export function openEditTooltip(
       newNote = get(card.order, true);
     } else {
       // If Enter is pressed, get the value of the input box.
-      const val = noteTextbox.val();
-      if (typeof val !== "string") {
-        throw new TypeError(
-          `The value of the "#tooltip-${card.tooltipName}-input" element was not a string.`,
-        );
-      }
+      const val = inputElement.value;
 
       // Keep a note that is too long open, so that the player can shorten it.
       if (rejectTooLong(inputElement, NOTE_LENGTH_LIMIT)) {
@@ -318,32 +312,24 @@ export function openEditTooltip(
   });
 
   // Reset the tab-complete variables after we have typed a new character.
-  noteTextbox.on("keypress", () => {
+  inputElement.addEventListener("keypress", () => {
     chat.tabResetAutoCompleteList();
   });
 
-  noteTextbox.on("input", (event) => {
-    const text = noteTextbox.val();
-    if (typeof text !== "string") {
-      throw new TypeError(
-        "The value of the element in the input function is not a string.",
-      );
-    }
+  inputElement.addEventListener("input", (event) => {
+    const text = inputElement.value;
 
     // Check for emoji substitution.
     const newText = chat.substituteEmoji(text);
     if (newText !== undefined) {
-      noteTextbox.val(newText);
+      inputElement.value = newText;
       event.preventDefault();
     }
   });
 
   // Automatically add a pipe to a non empty note input box when it is focused.
-  noteTextbox.on("focus", function tooltipCardInputFocus(this: HTMLElement) {
-    let oldNote = $(this).val();
-    if (typeof oldNote !== "string") {
-      oldNote = "";
-    }
+  inputElement.addEventListener("focus", () => {
+    const oldNote = inputElement.value;
 
     let newNote = oldNote;
     if (oldNote !== "" && !oldNote.endsWith(NOTE_SEPARATOR)) {
@@ -351,16 +337,16 @@ export function openEditTooltip(
     }
     newNote += addText;
     if (newNote !== oldNote) {
-      $(this).val(newNote);
+      inputElement.value = newNote;
     }
 
     chat.tabResetAutoCompleteList();
   });
 
   // Remove the pipe if the user clicks with the mouse buttons.
-  noteTextbox.on("mousedown", () => {
+  inputElement.addEventListener("mousedown", () => {
     if (shouldRemovePipe) {
-      noteTextbox.val(note);
+      inputElement.value = note;
       shouldRemovePipe = false;
     }
   });
@@ -368,10 +354,10 @@ export function openEditTooltip(
   // Automatically focus the new text input box. (This will not work properly in speedrun mode
   // unless we put it in a callback.)
   requestAnimationFrame(() => {
-    noteTextbox.trigger("focus");
+    inputElement.focus();
 
     // Automatically close the tooltip if we click elsewhere on the screen.
-    noteTextbox.on("focusout", () => {
+    inputElement.addEventListener("focusout", () => {
       chat.tabResetAutoCompleteList();
       tooltips.close(tooltip);
     });
@@ -379,7 +365,7 @@ export function openEditTooltip(
 
   // On mobile, if the focus event is wrapped in a callback then it will not trigger the keyboard to
   // open (due to security restrictions where only user inputs can trigger certain things).
-  noteTextbox.trigger("focus");
+  inputElement.focus();
 }
 
 /**

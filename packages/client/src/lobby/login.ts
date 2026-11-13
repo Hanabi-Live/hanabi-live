@@ -9,11 +9,12 @@ import {
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
 import type { z } from "zod";
-import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
+import { HTTP_STATUS } from "../constants.ts";
+import { fadeIn, hideElement } from "../elementVisibility.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
 import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
-import { getUrlFromPath } from "../utils.ts";
+import { getHtmlElement, getUrlFromPath } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat.tsx";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe.ts";
@@ -236,13 +237,13 @@ function show() {
 
 export function hide(firstTimeUser: boolean): void {
   // Hide the login screen
-  $("#login").hide();
+  hideElement(getHtmlElement("#login"));
 
   if (firstTimeUser) {
-    $("#tutorial").fadeIn(FADE_TIME_MS);
+    fadeIn(getHtmlElement("#tutorial"));
     return;
   }
-  $("#tutorial").hide();
+  hideElement(getHtmlElement("#tutorial"));
 
   // Disable scroll bars. Even with height and width 100%, the scroll bar can pop up when going back
   // from a game to the lobby. It also can show up in-game if a tooltip animates off of the edge of
@@ -253,15 +254,15 @@ export function hide(firstTimeUser: boolean): void {
   // body element itself rather than the window, so reset both.
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
-  $("body").css("overflow", "hidden");
+  document.body.style.overflow = "hidden";
 
   // Show the lobby. During the tutorial, the server can already have sent us to a pre-game screen,
   // so only leave the login screen.
   if (store.getState().session.screen === Screen.Login) {
     store.dispatch(screenChanged(Screen.Lobby));
   }
-  $("#lobby").removeClass("hidden");
-  $("#lobby-chat-input").trigger("focus");
+  getHtmlElement("#lobby").classList.remove("hidden");
+  document.querySelector<HTMLElement>("#lobby-chat-input")?.focus();
 
   // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the
   // tutorial.)

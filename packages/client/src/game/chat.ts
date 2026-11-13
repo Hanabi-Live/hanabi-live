@@ -3,13 +3,10 @@
 import { assertDefined, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
 import { globals } from "../Globals.ts";
-import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants.ts";
+import { LOCAL_STORAGE_KEY } from "../constants.ts";
+import { fadeIn, fadeOut, isElementShown } from "../elementVisibility.ts";
 import { getHtmlElement } from "../utils.ts";
-import {
-  GAME_CHAT_INPUT_ID,
-  GAME_CHAT_TEXT_ID,
-  mountGameChatBox,
-} from "./GameChatBox.tsx";
+import { GAME_CHAT_INPUT_ID, GAME_CHAT_TEXT_ID } from "./GameChatBox.tsx";
 import * as newUiState from "./newUi/newUiState.ts";
 
 /** The size of the chat modal before the player has moved or resized it, in percent of the page. */
@@ -36,8 +33,6 @@ const MIN_CHAT_MODAL_SIZE = {
 } as const;
 
 export function init(): void {
-  mountGameChatBox();
-
   // Make the chat modal draggable (using the InteractJS library). The bundled "interactjs" package
   // references "@interactjs/interactjs" which is not installed as a separate package, so
   // typescript-eslint cannot resolve the interact() type or its event types.
@@ -64,8 +59,7 @@ export function init(): void {
         // Move it,
         const newX = oldX + event.dx;
         const newY = oldY + event.dy;
-        const element = $(`#${event.target.id}`);
-        moveElement(element, newX, newY);
+        moveElement(event.target, newX, newY);
       },
     })
 
@@ -110,8 +104,7 @@ export function init(): void {
       const newY = oldY + event.deltaRect.top;
 
       // Move it.
-      const element = $(`#${event.target.id}`);
-      moveElement(element, newX, newY);
+      moveElement(event.target, newX, newY);
 
       // Resize it.
       event.target.style.width = `${event.rect.width}px`;
@@ -141,16 +134,19 @@ export function init(): void {
       );
     });
 
-  $("#game-chat-modal-header-close").click(() => {
-    hide();
-  });
+  getHtmlElement("#game-chat-modal-header-close").addEventListener(
+    "click",
+    () => {
+      hide();
+    },
+  );
 }
 
 /** Whether the player can see the in-game chat, in either game screen. */
 export function isOpen(): boolean {
   return newUiState.isActive()
     ? newUiState.isChatOpen()
-    : $("#game-chat-modal").is(":visible");
+    : isElementShown(getHtmlElement("#game-chat-modal"));
 }
 
 export function toggle(focusInput = true): void {
@@ -173,12 +169,12 @@ export function show(focusInput = true): void {
     return;
   }
 
-  const modal = $("#game-chat-modal");
-  modal.fadeIn(FADE_TIME_MS);
+  const modal = getHtmlElement("#game-chat-modal");
+  fadeIn(modal);
 
   // Set the modal to the default size and position.
-  modal.css(DEFAULT_CHAT_MODAL_SIZE);
-  modal.css(DEFAULT_CHAT_MODAL_POSITION);
+  Object.assign(modal.style, DEFAULT_CHAT_MODAL_SIZE);
+  Object.assign(modal.style, DEFAULT_CHAT_MODAL_POSITION);
   moveElement(modal, 0, 0);
 
   // If there is a stored size + position for the chat box, set that.
@@ -198,21 +194,19 @@ export function show(focusInput = true): void {
     && right !== undefined
     && top !== undefined
   ) {
-    modal.css("width", width);
-    modal.css("height", height);
+    modal.style.width = width;
+    modal.style.height = height;
 
     // The stored width may be a percentage, so measure the modal after applying it.
-    const modalWidth = modal[0]!.getBoundingClientRect().width;
-    modal.css({
-      left: `${window.innerWidth - right - modalWidth}px`,
-      top: `${top}px`,
-    });
+    const modalWidth = modal.getBoundingClientRect().width;
+    modal.style.left = `${window.innerWidth - right - modalWidth}px`;
+    modal.style.top = `${top}px`;
 
     // Just in case, reset the size and position if the stored location puts the chat box offscreen.
     // (This is possible if the window size has changed since the last time.)
     if (isOffscreen(modal)) {
-      modal.css(DEFAULT_CHAT_MODAL_SIZE);
-      modal.css(DEFAULT_CHAT_MODAL_POSITION);
+      Object.assign(modal.style, DEFAULT_CHAT_MODAL_SIZE);
+      Object.assign(modal.style, DEFAULT_CHAT_MODAL_POSITION);
     }
   }
 
@@ -231,7 +225,7 @@ export function hide(): void {
     return;
   }
 
-  $("#game-chat-modal").fadeOut(FADE_TIME_MS);
+  fadeOut(getHtmlElement("#game-chat-modal"));
 }
 
 /** Opening the chat counts every message in it as read. */
@@ -254,19 +248,18 @@ function markRead() {
 }
 
 /** Subroutine to move an element (using the "transform" CSS property). */
-function moveElement(element: JQuery, x: number, y: number) {
+function moveElement(element: HTMLElement | SVGElement, x: number, y: number) {
   // Update the element's style.
-  element.css("transform", `translate(${x}px, ${y}px)`);
+  element.style.transform = `translate(${x}px, ${y}px)`;
 
   // Keep the dragged position in the "data-x" & "data-y" attributes.
-  element.attr("data-x", x);
-  element.attr("data-y", y);
+  element.dataset["x"] = x.toString();
+  element.dataset["y"] = y.toString();
 }
 
 /** From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen */
-function isOffscreen(element: JQuery) {
-  const domElement = element[0]!;
-  const rect = domElement.getBoundingClientRect();
+function isOffscreen(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
   return (
     rect.top < 0 // Above the top
     || rect.bottom > window.innerHeight // Below the bottom

@@ -26,8 +26,8 @@ export default defineConfig(
        * Documentation:
        * https://typescript-eslint.io/rules/no-deprecated/
        *
-       * We use a lot of deprecated jQuery methods. If they are removed from the latest version of
-       * jQuery, then we will stick with using an older version.
+       * The hotkeys compare the deprecated `which` key codes, and the game screen's store uses
+       * Redux's deprecated `createStore`.
        */
       "@typescript-eslint/no-deprecated": "off",
 

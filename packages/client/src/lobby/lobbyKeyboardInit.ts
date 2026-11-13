@@ -1,5 +1,9 @@
 // Lobby keyboard shortcuts
 
+/* eslint-disable unicorn/prefer-keyboard-event-key -- The hotkeys compare key codes. On macOS,
+Alt + B gives a symbol in `event.key`, not "b". And `event.code` names the physical key, which moves
+the hotkeys on French keyboards. */
+
 import * as KeyCode from "keycode-js";
 import { isModalVisible } from "../modals.ts";
 import { store } from "../store.ts";
@@ -7,7 +11,7 @@ import * as lobbyPage from "./lobbyPage.ts";
 import { Screen } from "./types/Screen.ts";
 
 export function lobbyKeyboardInit(): void {
-  $(document).keydown((event) => {
+  document.addEventListener("keydown", (event) => {
     // On a lobby page, submit its form if enter is pressed (unless it activates a focused button or
     // link, or adds a line to a text area), and only allow returning otherwise.
     if (lobbyPage.isShown() && !isModalVisible()) {
@@ -129,10 +133,7 @@ function clickReturnToLobby() {
   }
 }
 
-/**
- * Use a native click so that handlers registered with `addEventListener` also run. The jQuery
- * `trigger("click")` method does not perform a native click on links.
- */
+/** Clicks an element, if it is on the page. */
 function clickElement(selector: string) {
   document.querySelector<HTMLElement>(selector)?.click();
 }

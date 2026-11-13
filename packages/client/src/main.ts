@@ -2,7 +2,7 @@
 // and then bundled together as a single JavaScript file to serve to end-users.
 
 import { DOMAIN, OLD_DOMAIN } from "@hanabi-live/data";
-import jquery from "jquery";
+import { mountApp } from "./App.tsx";
 import { globals } from "./Globals.ts";
 import { Loader } from "./Loader.ts";
 import * as chat from "./chat.ts";
@@ -16,26 +16,13 @@ import { getOtherScoresSeed } from "./lobby/historyHash.ts";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit.ts";
 import { lobbyKeyboardInit } from "./lobby/lobbyKeyboardInit.ts";
 import * as lobbyLogin from "./lobby/login.ts";
-import { mountLogin } from "./lobby/login/mountLogin.tsx";
-import { mountLobby } from "./lobby/mountLobby.tsx";
-import { mountNav } from "./lobby/nav/mountNav.tsx";
 import * as lobbyPregame from "./lobby/pregame/pregame.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
-import { mountMessageModal } from "./mountMessageModal.tsx";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as tooltips from "./tooltips.ts";
 import { setBrowserAddressBarPath } from "./utils.ts";
-
-// Initialize jQuery:
-// https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
-declare global {
-  interface Window {
-    $: JQueryStatic;
-  }
-}
-window.$ = jquery; // eslint-disable-line unicorn/prefer-global-this
 
 // Manually redirect users that are going to wrong URLs.
 if (
@@ -50,7 +37,8 @@ if (
 
 initErrorListener();
 
-$(document).ready(() => {
+/** Starts the client once the page has loaded. */
+function init() {
   globalThis.addEventListener("popstate", () => {
     if (globalThis.location.pathname !== PATH.LOBBY) {
       globalThis.location.reload();
@@ -82,7 +70,7 @@ $(document).ready(() => {
   });
 
   // Set an event handler for when the entire window loses focus.
-  $(globalThis).blur(() => {
+  globalThis.addEventListener("blur", () => {
     if (
       store.getState().session.screen === Screen.Game
       && globals.ui !== undefined
@@ -93,28 +81,24 @@ $(document).ready(() => {
 
   // Now that the page has loaded, initialize and define the functionality of various UI elements.
   modals.init();
-  mountMessageModal();
+  mountApp();
   chat.init();
   game.init();
   gameChat.init();
   tooltips.initGame();
   lobbyIdleInit();
   lobbyKeyboardInit();
-  mountLogin();
-  mountLobby();
-  mountNav();
   sounds.init();
 
   // Start preloading some images that we will need for when a game starts.
   globals.imageLoader = new Loader();
 
-  // For debugging graphics.
-  /*
-  $('body').click((event) => {
-    console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);
-  });
-  */
-
   // Now that the UI is initialized, automatically login if the user has cached credentials.
   lobbyLogin.automaticLogin();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

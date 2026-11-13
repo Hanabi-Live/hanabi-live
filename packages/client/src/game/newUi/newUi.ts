@@ -1,50 +1,46 @@
 // Shows a game in the redesigned game screen, for players who turned on the "New UI" setting.
+// "App.tsx" renders the screen while it is active.
 
 // The classic Konva screen still runs, hidden, for every game. It keeps handling the timers, the
 // sounds, the hotkeys, the replays, and the hypotheticals, which change the store that both screens
 // draw from. A player can switch to the classic screen at any time.
 
-import type { Root } from "react-dom/client";
-import { FADE_TIME_MS } from "../../constants.ts";
-import { renderRoot } from "../../renderRoot.tsx";
+import { flushSync } from "react-dom";
+import { fadeIn, hideElement, showElement } from "../../elementVisibility.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { globals } from "../ui/UiGlobals.ts";
-import { GameScreen } from "./GameScreen.tsx";
 import * as newUiState from "./newUiState.ts";
-
-let root: Root | undefined;
 
 export function mount(): void {
   unmount();
-  newUiState.setActive(true);
-  $("#game-new-ui").fadeIn(FADE_TIME_MS);
-  root = renderRoot(
-    getHtmlElement("#game-new-ui"),
-    <GameScreen onSwitchToClassic={switchToClassic} />,
-  );
+  fadeIn(getHtmlElement("#game-new-ui"));
+  // Render at once, so that the code that runs next finds the screen's elements.
+  flushSync(() => {
+    newUiState.setActive(true);
+  });
 }
 
 export function unmount(): void {
-  if (root === undefined) {
+  if (!newUiState.isActive()) {
     return;
   }
 
-  root.unmount();
-  root = undefined;
-  newUiState.setActive(false);
-  $("#game-new-ui").hide();
+  flushSync(() => {
+    newUiState.setActive(false);
+  });
+  hideElement(getHtmlElement("#game-new-ui"));
 }
 
 /** Shows the classic game screen in place of the new one, for the rest of this game. */
-function switchToClassic() {
-  // React cannot unmount a root while it is rendering it, so wait until it finishes.
+export function switchToClassic(): void {
+  // React cannot render again while it is rendering, so wait until it finishes.
   setTimeout(() => {
-    if (root === undefined) {
+    if (!newUiState.isActive()) {
       return;
     }
 
     unmount();
-    $("#game").show();
+    showElement(getHtmlElement("#game"));
     globals.stage.batchDraw();
   }, 0);
 }
