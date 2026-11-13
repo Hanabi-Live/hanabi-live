@@ -535,7 +535,7 @@ fn main() -> Result<()> {
             }
         }
     }
-    println!("// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.");
+    println!("// Generated from libs/protocol. Run bash scripts/dev/generate-protocol.sh.");
     if game {
         return game_library(&definitions);
     }

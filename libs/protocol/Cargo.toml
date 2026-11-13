@@ -1,0 +1,37 @@
+[package]
+name = "hanabi_protocol"
+version = "0.1.0"
+edition = "2024"
+description = "The messages of hanab.live's protocol (WebSocket and HTTP), typed, with their JSON schemas"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Hanabi-Live/hanabi-live"
+keywords = ["hanabi", "hanab-live", "protocol", "websocket", "json-schema"]
+categories = ["api-bindings", "data-structures"]
+# Not published yet: the name on crates.io has to be free and the MIT license agreed to. Remove this line to allow `cargo publish`.
+publish = false
+# The crate lives in the server's Cargo workspace (its lockfile and lints) although it is outside its directory.
+workspace = "../../server"
+
+[features]
+# What a client of the WebSocket needs is always there. The rest of the HTTP routes' payloads (identity tokens, password hashes,
+# public variants, the game list), which only the website and the server use, are behind this feature.
+http = []
+# What `bin/generate.rs` needs to write the TypeScript schemas of the clients (`scripts/dev/generate-protocol.sh`).
+generate = ["http"]
+
+[[bin]]
+name = "generate"
+path = "src/bin/generate.rs"
+required-features = ["generate"]
+
+[dependencies]
+anyhow = "1"
+chrono = "0.4"
+jsonschema = { version = "0.61", default-features = false }
+schemars = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+
+[lints]
+workspace = true

@@ -1,4 +1,4 @@
-// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
+// Generated from libs/protocol. Run bash scripts/dev/generate-protocol.sh.
 import {
   authorNoteSchema,
   authorNotesSchema,

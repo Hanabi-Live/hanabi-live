@@ -50,7 +50,7 @@ export function createVariant(
   recipe: string,
 ): Variant {
   // Fields are validated in the order that they appear in `CatalogVariant` (in
-  // "server/protocol/src/lib.rs").
+  // "libs/protocol/src/lib.rs").
 
   // ---------------
   // Core properties

@@ -101,7 +101,7 @@
     },
     {
       // The end of the game. "endCondition" is the name of a value of the "EndCondition" enum:
-      // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/protocol/src/enums.rs
+      // https://github.com/Hanabi-Live/hanabi-live/blob/main/libs/protocol/src/enums.rs
       // (e.g. "timeout" corresponds to someone running out of time in a timed game,
       // "terminatedByPlayer" corresponds to a player manually terminating the game, etc.)
       // "playerIndex" is the index of the player that ended the game. It is omitted when no player
@@ -122,7 +122,7 @@
 
     // Any other website option can be specified, such as "deckPlays" or "emptyClues". A full list
     // of options can be found in the "ReplayOptions" struct, located here:
-    // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/protocol/src/replay.rs
+    // https://github.com/Hanabi-Live/hanabi-live/blob/main/libs/protocol/src/replay.rs
     // The various options are documented here:
     // https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options
     // If an option is not specified, the default will be assumed (e.g. false or 0).

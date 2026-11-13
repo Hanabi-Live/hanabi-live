@@ -20,8 +20,8 @@ status=0
 for target in "packages/game/src/generated/protocol.ts --game" "packages/data/src/generated/protocol.ts"; do
   read -r output flag <<< "$target"
   (
-    cd "$REPO_ROOT/server/protocol"
-    cargo run --quiet --locked --bin generate -- ${flag:+"$flag"}
+    cd "$REPO_ROOT/libs/protocol"
+    cargo run --quiet --locked --features generate --bin generate -- ${flag:+"$flag"}
   ) \
     | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
   if [[ ${1:-} == --check ]]; then

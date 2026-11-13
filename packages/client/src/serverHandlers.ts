@@ -11,7 +11,7 @@ type Handler<Command extends keyof Payloads> = (
 
 /**
  * Handlers for server messages. Each handler is typed with its message's schema generated from
- * server/protocol, so it cannot assume a payload shape the server does not send.
+ * libs/protocol, so it cannot assume a payload shape the server does not send.
  */
 export class ServerHandlers {
   private readonly handlers = new Map<keyof Payloads, (data: never) => void>();

@@ -20,7 +20,7 @@ const fixture = z.strictObject({
 const contents = readFileSync(
   path.resolve(
     import.meta.dirname,
-    "../../../server/protocol/fixtures/compatibility.json",
+    "../../../libs/protocol/fixtures/compatibility.json",
   ),
   "utf8",
 );
