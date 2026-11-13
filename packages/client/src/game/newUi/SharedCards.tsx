@@ -203,7 +203,7 @@ export const PlayArea = forwardRef<
                         <CardNote notes={notes} order={stack.topOrder}>
                           <CardFace
                             colorblindMode={colorblindMode}
-                            noteBadge={
+                            noteTab={
                               notes.notesHtml.has(stack.topOrder)
                                 ? "note"
                                 : undefined
@@ -451,10 +451,9 @@ export const DiscardPile = forwardRef<
                   >
                     <CardFace
                       colorblindMode={colorblindMode}
-                      noteBadge={
+                      noteTab={
                         notes.notesHtml.has(card.order) ? "note" : undefined
                       }
-                      noteBadgePlacement="top"
                       rank={card.rank}
                       suitIndex={card.suitIndex}
                       variant={variant}

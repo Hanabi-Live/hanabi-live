@@ -79,11 +79,10 @@ interface CardFaceProps {
   readonly clueMarker?: ClueMarkerView;
 
   /**
-   * The badge of a card with a note, which its tooltip shows: "identity" when the note changes the
+   * The tab of a card with a note, which its tooltip shows: "identity" when the note changes the
    * suit or rank that the face shows, and "note" for any other note.
    */
-  readonly noteBadge?: NoteBadgeKind;
-  readonly noteBadgePlacement?: NoteBadgePlacement;
+  readonly noteTab?: NoteTabKind;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -203,63 +202,64 @@ function StatusBadge({
   );
 }
 
-export type NoteBadgeKind = "note" | "identity";
+export type NoteTabKind = "note" | "identity";
 
-const NOTE_BADGES = {
-  note: { icon: "fa-sticky-note", label: "Has a note" },
+const NOTE_TABS = {
+  note: { icon: "fa-align-left", label: "Has a note" },
   identity: {
     icon: "fa-pencil-alt",
     label: "Has a note that sets the suit or rank shown",
   },
 } as const satisfies Record<
-  NoteBadgeKind,
+  NoteTabKind,
   { readonly icon: string; readonly label: string }
 >;
 
 /**
- * The size of the badge of a card with a note, as a fraction of the card's width. Centered on the
- * card's corner, it stays inside the space that the rounded corner leaves, so that it does not
- * cover the possibilities, which keep `POSSIBILITIES.inset` from the edges.
+ * The size of the tab of a card with a note, as fractions of the card's width, and the least size
+ * in CSS pixels, so that its icon stays readable on small cards. It sits left of the clue token,
+ * which is in the middle of the top edge.
  */
-const NOTE_BADGE_SIZE_PER_WIDTH = 0.2;
+const NOTE_TAB = {
+  left: 0.05,
+  width: 0.2,
+  height: 0.13,
+  minWidth: 18,
+  minHeight: 12,
+  iconPerHeight: 0.62,
+} as const;
 
 /**
- * Where the badge of a card with a note goes: on the bottom-right corner, or on the middle of the
- * top edge, for a card whose corner another card covers (as in the discard pile).
+ * The tab of a card with a note: a slip of paper that sticks out above the card's top-left edge, as
+ * if tucked behind the card, so that it plainly belongs to that card. It covers nothing on the
+ * face. A pencil shows that the note changes the suit or rank on the face, so that the player does
+ * not take it for a known card.
  */
-type NoteBadgePlacement = "corner" | "top";
-
-/**
- * The badge of a card that has a note. A pencil shows that the note changes the suit or rank on the
- * face, so that the player does not take it for a known card.
- */
-function NoteBadge({
+function NoteTab({
   kind,
-  placement,
   width,
+  borderWidth,
 }: {
-  readonly kind: NoteBadgeKind;
-  readonly placement: NoteBadgePlacement;
+  readonly kind: NoteTabKind;
   readonly width: number;
+  /** The width of the card's border, which the tab stops above, as if the card were in front. */
+  readonly borderWidth: number;
 }): React.JSX.Element {
-  const size = width * NOTE_BADGE_SIZE_PER_WIDTH;
-  const { icon, label } = NOTE_BADGES[kind];
-  const position: React.CSSProperties =
-    placement === "corner"
-      ? { right: -size / 2, bottom: -size / 2 }
-      : { left: (width - size) / 2, top: -size / 2 };
+  const tabWidth = Math.max(width * NOTE_TAB.width, NOTE_TAB.minWidth);
+  const tabHeight = Math.max(width * NOTE_TAB.height, NOTE_TAB.minHeight);
+  const { icon, label } = NOTE_TABS[kind];
   return (
     <span
       aria-label={label}
-      className="tw:pointer-events-none tw:absolute tw:z-10 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-game-text tw:text-card-ink"
-      data-note-badge={kind}
+      className="tw:pointer-events-none tw:absolute tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-t-[4px] tw:border-[1.5px] tw:border-b-0 tw:border-black/45 tw:bg-game-text tw:text-card-ink"
+      data-note-tab={kind}
       role="img"
       style={{
-        ...position,
-        width: size,
-        height: size,
-        fontSize: size * 0.55,
-        boxShadow: "0 0 0 1.5px black",
+        left: width * NOTE_TAB.left,
+        top: -(tabHeight + borderWidth),
+        width: tabWidth,
+        height: tabHeight,
+        fontSize: tabHeight * NOTE_TAB.iconPerHeight,
       }}
     >
       <i aria-hidden="true" className={`fas ${icon}`} />
@@ -466,8 +466,7 @@ export function CardFace({
   possibleSuitIndexes = [],
   possibleRanks = [],
   clueMarker,
-  noteBadge,
-  noteBadgePlacement = "corner",
+  noteTab,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -538,10 +537,10 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {noteBadge !== undefined && (
-        <NoteBadge
-          kind={noteBadge}
-          placement={noteBadgePlacement}
+      {noteTab !== undefined && (
+        <NoteTab
+          borderWidth={clued ? CLUED_BORDER_WIDTH : 1}
+          kind={noteTab}
           width={width}
         />
       )}

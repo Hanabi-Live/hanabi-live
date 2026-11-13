@@ -263,9 +263,6 @@ function NoteEditor({
         />
         <LengthCounter input={inputRef} limit={notes.NOTE_LENGTH_LIMIT} />
       </span>
-      <span className="tw:mt-1 tw:block tw:px-1 tw:text-xs tw:text-card-ink/70">
-        Enter saves the note. Escape cancels.
-      </span>
     </div>
   );
 }

@@ -32,7 +32,7 @@ of the repository.
   hover over the card to read its notes.
 - In the new game screen, your notes on your own cards now apply, as in the
   classic screen: a note such as "r1" shows the card as a red 1, and a pencil on
-  the card's note badge shows this.
+  the card's note tab shows this.
 
 ## November 12th, 2026
 
