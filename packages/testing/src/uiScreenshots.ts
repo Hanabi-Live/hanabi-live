@@ -4,7 +4,8 @@
 // builds the server and the client: `bun run ui-screenshots [options]`.
 
 // Options:
-// - `--state <name>`: Only this state. Repeat it for more than one.
+// - `--state <name>`: Only this state. Repeat it for more than one. A state of Bob's game first
+//   runs the states of that game before it, without screenshots.
 // - `--width <pixels>`: Only this width. Repeat it for more than one.
 // - `--theme <light|dark>`: Only this theme.
 // - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
@@ -237,6 +238,12 @@ interface State {
    * should wait until the animation ends.
    */
   readonly record?: (page: Page) => Promise<void>;
+  /**
+   * Whether the state shows Bob's game, which the states before it move along. When `--state`
+   * leaves out those states, the tool still runs their steps, without screenshots, so that the game
+   * is the same as in a full run.
+   */
+  readonly bobsGame?: boolean;
 }
 
 /** Hovers over an element, unless the screen is too small to show it, such as a chat in a tab. */
@@ -580,6 +587,7 @@ function getStates({
   clueAccount,
   findAccountCard,
   playBobCard,
+  identityNote,
   showPrismMorph,
   leaderGoTo,
   lastClueSegment,
@@ -595,6 +603,7 @@ function getStates({
   | "clueAccount"
   | "findAccountCard"
   | "playBobCard"
+  | "identityNote"
   | "showPrismMorph"
   | "leaderGoTo"
   | "lastClueSegment"
@@ -1324,6 +1333,7 @@ function getStates({
       name: "new-ui-game",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         // The settings are only in the lobby, so leave the pregame screen to turn on "New UI".
         await joinTable(page);
@@ -1351,6 +1361,7 @@ function getStates({
       name: "new-ui-chat-length-over-limit",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.fill("#game-chat-input", longText(MAX_CHAT_LENGTH + 20));
       },
@@ -1367,6 +1378,7 @@ function getStates({
       name: "new-ui-clue-chosen",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       // Clicking the clue again clears the choice.
       prepare: async (page) => {
         await clickRankOneClue(page);
@@ -1381,6 +1393,7 @@ function getStates({
       name: "new-ui-play",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
       },
@@ -1394,6 +1407,7 @@ function getStates({
       name: "new-ui-misplay",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
         await playBobCard();
@@ -1413,6 +1427,7 @@ function getStates({
       name: "new-ui-replay",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         // A card that the team can play, so that the game does not reach its last strike.
         await playAccountCard(page, await findAccountCard(true));
@@ -1431,6 +1446,7 @@ function getStates({
       name: "new-ui-clue-log-press",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
         cluedCard = await clueAccount();
@@ -1463,12 +1479,14 @@ function getStates({
       name: "new-ui-tooltip",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       hover: '#game-new-ui [aria-label^="About efficiency"]',
     },
     {
       name: "new-ui-pace-tooltip",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       hover: '#game-new-ui [aria-label^="About pace"]',
     },
     // The tooltip of a clue in the clue log waits for the pointer to rest.
@@ -1476,6 +1494,7 @@ function getStates({
       name: "new-ui-clue-log-tooltip",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       hover: async (page) => {
         await page
           .locator('#game-new-ui [aria-label="Clue log"] li button')
@@ -1489,6 +1508,7 @@ function getStates({
       name: "new-ui-note-editor",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page
           .locator('#game-new-ui [data-card-place="hand-1-0"]')
@@ -1506,6 +1526,7 @@ function getStates({
       name: "new-ui-note-editor-stack",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page
           .locator(STACK_CARD_SELECTOR)
@@ -1519,14 +1540,18 @@ function getStates({
       },
     },
     // The same game, after the account writes a note on the first card of its own hand that makes
-    // it show as a yellow 3, so that its badge shows a pencil, and other notes on its second card
-    // and on a discarded card. The pointer is over the first card.
+    // it show as its real identity, which the clues always allow, so that its badge shows a pencil.
+    // Other notes are on its second card and on a discarded card. The pointer is over the first
+    // card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
-        await writeNote(page, page.locator(OWN_FIRST_CARD_SELECTOR), "y3");
+        const first = page.locator(OWN_FIRST_CARD_SELECTOR);
+        const order = Number(await first.getAttribute("data-card-order"));
+        await writeNote(page, first, await identityNote(order as CardOrder));
         await writeNote(page, page.locator(OWN_SECOND_CARD_SELECTOR), "chop?");
         await writeNote(
           page,
@@ -1556,6 +1581,7 @@ function getStates({
       name: "new-ui-end-game-menu",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page
           .getByRole("button", { name: "End game", exact: true })
@@ -1568,6 +1594,7 @@ function getStates({
       name: "new-ui-end-vote",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page
           .getByRole("button", { name: "End game", exact: true })
@@ -1585,6 +1612,7 @@ function getStates({
       name: "new-ui-classic",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.getByRole("button", { name: "Classic view" }).click();
         await page.waitForTimeout(SETTLE_MILLISECONDS);
@@ -1596,6 +1624,7 @@ function getStates({
       name: "play-discard-modal",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.keyboard.press("a");
         await page.locator("#play-discard-modal").waitFor();
@@ -1611,6 +1640,7 @@ function getStates({
       name: "new-ui-classic-note-over-limit",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         const classic = page.getByRole("button", { name: "Classic view" });
         if (await classic.isVisible()) {
@@ -1645,6 +1675,7 @@ function getStates({
       name: "classic-game-chat",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         const classic = page.getByRole("button", { name: "Classic view" });
         if (await classic.isVisible()) {
@@ -1668,6 +1699,7 @@ function getStates({
       name: "new-ui-shared-replay",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         const hands = page.locator('#game-new-ui [aria-label="Hands"]');
         if (!(await hands.isVisible())) {
@@ -1685,6 +1717,7 @@ function getStates({
       name: "new-ui-shared-replay-leader-moves",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
         leaderGoTo((await lastClueSegment()) - 1);
@@ -1709,6 +1742,7 @@ function getStates({
       name: "new-ui-shared-replay-leader",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         passLeader();
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
@@ -1720,6 +1754,7 @@ function getStates({
       name: "set-leader-modal",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         passLeader();
         await page.getByRole("button", { name: "Pass leader" }).click();
@@ -1737,6 +1772,7 @@ function getStates({
       name: "new-ui-hypothetical",
       path: "/",
       loggedIn: true,
+      bobsGame: true,
       prepare: async (page) => {
         passLeader();
         // Only the leader can start a hypothetical, so wait until the lead reaches the account.
@@ -2167,6 +2203,8 @@ interface Seed {
   ) => Promise<CardOrder | undefined>;
   /** When it is his turn, Bob plays a card that the team can play. */
   readonly playBobCard: () => Promise<void>;
+  /** A note that names the real identity of a card in the account's hand, such as "y2". */
+  readonly identityNote: (order: CardOrder) => Promise<string>;
   /**
    * Has another account create a shared replay of a Prism game, start a hypothetical, and morph a
    * card to the Prism suit without a rank, before the browser joins. Returns a function that
@@ -2415,6 +2453,21 @@ async function seed(address: string): Promise<Seed> {
       (playerIndex) => playerIndex !== bobIndex,
       playable,
     );
+  }
+
+  async function identityNote(order: CardOrder) {
+    const events = await loadEvents();
+    const draw = events.find(
+      (event) => event.type === "draw" && event.order === order,
+    );
+    if (draw?.type !== "draw" || draw.identity === undefined) {
+      throw new Error(`Bob does not see the card ${order}.`);
+    }
+    const { suitIndex, rank } = draw.identity;
+    const abbreviation =
+      getVariant(LONG_VARIANT_NAME).suitAbbreviations[suitIndex];
+    assertDefined(abbreviation, `The suit ${suitIndex} has no abbreviation.`);
+    return `${abbreviation.toLowerCase()}${rank}`;
   }
 
   /** When it is his turn, Bob plays a card that the team can play. */
@@ -3177,6 +3230,7 @@ async function seed(address: string): Promise<Seed> {
     clueAccount,
     findAccountCard,
     playBobCard,
+    identityNote,
     showPrismMorph,
     leaderGoTo,
     lastClueSegment,
@@ -3428,6 +3482,7 @@ async function capture(
   context: BrowserContext,
   address: string,
   states: readonly State[],
+  setupOnly: ReadonlySet<State>,
   options: Options,
   compareBundle: string | undefined,
   results: Results,
@@ -3467,7 +3522,9 @@ async function capture(
       await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
     }
     await state.prepare?.(page);
-    if (state.record !== undefined) {
+    if (setupOnly.has(state)) {
+      await state.record?.(page);
+    } else if (state.record !== undefined) {
       const video = path.join(OUTPUT_DIRECTORY, `${state.name}.webm`);
       await page.screencast.start({ path: video, size: SETUP_SIZE });
       await state.record(page);
@@ -3476,6 +3533,11 @@ async function capture(
     // Keep the pointer off of the page, so that no element shows its hover style.
     await page.mouse.move(0, SETUP_SIZE.height - 1);
     await page.waitForTimeout(SETTLE_MILLISECONDS);
+    if (setupOnly.has(state)) {
+      await state.cleanup?.(page);
+      console.info(`Set up: ${state.name}`);
+      continue;
+    }
 
     for (const size of sizes) {
       await page.setViewportSize(size);
@@ -3605,12 +3667,13 @@ async function main() {
     const address = `http://${DOMAIN}:${port}`;
 
     seeded = await seed(localAddress);
-    const states = getStates(seeded).filter(
+    const allStates = getStates(seeded);
+    const chosen = allStates.filter(
       (state) =>
         options.states.length === 0 || options.states.includes(state.name),
     );
     const unknown = options.states.filter((name) =>
-      states.every((state) => state.name !== name),
+      chosen.every((state) => state.name !== name),
     );
     if (unknown.length > 0) {
       throw new Error(
@@ -3621,6 +3684,21 @@ async function main() {
           .join(", ")}`,
       );
     }
+    // The states of Bob's game before the last chosen one, which bring the game to that point.
+    const lastBobsGame = allStates.findLastIndex(
+      (state) => state.bobsGame === true && chosen.includes(state),
+    );
+    const setupOnly = new Set(
+      allStates.filter(
+        (state, index) =>
+          state.bobsGame === true
+          && index < lastBobsGame
+          && !chosen.includes(state),
+      ),
+    );
+    const states = allStates.filter(
+      (state) => chosen.includes(state) || setupOnly.has(state),
+    );
 
     await run(process.execPath, [
       "x",
@@ -3657,6 +3735,7 @@ async function main() {
       contexts.loggedOut,
       address,
       states.filter((state) => !state.loggedIn),
+      setupOnly,
       options,
       compareBundle,
       results,
@@ -3665,6 +3744,7 @@ async function main() {
       contexts.loggedIn,
       address,
       states.filter((state) => state.loggedIn),
+      setupOnly,
       options,
       compareBundle,
       results,
