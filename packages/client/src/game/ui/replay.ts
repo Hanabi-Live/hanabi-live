@@ -5,6 +5,8 @@ import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals.ts";
 import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
+import * as newUiState from "../newUi/newUiState.ts";
+import type { State } from "../types/State.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import type { Shuttle } from "./controls/Shuttle.ts";
@@ -27,13 +29,28 @@ const setTurnInput = getHtmlInputElement("#set-turn-input");
 // Main replay functions
 // ---------------------
 
+/**
+ * The last segment that the replay controls go to. A finished game ends with a segment that only
+ * adds the players' times to the action log. The New UI has no action log, so that segment looks
+ * the same as the one before it, and the New UI stops one segment earlier.
+ */
+export function getLastSegment(
+  state: State = globals.state,
+  newUi: boolean = newUiState.isActive(),
+): number {
+  const finalSegment = state.ongoingGame.turn.segment ?? 0;
+  return newUi && state.replay.actions.at(-1)?.type === "playerTimes"
+    ? finalSegment - 1
+    : finalSegment;
+}
+
 export function enter(customSegment?: number): void {
   if (globals.state.replay.segment !== undefined) {
     return;
   }
 
   // By default, use the final segment of the ongoing game, or 0
-  const segment = customSegment ?? globals.state.ongoingGame.turn.segment ?? 0;
+  const segment = customSegment ?? getLastSegment();
 
   globals.store!.dispatch({
     type: "replayEnter",
@@ -80,7 +97,7 @@ export function goToSegment(
   breakFree = false,
   force = false,
 ): void {
-  const finalSegment = globals.state.ongoingGame.turn.segment!;
+  const finalSegment = getLastSegment();
   const currentSegment = getCurrentReplaySegment();
 
   // Validate the target segment. The target must be between 0 and the final replay segment.
@@ -185,8 +202,7 @@ export function forwardFull(): void {
     return;
   }
 
-  const finalSegment = globals.state.ongoingGame.turn.segment!;
-  goToSegment(finalSegment, true);
+  goToSegment(getLastSegment(), true);
 }
 
 // ------------------------

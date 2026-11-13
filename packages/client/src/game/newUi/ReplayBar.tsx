@@ -134,7 +134,8 @@ function Timeline({
   readonly slide: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const fraction = lastSegment === 0 ? 1 : segment / lastSegment;
+  // A leader on the classic screen can show a segment after the last one here.
+  const fraction = lastSegment === 0 ? 1 : Math.min(segment / lastSegment, 1);
   const percent = `${fraction * 100}%`;
 
   function showTurnAt(clientX: number) {
@@ -477,9 +478,8 @@ function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
   const turn = visibleState.turn.turnNum + 1;
   const lastTurn = ongoingGame.turn.turnNum + 1;
   const segment = visibleState.turn.segment ?? 0;
-  const lastSegment = ongoingGame.turn.segment ?? 0;
-  // The buttons and the timeline step through segments, as the classic screen's do. The end of a
-  // finished game is a segment of its own, on the same turn as the last move.
+  const lastSegment = replay.getLastSegment(state, true);
+  // The buttons and the timeline step through segments, as the classic screen's do.
   const atStart = segment === 0;
   const atEnd = segment >= lastSegment;
   const canEnterHypothetical = shared === undefined || shared.amLeader;
