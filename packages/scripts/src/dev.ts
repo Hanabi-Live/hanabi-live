@@ -175,16 +175,14 @@ function psqlCommand(env: ReadonlyMap<string, string>): readonly string[] {
 
 /**
  * Every checkout shares one PostgreSQL volume, so a migration that another checkout applied can
- * differ from this checkout's file with the same number.
+ * differ from this checkout's file with the same number, and a database that an old checkout
+ * created can be older than this checkout's migration baseline.
  */
-function explainModifiedMigration(env: ReadonlyMap<string, string>) {
+function explainReset(env: ReadonlyMap<string, string>, reason: string) {
   const user = setting(env, "DB_USER", "hanabiuser");
   const database = setting(env, "DB_NAME", "hanabi");
   const [composeTool] = composeCommand();
-  log(
-    "dev",
-    "All checkouts share one database. Another checkout applied a different version of this migration.",
-  );
+  log("dev", `All checkouts share one database. ${reason}`);
   log("dev", "To reset the database and lose its data, run:");
   log(
     "dev",
@@ -392,7 +390,12 @@ async function main() {
   const migrated = await run("services", [SERVER_BINARY, "migrate", "apply"]);
   if (!migrated.ok) {
     if (migrated.errors.includes("previously applied but has been modified")) {
-      explainModifiedMigration(env);
+      explainReset(
+        env,
+        "Another checkout applied a different version of this migration.",
+      );
+    } else if (migrated.errors.includes("older than baseline")) {
+      explainReset(env, "It is too old for this checkout to migrate.");
     }
     fail("Could not migrate the database.");
   }
