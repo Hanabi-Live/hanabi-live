@@ -120,6 +120,12 @@ function Heading({
 }
 
 /**
+ * How far the knob's center stays from each end of the timeline. It is half the knob, with its
+ * ring, when the pointer is over it, so that the knob does not cover the buttons beside it.
+ */
+const KNOB_INSET_PX = 16;
+
+/**
  * A line from the first turn to the last, with a knob on the turn on screen. Clicking it or
  * dragging along it shows another turn.
  */
@@ -137,7 +143,7 @@ function Timeline({
   const ref = useRef<HTMLDivElement>(null);
   // A leader on the classic screen can show a segment after the last one here.
   const fraction = lastSegment === 0 ? 1 : Math.min(segment / lastSegment, 1);
-  const percent = `${fraction * 100}%`;
+  const knobLeft = `calc(${KNOB_INSET_PX}px + (100% - ${2 * KNOB_INSET_PX}px) * ${fraction})`;
 
   function showTurnAt(clientX: number) {
     const track = ref.current;
@@ -146,7 +152,11 @@ function Timeline({
     }
 
     const box = track.getBoundingClientRect();
-    const at = clamp((clientX - box.left) / box.width, 0, 1);
+    const travel = box.width - 2 * KNOB_INSET_PX;
+    const at =
+      travel <= 0
+        ? 1
+        : clamp((clientX - box.left - KNOB_INSET_PX) / travel, 0, 1);
     replay.goToSegment(Math.round(at * lastSegment), true);
   }
 
@@ -174,7 +184,7 @@ function Timeline({
       <span
         className="tw:absolute tw:top-1/2 tw:left-0 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-replay"
         style={{
-          width: percent,
+          width: knobLeft,
           transition: slide
             ? `width ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}`
             : undefined,
@@ -183,7 +193,7 @@ function Timeline({
       <span
         className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-115"
         style={{
-          left: percent,
+          left: knobLeft,
           transition: slide
             ? `left ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}, transform 150ms`
             : undefined,
