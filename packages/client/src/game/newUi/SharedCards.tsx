@@ -352,8 +352,8 @@ export const DiscardPile = forwardRef<
         {/* A faint trash can behind the cards names the pile without a heading. */}
         <i
           aria-hidden="true"
-          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-40"
-          style={{ fontSize: cardWidth * 0.9 }}
+          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-50"
+          style={{ fontSize: cardWidth * 1.125 }}
         />
         {atMaxClues && zoneState === "idle" && (
           // On the bottom edge of the pile, in its padding, so that it covers no card and the cards
@@ -501,46 +501,6 @@ function BombIcon(): React.JSX.Element {
   );
 }
 
-/**
- * A crossed-out trash can, for the badge at max clues, where no one can discard. The slash has a
- * gap in the badge's color on each side, so that it stands apart from the can.
- */
-function NoDiscardsIcon(): React.JSX.Element {
-  return (
-    <span
-      aria-label="No discards"
-      className="tw:relative tw:inline-flex tw:px-1 tw:text-[14px]"
-      role="img"
-    >
-      <i aria-hidden="true" className="fas fa-trash-alt" />
-      <svg
-        aria-hidden="true"
-        className="tw:absolute tw:inset-0 tw:size-full tw:overflow-visible"
-        viewBox="0 0 24 24"
-      >
-        <line
-          stroke="var(--clue-border)"
-          strokeLinecap="round"
-          strokeWidth={7}
-          x1={3}
-          x2={21}
-          y1={1}
-          y2={23}
-        />
-        <line
-          stroke="var(--card-ink)"
-          strokeLinecap="round"
-          strokeWidth={3}
-          x1={3}
-          x2={21}
-          y1={1}
-          y2={23}
-        />
-      </svg>
-    </span>
-  );
-}
-
 /** The color of the clue count: it stands out only at the limits. */
 function getClueCountClass(atMaxClues: boolean, outOfClues: boolean): string {
   if (atMaxClues) {
@@ -649,7 +609,7 @@ export function TableTokens({
                 : "tw:bg-game-raised tw:text-game-text"
             }`}
           >
-            {atMaxClues ? <NoDiscardsIcon /> : "No clues"}
+            {atMaxClues ? "No discards" : "No clues"}
           </span>
         )}
       </section>
