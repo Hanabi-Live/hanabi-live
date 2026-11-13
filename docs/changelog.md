@@ -22,8 +22,9 @@ of the repository.
 - The emote and emoji picker, and the modals that ask for a turn, a card, an
   efficiency modifier, or a new replay leader, have a close button.
 - In the new game screen, the clue controls are now larger and below the hands.
-- In the new game screen, the play stacks, discards, deck, clues, and strikes no
-  longer have text labels, and the discard pile shows a trash can.
+- In the new game screen, the play stacks, discards, deck, clues, strikes, and
+  clue log no longer have text labels. The discard pile shows a trash can, and
+  the clue count and the strikes have icons.
 
 ## November 12th, 2026
 

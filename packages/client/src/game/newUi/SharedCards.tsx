@@ -355,6 +355,13 @@ export const DiscardPile = forwardRef<
           className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-line tw:opacity-40"
           style={{ fontSize: cardWidth * 0.9 }}
         />
+        {atMaxClues && zoneState === "idle" && (
+          // On the bottom edge of the pile, in its padding, so that it covers no card and the cards
+          // do not move when it shows.
+          <span className="tw:absolute tw:bottom-0.5 tw:left-1/2 tw:-translate-x-1/2 tw:text-[13px] tw:font-medium tw:whitespace-nowrap tw:text-clue">
+            No discards at max clues
+          </span>
+        )}
         <div
           className="tw:relative tw:flex tw:flex-col"
           style={{ height: rowsHeight }}
@@ -418,6 +425,121 @@ const TOKEN_BUBBLE_CLASS =
 
 /** The row of a value, as tall as the strike boxes, so that the two values line up. */
 const TOKEN_VALUE_CLASS = "tw:flex tw:h-[32px] tw:items-center";
+
+/**
+ * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
+ * counts clues with tokens.
+ */
+function ClueTokenIcon(): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:size-[24px] tw:text-clue"
+      viewBox="0 0 24 24"
+    >
+      <circle cx={12} cy={12} fill="currentColor" r={11} />
+      <circle
+        cx={12}
+        cy={12}
+        fill="none"
+        r={6.5}
+        stroke="var(--card-ink)"
+        strokeOpacity={0.45}
+        strokeWidth={2}
+      />
+    </svg>
+  );
+}
+
+/** The color of the body of the bomb icon: blue, like the bombs in "The Legend of Zelda". */
+const BOMB_BODY_COLOR = "#3d6fe0";
+
+/** The color of the lit spark on the fuse of the bomb icon. */
+const BOMB_SPARK_COLOR = "#ffd43b";
+
+/**
+ * A bomb, the usual name for a strike: a round blue body with a shine, a gray cap, and a lit fuse.
+ */
+function BombIcon(): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:mr-0.5 tw:size-[26px] tw:text-game-muted"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M17.2 6.8Q18.4 3.2 21.2 3.4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth={1.6}
+      />
+      <rect
+        fill="currentColor"
+        height={3.6}
+        rx={1}
+        transform="rotate(45 16 8)"
+        width={5}
+        x={13.5}
+        y={6.2}
+      />
+      <circle cx={10.5} cy={14} fill={BOMB_BODY_COLOR} r={8} />
+      <ellipse
+        cx={7.6}
+        cy={10.8}
+        fill="white"
+        fillOpacity={0.5}
+        rx={2.4}
+        ry={1.4}
+        transform="rotate(-40 7.6 10.8)"
+      />
+      <path
+        d="M21.4 0.6 22.2 2.6 24 3.4 22.2 4.2 21.4 6.2 20.6 4.2 18.8 3.4 20.6 2.6Z"
+        fill={BOMB_SPARK_COLOR}
+      />
+    </svg>
+  );
+}
+
+/**
+ * A crossed-out trash can, for the badge at max clues, where no one can discard. The slash has a
+ * gap in the badge's color on each side, so that it stands apart from the can.
+ */
+function NoDiscardsIcon(): React.JSX.Element {
+  return (
+    <span
+      aria-label="No discards"
+      className="tw:relative tw:inline-flex tw:px-1 tw:text-[14px]"
+      role="img"
+    >
+      <i aria-hidden="true" className="fas fa-trash-alt" />
+      <svg
+        aria-hidden="true"
+        className="tw:absolute tw:inset-0 tw:size-full tw:overflow-visible"
+        viewBox="0 0 24 24"
+      >
+        <line
+          stroke="var(--clue-border)"
+          strokeLinecap="round"
+          strokeWidth={7}
+          x1={3}
+          x2={21}
+          y1={1}
+          y2={23}
+        />
+        <line
+          stroke="var(--card-ink)"
+          strokeLinecap="round"
+          strokeWidth={3}
+          x1={3}
+          x2={21}
+          y1={1}
+          y2={23}
+        />
+      </svg>
+    </span>
+  );
+}
 
 /** The color of the clue count: it stands out only at the limits. */
 function getClueCountClass(atMaxClues: boolean, outOfClues: boolean): string {
@@ -506,16 +628,30 @@ export function TableTokens({
       >
         {/* One large number: the count that players check most. It stands out only at the
             limits, where the rules change what the team can do: in the color of clues at the
-            maximum, when someone must clue, and gray with none, when no one can. The color says
-            it, so the bubble has no text. */}
-        <span
-          className={`${TOKEN_VALUE_CLASS} tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
-          // A spark flies to the count when a completed stack gives a clue back (see
-          // "scoreMotion.ts").
-          data-clue-count
-        >
-          {clues}
-        </span>
+            maximum, when someone must clue, and gray with none, when no one can. */}
+        <div className={`${TOKEN_VALUE_CLASS} tw:gap-2`}>
+          <ClueTokenIcon />
+          <span
+            className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
+            // A spark flies to the count when a completed stack gives a clue back (see
+            // "scoreMotion.ts").
+            data-clue-count
+          >
+            {clues}
+          </span>
+        </div>
+        {(atMaxClues || outOfClues) && (
+          // A badge on the bottom edge of the bubble, so that the count stays centered.
+          <span
+            className={`tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
+              atMaxClues
+                ? "tw:bg-clue tw:text-card-ink"
+                : "tw:bg-game-raised tw:text-game-text"
+            }`}
+          >
+            {atMaxClues ? <NoDiscardsIcon /> : "No clues"}
+          </span>
+        )}
       </section>
       {/* Strikes are danger: the bubble turns red as they add up, and stays quiet without them. */}
       <section
@@ -527,6 +663,7 @@ export function TableTokens({
           className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
           role="group"
         >
+          <BombIcon />
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
             const struck = i < strikes;

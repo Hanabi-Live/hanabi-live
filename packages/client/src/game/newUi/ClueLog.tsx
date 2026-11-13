@@ -127,9 +127,15 @@ export function ClueLog({
       aria-label="Clue log"
       className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-[rgb(0_0_0/18%)] tw:shadow-[inset_0_1px_4px_rgb(0_0_0/35%)] tw:narrow-980:h-[320px] tw:narrow-980:flex-none"
     >
-      <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-game-muted">
-        {filtered ? "Clues about this card" : "Clue log"}
-      </h2>
+      {/* The whole log needs no heading: its rows are clearly clues. A heading shows only when the
+          log is narrowed to one card, so that the missing rows do not look lost. */}
+      {filtered ? (
+        <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-game-muted">
+          Clues about this card
+        </h2>
+      ) : (
+        <div className="tw:pt-3" />
+      )}
       {rows.length === 0 ? (
         <p className="tw:m-0 tw:px-4.5 tw:py-2 tw:text-[14px] tw:text-game-muted">
           {filtered ? "No clues about this card yet." : "No clues yet."}
