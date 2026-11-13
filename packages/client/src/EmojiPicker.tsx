@@ -74,14 +74,17 @@ const BUTTON_CLASS_NAME =
 export function mountEmojiPicker(
   container: HTMLElement,
   onPick: (text: string) => void,
+  onClose: () => void,
 ): void {
-  renderRoot(container, <EmojiPicker onPick={onPick} />);
+  renderRoot(container, <EmojiPicker onClose={onClose} onPick={onPick} />);
 }
 
 function EmojiPicker({
   onPick,
+  onClose,
 }: {
   readonly onPick: (text: string) => void;
+  readonly onClose: () => void;
 }): React.JSX.Element {
   const [tabIndex, setTabIndex] = useState(0);
   const [search, setSearch] = useState("");
@@ -95,62 +98,75 @@ function EmojiPicker({
         ).slice(0, MAX_SEARCH_RESULTS);
 
   return (
-    <div className="tw:flex tw:w-[min(34em,70vw)] tw:flex-col tw:gap-2">
-      <input
-        aria-label="Search emotes and emoji"
-        autoComplete="off"
-        onChange={(event) => {
-          setSearch(event.target.value);
-        }}
-        placeholder="Search"
-        type="text"
-        value={search}
-      />
-      <div
-        className="tw:flex tw:flex-wrap tw:gap-x-[1.1em] tw:gap-y-1"
-        role="tablist"
-      >
-        {TABS.map((tab, i) => (
-          <button
-            aria-selected={query === "" && i === tabIndex}
-            className={TAB_CLASS_NAME}
-            key={tab.label}
-            onClick={() => {
-              setTabIndex(i);
-              setSearch("");
-            }}
-            role="tab"
-            type="button"
-          >
-            {tab.label}
-          </button>
-        ))}
+    <div className="tw:w-[min(34em,70vw)]">
+      <div className="tw:flex tw:items-start tw:justify-between tw:gap-4">
+        <h2>Select Emote / Emoji</h2>
+        <button
+          aria-label="Close"
+          className="tw:-mr-2 tw:flex tw:size-10 tw:shrink-0 tw:cursor-pointer tw:appearance-none tw:items-center tw:justify-center tw:rounded tw:border-0 tw:bg-transparent tw:p-0 tw:text-[1.5em] tw:text-text-label tw:hover:bg-surface-sunken tw:hover:text-text-strong"
+          onClick={onClose}
+          type="button"
+        >
+          <i className="fas fa-times" />
+        </button>
       </div>
-      <div
-        className="tw:flex tw:h-[45vh] tw:flex-wrap tw:content-start tw:overflow-y-auto"
-        role="tabpanel"
-      >
-        {symbols.map((symbol) => (
-          <button
-            aria-label={symbol.title}
-            className={BUTTON_CLASS_NAME}
-            key={symbol.title}
-            onClick={() => {
-              onPick(symbol.text);
-            }}
-            ref={tooltipRef(symbol.title)}
-            type="button"
-          >
-            {symbol.imagePath === undefined ? (
-              <EmojiText emoji={symbol.emoji ?? ""} />
-            ) : (
-              <EmoteImage path={symbol.imagePath} />
-            )}
-          </button>
-        ))}
-        {symbols.length === 0 && (
-          <p className="tw:m-2 tw:text-text-label">No matches.</p>
-        )}
+      <div className="tw:flex tw:flex-col tw:gap-2">
+        <input
+          aria-label="Search emotes and emoji"
+          autoComplete="off"
+          onChange={(event) => {
+            setSearch(event.target.value);
+          }}
+          placeholder="Search"
+          type="text"
+          value={search}
+        />
+        <div
+          className="tw:flex tw:flex-wrap tw:gap-x-[1.1em] tw:gap-y-1"
+          role="tablist"
+        >
+          {TABS.map((tab, i) => (
+            <button
+              aria-selected={query === "" && i === tabIndex}
+              className={TAB_CLASS_NAME}
+              key={tab.label}
+              onClick={() => {
+                setTabIndex(i);
+                setSearch("");
+              }}
+              role="tab"
+              type="button"
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div
+          className="tw:flex tw:h-[45vh] tw:flex-wrap tw:content-start tw:overflow-y-auto"
+          role="tabpanel"
+        >
+          {symbols.map((symbol) => (
+            <button
+              aria-label={symbol.title}
+              className={BUTTON_CLASS_NAME}
+              key={symbol.title}
+              onClick={() => {
+                onPick(symbol.text);
+              }}
+              ref={tooltipRef(symbol.title)}
+              type="button"
+            >
+              {symbol.imagePath === undefined ? (
+                <EmojiText emoji={symbol.emoji ?? ""} />
+              ) : (
+                <EmoteImage path={symbol.imagePath} />
+              )}
+            </button>
+          ))}
+          {symbols.length === 0 && (
+            <p className="tw:m-2 tw:text-text-label">No matches.</p>
+          )}
+        </div>
       </div>
     </div>
   );

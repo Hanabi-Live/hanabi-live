@@ -181,10 +181,19 @@ export function openEmojiPicker(chatInput: HTMLInputElement): void {
   activeChatInput = chatInput;
   // Most users never open the picker, so it is drawn when it first opens.
   if (!emojiPickerMounted) {
-    mountEmojiPicker(getHtmlElement("#emoji-picker"), pickChatSymbol);
+    mountEmojiPicker(
+      getHtmlElement("#emoji-picker"),
+      pickChatSymbol,
+      modals.closeModals,
+    );
     emojiPickerMounted = true;
   }
-  modals.showPrompt("#emoji-modal");
+  // The search input comes after the close button, so the dialog would focus the button instead.
+  modals.showPrompt(
+    "#emoji-modal",
+    undefined,
+    getHtmlInputElement("#emoji-picker input"),
+  );
 }
 
 /**
