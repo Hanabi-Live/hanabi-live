@@ -8,7 +8,7 @@ import {
   MIN_PLAYERS,
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
-import { isEqual } from "lodash";
+import equal from "fast-deep-equal";
 import * as z from "zod";
 
 /** A game in the replay format, generated from the server's contract. */
@@ -104,7 +104,7 @@ export function shrink(jsonString: string): string | undefined {
   const decompressed = expand(compressed);
   if (
     decompressed === undefined
-    || !isEqual(gameDataJson, parseGameJson(decompressed))
+    || !equal(gameDataJson, parseGameJson(decompressed))
   ) {
     return undefined;
   }

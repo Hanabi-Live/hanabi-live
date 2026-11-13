@@ -23,7 +23,7 @@ import {
   parseIntSafe,
   trimSuffix,
 } from "complete-common";
-import { isEqual } from "lodash";
+import equal from "fast-deep-equal";
 import { getSpecialClueRanks } from "./getVariantDescriptions.ts";
 
 export function getVariantRecipe(
@@ -311,7 +311,7 @@ export function validateVariantRecipes(
       suitsIdMap,
     );
 
-    if (!isEqual(variantJson, reconstructedVariant)) {
+    if (!equal(variantJson, reconstructedVariant)) {
       console.error("--------------------------------------------------------");
       console.error("variantJson:", variantJson);
       console.error("--------------------------------------------------------");

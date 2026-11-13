@@ -1,7 +1,6 @@
 import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
-  ClueRank,
   ColorIndex,
   LogEntry,
   PlayerIndex,
@@ -13,8 +12,7 @@ import {
   getCardsPerHand,
   ODD_RANK_CLUE,
 } from "@hanabi-live/game";
-import { assertDefined, parseIntSafe } from "complete-common";
-import { includes } from "lodash";
+import { assertDefined, includes, parseIntSafe } from "complete-common";
 import { SelfChatMessageType, sendSelfPmFromServer } from "../chat.ts";
 import type {
   ClientAction,
@@ -346,13 +344,12 @@ function getActionFromHypoClue(
       `The clue rank of ${clueNumber} is not valid for this variant.`,
     );
   }
-  const clueRank = clueNumber as ClueRank;
 
   // It is a rank clue.
   return {
     type: "clue",
     receiverIndex: playerIndex,
-    clue: { type: "rank", rank: clueRank },
+    clue: { type: "rank", rank: clueNumber },
   };
 }
 
