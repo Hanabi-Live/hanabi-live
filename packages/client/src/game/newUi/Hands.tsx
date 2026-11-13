@@ -695,7 +695,8 @@ function Hand({
     && !editing
     && props.clueTarget === seat.playerIndex;
 
-  let boxClass = "tw:ring-1 tw:ring-game-raised";
+  let boxClass =
+    "tw:bg-black/12 tw:ring-1 tw:ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
     boxClass = "tw:bg-game-turn/10 tw:ring-3 tw:ring-game-turn";
   } else if (chosen) {

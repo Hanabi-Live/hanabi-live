@@ -45,6 +45,8 @@ of the repository.
 - In the new game screen, the deck no longer says "Last card" or "Final round".
 - In the new game screen, when a clue would touch no cards, the clue button says
   so, such as "No 4s in that hand".
+- In the new game screen, the table is grained felt that is darker toward the
+  edges, and the piles, clue log, and hands sit deeper in it.
 
 ## November 12th, 2026
 
