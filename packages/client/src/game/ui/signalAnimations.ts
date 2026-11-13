@@ -6,6 +6,15 @@ import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants.ts";
 import {
+  DROPPED_CARD_GLOW_SECONDS,
+  MAX_SCORE_FADE_SECONDS,
+  MAX_SCORE_POP_SCALE,
+  MAX_SCORE_POP_SECONDS,
+  MAX_SCORE_RED_SECONDS,
+  MAX_SCORE_RING_RADIUS,
+  MAX_SCORE_RING_SECONDS,
+} from "./effectConfig.ts";
+import {
   EffectTimeline,
   absoluteCenter,
   addCardGlow,
@@ -17,14 +26,6 @@ import {
 import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView.ts";
 
 // Distances and sizes are fractions of the height of a play stack.
-const MAX_SCORE_RING_RADIUS = 0.31;
-const MAX_SCORE_RING_SECONDS = 0.6;
-const MAX_SCORE_POP_SCALE = 2.8;
-const MAX_SCORE_POP_SECONDS = 0.5;
-/** After the pop, the maximum score stays red for a while and then fades back. */
-const MAX_SCORE_RED_SECONDS = 0.6;
-const MAX_SCORE_FADE_SECONDS = 0.5;
-const DROPPED_CARD_GLOW_SECONDS = 0.8;
 
 const STRIKEOUT_RING_RADIUS = 0.27;
 const STRIKEOUT_RING_SECONDS = 0.55;

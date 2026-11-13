@@ -5,6 +5,15 @@ import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
+import {
+  CARD_GLOW_WIDTH,
+  FLASH_START_RADIUS,
+  RING_START_RADIUS,
+  RING_STROKE,
+  SCORE_GLOW_BLUR,
+  SHEEN_DEGREES,
+  SHEEN_WIDTH,
+} from "./effectConfig.ts";
 
 export interface Point {
   x: number;
@@ -19,19 +28,6 @@ interface Track {
   end?: () => void;
   ended: boolean;
 }
-
-/** How large the flash of an explosion is when it starts, as a fraction of the unit. */
-const FLASH_START_RADIUS = 0.05;
-/** How large the shock ring of an explosion is when it starts, as a fraction of the unit. */
-const RING_START_RADIUS = 0.08;
-/** How thick the shock ring is when it starts and when it ends, as a fraction of the unit. */
-const RING_STROKE = { start: 0.066, end: 0.006 } as const;
-
-/** The glow and the sheen on a card. */
-const CARD_GLOW_WIDTH = 0.05;
-const SHEEN_WIDTH = 0.36;
-const SHEEN_DEGREES = 25;
-const SCORE_GLOW_BLUR = 0.13;
 
 export function easeIn(t: number): number {
   return t * t;

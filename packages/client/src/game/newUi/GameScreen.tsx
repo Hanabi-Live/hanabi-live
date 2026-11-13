@@ -76,7 +76,6 @@ import {
   measureCards,
   stopCardMoves,
 } from "./cardMotion.ts";
-import { animateFinale } from "./finaleMotion.ts";
 import {
   useElementSize,
   useGameState,
@@ -87,6 +86,12 @@ import {
 } from "./hooks.ts";
 import * as newUiState from "./newUiState.ts";
 import type { Misplay } from "./playMotion.ts";
+import {
+  animateFinale,
+  animateMaxScoreDrop,
+  animateStackComplete,
+  finishScoreSignals,
+} from "./scoreMotion.ts";
 import {
   getScreenScaleForWindow,
   setScreenScale,
@@ -516,6 +521,67 @@ function getMoveEffects(
   };
 }
 
+/**
+ * Shows the changes of the score on a move, as the classic screen does. The server sends a move in
+ * several updates, so each one starts on the update that changes its numbers.
+ *
+ * - In a game in progress, a play that completes a stack celebrates it, and a play that gives the
+ *   team a perfect score sets off the finale instead.
+ * - A lost card that lowers the maximum score shows it, also in a replay, but not when the replay
+ *   goes back.
+ */
+function animateScoreChanges(
+  root: HTMLElement,
+  before: GameState,
+  after: GameState,
+  live: boolean,
+  segmentChange: number,
+) {
+  const { variant } = globals;
+  if (live) {
+    const completed = after.playStacks.findIndex(
+      (stack, suitIndex) =>
+        stack.length === variant.stackSize
+        && before.playStacks[suitIndex]?.length === variant.stackSize - 1,
+    );
+    const playedCard = getLastPlayedCard(root, before, after);
+    if (after.score === variant.maxScore && before.score < variant.maxScore) {
+      animateFinale(root, variant.suits, playedCard);
+    } else if (completed !== -1) {
+      animateStackComplete(
+        root,
+        variant.suits,
+        completed,
+        playedCard,
+        after.clueTokens > before.clueTokens ? before.clueTokens : undefined,
+      );
+    }
+  }
+
+  if (segmentChange >= 0 && after.stats.maxScore < before.stats.maxScore) {
+    const discarded = new Set(before.discardStacks.flat());
+    const lost = after.discardStacks
+      .flat()
+      .find((order) => !discarded.has(order));
+    animateMaxScoreDrop(
+      root,
+      before.stats.maxScore,
+      lost === undefined ? undefined : getCardElement(root, lost),
+    );
+  }
+}
+
+function getCardElement(
+  root: HTMLElement,
+  order: CardOrder,
+): HTMLElement | undefined {
+  return (
+    root.querySelector<HTMLElement>(
+      `[data-card-order="${CSS.escape(order.toString())}"]`,
+    ) ?? undefined
+  );
+}
+
 /** The card that was just played onto a stack, if there is one. */
 function getLastPlayedCard(
   root: HTMLElement,
@@ -528,11 +594,7 @@ function getLastPlayedCard(
       order !== undefined
       && stack.length > (before.playStacks[suitIndex]?.length ?? 0)
     ) {
-      return (
-        root.querySelector<HTMLElement>(
-          `[data-card-order="${CSS.escape(order.toString())}"]`,
-        ) ?? undefined
-      );
+      return getCardElement(root, order);
     }
   }
   return undefined;
@@ -940,6 +1002,9 @@ export function GameScreen({
             startedAt: now,
           };
     stopCardMoves();
+    if (move !== previous.move) {
+      finishScoreSignals();
+    }
     const positions = measureCards(root);
     const segmentChange =
       (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
@@ -958,20 +1023,13 @@ export function GameScreen({
         effects,
       );
 
-      // A play that gives the team a perfect score sets off the finale, as on the classic screen.
-      // The server sends the play in several updates, so it starts on the one that changes the
-      // score.
-      const { maxScore } = globals.variant;
-      if (
-        effects.live
-        && !globals.lobby.settings.reducedMotion
-        && previous.shownState.score < maxScore
-        && shownState.score === maxScore
-      ) {
-        animateFinale(
+      if (!globals.lobby.settings.reducedMotion) {
+        animateScoreChanges(
           root,
-          globals.variant.suits,
-          getLastPlayedCard(root, previous.shownState, shownState),
+          previous.shownState,
+          shownState,
+          effects.live,
+          segmentChange,
         );
       }
     }

@@ -174,9 +174,11 @@ const MAX_PERFECT_SEEDS = 20;
 const MAX_PERFECT_MOVES = 200;
 
 /**
- * The table where the accounts of the perfect game complete a stack, lose a card, and strike out.
+ * The tables where the accounts of the perfect game complete a stack, lose a card, and strike out,
+ * for the account to watch in the classic and the new game screen.
  */
-const STACK_SIGNALS_TABLE_NAME = "Stack signals";
+const STACK_SIGNALS_TABLE_NAME = "Classic signals";
+const STACK_SIGNALS_NEW_UI_TABLE_NAME = "New UI signals";
 
 /**
  * How long a stack completion, a drop of the maximum score, or a misplay takes, with time to spare.
@@ -1684,32 +1686,24 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        stackSignals = await showStackSignals();
-        const lobbyButton = page.getByRole("button", {
-          name: "Lobby",
-          exact: true,
-        });
-        if (await lobbyButton.isVisible()) {
-          await lobbyButton.click();
-        }
-        await page.locator("#lobby").waitFor();
-        // The "new-ui-game" state turns on "New UI", which this state turns off.
-        await clickNav(page, "settings");
-        if (await page.locator("#newUi").first().isChecked()) {
-          // The checkbox itself is hidden behind its styled label.
-          await page.locator('label[for="newUi"]').first().click();
-        }
-        await page.keyboard.press("Escape");
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
-        // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
-        const row = page.locator("#lobby-games-table-tbody tr", {
-          hasText: STACK_SIGNALS_TABLE_NAME,
-        });
-        await row.waitFor();
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-        await row.click({ force: true });
-        await page.waitForSelector(".konvajs-content");
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await watchStackSignals(page, false);
+      },
+      record: async (page) => {
+        await stackSignals?.play(page);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        stackSignals?.close();
+        stackSignals = undefined;
+      },
+    },
+    // The same moves in the new game screen.
+    {
+      name: "new-ui-stack-signals",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await watchStackSignals(page, true);
       },
       record: async (page) => {
         await stackSignals?.play(page);
@@ -1721,6 +1715,48 @@ function getStates({
       },
     },
   ];
+
+  /**
+   * Has the accounts of the perfect game play it again at a new table, and makes the account watch
+   * it in the classic or the new game screen.
+   */
+  async function watchStackSignals(page: Page, newUi: boolean) {
+    const tableName = newUi
+      ? STACK_SIGNALS_NEW_UI_TABLE_NAME
+      : STACK_SIGNALS_TABLE_NAME;
+    stackSignals = await showStackSignals(tableName);
+    // The account can still watch the game of the previous state.
+    const lobby = page.locator("#lobby");
+    if (!(await lobby.isVisible())) {
+      const lobbyButton = page.getByRole("button", {
+        name: "Lobby",
+        exact: true,
+      });
+      await ((await lobbyButton.isVisible())
+        ? lobbyButton.click()
+        : clickCanvasElement(page, ["lobbyButton"]));
+    }
+    await lobby.waitFor();
+    // The "new-ui-game" state turns on "New UI".
+    await clickNav(page, "settings");
+    if ((await page.locator("#newUi").first().isChecked()) !== newUi) {
+      // The checkbox itself is hidden behind its styled label.
+      await page.locator('label[for="newUi"]').first().click();
+    }
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(SETTLE_MILLISECONDS);
+    // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
+    const row = page.locator("#lobby-games-table-tbody tr", {
+      hasText: tableName,
+    });
+    await row.waitFor();
+    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+    await row.click({ force: true });
+    await (newUi
+      ? page.locator('#game-new-ui [aria-label="Hands"]').waitFor()
+      : page.waitForSelector(".konvajs-content"));
+    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+  }
 }
 
 /** Joins the first table, unless the account is already at one. */
@@ -1964,7 +2000,7 @@ interface Seed {
    * Has the accounts of the perfect game play it again, from the play before one of its stacks is
    * complete, at a table that the browser's account can watch.
    */
-  readonly showStackSignals: () => Promise<StackSignals>;
+  readonly showStackSignals: (tableName: string) => Promise<StackSignals>;
   /** Bob, as the leader of the shared replay at his table, shows a segment to everyone there. */
   readonly leaderGoTo: (segment: number) => void;
   /** The segment of the shared replay at Bob's table that shows the game's last clue. */
@@ -2821,7 +2857,7 @@ async function seed(address: string): Promise<Seed> {
    * complete, at a table that the browser's account can watch. `play` completes the stack, then
    * loses a card that the team needs, then misplays three times, which ends the game.
    */
-  async function showStackSignals(): Promise<StackSignals> {
+  async function showStackSignals(tableName: string): Promise<StackSignals> {
     perfectGame ??= findPerfectGame();
     const { gameId, stackDone } = await perfectGame;
     const players = await Promise.all(
@@ -2832,7 +2868,7 @@ async function seed(address: string): Promise<Seed> {
     assertDefined(other, "There is no other player.");
     owner.send("tableCreate", {
       settings: {
-        name: STACK_SIGNALS_TABLE_NAME,
+        name: tableName,
         maxPlayers: DEFAULT_MAX_PLAYERS,
         options: {},
         deal: { type: "replay", gameId, turn: stackDone.turn },

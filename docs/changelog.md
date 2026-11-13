@@ -17,6 +17,8 @@ of the repository.
 - In the new game screen, the replay controls are now larger and below the
   hands.
 - In the new game screen, a perfect score now sets off the fireworks finale.
+- In the new game screen, a completed stack and a lower maximum score now have
+  the same animations as in the classic screen.
 
 ## November 12th, 2026
 

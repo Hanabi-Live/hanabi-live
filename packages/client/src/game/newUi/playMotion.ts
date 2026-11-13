@@ -8,6 +8,11 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { WARNING_COLOR } from "../ui/constants.ts";
+import {
+  FLASH_START_RADIUS,
+  RING_START_RADIUS,
+  RING_STROKE,
+} from "../ui/effectConfig.ts";
 import { getScreenScale, measure } from "./screenScale.ts";
 
 /** The ID of every card movement, so that the page can tell them from other animations. */
@@ -93,11 +98,6 @@ const RING_RADIUS = 0.68;
 const RING_SECONDS = 0.42;
 const RAYS_SECONDS = 0.38;
 const NUM_RAYS = 12;
-
-/** How large a flash or a ring is when it starts, and how thick a ring is (as on the classic). */
-export const FLASH_START_RADIUS = 0.05;
-export const RING_START_RADIUS = 0.08;
-export const RING_STROKE = { start: 0.066, end: 0.006 } as const;
 
 /** The flash of the strike that ends the game. */
 const STRIKEOUT_RING_RADIUS = 0.27;

@@ -4,17 +4,30 @@
 
 // When the card gives the team a perfect score, a finale plays instead: a rocket climbs from each
 // stack and bursts in its suit's colors, and then one large firework bursts over the stacks. The
-// new game screen plays the same finale (see "../newUi/finaleMotion.ts"), so its numbers are in
-// "fireworkConfig.ts".
+// new game screen plays the same animations (see "../newUi/scoreMotion.ts"), so their numbers are
+// in "effectConfig.ts".
 
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
 import type { PlayStack } from "./PlayStack.ts";
 import { globals } from "./UiGlobals.ts";
 import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
-import type { BurstConfig } from "./fireworkConfig.ts";
+import type { BurstConfig } from "./effectConfig.ts";
 import {
+  BURST,
+  BURST_HEIGHT,
   CARD_GLOW_SECONDS,
+  CLUE_BURST,
+  CLUE_BURST_COLORS,
+  CLUE_GREEN,
+  CLUE_POP_GREEN,
+  CLUE_POP_SCALE,
+  CLUE_POP_SECONDS,
+  COMET_CONTROL_POINT,
+  COMET_DELAY_SECONDS,
+  COMET_GLOW,
+  COMET_RADIUS,
+  COMET_SECONDS,
   CRACKLE_AREA,
   CRACKLE_BURST,
   CRACKLE_COLORS,
@@ -22,6 +35,7 @@ import {
   EMBER_COLORS,
   EMBER_DRIFT,
   EMBER_FALL,
+  EMBER_INTERVAL,
   EMBER_RADIUS,
   EMBER_SECONDS,
   FINALE_BURST,
@@ -43,6 +57,7 @@ import {
   ROCKET_STREAK_WIDTH,
   ROCKET_WOBBLE,
   ROCKET_WOBBLE_RADIANS,
+  SCORE_GLOW_SECONDS,
   SCORE_POP_SCALE,
   SCORE_POP_SECONDS,
   SPARK_FADE_START,
@@ -56,7 +71,7 @@ import {
   WHITE_HOT,
   burstColors,
   suitColors,
-} from "./fireworkConfig.ts";
+} from "./effectConfig.ts";
 import type { Point } from "./fireworks.ts";
 import {
   EffectTimeline,
@@ -77,43 +92,6 @@ export interface StackCompleteAnimation {
   /** Ends the animation and shows the current clue count. */
   stop: () => void;
 }
-
-const CLUE_GREEN = "#6cff73";
-const CLUE_BURST_COLORS = [CLUE_GREEN, WHITE_HOT] as const;
-
-// Distances and sizes are fractions of the height of a play stack.
-/** How far above the center of the stack the firework bursts. */
-const BURST_HEIGHT = 0.8;
-const BURST = {
-  sparks: 36,
-  reach: 0.9,
-  seconds: 0.6,
-  flashRadius: 0.4,
-  ringRadius: 0.85,
-} as const satisfies BurstConfig;
-const CLUE_BURST = {
-  sparks: 12,
-  reach: 0.3,
-  seconds: 0.35,
-  flashRadius: 0.15,
-  ringRadius: 0.3,
-} as const satisfies BurstConfig;
-
-/** The spark waits for the burst to open before it leaves. */
-const COMET_DELAY_SECONDS = 0.06;
-const COMET_SECONDS = 0.5;
-const COMET_RADIUS = 0.052;
-const COMET_GLOW = 0.13;
-/** Where the comet's path bends, relative to the midpoint of its path. */
-const COMET_CONTROL_POINT = { x: 0.3, y: -0.15 } as const;
-/** How often (as a fraction of the flight) the spark leaves an ember behind it. */
-const EMBER_INTERVAL = 0.025;
-
-const CLUE_POP_SECONDS = 0.35;
-const CLUE_POP_SCALE = 1.7;
-/** The part of the pop during which the clue count is green. */
-const CLUE_POP_GREEN = 0.55;
-const SCORE_GLOW_SECONDS = 0.4;
 
 /**
  * Celebrates the card that completed a play stack. The card is already moving to the stack.

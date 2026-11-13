@@ -1,6 +1,7 @@
-// The colors, sizes, and timing of the fireworks that celebrate a completed stack and a perfect
-// score. Both game screens draw them: the classic screen in "stackCompleteAnimation.ts", and the
-// new one in "../newUi/finaleMotion.ts".
+// The colors, sizes, and timing of the effects that show a completed stack, a perfect score, and a
+// drop of the maximum score. Both game screens draw them: the classic screen in
+// "stackCompleteAnimation.ts" and "signalAnimations.ts", and the new one in
+// "../newUi/scoreMotion.ts".
 
 import type { Suit } from "@hanabi-live/game";
 
@@ -15,8 +16,32 @@ export interface BurstConfig {
 export const GOLD = "#ffd166";
 export const WHITE_HOT = "#fff8e1";
 export const EMBER_COLORS = [GOLD, "#ffad3b", WHITE_HOT] as const;
+export const CLUE_GREEN = "#6cff73";
+export const CLUE_BURST_COLORS = [CLUE_GREEN, WHITE_HOT] as const;
 
 // Distances and sizes are fractions of the height of a play stack.
+/** How far above the center of the stack the firework of a completed stack bursts. */
+export const BURST_HEIGHT = 0.8;
+export const BURST = {
+  sparks: 36,
+  reach: 0.9,
+  seconds: 0.6,
+  flashRadius: 0.4,
+  ringRadius: 0.85,
+} as const satisfies BurstConfig;
+export const CLUE_BURST = {
+  sparks: 12,
+  reach: 0.3,
+  seconds: 0.35,
+  flashRadius: 0.15,
+  ringRadius: 0.3,
+} as const satisfies BurstConfig;
+/** How large the flash of an explosion is when it starts. */
+export const FLASH_START_RADIUS = 0.05;
+/** How large the shock ring of an explosion is when it starts. */
+export const RING_START_RADIUS = 0.08;
+/** How thick the shock ring is when it starts and when it ends. */
+export const RING_STROKE = { start: 0.066, end: 0.006 } as const;
 export const FLASH_SECONDS = 0.22;
 export const RING_SECONDS = 0.45;
 export const SPARK_RADIUS = { min: 0.026, max: 0.04 } as const;
@@ -31,7 +56,39 @@ export const EMBER_RADIUS = { min: 0.018, max: 0.033 } as const;
 export const EMBER_FALL = 0.13;
 export const EMBER_DRIFT = 0.06;
 
+/** The spark that flies to the clue count waits for the burst to open before it leaves. */
+export const COMET_DELAY_SECONDS = 0.06;
+export const COMET_SECONDS = 0.5;
+export const COMET_RADIUS = 0.052;
+export const COMET_GLOW = 0.13;
+/** Where the comet's path bends, relative to the midpoint of its path. */
+export const COMET_CONTROL_POINT = { x: 0.3, y: -0.15 } as const;
+/** How often (as a fraction of the flight) the spark leaves an ember behind it. */
+export const EMBER_INTERVAL = 0.025;
+
+export const CLUE_POP_SECONDS = 0.35;
+export const CLUE_POP_SCALE = 1.7;
+/** The part of the pop during which the clue count is green. */
+export const CLUE_POP_GREEN = 0.55;
+export const SCORE_GLOW_SECONDS = 0.4;
+
 export const CARD_GLOW_SECONDS = 0.5;
+/** The glow and the sheen on a card, as fractions of the card's width. */
+export const CARD_GLOW_WIDTH = 0.05;
+export const SHEEN_WIDTH = 0.36;
+export const SHEEN_DEGREES = 25;
+/** How large the glow of the score is. */
+export const SCORE_GLOW_BLUR = 0.13;
+
+// The drop of the maximum score.
+export const MAX_SCORE_RING_RADIUS = 0.31;
+export const MAX_SCORE_RING_SECONDS = 0.6;
+export const MAX_SCORE_POP_SCALE = 2.8;
+export const MAX_SCORE_POP_SECONDS = 0.5;
+/** After the pop, the maximum score stays red for a while and then fades back. */
+export const MAX_SCORE_RED_SECONDS = 0.6;
+export const MAX_SCORE_FADE_SECONDS = 0.5;
+export const DROPPED_CARD_GLOW_SECONDS = 0.8;
 
 // The perfect score finale.
 /** The first rocket leaves after the card lands. The others follow, one stack at a time. */

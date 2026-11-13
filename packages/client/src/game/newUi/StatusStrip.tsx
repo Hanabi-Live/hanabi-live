@@ -139,8 +139,14 @@ function OutOf({
 }): React.JSX.Element {
   return (
     <>
-      {value}
-      <span className="tw:font-medium tw:text-game-muted"> / {max}</span>
+      {value}{" "}
+      {/* The maximum score pops when it drops (see "scoreMotion.ts"). A transform needs a box. */}
+      <span
+        className="tw:inline-block tw:font-medium tw:text-game-muted"
+        data-out-of-max
+      >
+        / {max}
+      </span>
     </>
   );
 }
