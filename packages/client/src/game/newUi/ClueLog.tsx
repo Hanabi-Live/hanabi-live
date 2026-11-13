@@ -72,8 +72,7 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
  * The clues of the game so far, newest at the bottom, like the classic screen's clue log. They are
  * in columns: the turn, the giver, an arrow, the receiver, and the clue. A name that is too long
  * for its column is made smaller to fit, not cut off. Each one is a button that shows the turn
- * after it. The clue of the turn on screen stands out, in the same color as its rail beside the
- * hands.
+ * after it. The clue of the turn on screen stands out.
  *
  * While the mouse button is held down on a card in a hand, the log shows only the clues about that
  * card: the ones that touched it (on green), and the ones to its hand that did not (on red). So all
@@ -165,7 +164,6 @@ export function ClueLog({
         >
           {rows.map(({ entry, match }) => {
             const shown = entry.segment === shownSegment;
-            const color = getClueMarkerColor(entry.marker);
             const background =
               match === "none"
                 ? `tw:hover:bg-game-raised ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
@@ -177,7 +175,7 @@ export function ClueLog({
               >
                 <button
                   aria-current={shown ? "step" : undefined}
-                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:relative tw:rounded-lg tw:border-0 tw:py-1 tw:pr-2 tw:pl-3 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
+                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:rounded-lg tw:border-0 tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
@@ -185,13 +183,6 @@ export function ClueLog({
                   style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
                   type="button"
                 >
-                  {shown && (
-                    <span
-                      aria-hidden
-                      className="tw:absolute tw:inset-y-1.5 tw:left-1 tw:w-1 tw:rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                  )}
                   <span className="tw:text-[13px] tw:text-game-muted">
                     #{entry.turn}
                   </span>
