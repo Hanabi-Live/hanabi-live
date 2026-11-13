@@ -33,6 +33,8 @@ of the repository.
 - In the new game screen, your notes on your own cards now apply, as in the
   classic screen: a note such as "r1" shows the card as a red 1, and a pencil on
   the card's note tab shows this.
+- In the new game screen, the "Give clue" button says what you still have to
+  pick.
 
 ## November 12th, 2026
 
