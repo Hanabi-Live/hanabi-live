@@ -42,7 +42,7 @@ pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
 /// Connections in the primary pool, besides the one that holds live-table ownership.
 pub const PRIMARY_CONNECTIONS: u32 = 14;
 /// Connections in the pool that serves lobby reads and the public pages.
-pub const LOBBY_READ_CONNECTIONS: u32 = 2;
+pub const LOBBY_READ_CONNECTIONS: u32 = 4;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
 /// The most derived-statistics refreshes that run at once.
