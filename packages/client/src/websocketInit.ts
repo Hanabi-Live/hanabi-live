@@ -236,7 +236,7 @@ function openConnection(isReconnect: boolean) {
       ),
     );
   };
-  conn.on("serverRestart", ({ message }) => {
+  conn.on("serverShutdown", ({ message }) => {
     if (activeConnection === conn) {
       conn.setReady(false);
       reconnectBackoff.reset();

@@ -169,11 +169,17 @@ pub struct ChatList {
     pub messages: Vec<Chat>,
     /// The table whose chat this is. Absent for the lobby's chat.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
-    /// How many of the messages the recipient has not read. Present with `tableId`, as the server
-    /// does not track what a user has read in the lobby.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub num_unread: Option<Count>,
+    pub table: Option<ChatListTable>,
+}
+
+/// The table of a table's `chatList`, and what the recipient has read there. The server does not
+/// track what a user has read in the lobby.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChatListTable {
+    pub table_id: TableId,
+    /// How many of the messages the recipient has not read.
+    pub num_unread: Count,
 }
 
 impl ChatList {
@@ -181,8 +187,7 @@ impl ChatList {
     pub const fn lobby(messages: Vec<Chat>) -> Self {
         Self {
             messages,
-            table_id: None,
-            num_unread: None,
+            table: None,
         }
     }
 
@@ -190,8 +195,10 @@ impl ChatList {
     pub const fn table(table_id: TableId, messages: Vec<Chat>, num_unread: Count) -> Self {
         Self {
             messages,
-            table_id: Some(table_id),
-            num_unread: Some(num_unread),
+            table: Some(ChatListTable {
+                table_id,
+                num_unread,
+            }),
         }
     }
 }

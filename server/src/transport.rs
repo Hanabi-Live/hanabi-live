@@ -398,14 +398,14 @@ mod tests {
         drop(receiver.try_recv().unwrap());
         let mut completed = session
             .close_after(
-                &["serverRestart {}".into(), "error {}".into()],
+                &["serverShutdown {}".into(), "error {}".into()],
                 SERVICE_RESTART_CLOSE_CODE,
             )
             .unwrap();
         session.emit(&Frame::from("must not follow close"));
         assert_eq!(
             receiver.try_recv().unwrap().message,
-            Message::Text("serverRestart {}".into())
+            Message::Text("serverShutdown {}".into())
         );
         assert_eq!(
             receiver.try_recv().unwrap().message,

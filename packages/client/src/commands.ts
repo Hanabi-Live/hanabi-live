@@ -100,18 +100,15 @@ commands.set("chatTyping", (data) => {
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
 // messages, with the table's ID and the number of unread messages.
 commands.set("chatList", (data) => {
+  const { table } = data;
   for (const line of data.messages) {
     // The list names its table once, not in each message.
     const message =
-      data.tableId === undefined ? line : { ...line, tableId: data.tableId };
+      table === undefined ? line : { ...line, tableId: table.tableId };
     chat.add(message, true); // The second argument is "fast"
   }
-  if (
-    data.numUnread !== undefined
-    && globals.ui !== undefined
-    && !gameChat.isOpen()
-  ) {
-    globals.chatUnread += data.numUnread;
+  if (table !== undefined && globals.ui !== undefined && !gameChat.isOpen()) {
+    globals.chatUnread += table.numUnread;
     globals.ui.updateChatLabel();
   }
 });

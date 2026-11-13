@@ -13,7 +13,7 @@ use super::*;
 /// sound and reconnects.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ServerRestart {
+pub struct ServerShutdown {
     /// HTML explaining the downtime, present only when an administrator gave a reason.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
@@ -500,11 +500,6 @@ named_enum! {
     /// The typed cause of a failure that a notice reports. The clients' schema cannot describe each
     /// code, so their descriptions are comments.
     pub enum NoticeCode {
-        ArchiveInconsistentPlayers => "archiveInconsistentPlayers",
-        ArchiveInvalidAction => "archiveInvalidAction",
-        ArchiveInvalidSeed => "archiveInvalidSeed",
-        ArchiveInvalidCharacter => "archiveInvalidCharacter",
-        ArchiveUnknownVariant => "archiveUnknownVariant",
         // A command that failed for a reason the server did not anticipate. Its report keeps the
         // server's own description, so the player can pass it on with the reference.
         CommandFailed => "commandFailed",
@@ -545,6 +540,11 @@ named_enum! {
         PasswordRateLimited => "passwordRateLimited",
         PersistenceUncertain => "persistenceUncertain",
         RecordNotFound => "recordNotFound",
+        SavedGameInconsistentPlayers => "savedGameInconsistentPlayers",
+        SavedGameInvalidAction => "savedGameInvalidAction",
+        SavedGameInvalidSeed => "savedGameInvalidSeed",
+        SavedGameInvalidCharacter => "savedGameInvalidCharacter",
+        SavedGameUnknownVariant => "savedGameUnknownVariant",
         ServerDataInvalid => "serverDataInvalid",
         // A command or request that arrives while the server starts or drains.
         ServerDraining => "serverDraining",

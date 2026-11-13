@@ -1838,7 +1838,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
                 .await?;
             let history = h.receive(index, "chatList").await?;
             ensure!(
-                history["numUnread"] == i32::from(index != 0),
+                history["table"]["numUnread"] == i32::from(index != 0),
                 "Game start reset the chat read position: {history}"
             );
             h.send(index, "gameLoaded", json!({"tableId":id})).await?;
@@ -1848,7 +1848,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         ensure!(
-            h.receive(1, "chatList").await?["numUnread"] == 1,
+            h.receive(1, "chatList").await?["table"]["numUnread"] == 1,
             "Reconnect reset the chat read position"
         );
         h.send(1, "gameLoaded", json!({"tableId":id})).await?;
@@ -1878,7 +1878,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
                 .context("Missing history")?
                 .len();
             ensure!(
-                history["numUnread"] == total - read,
+                history["table"]["numUnread"] == total - read,
                 "Remake reset the chat read position: {history}"
             );
         }
@@ -2061,7 +2061,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         ensure!(history["messages"][0]["text"] == "Alice created the table.");
         ensure!(history["messages"][0]["kind"]["author"]["type"] == "server");
         ensure!(
-            history["numUnread"] == 0,
+            history["table"]["numUnread"] == 0,
             "The creator has unread chat: {history}"
         );
         h.send(0, "chat", json!({"tableId":id,"text":"Before Bob joined"}))

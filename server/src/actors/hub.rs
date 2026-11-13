@@ -591,8 +591,8 @@ impl Hub {
         }
         let messages = [if reconnect {
             frame(
-                hanabi_protocol::event::SERVER_RESTART,
-                hanabi_protocol::ServerRestart { message },
+                hanabi_protocol::event::SERVER_SHUTDOWN,
+                hanabi_protocol::ServerShutdown { message },
             )
         } else {
             frame(

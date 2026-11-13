@@ -76,7 +76,7 @@ macro_rules! request_contracts {
 macro_rules! event_contracts {
     ($apply:ident) => {
         $apply! {
-            SERVER_RESTART "serverRestart" => ServerRestart;
+            SERVER_SHUTDOWN "serverShutdown" => ServerShutdown;
             CLOCK "clock" => Clock;
             CONNECTIONS "connections" => Connections;
             PAUSE "pause" => Pause;

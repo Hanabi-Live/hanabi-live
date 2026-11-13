@@ -1,7 +1,7 @@
 use super::{HttpError, Params, PublicState, Result, StatusCode, catalog, integer};
 use hanabi_protocol::GameId;
 
-/// An archived game that cannot be exported. Its code and game ID reach the server log and the
+/// A saved game that cannot be exported. Its code and game ID reach the server log and the
 /// error alerts, so the game and the failed check can be found later.
 fn export_failure(code: hanabi_protocol::NoticeCode, problem: &str, id: i64) -> HttpError {
     crate::errors::Fault::new(
@@ -38,23 +38,23 @@ pub(super) async fn export(
             .all(|(i, p)| i16::try_from(i).ok() == Some(p.seat))
     {
         return Err(export_failure(
-            hanabi_protocol::NoticeCode::ArchiveInconsistentPlayers,
-            "The archived game's players do not match its seats",
+            hanabi_protocol::NoticeCode::SavedGameInconsistentPlayers,
+            "The saved game's players do not match its seats",
             id,
         ));
     }
     let variant_id = i64::from(row.variant_id);
     let variant = catalog::variant(variant_id).ok_or_else(|| {
         export_failure(
-            hanabi_protocol::NoticeCode::ArchiveUnknownVariant,
-            "The archived game's variant is not in the catalog",
+            hanabi_protocol::NoticeCode::SavedGameUnknownVariant,
+            "The saved game's variant is not in the catalog",
             id,
         )
     })?;
     let deck = crate::game::seeded_deck(i32::from(row.variant_id), &row.seed).map_err(|_| {
         export_failure(
-            hanabi_protocol::NoticeCode::ArchiveInvalidSeed,
-            "The archived game's seed cannot produce a deck",
+            hanabi_protocol::NoticeCode::SavedGameInvalidSeed,
+            "The saved game's seed cannot produce a deck",
             id,
         )
     })?;
@@ -88,8 +88,8 @@ pub(super) async fn export(
         for p in &players {
             let invalid = || {
                 export_failure(
-                    hanabi_protocol::NoticeCode::ArchiveInvalidCharacter,
-                    "The archived game's character is not in the catalog, or has an invalid value",
+                    hanabi_protocol::NoticeCode::SavedGameInvalidCharacter,
+                    "The saved game's character is not in the catalog, or has an invalid value",
                     id,
                 )
             };
@@ -114,8 +114,8 @@ pub(super) async fn export(
         .collect::<std::result::Result<Vec<_>, _>>()
         .map_err(|_| {
             export_failure(
-                hanabi_protocol::NoticeCode::ArchiveInvalidAction,
-                "The archived game has an action that the replay format cannot hold",
+                hanabi_protocol::NoticeCode::SavedGameInvalidAction,
+                "The saved game has an action that the replay format cannot hold",
                 id,
             )
         })?;

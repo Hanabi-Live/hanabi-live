@@ -217,6 +217,20 @@ export const chatDeletedSchema = z
 const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
 
 /**
+ * The table of a table's `chatList`, and what the recipient has read there. The server does not
+ * track what a user has read in the lobby.
+ */
+const chatListTableSchema = z
+  .strictObject({
+    /**
+     * How many of the messages the recipient has not read.
+     */
+    numUnread: countSchema,
+    tableId: tableIdSchema,
+  })
+  .readonly();
+
+/**
  * The past messages of the lobby's chat or of a table's chat, which a client receives when it
  * connects or joins the table.
  */
@@ -227,14 +241,9 @@ export const chatListSchema = z
      */
     messages: z.array(chatSchema).readonly(),
     /**
-     * How many of the messages the recipient has not read. Present with `tableId`, as the server
-     * does not track what a user has read in the lobby.
-     */
-    numUnread: countSchema.optional(),
-    /**
      * The table whose chat this is. Absent for the lobby's chat.
      */
-    tableId: tableIdSchema.optional(),
+    table: chatListTableSchema.optional(),
   })
   .readonly();
 export const chatPmHistorySchema = z
@@ -721,11 +730,6 @@ export const idleWarningSchema = z
  * code, so their descriptions are comments.
  */
 export const noticeCodeSchema = z.enum([
-  "archiveInconsistentPlayers",
-  "archiveInvalidAction",
-  "archiveInvalidSeed",
-  "archiveInvalidCharacter",
-  "archiveUnknownVariant",
   "commandFailed",
   "commandIgnored",
   "connectionLimit",
@@ -757,6 +761,11 @@ export const noticeCodeSchema = z.enum([
   "passwordRateLimited",
   "persistenceUncertain",
   "recordNotFound",
+  "savedGameInconsistentPlayers",
+  "savedGameInvalidAction",
+  "savedGameInvalidSeed",
+  "savedGameInvalidCharacter",
+  "savedGameUnknownVariant",
   "serverDataInvalid",
   "serverDraining",
   "serverIoError",
@@ -1246,7 +1255,7 @@ export const seedGamesRequestSchema = z
  * Sent before a graceful restart or stop closes the connection. The client plays the shutdown
  * sound and reconnects.
  */
-export const serverRestartSchema = z
+export const serverShutdownSchema = z
   .strictObject({
     /**
      * HTML explaining the downtime, present only when an administrator gave a reason.
@@ -1770,7 +1779,7 @@ export const SERVER_EVENT_SCHEMAS = {
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: replayActionSchema,
-  serverRestart: serverRestartSchema,
+  serverShutdown: serverShutdownSchema,
   spectators: spectatorsSchema,
   table: tableSchema,
   tableJoined: tableJoinedSchema,

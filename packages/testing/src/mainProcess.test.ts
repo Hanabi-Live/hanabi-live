@@ -280,8 +280,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
                 [alice, bob].map(
                   async (peer) =>
                     await peer.receive(
-                      "serverRestart",
-                      SERVER_EVENT_SCHEMAS.serverRestart,
+                      "serverShutdown",
+                      SERVER_EVENT_SCHEMAS.serverShutdown,
                     ),
                 ),
               );

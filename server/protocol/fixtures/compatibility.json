@@ -381,7 +381,7 @@
     "command": "chatList",
     "input": {
       "messages": [],
-      "tableId": -1
+      "table": { "tableId": -1, "numUnread": 0 }
     },
     "valid": false
   },
@@ -1625,8 +1625,7 @@
     "command": "chatList",
     "input": {
       "messages": [],
-      "tableId": 1,
-      "numUnread": -1
+      "table": { "tableId": 1, "numUnread": -1 }
     },
     "valid": false
   },
