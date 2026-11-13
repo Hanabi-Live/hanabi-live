@@ -12,7 +12,7 @@ export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
  * How opaque a trash card is. It fades more than on the classic screen (`CARD_FADE`), so that it
  * stands further apart from the cards that still matter.
  */
-const TRASH_CARD_OPACITY = 0.4;
+const TRASH_CARD_OPACITY = 0.3;
 
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 const CLUED_RAISE_PER_WIDTH = 0.12;
