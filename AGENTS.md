@@ -108,9 +108,10 @@ disposable database and seeded games, tables, and chat. It saves a screenshot of
 each state at several widths in both themes to `dist/ui-screenshots`. Use
 `--state`, `--width`, and `--theme` to take fewer screenshots. For a CSS change,
 add `--compare <git ref>`: it reports every computed style that differs from the
-stylesheets of that ref. Add `--coverage` to list the selectors that match no
-element. If a screen or state that you need is missing, add it to
-`packages/testing/src/uiScreenshots.ts`.
+stylesheets of that ref. If a screen or state that you need is missing, add it
+to `packages/testing/src/uiScreenshots.ts`. Keep one state for each screen or
+main element. Do not commit a state that only checks one change, such as a
+variant of a screen that another state shows.
 
 To show an animation, show a video, not still frames. Give the state a `record`
 step that starts the animation and waits for it to end. The command then saves a
