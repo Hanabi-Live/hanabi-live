@@ -35,13 +35,10 @@ const BUTTON_CLASS =
 const PRIMARY_BUTTON_CLASS =
   "tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white";
 
-/** How long the turn number takes to roll to the leader's turn, in milliseconds. */
-const TURN_ROLL_MILLISECONDS = 260;
-
 /** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
 const TIMELINE_SLIDE_MILLISECONDS = 300;
 
-/** A fast start and a soft stop, so that a roll or a slide reads as a move to a place. */
+/** A fast start and a soft stop, so that a slide reads as a move to a place. */
 const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
 const ICON_BUTTON_CLASS =
@@ -94,7 +91,7 @@ function Heading({
   readonly turn: number;
   readonly lastTurn: number | undefined;
 
-  /** The shared replay leader's last move, which the turn number rolls with. */
+  /** The shared replay leader's last move, which the direction icon shows. */
   readonly leaderMove?: LeaderMove | undefined;
 
   /** Whether we follow the leader, so that the icon of their direction has a place. */
@@ -109,7 +106,7 @@ function Heading({
         {label}
       </span>
       <span className="tw:text-[22px] tw:font-bold tw:whitespace-nowrap tw:text-game-text">
-        Turn <RollingNumber move={leaderMove} value={turn} />
+        Turn {turn}
         {lastTurn !== undefined && (
           <span className="tw:font-medium tw:text-game-muted">
             {" "}
@@ -640,15 +637,12 @@ function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
 interface LeaderMove {
   readonly direction: 1 | -1;
 
-  /** The turn before the move, which rolls away. */
-  readonly from: number;
-
-  /** Counts the moves, so that each one rolls the number, even to the same turn as the last. */
+  /** Counts the moves, so that each one shows the icon, even to the same turn as the last. */
   readonly key: number;
 }
 
 /**
- * The shared replay leader's last move, while we follow them, so that the turn number rolls its
+ * The shared replay leader's last move, while we follow them, so that the direction icon shows its
  * way. Moving on our own, or going back to the leader's turn, is not a leader's move.
  */
 function useLeaderMove(
@@ -667,7 +661,6 @@ function useLeaderMove(
     if (following && previous.following && previous.segment !== segment) {
       setMove({
         direction: segment > previous.segment ? 1 : -1,
-        from: previous.turn,
         key: (move?.key ?? 0) + 1,
       });
     } else if (move !== undefined) {
@@ -675,75 +668,6 @@ function useLeaderMove(
     }
   }
   return move;
-}
-
-/**
- * A number that rolls like an odometer when the leader moves: up to a later turn, and down to an
- * earlier one. Otherwise it changes at once.
- */
-function RollingNumber({
-  value,
-  move,
-}: {
-  readonly value: number;
-  readonly move: LeaderMove | undefined;
-}): React.JSX.Element {
-  const currentRef = useRef<HTMLSpanElement>(null);
-  const outgoingRef = useRef<HTMLSpanElement>(null);
-  const [outgoing, setOutgoing] = useState<LeaderMove>();
-  const [lastMove, setLastMove] = useState(move);
-  if (lastMove !== move) {
-    setLastMove(move);
-    setOutgoing(move === undefined || move.from === value ? undefined : move);
-  }
-
-  useLayoutEffect(() => {
-    const { current } = currentRef;
-    const old = outgoingRef.current;
-    if (outgoing === undefined || current === null || old === null) {
-      return undefined;
-    }
-
-    // Forward, the numbers roll up: the new one comes from below. Back, they roll down.
-    const away = `translateY(${-outgoing.direction * 100}%)`;
-    const toward = `translateY(${outgoing.direction * 100}%)`;
-    const options = { duration: TURN_ROLL_MILLISECONDS, easing: EASE_OUT };
-    const animations = [
-      current.animate(
-        [{ transform: toward }, { transform: "translateY(0)" }],
-        options,
-      ),
-      old.animate([{ transform: "translateY(0)" }, { transform: away }], {
-        ...options,
-        fill: "forwards",
-      }),
-    ];
-    animations[1]!.onfinish = () => {
-      setOutgoing(undefined);
-    };
-    return () => {
-      for (const animation of animations) {
-        animation.cancel();
-      }
-    };
-  }, [outgoing]);
-
-  return (
-    <span className="tw:inline-grid tw:overflow-hidden tw:align-bottom">
-      <span className="tw:[grid-area:1/1]" ref={currentRef}>
-        {value}
-      </span>
-      {outgoing !== undefined && (
-        <span
-          aria-hidden="true"
-          className="tw:[grid-area:1/1]"
-          ref={outgoingRef}
-        >
-          {outgoing.from}
-        </span>
-      )}
-    </span>
-  );
 }
 
 /** How long the leader's direction icon shows, from popping in to fading out, in milliseconds. */
