@@ -28,11 +28,11 @@ of the repository.
 - In the new game screen, pace has a help icon that explains it.
 - The new game screen is now brighter: the table is green felt, the empty play
   stacks show their suit colors, and a gold ring marks whose turn it is.
-- In the new game screen, you can right-click a card to write a note on it, and
-  hover over the card to read its notes.
+- In the new game screen, you can right-click a card to write a note on it. A
+  card with a note has a folded corner, which is dark when the note changes what
+  the card shows. Hover over the card to read its notes.
 - In the new game screen, your notes on your own cards now apply, as in the
-  classic screen: a note such as "r1" shows the card as a red 1, and a pencil on
-  the card's note tab shows this.
+  classic screen: a note such as "r1" shows the card as a red 1.
 - In the new game screen, the "Give clue" button says what you still have to
   pick.
 - In the new game screen, the turn shows once, in the bar along the bottom. In a

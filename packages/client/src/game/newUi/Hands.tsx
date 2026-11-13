@@ -1,7 +1,7 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
-import type { ClueMarkerView, NoteTabKind } from "./Card.tsx";
+import type { ClueMarkerView, NoteFoldKind } from "./Card.tsx";
 import {
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
@@ -464,7 +464,7 @@ function OwnCard({
       clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
-      noteTab={getNoteTab(card, props.notes.notesHtml)}
+      noteFold={getNoteFold(card, props.notes.notesHtml)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
       raiseClued
@@ -586,7 +586,7 @@ function EditableCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
-        noteTab={getNoteTab(card, props.notes.notesHtml)}
+        noteFold={getNoteFold(card, props.notes.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -601,11 +601,11 @@ function EditableCard({
   );
 }
 
-/** The tab of a card that has a note. */
-function getNoteTab(
+/** The folded corner of a card that has a note. */
+function getNoteFold(
   card: CardView,
   notesHtml: ReadonlyMap<CardOrder, string>,
-): NoteTabKind | undefined {
+): NoteFoldKind | undefined {
   if (card.identityFromNote) {
     return "identity";
   }
@@ -666,7 +666,7 @@ function HandCard({
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         highlighted={props.touchedCards.has(card.order)}
-        noteTab={getNoteTab(card, props.notes.notesHtml)}
+        noteFold={getNoteFold(card, props.notes.notesHtml)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued

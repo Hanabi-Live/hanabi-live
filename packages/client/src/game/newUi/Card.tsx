@@ -79,10 +79,11 @@ interface CardFaceProps {
   readonly clueMarker?: ClueMarkerView;
 
   /**
-   * The tab of a card with a note, which its tooltip shows: "identity" when the note changes the
-   * suit or rank that the face shows, and "note" for any other note.
+   * The folded corner of a card with a note, which its tooltip shows: "identity" when the note
+   * changes the suit or rank that the face shows, and "note" for any other note.
    */
-  readonly noteTab?: NoteTabKind;
+  readonly noteFold?: NoteFoldKind;
+  readonly noteFoldCorner?: NoteFoldCorner;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -202,68 +203,120 @@ function StatusBadge({
   );
 }
 
-export type NoteTabKind = "note" | "identity";
+export type NoteFoldKind = "note" | "identity";
 
-const NOTE_TABS = {
-  note: { icon: "fa-align-left", label: "Has a note" },
-  identity: {
-    icon: "fa-pencil-alt",
-    label: "Has a note that sets the suit or rank shown",
-  },
-} as const satisfies Record<
-  NoteTabKind,
-  { readonly icon: string; readonly label: string }
->;
+/** Which corner of a card folds over: one that stays in view where cards overlap. */
+type NoteFoldCorner = "bottomRight" | "topLeft";
 
 /**
- * The size of the tab of a card with a note, as fractions of the card's width, and the least size
- * in CSS pixels, so that its icon stays readable on small cards. It sits left of the clue token,
- * which is in the middle of the top edge.
+ * How far a folded corner reaches along each edge, as a fraction of the card's width, and the least
+ * reach in CSS pixels, so that it shows on small cards. The fold stays clear of the possibilities,
+ * which keep `POSSIBILITIES.inset` from the edges, and it reaches past the rounded corner, so that
+ * the fold is a straight line.
  */
-const NOTE_TAB = {
-  left: 0.05,
-  width: 0.2,
-  height: 0.13,
-  minWidth: 18,
-  minHeight: 12,
-  iconPerHeight: 0.62,
-} as const;
+const NOTE_FOLD = { reach: 0.18, minReach: 10 } as const;
 
 /**
- * The tab of a card with a note: a slip of paper that sticks out above the card's top-left edge, as
- * if tucked behind the card, so that it plainly belongs to that card. It covers nothing on the
- * face. A pencil shows that the note changes the suit or rank on the face, so that the player does
- * not take it for a known card.
+ * The size of the folded corner of a card with a note, in CSS pixels. Larger than the corner's
+ * rounding, so that the fold cuts a straight line.
  */
-function NoteTab({
+function getNoteFoldReach(width: number): number {
+  return Math.max(width * NOTE_FOLD.reach, NOTE_FOLD.minReach);
+}
+
+/**
+ * The `clip-path` that cuts off the folded corner of a card. The cut line sits just outside the
+ * fold, so that the whole border of the flap along the fold shows. It keeps everything else that
+ * the card draws outside of its edges, such as its border and its clue marker.
+ */
+function getNoteFoldClipPath(
+  corner: NoteFoldCorner,
+  width: number,
+  height: number,
+  clued: boolean,
+): string {
+  // Far enough out to keep everything that the card draws outside of its edges.
+  const far = Math.max(width, height) * 2;
+  // The outer half of the flap's border is outside the fold.
+  const offset = (getNoteFoldBorder(clued).strokeWidth / 2) * Math.SQRT2;
+  const reach = getNoteFoldReach(width);
+  if (corner === "bottomRight") {
+    // Keep the points where x + y is less than this.
+    const sum = width + height - reach + offset;
+    return `polygon(${-far}px ${-far}px, ${width + far}px ${-far}px, ${width + far}px ${sum - width - far}px, ${sum - height - far}px ${height + far}px, ${-far}px ${height + far}px)`;
+  }
+
+  // Keep the points where x + y is more than this.
+  const sum = reach - offset;
+  return `polygon(${sum + far}px ${-far}px, ${width + far}px ${-far}px, ${width + far}px ${height + far}px, ${-far}px ${height + far}px, ${-far}px ${sum + far}px)`;
+}
+
+/** The border of the folded corner, like the card's border (see `CardFace`). */
+function getNoteFoldBorder(clued: boolean): {
+  readonly stroke: string;
+  readonly strokeWidth: number;
+} {
+  return clued
+    ? { stroke: "var(--clue-border)", strokeWidth: CLUED_BORDER_WIDTH / 2 }
+    : { stroke: "rgb(0 0 0 / 45%)", strokeWidth: 1 };
+}
+
+const NOTE_FOLD_COLORS = {
+  // The back of the paper.
+  note: "var(--game-screen-text)",
+  // Dark, so that a card that a note shows as known does not pass for one that the player knows.
+  identity: "var(--card-ink)",
+} as const satisfies Record<NoteFoldKind, string>;
+
+/**
+ * The folded corner of a card with a note, as on a page that someone marked. It is inside the card,
+ * so that it plainly belongs to that card. Its edges have the card's border, so that the border
+ * runs around the card and the flap as one shape. A light flap marks a note, and a dark flap marks
+ * a note that changes the suit or rank on the face.
+ */
+function NoteFold({
   kind,
+  corner,
   width,
-  borderWidth,
+  clued,
 }: {
-  readonly kind: NoteTabKind;
+  readonly kind: NoteFoldKind;
+  readonly corner: NoteFoldCorner;
   readonly width: number;
-  /** The width of the card's border, which the tab stops above, as if the card were in front. */
-  readonly borderWidth: number;
+  readonly clued: boolean;
 }): React.JSX.Element {
-  const tabWidth = Math.max(width * NOTE_TAB.width, NOTE_TAB.minWidth);
-  const tabHeight = Math.max(width * NOTE_TAB.height, NOTE_TAB.minHeight);
-  const { icon, label } = NOTE_TABS[kind];
+  const reach = getNoteFoldReach(width);
+  const { stroke, strokeWidth } = getNoteFoldBorder(clued);
   return (
-    <span
-      aria-label={label}
-      className="tw:pointer-events-none tw:absolute tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-t-[4px] tw:border-[1.5px] tw:border-b-0 tw:border-black/45 tw:bg-game-text tw:text-card-ink"
-      data-note-tab={kind}
+    <svg
+      aria-label={
+        kind === "identity"
+          ? "Has a note that sets the suit or rank shown"
+          : "Has a note"
+      }
+      className="tw:pointer-events-none tw:absolute tw:overflow-visible"
+      data-note-fold={kind}
+      height={reach}
       role="img"
       style={{
-        left: width * NOTE_TAB.left,
-        top: -(tabHeight + borderWidth),
-        width: tabWidth,
-        height: tabHeight,
-        fontSize: tabHeight * NOTE_TAB.iconPerHeight,
+        ...(corner === "bottomRight"
+          ? { right: 0, bottom: 0 }
+          : { left: 0, top: 0, rotate: "180deg" }),
+        // The flap lifts off the card a little.
+        filter: "drop-shadow(-1.5px -1.5px 2px rgb(0 0 0 / 45%))",
       }}
+      viewBox={`0 0 ${reach} ${reach}`}
+      width={reach}
     >
-      <i aria-hidden="true" className={`fas ${icon}`} />
-    </span>
+      {/* The flap is the cut-off corner, folded over the fold line onto the card. */}
+      <polygon
+        fill={NOTE_FOLD_COLORS[kind]}
+        points={`0,0 ${reach},0 0,${reach}`}
+        stroke={stroke}
+        strokeLinejoin="round"
+        strokeWidth={strokeWidth}
+      />
+    </svg>
   );
 }
 
@@ -466,7 +519,8 @@ export function CardFace({
   possibleSuitIndexes = [],
   possibleRanks = [],
   clueMarker,
-  noteTab,
+  noteFold,
+  noteFoldCorner = "bottomRight",
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -506,6 +560,10 @@ export function CardFace({
         color: faceColors.ink,
         transform: `translateY(${-raise}px)`,
         opacity: trash ? TRASH_CARD_OPACITY : 1,
+        clipPath:
+          noteFold === undefined
+            ? undefined
+            : getNoteFoldClipPath(noteFoldCorner, width, height, clued),
       }}
     >
       {clueMarker !== undefined && (
@@ -537,10 +595,11 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {noteTab !== undefined && (
-        <NoteTab
-          borderWidth={clued ? CLUED_BORDER_WIDTH : 1}
-          kind={noteTab}
+      {noteFold !== undefined && (
+        <NoteFold
+          clued={clued}
+          corner={noteFoldCorner}
+          kind={noteFold}
           width={width}
         />
       )}

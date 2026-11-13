@@ -203,7 +203,7 @@ export const PlayArea = forwardRef<
                         <CardNote notes={notes} order={stack.topOrder}>
                           <CardFace
                             colorblindMode={colorblindMode}
-                            noteTab={
+                            noteFold={
                               notes.notesHtml.has(stack.topOrder)
                                 ? "note"
                                 : undefined
@@ -451,9 +451,11 @@ export const DiscardPile = forwardRef<
                   >
                     <CardFace
                       colorblindMode={colorblindMode}
-                      noteTab={
+                      noteFold={
                         notes.notesHtml.has(card.order) ? "note" : undefined
                       }
+                      // The next card in the row covers the bottom-right corner.
+                      noteFoldCorner="topLeft"
                       rank={card.rank}
                       suitIndex={card.suitIndex}
                       variant={variant}
