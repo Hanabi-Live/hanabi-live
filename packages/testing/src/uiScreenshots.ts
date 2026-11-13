@@ -111,6 +111,9 @@ const SETUP_SIZE = SIZES[0];
 /** Long enough for the transitions of the stylesheets to finish. */
 const SETTLE_MILLISECONDS = 400;
 
+/** How long to rest the pointer on an element, so that its tooltip opens after its delay. */
+const TOOLTIP_WAIT_MILLISECONDS = 1000;
+
 /** How many times to press Escape to go from the deepest screen back to the lobby. */
 const MAX_ESCAPES = 3;
 
@@ -1340,6 +1343,31 @@ function getStates({
       path: "/",
       loggedIn: true,
       hover: '#game-new-ui [aria-label^="About efficiency"]',
+    },
+    // The tooltips of a discarded card and of a clue in the clue log wait for the pointer to rest.
+    {
+      name: "new-ui-discard-tooltip",
+      path: "/",
+      loggedIn: true,
+      hover: async (page) => {
+        await page
+          .locator('#game-new-ui [data-card-place^="discard-"]')
+          .first()
+          .hover();
+        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
+      },
+    },
+    {
+      name: "new-ui-clue-log-tooltip",
+      path: "/",
+      loggedIn: true,
+      hover: async (page) => {
+        await page
+          .locator('#game-new-ui [aria-label="Clue log"] li button')
+          .first()
+          .hover();
+        await page.waitForTimeout(TOOLTIP_WAIT_MILLISECONDS);
+      },
     },
     // The same game, with the menu of the "End game" button open.
     {

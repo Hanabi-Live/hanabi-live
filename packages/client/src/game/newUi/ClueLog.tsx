@@ -1,5 +1,6 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { useLayoutEffect, useRef, useState } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import { getClueMarkerColor } from "./Card.tsx";
 
@@ -145,6 +146,7 @@ export function ClueLog({
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
+                  ref={tooltipRef("Click to go to the turn of this clue.")}
                   style={{ borderLeftColor: shown ? color : "transparent" }}
                   type="button"
                 >

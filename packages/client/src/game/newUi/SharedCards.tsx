@@ -378,6 +378,9 @@ export const DiscardPile = forwardRef<
                   onClick={() => {
                     onShowDiscard(card.order);
                   }}
+                  ref={tooltipRef(
+                    "Click to go to the turn this card was discarded.",
+                  )}
                   style={{
                     marginLeft:
                       i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,

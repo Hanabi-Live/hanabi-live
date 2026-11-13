@@ -12,6 +12,8 @@ of the repository.
 - "Reduced motion" also stops the action log from sliding in replays.
 - In a replay, or when you spectate without shadowing a player, Ctrl + Space
   narrows each hand by its own player's notes.
+- In the new game screen, discarded cards and clues in the clue log have
+  tooltips that say that clicking them goes to their turn.
 
 ## November 12th, 2026
 
