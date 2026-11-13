@@ -1519,14 +1519,14 @@ function getStates({
       },
     },
     // The same game, after the account writes a note on the first card of its own hand that makes
-    // it show as a yellow 2, so that its badge shows a pencil, and other notes on its second card
+    // it show as a yellow 3, so that its badge shows a pencil, and other notes on its second card
     // and on a discarded card. The pointer is over the first card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await writeNote(page, page.locator(OWN_FIRST_CARD_SELECTOR), "y2");
+        await writeNote(page, page.locator(OWN_FIRST_CARD_SELECTOR), "y3");
         await writeNote(page, page.locator(OWN_SECOND_CARD_SELECTOR), "chop?");
         await writeNote(
           page,
