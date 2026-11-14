@@ -220,7 +220,7 @@ const STATUS_TOOLTIP = {
 
 /** The size of a badge in the corner of a card, and its gap from the edges, per card width. */
 const BADGE_SIZE_PER_WIDTH = 0.225;
-const BADGE_INSET_PER_WIDTH = 0.06;
+const BADGE_INSET_PER_WIDTH = 0.09;
 
 /** The size of the mark in a badge, such as the exclamation mark, per badge size. */
 const BADGE_FONT_PER_SIZE = 0.73;
