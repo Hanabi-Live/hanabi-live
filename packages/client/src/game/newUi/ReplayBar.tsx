@@ -45,10 +45,9 @@ const ICON_BUTTON_SIZE_CLASS = {
 } as const;
 
 /**
- * The panel that holds a bar. It fills the slot of the controls, with its first row at the top,
- * where the clue panel has its top row, and the timeline at the bottom. Its padding is the clue
- * panel's, so that the buttons at its ends line up with the clue panel's. On a narrow window, the
- * page scrolls, so the bar goes above the hands, where it is in view.
+ * The panel that holds a bar. It fills the slot of the controls, with its first row at the top and
+ * the timeline at the bottom. On a narrow window, the page scrolls, so the bar goes above the
+ * hands, where it is in view.
  */
 function Bar({
   children,
@@ -352,9 +351,8 @@ function SpectatorHypotheticalBar({
 }
 
 /**
- * A button for the corner of the clue panel. It is as tall as the button of the replay bar that
- * enters a hypothetical. Its sides are narrow, so that the hypothetical's buttons fit beside the
- * players.
+ * A button of the bar of a hypothetical. It is as tall as the button that enters a hypothetical.
+ * Its sides are narrow, so that the hypothetical's buttons fit on one row.
  */
 const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
@@ -397,21 +395,22 @@ function IconToggle({
 }
 
 /**
- * The buttons of a hypothetical that we control. They are in the top-right corner of the clue
- * panel, which takes the place of the replay bar, so that the hands keep their size. The last one
- * is lit in the color of the mode, and leaves it. It is the size of the button that entered it, and
- * in its place.
+ * The bar of a hypothetical that we control. It has the shape of the bar of the turns, so that the
+ * hands keep their size. Going back a turn and passing are in the middle, where the steps through
+ * the turns are. The other buttons are on the right. The last one is lit in the color of the mode,
+ * and leaves the hypothetical. It is the size of the button that entered it, and in its place.
  */
-export function HypotheticalActions({
+function OwnHypotheticalBar({
   state,
   editingCards,
   onToggleEditCards,
+  hint,
 }: {
   readonly state: State;
   readonly editingCards: boolean;
   readonly onToggleEditCards: () => void;
+  readonly hint: string;
 }): React.JSX.Element {
-  // With no hypothetical, the buttons only hold their space in a hidden copy of the clue panel.
   const hypo = state.replay.hypothetical;
 
   // A hypothetical in a shared replay is the leader's, like the replay around it, and here we lead.
@@ -422,53 +421,64 @@ export function HypotheticalActions({
       : "the hypothetical";
 
   return (
-    <>
-      <button
-        aria-label="Back a turn in the hypothetical"
-        className={HYPOTHETICAL_BUTTON_CLASS}
-        disabled={hypo === undefined || hypo.states.length <= 1}
-        onClick={hypothetical.sendHypotheticalBack}
-        ref={tooltipRef("Back a turn in the hypothetical")}
-        type="button"
-      >
-        <i aria-hidden="true" className="fas fa-undo" />
-      </button>
-      <button
-        className={HYPOTHETICAL_BUTTON_CLASS}
-        disabled={!hypothetical.canPassTurnInHypothetical(state)}
-        onClick={hypothetical.sendHypotheticalPassTurn}
-        ref={tooltipRef(
-          "Spend a clue to pass the turn to the next player without giving a clue.",
-        )}
-        type="button"
-      >
-        Pass
-      </button>
-      <IconToggle
-        disabled={!canToggleDrawnCards(state)}
-        icon="fa-eye"
-        label="Show drawn cards"
-        onClick={hypothetical.toggleRevealed}
-        pressed={hypo?.showDrawnCards === true}
-        tooltip="Show the faces of the cards drawn during the hypothetical."
-      />
-      <IconToggle
-        icon="fa-pen"
-        label="Edit cards"
-        onClick={onToggleEditCards}
-        pressed={editingCards}
-        tooltip="While this is on, click a card in a hand to change it into another card."
-      />
-      <button
-        aria-label="Exit hypothetical"
-        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:w-11 tw:px-0 tw:*:text-[17px] tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
-        onClick={hypothetical.endHypothetical}
-        ref={tooltipRef(`Exit ${name}.`)}
-        type="button"
-      >
-        <i aria-hidden="true" className="fas fa-flask" />
-      </button>
-    </>
+    <Bar>
+      <div className={ROWS_CLASS}>
+        <LeaderControls state={state} />
+        <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
+          <button
+            aria-label="Back a turn in the hypothetical"
+            className={HYPOTHETICAL_BUTTON_CLASS}
+            disabled={hypo === undefined || hypo.states.length <= 1}
+            onClick={hypothetical.sendHypotheticalBack}
+            ref={tooltipRef("Back a turn in the hypothetical")}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-undo" />
+          </button>
+          <button
+            className={HYPOTHETICAL_BUTTON_CLASS}
+            disabled={!hypothetical.canPassTurnInHypothetical(state)}
+            onClick={hypothetical.sendHypotheticalPassTurn}
+            ref={tooltipRef(
+              "Spend a clue to pass the turn to the next player without giving a clue.",
+            )}
+            type="button"
+          >
+            Pass
+          </button>
+        </div>
+        <div className={RIGHT_CLASS}>
+          <IconToggle
+            disabled={!canToggleDrawnCards(state)}
+            icon="fa-eye"
+            label="Show drawn cards"
+            onClick={hypothetical.toggleRevealed}
+            pressed={hypo?.showDrawnCards === true}
+            tooltip="Show the faces of the cards drawn during the hypothetical."
+          />
+          <IconToggle
+            icon="fa-pen"
+            label="Edit cards"
+            onClick={onToggleEditCards}
+            pressed={editingCards}
+            tooltip="While this is on, click a card in a hand to change it into another card."
+          />
+          <button
+            aria-label="Exit hypothetical"
+            className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:w-11 tw:px-0 tw:*:text-[17px] tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
+            onClick={hypothetical.endHypothetical}
+            ref={tooltipRef(`Exit ${name}.`)}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-flask" />
+          </button>
+        </div>
+      </div>
+      {/* Where the bar of the turns has its timeline. */}
+      <p className="tw:m-0 tw:w-full tw:text-center tw:text-[15px] tw:text-game-muted">
+        {hint}
+      </p>
+    </Bar>
   );
 }
 
@@ -478,8 +488,18 @@ export function HypotheticalActions({
  */
 export function ReplayBar({
   state,
+  editingCards,
+  onToggleEditCards,
+  hypotheticalHint,
 }: {
   readonly state: State;
+
+  /** Whether the viewer edits cards in a hypothetical that they control. */
+  readonly editingCards: boolean;
+  readonly onToggleEditCards: () => void;
+
+  /** What the viewer can do next in a hypothetical that they control. */
+  readonly hypotheticalHint: string;
 }): React.JSX.Element | undefined {
   const { visibleState, replay: replayState, finished } = state;
   if (
@@ -489,9 +509,15 @@ export function ReplayBar({
     return undefined;
   }
 
-  // The clue panel holds the buttons of a hypothetical that we control.
   if (replayState.hypothetical !== undefined) {
-    return controlsHypothetical(state) ? undefined : (
+    return controlsHypothetical(state) ? (
+      <OwnHypotheticalBar
+        editingCards={editingCards}
+        hint={hypotheticalHint}
+        onToggleEditCards={onToggleEditCards}
+        state={state}
+      />
+    ) : (
       <SpectatorHypotheticalBar state={state} />
     );
   }
@@ -502,10 +528,10 @@ export function ReplayBar({
 /**
  * The first row of a bar: the left, the middle, and the right. The left and the right are always
  * the same width, and their contents cannot widen them, so the middle stays in the center. Its
- * parts line up at the top, so that the button at its right end is level with the clue panel's top
- * row, where the hypothetical's buttons are. On a narrow window, its parts flow into the bar's own
- * rows, with the left and the right first, so that the button that enters a hypothetical is in the
- * top-right corner, as the button that leaves it is.
+ * parts line up at the top, so that the button at its right end is in the same place in every bar.
+ * On a narrow window, its parts flow into the bar's own rows, with the left and the right first, so
+ * that the button that enters a hypothetical is in the top-right corner, as the button that leaves
+ * it is.
  */
 const ROWS_CLASS =
   "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-start tw:gap-2.5 tw:narrow-980:contents";

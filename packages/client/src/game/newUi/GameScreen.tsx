@@ -25,7 +25,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import { ClueLog } from "./ClueLog.tsx";
-import { CluePanel } from "./CluePanel.tsx";
+import { ClueMenu } from "./ClueMenu.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import {
   EMPATHY_TOGGLE_SPACE,
@@ -36,7 +36,7 @@ import {
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
-import { HypotheticalActions, ReplayBar, TurnsBar } from "./ReplayBar.tsx";
+import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
@@ -102,11 +102,6 @@ const CLOCK_TICK_MILLISECONDS = 500;
 /** How the chat names us among the people watching. */
 const YOU = "You";
 
-/** The handlers of the hidden copy of the clue panel, which no one can use. */
-function ignore() {
-  // The copy only holds the panel's space.
-}
-
 export function GameScreen({
   onSwitchToClassic,
 }: {
@@ -129,8 +124,21 @@ export function GameScreen({
   const tapToMove = touch || stacked;
   const [menuCard, setMenuCard] = useState<CardOrder>();
 
-  const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
+  // The player whose clue menu is open, and the clue chosen in it.
+  const [clueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
+  const chooseClueTarget = useCallback(
+    (playerIndex: PlayerIndex | undefined) => {
+      setClueTarget(playerIndex);
+      if (playerIndex === undefined) {
+        setClue(undefined);
+      }
+    },
+    [],
+  );
+  const closeClueMenu = useCallback(() => {
+    chooseClueTarget(undefined);
+  }, [chooseClueTarget]);
   // The card that the mouse button is held down on, for the clue log. Releasing it anywhere ends
   // the press, even after the pointer moved off the card, such as in a drag.
   const [pressedCard, setPressedCard] = useState<CardOrder>();
@@ -257,8 +265,6 @@ export function GameScreen({
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
   const canClue = ourTurn && clueAvailable && !editingCards && !paused;
-  const showCluePanel =
-    hypo === undefined ? state.playing && !inReplay : controlsHypo;
   const showReplayBar = inReplay || state.finished;
 
   const empathyPlayers = new Set<PlayerIndex>(
@@ -319,33 +325,36 @@ export function GameScreen({
     ),
   ];
 
-  // With only one other player, such as in a 2-player game, the clue can only go to them, so they
-  // do not need to be picked.
   const otherPlayers = seats.filter(
     (seat) => seat.playerIndex !== actingPlayerIndex,
   );
-  const onlyClueTarget =
-    otherPlayers.length === 1 ? otherPlayers[0]?.playerIndex : undefined;
-  const clueTarget = chosenClueTarget ?? onlyClueTarget;
-  const targetHand =
-    clueTarget === undefined ? undefined : visibleState.hands[clueTarget];
-  const touched =
-    targetHand === undefined || clue === undefined
+  // The clue menu is open only while the viewer can clue.
+  const menuTarget = canClue ? clueTarget : undefined;
+  const shownIdentities = getShownIdentities(state);
+  function getTouched(
+    target: PlayerIndex | undefined,
+    choice: Clue | undefined,
+  ) {
+    const hand = target === undefined ? undefined : visibleState.hands[target];
+    return hand === undefined || choice === undefined
       ? []
-      : getTouchedCards(variant, targetHand, getShownIdentities(state), clue);
+      : getTouchedCards(variant, hand, shownIdentities, choice);
+  }
+
+  function isAllowed(target: PlayerIndex, choice: Clue) {
+    return isClueAllowed(
+      choice,
+      getTouched(target, choice).length,
+      variant,
+      options,
+    );
+  }
+  const touched = getTouched(menuTarget, clue);
 
   // While the player chooses a clue, its tokens show on the cards that it would touch, as the
   // classic screen shows arrows. They take the place of the last clue's tokens and rail.
-  const previewing = clue !== undefined && clueTarget !== undefined;
-  const canGive =
-    canClue
-    && clueTarget !== undefined
-    && clue !== undefined
-    && isClueAllowed(clue, touched.length, variant, options);
-  const clueTouchesNothing =
-    clueTarget !== undefined
-    && clue !== undefined
-    && !isClueAllowed(clue, touched.length, variant, options);
+  const previewing = clue !== undefined && menuTarget !== undefined;
+  const canGive = previewing && isAllowed(menuTarget, clue);
 
   const clueTargets = otherPlayers.map((seat) => ({
     playerIndex: seat.playerIndex,
@@ -356,6 +365,8 @@ export function GameScreen({
     if (!canGive) {
       return;
     }
+    const receiverIndex = menuTarget;
+    closeClueMenu();
 
     if (clue.type === "color") {
       const colorIndex = variant.clueColors.findIndex(
@@ -363,7 +374,7 @@ export function GameScreen({
       ) as Extract<ClientClue, { type: "color" }>["color"];
       sendAction({
         type: "clue",
-        receiverIndex: clueTarget,
+        receiverIndex,
         clue: {
           type: "color",
           color: colorIndex,
@@ -372,7 +383,7 @@ export function GameScreen({
     } else {
       sendAction({
         type: "clue",
-        receiverIndex: clueTarget,
+        receiverIndex,
         clue: {
           type: "rank",
           rank: clue.value,
@@ -385,34 +396,31 @@ export function GameScreen({
     canClue,
     variant,
     clueTargets,
-    clueTarget,
-    onChooseTarget: setClueTarget,
-    onChooseClue: setClue,
+    clueTarget: menuTarget,
+    onChooseTarget: chooseClueTarget,
+    // A key chooses a clue in the open menu. With only one other player, such as in a 2-player
+    // game, it opens their menu.
+    onChooseClue: (choice) => {
+      const target =
+        menuTarget
+        ?? (otherPlayers.length === 1
+          ? otherPlayers[0]?.playerIndex
+          : undefined);
+      if (target !== undefined && isAllowed(target, choice)) {
+        setClueTarget(target);
+        setClue(choice);
+      }
+    },
     onGive: giveClue,
   };
 
-  let waitingText = "";
-  if (hypo !== undefined) {
-    if (editingCards) {
-      waitingText = 'Turn off "Edit cards" to make a move.';
-    } else if (actingPlayerIndex === undefined) {
-      waitingText = "The hypothetical game is over.";
-    } else if (!clueAvailable) {
-      waitingText = "The team has no clues. Play or discard a card.";
-    }
-  } else if (paused && !inReplay) {
-    waitingText = `${pausedBy} paused the game.`;
-  } else if (!ourTurn) {
-    const currentName =
-      ongoingGame.turn.currentPlayerIndex === undefined
-        ? undefined
-        : metadata.playerNames[ongoingGame.turn.currentPlayerIndex];
-    waitingText =
-      inReplay || currentName === undefined
-        ? "Return to the game to take your turn."
-        : `Waiting for ${currentName}.`;
+  let hypotheticalHint = "Click a player's name to give them a clue.";
+  if (editingCards) {
+    hypotheticalHint = "Click a card in a hand to change it into another card.";
+  } else if (actingPlayerIndex === undefined) {
+    hypotheticalHint = "The hypothetical game is over.";
   } else if (!clueAvailable) {
-    waitingText = "The team has no clues. Play or discard a card.";
+    hypotheticalHint = "The team has no clues. Play or discard a card.";
   }
 
   // On a touch screen, the name column also holds the eye button that shows a player's view of
@@ -559,7 +567,27 @@ export function GameScreen({
                         )
                       : getClueMarkers(shownClue, settings.colorblindMode)
                   }
-                  clueTarget={clueTarget}
+                  clueMenu={
+                    menuTarget === undefined ? undefined : (
+                      <ClueMenu
+                        canGive={canGive}
+                        clue={clue}
+                        colorblindMode={settings.colorblindMode}
+                        isAllowed={(choice) => isAllowed(menuTarget, choice)}
+                        name={metadata.playerNames[menuTarget] ?? ""}
+                        onChooseClue={setClue}
+                        onClose={closeClueMenu}
+                        onGive={giveClue}
+                        onShowActions={() => {
+                          closeClueMenu();
+                          setLogSeat(menuTarget);
+                        }}
+                        reducedMotion={settings.reducedMotion}
+                        variant={variant}
+                      />
+                    )
+                  }
+                  clueTarget={menuTarget}
                   colorblindMode={settings.colorblindMode}
                   draggedCard={held?.order}
                   empathyToggled={empathyToggled}
@@ -588,6 +616,7 @@ export function GameScreen({
                       current === order ? undefined : order,
                     );
                   }}
+                  onChooseClueTarget={chooseClueTarget}
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {
@@ -642,91 +671,40 @@ export function GameScreen({
                   touchedCards={new Set(touched)}
                   variant={variant}
                 />
-              </div>
-              {/* The controls are below the hands, nearer the middle of the screen, and in the same
-                  place in every game. They are in one slot that is always as tall as both the clue
-                  panel and the replay bar: a hidden copy holds the space of the one not shown. So
-                  the hands above it keep their place and size when the game pauses, goes in and out
-                  of a replay, or starts a hypothetical. The replay bar fills the slot, so that its
-                  first row is level with the top row of the clue panel. In a hypothetical that we
-                  control, the clue panel takes the place of the replay bar and holds the
-                  hypothetical's buttons. The button that leaves it is where the button that
-                  entered it was. On a narrow window, the page scrolls and the controls go above the
-                  hands, with the replay bar first. */}
-              <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
-                {/* The hidden clue panel has the hypothetical's buttons, so that it is as tall as
-                    the clue panel of a hypothetical. */}
-                <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
-                  <CluePanel
-                    actions={
-                      <HypotheticalActions
-                        editingCards={false}
-                        onToggleEditCards={ignore}
-                        state={state}
-                      />
-                    }
-                    canClue={false}
-                    canGive={false}
-                    clue={undefined}
-                    clueTouchesNothing={false}
-                    colorblindMode={settings.colorblindMode}
-                    onChooseClue={ignore}
-                    onChooseTarget={ignore}
-                    onGive={ignore}
-                    target={undefined}
-                    targets={clueTargets}
-                    variant={variant}
-                    waitingText=""
-                  />
-                </div>
-                {(!showReplayBar || hypo !== undefined) && (
-                  <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
-                    <TurnsBar state={state} />
-                  </div>
-                )}
-                {showCluePanel && (
-                  <div className="tw:grid tw:[grid-area:1/1]">
-                    <CluePanel
-                      actions={
-                        hypo === undefined ? undefined : (
-                          <HypotheticalActions
-                            editingCards={editingCards}
-                            onToggleEditCards={() => {
-                              setEditingCards(!editingCards);
-                            }}
-                            state={state}
-                          />
-                        )
-                      }
-                      canClue={canClue}
-                      canGive={canGive}
-                      clue={clue}
-                      clueTouchesNothing={clueTouchesNothing}
-                      colorblindMode={settings.colorblindMode}
-                      onChooseClue={setClue}
-                      onChooseTarget={setClueTarget}
-                      onGive={giveClue}
-                      target={clueTarget}
-                      targets={clueTargets}
-                      variant={variant}
-                      waitingText={waitingText}
-                    />
-                  </div>
-                )}
-                {!showCluePanel && !inReplay && pausedBy !== undefined && (
+                {paused && !inReplay && (
+                  // Over the middle of the hands, so that the hands keep their size.
                   <div
-                    className="tw:self-center tw:justify-self-center tw:rounded-game-control tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink tw:[grid-area:1/1]"
+                    className="tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-game-control tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-lg"
                     role="status"
                   >
                     {pausedBy} paused the game.
                   </div>
                 )}
-                {showReplayBar && (hypo === undefined || !showCluePanel) && (
-                  <div className="tw:grid tw:[grid-area:1/1] tw:narrow-980:-order-1">
-                    <ReplayBar state={state} />
-                  </div>
-                )}
               </div>
+              {/* In a replay, the controls are below the hands, nearer the middle of the screen.
+                  Their slot is always as tall as the bar of the turns: a hidden copy holds its
+                  space. So the hands keep their place and size when a hypothetical starts. While
+                  the game goes on, there are no controls, and the hands take the space. On a narrow
+                  window, the page scrolls and the controls go above the hands. */}
+              {(showReplayBar || hypo !== undefined) && (
+                <div className="tw:grid tw:shrink-0 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
+                  {hypo !== undefined && (
+                    <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
+                      <TurnsBar state={state} />
+                    </div>
+                  )}
+                  <div className="tw:grid tw:[grid-area:1/1]">
+                    <ReplayBar
+                      editingCards={editingCards}
+                      hypotheticalHint={hypotheticalHint}
+                      onToggleEditCards={() => {
+                        setEditingCards(!editingCards);
+                      }}
+                      state={state}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">

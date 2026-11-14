@@ -184,37 +184,18 @@ const KEYWORD_NOTES = [
 /** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
 
-/** Chooses the "1" clue in the New UI, or clears it when it is already chosen. */
-async function clickRankOneClue(page: Page) {
-  await page
-    .locator('#game-new-ui [aria-label="Give a clue"]')
-    .getByRole("button", {
-      name: "1",
-      exact: true,
-    })
-    .click();
-}
-
 /**
- * Chooses the first clue in the New UI that touches no cards in Bob's hand. The game has two
- * players, so the panel has no player buttons, and its pressed buttons are clues.
+ * Opens the New UI's clue menu on the next player's hand, and chooses the first clue that the rules
+ * allow, so that its cards show which ones it would touch.
  */
-async function chooseClueThatTouchesNothing(page: Page) {
-  const panel = page.locator('#game-new-ui [aria-label="Give a clue"]');
-  for (const clue of await panel.locator("button[aria-pressed]").all()) {
-    await clue.click();
-    if (
-      (await panel
-        .getByRole("button", { name: /^No .* in that hand$/u })
-        .count()) > 0
-    ) {
-      return;
-    }
-
-    await clue.click();
-  }
-
-  throw new Error("Every clue touches a card in Bob's hand.");
+async function chooseClueForNextPlayer(page: Page) {
+  await page.locator("#game-new-ui [data-name-chip]").nth(1).click();
+  await page
+    .getByRole("dialog", { name: /^Give .* a clue$/u })
+    .locator("button[aria-pressed]:enabled")
+    .first()
+    .click();
+  await settle(page);
 }
 
 async function writeNote(page: Page, card: Locator, text: string) {
@@ -940,30 +921,18 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
-    // A clue is chosen, so that "Give clue" can be pressed.
+    // On the account's turn in a five-player game, it opens the clue menu on the next player's hand
+    // and chooses a clue. The clues that would touch no cards are grayed out.
     {
-      name: "new-ui-clue-chosen",
+      name: "new-ui-clue-menu",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame();
+        const game = await cast.startBobsGame(5);
+        await game.discardUntilAccountsTurn();
       },
-      prepare: async (page) => {
-        await clickRankOneClue(page);
-      },
-    },
-    // A clue is chosen that touches no cards in Bob's hand, so that "Give clue" says why it cannot
-    // be pressed.
-    {
-      name: "new-ui-clue-touches-nothing",
-      path: "/",
-      loggedIn: true,
-      isolated: true,
-      setup: async (cast) => {
-        await cast.startBobsGame();
-      },
-      prepare: chooseClueThatTouchesNothing,
+      prepare: chooseClueForNextPlayer,
     },
     // After the account plays a card that it does not know.
     {

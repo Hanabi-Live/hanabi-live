@@ -16,6 +16,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
+import { KEY_CLASS } from "./surfaces.ts";
 import type { CardView } from "./tableView.ts";
 
 export interface Seat {
@@ -59,11 +60,15 @@ interface HandsProps {
   readonly nameColumnWidth: number | undefined;
 
   /**
-   * Whether the viewer can give a clue, so that the hand of the player picked in the clue panel
-   * stands out.
+   * Whether the viewer can give a clue. Then, clicking another player's name opens the clues that
+   * they can get (`clueMenu`) on their hand, instead of the list of their actions.
    */
   readonly canChooseClueTarget: boolean;
+
+  /** The player whose clue menu is open, if any. Their hand stands out. */
   readonly clueTarget: PlayerIndex | undefined;
+  readonly onChooseClueTarget: (playerIndex: PlayerIndex | undefined) => void;
+  readonly clueMenu: React.ReactNode;
 
   /** The cards that the clue being chosen would touch. */
   readonly touchedCards: ReadonlySet<CardOrder>;
@@ -359,7 +364,15 @@ export const NAME_COLUMN_MAX_WIDTH = {
   MEDIUM: 110,
 } as const;
 
-function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
+function NameChip({
+  seat,
+  chosen = false,
+}: {
+  readonly seat: Seat;
+
+  /** Whether the player's clue menu is open. */
+  readonly chosen?: boolean;
+}): React.JSX.Element {
   const youIcon = seat.you ? (
     <i aria-label="You" className="fas fa-user tw:text-[0.85em]" role="img" />
   ) : undefined;
@@ -386,7 +399,11 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 
   return (
     <span
-      className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:select-none"
+      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium tw:select-none ${
+        chosen
+          ? "tw:bg-game-text tw:text-card-ink"
+          : "tw:bg-game-raised tw:text-game-text"
+      }`}
       ref={tooltipRef(seat.timeTooltip)}
     >
       {youIcon}
@@ -730,25 +747,22 @@ function Hand({
   readonly props: HandsProps;
 }): React.JSX.Element {
   const editing = props.onEditCard !== undefined;
-  const chosen =
-    props.canChooseClueTarget
-    && !seat.acting
-    && !editing
-    && props.clueTarget === seat.playerIndex;
+  const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
+  const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
 
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
-    // White, like the chosen player's button in the clue panel, so that it does not look like the
-    // gold of the current player. The cards that the clue would touch keep the clue's orange.
+    // White, like the player's name while their clue menu is open, so that it does not look like
+    // the gold of the current player. The cards that the clue would touch keep the clue's orange.
     boxClass = "tw:bg-game-text/8 tw:inset-ring-2 tw:inset-ring-game-text";
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
 
-  const chip = <NameChip seat={seat} />;
+  const chip = <NameChip chosen={chosen} seat={seat} />;
 
   // Holding the pointer down on another player's cards shows their view of them until it lifts, as
   // on the classic screen. While editing cards, a press picks the card to change instead.
@@ -791,13 +805,21 @@ function Hand({
         style={{ width: props.nameColumnWidth }}
       >
         {/* The name of the player who gave the clue on the turn that shows keeps a ring in the
-            clue's color. */}
+            clue's color. While the viewer can clue a player, the player's name is a key, like
+            every other button on the screen, and opens the clues. */}
         <button
+          aria-expanded={canClueSeat ? chosen : undefined}
           aria-haspopup="dialog"
-          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110"
+          className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${
+            canClueSeat ? KEY_CLASS : ""
+          }`}
           data-name-chip={seat.playerIndex}
           onClick={() => {
-            props.onShowPlayerLog(seat.playerIndex);
+            if (canClueSeat) {
+              props.onChooseClueTarget(chosen ? undefined : seat.playerIndex);
+            } else {
+              props.onShowPlayerLog(seat.playerIndex);
+            }
           }}
           // Right-clicking a name views the game from that seat, as on the classic screen.
           onContextMenu={(event) => {
@@ -883,6 +905,7 @@ function Hand({
           The clue touched no cards
         </span>
       )}
+      {chosen && props.clueMenu}
     </div>
   );
 }
