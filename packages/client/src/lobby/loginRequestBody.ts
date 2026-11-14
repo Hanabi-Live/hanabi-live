@@ -10,7 +10,7 @@ import type { z } from "zod";
 export function loginRequestBody(
   data: z.output<typeof loginRequestSchema>,
 ): URLSearchParams {
-  const { newPassword, createAccount, ...fields } = data;
+  const { createAccount, newPassword, ...fields } = data;
   return new URLSearchParams({
     ...fields,
     ...(newPassword !== undefined && { newPassword }),

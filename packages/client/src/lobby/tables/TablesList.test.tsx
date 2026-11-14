@@ -28,7 +28,7 @@ vi.mock("./tableActions.ts", () => ({
   tableReattend: vi.fn(),
   tableSpectate: vi.fn(),
 }));
-const { tableJoin, tableSpectate } = await import("./tableActions.ts");
+const { tableSpectate, tableJoin } = await import("./tableActions.ts");
 
 const ROW_HEIGHT = 20;
 

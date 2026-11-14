@@ -106,7 +106,7 @@ export function ChatTextBox({
       id={id}
       onClick={onClick}
       onScroll={(event) => {
-        const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
+        const { clientHeight, scrollHeight, scrollTop } = event.currentTarget;
         atBottomRef.current =
           Math.abs(clientHeight + scrollTop - scrollHeight)
           < AT_BOTTOM_EPSILON_PIXELS;

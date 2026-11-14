@@ -131,7 +131,7 @@ export function onChanged(
 
   // eslint-disable-next-line func-style
   const setPlayerText = (numLines: number) => {
-    const { rect1, textValues, values } = currentPlayerArea;
+    const { values, textValues, rect1 } = currentPlayerArea;
 
     text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]!);
 

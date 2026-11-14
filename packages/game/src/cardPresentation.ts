@@ -350,7 +350,7 @@ function getPossibilityRows(
   }
 
   const rows = new Map<string, PossibilityRowPresentation>();
-  for (const { suitPip, clueRanksKey, rowKey, rankPips } of suits) {
+  for (const { suitPip, rankPips, clueRanksKey, rowKey } of suits) {
     const rowSuit =
       suitPip.state === PipState.Eliminated
         ? possibleSuitForClueRanks.get(clueRanksKey)

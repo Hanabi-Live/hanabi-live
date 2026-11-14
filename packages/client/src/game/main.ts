@@ -52,7 +52,7 @@ function preventContextMenu(event: MouseEvent) {
 }
 
 export function show(justStarted: boolean): void {
-  const { pathname, hash } = globalThis.location;
+  const { hash, pathname } = globalThis.location;
   historyHash =
     pathname === PATH.LOBBY && hash.startsWith(HISTORY_HASH) ? hash : "";
 

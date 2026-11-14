@@ -50,7 +50,7 @@ function getOpenTexts(): ReadonlyArray<string | null> {
 }
 
 test("an open tooltip stays open when its text changes", async () => {
-  const { getByRole, rerender } = render(<Button text="One" />);
+  const { rerender, getByRole } = render(<Button text="One" />);
   fireEvent.pointerEnter(getByRole("button"));
   expect(openElements.has(getBubble()!)).toBe(true);
 
@@ -65,7 +65,7 @@ test("an open tooltip stays open when its text changes", async () => {
 });
 
 test("a tooltip goes away with its element", async () => {
-  const { getByRole, unmount } = render(<Button text="One" />);
+  const { unmount, getByRole } = render(<Button text="One" />);
   fireEvent.pointerEnter(getByRole("button"));
   expect(getBubble()).not.toBeNull();
 

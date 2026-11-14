@@ -299,7 +299,7 @@ export function onRestartChanged(
       >
     | undefined,
 ): void {
-  const { playerNames, ourUsername } = globals.metadata;
+  const { ourUsername, playerNames } = globals.metadata;
   const amLeader = shared?.amLeader === true;
   const canPlayAgain = shared?.canPlayAgain === true;
   const canRestart =

@@ -59,7 +59,7 @@ export function canStartHypothetical(state: State): boolean {
 
 export function startHypothetical(): void {
   const state = getState();
-  const { hypothetical, shared } = state.replay;
+  const { shared, hypothetical } = state.replay;
   if (hypothetical !== undefined || !canStartHypothetical(state)) {
     return;
   }
@@ -97,7 +97,7 @@ export function startSharedHypothetical(): void {
 }
 
 export function endHypothetical(): void {
-  const { hypothetical, ownHypothetical, shared } = getState().replay;
+  const { shared, ownHypothetical, hypothetical } = getState().replay;
   if (hypothetical === undefined) {
     return;
   }
@@ -262,7 +262,7 @@ function sendHypotheticalActionsToServer(
 }
 
 export function sendHypotheticalBack(): void {
-  const { hypothetical, ownHypothetical, shared } = getState().replay;
+  const { shared, ownHypothetical, hypothetical } = getState().replay;
   if (hypothetical === undefined || hypothetical.states.length <= 1) {
     return;
   }
@@ -280,7 +280,7 @@ export function sendHypotheticalBack(): void {
 }
 
 export function toggleRevealed(): void {
-  const { hypothetical, ownHypothetical, shared } = getState().replay;
+  const { shared, ownHypothetical, hypothetical } = getState().replay;
   if (hypothetical === undefined) {
     return;
   }

@@ -10,7 +10,7 @@ vi.mock("./getSoundType.ts", () => ({
   getStandardSoundType: () => SoundType.Us,
 }));
 const sounds = await import("../sounds.ts");
-const { onNewSoundEffect, setPlayStartSound } =
+const { setPlayStartSound, onNewSoundEffect } =
   await import("./soundEffects.ts");
 
 const state = {

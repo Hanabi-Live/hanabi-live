@@ -85,7 +85,7 @@ export function ScoresTable({
             : scoreText(score, row.maxScore);
         },
         cell: (row) => {
-          const { score, modifier } = row.bestScores[index] ?? {};
+          const { modifier, score } = row.bestScores[index] ?? {};
           if (score === undefined) {
             return "\u{2013}";
           }

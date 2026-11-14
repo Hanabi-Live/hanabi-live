@@ -198,7 +198,7 @@ export function animateCardMoves(
  * element moves over the screen, and is removed when it reaches the deck.
  */
 function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
-  const { element, rect: from } = was;
+  const { rect: from, element } = was;
   Object.assign(element.style, {
     position: "fixed",
     // The card is outside of the zoomed game screen, so it takes the same zoom.

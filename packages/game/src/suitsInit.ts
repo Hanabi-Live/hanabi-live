@@ -14,7 +14,7 @@ export function suitsInit(
 
   // A test validates the file against the server's catalog contract.
   for (const suitJson of suitsJson as readonly SuitJson[]) {
-    const { name, id, pip } = suitJson;
+    const { id, name, pip } = suitJson;
 
     // Validate the "pip" property.
     if (pip !== "none" && pip !== "auto") {

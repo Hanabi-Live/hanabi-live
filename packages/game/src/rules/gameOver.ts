@@ -28,7 +28,7 @@ export function isGameOver(
 ): boolean {
   const { options } = metadata;
   const variant = getVariantById(options.variantId);
-  const { currentPlayerIndex, turnNum, endTurnNum, playOrderInverted } =
+  const { turnNum, currentPlayerIndex, playOrderInverted, endTurnNum } =
     gameState.turn;
   if (currentPlayerIndex === undefined) {
     return true;

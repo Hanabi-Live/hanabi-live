@@ -2001,7 +2001,7 @@ async function createCast(
           && !gone.has(event.order)
           && event.identity !== undefined
         ) {
-          const { suitIndex, rank } = event.identity;
+          const { rank, suitIndex } = event.identity;
           cards.push({
             order: event.order,
             suitIndex,
@@ -2135,7 +2135,7 @@ async function createCast(
             const key = `${event.identity.suitIndex}-${event.identity.rank}`;
             discarded.set(key, (discarded.get(key) ?? 0) + 1);
           } else if (event.type === "play" && event.identity !== undefined) {
-            const { suitIndex, rank } = event.identity;
+            const { rank, suitIndex } = event.identity;
             stacks.set(suitIndex, rank);
             if (rank === MAX_RANK) {
               clues = Math.min(clues + 1, MAX_CLUES);

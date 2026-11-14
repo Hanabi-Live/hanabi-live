@@ -76,7 +76,7 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
  * "Number", so that it does not read as a count.
  */
 export function getClueText(entry: ClueLogEntry): string {
-  const { marker, clueName } = entry;
+  const { clueName, marker } = entry;
   return marker.type === "rank" && clueName === marker.label
     ? `Number ${clueName}`
     : clueName;

@@ -11,7 +11,7 @@ export function colorsInit(): ReadonlyMap<string, Color> {
     z.infer<typeof catalogColorSchema>
   >;
   for (const colorJson of entries) {
-    const { name, fill } = colorJson;
+    const { fill, name } = colorJson;
 
     // If the abbreviation is not specified, assume that it is the first letter of the color.
     const abbreviation = colorJson.abbreviation ?? name.charAt(0);

@@ -2,7 +2,7 @@ import { draw, getDefaultMetadata } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import type { Action } from "../types/actions.ts";
 
-const { init, replayEnter } = await import("../../../test/testActions.ts");
+const { replayEnter, init } = await import("../../../test/testActions.ts");
 const { initialState } = await import("./initialStates/initialState.ts");
 const { stateReducer } = await import("./stateReducer.ts");
 

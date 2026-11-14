@@ -15,10 +15,10 @@ vi.mock("./lobby/createReplayJson.ts", () => ({
   createJsonFromReplay: vi.fn(),
 }));
 const {
-  chatCommands,
+  parsePmHistoryCommandArgs,
   getVariantFromArgs,
   getVariantNameFromPartial,
-  parsePmHistoryCommandArgs,
+  chatCommands,
 } = await import("./chatCommands.ts");
 
 const brownFives = "Brown-Fives (6 Suits)";

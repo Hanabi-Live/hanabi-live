@@ -6,7 +6,7 @@ import type { State } from "./types/State.ts";
  * We control our own hypothetical, and the leader controls the shared one. Spectators only watch.
  */
 export function controlsHypothetical(state: State): boolean {
-  const { hypothetical, ownHypothetical, shared } = state.replay;
+  const { shared, ownHypothetical, hypothetical } = state.replay;
   return (
     hypothetical !== undefined
     && (ownHypothetical !== undefined || shared?.amLeader === true)
@@ -18,7 +18,7 @@ export function controlsHypothetical(state: State): boolean {
  * shared hypothetical, a drawn card that has been played, discarded, or clued stays shown.
  */
 export function canToggleDrawnCards(state: State): boolean {
-  const { hypothetical, shared } = state.replay;
+  const { shared, hypothetical } = state.replay;
   if (hypothetical === undefined || !controlsHypothetical(state)) {
     return false;
   }

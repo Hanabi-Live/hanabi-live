@@ -114,8 +114,8 @@ const KNOB_INSET_PX = 16;
 function Timeline({
   segment,
   lastSegment,
-  slide,
   leader,
+  slide,
 }: {
   readonly segment: number;
   readonly lastSegment: number;
@@ -288,7 +288,7 @@ function SyncButton({
 }: {
   readonly state: State;
 }): React.JSX.Element | undefined {
-  const { shared, states } = state.replay;
+  const { states, shared } = state.replay;
   if (shared === undefined || shared.amLeader || shared.useSharedSegments) {
     return undefined;
   }
@@ -475,7 +475,7 @@ export function ReplayBar({
 }: {
   readonly state: State;
 }): React.JSX.Element | undefined {
-  const { replay: replayState, finished, visibleState } = state;
+  const { visibleState, replay: replayState, finished } = state;
   if (
     visibleState === undefined
     || (replayState.segment === undefined && !finished)
@@ -534,7 +534,7 @@ export function TurnsBar({
 }: {
   readonly state: State;
 }): React.JSX.Element {
-  const { replay: replayState, finished, visibleState } = state;
+  const { visibleState, replay: replayState, finished } = state;
   if (visibleState === undefined) {
     throw new Error("A replay bar needs a turn on screen.");
   }

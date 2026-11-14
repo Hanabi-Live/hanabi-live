@@ -135,7 +135,7 @@ export function HeldCardGhost({
   const cardRef = useRef<HTMLDivElement>(null);
   const shadowRef = useRef<HTMLDivElement>(null);
   const height = width * CARD_HEIGHT_PER_WIDTH;
-  const { grab, start, order } = held;
+  const { order, start, grab } = held;
 
   // The simulation lasts from when the card is lifted until it lands, through each phase.
   const simulation = useRef<Simulation>(undefined);

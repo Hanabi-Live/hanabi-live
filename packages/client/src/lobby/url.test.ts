@@ -20,7 +20,7 @@ const { globals } = await import("../Globals.ts");
 const modals = await import("../modals.ts");
 const history = await import("./history.ts");
 const { expand } = await import("./hypoCompress.ts");
-const { leaveTableLink, parseAndGoto } = await import("./url.ts");
+const { parseAndGoto, leaveTableLink } = await import("./url.ts");
 const { setBrowserAddressBarPath } = await import("../utils.ts");
 
 function welcome(

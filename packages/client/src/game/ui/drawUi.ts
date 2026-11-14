@@ -1204,7 +1204,7 @@ function drawBottomLeftButtons() {
 
   // The "New UI" button goes above the column. The Keldon layout has a hand in that place, so there
   // it goes at the top of the column instead, and the four buttons share the height of three.
-  const { newUi, keldonMode } = store.getState().session.settings;
+  const { keldonMode, newUi } = store.getState().session.settings;
   const newUiInColumn = newUi && keldonMode;
   const columnH =
     BOTTOM_LEFT_BUTTON.h * BOTTOM_LEFT_BUTTON_ROWS

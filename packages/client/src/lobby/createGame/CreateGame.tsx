@@ -212,7 +212,7 @@ function getInitialForm(mode: Mode): CreateGameForm {
   }
 
   const { settings } = game;
-  const { options, deal } = settings;
+  const { deal, options } = settings;
   return {
     name: settings.name,
     password: "",

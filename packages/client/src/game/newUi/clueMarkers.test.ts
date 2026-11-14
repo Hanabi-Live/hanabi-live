@@ -20,7 +20,7 @@ vi.mock("../gameSession.ts", () => ({
   currentVariant: () => game.variant,
   currentState: () => game.state,
 }));
-const { getClueMarker, getPreviewMarker } = await import("./clueMarkers.ts");
+const { getPreviewMarker, getClueMarker } = await import("./clueMarkers.ts");
 
 /** Character ID 34 is Quacker; player 1 has no character. */
 const QUACKER_ASSIGNMENTS = [34, undefined] as const;

@@ -46,10 +46,10 @@ const BORROWED_CHAT_BOX_CLASSES = [
  */
 export function ChatPanel({
   open,
+  overlay,
   unread,
   spectators,
   spectatorsTooltip,
-  overlay,
 }: {
   readonly open: boolean;
 

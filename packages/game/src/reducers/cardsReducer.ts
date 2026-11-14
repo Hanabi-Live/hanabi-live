@@ -157,7 +157,7 @@ export function cardsReducer(
 
       const identityDetermined = revealCard(suitIndex, rank, card);
 
-      let { segmentPlayed, segmentDiscarded, location, isMisplayed } = card;
+      let { location, segmentDiscarded, segmentPlayed, isMisplayed } = card;
 
       switch (action.type) {
         case "play": {
@@ -243,7 +243,7 @@ export function cardsReducer(
         ] as const;
       }
 
-      const { suitIndex, rank } = action.identity ?? {};
+      const { rank, suitIndex } = action.identity ?? {};
 
       const drawnCard = {
         ...initial,

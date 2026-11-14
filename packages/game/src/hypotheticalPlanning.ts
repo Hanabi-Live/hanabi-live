@@ -90,11 +90,11 @@ export function getHypotheticalCard(
   input: HypotheticalCardInput,
 ): HypotheticalCard {
   const {
-    state,
     identity,
     morphedIdentity,
     note,
     playing,
+    state,
     isStackBase,
     visibleSuitIndex,
     visibleRank,

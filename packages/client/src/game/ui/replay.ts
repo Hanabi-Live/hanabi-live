@@ -74,7 +74,7 @@ export function isSpoilerFree(): boolean {
 
 /** Spectators watch the leader's hypothetical, but do not control it. */
 export function isSpectatingHypothetical(): boolean {
-  const { hypothetical, ownHypothetical, shared } = globals.state.replay;
+  const { shared, ownHypothetical, hypothetical } = globals.state.replay;
   return (
     hypothetical !== undefined
     && ownHypothetical === undefined

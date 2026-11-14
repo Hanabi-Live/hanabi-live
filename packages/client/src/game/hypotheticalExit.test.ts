@@ -15,7 +15,7 @@ vi.mock("../Globals.ts", () => ({
 }));
 const { initialState } =
   await import("./reducers/initialStates/initialState.ts");
-const { endHypothetical, finishHypothetical, startHypothetical } =
+const { startHypothetical, endHypothetical, finishHypothetical } =
   await import("./hypothetical.ts");
 const { store: appStore } = await import("../store.ts");
 const { gameStarted, gameUpdated } = await import("./gameSlice.ts");

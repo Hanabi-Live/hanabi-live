@@ -15,7 +15,6 @@ export const hanabiConfigBase = defineConfig(
       // @template-customization-start
 
       // Keep domain-specific property ordering.
-      "complete/sort-destructured-properties": "off",
       "complete/sort-objects": "off",
 
       // The rule checks types deeply, so it rejects branded numbers, Zod-inferred types, and the

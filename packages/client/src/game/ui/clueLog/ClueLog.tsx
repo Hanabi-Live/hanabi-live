@@ -238,9 +238,9 @@ function ClueEntry({
 /** One column of text in an entry. Text that does not fit can shrink to fit. */
 function Column({
   text,
+  fontSize,
   x,
   width,
-  fontSize,
   center = false,
   fitText = false,
 }: {

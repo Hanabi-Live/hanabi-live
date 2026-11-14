@@ -14,8 +14,8 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
       : undefined;
   }
 
-  const { ourPlayerIndex, options } = state.metadata;
-  const { speedrunFeatures, preplay } = store.getState().session.settings;
+  const { options, ourPlayerIndex } = state.metadata;
+  const { preplay, speedrunFeatures } = store.getState().session.settings;
   const ourTurn = isOurSeat(
     state.ongoingGame.turn.currentPlayerIndex,
     state.metadata,

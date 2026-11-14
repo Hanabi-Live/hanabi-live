@@ -223,7 +223,7 @@ export function GameScreen({
     );
   }
 
-  const { visibleState, metadata, ongoingGame } = state;
+  const { visibleState, ongoingGame, metadata } = state;
   const variant = currentVariant();
   const { settings } = store.getState().session;
   const { options } = metadata;

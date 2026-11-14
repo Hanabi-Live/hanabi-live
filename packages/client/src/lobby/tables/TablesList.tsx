@@ -280,7 +280,7 @@ function useMovedTime(ref: React.RefObject<HTMLTableRowElement | null>) {
   );
 
   useLayoutEffect(() => {
-    const { offsetTop: top, offsetHeight: height } = ref.current!;
+    const { offsetHeight: height, offsetTop: top } = ref.current!;
 
     // A hidden row has no position, such as when we are in a game. When the lobby is shown again,
     // the row has not moved under the pointer.

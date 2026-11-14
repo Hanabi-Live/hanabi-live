@@ -92,7 +92,7 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      for (const { username, notes: noteTextList, spectator } of action.notes) {
+      for (const { notes: noteTextList, spectator, username } of action.notes) {
         // If we are a spectator, copy our notes from combined list.
         if (username === metadata.ourUsername && !playing && !finished) {
           for (const [order, text] of noteTextList.entries()) {

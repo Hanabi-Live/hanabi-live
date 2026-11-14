@@ -8,7 +8,7 @@ import type { ReplayState } from "../types/ReplayState.ts";
 import type { State } from "../types/State.ts";
 
 const { loadGameJson } = await import("../../../test/loadGameJson.ts");
-const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =
+const { init, hypoStart, hypoEnd, hypoAction, hypoBack } =
   await import("../../../test/testActions.ts");
 const { replayReducer } = await import("./replayReducer.ts");
 const { stateReducer } = await import("./stateReducer.ts");

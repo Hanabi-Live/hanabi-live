@@ -128,7 +128,7 @@ function HistoryRow({
   readonly game: GameSummary;
   readonly username: string;
 }) {
-  const { seed, numGamesOnSeed } = game;
+  const { numGamesOnSeed, seed } = game;
   const otherGameCount = numGamesOnSeed - 1;
   const hasOtherGames = otherGameCount > 0;
 

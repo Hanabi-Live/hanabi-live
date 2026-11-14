@@ -4,7 +4,7 @@ import { tooltipRefHtml } from "../tooltipRef.ts";
 import type { OptionDescription } from "./optionDescriptions.ts";
 
 export function OptionIcon({
-  description: { icon, label, tooltip },
+  description: { label, tooltip, icon },
 }: {
   readonly description: Pick<OptionDescription, "label" | "tooltip"> & {
     readonly icon: string;
