@@ -5,6 +5,7 @@
 import type { ReplyData, ServerEventData, Spectator } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
+  AuthorNotes,
   CardIdentity,
   GameAction,
 } from "@hanabi-live/game";
@@ -12,7 +13,7 @@ import type { ClientAction } from "./ClientAction.ts";
 
 export type Action =
   | ActionInit
-  | ActionListReceived
+  | ActionGameStateLoaded
   | GameAction
   | ReplayAction
   | ActionCardIdentities
@@ -53,9 +54,25 @@ export interface ActionInit extends Readonly<
   readonly type: "init";
 }
 
-interface ActionListReceived {
-  readonly type: "gameActionList";
+/**
+ * Everything about the game that we may see, which the server sends when we load the game or
+ * reconnect ("gameState"). The state applies it as one update, in the order of these fields.
+ */
+interface ActionGameStateLoaded {
+  readonly type: "gameStateLoaded";
+  /** Where the shared replay is, in a shared replay. */
+  readonly sharedReplay: Omit<ActionSharedReplayState, "type"> | undefined;
+  /** The game's events so far, as the game state applies them. */
   readonly actions: readonly GameAction[];
+  /** The identity of every card, in a replay. */
+  readonly cardIdentities: readonly CardIdentity[] | undefined;
+  /** The notes that we may see. */
+  readonly notes: readonly AuthorNotes[];
+  /** Whether the game is paused, in a game in progress. */
+  readonly pause: Omit<ActionPause, "type"> | undefined;
+  readonly spectators: readonly Spectator[];
+  /** The shared replay's hypothetical, if it has one, which we join. */
+  readonly hypothetical: Omit<ActionHypotheticalStart, "type"> | undefined;
 }
 
 // ---------------------

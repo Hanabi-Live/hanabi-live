@@ -33,6 +33,7 @@ import type { Votes } from "./gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "./gameSlice.ts";
 import * as hypothetical from "./hypothetical.ts";
 import { initialState } from "./reducers/initialStates/initialState.ts";
+import { getNotesAction } from "./reducers/stateReducer.ts";
 import { playerNamesAt } from "./reducers/stateReducerHelpers.ts";
 import { SoundType } from "./types/SoundType.ts";
 import type { State } from "./types/State.ts";
@@ -290,24 +291,7 @@ gameCommands.set("note", (data) => {
  * for a player of a game in progress.
  */
 function setNotes(playerNotes: GameState["notes"]) {
-  const { state } = globals;
-  if (state.playing && !state.finished) {
-    // A player gets only their own notes.
-    store.dispatch(
-      gameUpdated({
-        type: "noteListPlayer",
-        texts: playerNotes[0]?.notes ?? [],
-      }),
-    );
-  } else {
-    store.dispatch(
-      gameUpdated({
-        type: "noteList",
-        notes: playerNotes,
-      }),
-    );
-  }
-
+  store.dispatch(gameUpdated(getNotesAction(globals.state, playerNotes)));
   serverUpdates.drawAllNotes();
 }
 
@@ -329,72 +313,66 @@ gameCommands.set("gameEvent", (data) => {
 gameCommands.set("gameState", (data) => {
   const { phase } = data;
   const shared = phase.type === "replay" ? phase.sharedReplay : undefined;
-  if (shared !== undefined) {
-    store.dispatch(
-      gameUpdated({
-        type: "sharedReplayState",
-        turn: shared.turn,
-        efficiencyModifier: shared.efficiencyModifier,
-        restartDecliners: shared.restartDecliners,
-        leader: shared.owner.username,
-      }),
-    );
-  }
-  setEvents(data.events);
-  if (phase.type === "replay") {
-    setCardIdentities(phase.deck);
-  }
-  setNotes(data.notes);
+
+  // Users can load a specific turn in a replay by using a URL hash (e.g. "/replay/123#5"). Record
+  // the hash before the game state changes, since the screen then overwrites it with the turn that
+  // it shows.
+  const specificTurnString =
+    globalThis.location.hash === ""
+      ? undefined
+      : globalThis.location.hash.replace("#", "");
+
+  // The game's state changes in one update, so that the screens draw the game once.
+  store.dispatch(
+    gameUpdated({
+      type: "gameStateLoaded",
+      sharedReplay:
+        shared === undefined
+          ? undefined
+          : {
+              turn: shared.turn,
+              efficiencyModifier: shared.efficiencyModifier,
+              restartDecliners: shared.restartDecliners,
+              leader: shared.owner.username,
+            },
+      actions: data.events.map(toGameAction),
+      cardIdentities:
+        phase.type === "replay" ? phase.deck.map(toCardIdentity) : undefined,
+      notes: data.notes,
+      pause: phase.type === "playing" ? phase.pause : undefined,
+      spectators: data.spectators,
+      // We may be joining a shared replay that plays through a hypothetical line. Its actions so
+      // far catch us up with everyone else.
+      hypothetical:
+        shared?.hypothetical === undefined
+          ? undefined
+          : {
+              shared: true,
+              showDrawnCards: shared.hypothetical.showDrawnCards,
+              actions: shared.hypothetical.events.map(toHypotheticalAction),
+            },
+    }),
+  );
+  serverUpdates.drawAllNotes();
+
   if (phase.type === "playing") {
     if (phase.votes !== undefined) {
       setVotes(phase.votes);
     }
     serverUpdates.setConnections(phase.connections);
     clock.update(phase.clock);
-    store.dispatch(gameUpdated({ type: "pause", ...phase.pause }));
     // We may have missed the idle warning while we were away.
     if (phase.idleRemainingMs !== undefined) {
       showIdleWarning(phase.idleRemainingMs);
     }
   }
-  setSpectators(data.spectators);
-  if (shared?.hypothetical !== undefined) {
-    // We are joining a shared replay that plays through a hypothetical line. Play all of its
-    // actions so far to catch up with everyone else.
-    store.dispatch(
-      gameUpdated({
-        type: "hypotheticalStart",
-        shared: true,
-        showDrawnCards: shared.hypothetical.showDrawnCards,
-        actions: shared.hypothetical.events.map(toHypotheticalAction),
-      }),
-    );
-  }
-});
-
-function setEvents(events: GameState["events"]) {
-  // Users can load a specific turn in a replay by using a URL hash
-  // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
-  // with "#1", corresponding to the first turn).
-  let specificTurnString: string | undefined;
-  if (globalThis.location.hash !== "") {
-    specificTurnString = globalThis.location.hash.replace("#", ""); // Strip the leading "#".
-  }
-
-  // Send the game events so far to the reducers.
-  store.dispatch(
-    gameUpdated({
-      type: "gameActionList",
-      actions: events.map(toGameAction),
-    }),
-  );
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:
   // http://localhost/replay/123#5
   if (specificTurnString !== undefined) {
     replay.goTo(specificTurnString);
   }
-}
+});
 
 gameCommands.set("idleWarning", (data) => {
   showIdleWarning(data.idleRemainingMs);

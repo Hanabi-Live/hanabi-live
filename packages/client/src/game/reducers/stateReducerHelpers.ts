@@ -1,5 +1,16 @@
 import type { GameAction, Perspective, PlayerIndex } from "@hanabi-live/game";
+import type { Draft } from "immer";
+import { current, isDraft } from "immer";
 import type { State } from "../types/State.ts";
+
+/**
+ * The value of a part of the state as it is now, outside of the draft. A reducer that applies
+ * several updates at once sees the earlier ones. A value that one of them put in the draft is not a
+ * draft, so it is already plain.
+ */
+export function snapshot<T>(value: Draft<T> | T): T {
+  return (isDraft(value) ? current(value as Draft<T>) : value) as T;
+}
 
 /** Where we see the game from: our seat, a seat that we shadow, or outside of the seats. */
 export function getPerspective(

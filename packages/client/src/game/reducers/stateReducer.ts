@@ -1,6 +1,9 @@
 // The main reducer for the game mode, contemplating replays and game actions.
 
 import type {
+  ActionNoteList,
+  ActionNoteListPlayer,
+  AuthorNotes,
   CardIdentity,
   GameAction,
   GameMetadata,
@@ -10,7 +13,7 @@ import type {
 import { gameReducer, getInitialGameState } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
-import { castDraft, original, produce } from "immer";
+import { castDraft, produce } from "immer";
 import type { State } from "../types/State.ts";
 import type { Action } from "../types/actions.ts";
 import { notesReducer } from "./notesReducer.ts";
@@ -19,33 +22,41 @@ import {
   getPerspective,
   playerNamesAt,
   shouldStoreSegment,
+  snapshot,
 } from "./stateReducerHelpers.ts";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
 function stateReducerFunction(state: Draft<State>, action: Action) {
   switch (action.type) {
-    case "gameActionList": {
-      // Calculate all the intermediate states.
-      const initialGameState = getInitialGameState(state.metadata);
-
-      const { game, states } = reduceGameActions(
-        action.actions,
-        initialGameState,
-        getPerspective(state),
-        state.metadata,
-      );
-
-      state.ongoingGame = castDraft(game);
-
-      // Initialized, ready to show.
-      state.visibleState = state.ongoingGame;
-
-      // We copy the card identities to the global state for convenience.
-      updateCardIdentities(state);
-
-      state.replay.states = castDraft(states);
-      state.replay.actions = castDraft(action.actions);
+    case "gameStateLoaded": {
+      if (action.sharedReplay !== undefined) {
+        stateReducerFunction(state, {
+          type: "sharedReplayState",
+          ...action.sharedReplay,
+        });
+      }
+      loadGameActions(state, action.actions);
+      if (action.cardIdentities !== undefined) {
+        stateReducerFunction(state, {
+          type: "cardIdentities",
+          cardIdentities: action.cardIdentities,
+        });
+      }
+      stateReducerFunction(state, getNotesAction(state, action.notes));
+      if (action.pause !== undefined) {
+        stateReducerFunction(state, { type: "pause", ...action.pause });
+      }
+      stateReducerFunction(state, {
+        type: "spectators",
+        spectators: action.spectators,
+      });
+      if (action.hypothetical !== undefined) {
+        stateReducerFunction(state, {
+          type: "hypotheticalStart",
+          ...action.hypothetical,
+        });
+      }
       break;
     }
 
@@ -265,7 +276,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "receiveNote": {
       state.notes = castDraft(
         notesReducer(
-          original(state.notes),
+          snapshot(state.notes),
           action,
           state.metadata,
           state.playing,
@@ -280,7 +291,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "noteListPlayer": {
       state.notes = castDraft(
         notesReducer(
-          original(state.notes),
+          snapshot(state.notes),
           action,
           state.metadata,
           state.playing,
@@ -292,7 +303,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         // Recompute efficiency since it could change.
         state.ongoingGame = castDraft(
           gameReducer(
-            original(state.ongoingGame),
+            snapshot(state.ongoingGame),
             action,
             getPerspective(state),
             state.metadata,
@@ -308,7 +319,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = castDraft(
         gameReducer(
-          original(state.ongoingGame),
+          snapshot(state.ongoingGame),
           action,
           getPerspective(state),
           state.metadata,
@@ -339,6 +350,43 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
   // Show the appropriate state depending on the situation.
   state.visibleState = visualStateToShow(state, action);
+}
+
+/** Computes the game from its actions so far, with the state of every segment for replays. */
+function loadGameActions(state: Draft<State>, actions: readonly GameAction[]) {
+  // Calculate all the intermediate states.
+  const initialGameState = getInitialGameState(state.metadata);
+
+  const { game, states } = reduceGameActions(
+    actions,
+    initialGameState,
+    getPerspective(state),
+    state.metadata,
+  );
+
+  state.ongoingGame = castDraft(game);
+
+  // Initialized, ready to show.
+  state.visibleState = state.ongoingGame;
+
+  // We copy the card identities to the global state for convenience.
+  updateCardIdentities(state);
+
+  state.replay.states = castDraft(states);
+  state.replay.actions = castDraft(actions);
+}
+
+/**
+ * The notes that we may see: everyone's for a spectator or a replay viewer, and only our own for a
+ * player of a game in progress.
+ */
+export function getNotesAction(
+  state: Pick<State, "playing" | "finished">,
+  notes: readonly AuthorNotes[],
+): ActionNoteList | ActionNoteListPlayer {
+  return state.playing && !state.finished
+    ? { type: "noteListPlayer", texts: notes[0]?.notes ?? [] }
+    : { type: "noteList", notes };
 }
 
 // Runs through a list of actions from an initial state, and returns the final state and all

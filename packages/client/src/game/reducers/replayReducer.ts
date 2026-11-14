@@ -11,9 +11,10 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
-import { castDraft, original, produce } from "immer";
+import { castDraft, produce } from "immer";
 import type { ReplayState } from "../types/ReplayState.ts";
 import type { ReplayAction } from "../types/actions.ts";
+import { snapshot } from "./stateReducerHelpers.ts";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 
@@ -164,7 +165,7 @@ function replayReducerFunction(
       );
 
       const hypothetical = initializeHypotheticalState(
-        original(ongoing),
+        snapshot(ongoing),
         action.showDrawnCards,
         action.actions,
         metadata,
@@ -193,7 +194,7 @@ function replayReducerFunction(
         `A "${action.type}" action was dispatched with a undefined hypothetical state.`,
       );
 
-      let hypothetical = original(hypotheticalDraft)!;
+      let hypothetical: HypotheticalState = snapshot(hypotheticalDraft);
       let coreActions: readonly HypotheticalStateAction[];
       if (action.type === "hypotheticalActions") {
         coreActions = action.actions;
