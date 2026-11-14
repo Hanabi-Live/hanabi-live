@@ -88,6 +88,10 @@ interface CardFaceProps {
   readonly clued?: boolean;
   readonly critical?: boolean;
   readonly trash?: boolean;
+
+  /** Whether the viewer marked the card as trash in a note. */
+  readonly markedTrash?: boolean;
+
   readonly trashIcon?: boolean;
 
   /** Whether the card has a note that the viewer can read. */
@@ -271,6 +275,38 @@ function StatusBadge({
     >
       {critical ? "!" : <i aria-hidden="true" className="fas fa-trash-alt" />}
     </span>
+  );
+}
+
+/**
+ * The size and top edge of the trash can over a card that the viewer marked as trash, as fractions
+ * of the card's size. They match the classic screen (`TRASHCAN_SIZE` in "HanabiCardInit.ts").
+ */
+const TRASH_CAN = { width: 0.7, height: 0.6, top: 0.2 } as const;
+
+/**
+ * A large trash can over a card that the viewer marked as trash in a note, as on the classic
+ * screen. It covers the possibilities, so that the mark is never hidden.
+ */
+function TrashCan({
+  width,
+  height,
+}: {
+  readonly width: number;
+  readonly height: number;
+}): React.JSX.Element {
+  return (
+    <img
+      alt="Marked as trash"
+      className="tw:pointer-events-none tw:absolute"
+      src="/public/img/trashcan2.png"
+      style={{
+        left: (width * (1 - TRASH_CAN.width)) / 2,
+        top: height * TRASH_CAN.top,
+        width: width * TRASH_CAN.width,
+        height: height * TRASH_CAN.height,
+      }}
+    />
   );
 }
 
@@ -603,6 +639,7 @@ export function CardFace({
   clued = false,
   critical = false,
   trash = false,
+  markedTrash = false,
   trashIcon = false,
   note = false,
   noteUnread = false,
@@ -716,6 +753,8 @@ export function CardFace({
           width={width}
         />
       )}
+
+      {markedTrash && <TrashCan height={height} width={width} />}
     </div>
   );
 }

@@ -44,9 +44,14 @@ export interface CardView {
   readonly trash: boolean;
 
   /**
-   * Whether the card also shows a trash icon. Other players' trash cards only fade, unless the
-   * viewer marked them as trash in a note; cards in the viewer's own hand show it when the clues
-   * prove it.
+   * Whether the viewer marked the card as trash in a note. As on the classic screen, a large trash
+   * can then shows over the card.
+   */
+  readonly markedTrash: boolean;
+
+  /**
+   * Whether the card shows a trash badge, because the clues prove to its holder that it is trash.
+   * Other players' trash cards only fade.
    */
   readonly trashIcon: boolean;
 
@@ -135,9 +140,12 @@ export function getCardView({
   }
 
   const clued = isCardClued(cardState);
+  const markedTrash = !realLifeMode && note.knownTrash && !finished;
   const trashIcon =
     !realLifeMode
-    && (note.knownTrash || (empathy && cardState.isKnownTrashFromEmpathy));
+    && !markedTrash
+    && empathy
+    && cardState.isKnownTrashFromEmpathy;
 
   return {
     order: cardState.order,
@@ -152,12 +160,13 @@ export function getCardView({
       // knows that it is trash: its badge says so.
       && shouldFadeTrash({
         trash: status === CardStatus.Trash,
-        markedTrash: note.knownTrash && !finished,
+        markedTrash,
         clued,
         positivelyClued: cardState.numPositiveClues > 0,
         note,
         throwItInAHole: variant.throwItInAHole,
       }),
+    markedTrash,
     trashIcon,
     possibleSuitIndexes,
     possibleRanks,
