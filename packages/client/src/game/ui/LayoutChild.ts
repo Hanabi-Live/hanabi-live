@@ -162,12 +162,10 @@ export class LayoutChild extends Konva.Group {
       return true; // Known card
     }
 
-    modals.askForMorph(
-      this.card,
-      globals.variant,
-      globals.cardImages,
-      draggedTo,
-    );
+    modals.askForMorph(this.card.morphTarget(), globals.variant, {
+      card: this.card,
+      area: draggedTo,
+    });
     return false; // Unknown card
   }
 

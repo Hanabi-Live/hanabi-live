@@ -1,12 +1,10 @@
 // Click functions for the HanabiCard object.
 
-import type { CardIdentity } from "@hanabi-live/game";
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
-import * as hypothetical from "../hypothetical.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -209,23 +207,5 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
 /** Morphing cards allows for creation of hypothetical situations. */
 function clickMorph(card: HanabiCard) {
-  modals.askForMorph(card, globals.variant, globals.cardImages);
-}
-
-export function morphReplayFromModal(
-  card: HanabiCard,
-  cardIdentity: CardIdentity | "original",
-): void {
-  if (cardIdentity === "original") {
-    hypothetical.sendHypotheticalActionToServer({
-      type: "unmorph",
-      order: card.order,
-    });
-  } else {
-    hypothetical.sendHypotheticalActionToServer({
-      type: "morph",
-      order: card.order,
-      identity: { suitIndex: cardIdentity.suitIndex, rank: cardIdentity.rank },
-    });
-  }
+  modals.askForMorph(card.morphTarget(), globals.variant);
 }

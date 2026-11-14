@@ -37,7 +37,6 @@ import { globals } from "../ui/UiGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
-import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as notes from "../ui/notes.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import * as replay from "../ui/replay.ts";
@@ -270,9 +269,11 @@ function getShownIdentities(state: State): readonly CardIdentity[] {
 
 /** In a hypothetical with the cards turned on for editing, a card changes into another. */
 function editCard(order: CardOrder) {
-  const card = getCardOrStackBase(order);
-  if (card !== undefined) {
-    modals.askForMorph(card, globals.variant, globals.cardImages);
+  const state = store.getState().game.current;
+  const target =
+    state === undefined ? undefined : hypothetical.getMorphTarget(state, order);
+  if (target !== undefined) {
+    modals.askForMorph(target, globals.variant);
   }
 }
 

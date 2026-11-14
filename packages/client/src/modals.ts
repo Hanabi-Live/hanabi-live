@@ -1,6 +1,13 @@
 // Modals (boxes that hover on top of the UI).
 
-import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
+import type {
+  CardIdentity,
+  CardOrder,
+  Rank,
+  Suit,
+  SuitRankTuple,
+  Variant,
+} from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { globals } from "./Globals.ts";
@@ -10,9 +17,10 @@ import {
 } from "./closeButton.ts";
 import { START_CARD_RANK_LABEL } from "./constants.ts";
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
+import { getCardImages } from "./game/cardImages.ts";
+import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
-import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
 import type { MessageModal } from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
 import { errorOccurredChanged } from "./sessionSlice.ts";
@@ -139,25 +147,35 @@ export function askForPassword(tableId: number): void {
   showMessageModal({ type: "password", tableId });
 }
 
+/** A card that the morph dialog changes into another card in a hypothetical. */
+export interface MorphTarget {
+  readonly order: CardOrder;
+  /** The identity that the dialog starts with. */
+  readonly identity: CardIdentity;
+  /** The cards that the card can be, which the dialog marks. */
+  readonly possibilities: readonly SuitRankTuple[];
+}
+
+/**
+ * On the classic screen, a card of unknown identity that is dragged in a hypothetical asks for its
+ * identity first. The drag finishes after the dialog closes.
+ */
+export interface MorphDrag {
+  readonly card: HanabiCard;
+  readonly area: "playArea" | "discardArea";
+}
+
 export function askForMorph(
-  card: HanabiCard | undefined,
+  target: MorphTarget,
   variant: Variant,
-  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
-  draggedTo?: DragAreaType,
+  drag?: MorphDrag,
 ): void {
-  morphDragArea = draggedTo;
+  morphDragArea = drag?.area;
   allowCloseModal = false;
 
   const { suits, ranks } = variant;
-  const start =
-    card === undefined
-      ? { suitIndex: undefined, rank: undefined }
-      : card.getMorphedIdentity();
-  const startSuitIndex = start.suitIndex ?? 0;
-  const startRank = start.rank ?? 1;
-
-  const possibilities =
-    card === undefined ? [] : card.state.possibleCardsForEmpathy;
+  const startSuitIndex = target.identity.suitIndex ?? 0;
+  const startRank = target.identity.rank ?? 1;
   const startSuit = suits[startSuitIndex];
   assertDefined(
     startSuit,
@@ -170,8 +188,8 @@ export function askForMorph(
     ranks,
     startSuit,
     startRank,
-    possibilities,
-    cardImages,
+    target.possibilities,
+    getCardImages(variant),
   );
 
   showModal("#morph-modal", false, () => {
@@ -179,52 +197,47 @@ export function askForMorph(
     morphModalTextbox.select();
   });
 
-  if (draggedTo === undefined) {
-    // If action is undefined, the function was called from "HanabiCardClick.ts" during replay hypo.
+  if (drag === undefined) {
     morphModalDescription.textContent =
       "Select the card you want to morph it into.";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     morphModalButtonOk.onclick = () => {
-      morphReplayOkButton(card, variant);
+      morphOkButton(target, variant);
     };
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonCancel.onclick = morphReplayCancelButton;
+    morphModalButtonCancel.onclick = morphCancelButton;
   } else {
-    // The function was called from "LayoutChild.ts" during in-game hypo.
     morphModalDescription.textContent =
       "What will the card will be for the purposes of this hypothetical?";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     morphModalButtonOk.onclick = () => {
-      morphInGameOkButton(card, variant);
+      if (!morphOkButton(target, variant)) {
+        morphDragArea = undefined;
+      }
+      morphFinishDrag(drag.card);
     };
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     morphModalButtonCancel.onclick = () => {
-      morphInGameCancelButton(card);
+      morphCancelButton();
+      morphDragArea = undefined;
+      morphFinishDrag(drag.card);
     };
   }
 }
 
-function morphFinishLayout(card: HanabiCard | undefined) {
-  // Finish drag action.
-  if (card === undefined) {
-    return;
-  }
-
+function morphFinishDrag(card: HanabiCard) {
   card.getLayoutParent().continueDragAction(morphDragArea);
 }
 
-function morphReplayOkButton(
-  card: HanabiCard | undefined,
-  variant: Variant,
-): boolean {
+function morphOkButton(target: MorphTarget, variant: Variant): boolean {
   allowCloseModal = true;
   closeModals();
 
@@ -238,28 +251,13 @@ function morphReplayOkButton(
     return false;
   }
 
-  morphReplayFromModal(card!, cardIdentity);
+  morphCard(target.order, cardIdentity);
   return true;
 }
 
-function morphInGameOkButton(card: HanabiCard | undefined, variant: Variant) {
-  const success = morphReplayOkButton(card, variant);
-  if (!success) {
-    morphDragArea = undefined;
-  }
-
-  morphFinishLayout(card);
-}
-
-function morphReplayCancelButton() {
+function morphCancelButton() {
   allowCloseModal = true;
   closeModals();
-}
-
-function morphInGameCancelButton(card: HanabiCard | undefined) {
-  morphReplayCancelButton();
-  morphDragArea = undefined;
-  morphFinishLayout(card);
 }
 
 export function showWarning(msg: string): void {

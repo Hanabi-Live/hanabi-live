@@ -63,9 +63,8 @@ vi.mock("./Globals.ts", () => ({
   globals: { errorOccurred: false, lastActiveElement: undefined },
 }));
 vi.mock("./game/reducers/noteIdentity.ts", () => ({}));
-vi.mock("./game/ui/HanabiCardClick.ts", () => ({
-  morphReplayFromModal: vi.fn(),
-}));
+vi.mock("./game/hypothetical.ts", () => ({ morphCard: vi.fn() }));
+vi.mock("./game/cardImages.ts", () => ({ getCardImages: vi.fn() }));
 
 function getMessageModal() {
   return dom.window.document.querySelector("#message-modal");

@@ -3,6 +3,7 @@
 
 import type { ClientRequestData } from "@hanabi-live/data";
 import type {
+  CardIdentity,
   CardOrder,
   HypotheticalActionIntent,
   HypotheticalCardView,
@@ -10,10 +11,12 @@ import type {
 import {
   getCardIdentityToShow,
   getClueCost,
+  getHypotheticalCard,
   getVariantById,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { globals } from "../Globals.ts";
+import type { MorphTarget } from "../modals.ts";
 import { store } from "../store.ts";
 import { toWireHypotheticalAction } from "../wire.ts";
 import { controlsHypothetical } from "./controlsHypothetical.ts";
@@ -227,9 +230,9 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
   }
 }
 
-export function sendHypotheticalActionToServer(
+function sendHypotheticalActionToServer(
   hypoAction: ActionIncludingHypothetical,
-): void {
+) {
   if (getState().replay.ownHypothetical === undefined) {
     sendControl({
       type: "event",
@@ -284,4 +287,51 @@ export function toggleRevealed(): void {
       show: !hypothetical.showDrawnCards,
     });
   }
+}
+
+/** Changes a card into another card in the hypothetical, or back into its own identity. */
+export function morphCard(
+  order: CardOrder,
+  identity: CardIdentity | "original",
+): void {
+  sendHypotheticalActionToServer(
+    identity === "original"
+      ? { type: "unmorph", order }
+      : {
+          type: "morph",
+          order,
+          identity: { suitIndex: identity.suitIndex, rank: identity.rank },
+        },
+  );
+}
+
+/** A card in a hand, as the morph dialog starts with it. */
+export function getMorphTarget(
+  state: State,
+  order: CardOrder,
+): MorphTarget | undefined {
+  const cardState = state.visibleState?.deck[order];
+  const note = state.notes.ourNotes[order];
+  if (cardState === undefined || note === undefined) {
+    return undefined;
+  }
+
+  const { identity } = getHypotheticalCard({
+    state: cardState,
+    identity: state.cardIdentities[order] ?? {
+      suitIndex: undefined,
+      rank: undefined,
+    },
+    morphedIdentity: state.replay.hypothetical?.morphedIdentities[order],
+    note,
+    playing: state.playing,
+    isStackBase: false,
+    visibleSuitIndex: undefined,
+    visibleRank: undefined,
+  });
+  return {
+    order,
+    identity,
+    possibilities: cardState.possibleCardsForEmpathy,
+  };
 }

@@ -2,16 +2,14 @@ import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
-import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
+import { getCardImages } from "../cardImages.ts";
 import { globals } from "./UiGlobals.ts";
 import {
   LABEL_COLOR,
   RANK_FONT_FAMILY,
   STROKE_WIDTH_UNIT,
 } from "./constants.ts";
-import { drawCards } from "./drawCards.ts";
-import * as drawCardsBrowser from "./drawCardsBrowser.ts";
 import { drawUi } from "./drawUi.ts";
 import * as keyboard from "./keyboard.ts";
 
@@ -116,13 +114,7 @@ function showImageLoadError(filePath: string) {
 function finishedDownloadingImages() {
   // Build images for every card (with respect to the variant that we are playing and whether or not
   // we have the colorblind UI feature enabled).
-  globals.cardImages = drawCards(
-    globals.variant,
-    store.getState().session.settings.colorblindMode,
-    store.getState().session.settings.styleNumbers,
-    true,
-    drawCardsBrowser.cardRendererBackend,
-  );
+  globals.cardImages = getCardImages(globals.variant);
 
   // Draw the user interface.
   drawUi();

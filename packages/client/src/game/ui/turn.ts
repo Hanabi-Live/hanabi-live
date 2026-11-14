@@ -124,9 +124,9 @@ export function end(clientAction: ClientAction): void {
   }
 }
 
+/** On the classic screen, shows that the move is on its way. The New UI has no such animation. */
 function showWaitingOnServerAnimation() {
-  globals.elements.clueArea!.hide();
-
-  globals.elements.waitingOnServer!.show();
-  globals.elements.waitingOnServerAnimation!.start();
+  globals.elements.clueArea?.hide();
+  globals.elements.waitingOnServer?.show();
+  globals.elements.waitingOnServerAnimation?.start();
 }

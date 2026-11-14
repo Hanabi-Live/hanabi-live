@@ -36,6 +36,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import type { MorphTarget } from "../../modals.ts";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
@@ -536,6 +537,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     return globals.state.cardIdentities[this.order]!;
+  }
+
+  /** The card as the morph dialog starts with it. */
+  morphTarget(): MorphTarget {
+    return {
+      order: this.order,
+      identity: this.getMorphedIdentity(),
+      possibilities: this.state.possibleCardsForEmpathy,
+    };
   }
 
   getMorphedPossibilities(): readonly SuitRankTuple[] {
