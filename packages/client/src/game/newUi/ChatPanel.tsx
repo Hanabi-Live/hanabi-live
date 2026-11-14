@@ -30,10 +30,10 @@ const BORROWED_CHAT_BOX_CLASSES = [
   "tw:pt-3",
   // The "is typing" note goes in the space below the chat box, so the box leaves room for it.
   "tw:pb-[26px]",
-  // The site's text is 16pt, which fits only a few words on each line of the narrow panel. The text
-  // box sets its own size, so it gets the same size too.
-  "tw:text-base",
-  "tw:[&_input]:text-base",
+  // The site's text size changes with the window width, and at its largest it fits only a few words
+  // on each line of the narrow panel. The text box sets its own size, so it gets the same size too.
+  "tw:text-lg",
+  "tw:[&_input]:text-lg",
   "tw:rounded-none",
   "tw:bg-transparent",
   "tw:shadow-none",
