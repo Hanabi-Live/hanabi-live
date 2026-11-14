@@ -59,12 +59,6 @@ const ICON_BUTTON_SIZE_CLASS = {
 } as const;
 
 /**
- * The bar's buttons, kept together on the right. On a narrow window, they take a row of their own.
- */
-const ACTIONS_CLASS =
-  "tw:ml-auto tw:flex tw:flex-wrap tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:w-full tw:narrow-980:*:flex-1";
-
-/**
  * The panel that holds a bar. On a narrow window, the page scrolls, so the bar goes above the
  * hands, where it is in view.
  */
@@ -301,42 +295,6 @@ export function Checkbox({
   );
 }
 
-/** A button that stays pressed while its setting is on, with a check box to show it. */
-function ToggleButton({
-  label,
-  pressed,
-  icon,
-  disabled = false,
-  tooltip,
-  onClick,
-}: {
-  readonly label: string;
-  readonly pressed: boolean;
-  /** An icon between the check box and the label, such as the leader's crown. */
-  readonly icon?: string;
-  readonly disabled?: boolean;
-  /** What the button does, in the site's tooltip. */
-  readonly tooltip: string;
-  readonly onClick: () => void;
-}): React.JSX.Element {
-  return (
-    <button
-      aria-pressed={pressed}
-      className={BUTTON_CLASS}
-      disabled={disabled}
-      onClick={onClick}
-      ref={tooltipRef(tooltip)}
-      type="button"
-    >
-      <Checkbox checked={pressed} />
-      {icon !== undefined && (
-        <i aria-hidden="true" className={`fas ${icon} tw:text-game-replay`} />
-      )}
-      {label}
-    </button>
-  );
-}
-
 /**
  * A spectator's way back to the shared replay leader, after a step through the turns stops them
  * from following. It shows only then: while they follow the leader, they have nothing to do.
@@ -370,7 +328,86 @@ function SyncButton({
   );
 }
 
-function HypotheticalBar({
+/**
+ * A spectator's bar while the leader tries other moves. The leader's menu and the button to follow
+ * the leader again are where the bar of the turns has them, so that they do not move when a click
+ * on the button goes back to that bar. The menu names who leads, so the heading does not.
+ */
+function SpectatorHypotheticalBar({
+  state,
+}: {
+  readonly state: State;
+}): React.JSX.Element {
+  return (
+    <Bar>
+      <div className={ROWS_CLASS}>
+        <LeaderControls state={state} />
+        {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
+        <div
+          className={`tw:flex tw:items-center tw:justify-center tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
+        >
+          <Heading
+            icon="fa-flask"
+            label="Shared hypothetical"
+            mode="hypothetical"
+          />
+        </div>
+      </div>
+    </Bar>
+  );
+}
+
+/**
+ * A smaller button for the corner of the clue panel, so that the hypothetical's buttons fit beside
+ * the players.
+ */
+const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:h-9 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:text-[14px] tw:font-semibold tw:whitespace-nowrap tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
+
+const HYPOTHETICAL_BUTTON_CLASS = `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:text-game-text tw:hover:bg-white/15 tw:disabled:hover:bg-white/8`;
+
+/** A button that stays pressed while its setting is on. It is lit while pressed. */
+function IconToggle({
+  label,
+  icon,
+  pressed,
+  disabled = false,
+  tooltip,
+  onClick,
+}: {
+  readonly label: string;
+  readonly icon: string;
+  readonly pressed: boolean;
+  readonly disabled?: boolean;
+  /** What the button does, in the site's tooltip. */
+  readonly tooltip: string;
+  readonly onClick: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      aria-label={label}
+      aria-pressed={pressed}
+      className={
+        pressed
+          ? `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-text tw:text-card-ink tw:hover:bg-white`
+          : HYPOTHETICAL_BUTTON_CLASS
+      }
+      disabled={disabled}
+      onClick={onClick}
+      ref={tooltipRef(`${label}: ${tooltip}`)}
+      type="button"
+    >
+      <i aria-hidden="true" className={`fas ${icon}`} />
+    </button>
+  );
+}
+
+/**
+ * The buttons of a hypothetical that we control. They are in the top-right corner of the clue
+ * panel, which takes the place of the replay bar, so that the hands keep their size. The last one
+ * is lit violet, the color of the mode, and leaves it. It is in the place of the button that
+ * entered it.
+ */
+export function HypotheticalActions({
   state,
   editingCards,
   onToggleEditCards,
@@ -381,79 +418,61 @@ function HypotheticalBar({
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical!;
 
-  // A spectator watches the leader's hypothetical. The leader's menu and the button to follow the
-  // leader again are where the bar of the turns has them, so that they do not move when a click on
-  // the button goes back to that bar. The menu names who leads, so the heading does not.
-  if (!controlsHypothetical(state)) {
-    return (
-      <Bar>
-        <div className={ROWS_CLASS}>
-          <LeaderControls state={state} />
-          {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
-          <div
-            className={`tw:flex tw:items-center tw:justify-center tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
-          >
-            <Heading
-              icon="fa-flask"
-              label="Shared hypothetical"
-              mode="hypothetical"
-            />
-          </div>
-        </div>
-      </Bar>
-    );
-  }
-
   // A hypothetical in a shared replay is the leader's, like the replay around it, and here we lead.
-  const label =
+  const name =
     state.replay.shared !== undefined
     && state.replay.ownHypothetical === undefined
-      ? "Shared hypothetical: you lead"
-      : "Hypothetical";
+      ? "the shared hypothetical, which you lead"
+      : "the hypothetical";
 
   return (
-    <Bar>
-      <Heading icon="fa-flask" label={label} mode="hypothetical" />
-      <div className={ACTIONS_CLASS}>
-        <IconButton
-          disabled={hypo.states.length <= 1}
-          icon="fa-undo"
-          label="Back a turn in the hypothetical"
-          onClick={hypothetical.sendHypotheticalBack}
-        />
-        <button
-          className={BUTTON_CLASS}
-          disabled={!hypothetical.canPassTurnInHypothetical(state)}
-          onClick={hypothetical.sendHypotheticalPassTurn}
-          ref={tooltipRef(
-            "Spend a clue to pass the turn to the next player without giving a clue.",
-          )}
-          type="button"
-        >
-          Pass
-        </button>
-        <ToggleButton
-          disabled={!canToggleDrawnCards(state)}
-          label="Show drawn cards"
-          onClick={hypothetical.toggleRevealed}
-          pressed={hypo.showDrawnCards}
-          tooltip="Show the faces of the cards drawn during the hypothetical."
-        />
-        <ToggleButton
-          label="Edit cards"
-          onClick={onToggleEditCards}
-          pressed={editingCards}
-          tooltip="While this is on, click a card in a hand to change it into another card."
-        />
-        <button
-          className={PRIMARY_BUTTON_CLASS}
-          onClick={hypothetical.endHypothetical}
-          type="button"
-        >
-          Exit hypothetical
-        </button>
-      </div>
-    </Bar>
+    <>
+      <button
+        aria-label="Back a turn in the hypothetical"
+        className={HYPOTHETICAL_BUTTON_CLASS}
+        disabled={hypo.states.length <= 1}
+        onClick={hypothetical.sendHypotheticalBack}
+        ref={tooltipRef("Back a turn in the hypothetical")}
+        type="button"
+      >
+        <i aria-hidden="true" className="fas fa-undo" />
+      </button>
+      <button
+        className={HYPOTHETICAL_BUTTON_CLASS}
+        disabled={!hypothetical.canPassTurnInHypothetical(state)}
+        onClick={hypothetical.sendHypotheticalPassTurn}
+        ref={tooltipRef(
+          "Spend a clue to pass the turn to the next player without giving a clue.",
+        )}
+        type="button"
+      >
+        Pass
+      </button>
+      <IconToggle
+        disabled={!canToggleDrawnCards(state)}
+        icon="fa-eye"
+        label="Show drawn cards"
+        onClick={hypothetical.toggleRevealed}
+        pressed={hypo.showDrawnCards}
+        tooltip="Show the faces of the cards drawn during the hypothetical."
+      />
+      <IconToggle
+        icon="fa-pen"
+        label="Edit cards"
+        onClick={onToggleEditCards}
+        pressed={editingCards}
+        tooltip="While this is on, click a card in a hand to change it into another card."
+      />
+      <button
+        aria-label="Exit hypothetical"
+        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-hypothetical/30 tw:text-game-hypothetical tw:inset-ring-1 tw:inset-ring-game-hypothetical tw:hover:bg-game-hypothetical/45`}
+        onClick={hypothetical.endHypothetical}
+        ref={tooltipRef(`Exit ${name}.`)}
+        type="button"
+      >
+        <i aria-hidden="true" className="fas fa-flask" />
+      </button>
+    </>
   );
 }
 
@@ -463,12 +482,8 @@ function HypotheticalBar({
  */
 export function ReplayBar({
   state,
-  editingCards,
-  onToggleEditCards,
 }: {
   readonly state: State;
-  readonly editingCards: boolean;
-  readonly onToggleEditCards: () => void;
 }): React.JSX.Element | undefined {
   const { replay: replayState, finished, visibleState } = state;
   if (
@@ -478,13 +493,10 @@ export function ReplayBar({
     return undefined;
   }
 
+  // The clue panel holds the buttons of a hypothetical that we control.
   if (replayState.hypothetical !== undefined) {
-    return (
-      <HypotheticalBar
-        editingCards={editingCards}
-        onToggleEditCards={onToggleEditCards}
-        state={state}
-      />
+    return controlsHypothetical(state) ? undefined : (
+      <SpectatorHypotheticalBar state={state} />
     );
   }
 

@@ -36,7 +36,7 @@ import {
 } from "./Hands.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
-import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
+import { HypotheticalActions, ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
@@ -623,8 +623,8 @@ export function GameScreen({
                   the top of the slot. A finished game has no clue panel, so its slot is only as
                   tall as the replay bar, and the hands get the rest. A spectator's hypothetical bar
                   is shorter, so a hidden replay bar holds its space too, and the switch to follow
-                  the leader stays in its place. Only a hypothetical with both moves them: its bar
-                  is the lower one, so that it stays where it is in a replay.
+                  the leader stays in its place. In a hypothetical that we control, the clue panel
+                  takes the place of the replay bar and holds the hypothetical's buttons.
                   On a narrow window, the page scrolls and the controls go above the hands, with
                   the replay bar first. */}
               <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
@@ -646,7 +646,7 @@ export function GameScreen({
                     />
                   </div>
                 )}
-                {(!showReplayBar || (hypo !== undefined && !showCluePanel)) && (
+                {(!showReplayBar || hypo !== undefined) && (
                   <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
                     <TurnsBar state={state} />
                   </div>
@@ -654,6 +654,17 @@ export function GameScreen({
                 {showCluePanel && (
                   <div className="tw:grid tw:[grid-area:1/1]">
                     <CluePanel
+                      actions={
+                        hypo === undefined ? undefined : (
+                          <HypotheticalActions
+                            editingCards={editingCards}
+                            onToggleEditCards={() => {
+                              setEditingCards(!editingCards);
+                            }}
+                            state={state}
+                          />
+                        )
+                      }
                       canClue={canClue}
                       canGive={canGive}
                       clue={clue}
@@ -677,17 +688,9 @@ export function GameScreen({
                     {pausedBy} paused the game.
                   </div>
                 )}
-                {showReplayBar && (
-                  <div
-                    className={`tw:grid tw:self-start tw:narrow-980:-order-1 ${hypo !== undefined && showCluePanel ? "" : "tw:[grid-area:1/1]"}`}
-                  >
-                    <ReplayBar
-                      editingCards={editingCards}
-                      onToggleEditCards={() => {
-                        setEditingCards(!editingCards);
-                      }}
-                      state={state}
-                    />
+                {showReplayBar && (hypo === undefined || !showCluePanel) && (
+                  <div className="tw:grid tw:self-start tw:[grid-area:1/1] tw:narrow-980:-order-1">
+                    <ReplayBar state={state} />
                   </div>
                 )}
               </div>

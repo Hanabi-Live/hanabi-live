@@ -35,6 +35,12 @@ interface CluePanelProps {
   /** Whether the chosen clue touches no cards in the chosen hand, and the rules forbid that. */
   readonly clueTouchesNothing: boolean;
   readonly onGive: () => void;
+
+  /**
+   * Buttons for the top-right corner, such as those of a hypothetical. They stay usable while the
+   * viewer cannot clue.
+   */
+  readonly actions?: React.ReactNode;
 }
 
 function isSameClue(a: Clue | undefined, b: Clue): boolean {
@@ -127,8 +133,121 @@ export function CluePanel({
   canGive,
   clueTouchesNothing,
   onGive,
+  actions,
 }: CluePanelProps): React.JSX.Element {
   const label = getGiveButtonLabel(target, clue, clueTouchesNothing);
+
+  const hiddenClass = canClue ? "" : "tw:invisible tw:narrow-980:hidden";
+
+  const targetButtons = (
+    <>
+      {/* With one other player, such as in a 2-player game, the clue can only go to them, and
+          their hand stands out, so the panel shows only the clues. */}
+      {targets.length > 1 && (
+        // At narrow widths, the players take a row of their own above the clues.
+        <div
+          aria-label="Player to clue"
+          className="tw:mr-2 tw:flex tw:flex-wrap tw:gap-2 tw:narrow-980:mr-0 tw:narrow-980:w-full"
+          role="group"
+        >
+          {targets.map(({ playerIndex, name }) => {
+            const chosen = playerIndex === target;
+            return (
+              <button
+                aria-pressed={chosen}
+                className={`${KEY_CLASS} tw:h-11 tw:max-w-40 tw:cursor-pointer tw:truncate tw:rounded-full tw:border-0 tw:px-4 tw:text-[16px] tw:font-semibold ${
+                  chosen
+                    ? "tw:bg-game-text tw:text-card-ink"
+                    : "tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
+                }`}
+                key={playerIndex}
+                onClick={() => {
+                  onChooseTarget(chosen ? undefined : playerIndex);
+                }}
+                ref={fullNameTooltip(name)}
+                type="button"
+              >
+                {name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+
+  const clueButtons = (
+    <>
+      {/* The colors are on one row and the ranks below them, as on the classic screen, with
+          "Give clue" beside both. On a narrow window, "Give clue" goes below them. */}
+      <div className="tw:flex tw:flex-auto tw:gap-3 tw:narrow-980:flex-col">
+        <div className="tw:flex tw:flex-auto tw:flex-col tw:gap-2">
+          <div className="tw:flex tw:flex-wrap tw:gap-2">
+            {variant.clueColors.map((color) => {
+              const colorClue = newColorClue(color);
+              const pressed = isSameClue(clue, colorClue);
+              return (
+                <button
+                  aria-label={color.name}
+                  aria-pressed={pressed}
+                  className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
+                  key={color.name}
+                  onClick={() => {
+                    onChooseClue(pressed ? undefined : colorClue);
+                  }}
+                  ref={tooltipRef(color.name)}
+                  style={{
+                    background: colorblindMode
+                      ? color.fillColorblind
+                      : color.fill,
+                  }}
+                  type="button"
+                />
+              );
+            })}
+          </div>
+          <div className="tw:flex tw:flex-wrap tw:gap-2">
+            {variant.clueRanks.map((rank) => {
+              const rankClue = newRankClue(rank);
+              const pressed = isSameClue(clue, rankClue);
+              return (
+                <button
+                  aria-pressed={pressed}
+                  className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+                  key={rank}
+                  onClick={() => {
+                    onChooseClue(pressed ? undefined : rankClue);
+                  }}
+                  type="button"
+                >
+                  {getRankLabel(rank)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button
+          className={`tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+          disabled={!canGive}
+          onClick={onGive}
+          type="button"
+        >
+          {/* Every label sits in the same cell, so the button is as wide as the longest one and
+              does not change size as the player chooses. */}
+          <span className="tw:grid tw:items-center">
+            {getGiveButtonLabels(variant).map((buttonLabel) => (
+              <span
+                className={`tw:[grid-area:1/1] ${buttonLabel === label ? "" : "tw:invisible"}`}
+                key={buttonLabel}
+              >
+                {buttonLabel}
+              </span>
+            ))}
+          </span>
+        </button>
+      </div>
+    </>
+  );
 
   // While the viewer cannot clue, the buttons keep their place, hidden behind the reason. So the
   // panel is the same size on every turn, and the hands above it do not change size. On a narrow
@@ -147,110 +266,27 @@ export function CluePanel({
           {waitingText}
         </div>
       )}
-      <div
-        className={`tw:contents ${canClue ? "" : "tw:invisible tw:narrow-980:hidden"}`}
-      >
-        {/* With one other player, such as in a 2-player game, the clue can only go to them, and
-            their hand stands out, so the panel shows only the clues. */}
-        {targets.length > 1 && (
-          // At narrow widths, the players take a row of their own above the clues.
-          <div
-            aria-label="Player to clue"
-            className="tw:mr-2 tw:flex tw:flex-wrap tw:gap-2 tw:narrow-980:mr-0 tw:narrow-980:w-full"
-            role="group"
-          >
-            {targets.map(({ playerIndex, name }) => {
-              const chosen = playerIndex === target;
-              return (
-                <button
-                  aria-pressed={chosen}
-                  className={`${KEY_CLASS} tw:h-11 tw:max-w-40 tw:cursor-pointer tw:truncate tw:rounded-full tw:border-0 tw:px-4 tw:text-[16px] tw:font-semibold ${
-                    chosen
-                      ? "tw:bg-game-text tw:text-card-ink"
-                      : "tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
-                  }`}
-                  key={playerIndex}
-                  onClick={() => {
-                    onChooseTarget(chosen ? undefined : playerIndex);
-                  }}
-                  ref={fullNameTooltip(name)}
-                  type="button"
-                >
-                  {name}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        {/* The colors are on one row and the ranks below them, as on the classic screen, with
-      "Give clue" beside both. On a narrow window, "Give clue" goes below them. */}
-        <div className="tw:flex tw:flex-auto tw:gap-3 tw:narrow-980:flex-col">
-          <div className="tw:flex tw:flex-auto tw:flex-col tw:gap-2">
-            <div className="tw:flex tw:flex-wrap tw:gap-2">
-              {variant.clueColors.map((color) => {
-                const colorClue = newColorClue(color);
-                const pressed = isSameClue(clue, colorClue);
-                return (
-                  <button
-                    aria-label={color.name}
-                    aria-pressed={pressed}
-                    className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
-                    key={color.name}
-                    onClick={() => {
-                      onChooseClue(pressed ? undefined : colorClue);
-                    }}
-                    ref={tooltipRef(color.name)}
-                    style={{
-                      background: colorblindMode
-                        ? color.fillColorblind
-                        : color.fill,
-                    }}
-                    type="button"
-                  />
-                );
-              })}
-            </div>
-            <div className="tw:flex tw:flex-wrap tw:gap-2">
-              {variant.clueRanks.map((rank) => {
-                const rankClue = newRankClue(rank);
-                const pressed = isSameClue(clue, rankClue);
-                return (
-                  <button
-                    aria-pressed={pressed}
-                    className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
-                    key={rank}
-                    onClick={() => {
-                      onChooseClue(pressed ? undefined : rankClue);
-                    }}
-                    type="button"
-                  >
-                    {getRankLabel(rank)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <button
-            className={`tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
-            disabled={!canGive}
-            onClick={onGive}
-            type="button"
-          >
-            {/* Every label sits in the same cell, so the button is as wide as the longest one and
-                does not change size as the player chooses. */}
-            <span className="tw:grid tw:items-center">
-              {getGiveButtonLabels(variant).map((buttonLabel) => (
-                <span
-                  className={`tw:[grid-area:1/1] ${buttonLabel === label ? "" : "tw:invisible"}`}
-                  key={buttonLabel}
-                >
-                  {buttonLabel}
-                </span>
-              ))}
-            </span>
-          </button>
+      {actions === undefined ? (
+        <div className={`tw:contents ${hiddenClass}`}>
+          {targetButtons}
+          {clueButtons}
         </div>
-      </div>
+      ) : (
+        <>
+          {/* The players are on the left of the actions, and the clues are below both. On a
+              narrow window, the actions go first, so that they stay above the reason. */}
+          <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-2.5 tw:narrow-980:order-first">
+            <div className={`tw:flex-1 tw:empty:hidden ${hiddenClass}`}>
+              {targetButtons}
+            </div>
+            {/* Over the reason, which covers the panel, so that the buttons can be clicked. */}
+            <div className="tw:relative tw:ml-auto tw:flex tw:flex-wrap tw:justify-end tw:gap-2 tw:narrow-980:w-full tw:narrow-980:*:flex-1">
+              {actions}
+            </div>
+          </div>
+          <div className={`tw:contents ${hiddenClass}`}>{clueButtons}</div>
+        </>
+      )}
     </section>
   );
 }

@@ -1146,16 +1146,15 @@ function getStates(): readonly State[] {
         );
       },
     },
-    // A hypothetical that the account leads, from the first turn, after a player plays a card in
-    // it, with "Edit cards" on.
+    // A hypothetical that the account leads in a five-player game, from the first turn, after a
+    // player plays a card in it.
     {
       name: "new-ui-hypothetical",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame();
-        await game.playAndMisplay();
+        await cast.startBobsGame(5);
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
@@ -1179,7 +1178,6 @@ function getStates(): readonly State[] {
         await page
           .locator("#game-new-ui [data-turn]", { hasText: /^2$/u })
           .waitFor();
-        await page.getByRole("button", { name: "Edit cards" }).click();
         await settle(page);
       },
     },
