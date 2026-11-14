@@ -313,8 +313,49 @@ function StatusBadge({
         boxShadow: "0 0 0 1.5px white",
       }}
     >
-      {critical ? "!" : <i aria-hidden="true" className="fas fa-trash-alt" />}
+      {critical ? (
+        <ExclamationMark />
+      ) : (
+        <i aria-hidden="true" className="fas fa-trash-alt" />
+      )}
     </span>
+  );
+}
+
+/**
+ * The exclamation mark in the badge of a critical card, in the badge's box of 100 units. It is
+ * drawn rather than typed, so that a wide gap keeps the dot apart from the bar, as on the classic
+ * screen. Otherwise, the mark looks like a line on a small card.
+ */
+const EXCLAMATION_MARK = {
+  barTop: 17,
+  barBottom: 55,
+  barTopHalfWidth: 9,
+  barBottomHalfWidth: 6,
+  dotY: 77,
+  dotRadius: 9,
+} as const;
+
+function ExclamationMark(): React.JSX.Element {
+  const {
+    barTop,
+    barBottom,
+    barTopHalfWidth,
+    barBottomHalfWidth,
+    dotY,
+    dotRadius,
+  } = EXCLAMATION_MARK;
+  return (
+    <svg aria-hidden="true" className="tw:size-full" viewBox="0 0 100 100">
+      {/* A bar that narrows toward the dot. A thin stroke rounds its corners. */}
+      <path
+        className="tw:fill-white tw:stroke-white"
+        d={`M ${50 - barTopHalfWidth} ${barTop} H ${50 + barTopHalfWidth} L ${50 + barBottomHalfWidth} ${barBottom} H ${50 - barBottomHalfWidth} Z`}
+        strokeLinejoin="round"
+        strokeWidth={4}
+      />
+      <circle className="tw:fill-white" cx={50} cy={dotY} r={dotRadius} />
+    </svg>
   );
 }
 
