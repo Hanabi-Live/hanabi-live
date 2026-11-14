@@ -26,10 +26,12 @@ function entry(
 function renderLog(
   entries: readonly ClueLogEntry[],
   pressedCard: number | undefined,
+  hoveredCard?: number,
 ) {
   render(
     <ClueLog
       entries={entries}
+      hoveredCard={hoveredCard as CardOrder | undefined}
       onShowClue={onShowClue}
       pressedCard={pressedCard as CardOrder | undefined}
       shownSegment={undefined}
@@ -80,6 +82,20 @@ describe("ClueLog", () => {
         (item) => within(item).queryByLabelText(/did not touch it$/u) !== null,
       );
     expect(missed).toEqual([true, false]);
+  });
+
+  test("marks the clues about the hovered card and keeps the others", () => {
+    renderLog(entries, undefined, 2);
+    expect(getTurns()).toEqual(["#1", "#2", "#3"]);
+    const labels = screen.getAllByRole("listitem").map((item) => {
+      if (within(item).queryByLabelText(/did not touch it$/u) !== null) {
+        return "missed";
+      }
+      return within(item).queryByLabelText(/touched it$/u) === null
+        ? "none"
+        : "touched";
+    });
+    expect(labels).toEqual(["missed", "none", "touched"]);
   });
 
   test("says when no clue is about the pressed card", () => {

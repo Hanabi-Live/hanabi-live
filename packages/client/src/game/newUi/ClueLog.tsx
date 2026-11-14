@@ -26,14 +26,14 @@ const NAME_FONT_SIZE = 14;
 /** How a clue relates to the card that the mouse button is held on. */
 type Match = "none" | "positive" | "negative";
 
-/** The background of a row in the filtered log, for each match. */
+/** The background of a row about a hovered or pressed card, for each match. */
 const MATCH_BACKGROUND = {
   none: "",
-  positive: "tw:bg-[rgb(74_222_128/16%)] tw:hover:bg-[rgb(74_222_128/26%)]",
-  negative: "tw:bg-[rgb(248_113_113/16%)] tw:hover:bg-[rgb(248_113_113/26%)]",
+  positive: "tw:bg-[rgb(74_222_128/40%)] tw:hover:bg-[rgb(74_222_128/52%)]",
+  negative: "tw:bg-[rgb(248_113_113/40%)] tw:hover:bg-[rgb(248_113_113/52%)]",
 } as const satisfies Record<Match, string>;
 
-/** What the label of a clue in the filtered log adds, for each match. */
+/** What the label of a clue about a hovered or pressed card adds, for each match. */
 const MATCH_LABEL_SUFFIX = {
   none: "",
   positive: ", touched it",
@@ -85,15 +85,17 @@ function getClueText(entry: ClueLogEntry): string {
  * name that is too long for its column is made smaller to fit, not cut off. Each one is a button
  * that shows the turn after it. The clue of the turn on screen stands out.
  *
- * While the mouse button is held down on a card in a hand, the log shows only the clues about that
- * card: the ones that touched it (on green), and the ones to its hand that did not (on red). So all
- * of them fit, however old the card is. It does not filter on hover, so that the log does not
- * change as the mouse passes over the hands.
+ * While the mouse is over a card in a hand, the clues about that card stand out, as on the classic
+ * screen: the ones that touched it (on green), and the ones to its hand that did not (on red). The
+ * other clues stay, so that the log does not jump as the mouse passes over the hands. While the
+ * mouse button is held down on a card, the log shows only the clues about it, so that all of them
+ * fit, however old the card is.
  */
 export function ClueLog({
   entries,
   shownSegment,
   pressedCard,
+  hoveredCard,
   onShowClue,
 }: {
   readonly entries: readonly ClueLogEntry[];
@@ -101,6 +103,8 @@ export function ClueLog({
   readonly shownSegment: number | undefined;
   /** The card in a hand that the mouse button is held down on, if any. */
   readonly pressedCard: CardOrder | undefined;
+  /** The card in a hand that the mouse is over, if any. */
+  readonly hoveredCard: CardOrder | undefined;
   readonly onShowClue: (segment: number) => void;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
@@ -117,7 +121,10 @@ export function ClueLog({
 
   const filtered = pressedCard !== undefined;
   const rows = entries
-    .map((entry) => ({ entry, match: getMatch(entry, pressedCard) }))
+    .map((entry) => ({
+      entry,
+      match: getMatch(entry, pressedCard ?? hoveredCard),
+    }))
     .filter(({ match }) => !filtered || match !== "none");
 
   // Keep the newest clue in view, unless the viewer scrolled back in the full log.

@@ -733,6 +733,7 @@ export function GameScreen({
   // The card that the mouse button is held down on, for the clue log. Releasing it anywhere ends
   // the press, even after the pointer moved off the card, such as in a drag.
   const [pressedCard, setPressedCard] = useState<CardOrder>();
+  const [hoveredCard, setHoveredCard] = useState<CardOrder>();
   useEffect(() => {
     function release() {
       setPressedCard(undefined);
@@ -1148,6 +1149,12 @@ export function GameScreen({
     empathyPlayers,
     globalEmpathy && globalEmpathyNotes,
   );
+  /** The card, if it is still in a hand. */
+  function inHands(order: CardOrder | undefined): CardOrder | undefined {
+    return seats.some((seat) => seat.cards.some((card) => card.order === order))
+      ? order
+      : undefined;
+  }
   const shownClue = getClueForTurn(visibleState);
   const stacks = getStacks(state);
   const discardRows = getDiscardRows(state);
@@ -1471,6 +1478,7 @@ export function GameScreen({
                   }}
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
+                  onHoverCard={setHoveredCard}
                   onPlay={(order) => {
                     setMenuCard(undefined);
                     sendAction({ type: "play", order });
@@ -1600,16 +1608,11 @@ export function GameScreen({
               />
               <ClueLog
                 entries={getClueLogEntries(state)}
+                // A card that left the hands while hovered or pressed, such as one just played, no
+                // longer counts.
+                hoveredCard={inHands(hoveredCard)}
                 onShowClue={showClue}
-                // A card that left the hands while pressed, such as one just played, no longer
-                // counts.
-                pressedCard={
-                  seats.some((seat) =>
-                    seat.cards.some((card) => card.order === pressedCard),
-                  )
-                    ? pressedCard
-                    : undefined
-                }
+                pressedCard={inHands(pressedCard)}
                 shownSegment={shownClue?.segment}
               />
             </div>

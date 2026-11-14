@@ -67,6 +67,8 @@ of the repository.
   a spectator can make themselves the leader.
 - In the new game screen, the hands are centered between the play stacks and the
   discard pile.
+- In the new game screen, hovering over a card in a hand colors the clues about
+  it in the clue log, as in the classic screen.
 
 ## November 12th, 2026
 

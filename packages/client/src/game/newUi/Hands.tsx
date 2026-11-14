@@ -123,6 +123,12 @@ interface HandsProps {
 
   /** The mouse button went down on a card in a hand (the clue log then shows its clues). */
   readonly onPressCard: (order: CardOrder) => void;
+
+  /**
+   * The mouse moved onto a card in a hand, or off the cards (`undefined`). The clue log then
+   * highlights the clues about the card. A touch screen has no hover, so a tap does not count.
+   */
+  readonly onHoverCard: (order: CardOrder | undefined) => void;
 }
 
 /**
@@ -852,6 +858,14 @@ export function Hands(props: HandsProps): React.JSX.Element {
         const order = getCardOrderAt(event.target);
         if (event.button === 0 && order !== undefined) {
           props.onPressCard(order);
+        }
+      }}
+      onPointerLeave={() => {
+        props.onHoverCard(undefined);
+      }}
+      onPointerOver={(event) => {
+        if (event.pointerType === "mouse") {
+          props.onHoverCard(getCardOrderAt(event.target));
         }
       }}
     >
