@@ -11,9 +11,6 @@ export const hanabiConfigBase = defineConfig(
 
   {
     rules: {
-      // Insert changed or disabled rules here, if necessary.
-      // @template-customization-start
-
       // Properties follow a meaningful order, such as `x, y, w, h` for geometry, not alphabetical
       // order.
       "complete/sort-objects": "off",
@@ -76,7 +73,11 @@ export const hanabiConfigBase = defineConfig(
       // Preserve the existing grouping of fractional drawing coordinates.
       "unicorn/numeric-separators-style": [
         "error",
-        { number: { fractionGroupLength: 3 } },
+        {
+          number: {
+            fractionGroupLength: 3,
+          },
+        },
       ],
 
       // Promise callbacks are used for fire-and-forget operations and CommonJS entry points.
@@ -107,12 +108,8 @@ export const hanabiConfigBase = defineConfig(
 
       // Keep explicit branches in the game rules and event handlers.
       "unicorn/try-complexity": "off",
-
-      // @template-customization-end
     },
   },
-
-  // @template-customization-start
 
   // The wire contracts generated from "server/protocol" keep the line breaks of their Rust doc
   // comments and the generator's object layout, and their enums have the values that the wire
@@ -132,8 +129,6 @@ export const hanabiConfigBase = defineConfig(
       "packages/game/docs/assets/main.js",
     ],
   },
-
-  // @template-customization-end
 );
 
 export default defineConfig(...hanabiConfigBase);
