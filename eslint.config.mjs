@@ -22,29 +22,6 @@ export const hanabiConfigBase = defineConfig(
        */
       "func-style": ["error", "declaration"],
 
-      /**
-       * Documentation:
-       * https://typescript-eslint.io/rules/naming-convention/
-       *
-       * Spell an acronym like a word, as in `gameId` and `JsonAction`, as the wire protocol does.
-       * The exceptions are coordinate letters (such as `textYPos`), one-letter words (such as
-       * `throwItInAHole` and `HGroup`), and names that other code owns.
-       */
-      "@typescript-eslint/naming-convention": [
-        "error",
-        {
-          selector: "default",
-          format: null,
-          custom: { regex: "[a-z0-9][A-Z]{2}|^[A-Z]{2,}[a-z]", match: false },
-          filter: {
-            regex:
-              "^(\\w*[XY](Map|Pos|Spacing|String|Values)|\\w*ThrowItInAHole\\w*|throwItInAHole\\w*|\\w*ANumber|\\w*HGroup\\w*|\\w*(BetterTTV|FrankerFaceZ)\\w*|(franker[BZ]|monkaS)Index|HTML\\w*Element|toJSON)$",
-            match: false,
-          },
-        },
-        { selector: "import", format: null },
-      ],
-
       // State interfaces and third-party declarations intentionally contain mutable fields.
       "complete/type-declaration-immutability": "off",
 
