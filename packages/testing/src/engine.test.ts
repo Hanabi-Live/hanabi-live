@@ -12,6 +12,7 @@ import {
   getInitialGameState,
   getVariant,
   hasReversedSuits,
+  toGameAction,
 } from "@hanabi-live/game";
 import { test } from "bun:test";
 import { execFileSync } from "node:child_process";
@@ -50,30 +51,15 @@ const gameSchema = z.strictObject({
 
 type Checkpoint = z.infer<typeof checkpointSchema>;
 
-/**
- * Converts an event into the action that the game state applies, as the client's `toGameAction`
- * does. The games show every card and clue, so no clue is hidden.
- */
-function toGameAction(event: z.infer<typeof gameEventSchema>): GameAction {
-  if (event.type !== "clue") {
-    return event;
+/** Converts an event into the action that the game state applies. The games show every clue. */
+function toVisibleGameAction(
+  event: z.infer<typeof gameEventSchema>,
+): GameAction {
+  const action = toGameAction(event);
+  if (action.type === "clue" && action.clue.type === undefined) {
+    throw new Error("The engine hid a clue.");
   }
-  const { clue, ...rest } = event;
-  if (clue?.type === "color" && clue.color !== undefined) {
-    return {
-      ...rest,
-      clue: { type: "color", color: clue.color },
-      ignoreNegative: false,
-    };
-  }
-  if (clue?.type === "rank" && clue.rank !== undefined) {
-    return {
-      ...rest,
-      clue: { type: "rank", rank: clue.rank },
-      ignoreNegative: false,
-    };
-  }
-  throw new Error("The engine hid a clue.");
+  return action;
 }
 
 /**
@@ -130,7 +116,7 @@ test(
         for (const event of game.events.slice(applied, numEvents)) {
           state = gameReducer(
             state,
-            toGameAction(event),
+            toVisibleGameAction(event),
             false,
             false,
             false,

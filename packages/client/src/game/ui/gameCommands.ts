@@ -15,6 +15,8 @@ import {
   getMinEfficiency,
   getVariantById,
   isHardVariant,
+  toGameAction,
+  toHypotheticalAction,
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
@@ -30,8 +32,6 @@ import { store } from "../../store.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
   toCardIdentity,
-  toGameAction,
-  toHypotheticalAction,
   toPlayerTuple,
   toSoundType,
 } from "../../wire.ts";

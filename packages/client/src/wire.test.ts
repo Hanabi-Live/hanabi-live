@@ -2,8 +2,9 @@ import {
   replaySoundEffectSchema,
   SERVER_EVENT_SCHEMAS,
 } from "@hanabi-live/data";
+import { toGameAction } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
+import { toCardIdentity, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
 function event(data: unknown) {
