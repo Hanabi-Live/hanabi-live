@@ -173,6 +173,12 @@ function OutOf({
   );
 }
 
+/**
+ * The turn holds the space of a two-digit turn from the start. With digits of equal width, every
+ * two-digit turn takes the same space. (A turn of 100 or more is rare.)
+ */
+const FIRST_TWO_DIGIT_TURN = 10;
+
 const buttonClass = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-game-raised tw:px-4 tw:text-[15px] tw:text-game-text tw:hover:bg-game-line tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
 
 /**
@@ -198,20 +204,22 @@ export function StatusStrip({
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
+  const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_TURN);
+
   return (
     <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-game-raised tw:bg-game-panel tw:px-7 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3">
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
         <Stat label="Turn">
-          {/* An invisible copy of the widest turn, "21 / 21", holds the space. Then the bar does
-              not move when a replay adds " / 21" to the turn. */}
-          <span className="tw:inline-grid">
+          {/* An invisible "10 / 10" holds the space (or the real turn, if it is wider). Then the bar
+              does not move when a replay adds " / 21" to the turn, or when the turn reaches 10. */}
+          <span className="tw:inline-grid tw:tabular-nums">
             <span
               aria-hidden="true"
               className="tw:invisible tw:col-start-1 tw:row-start-1"
             >
-              <OutOf max={lastTurn ?? turn} value={lastTurn ?? turn} />
+              <OutOf max={reservedTurn} value={reservedTurn} />
             </span>
             <span className="tw:col-start-1 tw:row-start-1" data-turn>
               {lastTurn === undefined ? (
