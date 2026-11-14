@@ -207,8 +207,11 @@ const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 /** The account that owns the open table and plays Bob's game with the browser's account. */
 const BOB = "Bob";
 
-/** The accounts that also play Bob's game when it has more than two players. */
-const OTHER_PLAYER_NAMES = ["Grace", "Heidi", "Ivan"] as const;
+/**
+ * The accounts that also play Bob's game when it has more than two players. One name is as long as
+ * a username can be with the suffix of a cast, so that a crowded table shows how a long name fits.
+ */
+const OTHER_PLAYER_NAMES = ["Grace", "Heidi", "Ivan_Wolfgang"] as const;
 
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";

@@ -14,6 +14,7 @@ import {
 } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
+import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
 import type { CardView } from "./tableView.ts";
 
@@ -339,7 +340,7 @@ export const NAME_GAP = 16;
 
 /**
  * The most width that the column with each player's name takes, in CSS pixels. Below it, the column
- * is as wide as the widest name. A longer name is cut short.
+ * is as wide as the widest name. A longer name is drawn smaller.
  */
 export const NAME_COLUMN_MAX_WIDTH = {
   WIDE: 150,
@@ -362,7 +363,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
         }`}
       >
         {youIcon}
-        <span className="tw:truncate">{seat.name}</span>
+        <FitText text={seat.name} />
         {seat.clock !== undefined && (
           <span className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text">
             {seat.clock}
@@ -375,7 +376,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   return (
     <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:select-none">
       {youIcon}
-      <span className="tw:truncate">{seat.name}</span>
+      <FitText text={seat.name} />
     </span>
   );
 }
