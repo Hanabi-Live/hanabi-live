@@ -46,7 +46,7 @@ export function showMore(): void {
 
 function requestPage(offset: number) {
   store.dispatch(historyRequested());
-  globals.conn!.send(
+  globals.connection.send(
     "gameHistory",
     { offset, limit: HISTORY_PAGE_SIZE },
     (reply) => {
@@ -88,7 +88,7 @@ export function showMoreOtherScores(): void {
 }
 
 function requestOtherScoresPage(seed: string, offset: number) {
-  globals.conn!.send(
+  globals.connection.send(
     "seedGames",
     { seed, offset, limit: HISTORY_PAGE_SIZE },
     (reply) => {

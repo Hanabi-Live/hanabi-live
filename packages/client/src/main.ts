@@ -51,7 +51,9 @@ function init() {
       setBrowserAddressBarPath(PATH.LOBBY, hash);
     } else if (store.getState().session.screen === Screen.PreGame) {
       lobbyPregame.hide(false);
-      globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
+      globals.connection.send("tableUnattend", {
+        tableId: globals.joinedTableId,
+      });
       globals.tableId = undefined;
     }
 

@@ -81,7 +81,7 @@ export function WatchReplay(): React.JSX.Element {
       spoilerFree.toString(),
     );
 
-    globals.conn!.send("replayCreate", {
+    globals.connection.send("replayCreate", {
       source: replay,
       // Only shared replays can be spoiler-free reviews.
       visibility: replayVisibility(visibility === "shared", { spoilerFree }),

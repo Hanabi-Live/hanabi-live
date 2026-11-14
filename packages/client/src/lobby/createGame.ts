@@ -34,7 +34,7 @@ export function show(): void {
 }
 
 export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
-  globals.conn!.send("tableUpdate", {
+  globals.connection.send("tableUpdate", {
     tableId: globals.joinedTableId,
     settings: suggestion,
   });
@@ -46,7 +46,7 @@ export function remember(createTable: CreateTable): void {
     store.dispatch(
       settingsChanged({ ...store.getState().session.settings, createTable }),
     );
-    globals.conn!.send("settings", { settings: { createTable } });
+    globals.connection.send("settings", { settings: { createTable } });
   }
 }
 

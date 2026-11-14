@@ -8,7 +8,7 @@ vi.mock("./history.ts", () => ({
   showOtherScores: vi.fn(),
 }));
 vi.mock("../Globals.ts", () => ({
-  globals: { conn: { send: vi.fn() } },
+  globals: { connection: { send: vi.fn() } },
 }));
 vi.mock("../utils.ts", () => ({ setBrowserAddressBarPath: vi.fn() }));
 vi.mock("../modals.ts", () => ({ showWarning: vi.fn() }));
@@ -66,7 +66,7 @@ describe("replay URL loading", () => {
     ["replay-json", "", undefined, { type: "solo" }],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = vi.fn();
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -128,7 +128,7 @@ describe("replay URL loading", () => {
     ["/game/123/shadow/0", 0],
     ["/game/123/shadow/2", 2],
   ])("route %s => seat %i", (pathname, shadowingPlayerIndex) => {
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(`https://hanab.live${pathname}`),
@@ -148,7 +148,7 @@ describe("replay URL loading", () => {
     ["/replay/456", { playingAtTables: [tableId] }],
     ["/replay/456", { spectatingAtTables: [{ tableId }] }],
   ])("route %s takes precedence over reconnecting", (pathname, data) => {
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(`https://hanab.live${pathname}`),
@@ -181,7 +181,7 @@ describe("replay URL loading", () => {
       { tableId },
     ],
   ])("route /pre-game/123 with %o sends %s", (data, command, commandData) => {
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -202,7 +202,7 @@ describe("replay URL loading", () => {
   test.each(["/lobby", "/game/123", "/game/123/shadow/0"])(
     "route %s returns to an ongoing game",
     (pathname) => {
-      const send = vi.spyOn(globals.conn!, "send");
+      const send = vi.spyOn(globals.connection, "send");
       Object.defineProperty(globalThis, "location", {
         configurable: true,
         value: new URL(`https://hanab.live${pathname}`),
@@ -262,7 +262,7 @@ describe("table creation URL", () => {
   }
 
   test("names the variant by its ID", () => {
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     visit("Rainbow (6 Suits)");
     const [command, data] = send.mock.calls[0] ?? [];
     expect(command).toBe("tableCreate");
@@ -270,7 +270,7 @@ describe("table creation URL", () => {
   });
 
   test("warns about a variant that does not exist", () => {
-    const send = vi.spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.connection, "send");
     visit("No Such Variant");
     expect(send).not.toHaveBeenCalled();
     expect(modals.showWarning).toHaveBeenCalledWith(

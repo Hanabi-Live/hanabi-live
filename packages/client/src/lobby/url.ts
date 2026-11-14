@@ -52,7 +52,7 @@ function reconnectToTable(data: ServerEventData["welcome"]): boolean {
   // reconnect to that game.
   const firstTableId = data.playingAtTables[0];
   if (firstTableId !== undefined) {
-    globals.conn!.send("tableReattend", {
+    globals.connection.send("tableReattend", {
       tableId: firstTableId,
     });
     return true;
@@ -62,7 +62,7 @@ function reconnectToTable(data: ServerEventData["welcome"]): boolean {
   // spectate the newest one.
   const spectatedTable = data.spectatingAtTables[0];
   if (spectatedTable !== undefined) {
-    globals.conn!.send("tableSpectate", spectatedTable);
+    globals.connection.send("tableSpectate", spectatedTable);
     return true;
   }
 
@@ -113,7 +113,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       urlParams.get("replayTurn") ?? "",
     );
 
-    globals.conn!.send("tableCreate", {
+    globals.connection.send("tableCreate", {
       settings: {
         name,
         maxPlayers: DEFAULT_MAX_PLAYERS,
@@ -148,7 +148,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
           (table) => table.tableId === tableId,
         );
         if (spectatedTable !== undefined) {
-          globals.conn!.send("tableSpectate", spectatedTable);
+          globals.connection.send("tableSpectate", spectatedTable);
           return true;
         }
 
@@ -156,7 +156,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
         // server will ignore it.
         const password =
           localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
-        globals.conn!.send("tableJoin", {
+        globals.connection.send("tableJoin", {
           tableId,
           ...(password !== "" && { password }),
         });
@@ -174,7 +174,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       const tableId = parseIntSafe(tableIdString);
       if (tableId !== undefined && tableId > 0) {
         if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
-          globals.conn!.send("tableReattend", {
+          globals.connection.send("tableReattend", {
             tableId,
           });
           return true;
@@ -193,7 +193,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
             shadowingPlayerIndex = shadowingPlayerIndexInt;
           }
         }
-        globals.conn!.send("tableSpectate", {
+        globals.connection.send("tableSpectate", {
           tableId,
           shadowingPlayerIndex,
         });
@@ -214,7 +214,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
         const visibility = globalThis.location.pathname.includes("shared-")
           ? "shared"
           : "solo";
-        globals.conn!.send("replayCreate", {
+        globals.connection.send("replayCreate", {
           source: { type: "saved", gameId },
           // A link to a shared replay should join the one that people are already watching.
           visibility: replayVisibility(visibility === "shared", {
@@ -256,7 +256,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
         visibility,
       );
 
-      globals.conn!.send("replayCreate", {
+      globals.connection.send("replayCreate", {
         source: { type: "imported", game: gameJson },
         visibility: replayVisibility(visibility === "shared"),
       });

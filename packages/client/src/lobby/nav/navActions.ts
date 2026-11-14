@@ -46,7 +46,7 @@ export function selectJoinButton(state: RootState): {
 
 export function startGame(): void {
   store.dispatch(startGameSentChanged(true));
-  globals.conn!.send(
+  globals.connection.send(
     "tableStart",
     {
       tableId: globals.joinedTableId,
@@ -80,7 +80,7 @@ export function joinGame(): void {
       );
       return;
     }
-    globals.conn!.send("tableLeave", { tableId: oldTable.tableId });
+    globals.connection.send("tableLeave", { tableId: oldTable.tableId });
   }
   tableJoin(table);
 }
@@ -91,13 +91,13 @@ export function spectateGame(): void {
     return;
   }
 
-  globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
+  globals.connection.send("tableLeave", { tableId: globals.joinedTableId });
   tableSpectate(table);
 }
 
 export function returnToLobby(): void {
   pregame.hide();
-  globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
+  globals.connection.send("tableUnattend", { tableId: globals.joinedTableId });
   globals.tableId = undefined;
 }
 
@@ -115,6 +115,6 @@ export function leaveGame(): void {
   ) {
     returnToLobby();
   } else {
-    globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
+    globals.connection.send("tableLeave", { tableId: globals.joinedTableId });
   }
 }

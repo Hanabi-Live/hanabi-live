@@ -10,6 +10,12 @@ export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
   conn: Connection | undefined = undefined;
 
+  /** The WebSocket connection, for code that only runs once the client has connected. */
+  get connection(): Connection {
+    assertDefined(this.conn, "The WebSocket connection is not open yet.");
+    return this.conn;
+  }
+
   // ----------------------------------------
   // Values from the server "welcome" message
   // ----------------------------------------

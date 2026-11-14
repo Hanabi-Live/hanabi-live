@@ -240,8 +240,7 @@ function markRead() {
   store.dispatch(gameChatUnreadChanged(0));
 
   // We need to notify the server that we have read everything.
-  assertDefined(globals.conn, 'The "globals.conn" object is not initialized.');
-  globals.conn.send("chatRead", {
+  globals.connection.send("chatRead", {
     tableId: globals.joinedTableId,
   });
 

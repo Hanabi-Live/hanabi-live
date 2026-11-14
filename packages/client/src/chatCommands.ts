@@ -47,7 +47,7 @@ for (const [command, request] of Object.entries(RELATIONSHIP_REQUESTS)) {
       return;
     }
 
-    globals.conn!.send(request, {
+    globals.connection.send(request, {
       username: args.join(" "),
     });
   });
@@ -65,7 +65,7 @@ chatCommands.set("friends", friends);
 
 // /links
 chatCommands.set("links", () => {
-  globals.conn!.send("linkList", {});
+  globals.connection.send("linkList", {});
 });
 
 // /blocked
@@ -114,7 +114,7 @@ function pm(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPm", {
+  globals.connection.send("chatPm", {
     text: msg,
     recipient: matchingUser.username,
   });
@@ -192,7 +192,7 @@ function pmHistory(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPmHistory", data, (reply) => {
+  globals.connection.send("chatPmHistory", data, (reply) => {
     if (reply.ok) {
       showPmHistory(reply.data.messages);
     }
@@ -232,7 +232,7 @@ function setLeader(room: string, args: readonly string[]) {
     );
     return;
   }
-  globals.conn!.send("tableSetOwner", {
+  globals.connection.send("tableSetOwner", {
     tableId: globals.tableId,
     userId,
   });
@@ -276,7 +276,7 @@ function setVariant(room: string, args: readonly string[]) {
     );
     return;
   }
-  globals.conn!.send("tableUpdate", {
+  globals.connection.send("tableUpdate", {
     tableId: globals.tableId,
     settings: {
       ...game.settings,
@@ -332,7 +332,7 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
     return;
   }
 
-  globals.conn!.send("tableSuggest", {
+  globals.connection.send("tableSuggest", {
     tableId: globals.tableId,
     turn: segment,
   });
@@ -354,7 +354,7 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
   }
 
   const tag = args.join(" ");
-  globals.conn!.send("tagAdd", {
+  globals.connection.send("tagAdd", {
     tableId: globals.tableId,
     tag,
   });
@@ -375,7 +375,7 @@ function untag(room: string, args: readonly string[]) {
   }
 
   const tag = args.join(" ");
-  globals.conn!.send("tagRemove", {
+  globals.connection.send("tagRemove", {
     tableId: globals.tableId,
     tag,
   });
@@ -388,7 +388,7 @@ chatCommands.set("untag", untag);
 chatCommands.set("tagsearch", (_room: string, args: readonly string[]) => {
   const tag = args.join(" ");
 
-  globals.conn!.send("tagSearch", {
+  globals.connection.send("tagSearch", {
     tag,
   });
 });
@@ -406,7 +406,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     );
     return;
   }
-  globals.conn!.send("tagRemoveAll", {
+  globals.connection.send("tagRemoveAll", {
     tableId: globals.tableId,
   });
 });
@@ -426,7 +426,7 @@ chatCommands.set("terminate", (room: string) => {
     );
     return;
   }
-  globals.conn!.send("tableTerminate", {
+  globals.connection.send("tableTerminate", {
     tableId: globals.tableId,
   });
 });

@@ -109,7 +109,7 @@ export function UserLink({
                     icon="fa-user-minus"
                     onClick={() => {
                       closeMenu();
-                      globals.conn!.send("friendRemove", {
+                      globals.connection.send("friendRemove", {
                         username: user.username,
                       });
                     }}
@@ -121,7 +121,7 @@ export function UserLink({
                     icon="fa-user-plus"
                     onClick={() => {
                       closeMenu();
-                      globals.conn!.send("friendAdd", {
+                      globals.connection.send("friendAdd", {
                         username: user.username,
                       });
                     }}
@@ -135,9 +135,12 @@ export function UserLink({
                   icon={blocked ? "fa-check-circle" : "fa-ban"}
                   onClick={() => {
                     closeMenu();
-                    globals.conn!.send(blocked ? "blockRemove" : "blockAdd", {
-                      username: user.username,
-                    });
+                    globals.connection.send(
+                      blocked ? "blockRemove" : "blockAdd",
+                      {
+                        username: user.username,
+                      },
+                    );
                   }}
                 >
                   {blocked ? "Unblock" : "Block"}

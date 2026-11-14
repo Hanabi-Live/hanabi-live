@@ -163,7 +163,7 @@ function PasswordModal({ tableId }: { readonly tableId: number }) {
   );
 
   function submit() {
-    globals.conn!.send("tableJoin", {
+    globals.connection.send("tableJoin", {
       tableId,
       ...(password !== "" && { password }),
     });

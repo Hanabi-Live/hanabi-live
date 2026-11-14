@@ -18,7 +18,7 @@ export function tableSpectate(
     return;
   }
 
-  globals.conn!.send("tableSpectate", {
+  globals.connection.send("tableSpectate", {
     tableId: table.tableId,
     shadowingPlayerIndex,
   });
@@ -36,7 +36,7 @@ export function tableJoin(table: Table): void {
   if (table.passwordProtected) {
     modals.askForPassword(table.tableId);
   } else {
-    globals.conn!.send("tableJoin", {
+    globals.connection.send("tableJoin", {
       tableId: table.tableId,
     });
     // (We will get a "tableJoined" response back from the server.)
@@ -48,7 +48,7 @@ export function tableReattend(table: Table): void {
     return;
   }
 
-  globals.conn!.send("tableReattend", {
+  globals.connection.send("tableReattend", {
     tableId: table.tableId,
   });
   // (We will get a "tableJoined" response back from the server, whose stage says whether the game

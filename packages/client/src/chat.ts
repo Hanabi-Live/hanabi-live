@@ -170,7 +170,7 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
     const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
-      globals.conn!.send("chatTyping", {
+      globals.connection.send("chatTyping", {
         tableId: globals.joinedTableId,
       });
     }
@@ -282,7 +282,7 @@ function sendText(room: string, msgRaw: string) {
 
   // This is not a command, so send a the chat message to the server.
   const tableId = roomTableId(roomId);
-  globals.conn!.send("chat", {
+  globals.connection.send("chat", {
     text: msg,
     ...(tableId !== undefined && { tableId }),
   });

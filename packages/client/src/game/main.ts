@@ -69,7 +69,7 @@ export function show(justStarted: boolean): void {
 
   // Request what we need to start drawing the UI, such as the number of players and the variant. We
   // request the game's state once the UI is drawn.
-  loadGameInit(globals.conn!, globals.joinedTableId);
+  loadGameInit(globals.connection, globals.joinedTableId);
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */

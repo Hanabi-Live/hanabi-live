@@ -358,7 +358,7 @@ function ReplayButton({
       className="button fit tw:m-0 history-table enter-history-game"
       id={`replay-${gameId}`}
       onClick={() => {
-        globals.conn!.send("replayCreate", {
+        globals.connection.send("replayCreate", {
           source: { type: "saved", gameId },
           visibility: replayVisibility(visibility === "shared"),
         });

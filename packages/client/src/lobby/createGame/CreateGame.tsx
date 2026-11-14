@@ -326,7 +326,7 @@ export function CreateGame(): React.JSX.Element {
 
     if (isNew) {
       store.dispatch(creatingTableChanged(true));
-      globals.conn!.send(
+      globals.connection.send(
         "tableCreate",
         { settings, ...(password !== "" && { password }) },
         () => {
@@ -335,7 +335,7 @@ export function CreateGame(): React.JSX.Element {
         },
       );
     } else {
-      globals.conn!.send("tableUpdate", {
+      globals.connection.send("tableUpdate", {
         tableId: globals.joinedTableId,
         settings,
       });

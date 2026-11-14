@@ -59,7 +59,7 @@ function acknowledgeChatRead(
 
   if (store.getState().session.screen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received.
-    globals.conn!.send("chatRead", {
+    globals.connection.send("chatRead", {
       tableId: globals.joinedTableId,
     });
   } else if (
@@ -69,7 +69,7 @@ function acknowledgeChatRead(
     if (gameChat.isOpen()) {
       // The chat window was open; notify the server that we have read the chat message that was
       // just received.
-      globals.conn!.send("chatRead", {
+      globals.connection.send("chatRead", {
         tableId: globals.joinedTableId,
       });
       return;
@@ -90,7 +90,7 @@ function acknowledgeChatRead(
     } else {
       // The chat window was not open; pop open the chat window every time for spectators.
       gameChat.toggle(false);
-      globals.conn!.send("chatRead", {
+      globals.connection.send("chatRead", {
         tableId: globals.joinedTableId,
       });
     }

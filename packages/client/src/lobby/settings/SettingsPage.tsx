@@ -264,7 +264,7 @@ function HGroupLevelRow() {
             const { hGroupLevel: _cleared, ...settings } =
               store.getState().session.settings;
             store.dispatch(settingsChanged(settings));
-            globals.conn!.send("settings", {
+            globals.connection.send("settings", {
               settings: {},
               cleared: ["hGroupLevel"],
             });
@@ -308,7 +308,7 @@ function changeSetting(changed: Partial<Settings>) {
   store.dispatch(
     settingsChanged({ ...store.getState().session.settings, ...changed }),
   );
-  globals.conn!.send("settings", { settings: changed });
+  globals.connection.send("settings", { settings: changed });
 }
 
 /**
