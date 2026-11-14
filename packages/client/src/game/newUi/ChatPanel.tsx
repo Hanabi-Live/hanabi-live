@@ -32,8 +32,8 @@ const BORROWED_CHAT_BOX_CLASSES = [
   "tw:pb-[26px]",
   // The site's text is 16pt, which fits only a few words on each line of the narrow panel. The text
   // box sets its own size, so it gets the same size too.
-  "tw:text-sm",
-  "tw:[&_input]:text-sm",
+  "tw:text-base",
+  "tw:[&_input]:text-base",
   "tw:rounded-none",
   "tw:bg-transparent",
   "tw:shadow-none",
