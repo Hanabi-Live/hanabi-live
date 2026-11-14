@@ -146,6 +146,7 @@ export function ClueLog({
     <section
       aria-label="Clue log"
       className={`tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-game-panel tw:narrow-980:h-[320px] tw:narrow-980:flex-none ${WELL_CLASS}`}
+      ref={tooltipRef("Clue log")}
     >
       {/* The whole log needs no heading: its rows are clearly clues. A heading shows only when the
           log is narrowed to one card, so that the missing rows do not look lost. */}

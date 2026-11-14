@@ -28,6 +28,13 @@ const WINDOW_MARGIN_IN_PIXELS = 8;
 /** The open tooltips, which close when their anchor is removed from the page. */
 const openTooltips = new Set<Tooltip>();
 
+/**
+ * The tooltips whose anchors the mouse is over, including those that wait to open. An outer
+ * tooltip, such as that of a panel, stays shut while the mouse is over an element inside it with
+ * its own tooltip.
+ */
+const hoveredTooltips = new Set<Tooltip>();
+
 /** Watches the page for removed anchors while any tooltip is open. */
 let anchorObserver: MutationObserver | undefined;
 
@@ -125,14 +132,17 @@ export class Tooltip {
     }
     // Only the innermost of nested tooltips shows, such as that of a card's note in the discard
     // pile, and not that of the pile.
-    for (const tooltip of openTooltips) {
-      if (tooltip === this) {
-        continue;
-      }
-      if (this.anchor.contains(tooltip.anchor)) {
+    for (const tooltip of [...openTooltips, ...hoveredTooltips]) {
+      if (
+        tooltip !== this
+        && tooltip.content !== ""
+        && this.anchor.contains(tooltip.anchor)
+      ) {
         return;
       }
-      if (tooltip.anchor.contains(this.anchor)) {
+    }
+    for (const tooltip of openTooltips) {
+      if (tooltip !== this && tooltip.anchor.contains(this.anchor)) {
         tooltip.close();
       }
     }
@@ -199,6 +209,7 @@ export class Tooltip {
         if (event.pointerType === "touch") {
           return;
         }
+        hoveredTooltips.add(this);
         if (delayed) {
           clearTimeout(this.openingTimeout);
           this.openingTimeout = setTimeout(() => {
@@ -215,6 +226,7 @@ export class Tooltip {
       "pointerleave",
       (event) => {
         if (event.pointerType !== "touch") {
+          hoveredTooltips.delete(this);
           this.close();
         }
       },
@@ -238,6 +250,7 @@ export class Tooltip {
 
   destroy(): void {
     this.hoverListeners.abort();
+    hoveredTooltips.delete(this);
     this.close();
     clearTimeout(this.closingTimeout);
     this.closingTimeout = undefined;

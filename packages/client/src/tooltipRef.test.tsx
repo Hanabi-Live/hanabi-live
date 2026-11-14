@@ -117,3 +117,27 @@ test("only the innermost of nested tooltips opens", () => {
   fireEvent.pointerEnter(outer);
   expect(getOpenTexts()).toStrictEqual(["Inner"]);
 });
+
+test("an outer tooltip stays shut while an inner one waits to open", () => {
+  vi.useFakeTimers();
+  try {
+    const { getByRole } = render(
+      <div ref={tooltipRef("Outer")}>
+        <Button instant={false} text="Inner" />
+      </div>,
+    );
+    const outer = getByRole("button").parentElement!;
+
+    // The pointer crosses the outer element onto the inner one.
+    fireEvent.pointerEnter(outer);
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS / 2);
+    fireEvent.pointerEnter(getByRole("button"));
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS / 2);
+    expect(getOpenTexts()).toStrictEqual([]);
+
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS / 2);
+    expect(getOpenTexts()).toStrictEqual(["Inner"]);
+  } finally {
+    vi.useRealTimers();
+  }
+});
