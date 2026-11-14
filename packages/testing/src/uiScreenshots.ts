@@ -23,8 +23,10 @@ import {
   SERVER_EVENT_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
-import type { CardOrder, ClueRank, PlayerIndex } from "@hanabi-live/game";
+import type { CardOrder, ClueRank, PlayerIndex, Rank } from "@hanabi-live/game";
 import {
+  getNumCopiesOfCard,
+  getTotalCardsInDeck,
   getVariant,
   isValidClueRank,
   MAX_CLUES,
@@ -788,6 +790,17 @@ function getStates(): readonly State[] {
         await game.discardTurns(15);
       },
     },
+    // The deck is empty, so that it shows the turns left in the final round.
+    {
+      name: "new-ui-empty-deck",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.emptyDeck();
+      },
+    },
     // A clue is chosen, so that "Give clue" can be pressed.
     {
       name: "new-ui-clue-chosen",
@@ -1284,6 +1297,11 @@ interface BobsGame {
    */
   readonly discardTurns: (turns: number) => Promise<void>;
   /**
+   * The players take turns until the deck is empty: each plays a card if they can, or else discards
+   * a card that the team can lose, or else gives a clue.
+   */
+  readonly emptyDeck: () => Promise<void>;
+  /**
    * Bob gives the account a rank clue that touches its newest card, the account discards its oldest
    * card, and Bob gives a clue that misses the newest card.
    */
@@ -1726,6 +1744,13 @@ async function createCast(
           "The account can only move before the page loads.",
         );
       }
+      console.error(
+        "DEBUG move",
+        turn,
+        index,
+        JSON.stringify(action),
+        JSON.stringify(await handAt(index)),
+      );
       const peer = [...seats].find(([, other]) => other === index)?.[0];
       assertDefined(peer, `No player sits in seat ${index}.`);
       peer.send("playerAction", { tableId, action });
@@ -1881,6 +1906,85 @@ async function createCast(
       }
     }
 
+    async function emptyDeck() {
+      const variant = getVariant(LONG_VARIANT_NAME);
+      const deckSize = getTotalCardsInDeck(variant);
+      for (;;) {
+        const events = await loadEvents(viewer, tableId);
+        if (
+          events.filter((event) => event.type === "draw").length >= deckSize
+        ) {
+          return;
+        }
+        const { player } = readTurn(events);
+
+        // A discard and the play of the last card of a suit each give back a clue token.
+        let clues = MAX_CLUES;
+        const stacks = new Map<number, number>();
+        const discarded = new Map<string, number>();
+        for (const event of events) {
+          if (event.type === "clue") {
+            clues--;
+          } else if (event.type === "discard" && event.identity !== undefined) {
+            clues = Math.min(clues + 1, MAX_CLUES);
+            const key = `${event.identity.suitIndex}-${event.identity.rank}`;
+            discarded.set(key, (discarded.get(key) ?? 0) + 1);
+          } else if (event.type === "play" && event.identity !== undefined) {
+            const { suitIndex, rank } = event.identity;
+            stacks.set(suitIndex, rank);
+            if (rank === MAX_RANK) {
+              clues = Math.min(clues + 1, MAX_CLUES);
+            }
+          }
+        }
+        // A play of a card of an inverted suit, such as orange, discards it, and a discard plays
+        // it. So the players keep those cards.
+        const fullHand = await handAt(player);
+        const cards = fullHand.filter(
+          (card) => variant.suits[card.suitIndex]?.inverted !== true,
+        );
+        const playable = cards.find((card) => card.playable);
+        if (playable !== undefined) {
+          await moveAt(player, { type: "play", order: playable.order });
+          continue;
+        }
+
+        // Bob's table is a speedrun, which ends once the team cannot get a perfect score. So the
+        // player keeps the last copy of each card that is still to be played.
+        const expendable = cards.find((card) => {
+          const suit = variant.suits[card.suitIndex];
+          assertDefined(suit, `There is no suit ${card.suitIndex}.`);
+          const stack = stacks.get(card.suitIndex);
+          const played = stack !== undefined && card.rank <= stack;
+          const copies = getNumCopiesOfCard(suit, card.rank as Rank, variant);
+          const left =
+            copies - (discarded.get(`${card.suitIndex}-${card.rank}`) ?? 0);
+          return played || left > 1;
+        });
+        if (expendable !== undefined && clues < MAX_CLUES) {
+          await moveAt(player, { type: "discard", order: expendable.order });
+          continue;
+        }
+
+        const receiver = (player + 1) % seats.size;
+        const receiverCards = await handAt(receiver);
+        const touched = receiverCards.find((other) =>
+          isValidClueRank(other.rank),
+        );
+        assertDefined(touched, `Seat ${receiver} has no card to clue.`);
+        if (clues === 0) {
+          throw new Error(
+            "The team cannot play, discard, or clue. Choose another seed for Bob's game.",
+          );
+        }
+        await moveAt(player, {
+          type: "clue",
+          receiverIndex: receiver as PlayerIndex,
+          clue: { type: "rank", rank: touched.rank as ClueRank },
+        });
+      }
+    }
+
     async function end() {
       bob.send("tableTerminate", { tableId });
       await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
@@ -1909,6 +2013,7 @@ async function createCast(
         await play("account", false);
       },
       discardTurns,
+      emptyDeck,
       clueTwice: async () => {
         if ((await turnOf()) === "account") {
           await play("account", true);

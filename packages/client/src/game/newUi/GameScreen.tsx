@@ -445,6 +445,14 @@ export function GameScreen({
           .find((seat) => seat.acting)
           ?.cards.find((card) => card.order === ghost.order);
 
+  // A game of "All or Nothing" has no final round. The game sends one more turn after the last, to
+  // show the times, so the turns left never go below 0.
+  const { endTurnNum } = visibleState.turn;
+  const turnsLeft =
+    options.allOrNothing || endTurnNum === undefined
+      ? undefined
+      : Math.max(endTurnNum - visibleState.turn.turnNum, 0);
+
   // Only the efficiency of the game as it stands includes the player's own modifier.
   const efficiencyModifier =
     visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
@@ -490,6 +498,7 @@ export function GameScreen({
                     strikeSegments={getStrikeSegments(state)}
                   />
                 }
+                turnsLeft={turnsLeft}
                 variant={variant}
                 zoneState={playZoneState}
               />

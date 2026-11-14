@@ -137,6 +137,9 @@ export const PlayArea = forwardRef<
     readonly colorblindMode: boolean;
     readonly cardWidth: number;
     readonly cardsInDeck: number;
+
+    /** The turns left in the game once the deck is empty (see `Deck`). */
+    readonly turnsLeft: number | undefined;
     readonly zoneState: ZoneState;
     readonly notes: CardNotes;
 
@@ -151,6 +154,7 @@ export const PlayArea = forwardRef<
       colorblindMode,
       cardWidth,
       cardsInDeck,
+      turnsLeft,
       zoneState,
       notes,
       tokens,
@@ -259,7 +263,11 @@ export const PlayArea = forwardRef<
             </div>
             <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
           </section>
-          <Deck cardsInDeck={cardsInDeck} cardWidth={cardWidth} />
+          <Deck
+            cardsInDeck={cardsInDeck}
+            cardWidth={cardWidth}
+            turnsLeft={turnsLeft}
+          />
         </div>
         {tokens}
       </div>
@@ -303,29 +311,56 @@ const CARD_BACK_STYLE = {
   ].join(", "),
 } as const;
 
+/** The size of the count of cards in the deck, in card widths. */
+const CARDS_LEFT_SIZE = 0.5;
+
+/** The size of the turns left on the empty deck, and of its caption, in card widths. */
+const TURNS_LEFT_SIZE = 0.4;
+const TURNS_LEFT_CAPTION_SIZE = 0.17;
+
 /**
  * The deck: a pile of face-down cards with the number left on top, which gets thinner as it runs
- * low. Once it is empty, it is an empty slot, like an empty play stack. New cards are drawn from it
- * (see "cardMotion.ts").
+ * low. Once it is empty, it is an empty slot, like an empty play stack, that shows the turns left
+ * in the game, as on the classic screen. New cards are drawn from it (see "cardMotion.ts").
  */
 function Deck({
   cardsInDeck,
   cardWidth,
+  turnsLeft,
 }: {
   readonly cardsInDeck: number;
   readonly cardWidth: number;
+
+  /**
+   * The turns left in the game once the deck is empty, or `undefined` if the game has no final
+   * round (as in "All or Nothing").
+   */
+  readonly turnsLeft: number | undefined;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const edges = getDeckEdges(cardsInDeck);
   const empty = cardsInDeck === 0;
   // Whoever draws the last card starts the final round, so its count stands out.
   const lastCard = cardsInDeck === 1;
+  const finalRound = empty && turnsLeft !== undefined;
+  const turns = turnsLeft === 1 ? "turn" : "turns";
+  // In the final round, only the border of the empty slot is faint, so that the turns left stand
+  // out.
+  let emptyStyle = "";
+  if (finalRound) {
+    emptyStyle = "tw:border-game-line/60";
+  } else if (empty) {
+    emptyStyle = "tw:border-game-line tw:opacity-60";
+  }
+  const description = finalRound
+    ? `${turnsLeft} ${turns} left. Then the game ends.`
+    : "Cards left in the deck";
 
   return (
     <div
-      aria-label={`${cardsInDeck} cards in the deck`}
+      aria-label={finalRound ? description : `${cardsInDeck} cards in the deck`}
       className="tw:flex tw:flex-col tw:items-center tw:gap-1.5 tw:select-none"
-      ref={tooltipRef("Cards left in the deck")}
+      ref={tooltipRef(description)}
       role="img"
     >
       <div
@@ -356,9 +391,9 @@ function Deck({
         <div
           className={`tw:absolute tw:top-0 tw:left-0 tw:box-border tw:flex tw:items-center tw:justify-center ${
             empty
-              ? "tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
+              ? "tw:border-2 tw:border-dashed"
               : "tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80"
-          }`}
+          } ${emptyStyle}`}
           data-deck
           style={{
             ...(!empty && CARD_BACK_STYLE),
@@ -367,15 +402,36 @@ function Deck({
             height,
           }}
         >
-          <span
-            className={`tw:font-extrabold ${empty ? "tw:text-game-muted" : "tw:text-white"}`}
-            style={{
-              fontSize: cardWidth * 0.5,
-              color: lastCard ? PACE_HIGH_RISK_COLOR : undefined,
-            }}
-          >
-            {cardsInDeck}
-          </span>
+          {finalRound ? (
+            // Smaller than the count of cards, and always with its caption, so that it does not
+            // read as cards left.
+            <span
+              className="tw:flex tw:flex-col tw:items-center tw:leading-none tw:font-extrabold"
+              style={{ color: PACE_HIGH_RISK_COLOR }}
+            >
+              <span style={{ fontSize: cardWidth * TURNS_LEFT_SIZE }}>
+                {turnsLeft}
+              </span>
+              <span
+                className="tw:mt-[0.3em] tw:text-center tw:font-bold tw:uppercase"
+                style={{ fontSize: cardWidth * TURNS_LEFT_CAPTION_SIZE }}
+              >
+                {turns}
+                <br />
+                left
+              </span>
+            </span>
+          ) : (
+            <span
+              className={`tw:font-extrabold ${empty ? "tw:text-game-muted" : "tw:text-white"}`}
+              style={{
+                fontSize: cardWidth * CARDS_LEFT_SIZE,
+                color: lastCard ? PACE_HIGH_RISK_COLOR : undefined,
+              }}
+            >
+              {cardsInDeck}
+            </span>
+          )}
         </div>
       </div>
     </div>
