@@ -132,7 +132,8 @@ export function resetGlobals(): void {
   releaseSubscriptions();
   store.dispatch(gameCleared());
   globals = new UiGlobals();
-  window.globals = globals; // eslint-disable-line unicorn/prefer-global-this
+  // eslint-disable-next-line unicorn/prefer-global-this, unicorn/no-global-object-property-assignment
+  window.globals = globals;
 }
 
 // Also make the globals available to the window (so that we can access them from the JavaScript
@@ -143,4 +144,5 @@ declare global {
     globals: UiGlobals;
   }
 }
-window.globals = globals; // eslint-disable-line unicorn/prefer-global-this
+// eslint-disable-next-line unicorn/prefer-global-this, unicorn/no-global-object-property-assignment
+window.globals = globals;

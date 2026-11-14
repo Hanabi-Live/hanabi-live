@@ -18,8 +18,6 @@ class FakeImage {
   }
 }
 
-const originalImage = globalThis.Image;
-
 function getImage(loader: Loader, fileId: string): FakeImage {
   return loader.imageMap.get(fileId) as unknown as FakeImage;
 }
@@ -35,12 +33,12 @@ describe("image loader", () => {
         "Date",
       ],
     });
-    globalThis.Image = FakeImage as unknown as typeof Image;
+    vi.stubGlobal("Image", FakeImage);
   });
 
   afterEach(() => {
     clock.uninstall();
-    globalThis.Image = originalImage;
+    vi.unstubAllGlobals();
   });
 
   test("finishes after all images load successfully", () => {

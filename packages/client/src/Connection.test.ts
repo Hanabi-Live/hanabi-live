@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Connection } from "./Connection.ts";
 
 const sockets: FakeWebSocket[] = [];
@@ -23,18 +23,22 @@ class FakeWebSocket {
     this.sent.push(payload);
   }
 }
+beforeEach(() => {
+  vi.stubGlobal("WebSocket", FakeWebSocket);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("sending commands", () => {
   test("commands wait for readiness and work without randomUUID", () => {
-    // eslint-disable-next-line unicorn/no-unnecessary-global-this
-    const originalWebSocket = globalThis.WebSocket;
     const originalRandomUuid = Object.getOwnPropertyDescriptor(
       crypto,
       "randomUUID",
     );
     sockets.length = 0;
 
-    globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
     Object.defineProperty(crypto, "randomUUID", {
       configurable: true,
       value: undefined,
@@ -65,7 +69,6 @@ describe("sending commands", () => {
       });
       expect(sockets[0]?.sent).toHaveLength(4);
     } finally {
-      globalThis.WebSocket = originalWebSocket;
       if (originalRandomUuid === undefined) {
         Reflect.deleteProperty(crypto, "randomUUID");
       } else {
@@ -77,91 +80,73 @@ describe("sending commands", () => {
 
 describe("received messages", () => {
   test("handlers get validated payloads and invalid ones are reported instead", () => {
-    // eslint-disable-next-line unicorn/no-unnecessary-global-this
-    const originalWebSocket = globalThis.WebSocket;
-    globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
-    try {
-      const conn = new Connection("ws://localhost/ws", false);
-      const warnings: unknown[] = [];
-      const invalid: string[] = [];
-      conn.on("warning", (data) => {
-        warnings.push(data);
-      });
-      conn.invalidMessage = (command) => {
-        invalid.push(command);
-      };
-      for (const data of [
-        { message: "Careful" },
-        { message: "" },
-        { text: "Careful" },
-      ]) {
-        conn.onMessage({
-          data: JSON.stringify({ event: "warning", data }),
-        } as MessageEvent);
-      }
-      // An outdated client's error also arrives in the frame of clients from before JSON frames,
-      // which this client ignores.
+    const conn = new Connection("ws://localhost/ws", false);
+    const warnings: unknown[] = [];
+    const invalid: string[] = [];
+    conn.on("warning", (data) => {
+      warnings.push(data);
+    });
+    conn.invalidMessage = (command) => {
+      invalid.push(command);
+    };
+    for (const data of [
+      { message: "Careful" },
+      { message: "" },
+      { text: "Careful" },
+    ]) {
       conn.onMessage({
-        data: 'warning {"message":"Old frame"}',
+        data: JSON.stringify({ event: "warning", data }),
       } as MessageEvent);
-      expect(warnings).toEqual([{ message: "Careful" }]);
-      expect(Object.isFrozen(warnings[0])).toBe(false);
-      expect(invalid).toEqual(["warning", "warning"]);
-    } finally {
-      globalThis.WebSocket = originalWebSocket;
     }
+    // An outdated client's error also arrives in the frame of clients from before JSON frames,
+    // which this client ignores.
+    conn.onMessage({
+      data: 'warning {"message":"Old frame"}',
+    } as MessageEvent);
+    expect(warnings).toEqual([{ message: "Careful" }]);
+    expect(Object.isFrozen(warnings[0])).toBe(false);
+    expect(invalid).toEqual(["warning", "warning"]);
   });
 });
 
 describe("replies", () => {
   test("a request gets its reply, and a refusal shows unless it is ignored", () => {
-    // eslint-disable-next-line unicorn/no-unnecessary-global-this
-    const originalWebSocket = globalThis.WebSocket;
-    globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
-    try {
-      const conn = new Connection("ws://localhost/ws", false);
-      const warnings: unknown[] = [];
-      conn.on("warning", (data) => {
-        warnings.push(data);
-      });
-      const replies = new Map<string, unknown>();
-      function reply(frame: object) {
-        conn.onMessage({ data: JSON.stringify(frame) } as MessageEvent);
-      }
-
-      conn.send("gameHistory", { offset: 0, limit: 10 }, (answer) => {
-        replies.set("history", answer);
-      });
-      conn.send(
-        "tableStart",
-        { tableId: 1, intendedPlayerIds: [] },
-        (answer) => {
-          replies.set("refused", answer);
-        },
-      );
-      conn.send("tableLeave", { tableId: 1 }, (answer) => {
-        replies.set("ignored", answer);
-      });
-      conn.send("tableLeave", { tableId: 2 }, (answer) => {
-        replies.set("unanswered", answer);
-      });
-      reply({ reply: 1, data: { games: [], total: 0 } });
-      reply({ reply: 2, error: { message: "Not your table." } });
-      reply({
-        reply: 3,
-        error: { message: "Unknown table", code: "commandIgnored" },
-      });
-      conn.onClose({} as CloseEvent);
-
-      expect(Object.fromEntries(replies)).toEqual({
-        history: { ok: true, data: { games: [], total: 0 } },
-        refused: { ok: false },
-        ignored: { ok: false },
-        unanswered: { ok: false },
-      });
-      expect(warnings).toEqual([{ message: "Not your table." }]);
-    } finally {
-      globalThis.WebSocket = originalWebSocket;
+    const conn = new Connection("ws://localhost/ws", false);
+    const warnings: unknown[] = [];
+    conn.on("warning", (data) => {
+      warnings.push(data);
+    });
+    const replies = new Map<string, unknown>();
+    function reply(frame: object) {
+      conn.onMessage({ data: JSON.stringify(frame) } as MessageEvent);
     }
+
+    conn.send("gameHistory", { offset: 0, limit: 10 }, (answer) => {
+      replies.set("history", answer);
+    });
+    conn.send("tableStart", { tableId: 1, intendedPlayerIds: [] }, (answer) => {
+      replies.set("refused", answer);
+    });
+    conn.send("tableLeave", { tableId: 1 }, (answer) => {
+      replies.set("ignored", answer);
+    });
+    conn.send("tableLeave", { tableId: 2 }, (answer) => {
+      replies.set("unanswered", answer);
+    });
+    reply({ reply: 1, data: { games: [], total: 0 } });
+    reply({ reply: 2, error: { message: "Not your table." } });
+    reply({
+      reply: 3,
+      error: { message: "Unknown table", code: "commandIgnored" },
+    });
+    conn.onClose({} as CloseEvent);
+
+    expect(Object.fromEntries(replies)).toEqual({
+      history: { ok: true, data: { games: [], total: 0 } },
+      refused: { ok: false },
+      ignored: { ok: false },
+      unanswered: { ok: false },
+    });
+    expect(warnings).toEqual([{ message: "Not your table." }]);
   });
 });

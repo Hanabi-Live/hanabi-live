@@ -61,5 +61,5 @@ declare global {
   }
 }
 // We set the UI globals to `globals`, so the lobby globals take `globals2`.
-// eslint-disable-next-line unicorn/prefer-global-this
+// eslint-disable-next-line unicorn/prefer-global-this, unicorn/no-global-object-property-assignment
 window.globals2 = globals;

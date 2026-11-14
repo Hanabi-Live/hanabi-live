@@ -654,6 +654,7 @@ declare global {
 }
 
 // Make the current state available from the JavaScript console (for debugging purposes).
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 Object.defineProperty(globalThis, "state", {
   get: () => store.getState().game.current,
 });

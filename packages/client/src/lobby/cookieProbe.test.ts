@@ -3,11 +3,10 @@ import { install } from "@sinonjs/fake-timers";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { checkCookieWithRetry } from "./cookieProbe.ts";
 
-const originalFetch = globalThis.fetch;
 let clock: Clock | undefined;
 
 afterEach(() => {
-  globalThis.fetch = originalFetch;
+  vi.unstubAllGlobals();
   clock?.uninstall();
 });
 
@@ -18,9 +17,7 @@ describe("cached login cookie check", () => {
       const request = vi
         .fn<() => Promise<Response>>()
         .mockResolvedValue(new Response(null, { status }));
-      globalThis.fetch = Object.assign(request, {
-        preconnect: originalFetch.preconnect,
-      });
+      vi.stubGlobal("fetch", request);
 
       const result = await checkCookieWithRetry();
 
@@ -43,9 +40,7 @@ describe("cached login cookie check", () => {
       .fn<() => Promise<Response>>()
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
-    globalThis.fetch = Object.assign(request, {
-      preconnect: originalFetch.preconnect,
-    });
+    vi.stubGlobal("fetch", request);
 
     const pending = checkCookieWithRetry();
     await clock.tickAsync(1000);
@@ -69,9 +64,7 @@ describe("cached login cookie check", () => {
     const request = vi
       .fn<() => Promise<Response>>()
       .mockResolvedValue(new Response(null, { status: 503 }));
-    globalThis.fetch = Object.assign(request, {
-      preconnect: originalFetch.preconnect,
-    });
+    vi.stubGlobal("fetch", request);
 
     const pending = checkCookieWithRetry().catch((error: unknown) => error);
     await clock.tickAsync(3000);
@@ -106,9 +99,7 @@ describe("cached login cookie check", () => {
           }),
       )
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    globalThis.fetch = Object.assign(request, {
-      preconnect: originalFetch.preconnect,
-    });
+    vi.stubGlobal("fetch", request);
 
     const pending = checkCookieWithRetry();
     await clock.tickAsync(11_000);

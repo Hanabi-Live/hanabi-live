@@ -44,5 +44,6 @@ function cycleEmpathyStyle(): string {
 }
 
 // Players call it from the browser console.
+// eslint-disable-next-line unicorn/no-top-level-side-effects, unicorn/no-global-object-property-assignment
 (globalThis as unknown as { empathy: () => string }).empathy =
   cycleEmpathyStyle;

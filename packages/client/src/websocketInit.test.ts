@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { LocalStorageStub } from "./testLocalStorage.ts";
 
 let clock: Clock;
-const originalFetch = globalThis.fetch;
 
 vi.mock("./Globals.ts", () => ({
   globals: { conn: undefined, currentScreen: "Login", ui: undefined },
@@ -32,19 +31,6 @@ interface FakeSocket {
   emit: (event: string) => void;
 }
 
-const mockedGlobalNames = [
-  "WebSocket",
-  "fetch",
-  "navigator",
-  "document",
-  "location",
-  "sessionStorage",
-  "addEventListener",
-] as const;
-const savedGlobalDescriptors = new Map<
-  string,
-  PropertyDescriptor | undefined
->();
 const sockets: FakeSocket[] = [];
 const reload = vi.fn();
 
@@ -82,12 +68,6 @@ class MockSocket {
 }
 
 beforeEach(() => {
-  for (const name of mockedGlobalNames) {
-    savedGlobalDescriptors.set(
-      name,
-      Object.getOwnPropertyDescriptor(globalThis, name),
-    );
-  }
   clock = install({
     toFake: [
       "setTimeout",
@@ -100,44 +80,25 @@ beforeEach(() => {
   sockets.length = 0;
   reload.mockClear();
 
-  globalThis.WebSocket = MockSocket as unknown as typeof WebSocket;
-  globalThis.fetch = Object.assign(
-    vi
-      .fn<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>()
-      .mockResolvedValue(new Response(null, { status: 200 })),
-    { preconnect: originalFetch.preconnect },
+  vi.stubGlobal("WebSocket", MockSocket);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response(null, { status: 200 })),
   );
-  Object.defineProperties(globalThis, {
-    navigator: {
-      configurable: true,
-      value: { onLine: true },
-    },
-    document: {
-      configurable: true,
-      value: {
-        visibilityState: "visible",
-        addEventListener: vi.fn(),
-        querySelector: () => ({ textContent: "localhost" }),
-      },
-    },
-    location: {
-      configurable: true,
-      value: {
-        hostname: "localhost",
-        protocol: "https:",
-        port: "",
-        reload,
-      },
-    },
-    sessionStorage: {
-      configurable: true,
-      value: new LocalStorageStub(),
-    },
-    addEventListener: {
-      configurable: true,
-      value: vi.fn(),
-    },
+  vi.stubGlobal("navigator", { onLine: true });
+  vi.stubGlobal("document", {
+    visibilityState: "visible",
+    addEventListener: vi.fn(),
+    querySelector: () => ({ textContent: "localhost" }),
   });
+  vi.stubGlobal("location", {
+    hostname: "localhost",
+    protocol: "https:",
+    port: "",
+    reload,
+  });
+  vi.stubGlobal("sessionStorage", new LocalStorageStub());
+  vi.stubGlobal("addEventListener", vi.fn());
 });
 
 afterEach(() => {
@@ -145,14 +106,7 @@ afterEach(() => {
     socket.readyState = MockSocket.CLOSED;
   }
   clock.uninstall();
-  for (const [name, descriptor] of savedGlobalDescriptors) {
-    if (descriptor === undefined) {
-      Reflect.deleteProperty(globalThis, name);
-    } else {
-      Object.defineProperty(globalThis, name, descriptor);
-    }
-  }
-  savedGlobalDescriptors.clear();
+  vi.unstubAllGlobals();
 });
 
 describe("initial WebSocket handshake watchdog", () => {
@@ -187,9 +141,7 @@ describe("initial WebSocket handshake watchdog", () => {
           }),
       )
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
-    globalThis.fetch = Object.assign(request, {
-      preconnect: originalFetch.preconnect,
-    });
+    vi.stubGlobal("fetch", request);
 
     websocketInit();
 

@@ -57,18 +57,14 @@ export const hanabiConfigBase = defineConfig(
       // Keep explicit branches and comparisons in the game rules and event handlers.
       "unicorn/no-duplicate-if-branches": "off",
 
-      // Application entry points initialize shared state at module scope.
-      "unicorn/no-global-object-property-assignment": "off",
-
       // Names follow the existing UI style.
       "unicorn/no-non-function-verb-prefix": "off",
 
       // Keep explicit comparisons in the game rules and event handlers.
       "unicorn/no-subtraction-comparison": "off",
 
-      // Application entry points initialize shared state and register handlers at module scope.
+      // Modules keep their state in top-level variables that functions set.
       "unicorn/no-top-level-assignment-in-function": "off",
-      "unicorn/no-top-level-side-effects": "off",
 
       // Loops and constructor expressions follow the existing UI style.
       "unicorn/no-unreadable-for-of-expression": "off",
