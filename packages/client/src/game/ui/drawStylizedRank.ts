@@ -3,7 +3,7 @@ import { assertDefined } from "complete-common";
 import { tracePath } from "./tracePath.ts";
 
 /** Where the top-left corner of a stylized rank shape is drawn on the card, in pixels. */
-export const SHAPE_ORIGIN = {
+const SHAPE_ORIGIN = {
   x: 60,
   y: 135,
 } as const;

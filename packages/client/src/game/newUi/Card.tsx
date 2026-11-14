@@ -3,7 +3,7 @@ import { START_CARD_RANK } from "@hanabi-live/game";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
-import { RANK_PATHS, SHAPE_ORIGIN } from "../ui/drawStylizedRank.ts";
+import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
 import { Pip } from "./Pip.tsx";
 import type { NoteBorder, NoteMark } from "./tableView.ts";
 
@@ -38,11 +38,40 @@ const RANK_OUTLINE_WIDTH = 4;
 const SUIT_PIP_SIZE_PER_WIDTH = 0.5;
 
 /**
+ * How far the rank and the badges in the corners of a card are from its edges, as a fraction of its
+ * width. It is the same from the side and from the top, so the corners look even.
+ */
+const CORNER_INSET_PER_WIDTH = 0.09;
+
+/**
+ * The box around every rank shape, relative to the origin of its path, in the card's own units. The
+ * lowest shape, the 5, sets the bottom.
+ */
+const RANK_SHAPE_BOX = {
+  left: -46,
+  top: -113,
+  bottom: -21,
+} as const;
+
+/** How far the rank's path moves to put its box, with the outline, in the card's corner. */
+const RANK_CORNER_OFFSET = {
+  x:
+    CORNER_INSET_PER_WIDTH * CARD_W
+    + RANK_OUTLINE_WIDTH / 2
+    - RANK_SHAPE_BOX.left,
+  y:
+    CORNER_INSET_PER_WIDTH * CARD_W
+    + RANK_OUTLINE_WIDTH / 2
+    - RANK_SHAPE_BOX.top,
+} as const;
+
+/**
  * How far the bottom of the rank in a card's corner is from the card's top edge, as a fraction of
- * its width. The lowest shape, the 5, reaches down to `SHAPE_ORIGIN.y`.
+ * its width.
  */
 export const RANK_BOTTOM_PER_WIDTH =
-  (SHAPE_ORIGIN.y + RANK_OUTLINE_WIDTH) / CARD_W;
+  (RANK_CORNER_OFFSET.y + RANK_SHAPE_BOX.bottom + RANK_OUTLINE_WIDTH / 2)
+  / CARD_W;
 
 /** The width of the border in the clue color around a clued card (`tw:ring-4`), in CSS pixels. */
 export const CLUED_BORDER_WIDTH = 4;
@@ -228,9 +257,8 @@ const STATUS_TOOLTIP = {
   trash: "Known trash. This card can never be played.",
 } as const;
 
-/** The size of a badge in the corner of a card, and its gap from the edges, per card width. */
+/** The size of a badge in the corner of a card, per card width. */
 const BADGE_SIZE_PER_WIDTH = 0.2;
-const BADGE_INSET_PER_WIDTH = 0.09;
 
 /** The size of the mark in a badge, such as the exclamation mark, per badge size. */
 const BADGE_FONT_PER_SIZE = 0.73;
@@ -240,7 +268,7 @@ function getBadgeStyle(
   width: number,
   corner: "topRight" | "bottomLeft",
 ): React.CSSProperties {
-  const inset = width * BADGE_INSET_PER_WIDTH;
+  const inset = width * CORNER_INSET_PER_WIDTH;
   return {
     ...(corner === "topRight"
       ? {
@@ -698,7 +726,7 @@ function StylizedRanks({
   readonly showTurnedOver: boolean;
 }): React.JSX.Element {
   const path = RANK_PATHS.get(rank);
-  const corner = `translate(${SHAPE_ORIGIN.x} ${SHAPE_ORIGIN.y})`;
+  const corner = `translate(${RANK_CORNER_OFFSET.x} ${RANK_CORNER_OFFSET.y})`;
 
   return (
     <svg
