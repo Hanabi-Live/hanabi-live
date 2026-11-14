@@ -41,7 +41,9 @@ export const hanabiConfigBase = defineConfig(
       // variable would not make clearer.
       "unicorn/no-unreadable-new-expression": "off",
 
-      // Promise callbacks are used for fire-and-forget operations and CommonJS entry points.
+      // Event handlers, timers, and other functions that do not wait start async work with
+      // `.then()` and `.catch()`. With `await`, each one would need an async wrapper that nothing
+      // waits for.
       "unicorn/prefer-await": "off",
 
       // Keep explicit branches in the game rules and event handlers.
