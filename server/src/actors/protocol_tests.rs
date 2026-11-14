@@ -2236,6 +2236,29 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
 }
 
 #[tokio::test]
+async fn a_replay_leader_who_leaves_tells_the_new_leader() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.replay(0).await?;
+        h.send(1, "tableSpectate", json!({"tableId":id})).await?;
+        h.receive(1, "tableJoined").await?;
+        h.send(0, "tableUnattend", json!({"tableId":id})).await?;
+        ensure!(
+            h.receive(1, "tableOwner").await?["owner"]["userId"] == 2,
+            "Bob was not told that he leads the replay"
+        );
+        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId::new(2).unwrap());
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn finished_game_publishes_replay_leader_candidates_without_reconnecting() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Outsider"]).await? else {
         return Ok(());

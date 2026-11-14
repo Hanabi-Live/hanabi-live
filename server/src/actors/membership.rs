@@ -321,6 +321,8 @@ impl TableActor {
                 }
             }
         }
+        // A replay's leader who leaves passes the lead to someone who stays.
+        let mut successor = None;
         if matches!(next.phase, Phase::Replay { .. })
             && next.owner.user_id == session.user
             && let Some(a) = self.audience().find(|a| a.session.user != session.user)
@@ -329,6 +331,7 @@ impl TableActor {
             if let Phase::Replay { replay, .. } = &mut next.phase {
                 replay.leader = next.owner.user_id;
             }
+            successor = Some(next.owner.clone());
         }
         self.persist(next).await?;
         let mut e = if attending {
@@ -343,6 +346,9 @@ impl TableActor {
         };
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
+        }
+        if let Some(owner) = &successor {
+            self.leader_messages(&mut e, owner, None);
         }
         for message in notices {
             self.add_chat(&mut e, &message);
