@@ -726,6 +726,20 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 );
             }
         }
+        // Bob now leads the shared replay, and Alice, who follows, takes the lead.
+        h.send(
+            0,
+            "tableSetOwner",
+            json!({"tableId":id,"userId":h.users[0].user}),
+        )
+        .await?;
+        h.barrier(0).await?;
+        let expected = format!("{} has taken table ownership", h.users[0].name);
+        for index in 0..2 {
+            let messages = chat_messages(&h.frames(index));
+            ensure!(messages.len() == 1 && messages[0]["text"] == expected);
+        }
+        ensure!(h.snapshot(id).await?.0.owner.user_id == h.users[0].user);
         Ok::<(), anyhow::Error>(())
     }
     .await;

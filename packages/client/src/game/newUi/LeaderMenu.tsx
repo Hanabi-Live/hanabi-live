@@ -8,21 +8,25 @@ import { KEY_CLASS } from "./surfaces.ts";
 const BUTTON_CLASS = `tw:flex tw:h-11 tw:w-full tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`;
 
 /**
- * A person to pass the lead to. Like every button on the game screen, it is a key that stands on
- * the panel, so that it looks like something to press.
+ * A person to set as the new leader. Like every button on the game screen, it is a key that stands
+ * on the panel, so that it looks like something to press.
  */
 const ITEM_CLASS = `tw:group tw:flex tw:h-10 tw:w-full tw:cursor-pointer tw:items-center tw:gap-2.5 tw:rounded-lg tw:border-0 tw:bg-white/8 tw:px-3 tw:text-left tw:text-[15px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`;
 
 /**
- * The shared replay leader's menu, which shows that they lead and passes the lead to someone else
- * in the replay. The list follows the people in the replay while it is open.
+ * The shared replay's leader menu, which shows who leads and sets a new leader. Everyone in the
+ * replay has it, so a follower can also make themselves the leader. The list follows the people in
+ * the replay while it is open.
  */
 export function LeaderMenu({
   spectators,
-  ourUsername,
+  leader,
+  amLeader,
 }: {
   readonly spectators: readonly Spectator[];
-  readonly ourUsername: string;
+  /** The username of the leader. */
+  readonly leader: string;
+  readonly amLeader: boolean;
 }): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,8 +34,11 @@ export function LeaderMenu({
   useCloseOnOutsideClick(open, containerRef, setOpen);
 
   const others = spectators.filter(
-    (spectator) => spectator.username !== ourUsername,
+    (spectator) => spectator.username !== leader,
   );
+  const tooltip = amLeader
+    ? "You lead the shared replay. Set someone else as the new leader."
+    : `${leader} leads the shared replay. Set a new leader, such as yourself.`;
 
   return (
     <div className="tw:relative tw:flex" ref={containerRef}>
@@ -43,15 +50,11 @@ export function LeaderMenu({
           setOpen(!open);
         }}
         // The tooltip would cover the open menu, so it closes when the menu opens.
-        ref={tooltipRef(
-          open
-            ? undefined
-            : "You lead the shared replay. Pass the lead to someone else.",
-        )}
+        ref={tooltipRef(open ? undefined : tooltip)}
         type="button"
       >
         <i aria-hidden="true" className="fas fa-crown tw:text-game-replay" />
-        Leader: You
+        Leader: {amLeader ? "You" : leader}
         {/* The caret points the way that the menu opens. */}
         <i
           aria-hidden="true"
@@ -69,7 +72,7 @@ export function LeaderMenu({
           role="menu"
         >
           <span className="tw:px-1 tw:pt-1 tw:text-[13px] tw:text-game-muted">
-            {others.length === 0 ? "No one else is here" : "Pass the lead to"}
+            {others.length === 0 ? "No one else is here" : "Set new leader to"}
           </span>
           {others.map((spectator) => (
             <button
@@ -82,7 +85,7 @@ export function LeaderMenu({
               role="menuitem"
               type="button"
             >
-              {/* The crown lights up on the person that it would pass to. */}
+              {/* The crown lights up on the person that it would make the leader. */}
               <i
                 aria-hidden="true"
                 className="fas fa-crown tw:text-[13px] tw:text-game-muted tw:group-hover:text-game-replay"

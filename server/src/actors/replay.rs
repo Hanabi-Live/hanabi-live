@@ -236,13 +236,15 @@ impl TableActor {
         if let Phase::Replay { replay, .. } = &mut next.phase {
             replay.leader = target.0;
         }
-        let message = table_notice(
-            &mut next,
-            &format!(
+        let notice = if target.0 == session.user {
+            format!("{} has taken table ownership", session.name)
+        } else {
+            format!(
                 "{} has passed table ownership to: {}",
                 session.name, target.1
-            ),
-        );
+            )
+        };
+        let message = table_notice(&mut next, &notice);
         self.persist(next).await?;
         let mut e = self.effects();
         if let Some(message) = message {

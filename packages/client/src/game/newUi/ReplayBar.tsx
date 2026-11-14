@@ -15,7 +15,6 @@ import {
 import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
@@ -308,7 +307,7 @@ function FollowButton({
   return (
     <ToggleButton
       icon="fa-crown"
-      label={`Follow ${leader}`}
+      label="Follow"
       onClick={replay.toggleSharedSegments}
       pressed={following}
       tooltip={`Show the turns that ${leader} shows. Going to another turn on your own stops this.`}
@@ -466,19 +465,20 @@ export function TurnsBar({
   return (
     <Bar>
       <div className="tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents">
-        <div className="tw:flex tw:justify-start tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
-          {shared !== undefined
-            && (shared.amLeader ? (
-              <LeaderMenu
-                ourUsername={globals.metadata.ourUsername}
-                spectators={state.spectators}
-              />
-            ) : (
-              <FollowButton
-                following={shared.useSharedSegments}
-                leader={shared.leader}
-              />
-            ))}
+        <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
+          {shared !== undefined && (
+            <LeaderMenu
+              amLeader={shared.amLeader}
+              leader={shared.leader}
+              spectators={state.spectators}
+            />
+          )}
+          {shared !== undefined && !shared.amLeader && (
+            <FollowButton
+              following={shared.useSharedSegments}
+              leader={shared.leader}
+            />
+          )}
         </div>
         <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
           {finished && (

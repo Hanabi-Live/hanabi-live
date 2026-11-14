@@ -63,6 +63,8 @@ of the repository.
   finished game get the space.
 - In the new game screen, the clue tokens and the strikes are larger, and their
   bottom is level with the bottom of the controls below the hands.
+- In the new game screen, everyone in a shared replay has the "Leader" menu, so
+  a spectator can make themselves the leader.
 
 ## November 12th, 2026
 
