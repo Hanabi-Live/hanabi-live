@@ -58,6 +58,7 @@ import { CluePanel } from "./CluePanel.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import type { Seat } from "./Hands.tsx";
 import {
+  CARD_GAP,
   EMPATHY_TOGGLE_SPACE,
   HAND_BOX_BOTTOM_PADDING,
   HAND_BOX_TOP_SPACE,
@@ -671,7 +672,8 @@ function getHandCardWidth(
   const widthForCards =
     handsWidth
     - (nameColumnWidth === undefined ? 0 : nameColumnWidth + NAME_GAP)
-    - HAND_BOX_HORIZONTAL_PADDING;
+    - HAND_BOX_HORIZONTAL_PADDING
+    - CARD_GAP * (cardsPerHand - 1);
   const byWidth = widthForCards / cardsPerHand;
   const rowHeight =
     (handsHeight - HAND_ROW_GAP * (numPlayers - 1)) / numPlayers;
