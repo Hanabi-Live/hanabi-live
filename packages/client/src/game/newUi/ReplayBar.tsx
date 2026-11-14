@@ -449,7 +449,7 @@ export function TurnsBar({
   // The buttons and the timeline step through segments, as the classic screen's do.
   const atStart = segment === 0;
   const atEnd = segment >= lastSegment;
-  const canEnterHypothetical = shared === undefined || shared.amLeader;
+  const canEnterHypothetical = hypothetical.canStartHypothetical(state);
 
   // While we follow someone else's lead, the turn moves without us, so the bar shows which way.
   const following =

@@ -10,7 +10,7 @@ vi.mock("../Globals.ts", () => ({
 }));
 const { initialState } =
   await import("./reducers/initialStates/initialState.ts");
-const { endHypothetical, finishHypothetical } =
+const { endHypothetical, finishHypothetical, startHypothetical } =
   await import("./hypothetical.ts");
 const { store: appStore } = await import("../store.ts");
 const { gameStarted, gameUpdated } = await import("./gameSlice.ts");
@@ -24,7 +24,10 @@ function startGame(state: State) {
   };
 }
 
-function setup(shared: boolean) {
+/** Starts a finished game's replay, shared with these options or else on our own. */
+function startReplay(
+  shared: { amLeader: boolean; useSharedSegments: boolean } | undefined,
+) {
   const metadata = getDefaultMetadata(2);
   const initial = initialState(metadata);
   const store = startGame({
@@ -36,22 +39,30 @@ function setup(shared: boolean) {
       ...initial.replay,
       segment: 0,
       states: [initial.ongoingGame],
-      shared: shared
-        ? {
-            segment: 0,
-            useSharedSegments: true,
-            leader: metadata.ourUsername,
-            amLeader: true,
-            replayStartedAt: "2026-01-01T00:00:00.000Z",
-            spoilerFree: false,
-            canPlayAgain: false,
-            restartDeclined: [],
-            hypothetical: undefined,
-          }
-        : undefined,
+      shared:
+        shared === undefined
+          ? undefined
+          : {
+              segment: 0,
+              useSharedSegments: shared.useSharedSegments,
+              leader: shared.amLeader ? metadata.ourUsername : "leader",
+              amLeader: shared.amLeader,
+              replayStartedAt: "2026-01-01T00:00:00.000Z",
+              spoilerFree: false,
+              canPlayAgain: false,
+              restartDeclined: [],
+              hypothetical: undefined,
+            },
     },
   });
   send.mockClear();
+  return store;
+}
+
+function setup(shared: boolean) {
+  const store = startReplay(
+    shared ? { amLeader: true, useSharedSegments: true } : undefined,
+  );
   store.dispatch({
     type: "hypotheticalStart",
     shared,
@@ -108,6 +119,28 @@ describe("hypothetical exit", () => {
     const { store } = setup(true);
     finishHypothetical();
     finishHypothetical();
+    expect(store.getState().replay.hypothetical).toBeUndefined();
+    expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe("hypothetical start", () => {
+  test("starts our own hypothetical when we do not lead or follow", () => {
+    const store = startReplay({ amLeader: false, useSharedSegments: false });
+
+    startHypothetical();
+
+    const { replay } = store.getState();
+    expect(replay.ownHypothetical).not.toBeUndefined();
+    expect(replay.hypothetical).toBe(replay.ownHypothetical);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  test("does not start a hypothetical while we follow the leader", () => {
+    const store = startReplay({ amLeader: false, useSharedSegments: true });
+
+    startHypothetical();
+
     expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).not.toHaveBeenCalled();
   });

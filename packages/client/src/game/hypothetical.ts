@@ -45,13 +45,23 @@ function sendControl(control: HypotheticalControl) {
   });
 }
 
+/**
+ * The leader starts the shared hypothetical. Everyone else starts their own, but a player who
+ * follows the leader cannot, because the leader decides what they see.
+ */
+export function canStartHypothetical(state: State): boolean {
+  const { shared } = state.replay;
+  return shared === undefined || shared.amLeader || !shared.useSharedSegments;
+}
+
 export function startHypothetical(): void {
-  const { hypothetical, shared } = getState().replay;
-  if (hypothetical !== undefined) {
+  const state = getState();
+  const { hypothetical, shared } = state.replay;
+  if (hypothetical !== undefined || !canStartHypothetical(state)) {
     return;
   }
 
-  if (shared === undefined) {
+  if (shared === undefined || !shared.amLeader) {
     store.dispatch(
       gameUpdated({
         type: "hypotheticalStart",
@@ -60,7 +70,7 @@ export function startHypothetical(): void {
         actions: [],
       }),
     );
-  } else if (shared.amLeader) {
+  } else {
     sendControl({ type: "start" });
     startSharedHypothetical();
   }
