@@ -922,7 +922,7 @@ function getStates(): readonly State[] {
       },
     },
     // On the account's turn in a five-player game, it opens the clue menu on the next player's hand
-    // and chooses a clue. The clues that would touch no cards are grayed out.
+    // and chooses a clue. The clues that would touch no cards are empty slots.
     {
       name: "new-ui-clue-menu",
       path: "/",

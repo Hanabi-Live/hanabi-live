@@ -34,13 +34,18 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
 /** The space between the menu and the hand, in CSS pixels. */
 const MENU_GAP = 8;
 
-const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-25 ${KEY_CLASS}`;
+/**
+ * A clue is a key. A clue that the rules do not allow is an empty slot instead: it has no fill and
+ * no lip, only a thin outline. The difference is in the shape, not in the color, so that a faded
+ * color does not look like another color.
+ */
+const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:inset-ring-2 ${KEY_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it on their hand.
  * It opens below the hand, so that the cards that the chosen clue would touch stay in view. When
  * there is no room below, it opens above. A clue that the rules do not allow, such as one that
- * touches no cards, is grayed out. Clicking outside of it or pressing Escape closes it.
+ * touches no cards, is an empty slot. Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -165,16 +170,20 @@ export function ClueMenu({
             <button
               aria-label={color.name}
               aria-pressed={pressed}
-              className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
+              className={`${choiceClass} tw:bg-(--clue-color) tw:disabled:bg-transparent tw:disabled:inset-ring-(--clue-color) ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
               disabled={!isAllowed(colorClue)}
               key={color.name}
               onClick={() => {
                 onChooseClue(pressed ? undefined : colorClue);
               }}
               ref={tooltipRef(color.name)}
-              style={{
-                background: colorblindMode ? color.fillColorblind : color.fill,
-              }}
+              style={
+                {
+                  "--clue-color": colorblindMode
+                    ? color.fillColorblind
+                    : color.fill,
+                } as React.CSSProperties
+              }
               type="button"
             />
           );
@@ -187,7 +196,7 @@ export function ClueMenu({
           return (
             <button
               aria-pressed={pressed}
-              className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+              className={`${choiceClass} tw:bg-game-text tw:text-card-ink tw:disabled:bg-transparent tw:disabled:text-game-muted/60 tw:disabled:inset-ring-game-line/60 ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
               disabled={!isAllowed(rankClue)}
               key={rank}
               onClick={() => {
