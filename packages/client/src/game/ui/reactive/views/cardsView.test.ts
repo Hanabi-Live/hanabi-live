@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 const setBareImage = vi.fn();
 
 vi.mock("../../HanabiCard.ts", () => ({ HanabiCard: vi.fn() }));
-vi.mock("../../hypothetical.ts", () => ({
+vi.mock("../../hypotheticalHands.ts", () => ({
   changeStartingHandVisibility: vi.fn(),
 }));
 vi.mock("../../getCardOrStackBase.ts", () => ({

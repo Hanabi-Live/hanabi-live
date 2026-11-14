@@ -1,4 +1,4 @@
-import { changeStartingHandVisibility } from "./hypothetical.ts";
+import { changeStartingHandVisibility } from "./hypotheticalHands.ts";
 import { globals } from "./UiGlobals.ts";
 
 /** With `includeNotes`, the cards also apply our notes, as they do with Ctrl + Space. */

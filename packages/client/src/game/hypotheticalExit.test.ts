@@ -1,22 +1,19 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { getDefaultMetadata } from "@hanabi-live/game";
-import type { Mock } from "vitest";
 import { describe, expect, test, vi } from "vitest";
-import type { State } from "../types/State.ts";
-import type { Action } from "../types/actions.ts";
+import type { State } from "./types/State.ts";
+import type { Action } from "./types/actions.ts";
 
-import type { HanabiCard } from "./HanabiCard.ts";
-
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
-vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
+const send = vi.fn();
+vi.mock("../Globals.ts", () => ({
+  globals: { connection: { send }, joinedTableId: 42 },
+}));
 const { initialState } =
-  await import("../reducers/initialStates/initialState.ts");
-const mouse = await import("./HanabiCardMouse.ts");
-const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
+  await import("./reducers/initialStates/initialState.ts");
+const { endHypothetical, finishHypothetical } =
   await import("./hypothetical.ts");
-const { globals } = await import("./UiGlobals.ts");
-const { store: appStore } = await import("../../store.ts");
-const { gameStarted, gameUpdated } = await import("../gameSlice.ts");
+const { store: appStore } = await import("../store.ts");
+const { gameStarted, gameUpdated } = await import("./gameSlice.ts");
 
 /** Starts a game with this state in the store, and reads and changes it like a store of its own. */
 function startGame(state: State) {
@@ -54,26 +51,19 @@ function setup(shared: boolean) {
         : undefined,
     },
   });
-  const send = vi.fn();
-  Object.assign(globals, {
-    lobby: { tableId: 42, joinedTableId: 42, conn: { send } },
-  });
-  Object.defineProperty(globals, "state", {
-    configurable: true,
-    get: () => store.getState(),
-  });
+  send.mockClear();
   store.dispatch({
     type: "hypotheticalStart",
     shared,
     showDrawnCards: false,
     actions: [],
   });
-  return { store, send };
+  return { store };
 }
 
 describe("hypothetical exit", () => {
   test("waits for the shared replay's end event before clearing pending actions", () => {
-    const { store, send } = setup(true);
+    const { store } = setup(true);
 
     endHypothetical();
 
@@ -104,7 +94,7 @@ describe("hypothetical exit", () => {
   });
 
   test("ends a solo hypothetical locally without sending to the server", () => {
-    const { store, send } = setup(false);
+    const { store } = setup(false);
 
     endHypothetical();
 
@@ -113,32 +103,10 @@ describe("hypothetical exit", () => {
   });
 
   test("ignores a duplicate end event after the hypothetical has ended", () => {
-    const { store, send } = setup(true);
+    const { store } = setup(true);
     finishHypothetical();
     finishHypothetical();
     expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).not.toHaveBeenCalled();
-  });
-});
-
-describe("hypothetical hand empathy", () => {
-  test("uses the LayoutChild card when its first Konva child is not a card", () => {
-    setup(false);
-    const card = { state: { location: 0 } } as unknown as HanabiCard;
-    const hand = {
-      children: [{ card, children: [{ isDecoration: true }] }],
-    };
-    Object.assign(globals, {
-      elements: { playerHands: [hand, { children: [] }] },
-      options: { numPlayers: 2 },
-    });
-
-    changeStartingHandVisibility();
-
-    const empathyCalls = (
-      mouse.setEmpathyOnHand as unknown as Mock<typeof mouse.setEmpathyOnHand>
-    ).mock.calls;
-    expect(empathyCalls).toHaveLength(1);
-    expect(empathyCalls[0]).toEqual([card, true]);
   });
 });

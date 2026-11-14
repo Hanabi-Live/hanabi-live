@@ -1,6 +1,6 @@
+import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { globals } from "./UiGlobals.ts";
-import { controlsHypothetical } from "./controlsHypothetical.ts";
 
 /**
  * Used to determine if it is our turn in the present. (For example, it can be our turn in the

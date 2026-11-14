@@ -1,8 +1,8 @@
 import type { GameState } from "@hanabi-live/game";
 import { gameStateSource } from "../../gameStateSource.ts";
+import { canPassTurnInHypothetical } from "../../hypothetical.ts";
 import type { State } from "../../types/State.ts";
 import { globals } from "../UiGlobals.ts";
-import { canPassTurnInHypothetical } from "../hypothetical.ts";
 import type { Listener, Selector, Subscription } from "./observeStore.ts";
 import { observeStore, SKIP } from "./observeStore.ts";
 import * as animateFastView from "./views/animateFastView.ts";

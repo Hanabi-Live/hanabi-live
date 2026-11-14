@@ -16,17 +16,14 @@ import {
 } from "@hanabi-live/game";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
-vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
+vi.mock("../Globals.ts", () => ({ globals: {} }));
 const { initialState } =
-  await import("../reducers/initialStates/initialState.ts");
-const { globals } = await import("./UiGlobals.ts");
-const { getCardOrStackBase } = await import("./getCardOrStackBase.ts");
+  await import("./reducers/initialStates/initialState.ts");
 const { sendHypotheticalAction } = await import("./hypothetical.ts");
 const { planClientHypotheticalAction } =
   await import("./planClientHypotheticalAction.ts");
-const { store } = await import("../../store.ts");
-const { gameUpdated } = await import("../gameSlice.ts");
+const { store } = await import("../store.ts");
+const { gameStarted, gameUpdated } = await import("./gameSlice.ts");
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -116,26 +113,26 @@ function soloHypothetical(ongoing: GameState) {
 
 describe("client hypothetical planning", () => {
   test.each([1, 2] as const)(
-    "sends a bottom-deck rank %s play through the real client handoff without a UI card",
+    "sends a bottom-deck rank %s play through the real client handoff before the card is drawn",
     (rank) => {
       const context = makeContext(rank);
       const state = initialState(context.metadata);
-      const dispatch = spyOnDispatch();
-      Object.assign(globals, {
-        metadata: context.metadata,
-        variant: context.variant,
-        deck: [],
-        state: {
+      store.dispatch(
+        gameStarted({
           ...state,
           playing: context.playing,
+          visibleState: context.gameState,
           cardIdentities: context.cardIdentities,
           replay: {
             ...state.replay,
             ...soloHypothetical(context.gameState),
           },
-        },
-      });
-      expect(getCardOrStackBase(bottomOrder)).toBeUndefined();
+        }),
+      );
+      expect(
+        store.getState().game.current?.visibleState?.deck[bottomOrder],
+      ).toBeUndefined();
+      const dispatch = spyOnDispatch();
 
       sendHypotheticalAction({ type: "play", order: bottomOrder });
 
@@ -154,36 +151,23 @@ describe("client hypothetical planning", () => {
     },
   );
 
-  test("reads the layout card for a hypothetical clue", () => {
+  test("reads the visible card for a hypothetical clue", () => {
     const context = makeContext();
     const state = initialState(context.metadata);
-    const dispatch = spyOnDispatch();
-    const handChild = {
-      card: {
-        state: context.gameState.deck[1],
-        isStackBase: false,
-        visibleSuitIndex: 0,
-        visibleRank: 1,
-      },
-      children: [{}],
-    };
-    Object.assign(globals, {
-      metadata: context.metadata,
-      variant: context.variant,
-      elements: {
-        playerHands: [{ children: [] }, { children: [handChild] }],
-      },
-      state: {
+    store.dispatch(
+      gameStarted({
         ...state,
         playing: false,
+        visibleState: context.gameState,
         cardIdentities: context.cardIdentities,
         notes: { ...state.notes, ourNotes: context.notes },
         replay: {
           ...state.replay,
           ...soloHypothetical(context.gameState),
         },
-      },
-    });
+      }),
+    );
+    const dispatch = spyOnDispatch();
 
     sendHypotheticalAction({
       type: "clue",

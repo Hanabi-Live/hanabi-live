@@ -24,6 +24,8 @@ import {
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
+import { controlsHypothetical } from "../controlsHypothetical.ts";
+import * as hypothetical from "../hypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
@@ -32,8 +34,6 @@ import * as arrows from "./arrows.ts";
 import { backToLobby } from "./backToLobby.ts";
 import * as clues from "./clues.ts";
 import { confirmPlay } from "./confirmPlay.ts";
-import { controlsHypothetical } from "./controlsHypothetical.ts";
-import * as hypothetical from "./hypothetical.ts";
 import * as replay from "./replay.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 

@@ -37,6 +37,7 @@ import * as clock from "../clock.ts";
 import { registerGameObservers } from "../gameObservers.ts";
 import type { Votes } from "../gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
+import * as hypothetical from "../hypothetical.ts";
 import { initialState } from "../reducers/initialStates/initialState.ts";
 import { playerNamesAt } from "../reducers/stateReducerHelpers.ts";
 import { SoundType } from "../types/SoundType.ts";
@@ -45,7 +46,6 @@ import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
-import * as hypothetical from "./hypothetical.ts";
 import * as notes from "./notes.ts";
 import { StateObserver } from "./reactive/StateObserver.ts";
 import * as replay from "./replay.ts";
@@ -223,7 +223,6 @@ function onHypotheticalControl(control: HypotheticalControl) {
           action,
         }),
       );
-      hypothetical.checkToggleRevealedButton(action);
       break;
     }
 

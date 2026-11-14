@@ -5,6 +5,8 @@ import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
+import { controlsHypothetical } from "../controlsHypothetical.ts";
+import * as hypothetical from "../hypothetical.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -14,8 +16,6 @@ import {
   MIDDLE_MOUSE_BUTTON,
   RIGHT_MOUSE_BUTTON,
 } from "./constants.ts";
-import { controlsHypothetical } from "./controlsHypothetical.ts";
-import * as hypothetical from "./hypothetical.ts";
 import * as notes from "./notes.ts";
 import * as replay from "./replay.ts";
 

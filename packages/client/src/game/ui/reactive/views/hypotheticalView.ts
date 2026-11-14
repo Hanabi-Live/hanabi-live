@@ -1,11 +1,14 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
+import {
+  canToggleDrawnCards,
+  controlsHypothetical,
+} from "../../../controlsHypothetical.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
 import * as arrows from "../../arrows.ts";
 import * as clues from "../../clues.ts";
 import type { PlayerButton } from "../../controls/PlayerButton.ts";
-import { controlsHypothetical } from "../../controlsHypothetical.ts";
-import { changeStartingHandVisibility } from "../../hypothetical.ts";
+import { changeStartingHandVisibility } from "../../hypotheticalHands.ts";
 import * as turn from "../../turn.ts";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations.
@@ -79,7 +82,7 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
 }
 
 export function shouldShowToggleDrawnCards(state: State): boolean {
-  return state.finished && controlsHypothetical(state);
+  return canToggleDrawnCards(state);
 }
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {

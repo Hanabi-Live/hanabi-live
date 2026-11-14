@@ -3,13 +3,13 @@ import * as notifications from "../../notifications.ts";
 import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
 import { gameUpdated } from "../gameSlice.ts";
+import * as hypothetical from "../hypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import * as cluePreview from "./cluePreview.ts";
 import { PREPLAY_DELAY_MILLISECONDS } from "./constants.ts";
-import * as hypothetical from "./hypothetical.ts";
 import { isOurTurn } from "./isOurTurn.ts";
 import * as replay from "./replay.ts";
 

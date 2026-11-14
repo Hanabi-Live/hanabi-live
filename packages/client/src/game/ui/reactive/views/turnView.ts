@@ -1,10 +1,10 @@
 import type { ClueType } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
+import { controlsHypothetical } from "../../../controlsHypothetical.ts";
 import { isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
 import { DISABLED_OPACITY } from "../../constants.ts";
-import { controlsHypothetical } from "../../controlsHypothetical.ts";
 import { isOurTurn } from "../../isOurTurn.ts";
 import * as turn from "../../turn.ts";
 

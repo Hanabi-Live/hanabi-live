@@ -1,8 +1,10 @@
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
-vi.mock("./hypothetical.ts", () => ({ changeStartingHandVisibility: vi.fn() }));
-const { changeStartingHandVisibility } = await import("./hypothetical.ts");
+vi.mock("./hypotheticalHands.ts", () => ({
+  changeStartingHandVisibility: vi.fn(),
+}));
+const { changeStartingHandVisibility } = await import("./hypotheticalHands.ts");
 const { setGlobalEmpathy } = await import("./setGlobalEmpathy.ts");
 const { globals } = await import("./UiGlobals.ts");
 

@@ -8,11 +8,14 @@
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import {
+  canToggleDrawnCards,
+  controlsHypothetical,
+} from "../controlsHypothetical.ts";
+import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UiGlobals.ts";
-import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
-import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
+import { globals } from "../ui/UiGlobals.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
@@ -371,8 +374,7 @@ function HypotheticalBar({
           Pass
         </button>
         <ToggleButton
-          // A drawn card that has been played, discarded, or clued stays shown.
-          disabled={globals.elements.showDrawnCardsCheckbox?.enabled === false}
+          disabled={!canToggleDrawnCards(state)}
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo.showDrawnCards}

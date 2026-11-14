@@ -19,7 +19,7 @@ export function planClientHypotheticalAction(
     && intent.order === gameState.deck.length
     && cardViews.every((view) => view.state.order !== intent.order)
   ) {
-    // The bottom card has no HanabiCard yet. Supply only the planner's data.
+    // The bottom card is not drawn yet, so it has no view. Supply only the planner's data.
     return planHypotheticalAction(intent, {
       ...context,
       cardViews: [

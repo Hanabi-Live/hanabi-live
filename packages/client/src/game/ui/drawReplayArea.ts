@@ -1,13 +1,13 @@
 import Konva from "konva";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
+import * as hypothetical from "../hypothetical.ts";
 import { globals } from "./UiGlobals.ts";
 import { BGA_ACTION_LOG, THIN_STROKE_WIDTH } from "./constants.ts";
 import { Button } from "./controls/Button.ts";
 import { EnterHypoButton } from "./controls/EnterHypoButton.ts";
 import { SharedTurnsButton } from "./controls/SharedTurnsButton.ts";
 import { Shuttle } from "./controls/Shuttle.ts";
-import * as hypothetical from "./hypothetical.ts";
 import * as replay from "./replay.ts";
 
 /** Clicks on the replay buttons closer together than this are treated as accidental. */
