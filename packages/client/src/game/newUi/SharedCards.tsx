@@ -21,7 +21,7 @@ import {
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { Pip } from "./Pip.tsx";
-import { WELL_CLASS } from "./surfaces.ts";
+import { DROP_ZONE_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -231,13 +231,17 @@ function zoneRef(
   };
 }
 
+/**
+ * While the player drags a card, the play stacks and the discard pile both darken, to show where
+ * the card can go. The discard pile darkens at max clues too, where it refuses the card.
+ */
 const zoneClasses: Record<ZoneState, string> = {
   idle: WELL_CLASS,
-  available: WELL_CLASS,
-  hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
+  available: DROP_ZONE_CLASS,
+  hovered: `${DROP_ZONE_CLASS} tw:inset-ring-3 tw:inset-ring-clue`,
   // The discard pile dims its cards itself, so that its sign and label stay bright.
-  unavailable: WELL_CLASS,
-  blocked: WELL_CLASS,
+  unavailable: DROP_ZONE_CLASS,
+  blocked: DROP_ZONE_CLASS,
 };
 
 function isRefusing(state: ZoneState): boolean {
@@ -259,13 +263,7 @@ function ZoneLabel({
 
   return (
     <span
-      className={`tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-20 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
-        // A target that refuses the card says why at its top edge, where the held card does not
-        // cover it.
-        isRefusing(state)
-          ? "tw:top-3 tw:-translate-x-1/2"
-          : "tw:top-1/2 tw:-translate-1/2"
-      } ${
+      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
         state === "hovered" || state === "blocked"
           ? "tw:bg-clue tw:text-card-ink"
           : "tw:bg-game-text tw:text-card-ink"
@@ -679,8 +677,8 @@ export const DiscardPile = forwardRef<
         aria-label="Discards"
         className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]} ${
           // At max clues, a quiet dashed border in the clue color shows that no one can discard,
-          // before anyone picks up a card.
-          atMaxClues && zoneState === "idle"
+          // before anyone picks up a card and while they drag one.
+          atMaxClues
             ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
             : ""
         }`}
@@ -762,11 +760,11 @@ export const DiscardPile = forwardRef<
  * The sign over the discard pile while the player holds a card over it and the team cannot discard.
  * It is a circle with a slash, not an X, because an X on this screen is a strike. It is in the
  * color of clues, because the team has too many clues to discard. It is larger than the held card,
- * so that the card does not cover it. It fills the pile below the label.
+ * so that the card does not cover it. It is in the middle of the pile, around the label.
  */
 function NoEntrySign(): React.JSX.Element {
   return (
-    <div className="tw:pointer-events-none tw:absolute tw:inset-x-3 tw:top-14 tw:bottom-3 tw:z-10">
+    <div className="tw:pointer-events-none tw:absolute tw:inset-3 tw:z-10">
       <svg
         aria-hidden="true"
         className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]"

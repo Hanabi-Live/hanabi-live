@@ -173,6 +173,8 @@
   --game-screen-zone: rgb(255 255 255 / 8%);
   /* A readout on the table, such as the clue tokens: a well cut into the felt. */
   --game-screen-well: rgb(0 0 0 / 30%);
+  /* A place to drop the held card, such as the discard pile: a well darker than the others. */
+  --game-screen-drop-zone: rgb(0 0 0 / 55%);
 
   /*
     The panels around the table, such as the bar along the bottom and the chat: darker felt, so that

@@ -4,11 +4,23 @@
  */
 
 /**
+ * The edges of a well: the shadow that its top edge casts into it, and the light on its bottom
+ * edge.
+ */
+const WELL_EDGES_CLASS =
+  "tw:inset-shadow-[0_3px_10px_rgb(0_0_0/55%)] tw:shadow-[0_1px_0_rgb(255_255_255/12%)]";
+
+/**
  * A readout: a well cut into the felt. Its top edge casts a shadow into it, and light catches its
  * bottom edge.
  */
-export const WELL_CLASS =
-  "tw:bg-game-well tw:inset-shadow-[0_3px_10px_rgb(0_0_0/55%)] tw:shadow-[0_1px_0_rgb(255_255_255/12%)]";
+export const WELL_CLASS = `tw:bg-game-well ${WELL_EDGES_CLASS}`;
+
+/**
+ * A place to drop the held card, such as the play stacks: a well that is darker than a readout, so
+ * that the player sees where they can drag the card.
+ */
+export const DROP_ZONE_CLASS = `tw:bg-game-drop-zone ${WELL_EDGES_CLASS}`;
 
 /** The shadow of a panel of controls, such as the clue panel, which sits above the table. */
 export const PANEL_SHADOW_CLASS = "tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
