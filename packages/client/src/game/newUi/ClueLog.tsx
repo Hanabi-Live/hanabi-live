@@ -8,6 +8,9 @@ import { WELL_CLASS } from "./surfaces.ts";
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
 const CLUE_DISC_SIZE = 16;
 
+/** The size of the number on a clue disc, as a fraction of the disc's size. */
+const DISC_FONT_SIZE_PER_SIZE = 10 / CLUE_DISC_SIZE;
+
 /**
  * How close to the bottom of the log, in CSS pixels, the viewer must scroll for the log to stay on
  * the newest clue.
@@ -72,7 +75,7 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
  * The clue as words next to its disc, such as "Red" or "Number 2". A bare number gets the word
  * "Number", so that it does not read as a count.
  */
-function getClueText(entry: ClueLogEntry): string {
+export function getClueText(entry: ClueLogEntry): string {
   const { marker, clueName } = entry;
   return marker.type === "rank" && clueName === marker.label
     ? `Number ${clueName}`
@@ -285,24 +288,28 @@ function FitName({ name }: { readonly name: string }): React.JSX.Element {
  * The clue as a small disc, like the tokens on the cards: the clue's color, or a white disc with
  * the token's label. Its label also says whether the clue touched the card under the mouse.
  */
-function ClueDisc({
+export function ClueDisc({
   marker,
   clueName,
-  match,
+  match = "none",
+  size = CLUE_DISC_SIZE,
 }: {
   readonly marker: ClueMarkerView;
   readonly clueName: string;
-  readonly match: Match;
+  readonly match?: Match;
+  /** The width and height in CSS pixels. */
+  readonly size?: number;
 }): React.JSX.Element {
   const label = `${clueName}${MATCH_LABEL_SUFFIX[match]}`;
   return (
     <span
       aria-label={label}
-      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:text-[10px] tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black]"
+      className="tw:box-border tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black]"
       role="img"
       style={{
-        width: CLUE_DISC_SIZE,
-        height: CLUE_DISC_SIZE,
+        width: size,
+        height: size,
+        fontSize: size * DISC_FONT_SIZE_PER_SIZE,
         background: getClueMarkerColor(marker),
       }}
     >

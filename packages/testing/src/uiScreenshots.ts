@@ -812,8 +812,8 @@ function getStates(): readonly State[] {
         await game.emptyDeck();
       },
     },
-    // After every player has discarded cards, a click on the second player's name lists their
-    // actions.
+    // After every player has discarded cards, a click on the third player's name lists their
+    // actions: clues and discards.
     {
       name: "new-ui-player-log",
       path: "/",
@@ -824,7 +824,7 @@ function getStates(): readonly State[] {
         await game.discardTurns(15);
       },
       prepare: async (page) => {
-        await page.locator("[data-name-chip]").nth(1).click();
+        await page.locator("[data-name-chip]").nth(2).click();
         await page.getByRole("dialog").waitFor();
         await settle(page);
       },

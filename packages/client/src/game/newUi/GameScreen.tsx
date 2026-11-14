@@ -35,7 +35,7 @@ import {
   NameColumnSizer,
 } from "./Hands.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
-import { getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
+import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { HypotheticalActions, ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
@@ -812,13 +812,21 @@ export function GameScreen({
 
       {logSeat !== undefined && (
         <PlayerLog
-          entries={getPlayerLog(
-            visibleState.log,
-            metadata.playerNames,
-            logSeat,
+          colorblindMode={settings.colorblindMode}
+          entries={getPlayerActions(
+            getPlayerLog(visibleState.log, metadata.playerNames, logSeat),
+            metadata.playerNames[logSeat] ?? "",
+            visibleState.deck,
+            getClueLogEntries(state),
+            variant,
           )}
           name={metadata.playerNames[logSeat] ?? ""}
           onClose={closePlayerLog}
+          onShowTurn={(turn) => {
+            closePlayerLog();
+            showReplayTurn(turn);
+          }}
+          variant={variant}
         />
       )}
 
