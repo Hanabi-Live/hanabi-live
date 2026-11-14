@@ -1,10 +1,4 @@
-import type {
-  CardOrder,
-  Rank,
-  Suit,
-  SuitIndex,
-  Variant,
-} from "@hanabi-live/game";
+import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
@@ -40,31 +34,41 @@ export const PLAY_STACK_GAP = 6;
 /** The space between the play stacks, the deck, and the tokens, in CSS pixels. */
 export const PLAY_AREA_GAP = 8;
 
-/** How much of the suit's color tints an empty play stack, in percent. */
-const EMPTY_STACK_TINT_PERCENT = 45;
+/** The width of the dashed edge of an empty play stack, in CSS pixels. */
+const EMPTY_STACK_LINE_WIDTH = 2;
 
 /**
- * The look of an empty play stack: a soft fill and an edge in its suit's color, as on the classic
- * screen, so that the fireworks are in color before anyone plays them.
+ * The dashed edge of an empty play stack, in the shape of a card. It is drawn in SVG rather than as
+ * a CSS border, so that the dashes follow the card's rounded corners.
  */
-function getEmptyStackStyle(
-  suit: Suit,
-  colorblindMode: boolean,
-): React.CSSProperties {
-  const colors = suit.fillColors ?? [
-    colorblindMode ? suit.fillColorblind : suit.fill,
-  ];
-  const tints = colors.map(
-    (color) =>
-      `color-mix(in srgb, ${color} ${EMPTY_STACK_TINT_PERCENT}%, transparent)`,
+function EmptyStackOutline({
+  width,
+  height,
+}: {
+  readonly width: number;
+  readonly height: number;
+}): React.JSX.Element {
+  const inset = EMPTY_STACK_LINE_WIDTH / 2;
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:text-game-line"
+      height={height}
+      width={width}
+    >
+      <rect
+        fill="none"
+        height={height - EMPTY_STACK_LINE_WIDTH}
+        rx={width * CARD_CORNER_PER_WIDTH - inset}
+        stroke="currentColor"
+        strokeDasharray="6 4"
+        strokeWidth={EMPTY_STACK_LINE_WIDTH}
+        width={width - EMPTY_STACK_LINE_WIDTH}
+        x={inset}
+        y={inset}
+      />
+    </svg>
   );
-  return {
-    background:
-      tints.length === 1
-        ? tints[0]
-        : `linear-gradient(135deg, ${tints.join(", ")})`,
-    borderColor: colors.length === 1 ? colors[0] : "white",
-  };
 }
 
 export interface StackView {
@@ -196,18 +200,16 @@ export const PlayArea = forwardRef<
                 const below =
                   stack.belowRank === undefined ? (
                     <div
-                      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:border-2 tw:border-solid tw:border-game-line"
+                      className="tw:relative tw:flex tw:items-center tw:justify-center tw:opacity-60"
                       style={{
                         width: cardWidth,
-                        borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
                         height,
-                        ...(suit !== undefined
-                          && getEmptyStackStyle(suit, colorblindMode)),
                       }}
                     >
+                      <EmptyStackOutline height={height} width={cardWidth} />
                       {suit !== undefined && (
                         <Pip
-                          size={cardWidth * 0.6}
+                          size={cardWidth * 0.45}
                           suit={suit}
                           variant={variant}
                         />
