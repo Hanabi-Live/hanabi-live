@@ -380,10 +380,17 @@ impl TableActor {
             })
             .cloned()
             .collect::<Vec<_>>();
-        ensure_or_reject!(
-            players.len() >= MIN_PLAYERS && (!hide || players.len() == self.table.players().len()),
-            "Original players must attend to restart"
-        );
+        if players.len() < MIN_PLAYERS || (hide && players.len() < self.table.players().len()) {
+            let missing = self
+                .table
+                .players()
+                .iter()
+                .filter(|p| p.id.is_none_or(|id| !players.iter().any(|q| q.is(id))))
+                .map(|p| p.name.as_str())
+                .collect::<Vec<_>>()
+                .join(", ");
+            reject!("The original players must attend to restart. Missing: {missing}");
+        }
         Ok(players)
     }
     /// Starts a restart of a shared replay. Saving the finished game's statistics and reading the

@@ -18,7 +18,7 @@ use crate::{
     store::Store,
     transport::Session,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
@@ -414,6 +414,43 @@ async fn joining_or_reattending_a_review_does_not_restart_its_idle_timer() -> Re
         );
         actor.retire().await?;
     }
+    store.close().await?;
+    db.close().await;
+    Ok(())
+}
+
+#[tokio::test]
+async fn restarting_without_the_original_players_names_who_is_missing() -> Result<()> {
+    let Some((db, store, _)) = fixture_store().await? else {
+        return Ok(());
+    };
+    let id = store.allocate_table().await?;
+    let mut table = review(id, EndCondition::TerminatedByPlayer)?;
+    table.visible = true;
+    let revision = store.save_at(&table, 0).await?;
+    let (hub, _notifications) = mpsc::channel(16);
+    let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
+    let mut actor = TableActor::new(
+        table,
+        saved,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
+    );
+    let (leader, _frames) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
+    actor
+        .attendees
+        .insert(UserId::new(1).unwrap(), attendance(leader.clone(), false));
+    let Some(Err(error)) = actor.start_restart(&leader, false) else {
+        bail!("Restarted without Bob");
+    };
+    ensure!(
+        error.to_string() == "The original players must attend to restart. Missing: Bob",
+        "Unexpected rejection: {error}"
+    );
+    actor.retire().await?;
     store.close().await?;
     db.close().await;
     Ok(())
