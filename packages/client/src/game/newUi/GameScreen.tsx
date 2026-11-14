@@ -1,122 +1,84 @@
 // The redesigned game screen. It draws a game, or its replay, from the same store as the classic
 // screen.
 
-import type {
-  CardIdentity,
-  CardOrder,
-  Clue,
-  GameState,
-  PlayerIndex,
-  StateClue,
-  SuitIndex,
-} from "@hanabi-live/game";
+import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   getCardsPerHand,
-  getCharacterNameForPlayer,
   getClueCost,
-  getClueName,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
-  millisecondsToClockString,
-  newColorClue,
-  newRankClue,
 } from "@hanabi-live/game";
-import { clamp } from "complete-common";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import * as modals from "../../modals.ts";
+import { useEffect, useRef, useState } from "react";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
-import { getActivePlayerIndex, getPlayerTime } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
-import { getEmpathyNote } from "../empathyNote.ts";
-import * as hypothetical from "../hypothetical.ts";
-import { getViewPlayerIndex } from "../ourSeat.ts";
-import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
-import type { State } from "../types/State.ts";
+import type { ClientClue } from "../types/ClientAction.ts";
 import { globals } from "../ui/UiGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
-import * as notes from "../ui/notes.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
-import * as turn from "../ui/turn.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
-import type { ClueMarkerView } from "./Card.tsx";
-import {
-  CARD_HEIGHT_PER_WIDTH,
-  CardFace,
-  CLUED_RAISE_PER_WIDTH,
-} from "./Card.tsx";
+import { CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
-import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 import { CluePanel } from "./CluePanel.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
-import type { Seat } from "./Hands.tsx";
 import {
-  CARD_GAP,
   EMPATHY_TOGGLE_SPACE,
-  HAND_BOX_BOTTOM_PADDING,
-  HAND_BOX_TOP_SPACE,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
-  NAME_GAP,
   NameColumnSizer,
 } from "./Hands.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
-import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
-import {
-  DECK_PILE_DEPTH,
-  DiscardPile,
-  PlayArea,
-  TABLE_TOKENS_HEIGHT,
-  TableTokens,
-} from "./SharedCards.tsx";
+import type { ZoneState } from "./SharedCards.tsx";
+import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
-import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
-  animateCardMoves,
-  animateClue,
-  areCardsMoving,
-  MAX_ANIMATED_SEGMENT_CHANGE,
-  measureCards,
-  MOVE_BATCH_MILLISECONDS,
-  stopCardMoves,
-} from "./cardMotion.ts";
+  getHandCardWidth,
+  getTableCardWidth,
+  NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
+  TABLE_CARD_WIDTH,
+} from "./cardSizes.ts";
+import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
 import {
-  useElementSize,
-  useMediaQuery,
-  useNow,
-  useWindowSize,
-} from "./hooks.ts";
-import type { Misplay } from "./playMotion.ts";
+  canDiscardNow,
+  editCard,
+  getActionState,
+  sendAction,
+  showClue,
+  showDiscard,
+  showReplayTurn,
+} from "./screenActions.ts";
 import {
-  animateFinale,
-  animateMaxScoreDrop,
-  animateStackComplete,
-  finishScoreSignals,
-} from "./scoreMotion.ts";
+  getClueForTurn,
+  getClueLogEntries,
+  getClueMarker,
+  getClueMarkers,
+  getDiscardRows,
+  getNotesHtml,
+  getPreviewMarker,
+  getSeats,
+  getShownIdentities,
+  getStacks,
+  getStrikeSegments,
+} from "./screenView.ts";
 import {
-  getScreenScaleForWindow,
-  setScreenScale,
-  toScreenPixels,
-} from "./screenScale.ts";
-import type { CardView } from "./tableView.ts";
-import {
-  BLANK_NOTE,
   formatFutureEfficiency,
   formatPace,
-  getCardView,
-  getHandDisplayOrder,
   getTouchedCards,
   isClueAllowed,
 } from "./tableView.ts";
+import { getDropRect, useCardDrag } from "./useCardDrag.ts";
+import { useCardMotion } from "./useCardMotion.ts";
+import type { ClueHotkeys } from "./useHotkeys.ts";
+import { useClueHotkeys, useSpacebarEmpathy } from "./useHotkeys.ts";
 
 /**
  * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
@@ -131,581 +93,15 @@ const STACKED_WIDTH_QUERY = "(max-width: 980px)";
 /** A screen whose main pointer is a finger, which has no cursor to hover with. */
 const TOUCH_QUERY = "(pointer: coarse)";
 
-/** How far the pointer must move after pressing a card before the card starts to move with it. */
-const DRAG_THRESHOLD_PIXELS = 6;
-
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
-
-/** The smallest and largest card in a hand, in CSS pixels of width. */
-const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
-
-/**
- * When the columns stack, the names go beside the cards only if the cards are still at least this
- * wide. Otherwise, as on a phone, the names go above the cards, so that the cards get the whole
- * width.
- */
-const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
-
-/** The smallest and largest card on the play stacks and in the discard pile. */
-const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
-
-/** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
-const STACKED_PLAY_AREA_OTHER_WIDTH = 48;
-
-const HAND_BOX_HORIZONTAL_PADDING = 32;
-
-/**
- * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
- * deck, the edges under the top of the deck, and the tokens under it. The classes of these gaps are
- * in pixels, not "rem", so that this sum stays right.
- */
-const PLAY_AREA_OTHER_HEIGHT =
-  2 * 16 + 12 + DECK_PILE_DEPTH + TABLE_TOKENS_HEIGHT;
-const PLAY_STACK_GAP = 8;
-
-type DropZone = "play" | "discard";
-
-interface Drag {
-  readonly order: CardOrder;
-  readonly x: number;
-  readonly y: number;
-  readonly zone: DropZone | undefined;
-}
-
-/**
- * How long a card that the player dropped on the play stacks or the discard pile waits there for
- * the move to arrive. If the move does not arrive, such as when the server refuses it, the card
- * goes back to the hand.
- */
-const DROP_WAIT_MILLISECONDS = 3000;
 
 /** How the chat names us among the people watching. */
 const YOU = "You";
 
-/**
- * Where the card under the pointer sits, as the drag draws it (before its slight tilt), in the
- * screen's CSS pixels.
- */
-function getDropRect(drag: Drag, cardWidth: number): DOMRect {
-  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
-  return new DOMRect(
-    toScreenPixels(drag.x) - cardWidth / 2,
-    toScreenPixels(drag.y) - height / 2,
-    cardWidth,
-    height,
-  );
-}
-
-/** Whether a key press goes into a text box, such as the chat, rather than to the game. */
-function isTyping(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLElement
-    && (target.isContentEditable
-      || target instanceof HTMLInputElement
-      || target instanceof HTMLTextAreaElement)
-  );
-}
-
-/**
- * The keys that choose a color clue, in the order of the variant's colors, as on the classic
- * screen. They sit next to the number keys, which choose a rank.
- */
-const COLOR_CLUE_KEYS = ["q", "w", "e", "r", "t", "y"] as const;
-
-function isInside(element: HTMLElement | null, x: number, y: number): boolean {
-  if (element === null) {
-    return false;
-  }
-
-  const rect = element.getBoundingClientRect();
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-}
-
 /** The handlers of the hidden copy of the clue panel, which no one can use. */
 function ignore() {
   // The copy only holds the panel's space.
-}
-
-/** Plays the move in the game, or in the hypothetical when there is one. */
-function sendAction(action: ClientAction) {
-  if (globals.state.replay.hypothetical === undefined) {
-    turn.end(action);
-  } else {
-    hypothetical.sendHypotheticalAction(action);
-  }
-}
-
-/** The state that the player's moves change: the hypothetical's, or else the game's. */
-function getActionState(state: State): GameState {
-  return state.replay.hypothetical?.ongoing ?? state.ongoingGame;
-}
-
-function canDiscardNow(): boolean {
-  return !isAtMaxClueTokens(
-    getActionState(globals.state).clueTokens,
-    globals.variant,
-  );
-}
-
-/**
- * The identity of each card, as the screen shows it. In a hypothetical, an edited card shows its
- * new identity, and a drawn card shows nothing while the drawn cards are hidden.
- */
-function getShownIdentities(state: State): readonly CardIdentity[] {
-  const morphs = state.replay.hypothetical?.morphedIdentities;
-  if (morphs === undefined || morphs.length === 0) {
-    return state.cardIdentities;
-  }
-
-  // The array is sparse, with no entry for the cards that keep their identities.
-  const identities = [...state.cardIdentities];
-  for (const key of Object.keys(morphs)) {
-    const order = Number(key);
-    identities[order] = morphs[order]!;
-  }
-  return identities;
-}
-
-/** In a hypothetical with the cards turned on for editing, a card changes into another. */
-function editCard(order: CardOrder) {
-  const state = store.getState().game.current;
-  const target =
-    state === undefined ? undefined : hypothetical.getMorphTarget(state, order);
-  if (target !== undefined) {
-    modals.askForMorph(target, globals.variant);
-  }
-}
-
-/**
- * Returns the seats in the order that the screen shows them. The hands of the players in
- * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
- * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses. The
- * viewer's own hand always applies the viewer's notes.
- */
-function getSeats(
-  state: State,
-  empathyPlayers: ReadonlySet<PlayerIndex>,
-  empathyIncludesNotes: boolean,
-): readonly Seat[] {
-  const visibleState = state.visibleState!;
-  const { metadata } = state;
-  const { settings } = store.getState().session;
-  const { numPlayers } = metadata.options;
-  const hasSeat = state.playing || state.shadowing;
-  // In the replay of a game that we played, our hand stays first.
-  const firstPlayerIndex = getViewPlayerIndex(metadata);
-  // The clock belongs to the game as it stands. A replay shows a past turn, so its current player
-  // is not the one whose clock runs.
-  const showClock =
-    (metadata.options.timeControl !== undefined || settings.showTimerInUntimed)
-    && state.replay.segment === undefined
-    && !state.finished;
-  const hypo = state.replay.hypothetical;
-  const controlsHypo = controlsHypothetical(state);
-  const identities = getShownIdentities(state);
-
-  const seats: Seat[] = [];
-  for (let i = 0; i < numPlayers; i++) {
-    const playerIndex = ((firstPlayerIndex + i) % numPlayers) as PlayerIndex;
-    const you = hasSeat && playerIndex === metadata.ourPlayerIndex;
-    // In a hypothetical that hides the drawn cards, the player who started it sees their own hand
-    // only as the clues show it, as in the game.
-    const empathy =
-      you
-      || empathyPlayers.has(playerIndex)
-      || (hypo !== undefined
-        && !hypo.showDrawnCards
-        && playerIndex === hypo.startingPlayerIndex);
-    const hand = visibleState.hands[playerIndex] ?? [];
-    const cards: CardView[] = [];
-    for (const order of getHandDisplayOrder(hand, settings.reverseHands)) {
-      const cardState = visibleState.deck[order];
-      if (cardState === undefined) {
-        continue;
-      }
-
-      cards.push(
-        getCardView({
-          gameState: visibleState,
-          cardState,
-          cardIdentity: identities[order] ?? {
-            suitIndex: undefined,
-            rank: undefined,
-          },
-          note:
-            empathy && empathyIncludesNotes
-              ? getEmpathyNote(state, globals.variant, order)
-              : (state.notes.ourNotes[order] ?? BLANK_NOTE),
-          variant: globals.variant,
-          empathy,
-          // Our own notes always apply to our own hand, as on the classic screen: a note can show a
-          // card's identity and remove possibilities.
-          empathyIncludesNotes: empathy && (empathyIncludesNotes || you),
-          finished: state.finished,
-          realLifeMode: settings.realLifeMode,
-        }),
-      );
-    }
-
-    const active = visibleState.turn.currentPlayerIndex === playerIndex;
-    let clock: string | undefined;
-    if (showClock && active && getActivePlayerIndex() === playerIndex) {
-      clock = millisecondsToClockString(getPlayerTime(playerIndex) ?? 0);
-    }
-
-    seats.push({
-      playerIndex,
-      name: metadata.playerNames[playerIndex] ?? "",
-      active,
-      you,
-      acting: hypo === undefined ? you : controlsHypo && active,
-      cards,
-      clock,
-    });
-  }
-
-  return seats;
-}
-
-function getStacks(state: State): readonly StackView[] {
-  const visibleState = state.visibleState!;
-  const identities = getShownIdentities(state);
-  return globals.variant.suits.map((_suit, i) => {
-    const suitIndex = i as SuitIndex;
-    const stack = visibleState.playStacks[suitIndex] ?? [];
-    function rankOf(order: CardOrder | undefined) {
-      return order === undefined
-        ? undefined
-        : (identities[order]?.rank ?? visibleState.deck[order]?.rank);
-    }
-
-    const top = stack.at(-1);
-    return {
-      suitIndex,
-      topOrder: top,
-      topRank: rankOf(top),
-      belowRank: rankOf(stack.at(-2)),
-    };
-  });
-}
-
-/** Discarded cards go in order of rank, with cards of unknown rank last. */
-function compareDiscards(a: DiscardView, b: DiscardView): number {
-  return (
-    (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER)
-  );
-}
-
-function getDiscardRows(state: State): ReadonlyArray<readonly DiscardView[]> {
-  const visibleState = state.visibleState!;
-  const identities = getShownIdentities(state);
-  return visibleState.discardStacks
-    .map((stack) =>
-      stack
-        .map((order): DiscardView => {
-          const identity = identities[order];
-          return {
-            order,
-            suitIndex: identity?.suitIndex,
-            rank: identity?.rank,
-          };
-        })
-        .toSorted(compareDiscards),
-    )
-    .filter((row: readonly DiscardView[]) => row.length > 0);
-}
-
-/** The notes that the tooltip of each card shows, for the cards that have notes. */
-function getNotesHtml(
-  orders: Iterable<CardOrder>,
-): ReadonlyMap<CardOrder, string> {
-  const notesHtml = new Map<CardOrder, string>();
-  for (const order of orders) {
-    const html = notes.getShownNoteHtml(order);
-    if (html !== "") {
-      notesHtml.set(order, html);
-    }
-  }
-  return notesHtml;
-}
-
-/** The clue that led to the turn that shows, if the last move was a clue. */
-function getClueForTurn(gameState: GameState): StateClue | undefined {
-  const { segment } = gameState.turn;
-  if (segment === undefined) {
-    return undefined;
-  }
-
-  return gameState.clues.findLast((clue) => clue.segment === segment - 1);
-}
-
-/** How a clue shows on the arrows and beside the name of the player who gave it. */
-/** How the clue being chosen shows on the cards that it would touch. */
-function getPreviewMarker(clue: Clue, colorblindMode: boolean): ClueMarkerView {
-  return clue.type === "color"
-    ? {
-        type: "color",
-        name: clue.value.name,
-        fill: colorblindMode ? clue.value.fillColorblind : clue.value.fill,
-      }
-    : { type: "rank", label: clue.value.toString() };
-}
-
-function getClueMarker(
-  clue: StateClue,
-  colorblindMode: boolean,
-): ClueMarkerView {
-  if (clue.type === "color") {
-    const color = globals.variant.clueColors[clue.color];
-    if (color !== undefined) {
-      return {
-        type: "color",
-        name: color.name,
-        fill: colorblindMode ? color.fillColorblind : color.fill,
-      };
-    }
-  } else if (clue.type === "rank") {
-    return { type: "rank", label: clue.rank.toString() };
-  }
-
-  return { type: "hidden" };
-}
-
-/** The clues of the game so far, for the clue log. */
-function getClueLogEntries(state: State): readonly ClueLogEntry[] {
-  const { playerNames, characterAssignments } = state.metadata;
-  const { colorblindMode } = store.getState().session.settings;
-  return state.visibleState!.clues.map((clue) => ({
-    segment: clue.segment,
-    turn: clue.segment + 1,
-    giverName: playerNames[clue.giver] ?? "",
-    targetName: playerNames[clue.target] ?? "",
-    clueName: getClueName(
-      clue,
-      globals.variant,
-      getCharacterNameForPlayer(clue.giver, characterAssignments),
-    ),
-    marker: getClueMarker(clue, colorblindMode),
-    touchedCards: clue.list,
-    missedCards: clue.negativeList,
-  }));
-}
-
-/** Shows the turn just after a clue, in the in-game replay. */
-function showClue(segment: number) {
-  replay.goToSegment(segment + 1, true);
-}
-
-/** The markers for the cards that a clue touched. */
-function getClueMarkers(
-  clue: StateClue | undefined,
-  colorblindMode: boolean,
-): ReadonlyMap<CardOrder, ClueMarkerView> {
-  const markers = new Map<CardOrder, ClueMarkerView>();
-  if (clue === undefined) {
-    return markers;
-  }
-
-  const marker = getClueMarker(clue, colorblindMode);
-  for (const order of clue.list) {
-    markers.set(order, marker);
-  }
-  return markers;
-}
-
-/** Shows the turn on which a discarded card left its hand, in the in-game replay. */
-function showDiscard(order: CardOrder) {
-  const segment = globals.state.ongoingGame.deck[order]?.segmentDiscarded;
-  if (segment !== undefined) {
-    showReplayTurn(segment);
-  }
-}
-
-/**
- * Returns what the cards did on a move from one state to the next: the cards that were misplayed,
- * and whether plays and misplays show in full. They show only in a game in progress, as on the
- * classic screen, and not when the viewer steps through a replay.
- */
-function getMoveEffects(
-  state: State,
-  before: GameState,
-  after: GameState,
-  segmentChange: number,
-): MoveEffects {
-  const { variant } = globals;
-  const misplays = new Map<string, Misplay>();
-  const earlierStrikes = new Set(before.strikes.map((strike) => strike.order));
-  for (const [strikeIndex, strike] of after.strikes.entries()) {
-    const suitIndex = after.deck[strike.order]?.suitIndex;
-    if (earlierStrikes.has(strike.order) || suitIndex === undefined) {
-      continue;
-    }
-    misplays.set(strike.order.toString(), {
-      suitIndex,
-      // The strikes are hidden in the "Throw It in a Hole" variant.
-      strikeIndex: variant.throwItInAHole ? undefined : strikeIndex,
-    });
-  }
-
-  return {
-    // A play or a misplay comes a moment before its turn, so the segment does not change yet.
-    live: state.replay.segment === undefined && segmentChange >= 0,
-    misplays,
-  };
-}
-
-/**
- * Shows the changes of the score on a move, as the classic screen does. The server sends a move in
- * several updates, so each one starts on the update that changes its numbers.
- *
- * - In a game in progress, a play that completes a stack celebrates it, and a play that gives the
- *   team a perfect score sets off the finale instead.
- * - A lost card that lowers the maximum score shows it, also in a replay, but not when the replay
- *   goes back.
- */
-function animateScoreChanges(
-  root: HTMLElement,
-  before: GameState,
-  after: GameState,
-  live: boolean,
-  segmentChange: number,
-) {
-  const { variant } = globals;
-  if (live) {
-    const completed = after.playStacks.findIndex(
-      (stack, suitIndex) =>
-        stack.length === variant.stackSize
-        && before.playStacks[suitIndex]?.length === variant.stackSize - 1,
-    );
-    const playedCard = getLastPlayedCard(root, before, after);
-    if (after.score === variant.maxScore && before.score < variant.maxScore) {
-      animateFinale(root, variant.suits, playedCard);
-    } else if (completed !== -1) {
-      animateStackComplete(
-        root,
-        variant.suits,
-        completed,
-        playedCard,
-        after.clueTokens > before.clueTokens ? before.clueTokens : undefined,
-      );
-    }
-  }
-
-  if (segmentChange >= 0 && after.stats.maxScore < before.stats.maxScore) {
-    const discarded = new Set(before.discardStacks.flat());
-    const lost = after.discardStacks
-      .flat()
-      .find((order) => !discarded.has(order));
-    animateMaxScoreDrop(
-      root,
-      before.stats.maxScore,
-      lost === undefined ? undefined : getCardElement(root, lost),
-    );
-  }
-}
-
-function getCardElement(
-  root: HTMLElement,
-  order: CardOrder,
-): HTMLElement | undefined {
-  return (
-    root.querySelector<HTMLElement>(
-      `[data-card-order="${CSS.escape(order.toString())}"]`,
-    ) ?? undefined
-  );
-}
-
-/** The card that was just played onto a stack, if there is one. */
-function getLastPlayedCard(
-  root: HTMLElement,
-  before: GameState,
-  after: GameState,
-): HTMLElement | undefined {
-  for (const [suitIndex, stack] of after.playStacks.entries()) {
-    const order = stack.at(-1);
-    if (
-      order !== undefined
-      && stack.length > (before.playStacks[suitIndex]?.length ?? 0)
-    ) {
-      return getCardElement(root, order);
-    }
-  }
-  return undefined;
-}
-
-/**
- * For each strike box, the segment of its strike, as the classic screen's strike boxes have them.
- * In a replay, the boxes also stand for the strikes that come later, except in a spoiler-free
- * review. The strikes are hidden in the "Throw It in a Hole" variant.
- */
-function getStrikeSegments(state: State): ReadonlyArray<number | undefined> {
-  if (globals.variant.throwItInAHole) {
-    return [];
-  }
-
-  const { strikes } = replay.isSpoilerFree()
-    ? state.visibleState!
-    : state.ongoingGame;
-  return strikes.map((strike) => strike.segment);
-}
-
-/** Shows a turn in the in-game replay. */
-function showReplayTurn(segment: number) {
-  if (globals.state.replay.segment === undefined) {
-    replay.enter(segment);
-  } else {
-    replay.goToSegment(segment, true);
-  }
-}
-
-/**
- * Returns the width of the cards in the hands. When the columns stack, the page scrolls, so only
- * the width of the screen limits the cards.
- */
-function getHandCardWidth(
-  handsWidth: number,
-  handsHeight: number,
-  numPlayers: number,
-  cardsPerHand: number,
-  nameColumnWidth: number | undefined,
-  stacked: boolean,
-): number {
-  const widthForCards =
-    handsWidth
-    - (nameColumnWidth === undefined ? 0 : nameColumnWidth + NAME_GAP)
-    - HAND_BOX_HORIZONTAL_PADDING
-    - CARD_GAP * (cardsPerHand - 1);
-  const byWidth = widthForCards / cardsPerHand;
-  const rowHeight = handsHeight / numPlayers;
-  const byHeight = stacked
-    ? Infinity
-    : // The padding above the cards grows with them (see "getHandBoxTopPadding").
-      (rowHeight - HAND_BOX_BOTTOM_PADDING - HAND_BOX_TOP_SPACE)
-      / (CARD_HEIGHT_PER_WIDTH + CLUED_RAISE_PER_WIDTH);
-  return clamp(
-    Math.floor(Math.min(byWidth, byHeight)),
-    HAND_CARD_WIDTH.MIN,
-    HAND_CARD_WIDTH.MAX,
-  );
-}
-
-/**
- * Returns the width of the cards on the play stacks and in the discard pile. The play stacks and
- * the deck are one column of cards, or one row when the columns stack.
- */
-function getTableCardWidth(
-  playAreaWidth: number,
-  playAreaHeight: number,
-  numSuits: number,
-  stacked: boolean,
-): number {
-  const gaps = PLAY_STACK_GAP * (numSuits - 1);
-  const width = stacked
-    ? (playAreaWidth - STACKED_PLAY_AREA_OTHER_WIDTH - gaps) / (numSuits + 1)
-    : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps)
-      / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH);
-  return clamp(Math.floor(width), TABLE_CARD_WIDTH.MIN, TABLE_CARD_WIDTH.MAX);
 }
 
 export function GameScreen({
@@ -745,31 +141,10 @@ export function GameScreen({
       globalThis.removeEventListener("pointercancel", release);
     };
   }, []);
-  const [drag, setDrag] = useState<Drag>();
-  // A card that the player dropped stays where it was dropped until its move arrives, and then the
-  // move starts from there, not from the hand.
-  const [drop, setDrop] = useState<Drag>();
-  useEffect(() => {
-    if (drop === undefined) {
-      return undefined;
-    }
-    const timeout = setTimeout(() => {
-      setDrop(undefined);
-    }, DROP_WAIT_MILLISECONDS);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [drop]);
   const [editingCards, setEditingCards] = useState(false);
   // The card whose note the viewer is typing.
   const [noteCard, setNoteCard] = useState<CardOrder>();
 
-  const pendingDrag = useRef<{ order: CardOrder; x: number; y: number }>(
-    undefined,
-  );
-  const dragRef = useRef<Drag>(undefined);
-  const playZoneRef = useRef<HTMLElement>(null);
-  const discardZoneRef = useRef<HTMLElement>(null);
   const [handsElement, setHandsElement] = useState<HTMLDivElement | null>(null);
   const [playAreaElement, setPlayAreaElement] = useState<HTMLDivElement | null>(
     null,
@@ -785,58 +160,9 @@ export function GameScreen({
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
 
-  // Holding the spacebar shows every hand as its player sees it, as on the classic screen. Ctrl +
-  // Space also applies the viewer's notes.
-  const [globalEmpathy, setGlobalEmpathy] = useState(false);
-  const [globalEmpathyNotes, setGlobalEmpathyNotes] = useState(false);
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== " " || isTyping(event.target)) {
-        return;
-      }
-      // Otherwise, the spacebar would also press the button that has the focus.
-      event.preventDefault();
-      setGlobalEmpathy(true);
-      setGlobalEmpathyNotes(event.ctrlKey);
-    }
-
-    function onKeyUp(event: KeyboardEvent) {
-      if (event.key !== " ") {
-        return;
-      }
-      if (!isTyping(event.target)) {
-        event.preventDefault();
-      }
-      setGlobalEmpathy(false);
-    }
-
-    // A window that loses the focus never gets the key's release.
-    function onBlur() {
-      setGlobalEmpathy(false);
-    }
-
-    globalThis.addEventListener("keydown", onKeyDown);
-    globalThis.addEventListener("keyup", onKeyUp);
-    globalThis.addEventListener("blur", onBlur);
-    return () => {
-      globalThis.removeEventListener("keydown", onKeyDown);
-      globalThis.removeEventListener("keyup", onKeyUp);
-      globalThis.removeEventListener("blur", onBlur);
-    };
-  }, []);
-
-  // The clue hotkeys (see `onClueKey.current` below). The listener stays the same, so it reads the
-  // latest screen through the ref, which each render replaces.
-  const onClueKey = useRef<(event: KeyboardEvent) => void>(undefined);
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      onClueKey.current?.(event);
-    }
-    globalThis.addEventListener("keydown", onKeyDown);
-    return () => {
-      globalThis.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
+  const { globalEmpathy, globalEmpathyNotes } = useSpacebarEmpathy();
+  const clueHotkeys = useRef<ClueHotkeys>(undefined);
+  useClueHotkeys(clueHotkeys);
 
   // On a window too narrow for the chat panel beside the table, the chat starts collapsed.
   useEffect(() => {
@@ -863,235 +189,23 @@ export function GameScreen({
     }
   }, [inHypothetical]);
 
-  // The drag below reads the layout when the pointer moves, so it keeps the latest one here.
-  const mainRef = useRef<HTMLElement>(null);
-  const dropLayout = useRef({ stacked, handsElement });
-  useEffect(() => {
-    dropLayout.current = { stacked, handsElement };
-  }, [stacked, handsElement]);
-
-  // Move a card with the pointer, and play or discard it where the player drops it.
-  useEffect(() => {
-    function zoneAt(x: number, y: number): DropZone | undefined {
-      // Beside the hands, the whole half of the table is the target: everything to the left of the
-      // hands plays the card, and everything to the right discards it, from the top of the screen
-      // to the bottom. The narrow layout puts the play stacks below the hands, so there only the
-      // play stacks and the discard pile are targets.
-      const main = mainRef.current?.getBoundingClientRect();
-      const hands = dropLayout.current.handsElement?.getBoundingClientRect();
-      if (
-        !dropLayout.current.stacked
-        && main !== undefined
-        && hands !== undefined
-      ) {
-        if (x >= main.left && x < hands.left) {
-          return "play";
-        }
-        if (x > hands.right && x <= main.right) {
-          return "discard";
-        }
-        return undefined;
-      }
-
-      if (isInside(playZoneRef.current, x, y)) {
-        return "play";
-      }
-      if (isInside(discardZoneRef.current, x, y)) {
-        return "discard";
-      }
-      return undefined;
-    }
-
-    function onPointerMove(event: PointerEvent) {
-      const pending = pendingDrag.current;
-      if (pending === undefined) {
-        return;
-      }
-
-      const distance = Math.hypot(
-        event.clientX - pending.x,
-        event.clientY - pending.y,
-      );
-      if (dragRef.current === undefined && distance < DRAG_THRESHOLD_PIXELS) {
-        return;
-      }
-
-      const next: Drag = {
-        order: pending.order,
-        x: event.clientX,
-        y: event.clientY,
-        zone: zoneAt(event.clientX, event.clientY),
-      };
-      dragRef.current = next;
-      setDrag(next);
-    }
-
-    function onPointerUp(event: PointerEvent) {
-      const { current } = dragRef;
-      pendingDrag.current = undefined;
-      dragRef.current = undefined;
-      setDrag(undefined);
-      if (current === undefined) {
-        return;
-      }
-
-      const zone = zoneAt(event.clientX, event.clientY);
-      const dropped = { ...current, x: event.clientX, y: event.clientY, zone };
-      if (zone === "play") {
-        setDrop(dropped);
-        sendAction({ type: "play", order: current.order });
-      } else if (zone === "discard" && canDiscardNow()) {
-        setDrop(dropped);
-        sendAction({ type: "discard", order: current.order });
-      }
-    }
-
-    globalThis.addEventListener("pointermove", onPointerMove);
-    globalThis.addEventListener("pointerup", onPointerUp);
-    globalThis.addEventListener("pointercancel", onPointerUp);
-    return () => {
-      globalThis.removeEventListener("pointermove", onPointerMove);
-      globalThis.removeEventListener("pointerup", onPointerUp);
-      globalThis.removeEventListener("pointercancel", onPointerUp);
-    };
-  }, []);
-
-  // Move the cards when the game advances or the replay steps through a turn. A game's move arrives
-  // in one message, but a shared hypothetical's move arrives as several (such as a play, then a
-  // draw, then the turn), and the screen renders after each. So the updates within a short window
-  // count as one move: each one starts the cards again from where they were before the move began,
-  // toward their newest places. This runs before the page is painted, so the cards never flash in
-  // their new places.
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  // The whole screen grows with the window (see "screenScale.ts"). The card moves below measure
-  // with the new scale, so it is set first.
-  const windowSize = useWindowSize();
-  const screenScale = getScreenScaleForWindow(
-    windowSize.width,
-    windowSize.height,
+  const {
+    drag,
+    drop,
+    clearDrop,
+    pressCard,
+    mainRef,
+    playZoneRef,
+    discardZoneRef,
+  } = useCardDrag(stacked, handsElement);
+  // The card motion reads the width of the cards in the hands, which this render works out below.
+  const handCardWidthRef = useRef(0);
+  const { rootRef, screenScale } = useCardMotion(
+    state,
+    drop,
+    clearDrop,
+    handCardWidthRef,
   );
-  useLayoutEffect(() => {
-    setScreenScale(screenScale);
-  }, [screenScale]);
-
-  const shown = useRef<{
-    /** Where the cards were the last time that nothing was moving. */
-    readonly settledPositions: CardPositions;
-    readonly shownState: GameState | undefined;
-    /** The clue whose markers show, so that they fly in only once. */
-    readonly shownClue: StateClue | undefined;
-    readonly move:
-      | {
-          readonly startPositions: CardPositions;
-          readonly startState: GameState;
-          readonly startedAt: number;
-        }
-      | undefined;
-  }>({
-    settledPositions: new Map(),
-    shownState: undefined,
-    shownClue: undefined,
-    move: undefined,
-  });
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (root === null || state?.visibleState === undefined) {
-      return;
-    }
-    const shownState = state.visibleState;
-
-    const previous = shown.current;
-    if (previous.shownState === undefined) {
-      shown.current = {
-        settledPositions: measureCards(root),
-        shownState,
-        shownClue: getClueForTurn(shownState),
-        move: undefined,
-      };
-      return;
-    }
-
-    if (previous.shownState === shownState) {
-      // Keep the positions up to date (for example, after a resize), unless cards are moving.
-      if (!areCardsMoving()) {
-        shown.current = { ...previous, settledPositions: measureCards(root) };
-      }
-      return;
-    }
-
-    const now = performance.now();
-    let startPositions = previous.settledPositions;
-    // A card that the player dropped starts its move from where it was dropped.
-    if (drop !== undefined) {
-      const dropped = startPositions.get(drop.order.toString());
-      if (dropped !== undefined) {
-        startPositions = new Map(startPositions).set(drop.order.toString(), {
-          ...dropped,
-          rect: getDropRect(drop, handCardWidth),
-        });
-      }
-      setDrop(undefined);
-    }
-    const move =
-      previous.move !== undefined
-      && now - previous.move.startedAt <= MOVE_BATCH_MILLISECONDS
-        ? previous.move
-        : {
-            startPositions,
-            startState: previous.shownState,
-            startedAt: now,
-          };
-    stopCardMoves();
-    if (move !== previous.move) {
-      finishScoreSignals();
-    }
-    const positions = measureCards(root);
-    const segmentChange =
-      (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
-    if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
-      const effects = getMoveEffects(
-        state,
-        move.startState,
-        shownState,
-        segmentChange,
-      );
-      animateCardMoves(
-        root,
-        move.startPositions,
-        positions,
-        segmentChange > 0,
-        effects,
-      );
-
-      if (!store.getState().session.settings.reducedMotion) {
-        animateScoreChanges(
-          root,
-          previous.shownState,
-          shownState,
-          effects.live,
-          segmentChange,
-        );
-      }
-    }
-
-    // A clue that was just given flies in from its giver, when the game moves forward a turn.
-    const newClue = getClueForTurn(shownState);
-    if (
-      newClue !== undefined
-      && newClue !== previous.shownClue
-      && segmentChange > 0
-      && segmentChange <= MAX_ANIMATED_SEGMENT_CHANGE
-    ) {
-      animateClue(root);
-    }
-    shown.current = {
-      settledPositions: positions,
-      shownState,
-      shownClue: newClue,
-      move,
-    };
-  });
 
   if (state?.visibleState === undefined) {
     return (
@@ -1249,48 +363,14 @@ export function GameScreen({
     }
   }
 
-  // The clue hotkeys of the classic screen: Tab or ";" picks the next player, "1" to "5" pick a
-  // rank, "q" to "y" pick a color, and Ctrl + Enter gives the clue.
-  onClueKey.current = (event) => {
-    if (!canClue || isTyping(event.target)) {
-      return;
-    }
-
-    if (event.ctrlKey && event.key === "Enter") {
-      event.preventDefault();
-      giveClue();
-      return;
-    }
-    if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
-      return;
-    }
-
-    if (event.key === "Tab" || event.key === ";") {
-      event.preventDefault();
-      const index = clueTargets.findIndex(
-        (player) => player.playerIndex === clueTarget,
-      );
-      const next = clueTargets[(index + 1) % clueTargets.length];
-      if (next !== undefined) {
-        setClueTarget(next.playerIndex);
-      }
-      return;
-    }
-
-    const rank = variant.clueRanks[Number(event.key) - 1];
-    if (rank !== undefined && /^\d$/u.test(event.key)) {
-      setClue(newRankClue(rank));
-      return;
-    }
-    const color =
-      variant.clueColors[
-        COLOR_CLUE_KEYS.indexOf(
-          event.key.toLowerCase() as (typeof COLOR_CLUE_KEYS)[number],
-        )
-      ];
-    if (color !== undefined) {
-      setClue(newColorClue(color));
-    }
+  clueHotkeys.current = {
+    canClue,
+    variant,
+    clueTargets,
+    clueTarget,
+    onChooseTarget: setClueTarget,
+    onChooseClue: setClue,
+    onGive: giveClue,
   };
 
   let waitingText = "";
@@ -1339,6 +419,7 @@ export function GameScreen({
     nameColumnWidth = undefined;
     handCardWidth = getHandCardWidthFor(undefined);
   }
+  handCardWidthRef.current = handCardWidth;
   const tableCardWidth = getTableCardWidth(
     playAreaSize.width,
     playAreaSize.height,
@@ -1459,11 +540,7 @@ export function GameScreen({
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
                     if (canMoveCards && !tapToMove && event.button === 0) {
-                      pendingDrag.current = {
-                        order,
-                        x: event.clientX,
-                        y: event.clientY,
-                      };
+                      pressCard(order, event.clientX, event.clientY);
                     }
                   }}
                   onCardTap={(order) => {
