@@ -1,11 +1,14 @@
 import type {
   CardState,
   LogEntry,
+  NumPlayers,
+  PlayerIndex,
   Rank,
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
-import { getCardName } from "@hanabi-live/game";
+import { getCardName, getGoesFirstText } from "@hanabi-live/game";
+import type { Tuple } from "complete-common";
 import { useEffect, useRef } from "react";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
@@ -20,14 +23,20 @@ const ROW_DISC_SIZE = 22;
 /**
  * The lines of the action log that a player's actions wrote. Each line starts with the name of the
  * player who acted. When one name starts with another (such as "Al" and "Alice"), the line belongs
- * to the longer name that it starts with.
+ * to the longer name that it starts with. The line that says who goes first is not an action, so
+ * the list leaves it out.
  */
 export function getPlayerLog(
   log: readonly LogEntry[],
-  playerNames: readonly string[],
-  playerIndex: number,
+  playerNames: Readonly<Tuple<string, NumPlayers>>,
+  playerIndex: PlayerIndex,
 ): readonly LogEntry[] {
+  const goesFirstText = getGoesFirstText(playerIndex, playerNames);
   return log.filter((entry) => {
+    if (entry.text === goesFirstText) {
+      return false;
+    }
+
     let longest: number | undefined;
     for (const [i, name] of playerNames.entries()) {
       if (

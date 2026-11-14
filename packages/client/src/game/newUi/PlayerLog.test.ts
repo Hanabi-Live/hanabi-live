@@ -8,6 +8,10 @@ describe("getPlayerLog", () => {
   const log = [
     {
       turn: 1,
+      text: "Alice goes first",
+    },
+    {
+      turn: 1,
       text: "Alice plays Red 1 from slot #1",
     },
     {
@@ -23,9 +27,9 @@ describe("getPlayerLog", () => {
       text: "Alice discards Green 3 from slot #2",
     },
   ];
-  const playerNames = ["Al", "Alice", "Bob"];
+  const playerNames = ["Al", "Alice", "Bob"] as const;
 
-  test("lists only the lines of the player who acted", () => {
+  test("lists only the actions of the player", () => {
     expect(
       getPlayerLog(log, playerNames, 1).map((entry) => entry.turn),
     ).toEqual([1, 4]);
