@@ -190,7 +190,9 @@ export function ClueLog({
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
-                  ref={tooltipRef("Click to go to the turn of this clue.")}
+                  ref={tooltipRef(
+                    `This clue was given on turn ${entry.turn}. Click to go to it.`,
+                  )}
                   style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
                   type="button"
                 >
