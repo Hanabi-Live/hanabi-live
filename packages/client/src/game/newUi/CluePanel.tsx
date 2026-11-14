@@ -137,7 +137,9 @@ export function CluePanel({
     <section
       aria-label="Give a clue"
       className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-[14px] tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
-        canClue ? "tw:ring-3 tw:ring-game-turn" : "tw:ring-1 tw:ring-game-line"
+        canClue
+          ? "tw:inset-ring-3 tw:inset-ring-game-turn"
+          : "tw:inset-ring-1 tw:inset-ring-game-line"
       }`}
     >
       {!canClue && (
