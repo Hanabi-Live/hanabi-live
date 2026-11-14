@@ -3,7 +3,7 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
-import { KEY_CLASS } from "./surfaces.ts";
+import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 interface ClueMenuProps {
   readonly name: string;
@@ -34,13 +34,16 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
 /** The space between the menu and the hand, in CSS pixels. */
 const MENU_GAP = 8;
 
-const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold ${KEY_CLASS}`;
+const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
+
+const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it on their hand.
  * It opens below the hand, so that the cards that the chosen clue would touch stay in view. When
  * there is no room below, it opens above. A clue that the rules do not allow, such as one that
- * touches no cards, is left out. Clicking outside of it or pressing Escape closes it.
+ * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
+ * Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -56,12 +59,8 @@ export function ClueMenu({
   onClose,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const colorClues = variant.clueColors
-    .map((color) => newColorClue(color))
-    .filter((choice) => isAllowed(choice));
-  const rankClues = variant.clueRanks
-    .map((rank) => newRankClue(rank))
-    .filter((choice) => isAllowed(choice));
+  const colorClues = variant.clueColors.map((color) => newColorClue(color));
+  const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
   const [above, setAbove] = useState(false);
 
   useLayoutEffect(() => {
@@ -166,6 +165,9 @@ export function ClueMenu({
       <ClueRow>
         {colorClues.map((colorClue) => {
           const color = colorClue.value;
+          if (!isAllowed(colorClue)) {
+            return <EmptySlot key={color.name} />;
+          }
           const pressed = isSameClue(clue, colorClue);
           return (
             <button
@@ -188,6 +190,9 @@ export function ClueMenu({
       <ClueRow>
         {rankClues.map((rankClue) => {
           const rank = rankClue.value;
+          if (!isAllowed(rankClue)) {
+            return <EmptySlot key={rank} />;
+          }
           const pressed = isSameClue(clue, rankClue);
           return (
             <button
@@ -216,13 +221,18 @@ export function ClueMenu({
   );
 }
 
-/** A row of clues. A row with no clues that the rules allow is left out. */
+/** A row of clues. */
 function ClueRow({
   children,
 }: {
   readonly children: readonly React.JSX.Element[];
-}): React.JSX.Element | null {
-  return children.length === 0 ? null : (
-    <div className="tw:flex tw:flex-wrap tw:gap-2">{children}</div>
+}): React.JSX.Element {
+  return <div className="tw:flex tw:flex-wrap tw:gap-2">{children}</div>;
+}
+
+/** The place of a clue that the rules do not allow: an empty well, with no button in it. */
+function EmptySlot(): React.JSX.Element {
+  return (
+    <div aria-hidden="true" className={`${choiceSizeClass} ${WELL_CLASS}`} />
   );
 }
