@@ -5,7 +5,6 @@
 // and so on. When the mode changes, all of them change color together.
 
 import type { State } from "../types/State.ts";
-import { PANEL_SHADOW_CLASS } from "./surfaces.ts";
 
 type ScreenMode = "inGameReplay" | "finishedReplay" | "hypothetical";
 
@@ -15,11 +14,6 @@ const MODE_TOKEN = {
   finishedReplay: "--game-screen-finished-replay",
   hypothetical: "--game-screen-hypothetical",
 } as const satisfies Record<ScreenMode, string>;
-
-/**
- * A panel of the mode, such as the replay bar: in the mode's dark color, outlined in its accent.
- */
-export const MODE_PANEL_CLASS = `tw:bg-game-mode-panel tw:inset-ring-2 tw:inset-ring-game-mode ${PANEL_SHADOW_CLASS}`;
 
 function getScreenMode(state: State): ScreenMode | undefined {
   if (state.replay.hypothetical !== undefined) {

@@ -36,7 +36,7 @@ import {
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
-import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
+import { ReplayBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
@@ -264,7 +264,6 @@ export function GameScreen({
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
   const canClue = ourTurn && clueAvailable && !editingCards && !paused;
-  const showReplayBar = inReplay || state.finished;
 
   const empathyPlayers = new Set<PlayerIndex>(
     globalEmpathy
@@ -681,30 +680,6 @@ export function GameScreen({
                   </div>
                 )}
               </div>
-              {/* In a replay, the controls are below the hands, nearer the middle of the screen.
-                  Their slot is always as tall as the bar of the turns: a hidden copy holds its
-                  space. So the hands keep their place and size when a hypothetical starts. While
-                  the game goes on, there are no controls, and the hands take the space. On a narrow
-                  window, the page scrolls and the controls go above the hands. */}
-              {(showReplayBar || hypo !== undefined) && (
-                <div className="tw:grid tw:shrink-0 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
-                  {hypo !== undefined && (
-                    <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
-                      <TurnsBar state={state} />
-                    </div>
-                  )}
-                  <div className="tw:grid tw:[grid-area:1/1]">
-                    <ReplayBar
-                      editingCards={editingCards}
-                      hypotheticalHint={hypotheticalHint}
-                      onToggleEditCards={() => {
-                        setEditingCards(!editingCards);
-                      }}
-                      state={state}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
@@ -750,6 +725,16 @@ export function GameScreen({
         />
       </div>
 
+      {/* In a replay, its controls are at the top of the bar along the bottom, so that the hands keep
+          most of the height of the screen. */}
+      <ReplayBar
+        editingCards={editingCards}
+        hypotheticalHint={hypotheticalHint}
+        onToggleEditCards={() => {
+          setEditingCards(!editingCards);
+        }}
+        state={state}
+      />
       <StatusStrip
         futureEfficiency={formatFutureEfficiency(
           visibleState.stats,

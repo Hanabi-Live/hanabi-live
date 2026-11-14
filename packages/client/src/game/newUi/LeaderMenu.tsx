@@ -62,21 +62,10 @@ export function LeaderMenu({
             middle of the bar to the side. */}
         <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
         {/* The caret points the way that the menu opens. */}
-        <i
-          aria-hidden="true"
-          className="fas fa-caret-up tw:text-[12px] tw:narrow-980:hidden"
-        />
-        <i
-          aria-hidden="true"
-          className="fas fa-caret-down tw:hidden tw:text-[12px] tw:narrow-980:inline-block"
-        />
+        <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
       </button>
       {open && (
-        // On a narrow window, the bar is at the top of the page, so the menu opens downward.
-        <div
-          className={`${MENU_CLASS} tw:left-0 tw:min-w-52 tw:narrow-980:top-full tw:narrow-980:bottom-auto tw:narrow-980:mt-2 tw:narrow-980:mb-0`}
-          role="menu"
-        >
+        <div className={`${MENU_CLASS} tw:left-0 tw:min-w-52`} role="menu">
           <span className={MENU_LABEL_CLASS}>
             {others.length === 0 ? "No one else is here" : "Set new leader to"}
           </span>

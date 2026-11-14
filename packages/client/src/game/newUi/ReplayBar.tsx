@@ -1,8 +1,10 @@
-// The controls below the hands while the screen shows a replay: the in-game replay, a finished
-// game, or a hypothetical. They call the same functions as the classic screen's replay controls.
+// The controls at the top of the bar along the bottom while the screen shows a replay: the in-game
+// replay, a finished game, or a hypothetical. They call the same functions as the classic screen's
+// replay controls.
 
-// The bar is a dark panel in the colors of the screen's mode (see "screenMode.ts"). The buttons and
-// the timeline are large, because a player clicks them many times in a row.
+// The bar is a band across the screen in the colors of the screen's mode (see "screenMode.ts"). It
+// is one row, so that the hands keep most of the height of the screen. The buttons and the timeline
+// are large, because a player clicks them many times in a row.
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -15,7 +17,6 @@ import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { LeaderMenu } from "./LeaderMenu.tsx";
-import { MODE_PANEL_CLASS } from "./screenMode.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
@@ -45,9 +46,11 @@ const ICON_BUTTON_SIZE_CLASS = {
 } as const;
 
 /**
- * The panel that holds a bar. It fills the slot of the controls, with its first row at the top and
- * the timeline at the bottom. On a narrow window, the page scrolls, so the bar goes above the
- * hands, where it is in view.
+ * The band that holds a bar, above the numbers about the game. Every bar has the same parts: the
+ * leader's controls on the left, its main controls in the middle, and its other buttons on the
+ * right. Each part is as tall as a step, so every bar is as tall as the others, and the hands keep
+ * their size when the bar changes. On a narrow window, the middle has a row of its own, under the
+ * others.
  */
 function Bar({
   children,
@@ -56,13 +59,20 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:content-between tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:rounded-game-panel tw:px-4 tw:py-3 ${MODE_PANEL_CLASS}`}
+      className="tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:border-0 tw:border-t-2 tw:border-solid tw:border-game-mode tw:bg-game-mode-panel tw:px-7 tw:py-2.5 tw:narrow-980:px-3"
       role="status"
     >
       {children}
     </div>
   );
 }
+
+/** The middle of a bar. On a narrow window, it has the last row of the bar to itself. */
+const MIDDLE_CLASS = `tw:flex tw:min-w-0 tw:flex-1 tw:items-center tw:gap-2 tw:narrow-980:order-last tw:narrow-980:basis-full ${STEP_HEIGHT_CLASS}`;
+
+/** The right of a bar. On a narrow window, it shares the first row with the leader's controls. */
+const RIGHT_CLASS =
+  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden";
 
 /**
  * The mode's icon and name. The turn on screen is in the bar along the bottom, with the other
@@ -141,8 +151,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      // The knob is lower than the buttons are high, so the bar's padding below it is smaller.
-      className="tw:group tw:relative tw:-mb-1 tw:h-8 tw:w-full tw:cursor-pointer tw:touch-none"
+      className={`tw:group tw:relative tw:min-w-24 tw:flex-1 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -326,25 +335,9 @@ function SpectatorHypotheticalBar({
 }): React.JSX.Element {
   return (
     <Bar>
-      <div className={ROWS_CLASS}>
-        <LeaderControls state={state} />
-        {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
-        <div
-          className={`tw:flex tw:items-center tw:justify-center tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
-        >
-          <Heading icon="fa-flask" label="Shared hypothetical" />
-        </div>
-        {/* The space of the button that enters a hypothetical, which the bar of the turns has
-            here. On a narrow window, it shares a row with the switch to follow the leader, so
-            that the switch does not move when the bar changes. */}
-        <div className={RIGHT_CLASS}>
-          {hypothetical.canStartHypothetical(state) && (
-            <span
-              aria-hidden="true"
-              className={`tw:invisible ${ICON_BUTTON_SIZE_CLASS.normal}`}
-            />
-          )}
-        </div>
+      <LeaderControls state={state} />
+      <div className={MIDDLE_CLASS}>
+        <Heading icon="fa-flask" label="Shared hypothetical" />
       </div>
     </Bar>
   );
@@ -395,10 +388,10 @@ function IconToggle({
 }
 
 /**
- * The bar of a hypothetical that we control. It has the shape of the bar of the turns, so that the
- * hands keep their size. Going back a turn and passing are in the middle, where the steps through
- * the turns are. The other buttons are on the right. The last one is lit in the color of the mode,
- * and leaves the hypothetical. It is the size of the button that entered it, and in its place.
+ * The bar of a hypothetical that we control. Going back a turn and passing are where the steps
+ * through the turns are, and what to do next is where the timeline is. The other buttons are on the
+ * right. The last one is lit in the color of the mode, and leaves the hypothetical. It is the size
+ * of the button that entered it, and in its place.
  */
 function OwnHypotheticalBar({
   state,
@@ -422,65 +415,60 @@ function OwnHypotheticalBar({
 
   return (
     <Bar>
-      <div className={ROWS_CLASS}>
-        <LeaderControls state={state} />
-        {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
-        <div
-          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
+      <LeaderControls state={state} />
+      <div className={MIDDLE_CLASS}>
+        <button
+          aria-label="Back a turn in the hypothetical"
+          className={HYPOTHETICAL_BUTTON_CLASS}
+          disabled={hypo === undefined || hypo.states.length <= 1}
+          onClick={hypothetical.sendHypotheticalBack}
+          ref={tooltipRef("Back a turn in the hypothetical")}
+          type="button"
         >
-          <button
-            aria-label="Back a turn in the hypothetical"
-            className={HYPOTHETICAL_BUTTON_CLASS}
-            disabled={hypo === undefined || hypo.states.length <= 1}
-            onClick={hypothetical.sendHypotheticalBack}
-            ref={tooltipRef("Back a turn in the hypothetical")}
-            type="button"
-          >
-            <i aria-hidden="true" className="fas fa-undo" />
-          </button>
-          <button
-            className={HYPOTHETICAL_BUTTON_CLASS}
-            disabled={!hypothetical.canPassTurnInHypothetical(state)}
-            onClick={hypothetical.sendHypotheticalPassTurn}
-            ref={tooltipRef(
-              "Spend a clue to pass the turn to the next player without giving a clue.",
-            )}
-            type="button"
-          >
-            Pass
-          </button>
-        </div>
-        <div className={RIGHT_CLASS}>
-          <IconToggle
-            disabled={!canToggleDrawnCards(state)}
-            icon="fa-eye"
-            label="Show drawn cards"
-            onClick={hypothetical.toggleRevealed}
-            pressed={hypo?.showDrawnCards === true}
-            tooltip="Show the faces of the cards drawn during the hypothetical."
-          />
-          <IconToggle
-            icon="fa-pen"
-            label="Edit cards"
-            onClick={onToggleEditCards}
-            pressed={editingCards}
-            tooltip="While this is on, click a card in a hand to change it into another card."
-          />
-          <button
-            aria-label="Exit hypothetical"
-            className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:w-11 tw:px-0 tw:*:text-[17px] tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
-            onClick={hypothetical.endHypothetical}
-            ref={tooltipRef(`Exit ${name}.`)}
-            type="button"
-          >
-            <i aria-hidden="true" className="fas fa-flask" />
-          </button>
-        </div>
+          <i aria-hidden="true" className="fas fa-undo" />
+        </button>
+        <button
+          className={HYPOTHETICAL_BUTTON_CLASS}
+          disabled={!hypothetical.canPassTurnInHypothetical(state)}
+          onClick={hypothetical.sendHypotheticalPassTurn}
+          ref={tooltipRef(
+            "Spend a clue to pass the turn to the next player without giving a clue.",
+          )}
+          type="button"
+        >
+          Pass
+        </button>
+        {/* On a narrow window, a long hint wraps onto a second line in smaller text. */}
+        <p className="tw:m-0 tw:ml-2 tw:min-w-0 tw:flex-1 tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal">
+          {hint}
+        </p>
       </div>
-      {/* Where the bar of the turns has its timeline. */}
-      <p className="tw:m-0 tw:w-full tw:text-center tw:text-[15px] tw:text-game-muted">
-        {hint}
-      </p>
+      <div className={RIGHT_CLASS}>
+        <IconToggle
+          disabled={!canToggleDrawnCards(state)}
+          icon="fa-eye"
+          label="Show drawn cards"
+          onClick={hypothetical.toggleRevealed}
+          pressed={hypo?.showDrawnCards === true}
+          tooltip="Show the faces of the cards drawn during the hypothetical."
+        />
+        <IconToggle
+          icon="fa-pen"
+          label="Edit cards"
+          onClick={onToggleEditCards}
+          pressed={editingCards}
+          tooltip="While this is on, click a card in a hand to change it into another card."
+        />
+        <button
+          aria-label="Exit hypothetical"
+          className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:w-11 tw:px-0 tw:*:text-[17px] tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
+          onClick={hypothetical.endHypothetical}
+          ref={tooltipRef(`Exit ${name}.`)}
+          type="button"
+        >
+          <i aria-hidden="true" className="fas fa-flask" />
+        </button>
+      </div>
     </Bar>
   );
 }
@@ -529,23 +517,8 @@ export function ReplayBar({
 }
 
 /**
- * The first row of a bar: the left, the middle, and the right. The left and the right are always
- * the same width, and their contents cannot widen them, so the middle stays in the center. Its
- * parts line up on the middle of the steps through the turns. The middle of every bar is as tall as
- * the steps, so that the button at its right end is in the same place in every bar. On a narrow
- * window, its parts flow into the bar's own rows, with the left and the right first, so that the
- * button that enters a hypothetical is in the top-right corner, as the button that leaves it is.
- */
-const ROWS_CLASS =
-  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
-
-/** The right of the first row of a bar. On a narrow window, it is in the bar's first row. */
-const RIGHT_CLASS =
-  "tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-first tw:narrow-980:ml-auto tw:narrow-980:empty:hidden";
-
-/**
- * The shared replay's leader menu and the switch to follow the leader, on the left of the bar. On a
- * narrow window, they are in the bar's first row.
+ * The shared replay's leader menu and the switch to follow the leader, on the left of the bar. A
+ * long name makes the menu's text smaller, so that the menu does not push the other controls aside.
  */
 function LeaderControls({
   state,
@@ -554,9 +527,9 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:min-w-0 tw:justify-start tw:gap-2 tw:narrow-980:order-first tw:narrow-980:flex-1 tw:narrow-980:empty:hidden">
+    <div className="tw:flex tw:min-w-0 tw:gap-2 tw:empty:hidden">
       {shared !== undefined && (
-        <div className="tw:flex tw:min-w-0 tw:narrow-980:flex-1 tw:narrow-980:*:flex-1">
+        <div className="tw:flex tw:max-w-56 tw:min-w-0">
           <LeaderMenu
             amLeader={shared.amLeader}
             leader={shared.leader}
@@ -570,11 +543,7 @@ function LeaderControls({
 }
 
 /** The bar of a replay that is not a hypothetical, with the controls to move through its turns. */
-export function TurnsBar({
-  state,
-}: {
-  readonly state: State;
-}): React.JSX.Element {
+function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
   const { visibleState, replay: replayState } = state;
   if (visibleState === undefined) {
     throw new Error("A replay bar needs a turn on screen.");
@@ -603,78 +572,75 @@ export function TurnsBar({
           segment: shared.segment,
         };
 
-  // The buttons that step through the turns are together in the middle of the first row, so that a
-  // player can click back and forth without moving the mouse far. The leader's menu, which names
-  // who leads, and the switch to follow them are on their left, so the bar needs no heading. The
-  // button that enters a hypothetical is on their right. The timeline has the second row to itself,
-  // so that it is wide enough to pick a turn with the mouse. On a narrow window, the other buttons
-  // do not fit beside the steps, so they go above them. The way back to the game is in the bar
-  // along the bottom, where the way into the replay is.
+  // The buttons that step through the turns are together, so that a player can click back and forth
+  // without moving the mouse far. The leader's menu, which names who leads, and the switch to
+  // follow them are on their left, so the bar needs no heading. The timeline fills the rest of the
+  // row, so that it is wide enough to pick a turn with the mouse. The button that enters a
+  // hypothetical is at the right end. The way back to the game is in the bar under this one, where
+  // the way into the replay is.
   return (
     <Bar>
-      <div className={ROWS_CLASS}>
-        <LeaderControls state={state} />
-        <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
-          <IconButton
-            disabled={atStart}
-            icon="fa-step-backward"
-            label="First turn"
-            onClick={replay.backFull}
-            size="jump"
-          />
-          <IconButton
-            disabled={atStart}
-            icon="fa-chevron-left"
-            label="Previous turn"
-            onClick={() => {
-              replay.back();
-            }}
-            size="step"
-          />
-          {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline to show the
-              leader's moves. They flash between these buttons instead. */}
-          {spoilerFree && following && (
-            <span className="tw:flex tw:w-6 tw:justify-center">
-              <DirectionFlash move={move} />
-            </span>
-          )}
+      <LeaderControls state={state} />
+      <div className={MIDDLE_CLASS}>
+        <IconButton
+          disabled={atStart}
+          icon="fa-step-backward"
+          label="First turn"
+          onClick={replay.backFull}
+          size="jump"
+        />
+        <IconButton
+          disabled={atStart}
+          icon="fa-chevron-left"
+          label="Previous turn"
+          onClick={() => {
+            replay.back();
+          }}
+          size="step"
+        />
+        {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline to show the
+            leader's moves. They flash between these buttons instead. */}
+        {spoilerFree && following && (
+          <span className="tw:flex tw:w-6 tw:justify-center">
+            <DirectionFlash move={move} />
+          </span>
+        )}
+        <IconButton
+          disabled={atEnd}
+          icon="fa-chevron-right"
+          label="Next turn"
+          onClick={replay.forward}
+          size="step"
+        />
+        {!spoilerFree && (
           <IconButton
             disabled={atEnd}
-            icon="fa-chevron-right"
-            label="Next turn"
-            onClick={replay.forward}
-            size="step"
+            icon="fa-step-forward"
+            label="Last turn"
+            onClick={replay.forwardFull}
+            size="jump"
           />
-          {!spoilerFree && (
-            <IconButton
-              disabled={atEnd}
-              icon="fa-step-forward"
-              label="Last turn"
-              onClick={replay.forwardFull}
-              size="jump"
-            />
-          )}
-        </div>
-        <div className={RIGHT_CLASS}>
-          {canEnterHypothetical && (
-            <IconButton
-              icon="fa-flask"
-              iconClassName="tw:text-game-hypothetical"
-              label="Enter hypothetical"
-              onClick={hypothetical.startHypothetical}
-              tooltip="Enter hypothetical: try out other moves from this turn."
-            />
-          )}
-        </div>
+        )}
+        {!spoilerFree && (
+          <Timeline
+            lastSegment={lastSegment}
+            leader={leaderMark}
+            segment={segment}
+            slide={following}
+          />
+        )}
       </div>
-      {!spoilerFree && (
-        <Timeline
-          lastSegment={lastSegment}
-          leader={leaderMark}
-          segment={segment}
-          slide={following}
-        />
-      )}
+      <div className={RIGHT_CLASS}>
+        {canEnterHypothetical && (
+          <IconButton
+            icon="fa-flask"
+            iconClassName="tw:text-game-hypothetical"
+            label="Enter hypothetical"
+            onClick={hypothetical.startHypothetical}
+            tooltip="Enter hypothetical: try out other moves from this turn."
+          />
+        )}
+      </div>
     </Bar>
   );
 }
