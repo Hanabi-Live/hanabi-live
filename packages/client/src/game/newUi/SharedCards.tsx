@@ -271,7 +271,7 @@ function ZoneLabel({
 
   return (
     <span
-      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
+      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-full tw:border-2 tw:border-black tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
         state === "hovered" || state === "blocked"
           ? "tw:bg-clue tw:text-card-ink"
           : "tw:bg-game-text tw:text-card-ink"
