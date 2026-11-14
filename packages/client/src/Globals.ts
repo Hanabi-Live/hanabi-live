@@ -6,7 +6,7 @@ import type { Connection } from "./Connection.ts";
 import type { Loader } from "./Loader.ts";
 import type { HanabiUi } from "./game/ui/HanabiUi.ts";
 
-export class Globals {
+class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
   conn: Connection | undefined = undefined;
 

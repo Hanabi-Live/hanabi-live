@@ -1,5 +1,6 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
@@ -28,14 +29,14 @@ const LOADING_LABEL = {
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(): void {
   assertDefined(
-    globals.lobby.imageLoader,
+    lobbyGlobals.imageLoader,
     "Failed to find the image loader when initializing the user interface.",
   );
 
   // Once the initial page (e.g. the login screen / lobby) is finished loading and ready, all of the
   // images relating to the game screen start to get pre-loaded by the "Loader" class. Copy the
   // reference to the existing "Loader" object to our UI globals (for convenience).
-  globals.imageLoader = globals.lobby.imageLoader;
+  globals.imageLoader = lobbyGlobals.imageLoader;
 
   if (globals.imageLoader.failed) {
     showImageLoadError([...globals.imageLoader.failedFiles][0]!);
@@ -131,7 +132,7 @@ function finishedDownloadingImages() {
 
   // Tell the server that we are finished loading the UI and we now need the specific actions that
   // have taken place in this game so far.
-  globals.lobby.conn!.send("gameStateLoad", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("gameStateLoad", {
+    tableId: lobbyGlobals.joinedTableId,
   });
 }

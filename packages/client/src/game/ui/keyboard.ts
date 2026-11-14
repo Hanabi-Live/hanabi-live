@@ -13,9 +13,11 @@ import {
 import { parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { isElementShown } from "../../elementVisibility.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
+import * as sounds from "../../sounds.ts";
 import { store } from "../../store.ts";
 import {
   copyStringToClipboard,
@@ -24,6 +26,7 @@ import {
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
+import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
@@ -133,7 +136,7 @@ function keydown(event: KeyboardEvent) {
 
     // Escape = If the chat is open, close it.
     if (isElementShown(getHtmlElement("#game-chat-modal"))) {
-      globals.game!.chat.hide();
+      gameChat.hide();
       return;
     }
 
@@ -208,7 +211,7 @@ function keydown(event: KeyboardEvent) {
     }
     if (event.which === KeyCode.KEY_Z) {
       // Alt + z. This is used as a sound test.
-      globals.game!.sounds.play(SoundType.Us);
+      sounds.play(SoundType.Us);
       return;
     }
     if (event.which === KeyCode.KEY_A) {
@@ -220,7 +223,7 @@ function keydown(event: KeyboardEvent) {
     // Other
     if (event.which === KeyCode.KEY_C) {
       // Alt + c
-      globals.game!.chat.toggle();
+      gameChat.toggle();
       return;
     }
     if (event.which === KeyCode.KEY_L) {
@@ -403,8 +406,8 @@ function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
   }
 
   // Send it
-  globals.lobby.conn!.send("replayAction", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("replayAction", {
+    tableId: lobbyGlobals.joinedTableId,
     action: {
       type: "sound",
       sound,
@@ -507,9 +510,9 @@ function performAction(actionType: PlayOrDiscard, order: CardOrder) {
 
 function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
-    globals.lobby.conn!.send(
+    lobbyGlobals.connection.send(
       "playerAction",
-      toWireAction(globals.lobby.joinedTableId, { type: actionType, order }),
+      toWireAction(lobbyGlobals.joinedTableId, { type: actionType, order }),
     );
   } else {
     hypothetical.sendHypotheticalAction({ type: actionType, order });

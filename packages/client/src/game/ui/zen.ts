@@ -1,17 +1,19 @@
+import { globals as lobbyGlobals } from "../../Globals.ts";
+import * as gameChat from "../chat.ts";
 import { globals } from "./UiGlobals.ts";
 import { onSpectatorsChanged } from "./reactive/views/spectatorsView.ts";
 
 export function toggleZen(): void {
-  globals.lobby.zenModeEnabled = globals.state.finished
+  lobbyGlobals.zenModeEnabled = globals.state.finished
     ? false
-    : !globals.lobby.zenModeEnabled;
+    : !lobbyGlobals.zenModeEnabled;
 
-  if (globals.lobby.zenModeEnabled) {
-    globals.game!.chat.hide();
+  if (lobbyGlobals.zenModeEnabled) {
+    gameChat.hide();
   }
 
-  if (globals.lobby.ui !== undefined) {
-    globals.lobby.ui.updateChatLabel();
+  if (lobbyGlobals.ui !== undefined) {
+    lobbyGlobals.ui.updateChatLabel();
   }
 
   onSpectatorsChanged({

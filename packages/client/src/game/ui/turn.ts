@@ -1,4 +1,5 @@
 import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as notifications from "../../notifications.ts";
 import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
@@ -77,9 +78,9 @@ function handlePremove() {
       return;
     }
 
-    globals.lobby.conn!.send(
+    lobbyGlobals.connection.send(
       "playerAction",
-      toWireAction(globals.lobby.joinedTableId, oldPremove),
+      toWireAction(lobbyGlobals.joinedTableId, oldPremove),
     );
 
     arrows.hideAll();
@@ -106,9 +107,9 @@ export function end(clientAction: ClientAction): void {
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
     arrows.hideAll();
     showWaitingOnServerAnimation();
-    globals.lobby.conn!.send(
+    lobbyGlobals.connection.send(
       "playerAction",
-      toWireAction(globals.lobby.joinedTableId, clientAction),
+      toWireAction(lobbyGlobals.joinedTableId, clientAction),
     );
     return;
   }

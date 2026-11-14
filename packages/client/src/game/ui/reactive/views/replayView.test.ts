@@ -12,6 +12,7 @@ vi.mock("../../replay.ts", () => ({
 vi.mock("./cluesView.ts", () => ({
   refreshArrows: vi.fn(),
 }));
+vi.mock("../../../../Globals.ts", () => ({ globals: {} }));
 vi.mock("../../UiGlobals.ts", () => ({
   globals: {
     elements: {

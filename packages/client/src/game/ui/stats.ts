@@ -1,6 +1,7 @@
 import { MAX_EFFICIENCY_MODIFIER } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
@@ -30,8 +31,8 @@ export function setEfficiencyModifier(efficiencyModifier: number): void {
     globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
   ) {
-    globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.joinedTableId,
+    lobbyGlobals.connection.send("replayAction", {
+      tableId: lobbyGlobals.joinedTableId,
       action: {
         type: "efficiency",
         modifier: efficiencyModifier,

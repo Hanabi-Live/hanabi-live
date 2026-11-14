@@ -1,14 +1,13 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import type { Globals as LobbyGlobals } from "../../Globals.ts";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import * as clock from "../clock.ts";
 import { releaseGameObservers } from "../gameObservers.ts";
 import * as gameSession from "../gameSession.ts";
-import type { GameExports } from "../main.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
@@ -36,19 +35,12 @@ export class HanabiUi {
   /** Stops drawing the clocks. */
   private readonly stopDrawingTimers: () => void;
 
-  constructor(lobby: LobbyGlobals, game: GameExports) {
+  constructor() {
     // Each game starts with new globals.
     resetGlobals();
 
     // Expose the globals to functions in the "game" directory.
     this.globals = globals;
-
-    // Store references to the parent objects for later use.
-    globals.lobby = lobby; // This is the "Globals" object in the root of the "src" directory
-    // We name it "lobby" here to distinguish it from the UI globals; after more refactoring, we
-    // will eventually merge these objects to make it less confusing.
-    globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
-    // We should also combine this with the UI object in the future.
 
     initStageSize();
     cursor.set("default");
@@ -117,7 +109,7 @@ export class HanabiUi {
     }
 
     let text = "";
-    if (globals.lobby.zenModeEnabled) {
+    if (lobbyGlobals.zenModeEnabled) {
       // eslint-disable-next-line complete/require-ascii
       text += "☯️";
     } else {

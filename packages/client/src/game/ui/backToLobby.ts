@@ -1,10 +1,11 @@
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { PATH } from "../../constants.ts";
 import { typingCleared } from "../../lobby/pregame/pregameSlice.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import * as clock from "../clock.ts";
-import { globals } from "./UiGlobals.ts";
+import * as gameMain from "../main.ts";
 
 export function backToLobby(): void {
   // Hide any tooltips, if showing.
@@ -19,8 +20,8 @@ export function backToLobby(): void {
   // Update the address bar.
   setBrowserAddressBarPath(PATH.LOBBY);
 
-  globals.lobby.conn!.send("tableUnattend", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("tableUnattend", {
+    tableId: lobbyGlobals.joinedTableId,
   });
-  globals.game!.hide();
+  gameMain.hide();
 }

@@ -7,6 +7,7 @@ import { store } from "../../store.ts";
 
 import type { Arrow } from "./controls/Arrow.ts";
 
+vi.mock("../../Globals.ts", () => ({ globals: {} }));
 vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./HanabiCard.ts", () => ({ HanabiCard: Date }));
 vi.mock("./CardLayout.ts", () => ({ CardLayout: Date }));

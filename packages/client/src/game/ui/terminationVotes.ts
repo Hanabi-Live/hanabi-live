@@ -2,20 +2,20 @@
 // screen's "End game" menu.
 
 import { MIN_PLAYERS } from "@hanabi-live/game";
-import { globals } from "./UiGlobals.ts";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 
 /** Casts our vote to end the game, or takes it back. */
 export function setVote(voted: boolean): void {
-  globals.lobby.conn!.send("tableTerminateVote", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("tableTerminateVote", {
+    tableId: lobbyGlobals.joinedTableId,
     voted,
   });
 }
 
 /** Ends the game for everyone right away. */
 export function endNow(): void {
-  globals.lobby.conn!.send("tableTerminate", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("tableTerminate", {
+    tableId: lobbyGlobals.joinedTableId,
   });
 }
 

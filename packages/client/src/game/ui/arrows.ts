@@ -20,6 +20,7 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { z } from "zod";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -473,8 +474,8 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
-    globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.joinedTableId,
+    lobbyGlobals.connection.send("replayAction", {
+      tableId: lobbyGlobals.joinedTableId,
       action: show
         ? {
             type: "arrow",

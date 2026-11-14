@@ -8,11 +8,9 @@ import * as lobbyPage from "../lobby/lobbyPage.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
 import { screenChanged } from "../sessionSlice.ts";
-import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
 import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
-import * as chat from "./chat.ts";
 import * as clock from "./clock.ts";
 import { gameChatCleared } from "./gameChatSlice.ts";
 import * as gameSession from "./gameSession.ts";
@@ -68,7 +66,7 @@ export function show(justStarted: boolean): void {
   gameSession.startLoading();
   clock.reset();
   setPlayStartSound(justStarted);
-  globals.ui = new HanabiUi(globals, gameExports);
+  globals.ui = new HanabiUi();
   if (store.getState().session.settings.newUi) {
     newUi.mount();
   }
@@ -79,7 +77,7 @@ export function show(justStarted: boolean): void {
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
-function showNewUi() {
+export function showNewUi(): void {
   // The new screen has its own chat panel, which takes the chat box from the classic chat window.
   hideElement(getHtmlElement("#game-chat-modal"));
   hideElement(getHtmlElement("#game"));
@@ -128,18 +126,3 @@ export function hide(): void {
   // Scroll to the bottom of the chat.
   scrollLobbyChatToBottom();
 }
-
-// These are references to some functions and submodules that need to be interacted with in the UI
-// code (e.g. hiding the UI, playing a sound).
-export interface GameExports {
-  hide: () => void;
-  showNewUi: () => void;
-  chat: typeof chat;
-  sounds: typeof sounds;
-}
-const gameExports: GameExports = {
-  hide,
-  showNewUi,
-  chat,
-  sounds,
-};

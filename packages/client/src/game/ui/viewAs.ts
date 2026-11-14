@@ -3,6 +3,7 @@
 // changes which hand is first.
 
 import type { PlayerIndex } from "@hanabi-live/game";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { replayVisibility } from "../../lobby/replayVisibility.ts";
 import * as modals from "../../modals.ts";
 import { globals } from "./UiGlobals.ts";
@@ -47,8 +48,8 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
   if (!globals.state.finished) {
     setTimeout(() => {
       backToLobby();
-      globals.lobby.conn!.send("tableSpectate", {
-        tableId: globals.lobby.joinedTableId,
+      lobbyGlobals.connection.send("tableSpectate", {
+        tableId: lobbyGlobals.joinedTableId,
         shadowingPlayerIndex: playerIndex,
       });
     }, 0);
@@ -75,7 +76,7 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
 
     setTimeout(() => {
       backToLobby();
-      globals.lobby.conn!.send("replayCreate", {
+      lobbyGlobals.connection.send("replayCreate", {
         source: { type: "saved", gameId },
         visibility: replayVisibility(globals.state.replay.shared !== undefined),
         shadowingPlayerIndex: playerIndex,
@@ -87,8 +88,8 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
   // Otherwise, go back to the lobby and watch the shared replay again, from the seat.
   setTimeout(() => {
     backToLobby();
-    globals.lobby.conn!.send("tableSpectate", {
-      tableId: globals.lobby.joinedTableId,
+    lobbyGlobals.connection.send("tableSpectate", {
+      tableId: lobbyGlobals.joinedTableId,
       shadowingPlayerIndex: playerIndex,
     });
   }, 0);

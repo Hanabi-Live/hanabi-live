@@ -19,11 +19,13 @@ import {
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import type { Connection } from "../../Connection.ts";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import * as modals from "../../modals.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
+import * as sounds from "../../sounds.ts";
 import { store } from "../../store.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
@@ -177,7 +179,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
     }
 
     case "sound": {
-      globals.game!.sounds.play(toSoundType(leaderAction.sound));
+      sounds.play(toSoundType(leaderAction.sound));
       break;
     }
 
@@ -251,12 +253,11 @@ function onHypotheticalControl(control: HypotheticalControl) {
 
 /** Whether a reply about a table still applies: the connection is current and shows its game. */
 function showsTable(conn: Connection, tableId: number): boolean {
-  const { lobby } = globals;
   return (
-    lobby.conn === conn
+    lobbyGlobals.conn === conn
     && store.getState().session.screen === Screen.Game
-    && lobby.ui !== undefined
-    && lobby.joinedTableId === tableId
+    && lobbyGlobals.ui !== undefined
+    && lobbyGlobals.joinedTableId === tableId
   );
 }
 
@@ -419,8 +420,8 @@ function showIdleWarning(remainingMs: number) {
     remainingMs,
     globals.state.playing
       ? () => {
-          globals.lobby.conn!.send("idleReset", {
-            tableId: globals.lobby.joinedTableId,
+          lobbyGlobals.connection.send("idleReset", {
+            tableId: lobbyGlobals.joinedTableId,
           });
         }
       : undefined,
@@ -436,9 +437,7 @@ gameCommands.set("pause", (data) => {
   // The server also sends this when we queue or unqueue a pause, which plays no sound.
   const paused = data.pausingPlayerIndex !== undefined;
   if (paused !== (globals.state.pause.pausingPlayerIndex !== undefined)) {
-    globals.game!.sounds.play(
-      paused ? SoundType.GamePaused : SoundType.GameUnpaused,
-    );
+    sounds.play(paused ? SoundType.GamePaused : SoundType.GameUnpaused);
   }
 
   store.dispatch(

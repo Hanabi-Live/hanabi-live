@@ -2,12 +2,10 @@ import type { GameAction, GameMetadata, Options } from "@hanabi-live/game";
 import { getDefaultVariant } from "@hanabi-live/game";
 import { ReadonlyMap, assertDefined } from "complete-common";
 import Konva from "konva";
-import { Globals as LobbyGlobals } from "../../Globals.ts";
 import type { Loader } from "../../Loader.ts";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import { gameCleared } from "../gameSlice.ts";
-import type { GameExports } from "../main.ts";
 import type { State } from "../types/State.ts";
 import { Elements } from "./Elements.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
@@ -23,10 +21,6 @@ Konva.legacyTextRendering = true;
  * "resetGlobals()".
  */
 export class UiGlobals {
-  // Objects sent upon UI initialization.
-  lobby: LobbyGlobals = new LobbyGlobals();
-  game: GameExports | undefined = undefined;
-
   // Game constants (set upon first initialization).
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];

@@ -26,10 +26,13 @@ import {
   tupleKeys,
 } from "complete-common";
 import Konva from "konva";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
+import * as gameChat from "../chat.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
+import * as gameMain from "../main.ts";
 import { getViewPlayerIndex, isOurSeat } from "../ourSeat.ts";
 import { ActionLog } from "./ActionLog.ts";
 import { ButtonGroup } from "./ButtonGroup.ts";
@@ -1225,7 +1228,7 @@ function drawBottomLeftButtons() {
     visible: newUi,
   });
   newUiButton.on("click tap", () => {
-    globals.game!.showNewUi();
+    gameMain.showNewUi();
   });
   globals.layers.UI.add(newUiButton);
   newUiButton.tooltipName = "new-ui";
@@ -1289,7 +1292,7 @@ function drawBottomLeftButtons() {
     if (event.evt.button === RIGHT_MOUSE_BUTTON) {
       toggleZen();
     } else {
-      globals.game!.chat.toggle();
+      gameChat.toggle();
     }
   });
   chatButton.tooltipName = "chat";
@@ -2312,9 +2315,9 @@ function timerClick() {
 
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
 
-  const tableId = globals.lobby.joinedTableId;
+  const tableId = lobbyGlobals.joinedTableId;
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
-    globals.lobby.conn!.send("pause", { tableId, paused: true });
+    lobbyGlobals.connection.send("pause", { tableId, paused: true });
     return;
   }
 
@@ -2325,7 +2328,7 @@ function timerClick() {
       queued,
     }),
   );
-  globals.lobby.conn!.send("pauseQueue", { tableId, queued });
+  lobbyGlobals.connection.send("pauseQueue", { tableId, queued });
 }
 
 function drawClueArea() {
@@ -3034,8 +3037,8 @@ function drawPauseArea() {
     text: "Unpause",
   });
   globals.elements.pauseButton.on("click tap", () => {
-    globals.lobby.conn!.send("pause", {
-      tableId: globals.lobby.joinedTableId,
+    lobbyGlobals.connection.send("pause", {
+      tableId: lobbyGlobals.joinedTableId,
       paused: false,
     });
   });
@@ -3051,7 +3054,7 @@ function drawPauseArea() {
   });
   globals.elements.pauseArea.add(chatButton);
   chatButton.on("click tap", () => {
-    globals.game!.chat.toggle();
+    gameChat.toggle();
   });
 
   const pauseLobbyButton = new Button(

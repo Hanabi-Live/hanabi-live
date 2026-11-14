@@ -1,11 +1,12 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import { globals } from "./UiGlobals.ts";
 
 /** Tells the leader whether we will play again if they restart. */
 export function decline(declined: boolean): void {
-  globals.lobby.conn!.send("tableRestartDecline", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("tableRestartDecline", {
+    tableId: lobbyGlobals.joinedTableId,
     declined,
   });
 }
@@ -34,9 +35,9 @@ export function request(startNow: boolean): void {
   }
 
   setPending(true);
-  globals.lobby.conn!.send(
+  lobbyGlobals.connection.send(
     "tableRestart",
-    { tableId: globals.lobby.joinedTableId, startNow },
+    { tableId: lobbyGlobals.joinedTableId, startNow },
     (reply) => {
       // A restart that succeeds leaves this replay.
       if (!reply.ok) {

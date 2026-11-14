@@ -16,10 +16,12 @@ const start = vi.fn();
 const stop = vi.fn();
 const show = vi.fn();
 
+vi.mock("../../Globals.ts", () => ({
+  globals: { joinedTableId: 42, connection: { send } },
+}));
 vi.mock("./UiGlobals.ts", () => ({
   globals: {
     restartPending: false,
-    lobby: { tableId: 42, joinedTableId: 42, conn: { send } },
     elements: {
       restartButton: { setEnabled },
       restartContents: { visible: contentsVisible },

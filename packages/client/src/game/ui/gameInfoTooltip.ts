@@ -6,6 +6,7 @@ import {
   secondsToClockString,
 } from "@hanabi-live/game";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { selectTable } from "../../lobby/tables/tablesSlice.ts";
 import { store } from "../../store.ts";
 import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
@@ -22,7 +23,7 @@ export function getGameInfoTooltip(showLengths = true): string {
 
   const currentTable = selectTable(
     store.getState(),
-    globals.lobby.joinedTableId,
+    lobbyGlobals.joinedTableId,
   );
   if (currentTable !== undefined) {
     content += tooltipField(

@@ -4,6 +4,7 @@ import { MAX_NOTE_LENGTH } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import { ReadonlySet, trimSuffix } from "complete-common";
 import type { Root } from "react-dom/client";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import type { LengthLimit } from "../../LengthCounter.tsx";
 import {
   countCharacters,
@@ -134,8 +135,8 @@ export function set(order: CardOrder, text: string): void {
 
   // Send the note to the server.
   if (!globals.state.finished && text !== oldNote) {
-    globals.lobby.conn!.send("note", {
-      tableId: globals.lobby.joinedTableId,
+    lobbyGlobals.connection.send("note", {
+      tableId: lobbyGlobals.joinedTableId,
       order,
       text,
     });

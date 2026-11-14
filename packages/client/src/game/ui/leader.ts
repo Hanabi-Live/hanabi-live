@@ -1,6 +1,7 @@
 // Passing the lead of a shared replay to someone else.
 
 import type { UserId } from "@hanabi-live/data";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
@@ -47,8 +48,8 @@ export function showPassLeaderDialog(): void {
 
 export function setLeader(userId: UserId): void {
   modals.closeModals();
-  globals.lobby.conn!.send("tableSetOwner", {
-    tableId: globals.lobby.joinedTableId,
+  lobbyGlobals.connection.send("tableSetOwner", {
+    tableId: lobbyGlobals.joinedTableId,
     userId,
   });
 }
