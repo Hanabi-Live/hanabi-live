@@ -27,6 +27,8 @@ import type { CardOrder, ClueRank, PlayerIndex } from "@hanabi-live/game";
 import {
   getVariant,
   isValidClueRank,
+  MAX_CLUES,
+  MAX_RANK,
   START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -775,6 +777,17 @@ function getStates(): readonly State[] {
         await cast.startBobsGame(5);
       },
     },
+    // After every player has discarded cards, so that the discard pile has rows of several suits.
+    {
+      name: "new-ui-discards",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.discardTurns(15);
+      },
+    },
     // A clue is chosen, so that "Give clue" can be pressed.
     {
       name: "new-ui-clue-chosen",
@@ -1248,6 +1261,11 @@ interface BobsGame {
   /** The account plays a card, Bob plays one, and the account misplays one. */
   readonly playAndMisplay: () => Promise<void>;
   /**
+   * Each player in turn discards their oldest card that the team can lose, for the given number of
+   * turns. When the team has every clue token, the player gives a clue instead.
+   */
+  readonly discardTurns: (turns: number) => Promise<void>;
+  /**
    * Bob gives the account a rank clue that touches its newest card, the account discards its oldest
    * card, and Bob gives a clue that misses the newest card.
    */
@@ -1673,14 +1691,24 @@ async function createCast(
       player: "account" | "bob",
       action: z.input<typeof playerActionRequestSchema>["action"],
     ) {
+      await moveAt(seat(player), action);
+    }
+
+    /** Makes a move for the player in a seat, and waits until the server has made it. */
+    async function moveAt(
+      index: number,
+      action: z.input<typeof playerActionRequestSchema>["action"],
+    ) {
       const { turn } = readTurn(await loadEvents(viewer, tableId));
-      if (player === "account") {
+      if (index === seat("account")) {
         assertDefined(
           account,
           "The account can only move before the page loads.",
         );
       }
-      (player === "bob" ? bob : you).send("playerAction", { tableId, action });
+      const peer = [...seats].find(([, other]) => other === index)?.[0];
+      assertDefined(peer, `No player sits in seat ${index}.`);
+      peer.send("playerAction", { tableId, action });
       await viewer.receive(
         "gameEvent",
         SERVER_EVENT_SCHEMAS.gameEvent,
@@ -1689,7 +1717,12 @@ async function createCast(
     }
 
     /** The cards in a player's hand, oldest first, with what they are. */
-    async function hand(player: "account" | "bob"): Promise<
+    async function hand(player: "account" | "bob") {
+      return await handAt(seat(player));
+    }
+
+    /** The cards in the hand of the player in a seat, oldest first, with what they are. */
+    async function handAt(index: number): Promise<
       ReadonlyArray<{
         readonly order: CardOrder;
         readonly suitIndex: number;
@@ -1723,7 +1756,7 @@ async function createCast(
       for (const event of events) {
         if (
           event.type === "draw"
-          && event.playerIndex === seat(player)
+          && event.playerIndex === index
           && !gone.has(event.order)
           && event.identity !== undefined
         ) {
@@ -1780,6 +1813,51 @@ async function createCast(
       });
     }
 
+    async function discardTurns(turns: number) {
+      const variant = getVariant(LONG_VARIANT_NAME);
+      for (let i = 0; i < turns; i++) {
+        const events = await loadEvents(viewer, tableId);
+        const { player } = readTurn(events);
+        const clues =
+          MAX_CLUES
+          - events.filter((event) => event.type === "clue").length
+          + events.filter((event) => event.type === "discard").length;
+
+        // Bob's table is a speedrun, which ends once the team cannot get a perfect score. So the
+        // player keeps 5s and cards that have a copy in the discard pile. They also keep cards of
+        // an inverted suit, such as orange, whose 1s are critical.
+        const discarded = new Set<string>();
+        for (const event of events) {
+          if (event.type === "discard" && event.identity !== undefined) {
+            discarded.add(`${event.identity.suitIndex}-${event.identity.rank}`);
+          }
+        }
+        const cards = await handAt(player);
+        const card = cards.find(
+          (other) =>
+            other.rank !== MAX_RANK
+            && !discarded.has(`${other.suitIndex}-${other.rank}`)
+            && variant.suits[other.suitIndex]?.inverted !== true,
+        );
+        if (card !== undefined && clues < MAX_CLUES) {
+          await moveAt(player, { type: "discard", order: card.order });
+          continue;
+        }
+
+        const receiver = (player + 1) % seats.size;
+        const receiverCards = await handAt(receiver);
+        const touched = receiverCards.find((other) =>
+          isValidClueRank(other.rank),
+        );
+        assertDefined(touched, `Seat ${receiver} has no card to clue.`);
+        await moveAt(player, {
+          type: "clue",
+          receiverIndex: receiver as PlayerIndex,
+          clue: { type: "rank", rank: touched.rank as ClueRank },
+        });
+      }
+    }
+
     async function end() {
       bob.send("tableTerminate", { tableId });
       await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
@@ -1807,6 +1885,7 @@ async function createCast(
         await play("bob", true);
         await play("account", false);
       },
+      discardTurns,
       clueTwice: async () => {
         if ((await turnOf()) === "account") {
           await play("account", true);

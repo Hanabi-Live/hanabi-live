@@ -17,6 +17,15 @@ const TRASH_CARD_OPACITY = 0.4;
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 export const CLUED_RAISE_PER_WIDTH = 0.12;
 
+/** How far the rank in a card's corner is from the card's top edge, as a fraction of its width. */
+const RANK_TOP_PER_WIDTH = 0.05;
+
+/** The size of the rank in a card's corner, as a fraction of the card's width. */
+const RANK_SIZE_PER_WIDTH = 0.46;
+
+/** How far the bottom of the rank in a card's corner is from the card's top edge. */
+export const RANK_BOTTOM_PER_WIDTH = RANK_TOP_PER_WIDTH + RANK_SIZE_PER_WIDTH;
+
 /** The width of the border in the clue color around a clued card (`tw:ring-4`), in CSS pixels. */
 export const CLUED_BORDER_WIDTH = 4;
 
@@ -587,8 +596,8 @@ export function CardFace({
           className="tw:absolute tw:font-extrabold tw:leading-none"
           style={{
             left: width * 0.1,
-            top: width * 0.05,
-            fontSize: width * 0.46,
+            top: width * RANK_TOP_PER_WIDTH,
+            fontSize: width * RANK_SIZE_PER_WIDTH,
           }}
         >
           {getRankLabel(rank)}

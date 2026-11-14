@@ -10,7 +10,12 @@ import { eRange } from "complete-common";
 import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
-import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
+import {
+  CARD_HEIGHT_PER_WIDTH,
+  CardFace,
+  describeCard,
+  RANK_BOTTOM_PER_WIDTH,
+} from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { Pip } from "./Pip.tsx";
@@ -19,8 +24,11 @@ import { WELL_CLASS } from "./surfaces.ts";
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
 
-/** How far each row of the discard pile covers the row above, as a fraction of a card's height. */
-const DISCARD_ROW_OVERLAP_PER_HEIGHT = 0.42;
+/**
+ * The space between the bottom of a discarded card's rank and the row below it, as a fraction of
+ * the card's width.
+ */
+const DISCARD_ROW_GAP_PER_WIDTH = 0.04;
 
 /** How much of the suit's color tints an empty play stack, in percent. */
 const EMPTY_STACK_TINT_PERCENT = 45;
@@ -390,11 +398,11 @@ export const DiscardPile = forwardRef<
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
-    const rowsHeight =
-      height
-      + (variant.suits.length - 1)
-        * height
-        * (1 - DISCARD_ROW_OVERLAP_PER_HEIGHT);
+
+    // As on the classic screen, each row covers all of the row above but its ranks.
+    const rowStep =
+      cardWidth * (RANK_BOTTOM_PER_WIDTH + DISCARD_ROW_GAP_PER_WIDTH);
+    const rowsHeight = height + (variant.suits.length - 1) * rowStep;
 
     return (
       <section
@@ -423,8 +431,7 @@ export const DiscardPile = forwardRef<
               className="tw:flex"
               key={row[0]?.order}
               style={{
-                marginTop:
-                  rowIndex === 0 ? 0 : -height * DISCARD_ROW_OVERLAP_PER_HEIGHT,
+                marginTop: rowIndex === 0 ? 0 : rowStep - height,
               }}
             >
               {row.map((card, i) => (
