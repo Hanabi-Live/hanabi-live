@@ -147,9 +147,12 @@ export function getCardView({
     critical: !realLifeMode && status === CardStatus.Critical,
     trash:
       !realLifeMode
+      // As on the classic screen, a card fades only for what it shows or for a note that marks it
+      // as trash. A card whose identity does not show stays at full strength, even when the holder
+      // knows that it is trash: its badge says so.
       && shouldFadeTrash({
-        trash: status === CardStatus.Trash || cardState.isKnownTrashFromEmpathy,
-        markedTrash: trashIcon,
+        trash: status === CardStatus.Trash,
+        markedTrash: note.knownTrash && !finished,
         clued,
         positivelyClued: cardState.numPositiveClues > 0,
         note,
