@@ -224,7 +224,21 @@ export const CLUE_TOKEN_REACH_PER_WIDTH =
 export type ClueMarkerView =
   | { readonly type: "color"; readonly name: string; readonly fill: string }
   | { readonly type: "rank"; readonly label: string }
-  | { readonly type: "sound"; readonly emoji: string };
+  | {
+      readonly type: "sound";
+      readonly emoji: string;
+      /**
+       * The badge on the token's edge that says which type of clue the animal stands for: a mark,
+       * such as "#" for "some number", or a fill, such as every color for "some color". The clue
+       * log's discs are too small to show it.
+       */
+      readonly badge?: ClueBadgeView;
+    };
+
+/** What a badge on the edge of a clue token shows. */
+type ClueBadgeView =
+  | { readonly type: "mark"; readonly mark: string }
+  | { readonly type: "fill"; readonly fill: string };
 
 /** How much of a suit's color tints a card face. The rest is white. */
 const FACE_TINT_PERCENT = 32;
@@ -305,6 +319,39 @@ export function getClueMarkerLabel(marker: ClueMarkerView): string {
   }
 }
 
+/** The size of the badge on the edge of a clue token, per the token's width. */
+const CLUE_BADGE_SIZE_PER_SIZE = 0.5;
+
+/** A badge on the lower-right edge of a clue token: a light mark on dark ink, or a fill. */
+function ClueBadge({
+  badge,
+  size,
+}: {
+  readonly badge: ClueBadgeView;
+  readonly size: number;
+}): React.JSX.Element {
+  const badgeSize = size * CLUE_BADGE_SIZE_PER_SIZE;
+  return (
+    <span
+      className="tw:absolute tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:bg-card-ink tw:font-black tw:leading-none tw:text-white"
+      style={{
+        right: -badgeSize * 0.3,
+        bottom: -badgeSize * 0.15,
+        width: badgeSize,
+        height: badgeSize,
+        fontSize: badgeSize * 0.75,
+        ...(badge.type === "fill" && { background: badge.fill }),
+      }}
+    >
+      {badge.type === "mark" && (
+        <span className="tw:block tw:[text-box:trim-both_cap_alphabetic]">
+          {badge.mark}
+        </span>
+      )}
+    </span>
+  );
+}
+
 /**
  * The shape of a clue token, in a box 100 units wide: a disc with a point under it. The sides of
  * the point touch the disc at a tangent, so that the outline runs smoothly from one to the other.
@@ -382,6 +429,9 @@ function ClueMarker({
       >
         {label}
       </span>
+      {marker.type === "sound" && marker.badge !== undefined && (
+        <ClueBadge badge={marker.badge} size={size} />
+      )}
     </span>
   );
 }

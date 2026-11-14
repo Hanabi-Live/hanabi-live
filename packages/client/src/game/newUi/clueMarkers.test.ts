@@ -70,9 +70,12 @@ describe("getClueMarker", () => {
 
   test("shows only the clue's type in Cow & Pig", () => {
     setGame(getVariant("Cow & Pig (6 Suits)"));
-    expect(getClueMarker(colorClue(1), false)).toEqual({
+    expect(getClueMarker(colorClue(1), false)).toMatchObject({
       type: "sound",
       emoji: MOO_EMOJI,
+      badge: {
+        type: "fill",
+      },
     });
 
     const hiddenRankClue: StateClue = {
@@ -84,6 +87,10 @@ describe("getClueMarker", () => {
     expect(getClueMarker(hiddenRankClue, false)).toEqual({
       type: "sound",
       emoji: OINK_EMOJI,
+      badge: {
+        type: "mark",
+        mark: "#",
+      },
     });
   });
 });

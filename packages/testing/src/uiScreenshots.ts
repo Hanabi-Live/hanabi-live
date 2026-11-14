@@ -23,7 +23,13 @@ import {
   SERVER_EVENT_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
-import type { CardOrder, ClueRank, PlayerIndex, Rank } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  ClueRank,
+  ColorIndex,
+  PlayerIndex,
+  Rank,
+} from "@hanabi-live/game";
 import {
   getNumCopiesOfCard,
   getTotalCardsInDeck,
@@ -897,7 +903,7 @@ function getStates(): readonly State[] {
       },
     },
     // After every player has discarded cards in a "Cow & Pig" game, so that the clue log and the
-    // clue tokens show the animal of each clue instead of its number.
+    // clue tokens show the animal of each clue instead of its color or number.
     {
       name: "new-ui-animal-clues",
       path: "/",
@@ -905,7 +911,7 @@ function getStates(): readonly State[] {
       isolated: true,
       setup: async (cast) => {
         const game = await cast.startBobsGame(5, ANIMAL_CLUE_VARIANT_NAME);
-        await game.discardTurns(15);
+        await game.discardTurns(15, { mixClueTypes: true });
       },
     },
     // The deck is empty, so that it shows the turns left in the final round.
@@ -1477,9 +1483,14 @@ interface BobsGame {
   readonly playAndMisplay: () => Promise<void>;
   /**
    * Each player in turn discards their oldest card that the team can lose, for the given number of
-   * turns. When the team has every clue token, the player gives a clue instead.
+   * turns. When the team has every clue token, the player gives a clue instead: a rank clue, or,
+   * with `mixClueTypes`, a color clue and a rank clue in turn. A color clue names the card's suit
+   * index, so the variant's clue colors must match its suits.
    */
-  readonly discardTurns: (turns: number) => Promise<void>;
+  readonly discardTurns: (
+    turns: number,
+    options?: { readonly mixClueTypes?: boolean },
+  ) => Promise<void>;
   /**
    * The players before the account discard as in `discardTurns`, until it is the account's turn.
    */
@@ -2147,7 +2158,10 @@ async function createCast(
       }
     }
 
-    async function discardTurns(turns: number) {
+    async function discardTurns(
+      turns: number,
+      { mixClueTypes = false }: { readonly mixClueTypes?: boolean } = {},
+    ) {
       const variant = getVariant(LONG_VARIANT_NAME);
       for (let i = 0; i < turns; i++) {
         const events = await loadEvents(viewer, tableId);
@@ -2187,13 +2201,20 @@ async function createCast(
           isValidClueRank(other.rank),
         );
         assertDefined(touched, `Seat ${receiver} has no card to clue.`);
+        const numClues = events.filter((event) => event.type === "clue").length;
         await moveAt(player, {
           type: "clue",
           receiverIndex: receiver as PlayerIndex,
-          clue: {
-            type: "rank",
-            rank: touched.rank as ClueRank,
-          },
+          clue:
+            mixClueTypes && numClues % 2 === 0
+              ? {
+                  type: "color",
+                  color: touched.suitIndex as ColorIndex,
+                }
+              : {
+                  type: "rank",
+                  rank: touched.rank as ClueRank,
+                },
         });
       }
     }

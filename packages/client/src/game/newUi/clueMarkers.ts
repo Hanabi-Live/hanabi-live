@@ -17,11 +17,22 @@ export const QUACK_EMOJI = "\u{1F986}";
 export const MOO_EMOJI = "\u{1F42E}";
 export const OINK_EMOJI = "\u{1F437}";
 
+/** A ring of every clue color of the variant, which stands for "some color". */
+function getAnyColorFill(
+  colors: readonly Color[],
+  colorblindMode: boolean,
+): string {
+  const fills = colors.map((color) =>
+    colorblindMode ? color.fillColorblind : color.fill,
+  );
+  return `conic-gradient(${[...fills, fills[0]].join(", ")})`;
+}
+
 /**
  * How a clue shows on a token. Duck clues and the clues of a Quacker (until the game ends) hide the
- * clue, so they show a duck. "Cow & Pig" clues show only the clue's type: a cow for a color, and a
- * pig for a rank. These rules hold for every viewer, even when the server sends spectators and
- * replays the real clue.
+ * clue, so they show a duck. "Cow & Pig" clues show only the clue's type: a cow with a badge of
+ * every color for a color, and a pig with a "#" badge for a rank. These rules hold for every
+ * viewer, even when the server sends spectators and replays the real clue.
  */
 function getMarker(
   visibleType: ClueType | undefined,
@@ -51,6 +62,10 @@ function getMarker(
       ? {
           type: "sound",
           emoji: MOO_EMOJI,
+          badge: {
+            type: "fill",
+            fill: getAnyColorFill(variant.clueColors, colorblindMode),
+          },
         }
       : {
           type: "color",
@@ -63,6 +78,10 @@ function getMarker(
     return {
       type: "sound",
       emoji: OINK_EMOJI,
+      badge: {
+        type: "mark",
+        mark: "#",
+      },
     };
   }
   if (variant.oddsAndEvens) {
