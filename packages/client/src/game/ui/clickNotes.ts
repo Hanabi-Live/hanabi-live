@@ -1,3 +1,4 @@
+import * as gameSession from "../gameSession.ts";
 import {
   appendToNote,
   getRightClickNoteAction,
@@ -29,7 +30,7 @@ export function clickRightCheckAddNote(
     }
 
     case "repeatLast": {
-      card.setNote(globals.lastNote);
+      card.setNote(gameSession.getLastNote());
       break;
     }
 

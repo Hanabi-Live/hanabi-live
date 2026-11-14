@@ -30,6 +30,7 @@ import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import * as gameChat from "../chat.ts";
+import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
 import * as gameMain from "../main.ts";
@@ -3179,7 +3180,7 @@ function drawRestartArea() {
   globals.elements.restartWaitingOnServer = waitingOnServer;
   globals.elements.restartWaitingOnServerAnimation =
     createWaitingOnServerAnimation(waitingOnServer, globals.layers.UI2);
-  restart.setPending(globals.restartPending);
+  restart.setPending(gameSession.isRestartPending());
 }
 
 function drawTerminateMenu() {

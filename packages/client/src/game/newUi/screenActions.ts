@@ -4,16 +4,16 @@ import type { CardOrder, GameState } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
+import { currentState, currentVariant } from "../gameSession.ts";
 import * as hypothetical from "../hypothetical.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import * as replay from "../ui/replay.ts";
 import * as turn from "../ui/turn.ts";
 
 /** Plays the move in the game, or in the hypothetical when there is one. */
 export function sendAction(action: ClientAction): void {
-  if (globals.state.replay.hypothetical === undefined) {
+  if (currentState().replay.hypothetical === undefined) {
     turn.end(action);
   } else {
     hypothetical.sendHypotheticalAction(action);
@@ -27,8 +27,8 @@ export function getActionState(state: State): GameState {
 
 export function canDiscardNow(): boolean {
   return !isAtMaxClueTokens(
-    getActionState(globals.state).clueTokens,
-    globals.variant,
+    getActionState(currentState()).clueTokens,
+    currentVariant(),
   );
 }
 
@@ -38,7 +38,7 @@ export function editCard(order: CardOrder): void {
   const target =
     state === undefined ? undefined : hypothetical.getMorphTarget(state, order);
   if (target !== undefined) {
-    modals.askForMorph(target, globals.variant);
+    modals.askForMorph(target, currentVariant());
   }
 }
 
@@ -49,7 +49,7 @@ export function showClue(segment: number): void {
 
 /** Shows the turn on which a discarded card left its hand, in the in-game replay. */
 export function showDiscard(order: CardOrder): void {
-  const segment = globals.state.ongoingGame.deck[order]?.segmentDiscarded;
+  const segment = currentState().ongoingGame.deck[order]?.segmentDiscarded;
   if (segment !== undefined) {
     showReplayTurn(segment);
   }
@@ -57,7 +57,7 @@ export function showDiscard(order: CardOrder): void {
 
 /** Shows a turn in the in-game replay. */
 export function showReplayTurn(segment: number): void {
-  if (globals.state.replay.segment === undefined) {
+  if (currentState().replay.segment === undefined) {
     replay.enter(segment);
   } else {
     replay.goToSegment(segment, true);

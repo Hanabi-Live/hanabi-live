@@ -21,7 +21,6 @@ vi.mock("../../Globals.ts", () => ({
 }));
 vi.mock("./UiGlobals.ts", () => ({
   globals: {
-    restartPending: false,
     elements: {
       restartButton: { setEnabled },
       restartContents: { visible: contentsVisible },
@@ -32,12 +31,12 @@ vi.mock("./UiGlobals.ts", () => ({
     layers: { UI2: { batchDraw: vi.fn() } },
   },
 }));
-const { globals } = await import("./UiGlobals.ts");
+const gameSession = await import("../gameSession.ts");
 const { request, setPending } = await import("./restart.ts");
 
 beforeEach(() => {
   vi.clearAllMocks();
-  globals.restartPending = false;
+  gameSession.setRestartPending(false);
   reply = undefined;
 });
 
@@ -45,7 +44,7 @@ test.each([true, false])(
   "restart with startNow=%s blocks repeated and competing requests",
   (startNow) => {
     send.mockImplementationOnce(() => {
-      expect(globals.restartPending).toBe(true);
+      expect(gameSession.isRestartPending()).toBe(true);
       expect(contentsVisible).toHaveBeenLastCalledWith(false);
       expect(waitingVisible).toHaveBeenLastCalledWith(true);
       expect(start).toHaveBeenCalledTimes(1);
@@ -89,7 +88,7 @@ test("a restart that succeeds keeps waiting for the new table", () => {
   reply = { ok: true };
   request(true);
 
-  expect(globals.restartPending).toBe(true);
+  expect(gameSession.isRestartPending()).toBe(true);
   expect(stop).not.toHaveBeenCalled();
 });
 
@@ -97,7 +96,7 @@ test("rebuilding the pending UI does not allow another restart", () => {
   request(false);
   vi.clearAllMocks();
 
-  setPending(globals.restartPending);
+  setPending(gameSession.isRestartPending());
   request(true);
 
   expect(contentsVisible).toHaveBeenCalledWith(false);

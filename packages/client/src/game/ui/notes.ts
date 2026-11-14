@@ -21,6 +21,7 @@ import {
   getHtmlElement,
   getHtmlInputElement,
 } from "../../utils.ts";
+import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
@@ -131,7 +132,7 @@ export function getShownNoteHtml(order: CardOrder): string {
  */
 export function set(order: CardOrder, text: string): void {
   const oldNote = globals.state.notes.ourNotes[order]!.text;
-  globals.lastNote = text;
+  gameSession.setLastNote(text);
 
   // Send the note to the server.
   if (!globals.state.finished && text !== oldNote) {

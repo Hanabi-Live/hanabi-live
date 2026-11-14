@@ -9,7 +9,7 @@ import type {
   StateClue,
 } from "@hanabi-live/game";
 import { EVEN_RANK_CLUE, getCharacterNameForPlayer } from "@hanabi-live/game";
-import { globals } from "../ui/UiGlobals.ts";
+import { currentState, currentVariant } from "../gameSession.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 
 /** The fill of a color clue whose color is hidden ("Cow & Pig"), as on the classic screen. */
@@ -28,15 +28,15 @@ function getMarker(
   giver: PlayerIndex | undefined,
   colorblindMode: boolean,
 ): ClueMarkerView {
-  const { variant } = globals;
+  const variant = currentVariant();
   const giverCharacterName = getCharacterNameForPlayer(
     giver,
-    globals.metadata.characterAssignments,
+    currentState().metadata.characterAssignments,
   );
   if (
     visibleType === undefined
     || variant.duck
-    || (giverCharacterName === "Quacker" && !globals.state.finished)
+    || (giverCharacterName === "Quacker" && !currentState().finished)
   ) {
     return { type: "hidden" };
   }
@@ -80,7 +80,7 @@ export function getClueMarker(
     case "color": {
       return getMarker(
         "color",
-        globals.variant.clueColors[clue.color],
+        currentVariant().clueColors[clue.color],
         undefined,
         clue.giver,
         colorblindMode,

@@ -12,8 +12,8 @@ import { useEffect, useRef, useState } from "react";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
+import { currentVariant } from "../gameSession.ts";
 import type { ClientClue } from "../types/ClientAction.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
@@ -215,7 +215,7 @@ export function GameScreen({
   }
 
   const { visibleState, metadata, ongoingGame } = state;
-  const { variant } = globals;
+  const variant = currentVariant();
   const { settings } = store.getState().session;
   const { options } = metadata;
   const inReplay = state.replay.segment !== undefined;
@@ -776,7 +776,7 @@ export function GameScreen({
           )
         }
         turn={visibleState.turn.turnNum + 1}
-        variantName={globals.variant.name}
+        variantName={currentVariant().name}
         viewAsMenu={
           canChooseSeat() && (
             <ViewAsMenu

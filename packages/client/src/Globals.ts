@@ -26,10 +26,6 @@ class Globals {
   // Miscellaneous variables
   // -----------------------
 
-  /** Keys are IDs. */
-
-  totalGamesFriends = 0;
-
   idleMinutes = 0;
 
   /** The table we are joined to, if any. */

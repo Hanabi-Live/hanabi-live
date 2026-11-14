@@ -1,5 +1,6 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import * as gameSession from "../gameSession.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -30,7 +31,7 @@ export function canRestart(
 
 /** Asks to play again: at once with the same players, or else in a new pregame. */
 export function request(startNow: boolean): void {
-  if (globals.restartPending) {
+  if (gameSession.isRestartPending()) {
     return;
   }
 
@@ -48,7 +49,7 @@ export function request(startNow: boolean): void {
 }
 
 export function setPending(pending: boolean): void {
-  globals.restartPending = pending;
+  gameSession.setRestartPending(pending);
   globals.elements.restartButton?.setEnabled(!pending);
   globals.elements.restartContents?.visible(!pending);
   globals.elements.restartWaitingOnServer?.visible(pending);

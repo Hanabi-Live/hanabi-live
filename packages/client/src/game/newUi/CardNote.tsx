@@ -6,12 +6,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { currentState, currentVariant, getLastNote } from "../gameSession.ts";
 import {
   appendToNote,
   getRightClickNoteAction,
   prependTurnToNote,
 } from "../noteShortcuts.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
 import { toScreenPixels } from "./screenScale.ts";
@@ -39,7 +39,7 @@ export function rightClickNote(
   const ourNote = notes.getOurNote(order);
   switch (action?.type) {
     case "append": {
-      const note = appendToNote(globals.variant, ourNote, action.text);
+      const note = appendToNote(currentVariant(), ourNote, action.text);
       if (note !== undefined) {
         notes.set(order, note);
       }
@@ -47,13 +47,13 @@ export function rightClickNote(
     }
 
     case "repeatLast": {
-      notes.set(order, globals.lastNote);
+      notes.set(order, getLastNote());
       return false;
     }
 
     case "prependTurn": {
-      const turnNum = globals.state.visibleState?.turn.turnNum ?? 0;
-      const note = prependTurnToNote(globals.variant, ourNote, turnNum + 1);
+      const turnNum = currentState().visibleState?.turn.turnNum ?? 0;
+      const note = prependTurnToNote(currentVariant(), ourNote, turnNum + 1);
       if (note !== undefined) {
         notes.set(order, note);
       }

@@ -14,12 +14,12 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, includes, parseIntSafe } from "complete-common";
 import { SelfChatMessageType, sendSelfPmFromServer } from "../chat.ts";
+import { currentState, currentVariant } from "../game/gameSession.ts";
 import type {
   ClientAction,
   ClientActionClue,
 } from "../game/types/ClientAction.ts";
 import type { ReplayState } from "../game/types/ReplayState.ts";
-import { globals } from "../game/ui/UiGlobals.ts";
 import { store } from "../store.ts";
 import type { GameJson } from "./hypoCompress.ts";
 import { shrink } from "./hypoCompress.ts";
@@ -30,10 +30,10 @@ const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
 const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 
 export function createJsonFromReplay(room: string): void {
-  const { segment } = globals.state.replay;
+  const { segment } = currentState().replay;
   if (
     store.getState().game.current === undefined
-    || !globals.state.finished
+    || !currentState().finished
     || segment === undefined
   ) {
     sendSelfPmFromServer(
@@ -49,8 +49,8 @@ export function createJsonFromReplay(room: string): void {
   }
   // Copy the entire deck.
   const deck: Array<NonNullable<GameJson["deck"]>[number]> = [];
-  for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
-    const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
+  for (const [i, cardIdentity] of currentState().cardIdentities.entries()) {
+    const morph = currentState().replay.hypothetical?.morphedIdentities[i];
     if (
       morph !== undefined
       && morph.suitIndex !== undefined
@@ -81,7 +81,7 @@ export function createJsonFromReplay(room: string): void {
   // A morphed deck no longer necessarily matches its original seed. Preserve seed metadata only
   // when every exported identity is unchanged.
   const unchanged = deck.every((card, i) => {
-    const original = globals.state.cardIdentities[i];
+    const original = currentState().cardIdentities[i];
     return (
       original !== undefined
       && card.suitIndex === original.suitIndex
@@ -91,7 +91,7 @@ export function createJsonFromReplay(room: string): void {
 
   // Copy actions up to current segment, then add the hypothetical from the log, after the current
   // segment.
-  const { replay } = globals.state;
+  const { replay } = currentState();
   const actions = [...getGameActionsFromState(replay, segment)];
   if (replay.hypothetical !== undefined) {
     const { states } = replay.hypothetical;
@@ -106,18 +106,18 @@ export function createJsonFromReplay(room: string): void {
   const game: GameJson = {
     playerNames: DEFAULT_PLAYER_NAMES.slice(
       0,
-      globals.metadata.playerNames.length,
+      currentState().metadata.playerNames.length,
     ),
     deck,
     actions,
     options: {
-      variantId: globals.options.variantId,
+      variantId: currentState().metadata.options.variantId,
     },
     notes: [],
     characters: [],
     ...(unchanged
-      && globals.metadata.seed !== undefined && {
-        seed: globals.metadata.seed,
+      && currentState().metadata.seed !== undefined && {
+        seed: currentState().metadata.seed,
       }),
   };
 
@@ -291,7 +291,7 @@ function getActionFromHypoPlayOrDiscard(
 
   // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
   // perceived.
-  const numCards = getCardsPerHand(globals.options);
+  const numCards = getCardsPerHand(currentState().metadata.options);
   const slotIndex = numCards - slot;
   const cardOrder = getCardOrderFromHypoState(
     entryNumber - 1,
@@ -327,7 +327,7 @@ function getActionFromHypoClue(
 
   if (clueNumber === undefined) {
     // It is a color clue.
-    const colorIndex = getColorIndexFromColorName(clueWord, globals.variant);
+    const colorIndex = getColorIndexFromColorName(clueWord, currentVariant());
     assertDefined(
       colorIndex,
       `The clue color name of ${clueWord} is not valid for this variant.`,
@@ -340,7 +340,7 @@ function getActionFromHypoClue(
     };
   }
 
-  if (!includes(globals.variant.clueRanks, clueNumber)) {
+  if (!includes(currentVariant().clueRanks, clueNumber)) {
     throw new Error(
       `The clue rank of ${clueNumber} is not valid for this variant.`,
     );
@@ -357,7 +357,7 @@ function getActionFromHypoClue(
 function getPlayerIndexFromPlayerName(
   playerName: string,
 ): PlayerIndex | undefined {
-  const playerIndex = globals.metadata.playerNames.indexOf(playerName);
+  const playerIndex = currentState().metadata.playerNames.indexOf(playerName);
   return playerIndex === -1 ? undefined : (playerIndex as PlayerIndex);
 }
 
@@ -366,12 +366,13 @@ function getCardOrderFromHypoState(
   playerIndex: PlayerIndex,
   slotIndex: number,
 ): CardOrder | undefined {
-  if (globals.state.replay.hypothetical === undefined) {
+  const { hypothetical } = currentState().replay;
+  if (hypothetical === undefined) {
     return undefined;
   }
 
   const stateIndex = Math.max(previousStateIndex, 0);
-  const stateOnHypoTurn = globals.state.replay.hypothetical.states[stateIndex];
+  const stateOnHypoTurn = hypothetical.states[stateIndex];
   if (stateOnHypoTurn === undefined) {
     return undefined;
   }

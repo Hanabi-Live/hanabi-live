@@ -5,8 +5,8 @@ import type { CardOrder, GameState, StateClue } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useLayoutEffect, useRef } from "react";
 import { store } from "../../store.ts";
+import { currentVariant } from "../gameSession.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
   animateCardMoves,
@@ -40,7 +40,7 @@ function getMoveEffects(
   after: GameState,
   segmentChange: number,
 ): MoveEffects {
-  const { variant } = globals;
+  const variant = currentVariant();
   const misplays = new Map<string, Misplay>();
   const earlierStrikes = new Set(before.strikes.map((strike) => strike.order));
   for (const [strikeIndex, strike] of after.strikes.entries()) {
@@ -77,7 +77,7 @@ function animateScoreChanges(
   live: boolean,
   segmentChange: number,
 ) {
-  const { variant } = globals;
+  const variant = currentVariant();
   if (live) {
     const completed = after.playStacks.findIndex(
       (stack, suitIndex) =>

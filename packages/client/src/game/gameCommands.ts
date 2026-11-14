@@ -84,7 +84,9 @@ gameCommands.set("gameFinished", (data) => {
   setCardIdentities(data.deck);
 
   // A replay has no players to wait for.
-  serverUpdates.setConnections(globals.metadata.playerNames.map(() => true));
+  serverUpdates.setConnections(
+    gameSession.currentState().metadata.playerNames.map(() => true),
+  );
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
@@ -119,13 +121,11 @@ gameCommands.set("gameFinished", (data) => {
 
 // The shared replay leader's actions, which the server relays to everyone watching.
 gameCommands.set("replayAction", ({ action: leaderAction }) => {
+  const { shared } = gameSession.currentState().replay;
   switch (leaderAction.type) {
     case "turn": {
       // The leader already moved to the turn that the server is broadcasting.
-      if (
-        globals.state.replay.shared === undefined
-        || globals.state.replay.shared.amLeader
-      ) {
+      if (shared === undefined || shared.amLeader) {
         return;
       }
 
@@ -140,12 +140,12 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
 
     case "arrow": {
       if (
-        globals.state.replay.shared === undefined
+        shared === undefined
         // The leader already drew the arrow.
-        || globals.state.replay.shared.amLeader
+        || shared.amLeader
         // If we are not currently using the shared segments, the arrow that the leader is
         // highlighting will not be applicable.
-        || !globals.state.replay.shared.useSharedSegments
+        || !shared.useSharedSegments
       ) {
         return;
       }
@@ -166,10 +166,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
 
     case "efficiency": {
       // The leader already set the efficiency modifier.
-      if (
-        globals.state.replay.shared === undefined
-        || globals.state.replay.shared.amLeader
-      ) {
+      if (shared === undefined || shared.amLeader) {
         return;
       }
 
@@ -271,7 +268,7 @@ function requestGameState() {
 // Received when spectating a game, when someone else changes a note that we may see.
 gameCommands.set("note", (data) => {
   // If we are an active player and we got this message, something has gone wrong.
-  if (globals.state.playing) {
+  if (gameSession.currentState().playing) {
     return;
   }
 
@@ -291,7 +288,8 @@ gameCommands.set("note", (data) => {
  * for a player of a game in progress.
  */
 function setNotes(playerNotes: GameState["notes"]) {
-  store.dispatch(gameUpdated(getNotesAction(globals.state, playerNotes)));
+  const state = gameSession.currentState();
+  store.dispatch(gameUpdated(getNotesAction(state, playerNotes)));
   serverUpdates.drawAllNotes();
 }
 
@@ -382,7 +380,7 @@ gameCommands.set("idleWarning", (data) => {
 function showIdleWarning(remainingMs: number) {
   modals.showIdleWarning(
     remainingMs,
-    globals.state.playing
+    gameSession.currentState().playing
       ? () => {
           lobbyGlobals.connection.send("idleReset", {
             tableId: lobbyGlobals.joinedTableId,
@@ -400,7 +398,10 @@ gameCommands.set("idleReset", () => {
 gameCommands.set("pause", (data) => {
   // The server also sends this when we queue or unqueue a pause, which plays no sound.
   const paused = data.pausingPlayerIndex !== undefined;
-  if (paused !== (globals.state.pause.pausingPlayerIndex !== undefined)) {
+  if (
+    paused
+    !== (gameSession.currentState().pause.pausingPlayerIndex !== undefined)
+  ) {
     sounds.play(paused ? SoundType.GamePaused : SoundType.GameUnpaused);
   }
 
@@ -424,7 +425,7 @@ function setVotes(votes: Votes) {
 
 // The table's owner leads its shared replay.
 gameCommands.set("tableOwner", (data) => {
-  if (globals.state.replay.shared === undefined) {
+  if (gameSession.currentState().replay.shared === undefined) {
     return;
   }
 
@@ -438,7 +439,8 @@ gameCommands.set("tableOwner", (data) => {
 
 // This is used in shared replays to specify which players will not play again.
 gameCommands.set("tableRestartDecliners", (data) => {
-  if (globals.state.replay.shared === undefined) {
+  const state = gameSession.currentState();
+  if (state.replay.shared === undefined) {
     return;
   }
 
@@ -446,7 +448,7 @@ gameCommands.set("tableRestartDecliners", (data) => {
     gameUpdated({
       type: "restartDeclined",
       restartDeclined: playerNamesAt(
-        globals.metadata.playerNames,
+        state.metadata.playerNames,
         data.restartDecliners,
       ),
     }),
@@ -455,7 +457,7 @@ gameCommands.set("tableRestartDecliners", (data) => {
 
 // A spectator of a shared replay suggests a turn to its leader.
 gameCommands.set("tableSuggestion", (data) => {
-  if (globals.state.replay.shared === undefined) {
+  if (gameSession.currentState().replay.shared === undefined) {
     return;
   }
 
@@ -481,11 +483,12 @@ function setSpectators(spectators: GameState["spectators"]) {
 // -----------
 
 function canFollowSuggestion(): boolean {
+  const state = gameSession.currentState();
   return (
-    globals.state.finished
-    && globals.state.replay.shared !== undefined
-    && globals.state.replay.shared.amLeader
-    && globals.state.replay.hypothetical === undefined
+    state.finished
+    && state.replay.shared !== undefined
+    && state.replay.shared.amLeader
+    && state.replay.hypothetical === undefined
   );
 }
 
@@ -493,10 +496,11 @@ function suggestTurn(who: string, room: string, segment: number) {
   // We minus one to account for the fact that turns are presented to the user starting from 1.
   const internalSegment = segment - 1;
   if (canFollowSuggestion()) {
-    const leaderSuggested = who === globals.metadata.ourUsername;
+    const leaderSuggested =
+      who === gameSession.currentState().metadata.ourUsername;
     if (
       leaderSuggested
-      || internalSegment === globals.state.replay.shared!.segment
+      || internalSegment === gameSession.currentState().replay.shared!.segment
     ) {
       replay.goToSegment(internalSegment);
     } else {
@@ -560,8 +564,7 @@ function assignedValue(
 }
 
 function initStateStore(data: GameInit) {
-  // Set the variant (as a helper reference).
-  globals.variant = getVariantById(data.options.variantId);
+  const variant = getVariantById(data.options.variantId);
 
   const playerNames = toPlayerTuple(data.playerNames, "player names");
   const options: Options = {
@@ -587,10 +590,10 @@ function initStateStore(data: GameInit) {
   const minEfficiency = getMinEfficiency(
     options.numPlayers,
     endGameLength,
-    globals.variant,
+    variant,
     cardsPerHand,
   );
-  const hardVariant = isHardVariant(globals.variant, minEfficiency);
+  const hardVariant = isHardVariant(variant, minEfficiency);
   const metadata: GameMetadata = {
     ourUsername: store.getState().session.username,
     options,

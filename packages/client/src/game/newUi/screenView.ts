@@ -18,9 +18,9 @@ import { store } from "../../store.ts";
 import { getActivePlayerIndex, getPlayerTime } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
+import { currentVariant } from "../gameSession.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UiGlobals.ts";
 import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
 import type { ClueMarkerView } from "./Card.tsx";
@@ -65,6 +65,7 @@ export function getSeats(
   const { metadata } = state;
   const { settings } = store.getState().session;
   const { numPlayers } = metadata.options;
+  const variant = currentVariant();
   const hasSeat = state.playing || state.shadowing;
   // In the replay of a game that we played, our hand stays first.
   const firstPlayerIndex = getViewPlayerIndex(metadata);
@@ -108,9 +109,9 @@ export function getSeats(
           },
           note:
             empathy && empathyIncludesNotes
-              ? getEmpathyNote(state, globals.variant, order)
+              ? getEmpathyNote(state, variant, order)
               : (state.notes.ourNotes[order] ?? BLANK_NOTE),
-          variant: globals.variant,
+          variant,
           empathy,
           // Our own notes always apply to our own hand, as on the classic screen: a note can show a
           // card's identity and remove possibilities.
@@ -144,7 +145,7 @@ export function getSeats(
 export function getStacks(state: State): readonly StackView[] {
   const visibleState = state.visibleState!;
   const identities = getShownIdentities(state);
-  return globals.variant.suits.map((_suit, i) => {
+  return currentVariant().suits.map((_suit, i) => {
     const suitIndex = i as SuitIndex;
     const stack = visibleState.playStacks[suitIndex] ?? [];
     function rankOf(order: CardOrder | undefined) {
@@ -226,7 +227,7 @@ export function getClueLogEntries(state: State): readonly ClueLogEntry[] {
     targetName: playerNames[clue.target] ?? "",
     clueName: getClueName(
       clue,
-      globals.variant,
+      currentVariant(),
       getCharacterNameForPlayer(clue.giver, characterAssignments),
     ),
     marker: getClueMarker(clue, colorblindMode),
@@ -260,7 +261,7 @@ export function getClueMarkers(
 export function getStrikeSegments(
   state: State,
 ): ReadonlyArray<number | undefined> {
-  if (globals.variant.throwItInAHole) {
+  if (currentVariant().throwItInAHole) {
     return [];
   }
 

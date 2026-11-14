@@ -1,10 +1,15 @@
-import type { GameAction, GameMetadata, Options } from "@hanabi-live/game";
-import { getDefaultVariant } from "@hanabi-live/game";
-import { ReadonlyMap, assertDefined } from "complete-common";
+import type {
+  GameAction,
+  GameMetadata,
+  Options,
+  Variant,
+} from "@hanabi-live/game";
+import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
 import type { Loader } from "../../Loader.ts";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
+import { currentState, currentVariant } from "../gameSession.ts";
 import { gameCleared } from "../gameSlice.ts";
 import type { State } from "../types/State.ts";
 import { Elements } from "./Elements.ts";
@@ -27,7 +32,13 @@ export class UiGlobals {
 
   // UI elements
   imageLoader: Loader | undefined = undefined;
-  stage: Konva.Stage = newStage();
+  private stageInstance: Konva.Stage | undefined = undefined;
+
+  /** The classic screen's canvas, made when the classic screen first uses it. */
+  get stage(): Konva.Stage {
+    this.stageInstance ??= newStage();
+    return this.stageInstance;
+  }
 
   layers: Layers = new Layers();
   elements: Elements = new Elements();
@@ -52,15 +63,11 @@ export class UiGlobals {
   /** Equal to true if something happened when the note box happens to be open. */
   actionOccurred = false;
 
-  lastNote = ""; // Equal to the last note entered
-
   // Miscellaneous
   animateFast = true;
 
   /** Used to prevent accidental double clicks. */
   uiClickTime = 0;
-
-  restartPending = false;
 
   globalEmpathyEnabled = false;
 
@@ -76,21 +83,17 @@ export class UiGlobals {
   /** The game's state, which exists once the server has answered "gameInitLoad". */
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- It reads the store.
   get state(): State {
-    const { current } = store.getState().game;
-    assertDefined(current, "The game's state does not exist yet.");
-    return current;
+    return currentState();
   }
 
   get metadata(): GameMetadata {
     return this.state.metadata;
   }
 
-  /**
-   * The variant of the current game is stored in the state metadata as a string. Provide a helper
-   * for the variant object that corresponds to this (initialized in the "initStateStore()"
-   * function).
-   */
-  variant = getDefaultVariant();
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- It reads the store.
+  get variant(): Variant {
+    return currentVariant();
+  }
 
   get options(): Options {
     return this.state.metadata.options;

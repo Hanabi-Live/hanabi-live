@@ -12,19 +12,25 @@ import {
 } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("../ui/UiGlobals.ts", () => ({ globals: {} }));
-const { globals } = await import("../ui/UiGlobals.ts");
+const game = vi.hoisted<{ variant: unknown; state: unknown }>(() => ({
+  variant: undefined,
+  state: undefined,
+}));
+vi.mock("../gameSession.ts", () => ({
+  currentVariant: () => game.variant,
+  currentState: () => game.state,
+}));
 const { getClueMarker, getPreviewMarker } = await import("./clueMarkers.ts");
 
 /** Character ID 34 is Quacker; player 1 has no character. */
 const QUACKER_ASSIGNMENTS = [34, undefined] as const;
 
 function setGame(variant: Variant, finished = false) {
-  Object.assign(globals, {
-    variant,
+  game.variant = variant;
+  game.state = {
+    finished,
     metadata: { characterAssignments: QUACKER_ASSIGNMENTS },
-    state: { finished },
-  });
+  };
 }
 
 /** A clue as spectators and replays receive it, with its real value. */
