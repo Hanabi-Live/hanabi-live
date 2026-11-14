@@ -3579,3 +3579,213 @@ async fn a_note_goes_only_to_the_spectators_who_may_see_it_and_the_finish_carrie
     h.close().await?;
     outcome
 }
+
+/// Waits until the saved table `id` has started its game.
+async fn wait_live(h: &Harness, id: TableId) -> Result<()> {
+    tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            if matches!(h.snapshot(id).await?.0.phase, Phase::Live { .. }) {
+                return Ok::<(), anyhow::Error>(());
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await?
+}
+
+#[tokio::test]
+async fn games_archive_chat_and_last_replay_departure_retires_table() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "auto parity", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        wait_live(&h, id).await?;
+        h.send(
+            2,
+            "tableSpectate",
+            json!({"tableId":id,"shadowingPlayerIndex":0}),
+        )
+        .await?;
+        h.send(
+            0,
+            "chat",
+            json!({"tableId":id,"text":"retained authored chat"}),
+        )
+        .await?;
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        let rows: i64 = sqlx::query_scalar!(
+            "SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND table_id=$1 AND message='retained authored chat'",
+            i64::try_from(id.get())?
+        )
+        .fetch_one(&h.store.primary)
+        .await?;
+        ensure!(
+            rows == 1,
+            "Accepted authored chat was omitted or duplicated in PostgreSQL"
+        );
+        ensure!(
+            h.snapshot(id).await?.0.chat.iter().all(|chat| chat.id.is_some()),
+            "Chat was not archived with its checkpoint"
+        );
+        for index in 0..h.users.len() {
+            h.send(index, "tableUnattend", json!({"tableId":id})).await?;
+        }
+        h.receive(2, "tableRemoved").await?;
+        ensure!(
+            h.store.load().await?.is_empty(),
+            "Departed replay remained recoverable"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn actual_actor_split_replay_hypothetical_and_restart_are_durable() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "split parity", json!({"maxPlayers":6})).await?;
+        for index in 1..h.users.len() {
+            h.send(index, "tableJoin", json!({"tableId":id})).await?;
+        }
+        h.send(0, "chat", json!({"tableId":id,"text":"/split Bob"}))
+            .await?;
+        let tables = h.store.load().await?;
+        ensure!(tables.len() == 2, "Split table not persisted");
+        let source = tables
+            .iter()
+            .find(|(t, _)| t.id == id)
+            .context("Lost source")?;
+        ensure!(
+            source.0.seated_users().collect::<Vec<_>>()
+                == vec![UserId::new(1).unwrap(), UserId::new(3).unwrap()],
+            "Wrong split membership"
+        );
+        h.send(
+            0,
+            "tableUpdate",
+            json!({
+                "tableId":id,
+                "settings":{"name":"Split","options":{"variantId":1343}},
+            }),
+        )
+        .await?;
+        h.start(0, id).await?;
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"start"}}}),
+        )
+        .await?;
+        let action = json!({"type":"turn","turn":7,"currentPlayerIndex":1});
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"events","events":[action]}}}),
+        )
+        .await?;
+        let (source, _) = h.snapshot(id).await?;
+        let Phase::Replay { replay, .. } = &source.phase else {
+            bail!("Not a replay");
+        };
+        ensure!(
+            replay.hypothetical
+                && serde_json::to_value(&replay.hypothetical_actions)? == json!([action]),
+            "Hypothetical was not recovered exactly"
+        );
+        h.send(0, "tableRestart", json!({"tableId":id,"startNow":true}))
+            .await?;
+        wait_live(&h, id).await?;
+        let tables = h.store.load().await?;
+        let (table, _) = tables
+            .iter()
+            .find(|(t, _)| t.id == id)
+            .context("Lost the restarted table")?;
+        ensure!(
+            table.options.variant_name == "Reversed (5 Suits)" && table.players().len() == 2,
+            "Restart lost rules or seats"
+        );
+        ensure!(
+            tables
+                .iter()
+                .all(|(t, _)| !matches!(t.phase, Phase::Replay { .. })),
+            "Restart retained the replay"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn actors_run_multiplayer_variants_and_recover_all_runtime_mutations() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h
+            .create(
+                0,
+                "native",
+                json!({
+                    "maxPlayers": 6,
+                    "deal": {"type": "seed", "suffix": "native"},
+                    "options": {
+                        "variantId": 51,
+                        "timeControl": {"baseSeconds": 120, "perTurnSeconds": 20},
+                        "oneExtraCard": true,
+                        "detrimentalCharacters": true,
+                    },
+                }),
+            )
+            .await?;
+        for index in 1..h.users.len() {
+            h.send(index, "tableJoin", json!({"tableId":id})).await?;
+        }
+        h.start(0, id).await?;
+        let (table, _) = h.snapshot(id).await?;
+        let s = table.game().context("Not a game")?;
+        ensure!(
+            s.players.len() == 3 && s.game.stacks.len() == 6 && s.game.clue_tokens == 16,
+            "Native variant ignored"
+        );
+        let active = s.game.active_player_index;
+        let actor = usize::try_from(s.players[active].user()?.get())? - 1;
+        h.send(actor, "gameLoaded", json!({"tableId":id})).await?;
+        h.send(actor, "pause", json!({"tableId":id,"paused":true}))
+            .await?;
+        h.send(
+            actor,
+            "note",
+            json!({"tableId":id,"order":0,"text":"private"}),
+        )
+        .await?;
+        h.send(actor, "tagAdd", json!({"tableId":id,"tag":"native-live"}))
+            .await?;
+        let (table, _) = h.snapshot(id).await?;
+        let s = table.game().context("Not a game")?;
+        ensure!(
+            s.paused() && s.notes[active][0] == "private" && s.tags.len() == 1,
+            "Runtime mutations not durable"
+        );
+        h.stop_hub().await?;
+        let (table, _) = h.snapshot(id).await?;
+        ensure!(
+            table.game().context("Not a game")?.maintenance_applied,
+            "Maintenance allowance was not persisted"
+        );
+        h.start_hub().await
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
