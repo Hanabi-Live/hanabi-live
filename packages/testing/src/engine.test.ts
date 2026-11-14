@@ -5,6 +5,7 @@ import type {
   NumPlayers,
 } from "@hanabi-live/game";
 import {
+  StackDirection,
   gameEventSchema,
   gameOptionsSchema,
   gameReducer,
@@ -27,6 +28,14 @@ const GAMES = path.join(ROOT, "server/target/debug/examples/games");
 const MAX_OUTPUT_BYTES = 128 * 1024 * 1024;
 
 const TIMEOUT_MS = 600_000;
+
+/** The number that the engine writes for each stack direction. */
+const ENGINE_STACK_DIRECTIONS = {
+  [StackDirection.Undecided]: 0,
+  [StackDirection.Up]: 1,
+  [StackDirection.Down]: 2,
+  [StackDirection.Finished]: 3,
+} as const satisfies Record<StackDirection, number>;
 
 /** The engine's numbers after the first `numEvents` events of a game. */
 const checkpointSchema = z.strictObject({
@@ -85,7 +94,9 @@ function libraryCheckpoint(state: GameState, numEvents: number): Checkpoint {
     clueTokens: state.clueTokens,
     strikes: state.strikes.length,
     cardsRemainingInTheDeck: state.cardsRemainingInTheDeck,
-    stackDirections: [...state.playStackDirections],
+    stackDirections: state.playStackDirections.map(
+      (direction) => ENGINE_STACK_DIRECTIONS[direction],
+    ),
   };
 }
 

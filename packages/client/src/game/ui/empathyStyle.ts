@@ -7,13 +7,13 @@ import { globals } from "./UiGlobals.ts";
 
 export enum EmpathyStyle {
   /** Separate rows of suit pips and rank pips. */
-  Pips,
+  Pips = "Pips",
 
   /** Possibility rows, only when the separate pips cannot show the possible cards. */
-  RowsWhenNeeded,
+  RowsWhenNeeded = "RowsWhenNeeded",
 
   /** One possibility row for each suit, always. */
-  RowPerSuit,
+  RowPerSuit = "RowPerSuit",
 }
 
 const EMPATHY_STYLE_NAMES = {

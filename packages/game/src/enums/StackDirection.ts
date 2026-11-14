@@ -1,6 +1,6 @@
 export enum StackDirection {
-  Undecided,
-  Up,
-  Down,
-  Finished,
+  Undecided = "Undecided",
+  Up = "Up",
+  Down = "Down",
+  Finished = "Finished",
 }

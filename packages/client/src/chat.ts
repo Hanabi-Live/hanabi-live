@@ -50,9 +50,9 @@ function roomTableId(room: string): TableId | undefined {
 }
 
 export enum SelfChatMessageType {
-  Normal,
-  Info,
-  Error,
+  Normal = "Normal",
+  Info = "Info",
+  Error = "Error",
 }
 
 /**

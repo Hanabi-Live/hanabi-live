@@ -14,9 +14,9 @@ import type { SuitIndex } from "./types/SuitIndex.ts";
 import type { SuitRankTuple } from "./types/SuitRankTuple.ts";
 
 export enum PipState {
-  Hidden,
-  Eliminated,
-  Visible,
+  Hidden = "Hidden",
+  Eliminated = "Eliminated",
+  Visible = "Visible",
 }
 
 interface CardIdentityPresentationOptions {

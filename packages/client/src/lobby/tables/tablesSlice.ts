@@ -25,13 +25,16 @@ export interface TableRow {
   readonly firstJoinable: boolean;
 }
 
+// The lobby sorts tables by these numbers.
+/* eslint-disable complete/no-number-enums */
 /** After the table that we are playing at, the lobby lists tables in this order. */
 enum TableGroup {
-  Unstarted,
-  PasswordProtected,
-  Ongoing,
-  SharedReplay,
+  Unstarted = 0,
+  PasswordProtected = 1,
+  Ongoing = 2,
+  SharedReplay = 3,
 }
+/* eslint-enable complete/no-number-enums */
 
 const tablesAdapter = createEntityAdapter({
   selectId: (table: Table): number => table.tableId,

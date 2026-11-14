@@ -28,8 +28,8 @@ import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip.ts";
 import { drawStylizedRank } from "./drawStylizedRank.ts";
 
 enum CardArea {
-  Number,
-  Background,
+  Number = "Number",
+  Background = "Background",
 }
 
 /**

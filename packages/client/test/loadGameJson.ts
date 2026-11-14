@@ -35,13 +35,16 @@ import type testGame from "../test_data/up_or_down.json";
 
 type JsonGame = typeof testGame;
 
+// The test games store these numbers.
+/* eslint-disable complete/no-number-enums */
 enum JsonActionType {
-  ActionTypePlay,
-  ActionTypeDiscard,
-  ActionTypeColorClue,
-  ActionTypeRankClue,
-  ActionTypeGameOver,
+  ActionTypePlay = 0,
+  ActionTypeDiscard = 1,
+  ActionTypeColorClue = 2,
+  ActionTypeRankClue = 3,
+  ActionTypeGameOver = 4,
 }
+/* eslint-enable complete/no-number-enums */
 
 interface JsonAction {
   type: number;

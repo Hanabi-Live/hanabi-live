@@ -24,24 +24,6 @@ export const hanabiConfigBase = defineConfig(
 
       /**
        * Documentation:
-       * https://typescript-eslint.io/rules/prefer-enum-initializers/
-       *
-       * We intentionally number enums to save bandwidth between the client and server. Number enums
-       * are almost always safe with the `complete/strict-enums` rule.
-       */
-      "@typescript-eslint/prefer-enum-initializers": "off",
-
-      /**
-       * Documentation:
-       * TODO
-       *
-       * We use number enums to save bandwidth between client and server. Number enums are almost
-       * always safe with the `isaacscript/strict-enums` rule.
-       */
-      "complete/no-number-enums": "off",
-
-      /**
-       * Documentation:
        * https://typescript-eslint.io/rules/naming-convention/
        *
        * Spell an acronym like a word, as in `gameId` and `JsonAction`, as the wire protocol does.

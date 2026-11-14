@@ -17,14 +17,17 @@ export type GameJson = z.input<typeof replayGameSchema>;
 type DeckCard = NonNullable<z.output<typeof replayGameSchema>["deck"]>[number];
 type Action = NonNullable<GameJson["actions"]>[number];
 
+// Compressed games in shared links store these numbers.
+/* eslint-disable complete/no-number-enums */
 /** The type of an action in a compressed game. */
 enum CompactType {
-  Play,
-  Discard,
-  ColorClue,
-  RankClue,
-  GameOver,
+  Play = 0,
+  Discard = 1,
+  ColorClue = 2,
+  RankClue = 3,
+  GameOver = 4,
 }
+/* eslint-enable complete/no-number-enums */
 
 /**
  * An action with numbers for its type and value, which is the form that a compressed game holds.

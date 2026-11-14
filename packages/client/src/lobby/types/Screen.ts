@@ -1,8 +1,8 @@
 export enum Screen {
-  Login,
-  Lobby,
-  PreGame,
-  Game,
-  History,
-  HistoryOtherScores,
+  Login = "Login",
+  Lobby = "Lobby",
+  PreGame = "PreGame",
+  Game = "Game",
+  History = "History",
+  HistoryOtherScores = "HistoryOtherScores",
 }
