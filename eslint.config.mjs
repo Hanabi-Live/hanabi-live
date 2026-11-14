@@ -33,8 +33,12 @@ export const hanabiConfigBase = defineConfig(
       // that it does not carry into the next game.
       "unicorn/no-top-level-assignment-in-function": "off",
 
-      // Loops and constructor expressions follow the existing UI style.
+      // This flags loops over common expressions, such as `eRange(n + 1)` and
+      // `CHAT_EMOTES[category]`, which a temporary variable would not make clearer.
       "unicorn/no-unreadable-for-of-expression": "off",
+
+      // This flags common one-line idioms, such as `new Set(items).size`, which a temporary
+      // variable would not make clearer.
       "unicorn/no-unreadable-new-expression": "off",
 
       // Preserve the existing grouping of fractional drawing coordinates.
