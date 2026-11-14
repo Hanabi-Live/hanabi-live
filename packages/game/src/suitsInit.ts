@@ -21,7 +21,7 @@ export function suitsInit(
       assertEnumValue(
         pip,
         Pip,
-        `The "${suitJson.name}" suit has an invalid pip of: ${pip}`,
+        `The "${name}" suit has an invalid pip of: ${pip}`,
       );
     }
 
