@@ -381,7 +381,7 @@ function NameChip({
     return (
       // The clock's own pill sits close to the right edge, so the padding there is smaller.
       <span
-        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink tw:select-none ${
+        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink ${
           seat.clock === undefined ? "tw:pr-3.5" : "tw:pr-2"
         }`}
         ref={tooltipRef(seat.timeTooltip)}
@@ -399,7 +399,7 @@ function NameChip({
 
   return (
     <span
-      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium tw:select-none ${
+      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium ${
         chosen
           ? "tw:bg-game-text tw:text-card-ink"
           : "tw:bg-game-raised tw:text-game-text"
@@ -861,9 +861,9 @@ function Hand({
         )}
       </div>
       <div
-        // A long press on a touch screen shows the player's view instead of selecting text or
-        // opening the browser's menu.
-        className={`tw:flex ${empathyHold ? "tw:select-none tw:[-webkit-touch-callout:none]" : ""}`}
+        // A long press on a touch screen shows the player's view instead of opening the browser's
+        // menu.
+        className={`tw:flex ${empathyHold ? "tw:[-webkit-touch-callout:none]" : ""}`}
         onContextMenu={(event) => {
           if (empathyHold) {
             event.preventDefault();

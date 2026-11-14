@@ -114,7 +114,7 @@ function setUpChatWindow(chatWindow: Window): () => void {
   const container = chatDocument.createElement("div");
   container.id = CHAT_WINDOW_ID;
   container.className =
-    "tw:fixed tw:inset-0 tw:bg-game-panel tw:text-game-text";
+    "tw:fixed tw:inset-0 tw:bg-game-panel tw:text-game-text tw:select-none";
   for (const [name, value] of Object.entries(CHAT_BOX_COLORS)) {
     container.style.setProperty(name, value);
   }

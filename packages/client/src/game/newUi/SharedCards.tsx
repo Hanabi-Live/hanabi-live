@@ -233,7 +233,7 @@ function zoneRef(
 
 const zoneClasses: Record<ZoneState, string> = {
   idle: WELL_CLASS,
-  available: `${WELL_CLASS} tw:inset-ring-2 tw:inset-ring-game-line`,
+  available: WELL_CLASS,
   hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
   // The discard pile dims its cards itself, so that its sign and label stay bright.
   unavailable: WELL_CLASS,
@@ -555,7 +555,7 @@ function Deck({
   return (
     <div
       aria-label={finalRound ? description : `${cardsInDeck} cards in the deck`}
-      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5 tw:select-none"
+      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
       ref={tooltipRef(description)}
       role="img"
     >
@@ -892,7 +892,7 @@ export function TableTokens({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:mt-auto tw:shrink-0 tw:self-stretch tw:select-none ${TOKENS_BOX_CLASS}`}
+      className={`tw:mt-auto tw:shrink-0 tw:self-stretch ${TOKENS_BOX_CLASS}`}
     >
       <section
         aria-label="Clue tokens"

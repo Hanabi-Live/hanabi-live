@@ -227,7 +227,7 @@ export function GameScreen({
 
   if (state?.visibleState === undefined) {
     return (
-      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-game-bg tw:text-game-muted">
+      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-game-bg tw:text-game-muted tw:select-none">
         Loading the game...
       </div>
     );
@@ -486,8 +486,10 @@ export function GameScreen({
     <div
       // A browser draws a button in its own font, with normal letter spacing. Here, a button takes
       // the font and the letter spacing of the page instead, so that it matches the text around it,
-      // and a name measured outside a button fits in one. A button's own classes still win.
-      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
+      // and a name measured outside a button fits in one. A button's own classes still win. No text
+      // on the screen can be selected, so that clicks and drags never highlight it. The text boxes,
+      // such as the chat input, still let the player select what they type.
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:select-none tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       ref={rootRef}
       style={{
         zoom: screenScale,

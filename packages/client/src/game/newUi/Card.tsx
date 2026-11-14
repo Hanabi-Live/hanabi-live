@@ -998,7 +998,7 @@ export function CardFace({
   const face = (
     <div
       // A card that a clue newly touches slides up to its raised place, without a bounce.
-      className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out tw:select-none ${border} ${outline} ${faceColors.className}`}
+      className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out ${border} ${outline} ${faceColors.className}`}
       // A played card that its holder did not know turns over on its way to the stack (see
       // "playMotion.ts").
       data-card-face

@@ -45,6 +45,8 @@
   /* The link color of the light theme, which is also white. */
   --link: blue;
   --note-title-line: rgb(0 0 0 / 35%);
+  /* No text on the game screen can be selected. */
+  user-select: none;
 }
 
 .tooltip-bubble[data-side="bottom"] {
