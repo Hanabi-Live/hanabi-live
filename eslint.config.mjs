@@ -19,12 +19,7 @@ export const hanabiConfigBase = defineConfig(
       // Window and Konva declarations, which must be mutable.
       "complete/type-declaration-immutability": "off",
 
-      /**
-       * Documentation:
-       * https://eslint.org/docs/latest/rules/func-style
-       *
-       * Enforce the "normal" function style throughout the entire project.
-       */
+      // Enforce the "normal" function style throughout the entire project.
       "func-style": ["error", "declaration"],
 
       // Unicode code point escapes are enforced by Unicorn, including values below 256.
