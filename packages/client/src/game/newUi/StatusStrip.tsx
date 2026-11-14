@@ -204,12 +204,22 @@ export function StatusStrip({
           and what game this is. */}
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
         <Stat label="Turn">
-          <span data-turn>
-            {lastTurn === undefined ? (
-              turn
-            ) : (
-              <OutOf max={lastTurn} value={turn} />
-            )}
+          {/* An invisible copy of the widest turn, "21 / 21", holds the space. Then the bar does
+              not move when a replay adds " / 21" to the turn. */}
+          <span className="tw:inline-grid">
+            <span
+              aria-hidden="true"
+              className="tw:invisible tw:col-start-1 tw:row-start-1"
+            >
+              <OutOf max={lastTurn ?? turn} value={lastTurn ?? turn} />
+            </span>
+            <span className="tw:col-start-1 tw:row-start-1" data-turn>
+              {lastTurn === undefined ? (
+                turn
+              ) : (
+                <OutOf max={lastTurn} value={turn} />
+              )}
+            </span>
           </span>
         </Stat>
         <Stat label="Score" size="large" truncate={false}>
