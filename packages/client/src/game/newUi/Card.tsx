@@ -1,5 +1,5 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
-import { START_CARD_RANK } from "@hanabi-live/game";
+import { START_CARD_RANK, getColorForPrismCard } from "@hanabi-live/game";
 import { useId } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
@@ -829,7 +829,9 @@ function Possibilities({
  * come from the theme are classes, since the theme does not define them as CSS variables.
  */
 function getFaceColors(
+  variant: Variant,
   suit: Suit | undefined,
+  rank: Rank | undefined,
   colorblindMode: boolean,
 ): { className: string; background?: string; ink?: string } {
   if (suit === undefined) {
@@ -847,9 +849,18 @@ function getFaceColors(
   }
 
   const fill = colorblindMode ? suit.fillColorblind : suit.fill;
+
+  // A prism card is tinted with the color that touches it, which depends on its rank. A card of
+  // unknown rank uses the suit color.
+  const tintSource =
+    suit.prism && rank !== undefined
+      ? getColorForPrismCard(variant, rank)
+      : suit;
+  const tint = colorblindMode ? tintSource.fillColorblind : tintSource.fill;
+
   return {
     className: "",
-    background: `color-mix(in srgb, ${fill} ${FACE_TINT_PERCENT}%, white)`,
+    background: `color-mix(in srgb, ${tint} ${FACE_TINT_PERCENT}%, white)`,
     ink: `color-mix(in srgb, ${fill} ${INK_PERCENT}%, black)`,
   };
 }
@@ -963,7 +974,7 @@ export function CardFace({
   clueMarker,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
-  const faceColors = getFaceColors(suit, colorblindMode);
+  const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
   const height = width * CARD_HEIGHT_PER_WIDTH;
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
