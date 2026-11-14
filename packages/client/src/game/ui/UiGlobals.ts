@@ -32,12 +32,6 @@ export class UiGlobals {
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | undefined = undefined;
 
-  /**
-   * The UI is instantiated before all the images are necessarily downloaded and before we know
-   * enough information to draw all the UI elements.
-   */
-  loading = true;
-
   // Game constants (set upon first initialization).
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];

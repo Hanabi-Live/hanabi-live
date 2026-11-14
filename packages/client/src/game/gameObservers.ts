@@ -1,8 +1,9 @@
-// The observers of the game's state that do work for both game screens: they play sounds and keep a
-// shared replay on the leader's turn. The classic screen's observers
-// ("ui/reactive/StateObserver.ts") only draw it.
+// The observers of the game's state that do work for both game screens: they tell the server when
+// the game has loaded, play sounds, and keep a shared replay on the leader's turn. The classic
+// screen's observers ("ui/reactive/StateObserver.ts") only draw it.
 
 import { globals } from "../Globals.ts";
+import * as gameSession from "./gameSession.ts";
 import { gameStateSource } from "./gameStateSource.ts";
 import type { SoundData } from "./soundEffects.ts";
 import { onNewSoundEffect } from "./soundEffects.ts";
@@ -42,6 +43,18 @@ function subAfterInit<T>(
       }
     },
   };
+}
+
+/** Once the game's first state is shown, the server starts our clock if it is our turn. */
+function onShownChanged(shown: boolean) {
+  if (!shown || !gameSession.isLoading()) {
+    return;
+  }
+
+  gameSession.finishLoading();
+  globals.connection.send("gameLoaded", {
+    tableId: globals.joinedTableId,
+  });
 }
 
 interface SharedSegmentData {
@@ -103,4 +116,9 @@ const subscriptions: Array<Subscription<State, any>> = [
     }),
     onSharedSegmentChanged,
   ),
+
+  {
+    select: (s: State) => s.visibleState !== undefined,
+    onChange: onShownChanged,
+  },
 ];

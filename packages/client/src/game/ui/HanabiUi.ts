@@ -6,6 +6,7 @@ import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { releaseGameObservers } from "../gameObservers.ts";
+import * as gameSession from "../gameSession.ts";
 import type { GameExports } from "../main.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
@@ -52,7 +53,7 @@ export class HanabiUi {
     this.resizeHandler = () => {
       if (
         store.getState().session.screen !== Screen.Game
-        || this.globals.loading
+        || gameSession.isLoading()
       ) {
         return;
       }
@@ -88,7 +89,7 @@ export class HanabiUi {
     this.themeChangeHandler = () => {
       if (
         store.getState().session.screen !== Screen.Game
-        || this.globals.loading
+        || gameSession.isLoading()
         || this.liveResizeActive
       ) {
         return;

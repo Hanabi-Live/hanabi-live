@@ -12,6 +12,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands.ts";
 import { Connection } from "./Connection.ts";
 import { HTTP_STATUS } from "./constants.ts";
+import * as gameSession from "./game/gameSession.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 import { gameCommands } from "./game/ui/gameCommands.ts";
 import { globals } from "./Globals.ts";
@@ -301,7 +302,7 @@ function openConnection(isReconnect: boolean) {
           if (!isCurrentConnection(conn) || globals.ui === undefined) {
             return;
           }
-          const rebuilding = globals.ui.globals.loading;
+          const rebuilding = gameSession.isLoading();
           gameCommands.get("gameState")?.(state);
           conn.setReady(true);
           if (!rebuilding) {
@@ -441,7 +442,7 @@ function gameCallback<Command extends ServerEvent>(
     ) {
       return;
     }
-    if (globals.ui.globals.loading && commandName !== "gameState") {
+    if (gameSession.isLoading() && commandName !== "gameState") {
       return;
     }
     commandFunction(data);
