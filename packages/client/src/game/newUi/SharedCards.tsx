@@ -414,7 +414,7 @@ function Deck({
                 {turnsLeft}
               </span>
               <span
-                className="tw:mt-[0.3em] tw:text-center tw:font-bold tw:uppercase"
+                className="tw:mt-[0.3em] tw:text-center tw:font-bold tw:text-white tw:uppercase"
                 style={{ fontSize: cardWidth * TURNS_LEFT_CAPTION_SIZE }}
               >
                 {turns}
