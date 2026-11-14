@@ -48,6 +48,10 @@ interface PendingRequest {
  * "frames.ts".
  */
 export class Connection {
+  private ready = true;
+  private nextRequestId = 1;
+  private readonly pending = new Map<number, PendingRequest>();
+
   ws: WebSocket;
   /**
    * Callbacks by server command or lifecycle event. `on` pairs each name with its callback type, so
@@ -57,13 +61,6 @@ export class Connection {
   debug: boolean;
   /** Called instead of the command's callback when a message does not match its schema. */
   invalidMessage?: (command: string, error: Error) => void;
-  private ready = true;
-  private nextRequestId = 1;
-  private readonly pending = new Map<number, PendingRequest>();
-
-  setReady(ready: boolean): void {
-    this.ready = ready;
-  }
 
   constructor(addr: string, debug: boolean) {
     this.ws = new WebSocket(addr);
@@ -73,6 +70,80 @@ export class Connection {
     this.ws.addEventListener("open", this.onOpen.bind(this));
     this.ws.addEventListener("message", this.onMessage.bind(this));
     this.ws.addEventListener("error", this.onError.bind(this));
+  }
+
+  /** Answers a request: with its data, or, after the "warning" handler shows it, with a failure. */
+  private onReply(id: number, data: unknown, error: unknown): void {
+    const request = this.pending.get(id);
+    if (request === undefined) {
+      console.error(
+        `The server answered request ${id}, which we did not send.`,
+      );
+      return;
+    }
+    this.pending.delete(id);
+    const { command } = request;
+    function resolve(reply: Reply<ClientRequest>) {
+      request?.onReply?.(reply);
+    }
+    if (error !== undefined) {
+      const notice = SERVER_EVENT_SCHEMAS.warning.safeParse(error);
+      if (!notice.success) {
+        this.invalidMessage?.(
+          command,
+          new TypeError(
+            `The server sent an invalid failure of "${command}": ${notice.error.message}`,
+          ),
+        );
+      } else if (notice.data.code !== "commandIgnored") {
+        // `on` registered the warning callback for this payload type.
+        const warning = this.callbacks.get("warning") as
+          ((data: ServerEventData["warning"]) => void) | undefined;
+        warning?.(structuredClone(notice.data));
+      }
+      resolve({ ok: false });
+      return;
+    }
+    const schema = replySchemas[command];
+    if (schema === undefined) {
+      // `ReplyData` has no data for a command without a reply schema.
+      resolve({
+        ok: true,
+        data: undefined as ReplyData[ClientRequest],
+      });
+      return;
+    }
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      this.invalidMessage?.(
+        command,
+        new TypeError(
+          `The server sent an invalid reply to "${command}": ${result.error.message}`,
+        ),
+      );
+      resolve({ ok: false });
+      return;
+    }
+    if (this.debug) {
+      console.log(`%cReceived the reply to ${command}:`, "color: blue;");
+      console.log(result.data);
+    }
+    // The schema of the command's reply checked the data.
+    resolve({
+      ok: true,
+      data: structuredClone(result.data) as ReplyData[ClientRequest],
+    });
+  }
+
+  private lifecycleCallback(
+    name: LifecycleEvent,
+  ): ((event: Event) => void) | undefined {
+    // `on` only registers lifecycle names with event callbacks.
+    return this.callbacks.get(name) as ((event: Event) => void) | undefined;
+  }
+
+  setReady(ready: boolean): void {
+    this.ready = ready;
   }
 
   onOpen(event: Event): void {
@@ -140,69 +211,6 @@ export class Connection {
     callback(structuredClone(result.data));
   }
 
-  /** Answers a request: with its data, or, after the "warning" handler shows it, with a failure. */
-  private onReply(id: number, data: unknown, error: unknown): void {
-    const request = this.pending.get(id);
-    if (request === undefined) {
-      console.error(
-        `The server answered request ${id}, which we did not send.`,
-      );
-      return;
-    }
-    this.pending.delete(id);
-    const { command } = request;
-    function resolve(reply: Reply<ClientRequest>) {
-      request?.onReply?.(reply);
-    }
-    if (error !== undefined) {
-      const notice = SERVER_EVENT_SCHEMAS.warning.safeParse(error);
-      if (!notice.success) {
-        this.invalidMessage?.(
-          command,
-          new TypeError(
-            `The server sent an invalid failure of "${command}": ${notice.error.message}`,
-          ),
-        );
-      } else if (notice.data.code !== "commandIgnored") {
-        // `on` registered the warning callback for this payload type.
-        const warning = this.callbacks.get("warning") as
-          ((data: ServerEventData["warning"]) => void) | undefined;
-        warning?.(structuredClone(notice.data));
-      }
-      resolve({ ok: false });
-      return;
-    }
-    const schema = replySchemas[command];
-    if (schema === undefined) {
-      // `ReplyData` has no data for a command without a reply schema.
-      resolve({
-        ok: true,
-        data: undefined as ReplyData[ClientRequest],
-      });
-      return;
-    }
-    const result = schema.safeParse(data);
-    if (!result.success) {
-      this.invalidMessage?.(
-        command,
-        new TypeError(
-          `The server sent an invalid reply to "${command}": ${result.error.message}`,
-        ),
-      );
-      resolve({ ok: false });
-      return;
-    }
-    if (this.debug) {
-      console.log(`%cReceived the reply to ${command}:`, "color: blue;");
-      console.log(result.data);
-    }
-    // The schema of the command's reply checked the data.
-    resolve({
-      ok: true,
-      data: structuredClone(result.data) as ReplyData[ClientRequest],
-    });
-  }
-
   onError(event: Event): void {
     this.lifecycleCallback("socketError")?.(event);
   }
@@ -214,13 +222,6 @@ export class Connection {
   ): void;
   on(name: string, callback: (data: never) => void): void {
     this.callbacks.set(name, callback);
-  }
-
-  private lifecycleCallback(
-    name: LifecycleEvent,
-  ): ((event: Event) => void) | undefined {
-    // `on` only registers lifecycle names with event callbacks.
-    return this.callbacks.get(name) as ((event: Event) => void) | undefined;
   }
 
   /**

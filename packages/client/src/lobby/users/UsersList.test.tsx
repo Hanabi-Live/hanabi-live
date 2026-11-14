@@ -34,15 +34,16 @@ import {
 // The menu tooltip shows its content in the body, since jsdom does not support popovers.
 vi.mock("../../Tooltip.ts", () => ({
   Tooltip: class {
-    isOpen = false;
     private readonly content: Node | string;
+
+    isOpen = false;
+
+    openOnHover = vi.fn();
+    setContent = vi.fn();
 
     constructor(_anchor: HTMLElement, options: { content: Node | string }) {
       this.content = options.content;
     }
-
-    openOnHover = vi.fn();
-    setContent = vi.fn();
 
     openUntilClickElsewhere() {
       document.body.append(this.content);

@@ -31,15 +31,16 @@ const FULL_ACTION_LOG_TEXT = {
 } as const;
 
 export class FullActionLog extends Konva.Group {
-  buffer: Array<{ turnNum: number; text: string }> = [];
-  logText: MultiFitText | undefined = undefined;
-  logNumbers: MultiFitText | undefined = undefined;
-  playerLogEmptyMessage: FitText;
   private playerLogs: Tuple<MultiFitText | undefined, NumPlayers>;
   private playerLogNumbers: Tuple<MultiFitText | undefined, NumPlayers>;
   private needsRefresh = false;
   private readonly numbersOptions: ContainerConfig;
   private readonly textOptions: ContainerConfig;
+
+  buffer: Array<{ turnNum: number; text: string }> = [];
+  logText: MultiFitText | undefined = undefined;
+  logNumbers: MultiFitText | undefined = undefined;
+  playerLogEmptyMessage: FitText;
 
   constructor(winW: number, winH: number) {
     // The log fills the height of the stage, with an equal margin above and below.
@@ -121,6 +122,65 @@ export class FullActionLog extends Konva.Group {
     ) as Tuple<undefined, NumPlayers>;
   }
 
+  private makeLog() {
+    this.logText = new MultiFitText(this.textOptions, MAX_LINES);
+    this.add(this.logText);
+    this.logNumbers = new MultiFitText(this.numbersOptions, MAX_LINES);
+    this.add(this.logNumbers);
+  }
+
+  private makePlayerLog(i: number) {
+    const playerLog = new MultiFitText(this.textOptions, MAX_LINES);
+    playerLog.hide();
+    this.playerLogs[i] = playerLog;
+    this.add(playerLog);
+
+    const playerLogNumber = new MultiFitText(this.numbersOptions, MAX_LINES);
+    playerLogNumber.hide();
+    this.playerLogNumbers[i] = playerLogNumber;
+    this.add(playerLogNumber);
+  }
+
+  private refreshText() {
+    if (this.logText === undefined || this.logNumbers === undefined) {
+      this.makeLog();
+    }
+
+    for (const logEntry of this.buffer) {
+      appendLine(
+        this.logText!,
+        this.logNumbers!,
+        logEntry.turnNum,
+        logEntry.text,
+      );
+      for (const playerIndex of eRange(globals.options.numPlayers)) {
+        if (
+          logEntry.text.startsWith(globals.metadata.playerNames[playerIndex]!)
+        ) {
+          if (this.playerLogs[playerIndex] === undefined) {
+            this.makePlayerLog(playerIndex);
+          }
+          appendLine(
+            this.playerLogs[playerIndex]!,
+            this.playerLogNumbers[playerIndex]!,
+            logEntry.turnNum,
+            logEntry.text,
+          );
+          break;
+        }
+      }
+    }
+
+    this.logText!.refreshText();
+    this.logNumbers!.refreshText();
+    for (const playerIndex of eRange(globals.options.numPlayers)) {
+      this.playerLogs[playerIndex]?.refreshText();
+      this.playerLogNumbers[playerIndex]?.refreshText();
+    }
+    this.buffer = [];
+    this.needsRefresh = false;
+  }
+
   addMessage(turn: number, msg: string): void {
     this.buffer.push({
       turnNum: turn,
@@ -195,65 +255,6 @@ export class FullActionLog extends Konva.Group {
 
       globals.layers.UI2.batchDraw();
     });
-  }
-
-  private makeLog() {
-    this.logText = new MultiFitText(this.textOptions, MAX_LINES);
-    this.add(this.logText);
-    this.logNumbers = new MultiFitText(this.numbersOptions, MAX_LINES);
-    this.add(this.logNumbers);
-  }
-
-  private makePlayerLog(i: number) {
-    const playerLog = new MultiFitText(this.textOptions, MAX_LINES);
-    playerLog.hide();
-    this.playerLogs[i] = playerLog;
-    this.add(playerLog);
-
-    const playerLogNumber = new MultiFitText(this.numbersOptions, MAX_LINES);
-    playerLogNumber.hide();
-    this.playerLogNumbers[i] = playerLogNumber;
-    this.add(playerLogNumber);
-  }
-
-  private refreshText() {
-    if (this.logText === undefined || this.logNumbers === undefined) {
-      this.makeLog();
-    }
-
-    for (const logEntry of this.buffer) {
-      appendLine(
-        this.logText!,
-        this.logNumbers!,
-        logEntry.turnNum,
-        logEntry.text,
-      );
-      for (const playerIndex of eRange(globals.options.numPlayers)) {
-        if (
-          logEntry.text.startsWith(globals.metadata.playerNames[playerIndex]!)
-        ) {
-          if (this.playerLogs[playerIndex] === undefined) {
-            this.makePlayerLog(playerIndex);
-          }
-          appendLine(
-            this.playerLogs[playerIndex]!,
-            this.playerLogNumbers[playerIndex]!,
-            logEntry.turnNum,
-            logEntry.text,
-          );
-          break;
-        }
-      }
-    }
-
-    this.logText!.refreshText();
-    this.logNumbers!.refreshText();
-    for (const playerIndex of eRange(globals.options.numPlayers)) {
-      this.playerLogs[playerIndex]?.refreshText();
-      this.playerLogNumbers[playerIndex]?.refreshText();
-    }
-    this.buffer = [];
-    this.needsRefresh = false;
   }
 
   reset(): void {

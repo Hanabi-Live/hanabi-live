@@ -57,16 +57,16 @@ const CHECK_MARK_COLOR = "black";
  * is checked, so that it always shows the state.
  */
 export class Checkbox extends Konva.Group {
+  private readonly background: Konva.Rect;
+  private readonly box: Konva.Rect;
+  private readonly checkMark: Konva.Line;
+  private readonly label: Konva.Text | Konva.Image;
+
   checked = false;
   enabled = true;
 
   tooltipName?: GameTooltipName;
   tooltipContent = "";
-
-  private readonly background: Konva.Rect;
-  private readonly box: Konva.Rect;
-  private readonly checkMark: Konva.Line;
-  private readonly label: Konva.Text | Konva.Image;
 
   /** The label is text or an image. A text label can have its own font size. */
   constructor(
@@ -202,17 +202,6 @@ export class Checkbox extends Konva.Group {
     return label;
   }
 
-  setChecked(checked: boolean): void {
-    this.checked = checked;
-    this.updateStyle();
-  }
-
-  setEnabled(enabled: boolean): void {
-    this.enabled = enabled;
-    this.background.listening(enabled);
-    this.updateStyle();
-  }
-
   private updateStyle(): void {
     const color = this.enabled ? COLOR : BUTTON_DISABLED_TEXT_COLOR;
     this.box.stroke(color);
@@ -224,5 +213,16 @@ export class Checkbox extends Konva.Group {
       this.label.opacity(this.enabled ? 1 : DISABLED_IMAGE_OPACITY);
     }
     drawLayer(this);
+  }
+
+  setChecked(checked: boolean): void {
+    this.checked = checked;
+    this.updateStyle();
+  }
+
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+    this.background.listening(enabled);
+    this.updateStyle();
   }
 }

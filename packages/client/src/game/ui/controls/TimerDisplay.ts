@@ -17,10 +17,11 @@ const PANEL_COLOR = "black";
 const LABEL_Y_SPACES = 6;
 
 export class TimerDisplay extends Konva.Group {
-  timerText: FitText;
-  labelText: FitText;
   private readonly oval: Konva.Rect;
   private warningFlashOn = false;
+
+  timerText: FitText;
+  labelText: FitText;
 
   tooltipName?: GameTooltipName;
   tooltipContent = "";
@@ -73,6 +74,13 @@ export class TimerDisplay extends Konva.Group {
     this.add(this.labelText);
   }
 
+  private setWarningFlash(on: boolean): void {
+    this.warningFlashOn = on;
+    this.oval
+      .fill(on ? WARNING_COLOR : PANEL_COLOR)
+      .opacity(on ? TIMER_WARNING_OPACITY : PANEL_OPACITY);
+  }
+
   setTimerText(text: string): void {
     this.timerText.fitText(text);
   }
@@ -89,12 +97,5 @@ export class TimerDisplay extends Konva.Group {
   /** Restores the normal background. */
   clearWarningFlash(): void {
     this.setWarningFlash(false);
-  }
-
-  private setWarningFlash(on: boolean): void {
-    this.warningFlashOn = on;
-    this.oval
-      .fill(on ? WARNING_COLOR : PANEL_COLOR)
-      .opacity(on ? TIMER_WARNING_OPACITY : PANEL_OPACITY);
   }
 }

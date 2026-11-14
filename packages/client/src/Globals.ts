@@ -10,12 +10,6 @@ class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
   conn: Connection | undefined = undefined;
 
-  /** The WebSocket connection, for code that only runs once the client has connected. */
-  get connection(): Connection {
-    assertDefined(this.conn, "The WebSocket connection is not open yet.");
-    return this.conn;
-  }
-
   // ----------------------------------------
   // Values from the server "welcome" message
   // ----------------------------------------
@@ -31,12 +25,6 @@ class Globals {
   /** The table we are joined to, if any. */
   tableId: TableId | undefined = undefined;
 
-  /** The table we are joined to, for code that only runs at a table. */
-  get joinedTableId(): TableId {
-    assertDefined(this.tableId, "We are not joined to a table.");
-    return this.tableId;
-  }
-
   // ------------
   // UI variables
   // ------------
@@ -48,6 +36,18 @@ class Globals {
 
   /** Used to keep track of the active element before model warning box. */
   lastActiveElement: HTMLElement | undefined = undefined;
+
+  /** The WebSocket connection, for code that only runs once the client has connected. */
+  get connection(): Connection {
+    assertDefined(this.conn, "The WebSocket connection is not open yet.");
+    return this.conn;
+  }
+
+  /** The table we are joined to, for code that only runs at a table. */
+  get joinedTableId(): TableId {
+    assertDefined(this.tableId, "We are not joined to a table.");
+    return this.tableId;
+  }
 }
 
 export const globals = new Globals();

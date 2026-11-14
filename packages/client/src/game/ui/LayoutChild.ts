@@ -17,16 +17,13 @@ import * as turn from "./turn.ts";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
 export class LayoutChild extends Konva.Group {
+  private readonly _card: HanabiCard;
+
   tween: Konva.Tween | undefined = undefined;
   doMisplayAnimation = false;
   misplayAnimation: MisplayAnimation | undefined = undefined;
   stackCompleteAnimation: StackCompleteAnimation | undefined = undefined;
   blank = false;
-
-  private readonly _card: HanabiCard;
-  get card(): HanabiCard {
-    return this._card;
-  }
 
   constructor(child: HanabiCard, config?: Konva.ContainerConfig) {
     super(config);
@@ -53,6 +50,10 @@ export class LayoutChild extends Konva.Group {
 
     child.on("widthChange", change);
     child.on("heightChange", change);
+  }
+
+  get card(): HanabiCard {
+    return this._card;
   }
 
   stopAnimations(): void {

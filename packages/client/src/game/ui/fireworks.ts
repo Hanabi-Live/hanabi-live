@@ -38,14 +38,14 @@ export function absoluteCenter(node: Konva.Node): Point {
  * runs for a duration. Shapes are drawn above the cards and are destroyed when their track ends.
  */
 export class EffectTimeline {
-  /** Sizes and distances are fractions of this length, which is the height of a play stack. */
-  readonly unit: number;
-
   private readonly fxLayer = globals.layers.UI2;
   private readonly fx = new Konva.Group({ listening: false });
   private readonly fxInverse: Konva.Transform;
   private readonly tracks: Track[] = [];
   private animation: Konva.Animation | undefined = undefined;
+
+  /** Sizes and distances are fractions of this length, which is the height of a play stack. */
+  readonly unit: number;
 
   constructor(unit: number) {
     this.unit = unit;

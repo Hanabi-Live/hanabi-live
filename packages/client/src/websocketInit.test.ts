@@ -42,11 +42,11 @@ class MockSocket {
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSED = 3;
+  private readonly listeners = new Map<string, () => void>();
 
   readonly url: string;
   readyState = MockSocket.CONNECTING;
   closed = false;
-  private readonly listeners = new Map<string, () => void>();
 
   constructor(url: string) {
     this.url = url;

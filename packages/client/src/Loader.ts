@@ -57,10 +57,6 @@ export class Loader {
   finishedCallback: FinishedCallback | undefined = undefined;
   failedCallback: FailedCallback | undefined = undefined;
 
-  get failed(): boolean {
-    return this.failedFiles.size > 0;
-  }
-
   constructor() {
     // Build a map of image identifiers to URL paths.
     for (const fileId of FILE_IDS) {
@@ -71,14 +67,6 @@ export class Loader {
     this.filePathMap.set("background", "/public/img/background.jpg");
 
     this.start();
-  }
-
-  start(): void {
-    for (const [fileId, filePath] of this.filePathMap) {
-      this.loadImage(fileId, filePath);
-    }
-
-    this.progress();
   }
 
   private loadImage(fileId: string, filePath: string, retryCount = 0): void {
@@ -108,6 +96,18 @@ export class Loader {
     });
     this.imageMap.set(fileId, img);
     img.src = filePath;
+  }
+
+  get failed(): boolean {
+    return this.failedFiles.size > 0;
+  }
+
+  start(): void {
+    for (const [fileId, filePath] of this.filePathMap) {
+      this.loadImage(fileId, filePath);
+    }
+
+    this.progress();
   }
 
   progress(): void {

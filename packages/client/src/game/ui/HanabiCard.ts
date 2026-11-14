@@ -115,21 +115,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // ---------------
 
   private readonly variant: Variant;
-
-  tween: Konva.Tween | undefined = undefined; // Required in order to be able to cancel animations
-  tweenFinalPosition: { x: number; y: number } | undefined = undefined;
-  tweenFinalScale: { x: number; y: number } | undefined = undefined;
   private vortexTween: Konva.Tween | undefined = undefined;
-  cursor: CursorType = "default";
   private empathy = false;
 
   /** How this card would look after a clue that the player is considering giving. */
   private cluePreviewState: CardState | undefined;
-  dragging = false;
-  wasRecentlyTapped = false;
-  touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
-
-  isStackBase: boolean;
 
   private readonly bare: Konva.Image;
   private bareName = "";
@@ -159,8 +149,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private readonly criticalIndicator: Konva.Image;
   private readonly arrow: Konva.Group | undefined = undefined;
   private readonly arrowBase: Konva.Shape | undefined = undefined;
-
-  noteIndicator: NoteIndicator;
   private readonly trashcan: Konva.Image;
   private readonly questionMark: Konva.Image;
   private readonly exclamationMark: Konva.Image;
@@ -176,49 +164,40 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // -------------------
 
   private readonly _layout: LayoutChild;
-  get layout(): LayoutChild {
-    return this._layout;
-  }
-
-  readonly order: CardOrder;
 
   /** The state of a card that is not in the deck, such as a stack base. */
   private readonly fallbackState: CardState;
 
-  /**
-   * The clue preview state if one is shown. Otherwise, the card's entry in the visible deck.
-   * Otherwise, the fixed state of a card that is not in the deck.
-   */
-  get state(): CardState {
-    return (
-      this.cluePreviewState
-      ?? store.getState().game.current?.visibleState?.deck[this.order]
-      ?? this.fallbackState
-    );
-  }
-
-  get note(): CardNote {
-    return globals.state.notes.ourNotes[this.order]!;
-  }
-
   private _tweening = false;
-  get tweening(): boolean {
-    return this._tweening;
-  }
-
-  get tooltipName(): GameTooltipName {
-    return `card-${this.order}`;
-  }
 
   private _visibleSuitIndex: SuitIndex | undefined = undefined;
-  get visibleSuitIndex(): SuitIndex | undefined {
-    return this._visibleSuitIndex;
-  }
 
   private _visibleRank: Rank | undefined = undefined;
-  get visibleRank(): Rank | undefined {
-    return this._visibleRank;
-  }
+
+  private readonly setArrowMiddleRight = () => {
+    this.arrow!.y(REVERSED_ARROW_Y.MIDDLE * CARD_H);
+  };
+
+  private readonly setArrowBottomRight = () => {
+    this.arrow!.y(REVERSED_ARROW_Y.BOTTOM * CARD_H);
+  };
+
+  tween: Konva.Tween | undefined = undefined; // Required in order to be able to cancel animations
+  tweenFinalPosition: { x: number; y: number } | undefined = undefined;
+  tweenFinalScale: { x: number; y: number } | undefined = undefined;
+  cursor: CursorType = "default";
+  dragging = false;
+  wasRecentlyTapped = false;
+  touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+
+  isStackBase: boolean;
+
+  noteIndicator: NoteIndicator;
+
+  readonly order: CardOrder;
+
+  registerMouseHandlers = HanabiCardMouse.registerMouseHandlers;
+  setCursor = HanabiCardMouse.setCursor;
 
   // -----------
   // Constructor
@@ -336,8 +315,225 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  registerMouseHandlers = HanabiCardMouse.registerMouseHandlers;
-  setCursor = HanabiCardMouse.setCursor;
+  /** Restores the normal size and rotation of a card that was sucked into the hole. */
+  private stopVortex(): void {
+    if (this.vortexTween !== undefined) {
+      this.vortexTween.destroy();
+      this.vortexTween = undefined;
+    }
+    this.scale({
+      x: 1,
+      y: 1,
+    });
+    this.rotation(0);
+  }
+
+  private identityPresentationOptions(cardIdentity: CardIdentity) {
+    return {
+      cardIdentity,
+      state: this.state,
+      note: this.shownNote,
+      empathy: this.showsEmpathy,
+      empathyIncludesNotes: this.empathyIncludesNotes,
+      morphedIdentity: this.isMorphed() ? this.getMorph() : undefined,
+      isStackBase: this.isStackBase,
+      finished: globals.state.finished,
+    };
+  }
+
+  private getIdentityToShow(cardIdentity: CardIdentity): CardIdentity {
+    return getCardIdentityToShow(
+      this.identityPresentationOptions(cardIdentity),
+    );
+  }
+
+  /**
+   * A card that a hypothetical draws from beyond the real game's deck has no identity to reveal, so
+   * it stays blank even when drawn cards are shown.
+   */
+  private isUnknownHypotheticalDraw(): boolean {
+    if (globals.state.replay.hypothetical === undefined || this.isStackBase) {
+      return false;
+    }
+
+    const { order } = this;
+    const cardIdentity = globals.state.cardIdentities[order];
+    return (
+      order >= globals.state.ongoingGame.deck.length
+      && cardIdentity !== undefined
+      && cardIdentity.suitIndex === undefined
+      && cardIdentity.rank === undefined
+    );
+  }
+
+  // --------------
+  // Border methods
+  // --------------
+
+  private getBorderPresentation() {
+    return getCardBorderPresentation(
+      this.state,
+      this.note,
+      globals.state.finished,
+    );
+  }
+
+  private shouldShowClueBorder() {
+    return this.getBorderPresentation().clued;
+  }
+
+  /**
+   * Shows the possibility rows instead of the suit and rank pips when the card has them. The rows
+   * need both the suit and the rank pips, so a card that shows its suit or its rank (such as a card
+   * in our hand whose identity we learn later in the game) keeps the other pips.
+   */
+  private updatePipVisibility() {
+    const showRows =
+      this.possibilityRowsToDraw !== undefined
+      && this.pipsAllowed.suit
+      && this.pipsAllowed.rank;
+    this.suitPips.visible(this.pipsAllowed.suit && !showRows);
+    this.rankPips.visible(this.pipsAllowed.rank && !showRows);
+    this.possibilityRows.visible(showRows);
+  }
+
+  private setTrashMiniIndicator(isTrash: boolean) {
+    const known = this.visibleRank !== undefined;
+    if (isTrash && this.trashcan.isVisible() === false) {
+      this.trashMiniIndicatorTop.visible(!known);
+      this.trashMiniIndicatorBottom.visible(known);
+    } else {
+      this.trashMiniIndicatorTop.visible(false);
+      this.trashMiniIndicatorBottom.visible(false);
+    }
+  }
+
+  private setDda(dda: boolean) {
+    const visible = this.shouldSetDda(dda);
+    const known = this.visibleRank !== undefined;
+    if (visible) {
+      this.ddaIndicatorTop.visible(!known);
+      this.ddaIndicatorBottom.visible(known);
+    } else {
+      this.ddaIndicatorTop.visible(false);
+      this.ddaIndicatorBottom.visible(false);
+    }
+  }
+
+  private shouldSetDda(dda: boolean) {
+    return (
+      dda
+      && !this.shouldShowClueBorder()
+      && this.trashcan.isVisible() === false
+      && store.getState().session.settings.hGroupConventions
+      && !globals.metadata.hardVariant
+    );
+  }
+
+  private setFade(isTrash: boolean) {
+    const opacity = this.shouldSetFade(isTrash) ? CARD_FADE : 1;
+    this.opacity(opacity);
+  }
+
+  private shouldSetFade(isTrash: boolean) {
+    return shouldFadeTrash({
+      trash:
+        isTrash && !isCardPlayed(this.state) && !isCardDiscarded(this.state),
+      markedTrash: this.trashcan.isVisible() === true,
+      clued: isCardClued(this.state),
+      positivelyClued: this.state.numPositiveClues > 0,
+      note: this.note,
+      throwItInAHole: this.variant.throwItInAHole,
+    });
+  }
+
+  private setCritical(critical: boolean) {
+    const visible = this.shouldSetCritical(critical);
+    this.criticalIndicator.visible(visible);
+  }
+
+  private shouldSetCritical(critical: boolean) {
+    return (
+      critical && !isCardPlayed(this.state) && !isCardDiscarded(this.state)
+    );
+  }
+
+  private shouldBeRaisedFromClues() {
+    // On Keldon mode, only the player should see the cards raised on their own hand.
+    const shouldShowOnKeldonMode =
+      this.state.location === getViewPlayerIndex(globals.metadata)
+      && !globals.state.finished;
+
+    return (
+      this.shouldShowClueBorder()
+      && !this.layout.isDragging()
+      && (!store.getState().session.settings.keldonMode
+        || shouldShowOnKeldonMode)
+    );
+  }
+
+  private get showsEmpathy(): boolean {
+    return this.empathy || this.cluePreviewState !== undefined;
+  }
+
+  /** Holding Ctrl + Space shows empathy that also applies our notes. */
+  private get empathyIncludesNotes(): boolean {
+    return (
+      this.empathy
+      && this.cluePreviewState === undefined
+      && globals.globalEmpathyIncludesNotes
+    );
+  }
+
+  /**
+   * The note that the card shows. Ctrl + Space empathy outside of our own game shows the note of
+   * the card's holder.
+   */
+  private get shownNote(): CardNote {
+    return this.empathyIncludesNotes
+      ? getEmpathyNote(globals.state, this.variant, this.order)
+      : this.note;
+  }
+
+  private get hidesNotes(): boolean {
+    return this.showsEmpathy && !this.empathyIncludesNotes;
+  }
+
+  get layout(): LayoutChild {
+    return this._layout;
+  }
+
+  /**
+   * The clue preview state if one is shown. Otherwise, the card's entry in the visible deck.
+   * Otherwise, the fixed state of a card that is not in the deck.
+   */
+  get state(): CardState {
+    return (
+      this.cluePreviewState
+      ?? store.getState().game.current?.visibleState?.deck[this.order]
+      ?? this.fallbackState
+    );
+  }
+
+  get note(): CardNote {
+    return globals.state.notes.ourNotes[this.order]!;
+  }
+
+  get tweening(): boolean {
+    return this._tweening;
+  }
+
+  get tooltipName(): GameTooltipName {
+    return `card-${this.order}`;
+  }
+
+  get visibleSuitIndex(): SuitIndex | undefined {
+    return this._visibleSuitIndex;
+  }
+
+  get visibleRank(): Rank | undefined {
+    return this._visibleRank;
+  }
 
   // -------------
   // Tween methods
@@ -385,19 +581,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       },
     });
     this.vortexTween.play();
-  }
-
-  /** Restores the normal size and rotation of a card that was sucked into the hole. */
-  private stopVortex(): void {
-    if (this.vortexTween !== undefined) {
-      this.vortexTween.destroy();
-      this.vortexTween = undefined;
-    }
-    this.scale({
-      x: 1,
-      y: 1,
-    });
-    this.rotation(0);
   }
 
   // ----------------------------------------------
@@ -476,25 +659,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
 
     return cardIdentity;
-  }
-
-  private identityPresentationOptions(cardIdentity: CardIdentity) {
-    return {
-      cardIdentity,
-      state: this.state,
-      note: this.shownNote,
-      empathy: this.showsEmpathy,
-      empathyIncludesNotes: this.empathyIncludesNotes,
-      morphedIdentity: this.isMorphed() ? this.getMorph() : undefined,
-      isStackBase: this.isStackBase,
-      finished: globals.state.finished,
-    };
-  }
-
-  private getIdentityToShow(cardIdentity: CardIdentity): CardIdentity {
-    return getCardIdentityToShow(
-      this.identityPresentationOptions(cardIdentity),
-    );
   }
 
   getSuitToShow(cardIdentity: CardIdentity): Suit | undefined {
@@ -590,25 +754,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   /**
-   * A card that a hypothetical draws from beyond the real game's deck has no identity to reveal, so
-   * it stays blank even when drawn cards are shown.
-   */
-  private isUnknownHypotheticalDraw(): boolean {
-    if (globals.state.replay.hypothetical === undefined || this.isStackBase) {
-      return false;
-    }
-
-    const { order } = this;
-    const cardIdentity = globals.state.cardIdentities[order];
-    return (
-      order >= globals.state.ongoingGame.deck.length
-      && cardIdentity !== undefined
-      && cardIdentity.suitIndex === undefined
-      && cardIdentity.rank === undefined
-    );
-  }
-
-  /**
    * Used to compute the card's "bare name", which is used to render the correct image (e.g.
    * "card-${suit}-${bareNameRank}"). The "card" image when nothing is on the stacks has the special
    * name "card-${suit}-${CARD_IMAGE_STACK_BASE_RANK_NAME}".
@@ -663,28 +808,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
   }
 
-  // --------------
-  // Border methods
-  // --------------
-
-  private getBorderPresentation() {
-    return getCardBorderPresentation(
-      this.state,
-      this.note,
-      globals.state.finished,
-    );
-  }
-
   setBorder(): void {
     const border = this.getBorderPresentation();
     this.cluedBorder.visible(border.clued);
     this.chopMoveBorder.visible(border.chopMoved);
     this.finesseBorder.visible(border.finessed);
     this.discardPermissionBorder.visible(border.discardPermission);
-  }
-
-  private shouldShowClueBorder() {
-    return this.getBorderPresentation().clued;
   }
 
   // -----------
@@ -726,21 +855,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
         ? undefined
         : presentation.possibilityRows;
     this.updatePipVisibility();
-  }
-
-  /**
-   * Shows the possibility rows instead of the suit and rank pips when the card has them. The rows
-   * need both the suit and the rank pips, so a card that shows its suit or its rank (such as a card
-   * in our hand whose identity we learn later in the game) keeps the other pips.
-   */
-  private updatePipVisibility() {
-    const showRows =
-      this.possibilityRowsToDraw !== undefined
-      && this.pipsAllowed.suit
-      && this.pipsAllowed.rank;
-    this.suitPips.visible(this.pipsAllowed.suit && !showRows);
-    this.rankPips.visible(this.pipsAllowed.rank && !showRows);
-    this.possibilityRows.visible(showRows);
   }
 
   // --------------------------
@@ -884,14 +998,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private readonly setArrowMiddleRight = () => {
-    this.arrow!.y(REVERSED_ARROW_Y.MIDDLE * CARD_H);
-  };
-
-  private readonly setArrowBottomRight = () => {
-    this.arrow!.y(REVERSED_ARROW_Y.BOTTOM * CARD_H);
-  };
-
   setStatus(): void {
     const { visibleState } = globals.state;
     // Do not show any status in real life mode.
@@ -920,67 +1026,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.state.inDoubleDiscard
         && status !== CardStatus.Critical
         && !isKnownTrash,
-    );
-  }
-
-  private setTrashMiniIndicator(isTrash: boolean) {
-    const known = this.visibleRank !== undefined;
-    if (isTrash && this.trashcan.isVisible() === false) {
-      this.trashMiniIndicatorTop.visible(!known);
-      this.trashMiniIndicatorBottom.visible(known);
-    } else {
-      this.trashMiniIndicatorTop.visible(false);
-      this.trashMiniIndicatorBottom.visible(false);
-    }
-  }
-
-  private setDda(dda: boolean) {
-    const visible = this.shouldSetDda(dda);
-    const known = this.visibleRank !== undefined;
-    if (visible) {
-      this.ddaIndicatorTop.visible(!known);
-      this.ddaIndicatorBottom.visible(known);
-    } else {
-      this.ddaIndicatorTop.visible(false);
-      this.ddaIndicatorBottom.visible(false);
-    }
-  }
-
-  private shouldSetDda(dda: boolean) {
-    return (
-      dda
-      && !this.shouldShowClueBorder()
-      && this.trashcan.isVisible() === false
-      && store.getState().session.settings.hGroupConventions
-      && !globals.metadata.hardVariant
-    );
-  }
-
-  private setFade(isTrash: boolean) {
-    const opacity = this.shouldSetFade(isTrash) ? CARD_FADE : 1;
-    this.opacity(opacity);
-  }
-
-  private shouldSetFade(isTrash: boolean) {
-    return shouldFadeTrash({
-      trash:
-        isTrash && !isCardPlayed(this.state) && !isCardDiscarded(this.state),
-      markedTrash: this.trashcan.isVisible() === true,
-      clued: isCardClued(this.state),
-      positivelyClued: this.state.numPositiveClues > 0,
-      note: this.note,
-      throwItInAHole: this.variant.throwItInAHole,
-    });
-  }
-
-  private setCritical(critical: boolean) {
-    const visible = this.shouldSetCritical(critical);
-    this.criticalIndicator.visible(visible);
-  }
-
-  private shouldSetCritical(critical: boolean) {
-    return (
-      critical && !isCardPlayed(this.state) && !isCardDiscarded(this.state)
     );
   }
 
@@ -1027,20 +1072,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
         duration: RAISE_DURATION_SECONDS,
       });
     }
-  }
-
-  private shouldBeRaisedFromClues() {
-    // On Keldon mode, only the player should see the cards raised on their own hand.
-    const shouldShowOnKeldonMode =
-      this.state.location === getViewPlayerIndex(globals.metadata)
-      && !globals.state.finished;
-
-    return (
-      this.shouldShowClueBorder()
-      && !this.layout.isDragging()
-      && (!store.getState().session.settings.keldonMode
-        || shouldShowOnKeldonMode)
-    );
   }
 
   /** @param unread Whether to tilt the indicator to show spectators that the notes changed. */
@@ -1361,33 +1392,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setBareImage();
     this.updatePips();
     this.setBorder();
-  }
-
-  private get showsEmpathy(): boolean {
-    return this.empathy || this.cluePreviewState !== undefined;
-  }
-
-  /** Holding Ctrl + Space shows empathy that also applies our notes. */
-  private get empathyIncludesNotes(): boolean {
-    return (
-      this.empathy
-      && this.cluePreviewState === undefined
-      && globals.globalEmpathyIncludesNotes
-    );
-  }
-
-  /**
-   * The note that the card shows. Ctrl + Space empathy outside of our own game shows the note of
-   * the card's holder.
-   */
-  private get shownNote(): CardNote {
-    return this.empathyIncludesNotes
-      ? getEmpathyNote(globals.state, this.variant, this.order)
-      : this.note;
-  }
-
-  private get hidesNotes(): boolean {
-    return this.showsEmpathy && !this.empathyIncludesNotes;
   }
 
   /** A description of the card's suit, or `undefined` when its suit is unknown. */

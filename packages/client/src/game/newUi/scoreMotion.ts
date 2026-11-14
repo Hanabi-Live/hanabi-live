@@ -153,11 +153,11 @@ function center(element: Element): Point {
  * last effect ends, when the game screen leaves the page, or when the effects are stopped.
  */
 class Fireworks {
-  /** Sizes and distances are fractions of this length, which is the height of a play stack. */
-  readonly unit: number;
-
   private readonly tracks: Track[] = [];
   private stopped = false;
+
+  /** Sizes and distances are fractions of this length, which is the height of a play stack. */
+  readonly unit: number;
 
   constructor(unit: number) {
     this.unit = unit;

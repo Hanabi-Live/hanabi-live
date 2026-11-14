@@ -26,19 +26,14 @@ Konva.legacyTextRendering = true;
  * "resetGlobals()".
  */
 export class UiGlobals {
+  private stageInstance: Konva.Stage | undefined = undefined;
+
   // Game constants (set upon first initialization).
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
 
   // UI elements
   imageLoader: Loader | undefined = undefined;
-  private stageInstance: Konva.Stage | undefined = undefined;
-
-  /** The classic screen's canvas, made when the classic screen first uses it. */
-  get stage(): Konva.Stage {
-    this.stageInstance ??= newStage();
-    return this.stageInstance;
-  }
 
   layers: Layers = new Layers();
   elements: Elements = new Elements();
@@ -79,6 +74,12 @@ export class UiGlobals {
   // State information
   stateObserver: StateObserver | undefined = undefined;
   cardSubscriptions: Array<() => void> = [];
+
+  /** The classic screen's canvas, made when the classic screen first uses it. */
+  get stage(): Konva.Stage {
+    this.stageInstance ??= newStage();
+    return this.stageInstance;
+  }
 
   /** The game's state, which exists once the server has answered "gameInitLoad". */
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- It reads the store.

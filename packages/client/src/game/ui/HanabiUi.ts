@@ -19,7 +19,6 @@ import type { UiGlobals } from "./UiGlobals.ts";
 import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 
 export class HanabiUi {
-  globals: UiGlobals;
   private readonly resizeHandler: () => void;
   private readonly themeChangeHandler: () => void;
   private resizeRequestAnimationFrame: number | undefined = undefined;
@@ -32,6 +31,8 @@ export class HanabiUi {
 
   /** Stops drawing the clocks. */
   private readonly stopDrawingTimers: () => void;
+
+  globals: UiGlobals;
 
   constructor() {
     // Expose the globals to functions in the "game" directory.
@@ -93,52 +94,6 @@ export class HanabiUi {
     // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the reply to "gameInitLoad" from the server in order to know how many players
     // are in the game and what the variant is. Only then can we start drawing the UI.
-  }
-
-  // The following methods are called from various parent functions.
-
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  updateChatLabel(): void {
-    if (globals.elements.chatButton === undefined) {
-      return;
-    }
-
-    let text = "";
-    if (lobbyGlobals.zenModeEnabled) {
-      // eslint-disable-next-line complete/require-ascii
-      text += "☯️";
-    } else {
-      // eslint-disable-next-line complete/require-ascii
-      text += "💬";
-      const { unread } = store.getState().gameChat;
-      if (unread > 0) {
-        text += ` (${unread})`;
-      }
-    }
-
-    globals.elements.chatButton.text(text);
-    globals.layers.UI.batchDraw();
-  }
-
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  focusLost(): void {
-    setGlobalEmpathy(false);
-    cursor.set("default");
-  }
-
-  destroy(): void {
-    window.removeEventListener("resize", this.resizeHandler);
-    document.removeEventListener("theme_change", this.themeChangeHandler);
-    if (this.resizeRequestAnimationFrame !== undefined) {
-      cancelAnimationFrame(this.resizeRequestAnimationFrame);
-      this.resizeRequestAnimationFrame = undefined;
-    }
-    releaseSubscriptions();
-    unmountClueLog();
-    keyboard.destroy();
-    this.stopDrawingTimers();
-    globals.elements.restartWaitingOnServerAnimation?.stop();
-    globals.stage.destroy();
   }
 
   private scheduleResizeFrame(): void {
@@ -244,6 +199,52 @@ export class HanabiUi {
     this.liveResizeActive = false;
     this.globals.isResizing = false;
     this.globals.animateFast = false;
+  }
+
+  // The following methods are called from various parent functions.
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  updateChatLabel(): void {
+    if (globals.elements.chatButton === undefined) {
+      return;
+    }
+
+    let text = "";
+    if (lobbyGlobals.zenModeEnabled) {
+      // eslint-disable-next-line complete/require-ascii
+      text += "☯️";
+    } else {
+      // eslint-disable-next-line complete/require-ascii
+      text += "💬";
+      const { unread } = store.getState().gameChat;
+      if (unread > 0) {
+        text += ` (${unread})`;
+      }
+    }
+
+    globals.elements.chatButton.text(text);
+    globals.layers.UI.batchDraw();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  focusLost(): void {
+    setGlobalEmpathy(false);
+    cursor.set("default");
+  }
+
+  destroy(): void {
+    window.removeEventListener("resize", this.resizeHandler);
+    document.removeEventListener("theme_change", this.themeChangeHandler);
+    if (this.resizeRequestAnimationFrame !== undefined) {
+      cancelAnimationFrame(this.resizeRequestAnimationFrame);
+      this.resizeRequestAnimationFrame = undefined;
+    }
+    releaseSubscriptions();
+    unmountClueLog();
+    keyboard.destroy();
+    this.stopDrawingTimers();
+    globals.elements.restartWaitingOnServerAnimation?.stop();
+    globals.stage.destroy();
   }
 }
 

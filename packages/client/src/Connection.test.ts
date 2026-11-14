@@ -5,10 +5,10 @@ const sockets: FakeWebSocket[] = [];
 
 class FakeWebSocket {
   public static readonly OPEN = 1;
+  private readonly listeners = new Map<string, unknown>();
   public readonly readyState = 1;
   public readonly sent: string[] = [];
   public readonly address: string;
-  private readonly listeners = new Map<string, unknown>();
 
   public constructor(address: string) {
     this.address = address;

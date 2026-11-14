@@ -62,6 +62,11 @@ export class ActionLog extends Konva.Group {
     }
   }
 
+  /** Row 0 and row `maxLines + 1` are the hidden lines. */
+  private isVisibleRow(row: number): boolean {
+    return row >= 1 && row <= this.maxLines;
+  }
+
   update(log: readonly LogEntry[]): void {
     const firstIndex = Math.max(0, log.length - this.maxLines);
     const texts = [...eRange(this.maxLines + 2)].map(
@@ -132,10 +137,5 @@ export class ActionLog extends Konva.Group {
         this.tween = undefined;
       },
     }).play();
-  }
-
-  /** Row 0 and row `maxLines + 1` are the hidden lines. */
-  private isVisibleRow(row: number): boolean {
-    return row >= 1 && row <= this.maxLines;
   }
 }

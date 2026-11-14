@@ -9,11 +9,11 @@ interface NoteIndicatorConfig extends Konva.ImageConfig {
 }
 
 export class NoteIndicator extends Konva.Image {
-  // We tilt the note indicator in order to indicate to spectators that the note was updated.
-  tilted = false;
-
   private readonly normalImage: Konva.ImageConfig["image"];
   private readonly identitySourceImage: Konva.ImageConfig["image"];
+
+  // We tilt the note indicator in order to indicate to spectators that the note was updated.
+  tilted = false;
 
   constructor(config: NoteIndicatorConfig) {
     super(config);
