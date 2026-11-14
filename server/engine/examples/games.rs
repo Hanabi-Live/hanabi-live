@@ -7,8 +7,8 @@
 
 use anyhow::Context;
 use hanabi_engine::{
-    EngineState, GameSetup, Options, PlayerAction, apply_action, create_game, create_shuffled_deck,
-    validate_action, variants, wire_event,
+    EngineState, GameSetup, Options, PlayerAction, StackDirection, apply_action, create_game,
+    create_shuffled_deck, validate_action, variants, wire_event,
 };
 use hanabi_protocol::{
     CardOrder, Clue, ClueRank, ClueTurn, ColorIndex, MAX_PLAYERS, MIN_PLAYERS, PlayerIndex,
@@ -84,7 +84,7 @@ struct Checkpoint {
     clue_tokens: i32,
     strikes: i32,
     cards_remaining_in_the_deck: usize,
-    stack_directions: Vec<i32>,
+    stack_directions: Vec<StackDirection>,
 }
 
 /// A small, seeded random number generator, so that every run plays the same games.
@@ -121,11 +121,7 @@ fn checkpoint(state: &EngineState) -> Checkpoint {
         clue_tokens: state.clue_tokens,
         strikes: state.strikes,
         cards_remaining_in_the_deck: state.deck.len() - state.deck_index,
-        stack_directions: state
-            .play_stack_directions
-            .iter()
-            .map(|&direction| direction.into())
-            .collect(),
+        stack_directions: state.play_stack_directions.clone(),
     }
 }
 

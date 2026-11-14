@@ -334,7 +334,6 @@ pub enum EngineEvent {
 
 /// Which way a stack is built. Only reversible and Sudoku variants leave `Undecided`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(try_from = "i32", into = "i32")]
 pub enum StackDirection {
     /// No card has fixed the direction yet.
     Undecided,
@@ -342,27 +341,6 @@ pub enum StackDirection {
     Down,
     /// The stack is complete.
     Finished,
-}
-
-impl StackDirection {
-    const ALL: [Self; 4] = [Self::Undecided, Self::Up, Self::Down, Self::Finished];
-}
-
-impl From<StackDirection> for i32 {
-    fn from(direction: StackDirection) -> Self {
-        direction as Self
-    }
-}
-
-impl TryFrom<i32> for StackDirection {
-    type Error = String;
-
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Self::ALL
-            .into_iter()
-            .find(|direction| i32::from(*direction) == value)
-            .ok_or_else(|| format!("Invalid stack direction: {value}"))
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
