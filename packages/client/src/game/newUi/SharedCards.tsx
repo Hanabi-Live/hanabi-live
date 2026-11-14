@@ -107,7 +107,10 @@ function ZoneLabel({
   );
 }
 
-/** The play stacks, where the player drops a card to play it, with the deck below them. */
+/**
+ * The play stacks, where the player drops a card to play it, with the deck and the table's tokens
+ * below them. Players look to the bottom left for the clue count, as on the classic screen.
+ */
 export const PlayArea = forwardRef<
   HTMLElement,
   {
@@ -118,6 +121,9 @@ export const PlayArea = forwardRef<
     readonly cardsInDeck: number;
     readonly zoneState: ZoneState;
     readonly notes: CardNotes;
+
+    /** The clue tokens and the strikes (see `TableTokens`). */
+    readonly tokens: React.ReactNode;
   }
 >(
   (
@@ -129,102 +135,108 @@ export const PlayArea = forwardRef<
       cardsInDeck,
       zoneState,
       notes,
+      tokens,
     },
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
 
     return (
-      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3 tw:narrow-980:flex-row tw:narrow-980:items-start">
-        <section
-          aria-label="Play stacks"
-          className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
-          // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
-          data-play-stacks
-          ref={ref}
-        >
-          <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
-            {stacks.map((stack) => {
-              const suit = variant.suits[stack.suitIndex];
-              const name = suit?.displayName ?? "";
+      // One column: the stacks, the deck, and the tokens. When the columns stack, the stacks and
+      // the deck are one row, with the tokens below it.
+      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3">
+        <div className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start tw:narrow-980:gap-3">
+          <section
+            aria-label="Play stacks"
+            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+            // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
+            data-play-stacks
+            ref={ref}
+          >
+            <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
+              {stacks.map((stack) => {
+                const suit = variant.suits[stack.suitIndex];
+                const name = suit?.displayName ?? "";
 
-              // What lies under the top card: the card below it, or else the empty stack. It stays
-              // in place while a newly played card moves on top of it.
-              const below =
-                stack.belowRank === undefined ? (
-                  <div
-                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-solid tw:border-game-line"
-                    style={{
-                      width: cardWidth,
-                      height,
-                      ...(suit !== undefined
-                        && getEmptyStackStyle(suit, colorblindMode)),
-                    }}
-                  >
-                    {suit !== undefined && (
-                      <Pip
-                        size={cardWidth * 0.6}
-                        suit={suit}
-                        variant={variant}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <CardFace
-                    colorblindMode={colorblindMode}
-                    rank={stack.belowRank}
-                    suitIndex={stack.suitIndex}
-                    variant={variant}
-                    width={cardWidth}
-                  />
-                );
-
-              return (
-                <div
-                  aria-label={
-                    stack.topRank === undefined
-                      ? `${name}: nothing played`
-                      : describeCard(variant, stack.suitIndex, stack.topRank)
-                  }
-                  className="tw:relative"
-                  // A misplayed card launches over its stack (see "playMotion.ts").
-                  data-stack-slot={stack.suitIndex}
-                  key={stack.suitIndex}
-                  role="img"
-                >
-                  {below}
-                  {stack.topRank !== undefined && (
+                // What lies under the top card: the card below it, or else the empty stack. It
+                // stays in place while a newly played card moves on top of it.
+                const below =
+                  stack.belowRank === undefined ? (
                     <div
-                      className="tw:absolute tw:inset-0"
-                      data-card-order={stack.topOrder}
-                      data-card-place={`stack-${stack.suitIndex}`}
-                      data-play-stack
+                      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-solid tw:border-game-line"
+                      style={{
+                        width: cardWidth,
+                        height,
+                        ...(suit !== undefined
+                          && getEmptyStackStyle(suit, colorblindMode)),
+                      }}
                     >
-                      {stack.topOrder === undefined ? undefined : (
-                        <CardNote notes={notes} order={stack.topOrder}>
-                          <CardFace
-                            colorblindMode={colorblindMode}
-                            noteFold={
-                              notes.notesHtml.has(stack.topOrder)
-                                ? "note"
-                                : undefined
-                            }
-                            rank={stack.topRank}
-                            suitIndex={stack.suitIndex}
-                            variant={variant}
-                            width={cardWidth}
-                          />
-                        </CardNote>
+                      {suit !== undefined && (
+                        <Pip
+                          size={cardWidth * 0.6}
+                          suit={suit}
+                          variant={variant}
+                        />
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
-        </section>
-        <Deck cardsInDeck={cardsInDeck} cardWidth={cardWidth} />
+                  ) : (
+                    <CardFace
+                      colorblindMode={colorblindMode}
+                      rank={stack.belowRank}
+                      suitIndex={stack.suitIndex}
+                      variant={variant}
+                      width={cardWidth}
+                    />
+                  );
+
+                return (
+                  <div
+                    aria-label={
+                      stack.topRank === undefined
+                        ? `${name}: nothing played`
+                        : describeCard(variant, stack.suitIndex, stack.topRank)
+                    }
+                    className="tw:relative"
+                    // A misplayed card launches over its stack (see "playMotion.ts").
+                    data-stack-slot={stack.suitIndex}
+                    key={stack.suitIndex}
+                    role="img"
+                  >
+                    {below}
+                    {stack.topRank !== undefined && (
+                      <div
+                        className="tw:absolute tw:inset-0"
+                        data-card-order={stack.topOrder}
+                        data-card-place={`stack-${stack.suitIndex}`}
+                        data-play-stack
+                      >
+                        {stack.topOrder === undefined ? undefined : (
+                          <CardNote notes={notes} order={stack.topOrder}>
+                            <CardFace
+                              colorblindMode={colorblindMode}
+                              noteFold={
+                                notes.notesHtml.has(stack.topOrder)
+                                  ? "note"
+                                  : undefined
+                              }
+                              rank={stack.topRank}
+                              suitIndex={stack.suitIndex}
+                              variant={variant}
+                              width={cardWidth}
+                            />
+                          </CardNote>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
+          </section>
+          <Deck cardsInDeck={cardsInDeck} cardWidth={cardWidth} />
+        </div>
+        {tokens}
       </div>
     );
   },
@@ -464,13 +476,22 @@ export const DiscardPile = forwardRef<
 );
 
 /**
- * A bubble for the clue tokens or the strikes: its value, centered. The two bubbles have the same
- * layout, so that their values line up.
+ * A bubble for the clue tokens or the strikes: its value, centered. Under the deck, the bubbles are
+ * small, one above the other, so that the column stays narrow. When the columns stack, they are
+ * side by side and share their height, so that their values line up.
  */
-const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:justify-center tw:gap-1 tw:rounded-[18px] tw:px-3 tw:py-5 ${WELL_CLASS}`;
+const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:items-center tw:justify-center tw:rounded-[14px] tw:px-1.5 tw:py-2 tw:narrow-980:flex-1 tw:narrow-980:rounded-[18px] tw:narrow-980:px-3 tw:narrow-980:py-5 ${WELL_CLASS}`;
 
 /** The row of a value, as tall as the strike boxes, so that the two values line up. */
-const TOKEN_VALUE_CLASS = "tw:flex tw:h-[32px] tw:items-center";
+const TOKEN_VALUE_CLASS =
+  "tw:flex tw:h-[30px] tw:items-center tw:narrow-980:h-[32px]";
+
+/**
+ * The height of the tokens under the deck, with the gap above them. It is the sum of the bubbles'
+ * classes: two rows of 30 pixels with 8 pixels of padding above and below, and gaps of 12 and 14
+ * pixels.
+ */
+export const TABLE_TOKENS_HEIGHT = 12 + 2 * (30 + 16) + 14;
 
 /**
  * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
@@ -480,7 +501,7 @@ function ClueTokenIcon(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className="tw:size-[24px] tw:text-clue"
+      className="tw:size-[20px] tw:text-clue tw:narrow-980:size-[24px]"
       viewBox="0 0 24 24"
     >
       <circle cx={12} cy={12} fill="currentColor" r={11} />
@@ -533,7 +554,7 @@ function BombIcon(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className="tw:mr-0.5 tw:size-[26px]"
+      className="tw:size-[20px] tw:narrow-980:mr-0.5 tw:narrow-980:size-[26px]"
       viewBox="0 0 24 24"
     >
       <path
@@ -590,7 +611,7 @@ function StrikeMark({
   return (
     <svg
       aria-hidden="true"
-      className={`tw:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
+      className={`tw:size-[15px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
       viewBox="0 0 24 24"
     >
       <path
@@ -616,8 +637,8 @@ function getStrikeBubbleClass(strikes: number): string {
 }
 
 /**
- * The clue tokens and the strikes, below the discard pile. They are real tokens in the physical
- * game, so they sit on the table instead of with the numbers along the bottom.
+ * The clue tokens and the strikes, below the deck. They are real tokens in the physical game, so
+ * they sit on the table instead of with the numbers along the bottom.
  */
 export function TableTokens({
   clues,
@@ -644,8 +665,7 @@ export function TableTokens({
   readonly onShowStrike: (segment: number) => void;
 }): React.JSX.Element {
   return (
-    // Two bubbles side by side. They share their height, so that their values line up.
-    <div className="tw:flex tw:shrink-0 tw:gap-3">
+    <div className="tw:flex tw:shrink-0 tw:flex-col tw:gap-3.5 tw:self-stretch tw:narrow-980:flex-row tw:narrow-980:gap-3">
       <section
         aria-label="Clue tokens"
         className={TOKEN_BUBBLE_CLASS}
@@ -654,10 +674,10 @@ export function TableTokens({
         {/* One large number: the count that players check most. It stands out only at the
             limits, where the rules change what the team can do: in the color of clues at the
             maximum, when someone must clue, and gray with none, when no one can. */}
-        <div className={`${TOKEN_VALUE_CLASS} tw:gap-2`}>
+        <div className={`${TOKEN_VALUE_CLASS} tw:gap-1.5 tw:narrow-980:gap-2`}>
           <ClueTokenIcon />
           <span
-            className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
+            className={`tw:text-[30px] tw:leading-none tw:narrow-980:text-[34px] tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
             // A spark flies to the count when a completed stack gives a clue back (see
             // "scoreMotion.ts").
             data-clue-count
@@ -685,7 +705,7 @@ export function TableTokens({
       >
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-          className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
+          className={`${TOKEN_VALUE_CLASS} tw:gap-[3px] tw:narrow-980:gap-1.5`}
           role="group"
         >
           {/* The tooltip sits on the bomb, not the bubble, since each strike box has its own. */}
@@ -698,7 +718,7 @@ export function TableTokens({
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
-            const className = `tw:box-border tw:flex tw:size-[32px] tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+            const className = `tw:box-border tw:flex tw:size-[20px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"

@@ -203,6 +203,9 @@ const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 /** The account that owns the open table and plays Bob's game with the browser's account. */
 const BOB = "Bob";
 
+/** The accounts that also play Bob's game when it has more than two players. */
+const OTHER_PLAYER_NAMES = ["Grace", "Heidi", "Ivan"] as const;
+
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
@@ -762,6 +765,16 @@ function getStates(): readonly State[] {
         await cast.startBobsGame();
       },
     },
+    // Bob's game with five players, so that the game screen shows a crowded table.
+    {
+      name: "new-ui-five-players",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+    },
     // A clue is chosen, so that "Give clue" can be pressed.
     {
       name: "new-ui-clue-chosen",
@@ -1245,8 +1258,11 @@ interface Cast {
   readonly replayId: number;
   /** Sets whether the browser's account sees the New UI. */
   readonly setNewUi: (newUi: boolean) => Promise<void>;
-  /** Starts Bob's game, where the browser's account plays. */
-  readonly startBobsGame: () => Promise<BobsGame>;
+  /**
+   * Starts Bob's game, where the browser's account plays. It has two players unless the state asks
+   * for more, up to five.
+   */
+  readonly startBobsGame: (numPlayers?: number) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
   /** Disconnects the browser's account after the setup of a state, so that the page can connect. */
   readonly disconnectAccount: () => void;
@@ -1583,7 +1599,7 @@ async function createCast(
     disconnectAccount();
   }
 
-  async function startBobsGame(): Promise<BobsGame> {
+  async function startBobsGame(numPlayers = 2): Promise<BobsGame> {
     const you = await connectAccount(true);
     const bob = await connectPeer(name(BOB));
     const tableId = await createBobsTable(bob, `${name(BOB)}'s table`, {
@@ -1601,7 +1617,14 @@ async function createCast(
     const viewer: Peer = firstSpectator;
     you.send("tableJoin", { tableId });
     await you.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
-    const seats = await startTable(bob, [bob, you], tableId);
+    const others: Peer[] = [];
+    for (const other of OTHER_PLAYER_NAMES.slice(0, numPlayers - 2)) {
+      const peer = await connectPeer(name(other));
+      peer.send("tableJoin", { tableId });
+      await peer.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+      others.push(peer);
+    }
+    const seats = await startTable(bob, [bob, you, ...others], tableId);
     table = { id: tableId, owner: bob };
     let over = false;
     endGame = async () => {

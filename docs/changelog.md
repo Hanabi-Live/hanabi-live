@@ -57,6 +57,8 @@ of the repository.
   and a spectator follows the leader with a "Follow" switch.
 - In the new game screen, the shared replay leader passes the lead from a
   "Leader" menu in the replay controls, which no longer have a heading.
+- In the new game screen, the clue tokens and the strikes are now under the
+  deck, so that the clue log is taller.
 
 ## November 12th, 2026
 

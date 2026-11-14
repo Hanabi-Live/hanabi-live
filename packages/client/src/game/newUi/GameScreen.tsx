@@ -74,6 +74,7 @@ import {
   DECK_PILE_DEPTH,
   DiscardPile,
   PlayArea,
+  TABLE_TOKENS_HEIGHT,
   TableTokens,
 } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
@@ -156,9 +157,11 @@ const HAND_BOX_HORIZONTAL_PADDING = 32;
 const HAND_ROW_GAP = 6;
 
 /**
- * The height in the play area that is not cards: its padding, its heading, and the deck's label.
+ * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
+ * deck, the edges under the top of the deck, and the tokens under it.
  */
-const PLAY_AREA_OTHER_HEIGHT = 130 + DECK_PILE_DEPTH;
+const PLAY_AREA_OTHER_HEIGHT =
+  2 * 16 + 12 + DECK_PILE_DEPTH + TABLE_TOKENS_HEIGHT;
 const PLAY_STACK_GAP = 8;
 
 type DropZone = "play" | "discard";
@@ -1382,6 +1385,22 @@ export function GameScreen({
                 notes={cardNotes}
                 ref={playZoneRef}
                 stacks={stacks}
+                tokens={
+                  <TableTokens
+                    atMaxClues={isAtMaxClueTokens(
+                      visibleState.clueTokens,
+                      variant,
+                    )}
+                    clues={getUnadjustedClueTokens(
+                      visibleState.clueTokens,
+                      variant,
+                    )}
+                    onShowStrike={showReplayTurn}
+                    outOfClues={visibleState.clueTokens < getClueCost(variant)}
+                    strikes={visibleState.strikes.length}
+                    strikeSegments={getStrikeSegments(state)}
+                  />
+                }
                 variant={variant}
                 zoneState={playZoneState}
               />
@@ -1588,17 +1607,6 @@ export function GameScreen({
                     : undefined
                 }
                 shownSegment={shownClue?.segment}
-              />
-              <TableTokens
-                atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
-                clues={getUnadjustedClueTokens(
-                  visibleState.clueTokens,
-                  variant,
-                )}
-                onShowStrike={showReplayTurn}
-                outOfClues={visibleState.clueTokens < getClueCost(variant)}
-                strikes={visibleState.strikes.length}
-                strikeSegments={getStrikeSegments(state)}
               />
             </div>
           </div>
