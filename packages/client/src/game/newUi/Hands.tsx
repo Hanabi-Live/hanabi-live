@@ -714,7 +714,9 @@ function Hand({
   if (seat.active) {
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
-    boxClass = "tw:bg-clue/10 tw:inset-ring-2 tw:inset-ring-clue";
+    // White, like the chosen player's button in the clue panel, so that it does not look like the
+    // gold of the current player. The cards that the clue would touch keep the clue's orange.
+    boxClass = "tw:bg-game-text/8 tw:inset-ring-2 tw:inset-ring-game-text";
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
