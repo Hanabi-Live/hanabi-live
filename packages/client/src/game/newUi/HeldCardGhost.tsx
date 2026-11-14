@@ -9,9 +9,19 @@ import { useEffect, useRef } from "react";
 import { CARD_CORNER_PER_WIDTH, CARD_HEIGHT_PER_WIDTH } from "./Card.tsx";
 import type { HeldCard } from "./useCardDrag.ts";
 
-/** How much larger the card is while lifted, and while over a drop target. */
+/**
+ * How much larger the card is while lifted, while pressed but not yet moved (halfway), and while
+ * over a drop target.
+ */
 const LIFTED_SCALE = 1.12;
+const PRESSED_SCALE = (1 + LIFTED_SCALE) / 2;
 const AIMING_SCALE = 1.05;
+
+/**
+ * How far the card rises off the table when it is lifted, in CSS pixels. Its shadow stays on the
+ * table.
+ */
+const LIFT_RISE_PIXELS = 14;
 
 /**
  * How fast the card leans back from the air as it moves, in degrees for each pixel per second, and
@@ -161,11 +171,14 @@ export function HeldCardGhost({
     function draw(sim: Simulation) {
       const { held: current, width: w, height: h } = latest.current;
       const s = sim.scale.x;
+      // The higher the card, the farther and softer its shadow.
+      const lift = Math.max(0, Math.min(1.2, (s - 1) / (LIFTED_SCALE - 1)));
+      const rise = LIFT_RISE_PIXELS * lift;
       const left = sim.x.x - current.grab.x;
-      const top = sim.y.x - current.grab.y;
+      const top = sim.y.x - current.grab.y - rise;
       heldRectRef.current = new DOMRect(
         sim.x.x - current.grab.x * s,
-        sim.y.x - current.grab.y * s,
+        sim.y.x - current.grab.y * s - rise,
         w * s,
         h * s,
       );
@@ -177,12 +190,11 @@ export function HeldCardGhost({
       }
       card.style.transform = `translate3d(${left}px, ${top}px, 0) perspective(${PERSPECTIVE_PIXELS}px) rotateZ(${sim.swing.x}deg) rotateX(${sim.leanX.x}deg) rotateY(${sim.leanY.x}deg) scale(${s})`;
 
-      // The higher the card, the farther and softer its shadow. The light is above the table, so
-      // the shadow falls down and away from the side that leans back.
-      const lift = Math.max(0, Math.min(1.2, (s - 1) / (LIFTED_SCALE - 1)));
+      // The light is above the table, so the shadow falls down and away from the side that leans
+      // back.
       const shadowX = 2 + 8 * lift - sim.leanY.x * 0.35;
       const shadowY = 4 + 22 * lift + sim.leanX.x * 0.3;
-      shadow.style.transform = `translate3d(${left + shadowX}px, ${top + shadowY}px, 0) rotateZ(${sim.swing.x}deg) scale(${s * (1 - 0.03 * lift)})`;
+      shadow.style.transform = `translate3d(${left + shadowX}px, ${top + rise + shadowY}px, 0) rotateZ(${sim.swing.x}deg) scale(${s * (1 - 0.03 * lift)})`;
       shadow.style.opacity = String(0.55 + 0.15 * lift);
       shadow.style.filter = `blur(${2 + 6 * lift}px)`;
     }
@@ -199,8 +211,12 @@ export function HeldCardGhost({
       let targetX = pointerRef.current.x;
       let targetY = pointerRef.current.y;
       let follow: Spring = FOLLOW_SPRING;
-      let targetScale =
-        current.zone === undefined ? LIFTED_SCALE : AIMING_SCALE;
+      let targetScale = LIFTED_SCALE;
+      if (!current.moved) {
+        targetScale = PRESSED_SCALE;
+      } else if (current.zone !== undefined) {
+        targetScale = AIMING_SCALE;
+      }
       if (current.phase === "drop") {
         targetX = sim.x.x;
         targetY = sim.y.x;
