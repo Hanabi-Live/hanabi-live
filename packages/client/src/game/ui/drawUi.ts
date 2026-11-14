@@ -100,7 +100,6 @@ import { getGameIdLabel } from "./reactive/views/replayView.ts";
 import * as replay from "./replay.ts";
 import * as restart from "./restart.ts";
 import * as stats from "./stats.ts";
-import * as timer from "./timer.ts";
 import { toggleZen } from "./zen.ts";
 
 interface Values {
@@ -2212,9 +2211,6 @@ function drawArrows() {
 }
 
 function drawTimers() {
-  // Just in case, stop the previous timer, if any.
-  timer.stop();
-
   // We do not want the timer to show in replays or untimed games (unless they have the optional
   // setting turned on).
   if (

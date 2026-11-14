@@ -5,6 +5,7 @@ import Konva from "konva";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
+import * as clock from "../clock.ts";
 import { globals } from "./UiGlobals.ts";
 import {
   FONT_FAMILY,
@@ -141,7 +142,7 @@ export class NameFrame extends Konva.Group {
       if (
         store.getState().session.settings.speedrunFeatures
         || globals.options.speedrun
-        || globals.playerTimes[this.playerIndex] === undefined
+        || clock.getPlayerTime(this.playerIndex) === undefined
         || globals.state.finished
         || globals.editingNote !== undefined
       ) {

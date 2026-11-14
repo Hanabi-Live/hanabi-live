@@ -33,6 +33,7 @@ import {
   toPlayerTuple,
   toSoundType,
 } from "../../wire.ts";
+import * as clock from "../clock.ts";
 import { registerGameObservers } from "../gameObservers.ts";
 import type { Votes } from "../gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
@@ -49,7 +50,6 @@ import * as notes from "./notes.ts";
 import { StateObserver } from "./reactive/StateObserver.ts";
 import * as replay from "./replay.ts";
 import * as stats from "./stats.ts";
-import * as timer from "./timer.ts";
 import { uiInit } from "./uiInit.ts";
 
 // Define a command handler map.
@@ -68,7 +68,7 @@ type HypotheticalControl = Extract<
 
 // Updates the clocks to show how much time people are taking or how much time people have left.
 gameCommands.set("clock", (data) => {
-  timer.update(data);
+  clock.update(data);
 });
 
 gameCommands.set("connections", (data) => {
@@ -129,7 +129,7 @@ gameCommands.set("gameFinished", (data) => {
       leader: data.sharedReplay.owner.username,
     }),
   );
-  timer.hide();
+  clock.finish();
 
   // Now that the game is over, we may see everyone's notes.
   setNotes(data.notes);
@@ -364,7 +364,7 @@ gameCommands.set("gameState", (data) => {
       setVotes(phase.votes);
     }
     setConnected(phase.connections);
-    timer.update(phase.clock);
+    clock.update(phase.clock);
     store.dispatch(gameUpdated({ type: "pause", ...phase.pause }));
     // We may have missed the idle warning while we were away.
     if (phase.idleRemainingMs !== undefined) {

@@ -5,6 +5,7 @@ import type { Globals as LobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
+import * as clock from "../clock.ts";
 import { releaseGameObservers } from "../gameObservers.ts";
 import * as gameSession from "../gameSession.ts";
 import type { GameExports } from "../main.ts";
@@ -32,6 +33,9 @@ export class HanabiUi {
   private liveResizeBaseHeight = 0;
   private liveResizeScale = 1;
 
+  /** Stops drawing the clocks. */
+  private readonly stopDrawingTimers: () => void;
+
   constructor(lobby: LobbyGlobals, game: GameExports) {
     // Each game starts with new globals.
     resetGlobals();
@@ -48,6 +52,7 @@ export class HanabiUi {
 
     initStageSize();
     cursor.set("default");
+    this.stopDrawingTimers = timer.init();
 
     // Add a window resize listener.
     this.resizeHandler = () => {
@@ -145,7 +150,8 @@ export class HanabiUi {
     releaseSubscriptions();
     unmountClueLog();
     keyboard.destroy();
-    timer.stop();
+    this.stopDrawingTimers();
+    clock.reset();
     globals.elements.restartWaitingOnServerAnimation?.stop();
     globals.stage.destroy();
   }
@@ -237,7 +243,8 @@ export class HanabiUi {
     this.globals.layers.card.draw();
     this.globals.layers.UI2.draw();
     this.globals.layers.arrow.draw();
-    timer.resumeAfterResize();
+    // The timers were drawn again, so show the clocks on them.
+    timer.draw();
   }
 
   private finishResize(): void {

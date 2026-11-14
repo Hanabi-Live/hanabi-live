@@ -6,7 +6,6 @@ import type { SharedReplayState } from "../../../types/SharedReplayState.ts";
 import type { State } from "../../../types/State.ts";
 import * as replay from "../../replay.ts";
 import * as restart from "../../restart.ts";
-import * as timer from "../../timer.ts";
 import { globals } from "../../UiGlobals.ts";
 import { toggleZen } from "../../zen.ts";
 import * as cluesView from "./cluesView.ts";
@@ -238,7 +237,6 @@ export function onFinishedChanged(
   // If the timers are showing, hide them.
   globals.elements.timer1?.hide();
   globals.elements.timer2?.hide();
-  timer.stop();
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary.
   globals.elements.replayExitButton?.hide();

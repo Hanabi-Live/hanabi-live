@@ -13,6 +13,7 @@ import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
 import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
+import * as clock from "./clock.ts";
 import { gameChatCleared } from "./gameChatSlice.ts";
 import * as gameSession from "./gameSession.ts";
 import * as newUi from "./newUi/newUi.ts";
@@ -65,6 +66,7 @@ export function show(justStarted: boolean): void {
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   gameSession.startLoading();
+  clock.reset();
   setPlayStartSound(justStarted);
   globals.ui = new HanabiUi(globals, gameExports);
   if (store.getState().session.settings.newUi) {

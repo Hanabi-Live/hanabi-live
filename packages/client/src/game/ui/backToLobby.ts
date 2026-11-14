@@ -3,15 +3,15 @@ import { typingCleared } from "../../lobby/pregame/pregameSlice.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
+import * as clock from "../clock.ts";
 import { globals } from "./UiGlobals.ts";
-import * as timer from "./timer.ts";
 
 export function backToLobby(): void {
   // Hide any tooltips, if showing.
   tooltips.closeAllTooltips();
 
-  // Stop any timer-related callbacks.
-  timer.stop();
+  // Stop counting the clocks.
+  clock.stop();
 
   // Clear the typing list.
   store.dispatch(typingCleared());

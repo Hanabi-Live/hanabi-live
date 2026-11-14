@@ -1,9 +1,4 @@
-import type {
-  GameAction,
-  GameMetadata,
-  Options,
-  PlayerIndex,
-} from "@hanabi-live/game";
+import type { GameAction, GameMetadata, Options } from "@hanabi-live/game";
 import { getDefaultVariant } from "@hanabi-live/game";
 import { ReadonlyMap, assertDefined } from "complete-common";
 import Konva from "konva";
@@ -64,20 +59,6 @@ export class UiGlobals {
   actionOccurred = false;
 
   lastNote = ""; // Equal to the last note entered
-
-  // Timer feature
-  timerId: number | undefined = undefined;
-  playerTimes: number[] = [];
-
-  /**
-   * The player whose clock is running, from the last "clock" message. `undefined` when no clock is
-   * running. It indexes `playerTimes` from the same message, so it is not read from the game state.
-   */
-  clockPlayerIndex: PlayerIndex | undefined = undefined;
-
-  timeTaken = 0;
-  startingTurnTime = 0;
-  lastTimerUpdateTimeMs = 0;
 
   // Miscellaneous
   animateFast = true;

@@ -26,6 +26,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
+import { getActivePlayerIndex, getPlayerTime } from "../clock.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
@@ -347,8 +348,8 @@ function getSeats(
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
     let clock: string | undefined;
-    if (showClock && active && globals.clockPlayerIndex === playerIndex) {
-      clock = millisecondsToClockString(globals.playerTimes[playerIndex] ?? 0);
+    if (showClock && active && getActivePlayerIndex() === playerIndex) {
+      clock = millisecondsToClockString(getPlayerTime(playerIndex) ?? 0);
     }
 
     seats.push({
