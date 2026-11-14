@@ -307,8 +307,8 @@ export function CreateGame(): React.JSX.Element {
       return;
     }
 
-    const createTable: CreateTable = readTable(form, rememberedTimeControl());
-    remember(createTable);
+    const table: CreateTable = readTable(form, rememberedTimeControl());
+    remember(table);
 
     const isNew = mode === "create";
     const { name, password } = form;
@@ -328,8 +328,8 @@ export function CreateGame(): React.JSX.Element {
     const deal = readFormDeal(form);
     const settings = {
       name: name.trim() === "" ? getDefaultTableName() : name,
-      maxPlayers: createTable.maxPlayers,
-      options: createTable.options,
+      maxPlayers: table.maxPlayers,
+      options: table.options,
       ...(deal !== undefined && { deal }),
     };
 

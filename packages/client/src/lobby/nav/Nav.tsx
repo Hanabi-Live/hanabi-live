@@ -6,7 +6,7 @@ import { globals } from "../../Globals.ts";
 import type { RootState } from "../../store.ts";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import * as createGame from "../createGame.ts";
+import { showCreateGame } from "../createGame.ts";
 import { ShownGameCount } from "../gameHistory/HistoryLists.tsx";
 import * as history from "../history.ts";
 import * as lobbyPage from "../lobbyPage.ts";
@@ -115,7 +115,7 @@ function LobbyNav() {
         disabled={creatingTable}
         icon="fa-plus"
         id="nav-buttons-lobby-create-game"
-        onClick={createGame.show}
+        onClick={showCreateGame}
       >
         <span className="tw:narrow-530:hidden">
           <Hotkey>N</Hotkey>ew
@@ -233,7 +233,7 @@ function PregameNav() {
       <NavButton
         icon="fa-rainbow"
         id="nav-buttons-pregame-change-options"
-        onClick={createGame.show}
+        onClick={showCreateGame}
       >
         <span className="tw:narrow-840:hidden">
           <Hotkey>C</Hotkey>hange Options

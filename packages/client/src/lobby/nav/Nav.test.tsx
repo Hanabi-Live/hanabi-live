@@ -18,7 +18,7 @@ import { Screen } from "../types/Screen.ts";
 import { Nav } from "./Nav.tsx";
 
 vi.mock("../../modals.ts", () => ({ showWarning: vi.fn() }));
-vi.mock("../createGame.ts", () => ({ show: vi.fn() }));
+vi.mock("../createGame.ts", () => ({ showCreateGame: vi.fn() }));
 vi.mock("../history.ts", () => ({}));
 vi.mock("../lobbyPage.ts", () => ({}));
 vi.mock("../pregame/pregame.ts", () => ({}));

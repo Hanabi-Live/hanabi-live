@@ -26,9 +26,6 @@ export const hanabiConfigBase = defineConfig(
       // iOS 17 dropped the iPhone 8, iPhone X, and first iPad Pro, so they stay on Safari 16.
       "regexp/require-unicode-sets-regexp": "off",
 
-      // Names follow the existing UI style.
-      "unicorn/no-non-function-verb-prefix": "off",
-
       // Keep explicit comparisons in the game rules and event handlers.
       "unicorn/no-subtraction-comparison": "off",
 
@@ -93,6 +90,8 @@ export const hanabiConfigBase = defineConfig(
       "complete/consistent-enum-values": "off",
       "complete/consistent-object-braces": "off",
       "complete/format-jsdoc-comments": "off",
+      // Names follow the Rust types, such as "CreateTableSettings".
+      "unicorn/no-non-function-verb-prefix": "off",
     },
   },
 

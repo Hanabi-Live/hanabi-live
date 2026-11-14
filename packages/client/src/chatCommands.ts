@@ -7,7 +7,7 @@ import {
   sendSelfPmFromServer,
   showPmHistory,
 } from "./chat.ts";
-import * as createGame from "./lobby/createGame.ts";
+import { rememberVariant } from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
 import { findOnlineUser, getOnlineUserId } from "./onlineUsers.ts";
 import { store } from "./store.ts";
@@ -288,7 +288,7 @@ function setVariant(room: string, args: readonly string[]) {
   });
 
   // Update our stored create table setting to be equal to this variant.
-  createGame.rememberVariant(variantName);
+  rememberVariant(variantName);
 }
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);

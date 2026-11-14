@@ -45,7 +45,7 @@ export function suitsInit(
       );
     }
 
-    const createVariants = suitJson.createVariants ?? false;
+    const shouldCreateVariants = suitJson.createVariants ?? false;
 
     // The display name is optional; if not specified, then use the normal suit name.
     const displayName = suitJson.displayName ?? suitJson.name;
@@ -76,7 +76,7 @@ export function suitsInit(
 
       // Optional properties
       abbreviation,
-      createVariants,
+      createVariants: shouldCreateVariants,
       displayName,
       ...fill,
 

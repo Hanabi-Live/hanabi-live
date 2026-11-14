@@ -202,11 +202,7 @@ export function show(card: HanabiCard): void {
   tooltips.open(tooltip);
 }
 
-export function openEditTooltip(
-  card: HanabiCard,
-  isDesktop = true,
-  addText = "",
-): void {
+export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   // Do not edit any notes in dedicated replays.
   if (globals.state.finished) {
     return;
@@ -341,7 +337,6 @@ export function openEditTooltip(
     if (oldNote !== "" && !oldNote.endsWith(NOTE_SEPARATOR)) {
       newNote += NOTE_SEPARATOR;
     }
-    newNote += addText;
     if (newNote !== oldNote) {
       inputElement.value = newNote;
     }

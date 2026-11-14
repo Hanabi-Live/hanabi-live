@@ -7,7 +7,7 @@ the hotkeys on French keyboards. */
 import * as KeyCode from "keycode-js";
 import { isModalVisible } from "../modals.ts";
 import { store } from "../store.ts";
-import * as createGame from "./createGame.ts";
+import { showCreateGame } from "./createGame.ts";
 import * as history from "./history.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 import {
@@ -80,7 +80,7 @@ export function lobbyKeyboardInit(): void {
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
       // Alt + n. Create a game.
       if (screen === Screen.Lobby && !state.session.creatingTable) {
-        createGame.show();
+        showCreateGame();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_H) {
       // Alt + h. Show the history.
@@ -116,7 +116,7 @@ export function lobbyKeyboardInit(): void {
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
       // Alt + c. Change the options.
       if (screen === Screen.PreGame) {
-        createGame.show();
+        showCreateGame();
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
       // Alt + l. Leave the game.

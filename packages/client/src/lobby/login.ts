@@ -43,12 +43,12 @@ export function retryAutomaticLogin(): void {
   automaticLogin();
 }
 
-/** Sends a login request. `createAccount` confirms the creation of an account that has none. */
+/** Sends a login request. `isNewAccount` confirms the creation of an account that has none. */
 export function signIn(
   username: string,
   password: string,
   newPassword: string | undefined,
-  createAccount: boolean,
+  isNewAccount: boolean,
 ): void {
   store.dispatch(loginStarted());
 
@@ -59,7 +59,7 @@ export function signIn(
     password,
     newPassword,
     version: VERSION,
-    createAccount,
+    createAccount: isNewAccount,
   });
 
   console.log(`Sending a login request to: ${url}`);

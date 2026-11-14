@@ -15,7 +15,7 @@ import type { CreateTable } from "./createGameForm.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 
 /** Shows the page from the lobby (to create a game) or the pre-game screen (to change options). */
-export function show(): void {
+export function showCreateGame(): void {
   // A variant that no longer exists becomes the default one.
   const { createTable } = store.getState().session.settings;
   if (!doesVariantIdExist(createTable.options.variantId)) {
@@ -44,17 +44,17 @@ export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
 }
 
 /** Remembers the table that the form starts from next time, if it changed. */
-export function remember(createTable: CreateTable): void {
-  if (!equal(createTable, store.getState().session.settings.createTable)) {
+export function remember(table: CreateTable): void {
+  if (!equal(table, store.getState().session.settings.createTable)) {
     store.dispatch(
       settingsChanged({
         ...store.getState().session.settings,
-        createTable,
+        createTable: table,
       }),
     );
     globals.connection.send("settings", {
       settings: {
-        createTable,
+        createTable: table,
       },
     });
   }

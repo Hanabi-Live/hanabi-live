@@ -281,7 +281,7 @@ async function fetchFrankerFaceZEmotes(): Promise<readonly UpstreamEmote[]> {
   const { default_sets: defaultSets, sets } =
     (await response.json()) as FrankerFaceZResponse;
   return defaultSets
-    .flatMap((setId) => sets[setId]?.emoticons ?? [])
+    .flatMap((emoteSetId) => sets[emoteSetId]?.emoticons ?? [])
     .filter((emote) => !emote.modifier)
     .map((emote) => {
       const imageUrl = emote.urls["1"];
