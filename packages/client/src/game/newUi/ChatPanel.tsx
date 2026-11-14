@@ -13,9 +13,15 @@ import { KEY_CLASS } from "./surfaces.ts";
 
 /**
  * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
- * panel gives the box the game screen's colors in their place.
+ * panel gives the box the game screen's colors in their place. It sets each color that the dark
+ * theme changes. A color such as "--chat-bg" that refers to another one gets its value on the
+ * page's root, so the panel sets it too.
  */
 const CHAT_BOX_COLORS = {
+  "--chat-bg": "transparent",
+  "--focus": "var(--game-screen-line)",
+  "--green-text": "var(--game-screen-green-text)",
+  "--error": "var(--game-screen-error)",
   "--text": "var(--game-screen-text)",
   "--text-strong": "var(--game-screen-text)",
   "--text-label": "var(--game-screen-muted)",

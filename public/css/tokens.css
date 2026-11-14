@@ -183,6 +183,9 @@
   --game-screen-line: #6c9c7e;
   --game-screen-text: #eef1f3;
   --game-screen-muted: #c3d8ca;
+  /* The chat's messages from the server, and its errors. They are light, so that they show on the panel. */
+  --game-screen-green-text: #6fcf7a;
+  --game-screen-error: #ff6b6b;
   /*
     The colors of the screen's modes: an accent, and the dark color of the mode's panels. Each one
     belongs to its mode only: looking back during a game, looking at a finished game, or trying
