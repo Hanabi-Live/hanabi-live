@@ -55,7 +55,7 @@
 .lobby-row > label,
 .lobby-row-label label,
 .lobby-row-text {
-  cursor: pointer;
+  cursor: default;
   font-size: 1em;
   line-height: 1.4em;
   margin: 0;
@@ -67,10 +67,6 @@
 .lobby-row-label,
 .lobby-row-text {
   flex: 1;
-}
-
-.lobby-row-text {
-  cursor: default;
 }
 
 /* A description followed by a link that explains it. */
@@ -129,6 +125,11 @@
 .lobby-row:has(> .lobby-row-checkbox):last-child {
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
+}
+
+.lobby-row:has(> .lobby-row-checkbox) > label,
+.lobby-row:has(> .lobby-row-checkbox) > .lobby-row-label > label {
+  cursor: pointer;
 }
 
 .lobby-row:has(> .lobby-row-checkbox) > label::after,
