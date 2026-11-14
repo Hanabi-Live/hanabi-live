@@ -8,7 +8,6 @@ import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatSegment, ChatTextOptions } from "../../chatText.ts";
 import { chatSegments } from "../../chatText.ts";
 import { FADE_TIME_MS } from "../../constants.ts";
-import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
 
@@ -78,7 +77,6 @@ export function ChatTextBox({
   readonly onClick?: React.MouseEventHandler<HTMLDivElement>;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const username = useAppSelector((state) => state.session.username);
 
   // Then the lines do not move while someone reads older ones.
   const atBottomRef = useRef(true);
@@ -104,7 +102,9 @@ export function ChatTextBox({
 
   return (
     <div
-      className="tw:mb-4 tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:border tw:border-solid tw:border-border tw:bg-(--chat-bg) tw:px-2 tw:wrap-break-word"
+      // The game screen of the New UI lets no text be selected, but players copy text from the
+      // chat.
+      className="tw:mb-4 tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:border tw:border-solid tw:border-border tw:bg-(--chat-bg) tw:px-2 tw:wrap-break-word tw:select-text"
       id={id}
       onClick={onClick}
       onScroll={(event) => {
@@ -116,33 +116,13 @@ export function ChatTextBox({
       ref={ref}
     >
       {lines.map((line) => (
-        <ChatLineView key={line.key} line={line} username={username} />
+        <ChatLineView key={line.key} line={line} />
       ))}
     </div>
   );
 }
 
-/** The person other than the viewer who wrote the line, if one did. */
-function otherAuthor(line: ChatLine, username: string): string | undefined {
-  if (line.fromServer) {
-    return undefined;
-  }
-  const author =
-    line.privateMessage?.direction === "from"
-      ? line.privateMessage.name
-      : line.author;
-  return author === username ? undefined : author;
-}
-
-function ChatLineView({
-  line,
-  username,
-}: {
-  readonly line: ChatLine;
-
-  /** The viewer's name. */
-  readonly username: string;
-}) {
+function ChatLineView({ line }: { readonly line: ChatLine }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     if (line.fadeIn) {
@@ -173,15 +153,7 @@ function ChatLineView({
           &lt;<strong>{author}</strong>&gt;{"\u{A0} "}
         </>
       )}
-      {/* The game screen of the New UI lets no text be selected, but players copy what other
-          people write, such as a link. */}
-      {otherAuthor(line, username) === undefined ? (
-        <ChatLineBody line={line} />
-      ) : (
-        <span className="tw:select-text">
-          <ChatLineBody line={line} />
-        </span>
-      )}
+      <ChatLineBody line={line} />
     </span>
   );
 }
