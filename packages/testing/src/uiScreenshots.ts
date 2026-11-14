@@ -926,6 +926,35 @@ function getStates(): readonly State[] {
         await game.play("account", true);
       },
     },
+    // The account drags a card, so that the play stacks and the discard pile show that it can drop
+    // the card on them.
+    {
+      name: "new-ui-drag",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.discardUntilAccountsTurn();
+      },
+      hover: async (page) => {
+        const from = await ownCard(page, 0).boundingBox();
+        if (from === null) {
+          throw new Error("The account's card is not on the screen.");
+        }
+        await page.mouse.move(
+          from.x + from.width / 2,
+          from.y + from.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+          from.x + from.width / 2,
+          from.y + from.height * 2,
+          { steps: DRAG_STEPS },
+        );
+        await settle(page);
+      },
+    },
     // After the account plays a card, Bob plays one, and the account misplays one.
     {
       name: "new-ui-misplay",
@@ -1417,6 +1446,10 @@ interface BobsGame {
    * turns. When the team has every clue token, the player gives a clue instead.
    */
   readonly discardTurns: (turns: number) => Promise<void>;
+  /**
+   * The players before the account discard as in `discardTurns`, until it is the account's turn.
+   */
+  readonly discardUntilAccountsTurn: () => Promise<void>;
   /**
    * The players take turns until the deck is empty: each plays a card if they can, or else discards
    * a card that the team can lose, or else gives a clue.
@@ -2060,6 +2093,14 @@ async function createCast(
       });
     }
 
+    async function discardUntilAccountsTurn() {
+      while (
+        readTurn(await loadEvents(viewer, tableId)).player !== seat("account")
+      ) {
+        await discardTurns(1);
+      }
+    }
+
     async function discardTurns(turns: number) {
       const variant = getVariant(LONG_VARIANT_NAME);
       for (let i = 0; i < turns; i++) {
@@ -2230,6 +2271,7 @@ async function createCast(
         await play("account", false);
       },
       discardTurns,
+      discardUntilAccountsTurn,
       emptyDeck,
       clueTwice: async () => {
         if ((await turnOf()) === "account") {
