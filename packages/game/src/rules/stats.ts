@@ -11,6 +11,7 @@ import type { Variant } from "../interfaces/Variant.ts";
 import type { CardOrder } from "../types/CardOrder.ts";
 import type { NumPlayers } from "../types/NumPlayers.ts";
 import type { NumSuits } from "../types/NumSuits.ts";
+import type { Perspective } from "../types/Perspective.ts";
 import {
   isAllCardPossibilitiesTrash,
   isCardNeededForMaxScore,
@@ -163,8 +164,7 @@ export function getCardsGotten(
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
-  playing: boolean,
-  shadowing: boolean,
+  perspective: Perspective,
   maxScore: number,
   variant: Variant,
 ): number {
@@ -177,7 +177,7 @@ export function getCardsGotten(
       || (cardState.location === "discard"
         && cardState.isMisplayed
         && variant.throwItInAHole
-        && (playing || shadowing))
+        && perspective === "seat")
     ) {
       // A card is considered to be gotten if it is already played (and misplays count as played for
       // the purposes of "Throw It in a Hole" variants).

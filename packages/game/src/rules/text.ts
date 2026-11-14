@@ -13,6 +13,7 @@ import type { EndCondition } from "../types/EndCondition.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
 import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { Perspective } from "../types/Perspective.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type {
   ActionClue,
@@ -53,14 +54,14 @@ export function getGoesFirstText(
 export function getClueText(
   action: ActionClue,
   targetHand: readonly number[],
-  hypothetical: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
 ): string {
   const giver = metadata.playerNames[action.playerIndex] ?? "unknown";
   const target = metadata.playerNames[action.receiverIndex] ?? "unknown";
   const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
   const variant = getVariantById(metadata.options.variantId);
-  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  const hypoPrefix = perspective === "hypothetical" ? HYPO_PREFIX : "";
 
   if (isPassTurnClue(action)) {
     return `${hypoPrefix}${giver} passes the turn`;
@@ -212,9 +213,7 @@ export function getPlayText(
   action: ActionPlay | ActionMisplay,
   slot: number | undefined,
   touched: boolean,
-  playing: boolean,
-  shadowing: boolean,
-  hypothetical: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
 ): string {
   const variant = getVariantById(metadata.options.variantId);
@@ -222,7 +221,7 @@ export function getPlayText(
 
   const cardIsHidden =
     action.identity === undefined
-    || (variant.throwItInAHole && (playing || shadowing));
+    || (variant.throwItInAHole && perspective === "seat");
 
   const cardName = cardIsHidden
     ? "a card"
@@ -230,7 +229,7 @@ export function getPlayText(
 
   const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = touched ? "" : " (blind)";
-  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  const hypoPrefix = perspective === "hypothetical" ? HYPO_PREFIX : "";
   const playText =
     action.type === "misplay" && !cardIsHidden ? "fails to play" : "plays";
 
@@ -242,9 +241,7 @@ export function getDiscardText(
   slot: number | undefined,
   touched: boolean,
   critical: boolean,
-  playing: boolean,
-  shadowing: boolean,
-  hypothetical: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
 ): string {
   const variant = getVariantById(metadata.options.variantId);
@@ -252,7 +249,7 @@ export function getDiscardText(
 
   const cardIsHidden =
     action.identity === undefined
-    || (variant.throwItInAHole && (playing || shadowing));
+    || (variant.throwItInAHole && perspective === "seat");
 
   const cardName = cardIsHidden
     ? "a card"
@@ -260,7 +257,7 @@ export function getDiscardText(
 
   const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = getDiscardTextSuffix(touched, critical);
-  const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+  const hypoPrefix = perspective === "hypothetical" ? HYPO_PREFIX : "";
 
   return `${hypoPrefix}${playerName} discards ${cardName} from ${location}${suffix}`;
 }

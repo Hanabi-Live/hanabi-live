@@ -33,12 +33,7 @@ describe("replayReducer", () => {
 
   describe("hypothetical", () => {
     test("can start", () => {
-      const state = replayReducer(
-        testState.replay,
-        hypoStart(),
-        false,
-        metadata,
-      );
+      const state = replayReducer(testState.replay, hypoStart(), metadata);
 
       assertDefined(state.hypothetical, "Failed to start the hypothetical.");
 
@@ -57,7 +52,6 @@ describe("replayReducer", () => {
       const state = replayReducer(
         testState.replay,
         { ...hypoStart(), showDrawnCards: true },
-        false,
         metadata,
       );
       expect(state.hypothetical?.showDrawnCards).toBe(true);
@@ -79,7 +73,6 @@ describe("replayReducer", () => {
             action,
           ],
         },
-        false,
         metadata,
       );
       assertDefined(state.hypothetical, "Failed to start the hypothetical.");
@@ -101,7 +94,7 @@ describe("replayReducer", () => {
     });
 
     test("morph and unmorph only change sparse identities", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
       const ongoing = state.hypothetical?.ongoing;
       const states = state.hypothetical?.states;
       state = replayReducer(
@@ -111,7 +104,6 @@ describe("replayReducer", () => {
           order: 30 as CardOrder,
           identity: { suitIndex: undefined, rank: undefined },
         }),
-        false,
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[30]).toEqual({
@@ -126,7 +118,6 @@ describe("replayReducer", () => {
           order: 30 as CardOrder,
           identity: { suitIndex: 1, rank: 2 },
         }),
-        false,
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[30]).toEqual({
@@ -136,7 +127,6 @@ describe("replayReducer", () => {
       state = replayReducer(
         state,
         hypoAction({ type: "unmorph", order: 30 as CardOrder }),
-        false,
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[30]).toBeUndefined();
@@ -146,18 +136,12 @@ describe("replayReducer", () => {
     });
 
     test("records every hidden draw and toggles all drawn identities", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
       const order = startingState.deck.length;
-      state = replayReducer(
-        state,
-        hypoAction(draw(0, order, 0, 1)),
-        false,
-        metadata,
-      );
+      state = replayReducer(state, hypoAction(draw(0, order, 0, 1)), metadata);
       state = replayReducer(
         state,
         hypoAction(draw(0, order + 1, 0, 1)),
-        false,
         metadata,
       );
       expect(state.hypothetical?.drawnCardsInHypothetical).toEqual([
@@ -179,7 +163,6 @@ describe("replayReducer", () => {
           order: 0 as CardOrder,
           identity: { suitIndex: 1, rank: 2 },
         }),
-        false,
         metadata,
       );
       const ongoing = state.hypothetical?.ongoing;
@@ -190,7 +173,6 @@ describe("replayReducer", () => {
           shared: false,
           showDrawnCards: true,
         },
-        false,
         metadata,
       );
       expect(state.hypothetical?.showDrawnCards).toBe(true);
@@ -198,7 +180,6 @@ describe("replayReducer", () => {
       state = replayReducer(
         state,
         hypoAction(draw(0, order + 2, 0, 2)),
-        false,
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[order + 2]).toBeUndefined();
@@ -211,7 +192,6 @@ describe("replayReducer", () => {
           shared: false,
           showDrawnCards: false,
         },
-        false,
         metadata,
       );
       expect(state.hypothetical?.showDrawnCards).toBe(false);
@@ -234,53 +214,43 @@ describe("replayReducer", () => {
     });
 
     test("saves segment changes and Back restores the previous saved state", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
-      state = replayReducer(
-        state,
-        hypoAction(rankClue(3, 0, [], 1)),
-        false,
-        metadata,
-      );
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
+      state = replayReducer(state, hypoAction(rankClue(3, 0, [], 1)), metadata);
       const firstMove = state.hypothetical?.ongoing;
       expect(firstMove?.turn.segment).toBe(
         (startingState.turn.segment ?? 0) + 1,
       );
       expect(state.hypothetical?.states).toHaveLength(2);
       expect(state.hypothetical?.states[1]).toBe(firstMove);
-      state = replayReducer(
-        state,
-        hypoAction(rankClue(3, 1, [], 0)),
-        false,
-        metadata,
-      );
+      state = replayReducer(state, hypoAction(rankClue(3, 1, [], 0)), metadata);
       expect(state.hypothetical?.states).toHaveLength(3);
-      state = replayReducer(state, hypoBack(), false, metadata);
+      state = replayReducer(state, hypoBack(), metadata);
       expect(state.hypothetical?.ongoing).toBe(firstMove);
       expect(state.hypothetical?.states).toHaveLength(2);
-      state = replayReducer(state, hypoBack(), false, metadata);
+      state = replayReducer(state, hypoBack(), metadata);
       expect(state.hypothetical?.ongoing).toBe(startingState);
-      state = replayReducer(state, hypoBack(), false, metadata);
+      state = replayReducer(state, hypoBack(), metadata);
       expect(state.hypothetical?.states).toEqual([]);
       expect(state.hypothetical?.ongoing).toBe(startingState);
     });
 
     test("can give a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
 
       // Give a number 3 clue in the new hypothetical.
       const hypoClue = hypoAction(rankClue(3, 0, [], 1));
-      state = replayReducer(state, hypoClue, false, testState.metadata);
+      state = replayReducer(state, hypoClue, testState.metadata);
 
       const expectedClues = startingState.clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
     });
 
     test("can go back on a hypothetical after giving a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1));
-      state = replayReducer(state, hypoClue, false, metadata);
-      state = replayReducer(state, hypoBack(), false, metadata);
+      state = replayReducer(state, hypoClue, metadata);
+      state = replayReducer(state, hypoBack(), metadata);
 
       const originalState = testState.visibleState;
       expect(state.hypothetical?.ongoing).toBe<unknown>(originalState);
@@ -305,11 +275,10 @@ describe("replayReducer", () => {
         },
       };
 
-      state = replayReducer(state, hypoStart(true), true, metadata);
+      state = replayReducer(state, hypoStart(true), metadata);
       state = replayReducer(
         state,
         hypoAction(rankClue(3, 0, [], 1), true),
-        true,
         metadata,
       );
       expect(state.hypothetical).toBeUndefined();
@@ -321,18 +290,17 @@ describe("replayReducer", () => {
       state = replayReducer(
         state,
         { type: "replayUseSharedSegments", useSharedSegments: true },
-        true,
         metadata,
       );
       expect(state.hypothetical).toBe(hidden);
 
-      state = replayReducer(state, hypoEnd(true), true, metadata);
+      state = replayReducer(state, hypoEnd(true), metadata);
       expect(state.hypothetical).toBeUndefined();
       expect(state.shared?.hypothetical).toBeUndefined();
     });
 
     test("keeps our own hypothetical when the game ends and a shared replay starts", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
       const own = state.ownHypothetical;
       assertDefined(own, "Failed to start our own hypothetical.");
 
@@ -354,41 +322,34 @@ describe("replayReducer", () => {
       state = replayReducer(
         state,
         { type: "replayLeader", username: "leader" },
-        true,
         metadata,
       );
-      state = replayReducer(state, hypoStart(true), true, metadata);
+      state = replayReducer(state, hypoStart(true), metadata);
       expect(state.hypothetical).toBe(own);
 
-      state = replayReducer(
-        state,
-        hypoAction(rankClue(3, 0, [], 1)),
-        true,
-        metadata,
-      );
+      state = replayReducer(state, hypoAction(rankClue(3, 0, [], 1)), metadata);
       expect(state.hypothetical).toBe(state.ownHypothetical);
       expect(state.hypothetical?.states).toHaveLength(2);
       expect(state.shared?.hypothetical?.states).toHaveLength(1);
 
-      state = replayReducer(state, hypoEnd(), true, metadata);
+      state = replayReducer(state, hypoEnd(), metadata);
       expect(state.ownHypothetical).toBeUndefined();
       expect(state.hypothetical).toBeUndefined();
 
       state = replayReducer(
         state,
         { type: "replayUseSharedSegments", useSharedSegments: true },
-        true,
         metadata,
       );
       expect(state.hypothetical).toBe(state.shared?.hypothetical);
     });
 
     test("can end hypothetical after giving a clue", () => {
-      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
+      let state = replayReducer(testState.replay, hypoStart(), metadata);
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1));
-      state = replayReducer(state, hypoClue, false, metadata);
-      state = replayReducer(state, hypoEnd(), false, metadata);
+      state = replayReducer(state, hypoClue, metadata);
+      state = replayReducer(state, hypoEnd(), metadata);
       expect(state.hypothetical).toBeUndefined();
     });
   });

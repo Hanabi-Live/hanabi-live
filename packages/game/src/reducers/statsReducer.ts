@@ -30,14 +30,14 @@ import {
 } from "../rules/stats.ts";
 import { getEndGameLength } from "../rules/turn.ts";
 import type { GameAction } from "../types/gameActions.ts";
+import type { Perspective } from "../types/Perspective.ts";
 
 export function statsReducer(
   statsState: StatsState,
   action: GameAction,
   previousGameState: GameState,
   gameState: GameState,
-  playing: boolean,
-  shadowing: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
   ourNotes: readonly CardNote[] | undefined,
 ): StatsState {
@@ -47,8 +47,7 @@ export function statsReducer(
       action,
       previousGameState,
       gameState,
-      playing,
-      shadowing,
+      perspective,
       metadata,
       ourNotes,
     );
@@ -60,8 +59,7 @@ function statsReducerFunction(
   action: GameAction,
   previousGameState: GameState,
   gameState: GameState,
-  playing: boolean,
-  shadowing: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
   ourNotes: readonly CardNote[] | undefined,
 ) {
@@ -78,7 +76,7 @@ function statsReducerFunction(
     case "misplay": {
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (!variant.throwItInAHole || (!playing && !shadowing)) {
+      if (!variant.throwItInAHole || perspective !== "seat") {
         statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
@@ -137,7 +135,7 @@ function statsReducerFunction(
 
   // Handle pace calculation.
   const score =
-    variant.throwItInAHole && (playing || shadowing)
+    variant.throwItInAHole && perspective === "seat"
       ? statsState.numAttemptedCardsPlayed
       : gameState.score;
   statsState.pace = getPace(
@@ -159,8 +157,7 @@ function statsReducerFunction(
     gameState.playStacks,
     gameState.playStackDirections,
     gameState.playStackStarts,
-    playing,
-    shadowing,
+    perspective,
     statsState.maxScore,
     variant,
   );

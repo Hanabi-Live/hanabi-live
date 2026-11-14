@@ -20,7 +20,6 @@ export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 function replayReducerFunction(
   state: Draft<ReplayState>,
   action: ReplayAction,
-  finished: boolean,
   metadata: GameMetadata,
 ) {
   if (action.type === "replayEnter") {
@@ -168,7 +167,6 @@ function replayReducerFunction(
         original(ongoing),
         action.showDrawnCards,
         action.actions,
-        finished,
         metadata,
       );
       setHypothetical(state, action.shared, castDraft(hypothetical));
@@ -210,14 +208,7 @@ function replayReducerFunction(
       setHypothetical(
         state,
         action.shared,
-        castDraft(
-          hypotheticalStateReducer(
-            hypothetical,
-            coreAction,
-            finished,
-            metadata,
-          ),
-        ),
+        castDraft(hypotheticalStateReducer(hypothetical, coreAction, metadata)),
       );
       break;
     }

@@ -1,4 +1,12 @@
-import type { GameAction, PlayerIndex } from "@hanabi-live/game";
+import type { GameAction, Perspective, PlayerIndex } from "@hanabi-live/game";
+import type { State } from "../types/State.ts";
+
+/** Where we see the game from: our seat, a seat that we shadow, or outside of the seats. */
+export function getPerspective(
+  state: Pick<State, "playing" | "shadowing">,
+): Perspective {
+  return state.playing || state.shadowing ? "seat" : "spectator";
+}
 
 /**
  * When the game state reducer sets "segment" to a new number, it is a signal to record the current

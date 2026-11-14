@@ -22,15 +22,7 @@ describe("clue preview", () => {
     const variant = getDefaultVariant();
     let gameState: GameState = getInitialGameStateTest(metadata);
     for (const action of [draw(1, RED_ONE, 0, 1), draw(1, BLUE_TWO, 3, 2)]) {
-      gameState = gameReducer(
-        gameState,
-        action,
-        true,
-        false,
-        false,
-        false,
-        metadata,
-      );
+      gameState = gameReducer(gameState, action, "seat", metadata);
     }
     gameState = {
       ...gameState,

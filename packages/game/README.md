@@ -45,15 +45,7 @@ const initialGameState = getInitialGameState(metadata);
 console.log(`First player has ${initialGameState.hands[0].length} cards.`); // Should print 0.
 
 const action = draw(0, 0, 0, 1);
-const nextGameState = gameReducer(
-  initialGameState,
-  action,
-  true,
-  false,
-  false,
-  false,
-  metadata,
-);
+const nextGameState = gameReducer(initialGameState, action, "seat", metadata);
 
 console.log(`First player now has ${nextGameState.hands[0].length} cards.`); // Should print 1.
 ```

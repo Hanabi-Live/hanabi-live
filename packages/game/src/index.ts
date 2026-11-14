@@ -74,6 +74,7 @@ export type * from "./types/HiddenClue.ts";
 export type * from "./types/MsgClue.ts";
 export * from "./types/NumPlayers.ts";
 export type * from "./types/NumSuits.ts";
+export type * from "./types/Perspective.ts";
 export * from "./types/PlayerIndex.ts";
 export type * from "./types/Rank.ts";
 export type * from "./types/StateClue.ts";

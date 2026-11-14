@@ -81,7 +81,6 @@ export function initializeHypotheticalState(
   ongoing: GameState,
   showDrawnCards: boolean,
   actions: readonly ActionIncludingHypothetical[],
-  finished: boolean,
   metadata: GameMetadata,
 ): HypotheticalState {
   let state: HypotheticalState = {
@@ -95,7 +94,7 @@ export function initializeHypotheticalState(
   };
 
   for (const action of actions) {
-    state = hypotheticalStateReducer(state, action, finished, metadata);
+    state = hypotheticalStateReducer(state, action, metadata);
   }
 
   return state;
@@ -105,10 +104,9 @@ export function initializeHypotheticalState(
 export function hypotheticalStateReducer(
   state: HypotheticalState,
   action: HypotheticalStateAction,
-  finished: boolean,
   metadata: GameMetadata,
 ): HypotheticalState {
-  const newState = produceHypotheticalState(state, action, finished, metadata);
+  const newState = produceHypotheticalState(state, action, metadata);
   // Restoring an original identity can leave undefined elements behind.
   const shownIdentities: ReadonlyArray<CardIdentity | undefined> =
     newState.morphedIdentities;
@@ -152,7 +150,6 @@ const produceHypotheticalState = produce(hypotheticalStateReducerFunction);
 function hypotheticalStateReducerFunction(
   state: Draft<HypotheticalState>,
   action: HypotheticalStateAction,
-  finished: boolean,
   metadata: GameMetadata,
 ) {
   switch (action.type) {
@@ -243,15 +240,7 @@ function hypotheticalStateReducerFunction(
   }
 
   const oldSegment = state.ongoing.turn.segment;
-  const newState = gameReducer(
-    state.ongoing,
-    action,
-    true,
-    false,
-    finished,
-    true,
-    metadata,
-  );
+  const newState = gameReducer(state.ongoing, action, "hypothetical", metadata);
   state.ongoing = castDraft(newState);
 
   if (isHypotheticalOver(state, newState, metadata)) {

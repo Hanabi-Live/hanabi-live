@@ -105,14 +105,12 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
             gameState,
             false,
             [],
-            true,
             metadata,
           );
           for (const action of actions) {
             hypothetical = hypotheticalStateReducer(
               hypothetical,
               action,
-              true,
               metadata,
             );
             expectConsistentCollections(hypothetical.ongoing);
@@ -131,7 +129,6 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
       gameState,
       false,
       [],
-      true,
       metadata,
     );
 
@@ -177,12 +174,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
       });
       assertDefined(planned, "Failed to plan a replay action.");
       for (const action of planned) {
-        hypothetical = hypotheticalStateReducer(
-          hypothetical,
-          action,
-          true,
-          metadata,
-        );
+        hypothetical = hypotheticalStateReducer(hypothetical, action, metadata);
         expectConsistentCollections(hypothetical.ongoing);
       }
     }

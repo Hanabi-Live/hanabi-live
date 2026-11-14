@@ -5,6 +5,7 @@ import type {
   GameAction,
   GameMetadata,
   GameState,
+  Perspective,
 } from "@hanabi-live/game";
 import { gameReducer, getInitialGameState } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -14,7 +15,11 @@ import type { State } from "../types/State.ts";
 import type { Action } from "../types/actions.ts";
 import { notesReducer } from "./notesReducer.ts";
 import { replayReducer } from "./replayReducer.ts";
-import { playerNamesAt, shouldStoreSegment } from "./stateReducerHelpers.ts";
+import {
+  getPerspective,
+  playerNamesAt,
+  shouldStoreSegment,
+} from "./stateReducerHelpers.ts";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 
@@ -27,9 +32,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       const { game, states } = reduceGameActions(
         action.actions,
         initialGameState,
-        state.playing,
-        state.shadowing,
-        state.finished,
+        getPerspective(state),
         state.metadata,
       );
 
@@ -71,9 +74,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         const { game, states } = reduceGameActions(
           action.actions,
           initialGameState,
-          state.playing,
-          state.shadowing,
-          true,
+          getPerspective(state),
           state.metadata,
         );
 
@@ -221,7 +222,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypotheticalAction":
     case "hypotheticalShowDrawnCards": {
       state.replay = castDraft(
-        replayReducer(state.replay, action, state.finished, state.metadata),
+        replayReducer(state.replay, action, state.metadata),
       );
       break;
     }
@@ -293,10 +294,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           gameReducer(
             original(state.ongoingGame),
             action,
-            state.playing,
-            state.shadowing,
-            state.finished,
-            state.replay.hypothetical !== undefined,
+            getPerspective(state),
             state.metadata,
             state.notes.ourNotes,
           ),
@@ -312,10 +310,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         gameReducer(
           original(state.ongoingGame),
           action,
-          state.playing,
-          state.shadowing,
-          state.finished,
-          false,
+          getPerspective(state),
           state.metadata,
           state.notes.ourNotes,
         ),
@@ -351,24 +346,14 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 function reduceGameActions(
   actions: readonly GameAction[],
   initialState: GameState,
-  playing: boolean,
-  shadowing: boolean,
-  finished: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
 ) {
   const states: GameState[] = [initialState];
 
   // eslint-disable-next-line unicorn/no-array-reduce
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameReducer(
-      s,
-      a,
-      playing,
-      shadowing,
-      finished,
-      false,
-      metadata,
-    );
+    const nextState = gameReducer(s, a, perspective, metadata);
 
     if (
       shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)

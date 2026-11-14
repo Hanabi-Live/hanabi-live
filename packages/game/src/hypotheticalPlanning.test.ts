@@ -145,15 +145,7 @@ function applyPlan(
   expect(actions).not.toBeUndefined();
   let state = context.gameState;
   for (const action of actions!) {
-    state = gameReducer(
-      state,
-      action,
-      context.playing,
-      false,
-      false,
-      true,
-      context.metadata,
-    );
+    state = gameReducer(state, action, "hypothetical", context.metadata);
   }
   return state;
 }

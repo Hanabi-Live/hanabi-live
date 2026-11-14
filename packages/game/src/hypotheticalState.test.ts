@@ -19,10 +19,7 @@ for (let order = 0; order < 10; order++) {
   startingState = gameReducer(
     startingState,
     draw(order < 5 ? 0 : 1, order),
-    true,
-    false,
-    false,
-    true,
+    "hypothetical",
     metadata,
   );
 }
@@ -35,7 +32,6 @@ describe("hypothetical state", () => {
         startingState,
         showDrawnCards,
         [],
-        false,
         metadata,
       );
       expect(state.ongoing).toBe(startingState);
@@ -55,13 +51,7 @@ describe("hypothetical state", () => {
         ...startingState,
         turn: { ...startingState.turn, segment: 7, currentPlayerIndex },
       };
-      const state = initializeHypotheticalState(
-        selected,
-        false,
-        [],
-        false,
-        metadata,
-      );
+      const state = initializeHypotheticalState(selected, false, [], metadata);
       expect(state.ongoing).toBe(selected);
       expect(state.states[0]).toBe(selected);
       expect(state.startingPlayerIndex).toBe(currentPlayerIndex);
@@ -82,7 +72,6 @@ describe("hypothetical state", () => {
         action,
         action,
       ],
-      false,
       metadata,
     );
     expect(state.startingPlayerIndex).toBe(0);
@@ -104,7 +93,6 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [],
-      false,
       metadata,
     );
     let state = hypotheticalStateReducer(
@@ -114,7 +102,6 @@ describe("hypothetical state", () => {
         order: 30 as CardOrder,
         identity: { suitIndex: undefined, rank: undefined },
       },
-      false,
       metadata,
     );
     expect(state.morphedIdentities[30]).toEqual({
@@ -129,7 +116,6 @@ describe("hypothetical state", () => {
         order: 30 as CardOrder,
         identity: { suitIndex: 1, rank: 2 },
       },
-      false,
       metadata,
     );
     expect(state.morphedIdentities[30]).toEqual({ suitIndex: 1, rank: 2 });
@@ -139,7 +125,6 @@ describe("hypothetical state", () => {
         type: "unmorph",
         order: 30 as CardOrder,
       },
-      false,
       metadata,
     );
     expect(state.morphedIdentities[30]).toBeUndefined();
@@ -157,14 +142,12 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [],
-      false,
       metadata,
     );
 
     const result = hypotheticalStateReducer(
       initial,
       draw(0, order, 0, 1),
-      false,
       metadata,
     );
 
@@ -178,14 +161,12 @@ describe("hypothetical state", () => {
         startingState,
         false,
         [],
-        false,
         metadata,
       );
 
       const result = hypotheticalStateReducer(
         initial,
         draw(playerIndex as PlayerIndex, startingState.deck.length, 0, 1),
-        false,
         metadata,
       );
 
@@ -202,14 +183,12 @@ describe("hypothetical state", () => {
       emptyDeckState,
       false,
       [],
-      false,
       metadata,
     );
 
     const result = hypotheticalStateReducer(
       initial,
       draw(0, emptyDeckState.deck.length, 0, 1),
-      false,
       metadata,
     );
 
@@ -225,7 +204,6 @@ describe("hypothetical state", () => {
       finalCardState,
       false,
       [],
-      false,
       metadata,
     );
     const nextOrder = finalCardState.deck.length;
@@ -233,7 +211,6 @@ describe("hypothetical state", () => {
     const result = hypotheticalStateReducer(
       initial,
       draw(0, nextOrder, 0, 1),
-      false,
       metadata,
     );
 
@@ -248,20 +225,17 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [],
-      false,
       metadata,
     );
     const nextOrder = startingState.deck.length;
     const once = hypotheticalStateReducer(
       initial,
       draw(0, nextOrder, 0, 1),
-      false,
       metadata,
     );
     const twice = hypotheticalStateReducer(
       once,
       draw(0, nextOrder, 0, 1),
-      false,
       metadata,
     );
 
@@ -277,22 +251,15 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [],
-      false,
       metadata,
     );
     const order = startingState.deck.length;
     let state = hypotheticalStateReducer(
       initial,
       draw(0, order, 0, 1),
-      false,
       metadata,
     );
-    state = hypotheticalStateReducer(
-      state,
-      draw(0, order + 1, 0, 1),
-      false,
-      metadata,
-    );
+    state = hypotheticalStateReducer(state, draw(0, order + 1, 0, 1), metadata);
     expect(state.drawnCardsInHypothetical).toEqual([order, order + 1]);
     expect(state.morphedIdentities[order]).toEqual({
       suitIndex: undefined,
@@ -309,31 +276,23 @@ describe("hypothetical state", () => {
         order: 0 as CardOrder,
         identity: { suitIndex: 1, rank: 2 },
       },
-      false,
       metadata,
     );
     const { ongoing } = state;
     state = hypotheticalStateReducer(
       state,
       { type: "showDrawnCards", showDrawnCards: true },
-      false,
       metadata,
     );
     expect(state.showDrawnCards).toBe(true);
     expect(state.morphedIdentities[order]).toBeUndefined();
     expect(state.ongoing).toBe(ongoing);
-    state = hypotheticalStateReducer(
-      state,
-      draw(0, order + 2, 0, 2),
-      false,
-      metadata,
-    );
+    state = hypotheticalStateReducer(state, draw(0, order + 2, 0, 2), metadata);
     expect(state.morphedIdentities[order + 2]).toBeUndefined();
     const afterDraw = state.ongoing;
     state = hypotheticalStateReducer(
       state,
       { type: "showDrawnCards", showDrawnCards: false },
-      false,
       metadata,
     );
     expect(state.showDrawnCards).toBe(false);
@@ -380,7 +339,6 @@ describe("hypothetical state", () => {
         startingState,
         false,
         [],
-        false,
         metadata,
       );
       expect(original.ongoing.hands[0]).not.toContain(order);
@@ -388,7 +346,6 @@ describe("hypothetical state", () => {
       const result = hypotheticalStateReducer(
         original,
         cardAction(order),
-        false,
         metadata,
       );
       expect(result).toBe<unknown>(original);
@@ -399,7 +356,6 @@ describe("hypothetical state", () => {
         startingState,
         false,
         [cardAction(0)],
-        false,
         metadata,
       );
       expect(original.ongoing.hands[0]).not.toContain(0);
@@ -407,7 +363,6 @@ describe("hypothetical state", () => {
       const result = hypotheticalStateReducer(
         original,
         cardAction(0),
-        false,
         metadata,
       );
       expect(result).toBe<unknown>(original);
@@ -419,101 +374,75 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [],
-      false,
       metadata,
     );
     const action = rankClue(3, 1, [], 0);
     expect(action.ignoreNegative).toBe(false);
-    const state = hypotheticalStateReducer(initial, action, false, metadata);
+    const state = hypotheticalStateReducer(initial, action, metadata);
     expect(state.ongoing.clues.at(-1)?.negativeList).toEqual<unknown>(
       startingState.hands[0],
     );
   });
 
   test("saves segment changes and Back restores the previous saved state", () => {
-    let state = initializeHypotheticalState(
-      startingState,
-      false,
-      [],
-      false,
-      metadata,
-    );
-    state = hypotheticalStateReducer(
-      state,
-      rankClue(3, 0, [], 1),
-      false,
-      metadata,
-    );
+    let state = initializeHypotheticalState(startingState, false, [], metadata);
+    state = hypotheticalStateReducer(state, rankClue(3, 0, [], 1), metadata);
     const firstMove = state.ongoing;
     expect(firstMove.turn.segment).toBe(1);
     expect(state.states).toHaveLength(2);
     expect(state.states[1]).toBe(firstMove);
-    state = hypotheticalStateReducer(
-      state,
-      rankClue(3, 1, [], 0),
-      false,
-      metadata,
-    );
+    state = hypotheticalStateReducer(state, rankClue(3, 1, [], 0), metadata);
     expect(state.states).toHaveLength(3);
-    state = hypotheticalStateReducer(state, { type: "back" }, false, metadata);
+    state = hypotheticalStateReducer(state, { type: "back" }, metadata);
     expect(state.ongoing).toBe(firstMove);
     expect(state.states).toHaveLength(2);
-    state = hypotheticalStateReducer(state, { type: "back" }, false, metadata);
+    state = hypotheticalStateReducer(state, { type: "back" }, metadata);
     expect(state.ongoing).toBe(startingState);
-    state = hypotheticalStateReducer(state, { type: "back" }, false, metadata);
+    state = hypotheticalStateReducer(state, { type: "back" }, metadata);
     expect(state.states).toEqual([]);
     expect(state.ongoing).toBe(startingState);
-    state = hypotheticalStateReducer(state, { type: "back" }, false, metadata);
+    state = hypotheticalStateReducer(state, { type: "back" }, metadata);
     expect(state.states).toEqual([]);
     expect(state.ongoing).toBe(startingState);
   });
 
-  test.each([false, true])(
-    "uses the real game reducer with finished = %s",
-    (finished) => {
-      const initial = initializeHypotheticalState(
-        startingState,
-        false,
-        [],
-        finished,
+  test("uses the real game reducer from the hypothetical perspective", () => {
+    const initial = initializeHypotheticalState(
+      startingState,
+      false,
+      [],
+      metadata,
+    );
+    const reducer = spyOn(gameReducerModule, "gameReducer");
+    try {
+      let state = hypotheticalStateReducer(
+        initial,
+        {
+          type: "morph",
+          order: 0 as CardOrder,
+          identity: { suitIndex: undefined, rank: undefined },
+        },
         metadata,
       );
-      const reducer = spyOn(gameReducerModule, "gameReducer");
-      try {
-        let state = hypotheticalStateReducer(
-          initial,
-          {
-            type: "morph",
-            order: 0 as CardOrder,
-            identity: { suitIndex: undefined, rank: undefined },
-          },
-          finished,
-          metadata,
-        );
-        state = hypotheticalStateReducer(
-          state,
-          { type: "unmorph", order: 0 as CardOrder },
-          finished,
-          metadata,
-        );
-        expect(reducer).not.toHaveBeenCalled();
-        const action = draw(0, startingState.deck.length, 0, 1);
-        hypotheticalStateReducer(state, action, finished, metadata);
-        expect(reducer).toHaveBeenCalledTimes(1);
-        // The first argument is an Immer draft that is revoked after the transition.
-        expect(reducer.mock.calls[0]?.slice(1)).toEqual([
-          action,
-          true,
-          false,
-          finished,
-          true,
-          metadata,
-        ]);
-      } finally {
-        reducer.mockRestore();
-      }
-    },
-  );
+      state = hypotheticalStateReducer(
+        state,
+        { type: "unmorph", order: 0 as CardOrder },
+        metadata,
+      );
+      expect(reducer).not.toHaveBeenCalled();
+      const action = draw(0, startingState.deck.length, 0, 1);
+      hypotheticalStateReducer(state, action, metadata);
+      expect(reducer).toHaveBeenCalledTimes(1);
+      // The first argument is an Immer draft that is revoked after the transition.
+      expect(reducer.mock.calls[0]?.slice(1)).toEqual([
+        action,
+        "hypothetical",
+        metadata,
+      ]);
+    } finally {
+      reducer.mockRestore();
+    }
+  });
 
   test("deduces empathy from the identities that cards are shown as", () => {
     // The first player holds a green 5 (order 0), and the second player has a 5 clued (order 5).
@@ -534,10 +463,7 @@ describe("hypothetical state", () => {
       dealtState = gameReducer(
         dealtState,
         draw(order < 5 ? 0 : 1, order, suitIndex, rank),
-        true,
-        false,
-        false,
-        true,
+        "hypothetical",
         metadata,
       );
     }
@@ -549,7 +475,6 @@ describe("hypothetical state", () => {
       dealtState,
       true,
       [rankClue(5, 0, [cluedOrder], 1)],
-      false,
       metadata,
     );
     function empathy() {
@@ -564,7 +489,6 @@ describe("hypothetical state", () => {
         order: 0 as CardOrder,
         identity: { suitIndex: 3, rank: 1 },
       },
-      false,
       metadata,
     );
     expect(empathy()).toContainEqual(green5);
@@ -576,7 +500,6 @@ describe("hypothetical state", () => {
         order: 1 as CardOrder,
         identity: { suitIndex: 1, rank: 5 },
       },
-      false,
       metadata,
     );
     expect(empathy()).toContainEqual(green5);
@@ -585,13 +508,11 @@ describe("hypothetical state", () => {
     state = hypotheticalStateReducer(
       state,
       { type: "unmorph", order: 0 as CardOrder },
-      false,
       metadata,
     );
     state = hypotheticalStateReducer(
       state,
       { type: "unmorph", order: 1 as CardOrder },
-      false,
       metadata,
     );
     expect(empathy()).not.toContainEqual(green5);
@@ -624,7 +545,6 @@ describe("hypothetical state", () => {
       { ...startingState, ...stateOverrides },
       false,
       [rankClue(3, 0, [], 1)],
-      false,
       metadata,
     );
     expect(ended.ongoing.turn.currentPlayerIndex).toBeUndefined();
@@ -632,7 +552,6 @@ describe("hypothetical state", () => {
     const next = hypotheticalStateReducer(
       ended,
       rankClue(3, 1, [], 0),
-      false,
       metadata,
     );
     expect(next.ongoing).toBe(ended.ongoing);
@@ -649,10 +568,7 @@ describe("hypothetical state", () => {
         finalRound = gameReducer(
           finalRound,
           order < 5 ? draw(0, order) : draw(1, order, 0, rank),
-          true,
-          false,
-          false,
-          true,
+          "hypothetical",
           metadata,
         );
       }
@@ -668,7 +584,6 @@ describe("hypothetical state", () => {
         finalRound,
         false,
         [rankClue(3, 0, [], 1)],
-        false,
         metadata,
       );
       expect(state.ongoing.turn.currentPlayerIndex).toBe(ends ? undefined : 1);

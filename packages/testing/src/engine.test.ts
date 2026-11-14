@@ -117,10 +117,7 @@ test(
           state = gameReducer(
             state,
             toVisibleGameAction(event),
-            false,
-            false,
-            false,
-            false,
+            "spectator",
             metadata,
           );
         }

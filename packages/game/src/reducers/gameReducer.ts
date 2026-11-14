@@ -40,6 +40,7 @@ import type {
   ActionPlay,
   GameAction,
 } from "../types/gameActions.ts";
+import type { Perspective } from "../types/Perspective.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
 import { cardsReducer } from "./cardsReducer.ts";
 import { ddaReducer } from "./ddaReducer.ts";
@@ -51,34 +52,19 @@ import { turnReducer } from "./turnReducer.ts";
 export function gameReducer(
   gameState: GameState,
   action: GameAction,
-  playing: boolean,
-  shadowing: boolean,
-  finished: boolean,
-  hypothetical: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
   ourNotes?: readonly CardNote[],
 ): GameState {
   return produce(gameState, (draft) => {
-    gameReducerFunction(
-      draft,
-      action,
-      playing,
-      shadowing,
-      finished,
-      hypothetical,
-      metadata,
-      ourNotes,
-    );
+    gameReducerFunction(draft, action, perspective, metadata, ourNotes);
   });
 }
 
 function gameReducerFunction(
   gameState: Draft<GameState>,
   action: GameAction,
-  playing: boolean,
-  shadowing: boolean,
-  finished: boolean,
-  hypothetical: boolean,
+  perspective: Perspective,
   metadata: GameMetadata,
   ourNotes?: readonly CardNote[],
 ) {
@@ -169,7 +155,7 @@ function gameReducerFunction(
         }
       }
 
-      const text = getClueText(action, targetHand, hypothetical, metadata);
+      const text = getClueText(action, targetHand, perspective, metadata);
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
         text,
@@ -221,9 +207,7 @@ function gameReducerFunction(
           gameState,
           action,
           variant,
-          playing,
-          shadowing,
-          finished,
+          perspective,
         )
       ) {
         if (action.identity === undefined) {
@@ -276,23 +260,13 @@ function gameReducerFunction(
 
       const text =
         action.type === "misplay"
-          ? getPlayText(
-              action,
-              slot,
-              touched,
-              playing,
-              shadowing,
-              hypothetical,
-              metadata,
-            )
+          ? getPlayText(action, slot, touched, perspective, metadata)
           : getDiscardText(
               action,
               slot,
               touched,
               critical,
-              playing,
-              shadowing,
-              hypothetical,
+              perspective,
               metadata,
             );
       gameState.log.push({
@@ -410,9 +384,7 @@ function gameReducerFunction(
           gameState,
           action,
           variant,
-          playing,
-          shadowing,
-          finished,
+          perspective,
         )
       ) {
         if (action.identity === undefined) {
@@ -446,15 +418,7 @@ function gameReducerFunction(
       );
 
       const touched = isCardClued(cardState);
-      const text = getPlayText(
-        action,
-        slot,
-        touched,
-        playing,
-        shadowing,
-        hypothetical,
-        metadata,
-      );
+      const text = getPlayText(action, slot, touched, perspective, metadata);
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
         text,
@@ -602,8 +566,7 @@ function gameReducerFunction(
       action,
       originalState,
       gameState,
-      playing,
-      shadowing,
+      perspective,
       metadata,
       ourNotes ?? undefined,
     ),
@@ -634,11 +597,9 @@ function throwItInAHolePlayedOrMisplayed(
   gameState: Draft<GameState>,
   action: ActionPlay | ActionDiscard | ActionMisplay,
   variant: Variant,
-  playing: boolean,
-  shadowing: boolean,
-  finished: boolean,
+  perspective: Perspective,
 ) {
-  if (!variant.throwItInAHole || (!playing && !shadowing) || finished) {
+  if (!variant.throwItInAHole || perspective !== "seat") {
     return false;
   }
 
