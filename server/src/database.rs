@@ -112,13 +112,11 @@ mod tests {
         sqlx::query_scalar!(
             "SELECT NOT EXISTS(SELECT 1 FROM users u LEFT JOIN (
                SELECT p.user_id, count(*) AS all_games,
-                      count(*) FILTER (WHERE g.end_condition = 1 AND NOT g.speedrun) AS normal,
-                      count(*) FILTER (WHERE g.end_condition = 1 AND g.speedrun) AS speedrun
+                      count(*) FILTER (WHERE g.end_condition = 1 AND NOT g.speedrun) AS normal
                FROM game_participants p JOIN games g ON g.id = p.game_id
                GROUP BY p.user_id) c ON c.user_id = u.id
              WHERE u.num_games <> COALESCE(c.all_games, 0)
-                OR u.num_normal_games <> COALESCE(c.normal, 0)
-                OR u.num_normal_speedrun_games <> COALESCE(c.speedrun, 0)) AS \"value!\""
+                OR u.num_normal_games <> COALESCE(c.normal, 0)) AS \"value!\""
         )
         .fetch_one(&db.pool)
         .await

@@ -39,9 +39,8 @@ CREATE TABLE users (
     datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
 
     /* Counts of games, kept by the "count_games_of_participant" triggers. */
-    num_games                  INTEGER  NOT NULL  DEFAULT 0, /* However each game ended. */
-    num_normal_games           INTEGER  NOT NULL  DEFAULT 0,
-    num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0,
+    num_games         INTEGER  NOT NULL  DEFAULT 0, /* However each game ended. */
+    num_normal_games  INTEGER  NOT NULL  DEFAULT 0, /* Games that ended normally, not speedruns. */
 
     /* The time spent in solo and shared replays. */
     seconds_reviewing          BIGINT   NOT NULL  DEFAULT 0,
@@ -213,9 +212,7 @@ BEGIN
     UPDATE users SET
         num_games = num_games + change,
         num_normal_games = num_normal_games
-            + CASE WHEN games.end_condition = 1 AND NOT games.speedrun THEN change ELSE 0 END,
-        num_normal_speedrun_games = num_normal_speedrun_games
-            + CASE WHEN games.end_condition = 1 AND games.speedrun THEN change ELSE 0 END
+            + CASE WHEN games.end_condition = 1 AND NOT games.speedrun THEN change ELSE 0 END
     FROM games
     WHERE users.id = participant.user_id AND games.id = participant.game_id;
     RETURN NULL;
@@ -233,9 +230,7 @@ BEGIN
     UPDATE users SET
         num_games = num_games - 1,
         num_normal_games = num_normal_games
-            - CASE WHEN OLD.end_condition = 1 AND NOT OLD.speedrun THEN 1 ELSE 0 END,
-        num_normal_speedrun_games = num_normal_speedrun_games
-            - CASE WHEN OLD.end_condition = 1 AND OLD.speedrun THEN 1 ELSE 0 END
+            - CASE WHEN OLD.end_condition = 1 AND NOT OLD.speedrun THEN 1 ELSE 0 END
     FROM game_participants
     WHERE game_participants.game_id = OLD.id AND users.id = game_participants.user_id;
     RETURN OLD;
