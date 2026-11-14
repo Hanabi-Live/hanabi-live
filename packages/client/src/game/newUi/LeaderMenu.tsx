@@ -2,6 +2,7 @@ import type { Spectator } from "@hanabi-live/data";
 import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { setLeader } from "../ui/leader.ts";
+import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import {
   MENU_CLASS,
@@ -11,7 +12,7 @@ import {
   REPLAY_BAR_BUTTON_CLASS,
 } from "./surfaces.ts";
 
-const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:w-full`;
+const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:w-full tw:min-w-0`;
 
 /** A person to set as the new leader. */
 const ITEM_CLASS = `tw:group tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
@@ -44,7 +45,7 @@ export function LeaderMenu({
     : `${leader} leads the shared replay. Set a new leader, such as yourself.`;
 
   return (
-    <div className="tw:relative tw:flex" ref={containerRef}>
+    <div className="tw:relative tw:flex tw:min-w-0" ref={containerRef}>
       <button
         aria-expanded={open}
         aria-haspopup="menu"
@@ -57,7 +58,9 @@ export function LeaderMenu({
         type="button"
       >
         <i aria-hidden="true" className="fas fa-crown tw:text-game-replay" />
-        Leader: {amLeader ? "You" : leader}
+        {/* A long name makes the text smaller, so that the button does not push the steps in the
+            middle of the bar to the side. */}
+        <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
         {/* The caret points the way that the menu opens. */}
         <i
           aria-hidden="true"

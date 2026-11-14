@@ -14,7 +14,6 @@ import {
   controlsHypothetical,
 } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
-import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
@@ -282,15 +281,19 @@ export function Checkbox({
 
 /**
  * A spectator's way back to the shared replay leader, after a step through the turns stops them
- * from following. It shows only then: while they follow the leader, they have nothing to do.
+ * from following. It shows only then: while they follow the leader, they have nothing to do. It is
+ * on the right of the bar, so that the steps in the middle do not move when it shows.
  */
 function SyncButton({
-  shared,
-  states,
+  state,
 }: {
-  readonly shared: SharedReplayState;
-  readonly states: State["replay"]["states"];
-}): React.JSX.Element {
+  readonly state: State;
+}): React.JSX.Element | undefined {
+  const { shared, states } = state.replay;
+  if (shared === undefined || shared.amLeader || shared.useSharedSegments) {
+    return undefined;
+  }
+
   // The states are indexed by segment, and their turn numbers start at 0.
   const turnNum = states[shared.segment]?.turn.turnNum;
   let tooltip = `Follow ${shared.leader} again.`;
@@ -336,6 +339,9 @@ function SpectatorHypotheticalBar({
             label="Shared hypothetical"
             mode="hypothetical"
           />
+        </div>
+        <div className={RIGHT_CLASS}>
+          <SyncButton state={state} />
         </div>
       </div>
     </Bar>
@@ -489,15 +495,19 @@ export function ReplayBar({
 }
 
 /**
- * The first row of a bar: the left, the middle, and the right. On a narrow window, its parts flow
- * into the bar's own rows.
+ * The first row of a bar: the left, the middle, and the right. The left and the right are always
+ * the same width, and their contents cannot widen them, so the middle stays in the center. On a
+ * narrow window, its parts flow into the bar's own rows.
  */
 const ROWS_CLASS =
-  "tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
+  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
+
+/** The right of the first row of a bar. On a narrow window, it is in the bar's last row. */
+const RIGHT_CLASS =
+  "tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-last tw:narrow-980:empty:hidden";
 
 /**
- * The shared replay's leader menu, and the button to follow the leader again if we do not lead and
- * do not follow them. They are on the left of the bar. On a narrow window, they are in the bar's
+ * The shared replay's leader menu, on the left of the bar. On a narrow window, it is in the bar's
  * last row.
  */
 function LeaderControls({
@@ -507,7 +517,7 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:flex-wrap tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
+    <div className="tw:flex tw:justify-start tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
       {shared !== undefined && (
         <LeaderMenu
           amLeader={shared.amLeader}
@@ -515,11 +525,6 @@ function LeaderControls({
           spectators={state.spectators}
         />
       )}
-      {shared !== undefined
-        && !shared.amLeader
-        && !shared.useSharedSegments && (
-          <SyncButton shared={shared} states={state.replay.states} />
-        )}
     </div>
   );
 }
@@ -557,10 +562,10 @@ export function TurnsBar({
 
   // The buttons that step through the turns are together in the middle of the first row, so that a
   // player can click back and forth without moving the mouse far. The leader's menu, which names
-  // who leads, and the button to follow the leader again are on their left, so the bar needs no
-  // heading. The timeline has the second row to itself, so that it is wide enough to pick a turn
-  // with the mouse. On a narrow window, the other buttons do not fit beside the steps, so they go
-  // below the timeline.
+  // who leads, is on their left, so the bar needs no heading. The button to follow the leader again
+  // is on their right. The timeline has the second row to itself, so that it is wide enough to pick
+  // a turn with the mouse. On a narrow window, the other buttons do not fit beside the steps, so
+  // they go below the timeline.
   return (
     <Bar>
       <div className={ROWS_CLASS}>
@@ -607,8 +612,9 @@ export function TurnsBar({
           )}
         </div>
         <div
-          className={`tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-last ${finished ? "" : "tw:narrow-980:flex-1"}`}
+          className={`${RIGHT_CLASS} ${finished ? "" : "tw:narrow-980:flex-1"}`}
         >
+          <SyncButton state={state} />
           {canEnterHypothetical && (
             <IconButton
               icon="fa-flask"
