@@ -23,18 +23,20 @@ import {
   addScoreGlow,
   textCenter,
 } from "./fireworks.ts";
+import {
+  STRIKEOUT_FLASHES,
+  STRIKEOUT_GLOW,
+  STRIKEOUT_OPACITY,
+  STRIKEOUT_RING_RADIUS,
+  STRIKEOUT_RING_SECONDS,
+  STRIKEOUT_SECONDS,
+} from "./misplayConfig.ts";
 import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView.ts";
 
 // Distances and sizes are fractions of the height of a play stack.
 
-const STRIKEOUT_RING_RADIUS = 0.27;
-const STRIKEOUT_RING_SECONDS = 0.55;
-/** The strike squares flash twice during this time. */
-const STRIKEOUT_SECONDS = 1.1;
-const STRIKEOUT_FLASHES = 2;
-const STRIKEOUT_OPACITY = 0.6;
+/** The flash of the strike that ends the game also uses the numbers in "misplayConfig.ts". */
 const STRIKEOUT_STROKE_WIDTH = 0.02;
-const STRIKEOUT_GLOW = 0.1;
 
 const EMPTY_DECK_RING_RADIUS = 0.8;
 const EMPTY_DECK_RING_SECONDS = 0.7;

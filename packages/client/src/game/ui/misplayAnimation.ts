@@ -26,21 +26,52 @@ import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
 import { EffectTimeline, absoluteCenter } from "./fireworks.ts";
 import { degreesToRadians } from "./konvaHelpers.ts";
 import {
+  EMBER_COLORS,
+  EXPLODED_SCORCH_OPACITY,
+  FALL_LIFT,
+  FALL_SECONDS,
+  FLASH_COLOR,
+  FLASH_RADIUS,
+  FLASH_SECONDS,
+  FLIGHT_CONTROL_POINT,
+  FLIGHT_END_SCALE,
+  FLIGHT_SCORCH_OPACITY,
+  FLIGHT_SECONDS,
+  LAUNCH_SECONDS,
+  NUM_RAYS,
+  RAYS_SECONDS,
+  RAY_COLORS,
+  RECOIL_SCALE,
+  RECOIL_SECONDS,
+  RECOIL_SPIN_DEGREES,
+  RING_COLOR,
+  RING_RADIUS,
+  RING_SECONDS,
+  SCORCH_COLOR,
+  SHAKE_AMPLITUDE,
+  SHAKE_SECONDS,
+  SMOKE_COLORS,
+  SMOKE_SECONDS,
+  SMOKE_STAGGER_SECONDS,
+  SPARK_COLORS,
+  SPUTTER_JITTER,
+  SPUTTER_JITTER_HALF_TURNS,
+  SPUTTER_SCORCH_OPACITY,
+  SPUTTER_SECONDS,
+  SPUTTER_WOBBLE_DEGREES,
+  SPUTTER_WOBBLE_HALF_TURNS,
+  STRIKEOUT_DELAY_SECONDS,
+  STRIKE_POP_SCALE,
+  STRIKE_POP_SECONDS,
+  TRAIL_COLORS,
+  TRAIL_SPARK_INTERVAL,
+} from "./misplayConfig.ts";
+import {
   areStrikesHidden,
   onOngoingOrVisibleStrikesChanged,
 } from "./reactive/views/gameInfoView.ts";
 import { addStrikeoutFlash } from "./signalAnimations.ts";
 
-/** The card rises over its play stack. */
-const LAUNCH_SECONDS = 0.35;
-/** The card wobbles over the stack while its fuse sputters. */
-const SPUTTER_SECONDS = 0.35;
-/** The card veers off and accelerates into the strike square. */
-const FLIGHT_SECONDS = 0.38;
-/** The card is knocked back by its own explosion. */
-const RECOIL_SECONDS = 0.12;
-/** The card tumbles into the discard pile. */
-const FALL_SECONDS = 0.5;
 /** How long a misplayed card takes to reach the discard pile. */
 const MISPLAY_ANIMATION_SECONDS =
   LAUNCH_SECONDS
@@ -58,51 +89,6 @@ const REPLAY_MISPLAY_ANIMATION_SECONDS =
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
 const HOVER_HEIGHT = 0.375;
-const FLIGHT_CONTROL_POINT = { x: 0.5, y: -1.125 } as const;
-const FALL_LIFT = 0.325;
-const SPUTTER_JITTER = 0.019;
-const SHAKE_AMPLITUDE = 0.06;
-
-/** The card's size while it flies and recoils, relative to its size on the play stacks. */
-const FLIGHT_END_SCALE = 0.5;
-const RECOIL_SCALE = 0.62;
-
-const SPUTTER_WOBBLE_DEGREES = 6;
-const SPUTTER_WOBBLE_HALF_TURNS = 7;
-const SPUTTER_JITTER_HALF_TURNS = 11;
-const RECOIL_SPIN_DEGREES = 25;
-
-const SPUTTER_SCORCH_OPACITY = 0.3;
-const FLIGHT_SCORCH_OPACITY = 0.5;
-const EXPLODED_SCORCH_OPACITY = 0.65;
-const SCORCH_COLOR = "#140b06";
-
-/** How often (as a fraction of the flight) the card leaves sparks behind it. */
-const TRAIL_SPARK_INTERVAL = 0.06;
-
-const SHAKE_SECONDS = 0.25;
-const STRIKE_POP_SECONDS = 0.35;
-const STRIKE_POP_SCALE = 1.8;
-/** The pause between the pop of the last strike and the flash that ends the game. */
-const STRIKEOUT_DELAY_SECONDS = 0.15;
-
-const SPARK_COLORS = ["#ffd166", "#ff9f1c", "#fff1c1"] as const;
-const EMBER_COLORS = ["#ffb347", "#c9a26a"] as const;
-const TRAIL_COLORS = ["#ffd166", "#ff6b35", "#fff1c1"] as const;
-const SMOKE_COLORS = ["#6e655d", "#8d8379"] as const;
-const FLASH_COLOR = "#fff6d8";
-const RING_COLOR = "#ffb13b";
-const RAY_COLORS = ["#ff6b35", "#ffd166"] as const;
-
-const SMOKE_SECONDS = 0.9;
-const SMOKE_STAGGER_SECONDS = 0.07;
-const FLASH_SECONDS = 0.22;
-/** The final radius of the flash and the shock ring, as fractions of a stack height. */
-const FLASH_RADIUS = 0.43;
-const RING_RADIUS = 0.68;
-const RING_SECONDS = 0.42;
-const RAYS_SECONDS = 0.38;
-const NUM_RAYS = 12;
 
 export interface MisplayAnimation {
   /** Whether the card has reached the strike tracker (or no longer needs to). */

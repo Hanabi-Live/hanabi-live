@@ -16,12 +16,63 @@ import {
   randomBetween,
   rectCenter,
 } from "../motion.ts";
-import { WARNING_COLOR } from "../ui/constants.ts";
+import {
+  FULL_TURN_DEGREES,
+  QUARTER_TURN_DEGREES,
+  WARNING_COLOR,
+} from "../ui/constants.ts";
 import {
   FLASH_START_RADIUS,
   RING_START_RADIUS,
   RING_STROKE,
 } from "../ui/effectConfig.ts";
+import {
+  EMBER_COLORS,
+  EXPLODED_SCORCH_OPACITY,
+  FALL_LIFT,
+  FALL_SECONDS,
+  FLASH_COLOR,
+  FLASH_RADIUS,
+  FLASH_SECONDS,
+  FLIGHT_CONTROL_POINT,
+  FLIGHT_END_SCALE,
+  FLIGHT_SCORCH_OPACITY,
+  FLIGHT_SECONDS,
+  LAUNCH_SECONDS,
+  NUM_RAYS,
+  RAYS_SECONDS,
+  RAY_COLORS,
+  RECOIL_SCALE,
+  RECOIL_SECONDS,
+  RECOIL_SPIN_DEGREES,
+  RING_COLOR,
+  RING_RADIUS,
+  RING_SECONDS,
+  SCORCH_COLOR,
+  SHAKE_AMPLITUDE,
+  SHAKE_SECONDS,
+  SMOKE_COLORS,
+  SMOKE_SECONDS,
+  SMOKE_STAGGER_SECONDS,
+  SPARK_COLORS,
+  SPUTTER_JITTER,
+  SPUTTER_JITTER_HALF_TURNS,
+  SPUTTER_SCORCH_OPACITY,
+  SPUTTER_SECONDS,
+  SPUTTER_WOBBLE_DEGREES,
+  SPUTTER_WOBBLE_HALF_TURNS,
+  STRIKEOUT_DELAY_SECONDS,
+  STRIKEOUT_FLASHES,
+  STRIKEOUT_GLOW,
+  STRIKEOUT_OPACITY,
+  STRIKEOUT_RING_RADIUS,
+  STRIKEOUT_RING_SECONDS,
+  STRIKEOUT_SECONDS,
+  STRIKE_POP_SCALE,
+  STRIKE_POP_SECONDS,
+  TRAIL_COLORS,
+  TRAIL_SPARK_INTERVAL,
+} from "../ui/misplayConfig.ts";
 import { CARD_CORNER_PER_WIDTH } from "./Card.tsx";
 import { getScreenScale, measure } from "./screenScale.ts";
 
@@ -48,71 +99,6 @@ const PLAYED_CARD_Z_INDEX = "40";
 
 /** The effects go over everything on the screen. */
 export const EFFECT_Z_INDEX = "60";
-
-// The misplay is a copy of the classic screen's, so its numbers are the same.
-
-/** The steps of a misplay, in seconds. */
-const LAUNCH_SECONDS = 0.35;
-const SPUTTER_SECONDS = 0.35;
-const FLIGHT_SECONDS = 0.38;
-const RECOIL_SECONDS = 0.12;
-const FALL_SECONDS = 0.5;
-
-// Distances and sizes are fractions of the height of a card on the play stacks.
-const FLIGHT_CONTROL_POINT = { x: 0.5, y: -1.125 } as const;
-const FALL_LIFT = 0.325;
-const SPUTTER_JITTER = 0.019;
-const SHAKE_AMPLITUDE = 0.06;
-
-/** The card's size while it flies and recoils, relative to its size on the play stacks. */
-const FLIGHT_END_SCALE = 0.5;
-const RECOIL_SCALE = 0.62;
-
-const SPUTTER_WOBBLE_DEGREES = 6;
-const SPUTTER_WOBBLE_HALF_TURNS = 7;
-const SPUTTER_JITTER_HALF_TURNS = 11;
-const RECOIL_SPIN_DEGREES = 25;
-const FULL_TURN_DEGREES = 360;
-const QUARTER_TURN_DEGREES = 90;
-
-const SPUTTER_SCORCH_OPACITY = 0.3;
-const FLIGHT_SCORCH_OPACITY = 0.5;
-const EXPLODED_SCORCH_OPACITY = 0.65;
-const SCORCH_COLOR = "#140b06";
-
-/** How often (as a fraction of the flight) the card leaves sparks behind it. */
-const TRAIL_SPARK_INTERVAL = 0.06;
-
-const SHAKE_SECONDS = 0.25;
-const STRIKE_POP_SECONDS = 0.35;
-const STRIKE_POP_SCALE = 1.8;
-/** The pause between the pop of the last strike and the flash that ends the game. */
-const STRIKEOUT_DELAY_SECONDS = 0.15;
-
-const SPARK_COLORS = ["#ffd166", "#ff9f1c", "#fff1c1"] as const;
-const EMBER_COLORS = ["#ffb347", "#c9a26a"] as const;
-const TRAIL_COLORS = ["#ffd166", "#ff6b35", "#fff1c1"] as const;
-const SMOKE_COLORS = ["#6e655d", "#8d8379"] as const;
-const FLASH_COLOR = "#fff6d8";
-const RING_COLOR = "#ffb13b";
-const RAY_COLORS = ["#ff6b35", "#ffd166"] as const;
-
-const SMOKE_SECONDS = 0.9;
-const SMOKE_STAGGER_SECONDS = 0.07;
-const FLASH_SECONDS = 0.22;
-const FLASH_RADIUS = 0.43;
-const RING_RADIUS = 0.68;
-const RING_SECONDS = 0.42;
-const RAYS_SECONDS = 0.38;
-const NUM_RAYS = 12;
-
-/** The flash of the strike that ends the game. */
-const STRIKEOUT_RING_RADIUS = 0.27;
-const STRIKEOUT_RING_SECONDS = 0.55;
-const STRIKEOUT_SECONDS = 1.1;
-const STRIKEOUT_FLASHES = 2;
-const STRIKEOUT_OPACITY = 0.6;
-const STRIKEOUT_GLOW = 0.1;
 
 /**
  * Where a moving card is: its center, its size relative to its size where it rests, and its turn in
