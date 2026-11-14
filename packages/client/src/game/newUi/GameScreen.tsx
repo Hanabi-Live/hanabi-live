@@ -8,7 +8,13 @@ import {
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
@@ -82,6 +88,11 @@ import { useCardDrag } from "./useCardDrag.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
 import { useClueHotkeys, useSpacebarEmpathy } from "./useHotkeys.ts";
+
+/**
+ * The room that the box of the play stacks leaves before the hands while it grows, in CSS pixels.
+ */
+const PLAY_ZONE_HANDS_GAP = 12;
 
 /**
  * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
@@ -163,6 +174,11 @@ export function GameScreen({
     null,
   );
   const handsSize = useElementSize(handsElement);
+  // The rows of the hands, which are centered in the space of the hands. A dragged card plays or
+  // discards to their left or right.
+  const [handRowsElement, setHandRowsElement] = useState<HTMLElement | null>(
+    null,
+  );
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
 
@@ -217,7 +233,32 @@ export function GameScreen({
     mainRef,
     playZoneRef,
     discardZoneRef,
-  } = useCardDrag(stacked, handsElement);
+  } = useCardDrag(stacked, handRowsElement);
+
+  // Beside the hands, dropping a card anywhere to their left plays it, so the box of the play
+  // stacks grows toward the hands while the player drags a card. It is measured when the drag
+  // starts.
+  const dragging = held?.phase === "drag";
+  const [playZoneReach, setPlayZoneReach] = useState(0);
+  useLayoutEffect(() => {
+    const stacksElement = playZoneRef.current;
+    if (
+      !dragging
+      || stacked
+      || stacksElement === null
+      || handRowsElement === null
+    ) {
+      return;
+    }
+    setPlayZoneReach(
+      Math.max(
+        0,
+        measure(handRowsElement).left
+          - measure(stacksElement).right
+          - PLAY_ZONE_HANDS_GAP,
+      ),
+    );
+  }, [dragging, stacked, handRowsElement, playZoneRef]);
   const { rootRef, screenScale } = useCardMotion(
     state,
     held?.phase === "drop" ? held.order : undefined,
@@ -533,6 +574,7 @@ export function GameScreen({
                 }
                 turnsLeft={turnsLeft}
                 variant={variant}
+                zoneReach={stacked ? 0 : playZoneReach}
                 zoneState={playZoneState}
               />
             </div>
@@ -656,6 +698,7 @@ export function GameScreen({
                       : undefined
                   }
                   onViewAs={canChooseSeat() ? viewAs : undefined}
+                  ref={setHandRowsElement}
                   seats={seats}
                   shownClue={
                     previewing || shownClue === undefined

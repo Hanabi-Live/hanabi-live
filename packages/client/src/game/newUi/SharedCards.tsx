@@ -289,6 +289,9 @@ export const PlayArea = forwardRef<
 
     /** The turns left in the game once the deck is empty (see `Deck`). */
     readonly turnsLeft: number | undefined;
+
+    /** How far the box grows to the right while the player drags a card, in CSS pixels. */
+    readonly zoneReach: number;
     readonly zoneState: ZoneState;
     readonly notes: CardNotes;
 
@@ -304,6 +307,7 @@ export const PlayArea = forwardRef<
       cardWidth,
       cardsInDeck,
       turnsLeft,
+      zoneReach,
       zoneState,
       notes,
       tokens,
@@ -327,15 +331,21 @@ export const PlayArea = forwardRef<
         >
           <section
             aria-label="Play stacks"
-            // The box shows only while the player drags a card, to show that they can drop it here.
-            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-game-panel ${
-              zoneState === "idle" ? "" : zoneClasses[zoneState]
-            }`}
+            className="tw:relative tw:isolate tw:flex tw:flex-col tw:items-center tw:self-stretch"
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
             ref={zoneRef(ref, zoneState, "Play stacks")}
             style={{ padding: PLAY_STACKS_PADDING }}
           >
+            {/* The box shows only while the player drags a card, to show that they can drop it
+                here. It is behind the stacks, and it grows toward the hands without moving them. */}
+            {zoneState !== "idle" && (
+              <div
+                aria-hidden="true"
+                className={`tw:pointer-events-none tw:absolute tw:inset-y-0 tw:left-0 tw:-z-10 tw:rounded-game-panel ${zoneClasses[zoneState]}`}
+                style={{ right: -zoneReach }}
+              />
+            )}
             <div
               className="tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
               style={{ gap: PLAY_STACK_GAP }}

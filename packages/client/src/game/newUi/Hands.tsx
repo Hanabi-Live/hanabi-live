@@ -48,6 +48,8 @@ export interface Seat {
 }
 
 interface HandsProps {
+  /** The section of the rows, which is narrower than the space that it is centered in. */
+  readonly ref?: React.Ref<HTMLElement>;
   readonly seats: readonly Seat[];
   readonly variant: Variant;
   readonly colorblindMode: boolean;
@@ -934,6 +936,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
           props.onHoverCard(getCardOrderAt(event.target));
         }
       }}
+      ref={props.ref}
     >
       {props.seats.map((seat) => (
         <Hand key={seat.playerIndex} props={props} seat={seat} />
