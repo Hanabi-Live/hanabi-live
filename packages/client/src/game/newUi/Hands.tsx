@@ -112,6 +112,9 @@ interface HandsProps {
    */
   readonly onViewAs: ((playerIndex: PlayerIndex) => void) | undefined;
 
+  /** Clicking a name lists the player's actions, as on the classic screen. */
+  readonly onShowPlayerLog: (playerIndex: PlayerIndex) => void;
+
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
    * player. A hand shows it while the viewer holds the pointer down on it, or while its eye button
@@ -749,9 +752,13 @@ function Hand({
       >
         {/* The name of the player who gave the clue on the turn that shows keeps a ring in the
             clue's color. */}
-        <span
-          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:rounded-full"
+        <button
+          aria-haspopup="dialog"
+          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110"
           data-name-chip={seat.playerIndex}
+          onClick={() => {
+            props.onShowPlayerLog(seat.playerIndex);
+          }}
           // Right-clicking a name views the game from that seat, as on the classic screen.
           onContextMenu={(event) => {
             event.preventDefault();
@@ -766,9 +773,10 @@ function Hand({
                   }px ${giverColor === "white" ? "black" : "white"}`,
                 }
           }
+          type="button"
         >
           {chip}
-        </span>
+        </button>
         {!seat.you && props.onToggleEmpathy !== undefined && (
           <button
             aria-label={`Show ${seat.name}'s view of their hand`}

@@ -8,7 +8,7 @@ import {
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
@@ -35,6 +35,7 @@ import {
   NameColumnSizer,
 } from "./Hands.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
+import { getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
@@ -158,6 +159,11 @@ export function GameScreen({
     ReadonlySet<PlayerIndex>
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
+  // The player whose actions the screen lists, after a click on their name.
+  const [logSeat, setLogSeat] = useState<PlayerIndex>();
+  const closePlayerLog = useCallback(() => {
+    setLogSeat(undefined);
+  }, []);
 
   const { globalEmpathy, globalEmpathyNotes } = useSpacebarEmpathy();
   const clueHotkeys = useRef<ClueHotkeys>(undefined);
@@ -574,6 +580,7 @@ export function GameScreen({
                     sendAction({ type: "play", order });
                   }}
                   onPressCard={setPressedCard}
+                  onShowPlayerLog={setLogSeat}
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {
@@ -799,6 +806,18 @@ export function GameScreen({
           )
         }
       />
+
+      {logSeat !== undefined && (
+        <PlayerLog
+          entries={getPlayerLog(
+            visibleState.log,
+            metadata.playerNames,
+            logSeat,
+          )}
+          name={metadata.playerNames[logSeat] ?? ""}
+          onClose={closePlayerLog}
+        />
+      )}
 
       {ghost !== undefined && draggedView !== undefined && (
         <div
