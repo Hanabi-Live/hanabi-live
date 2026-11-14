@@ -20,12 +20,19 @@ export type ServerFrame =
 
 /** Encodes a client request. */
 export function packRequest(id: number, name: string, data: unknown): string {
-  return JSON.stringify({ id, request: name, data });
+  return JSON.stringify({
+    id,
+    request: name,
+    data,
+  });
 }
 
 /** Encodes a message that the server sends on its own, for tests that stand in for the server. */
 export function packEvent(name: string, data: unknown): string {
-  return JSON.stringify({ event: name, data });
+  return JSON.stringify({
+    event: name,
+    data,
+  });
 }
 
 /** Reads a frame from the server, or returns undefined if it is not one. */
@@ -41,10 +48,19 @@ export function unpackServerFrame(text: string): ServerFrame | undefined {
   }
   const { event, reply, data, error } = frame as Record<string, unknown>;
   if (typeof event === "string") {
-    return { kind: "event", name: event, data };
+    return {
+      kind: "event",
+      name: event,
+      data,
+    };
   }
   if (typeof reply === "number") {
-    return { kind: "reply", id: reply, data, error };
+    return {
+      kind: "reply",
+      id: reply,
+      data,
+      error,
+    };
   }
   return undefined;
 }

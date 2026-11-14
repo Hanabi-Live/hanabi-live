@@ -323,7 +323,10 @@ const CROWN_TOP_Y = -0.067;
  * The center of the "Your Turn" indicator, relative to the top-left corner of the spectators
  * column, in fractions of the stage.
  */
-const YOUR_TURN_CENTER = { x: 0.0695, y: 0.026 } as const;
+const YOUR_TURN_CENTER = {
+  x: 0.0695,
+  y: 0.026,
+} as const;
 
 /**
  * Where the middle of the ring around a timer (which shows that a pause is queued) is, relative to
@@ -335,7 +338,10 @@ const TIMER_PAUSE_RING_CENTER = {
 } as const;
 
 /** The ring around a timer that shows that a pause is queued, in fractions of the stage. */
-const TIMER_PAUSE_RING_RADIUS = { x: 0.05, y: 0.07 } as const;
+const TIMER_PAUSE_RING_RADIUS = {
+  x: 0.05,
+  y: 0.07,
+} as const;
 
 /**
  * The default text label that the other labels are cloned from, in fractions of the stage. Number
@@ -361,7 +367,10 @@ const KELDON_ACTION_LOG = {
 /**
  * How far the action log's text is inset from the edges of its panel, in fractions of the stage.
  */
-const ACTION_LOG_TEXT_INSET = { x: 0.01, y: 0.003 } as const;
+const ACTION_LOG_TEXT_INSET = {
+  x: 0.01,
+  y: 0.003,
+} as const;
 
 /** The size of the action log's text, as a fraction of the stage height. */
 const ACTION_LOG_FONT_SIZE = 0.028;
@@ -476,7 +485,10 @@ const CLUES_PULSE = {
  * Where the spectators column sits in the Keldon layout, relative to the top-left corner of the
  * score area, in fractions of the stage.
  */
-const KELDON_SPECTATORS_OFFSET = { x: -0.037, y: 0.09 } as const;
+const KELDON_SPECTATORS_OFFSET = {
+  x: -0.037,
+  y: 0.09,
+} as const;
 
 /** The crown of a shared replay. */
 const CROWN = {
@@ -527,10 +539,18 @@ const TIMER = {
 } as const;
 
 /** The left edges and top of the two timers, which sit in a row in the Keldon layout. */
-const KELDON_TIMERS = { x1: 0.145, x2: 0.595, y: 0.645 } as const;
+const KELDON_TIMERS = {
+  x1: 0.145,
+  x2: 0.595,
+  y: 0.645,
+} as const;
 
 /** The left edge and tops of the two timers, which sit one above the other in the BGA layout. */
-const BGA_TIMERS = { x: 0.352, y1: 0.77, y2: 0.885 } as const;
+const BGA_TIMERS = {
+  x: 0.352,
+  y1: 0.77,
+  y2: 0.885,
+} as const;
 
 /** The clue area below the play stacks, in fractions of the stage height. */
 const CLUE_AREA = {
@@ -576,7 +596,10 @@ const GIVE_CLUE_BUTTON = {
 /**
  * How far the cross over a disabled clue area is inset from its corners, in fractions of the stage.
  */
-const CLUE_AREA_DISABLED_CROSS_INSET = { x: 0.075, y: 0.03 } as const;
+const CLUE_AREA_DISABLED_CROSS_INSET = {
+  x: 0.075,
+  y: 0.03,
+} as const;
 
 /** The width of the lines of the cross over a disabled clue area. */
 const CLUE_AREA_DISABLED_CROSS_WIDTH = 5 * STROKE_WIDTH_UNIT;
@@ -1956,7 +1979,10 @@ function drawYourTurn() {
     text: "Your\nTurn",
     listening: false,
   });
-  text.offset({ x: text.width() / 2, y: text.height() / 2 });
+  text.offset({
+    x: text.width() / 2,
+    y: text.height() / 2,
+  });
   globals.elements.yourTurn.add(text);
 }
 
@@ -2323,7 +2349,10 @@ function timerClick() {
 
   const tableId = lobbyGlobals.joinedTableId;
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
-    lobbyGlobals.connection.send("pause", { tableId, paused: true });
+    lobbyGlobals.connection.send("pause", {
+      tableId,
+      paused: true,
+    });
     return;
   }
 
@@ -2334,7 +2363,10 @@ function timerClick() {
       queued,
     }),
   );
-  lobbyGlobals.connection.send("pauseQueue", { tableId, queued });
+  lobbyGlobals.connection.send("pauseQueue", {
+    tableId,
+    queued,
+  });
 }
 
 function drawClueArea() {
@@ -2725,11 +2757,17 @@ function createWaitingOnServerAnimation(
   const period = SECOND_IN_MILLISECONDS;
   return new Konva.Animation((frame: Konva.Animation["frame"]) => {
     const scale = (frame.time % period) / period;
-    blueCircle.scale({ x: scale, y: scale });
+    blueCircle.scale({
+      x: scale,
+      y: scale,
+    });
     blueCircle.opacity(1 - scale);
 
     const redScale = ((frame.time + period / 2) % period) / period;
-    redCircle.scale({ x: redScale, y: redScale });
+    redCircle.scale({
+      x: redScale,
+      y: redScale,
+    });
     redCircle.opacity(1 - redScale);
   }, layer);
 }

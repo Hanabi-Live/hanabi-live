@@ -186,7 +186,11 @@ export class CardLayout extends Konva.Group {
         layoutChild.doMisplayAnimation = false;
         layoutChild.misplayAnimation = startMisplayAnimation(
           layoutChild,
-          { x: newX, y: 0, scale },
+          {
+            x: newX,
+            y: 0,
+            scale,
+          },
           () => {
             layoutChild.misplayAnimation = undefined;
             layoutChild.card.finishedTweening();

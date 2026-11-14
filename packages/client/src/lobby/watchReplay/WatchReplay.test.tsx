@@ -65,7 +65,11 @@ describe("WatchReplay", () => {
 
   test("shows an error for an ID that is not a number", () => {
     showPage();
-    fireEvent.change(getElement("replay-id")!, { target: { value: "abc" } });
+    fireEvent.change(getElement("replay-id")!, {
+      target: {
+        value: "abc",
+      },
+    });
     act(() => {
       getElement("replay-submit")!.click();
     });
@@ -79,7 +83,11 @@ describe("WatchReplay", () => {
 
   test("watches a replay and remembers it", () => {
     showPage();
-    fireEvent.change(getElement("replay-id")!, { target: { value: "42" } });
+    fireEvent.change(getElement("replay-id")!, {
+      target: {
+        value: "42",
+      },
+    });
     act(() => {
       getElement("replay-visibility-shared")!.click();
     });
@@ -92,8 +100,15 @@ describe("WatchReplay", () => {
     });
 
     expect(send).toHaveBeenCalledWith("replayCreate", {
-      source: { type: "saved", gameId: 42 },
-      visibility: { type: "shared", joinExisting: false, spoilerFree: true },
+      source: {
+        type: "saved",
+        gameId: 42,
+      },
+      visibility: {
+        type: "shared",
+        joinExisting: false,
+        spoilerFree: true,
+      },
     });
     expect(hide).toHaveBeenCalled();
     expect(localStorage.getItem("watchReplayId")).toBe("42");
@@ -105,20 +120,34 @@ describe("WatchReplay", () => {
     showPage();
     const jsonBox =
       document.querySelector<HTMLTextAreaElement>("#replay-json")!;
-    const text = JSON.stringify({ seed: "p2v0s1", options: { variantId: 0 } });
-    fireEvent.change(jsonBox, { target: { value: text } });
+    const text = JSON.stringify({
+      seed: "p2v0s1",
+      options: {
+        variantId: 0,
+      },
+    });
+    fireEvent.change(jsonBox, {
+      target: {
+        value: text,
+      },
+    });
 
     fireEvent.keyDown(jsonBox, { key: "Enter" });
     expect(send).not.toHaveBeenCalled();
 
-    fireEvent.keyDown(jsonBox, { key: "Enter", ctrlKey: true });
+    fireEvent.keyDown(jsonBox, {
+      key: "Enter",
+      ctrlKey: true,
+    });
     const parsed = parseGameJson(text);
     expect(send).toHaveBeenCalledWith("replayCreate", {
       source: {
         type: "imported",
         game: "gameJson" in parsed ? parsed.gameJson : undefined,
       },
-      visibility: { type: "solo" },
+      visibility: {
+        type: "solo",
+      },
     });
     expect(hide).toHaveBeenCalled();
   });

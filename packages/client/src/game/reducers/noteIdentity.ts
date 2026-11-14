@@ -146,7 +146,10 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
       }
 
       if (suitIndices.length + ranks.length > 0) {
-        return { suitIndices, ranks };
+        return {
+          suitIndices,
+          ranks,
+        };
       }
     }
     const suitText = extractSuitText(identityMatch);

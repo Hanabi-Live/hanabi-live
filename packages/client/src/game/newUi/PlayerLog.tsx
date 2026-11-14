@@ -112,7 +112,13 @@ export function getPlayerActions(
         note: note as CardNote | undefined,
       };
       if (cardName === HIDDEN_CARD_NAME) {
-        return { turn: entry.turn, action: { ...action, card: undefined } };
+        return {
+          turn: entry.turn,
+          action: {
+            ...action,
+            card: undefined,
+          },
+        };
       }
 
       const card = deck.find(
@@ -130,7 +136,10 @@ export function getPlayerActions(
           turn: entry.turn,
           action: {
             ...action,
-            card: { suitIndex: card.suitIndex, rank: card.rank },
+            card: {
+              suitIndex: card.suitIndex,
+              rank: card.rank,
+            },
           },
         };
       }
@@ -143,7 +152,13 @@ export function getPlayerActions(
         && rest.includes(clueEntry.targetName),
     );
     if (clue !== undefined) {
-      return { turn: entry.turn, action: { type: "clue", clue } };
+      return {
+        turn: entry.turn,
+        action: {
+          type: "clue",
+          clue,
+        },
+      };
     }
 
     const text = rest.trim();
@@ -159,10 +174,22 @@ export function getPlayerActions(
 
 /** The verb at the start of each row, and its color. */
 const ACTION_VERB = {
-  play: { text: "Played", className: "tw:text-[rgb(134_239_172)]" },
-  misplay: { text: "Misplayed", className: "tw:text-[rgb(252_165_165)]" },
-  discard: { text: "Discarded", className: "tw:text-game-text" },
-  clue: { text: "Clued", className: "tw:text-game-text" },
+  play: {
+    text: "Played",
+    className: "tw:text-[rgb(134_239_172)]",
+  },
+  misplay: {
+    text: "Misplayed",
+    className: "tw:text-[rgb(252_165_165)]",
+  },
+  discard: {
+    text: "Discarded",
+    className: "tw:text-game-text",
+  },
+  clue: {
+    text: "Clued",
+    className: "tw:text-game-text",
+  },
 } as const satisfies Record<
   CardMove | "clue",
   { readonly text: string; readonly className: string }

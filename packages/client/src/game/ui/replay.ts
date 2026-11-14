@@ -64,11 +64,7 @@ export function exit(): void {
 
   // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent
   // turn.
-  store.dispatch(
-    gameUpdated({
-      type: "replayExit",
-    }),
-  );
+  store.dispatch(gameUpdated({ type: "replayExit" }));
 }
 
 /** Spoiler-free reviews hide what happens later in the game. */

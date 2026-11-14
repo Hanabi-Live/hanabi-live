@@ -108,7 +108,10 @@ export class Deck extends Konva.Group {
     this.pips = HanabiCardInit.pips(globals.variant);
     const pipsScale = this.width() / CARD_W;
     const pipsGroup = new Konva.Group({
-      scale: { x: pipsScale, y: pipsScale },
+      scale: {
+        x: pipsScale,
+        y: pipsScale,
+      },
       listening: false,
     });
     pipsGroup.add(this.pips.suitPips, this.pips.rankPips);

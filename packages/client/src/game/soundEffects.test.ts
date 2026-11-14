@@ -14,14 +14,27 @@ const { onNewSoundEffect, setPlayStartSound } =
   await import("./soundEffects.ts");
 
 const state = {
-  replay: { hypothetical: undefined, states: [] },
+  replay: {
+    hypothetical: undefined,
+    states: [],
+  },
   finished: false,
   playing: true,
-  metadata: { ourPlayerIndex: 0, options: { variantId: 0 } },
+  metadata: {
+    ourPlayerIndex: 0,
+    options: {
+      variantId: 0,
+    },
+  },
 } as unknown as State;
 
 const firstTurn = {
-  gameState: { turn: { turnNum: 0, currentPlayerIndex: 0 } } as GameState,
+  gameState: {
+    turn: {
+      turnNum: 0,
+      currentPlayerIndex: 0,
+    },
+  } as GameState,
   actions: [] as readonly GameAction[],
 };
 

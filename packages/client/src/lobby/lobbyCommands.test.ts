@@ -5,7 +5,10 @@ import { store } from "../store.ts";
 import { Screen } from "./types/Screen.ts";
 
 vi.mock("../Globals.ts", () => ({
-  globals: { currentScreen: "Lobby", tableId: undefined },
+  globals: {
+    currentScreen: "Lobby",
+    tableId: undefined,
+  },
 }));
 vi.mock("../game/main.ts", () => ({ hide: vi.fn() }));
 vi.mock("../game/ui/reactive/views/spectatorsView.ts", () => ({}));

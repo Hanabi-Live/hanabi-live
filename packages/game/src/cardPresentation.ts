@@ -111,7 +111,10 @@ export function getCardIdentityToShow({
       }
     }
 
-    return { suitIndex, rank };
+    return {
+      suitIndex,
+      rank,
+    };
   }
 
   const { suitIndex: cardSuitIndex, rank: cardRank } = cardIdentity;
@@ -123,7 +126,10 @@ export function getCardIdentityToShow({
     rank = rankFromNote;
   }
 
-  return { suitIndex, rank };
+  return {
+    suitIndex,
+    rank,
+  };
 }
 
 /** Whether the note changes the suit or rank shown on the card face. */
@@ -137,7 +143,10 @@ export function isCardIdentityFromNote(
   const shown = getCardIdentityToShow(options);
   const shownWithoutNote = getCardIdentityToShow({
     ...options,
-    note: { ...options.note, possibilities: [] },
+    note: {
+      ...options.note,
+      possibilities: [],
+    },
   });
   return (
     shown.suitIndex !== shownWithoutNote.suitIndex
@@ -255,7 +264,11 @@ export function getCardPipPresentation(
     rowPerSuit,
   );
 
-  return { suitPips, rankPips, possibilityRows };
+  return {
+    suitPips,
+    rankPips,
+    possibilityRows,
+  };
 }
 
 function cardKey(suitIndex: number, rank: Rank) {
@@ -302,13 +315,22 @@ function getPossibilityRows(
         } else if (fromClues.has(key)) {
           pipState = PipState.Eliminated;
         }
-        return { rank, state: pipState, positive: isPositiveRank(rank) };
+        return {
+          rank,
+          state: pipState,
+          positive: isPositiveRank(rank),
+        };
       });
       const clueRanksKey = rankPips
         .map((rankPip) => rankPip.state !== PipState.Hidden)
         .join(",");
       const rowKey = rankPips.map((rankPip) => rankPip.state).join(",");
-      return { suitPip, rankPips, clueRanksKey, rowKey };
+      return {
+        suitPip,
+        rankPips,
+        clueRanksKey,
+        rowKey,
+      };
     });
 
   if (rowPerSuit) {
@@ -338,8 +360,14 @@ function getPossibilityRows(
     rows.set(
       key,
       row === undefined
-        ? { suitPips: [suitPip], rankPips: rowSuit?.rankPips ?? rankPips }
-        : { ...row, suitPips: [...row.suitPips, suitPip] },
+        ? {
+            suitPips: [suitPip],
+            rankPips: rowSuit?.rankPips ?? rankPips,
+          }
+        : {
+            ...row,
+            suitPips: [...row.suitPips, suitPip],
+          },
     );
   }
 

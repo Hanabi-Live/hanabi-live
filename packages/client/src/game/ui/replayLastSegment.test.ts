@@ -3,7 +3,9 @@ import { getDefaultMetadata } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 import type { State } from "../types/State.ts";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("./arrows.ts", () => ({}));
 vi.mock("./getCardOrStackBase.ts", () => ({}));
@@ -24,9 +26,15 @@ function finishedGame(actions: readonly GameAction[]): State {
     ...initial,
     ongoingGame: {
       ...initial.ongoingGame,
-      turn: { ...initial.ongoingGame.turn, segment: FINAL_SEGMENT },
+      turn: {
+        ...initial.ongoingGame.turn,
+        segment: FINAL_SEGMENT,
+      },
     },
-    replay: { ...initial.replay, actions },
+    replay: {
+      ...initial.replay,
+      actions,
+    },
   };
 }
 

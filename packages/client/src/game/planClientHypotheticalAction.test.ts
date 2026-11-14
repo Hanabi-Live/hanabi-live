@@ -17,7 +17,9 @@ import {
 } from "@hanabi-live/game";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-vi.mock("../Globals.ts", () => ({ globals: {} }));
+vi.mock("../Globals.ts", () => ({
+  globals: {},
+}));
 const { initialState } =
   await import("./reducers/initialStates/initialState.ts");
 const { sendHypotheticalAction } = await import("./hypothetical.ts");
@@ -48,7 +50,10 @@ function makeContext(rank: Rank = 1): PlanHypotheticalActionContext {
   return {
     metadata: {
       ...metadata,
-      options: { ...metadata.options, deckPlays: true },
+      options: {
+        ...metadata.options,
+        deckPlays: true,
+      },
     },
     variant,
     gameState: {
@@ -64,9 +69,18 @@ function makeContext(rank: Rank = 1): PlanHypotheticalActionContext {
       cardsRemainingInTheDeck: 1,
     },
     cardIdentities: [
-      { suitIndex: 0, rank: 1 },
-      { suitIndex: 0, rank: 1 },
-      { suitIndex: 0, rank },
+      {
+        suitIndex: 0,
+        rank: 1,
+      },
+      {
+        suitIndex: 0,
+        rank: 1,
+      },
+      {
+        suitIndex: 0,
+        rank,
+      },
     ],
     morphedIdentities: [],
     showDrawnCards: true,
@@ -101,7 +115,10 @@ function soloHypothetical(ongoing: GameState) {
     ongoing,
     morphedIdentities: [],
   } as unknown as HypotheticalState;
-  return { ownHypothetical: hypothetical, hypothetical };
+  return {
+    ownHypothetical: hypothetical,
+    hypothetical,
+  };
 }
 
 describe("client hypothetical planning", () => {
@@ -127,10 +144,16 @@ describe("client hypothetical planning", () => {
       ).toBeUndefined();
       const dispatch = spyOnDispatch();
 
-      sendHypotheticalAction({ type: "play", order: bottomOrder });
+      sendHypotheticalAction({
+        type: "play",
+        order: bottomOrder,
+      });
 
       const actions = planClientHypotheticalAction(
-        { type: "play", order: bottomOrder },
+        {
+          type: "play",
+          order: bottomOrder,
+        },
         context,
       );
       expect(actions).not.toBeUndefined();
@@ -154,7 +177,10 @@ describe("client hypothetical planning", () => {
         playing: false,
         visibleState: context.gameState,
         cardIdentities: context.cardIdentities,
-        notes: { ...state.notes, ourNotes: context.notes },
+        notes: {
+          ...state.notes,
+          ourNotes: context.notes,
+        },
         replay: {
           ...state.replay,
           ...soloHypothetical(context.gameState),
@@ -166,7 +192,10 @@ describe("client hypothetical planning", () => {
     sendHypotheticalAction({
       type: "clue",
       receiverIndex: 1 as PlayerIndex,
-      clue: { type: "rank", rank: 1 },
+      clue: {
+        type: "rank",
+        rank: 1,
+      },
     });
 
     expect(dispatch).toHaveBeenCalledWith(
@@ -176,7 +205,10 @@ describe("client hypothetical planning", () => {
         actions: expect.arrayContaining([
           {
             type: "clue",
-            clue: { type: "rank", rank: 1 },
+            clue: {
+              type: "rank",
+              rank: 1,
+            },
             playerIndex: 0 as PlayerIndex,
             orders: [1 as CardOrder],
             receiverIndex: 1 as PlayerIndex,
@@ -189,7 +221,10 @@ describe("client hypothetical planning", () => {
 
   test("plans the exact final order without an existing UI card", () => {
     const context = makeContext();
-    const intent = { type: "play", order: bottomOrder } as const;
+    const intent = {
+      type: "play",
+      order: bottomOrder,
+    } as const;
     expect(context.gameState.deck[bottomOrder]).toBeUndefined();
     expect(
       context.cardViews.find(({ state }) => state.order === bottomOrder),
@@ -202,15 +237,25 @@ describe("client hypothetical planning", () => {
         type: "draw",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 1 },
+        identity: {
+          suitIndex: 0,
+          rank: 1,
+        },
       },
       {
         type: "play",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 1 },
+        identity: {
+          suitIndex: 0,
+          rank: 1,
+        },
       },
-      { type: "turn", turn: 7, currentPlayerIndex: 1 },
+      {
+        type: "turn",
+        turn: 7,
+        currentPlayerIndex: 1,
+      },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -224,7 +269,10 @@ describe("client hypothetical planning", () => {
   test("draws before a misplay without an existing UI card", () => {
     const context = makeContext(2);
     const actions = planClientHypotheticalAction(
-      { type: "play", order: bottomOrder },
+      {
+        type: "play",
+        order: bottomOrder,
+      },
       context,
     );
     expect(actions).toEqual<unknown>([
@@ -232,15 +280,25 @@ describe("client hypothetical planning", () => {
         type: "draw",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 2 },
+        identity: {
+          suitIndex: 0,
+          rank: 2,
+        },
       },
       {
         type: "misplay",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 2 },
+        identity: {
+          suitIndex: 0,
+          rank: 2,
+        },
       },
-      { type: "turn", turn: 7, currentPlayerIndex: 1 },
+      {
+        type: "turn",
+        turn: 7,
+        currentPlayerIndex: 1,
+      },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -255,7 +313,10 @@ describe("client hypothetical planning", () => {
     "preserves ordinary hand %s before the final draw",
     (type) => {
       const context = makeContext();
-      const intent = { type, order: 0 as CardOrder };
+      const intent = {
+        type,
+        order: 0 as CardOrder,
+      };
       const actions = planClientHypotheticalAction(intent, context);
       expect(actions).toEqual(planHypotheticalAction(intent, context));
       expect(actions?.map((action) => action.type)).toEqual([
@@ -272,12 +333,18 @@ describe("client hypothetical planning", () => {
       ...base,
       metadata: {
         ...base.metadata,
-        options: { ...base.metadata.options, deckPlays: false },
+        options: {
+          ...base.metadata.options,
+          deckPlays: false,
+        },
       },
     };
     expect(
       planClientHypotheticalAction(
-        { type: "play", order: bottomOrder },
+        {
+          type: "play",
+          order: bottomOrder,
+        },
         context,
       ),
     ).toBeUndefined();
@@ -289,12 +356,18 @@ describe("client hypothetical planning", () => {
       const base = makeContext();
       const context = {
         ...base,
-        gameState: { ...base.gameState, cardsRemainingInTheDeck: 2 },
+        gameState: {
+          ...base.gameState,
+          cardsRemainingInTheDeck: 2,
+        },
         cardIdentities: [...base.cardIdentities, base.cardIdentities[0]!],
       };
       expect(
         planClientHypotheticalAction(
-          { type: "play", order: order as CardOrder },
+          {
+            type: "play",
+            order: order as CardOrder,
+          },
           context,
         ),
       ).toBeUndefined();
@@ -304,7 +377,10 @@ describe("client hypothetical planning", () => {
   test("rejects a missing order beyond the final card", () => {
     expect(
       planClientHypotheticalAction(
-        { type: "play", order: 3 as CardOrder },
+        {
+          type: "play",
+          order: 3 as CardOrder,
+        },
         makeContext(),
       ),
     ).toBeUndefined();
@@ -314,11 +390,17 @@ describe("client hypothetical planning", () => {
     const base = makeContext();
     const context = {
       ...base,
-      gameState: { ...base.gameState, cardsRemainingInTheDeck: 2 },
+      gameState: {
+        ...base.gameState,
+        cardsRemainingInTheDeck: 2,
+      },
     };
     expect(
       planClientHypotheticalAction(
-        { type: "play", order: bottomOrder },
+        {
+          type: "play",
+          order: bottomOrder,
+        },
         context,
       ),
     ).toBeUndefined();

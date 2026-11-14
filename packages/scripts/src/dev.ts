@@ -118,7 +118,11 @@ async function run(
       log(label, line);
     }
   }
-  return { ok: code === 0, output: output.trim(), errors: errors.trim() };
+  return {
+    ok: code === 0,
+    output: output.trim(),
+    errors: errors.trim(),
+  };
 }
 
 /** The first run creates ".env" with a random session secret and a port that needs no root. */

@@ -65,7 +65,10 @@ export function draw(
     type: "draw",
     playerIndex,
     order: order as CardOrder,
-    ...identityField({ suitIndex, rank }),
+    ...identityField({
+      suitIndex,
+      rank,
+    }),
   };
 }
 
@@ -80,7 +83,10 @@ export function discard(
     type: "discard",
     playerIndex,
     order: order as CardOrder,
-    ...identityField({ suitIndex, rank }),
+    ...identityField({
+      suitIndex,
+      rank,
+    }),
   };
 }
 
@@ -95,7 +101,10 @@ export function misplay(
     type: "misplay",
     playerIndex,
     order: order as CardOrder,
-    ...identityField({ suitIndex, rank }),
+    ...identityField({
+      suitIndex,
+      rank,
+    }),
   };
 }
 
@@ -110,7 +119,10 @@ export function play(
     type: "play",
     playerIndex,
     order: order as CardOrder,
-    ...identityField({ suitIndex, rank }),
+    ...identityField({
+      suitIndex,
+      rank,
+    }),
   };
 }
 
@@ -125,6 +137,9 @@ export function actionCardIdentity(
     type: "cardIdentity",
     playerIndex,
     order: order as CardOrder,
-    ...identityField({ suitIndex, rank }),
+    ...identityField({
+      suitIndex,
+      rank,
+    }),
   };
 }

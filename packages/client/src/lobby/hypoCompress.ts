@@ -323,7 +323,10 @@ function stringToDeckCard(
   const rank = (index % r) + 1;
   const suitIndex = Math.floor((index - rank + 1) / r);
 
-  const result = deckCardSchema.safeParse({ suitIndex, rank });
+  const result = deckCardSchema.safeParse({
+    suitIndex,
+    rank,
+  });
   return result.success ? result.data : undefined;
 }
 
@@ -482,12 +485,18 @@ function fromCompactAction(action: CompactAction): Action | undefined {
   let named: unknown;
   switch (action.type) {
     case CompactType.Play: {
-      named = { type: "play", order: target };
+      named = {
+        type: "play",
+        order: target,
+      };
       break;
     }
 
     case CompactType.Discard: {
-      named = { type: "discard", order: target };
+      named = {
+        type: "discard",
+        order: target,
+      };
       break;
     }
 
@@ -495,7 +504,10 @@ function fromCompactAction(action: CompactAction): Action | undefined {
       named = {
         type: "clue",
         receiverIndex: target,
-        clue: { type: "color", color: value },
+        clue: {
+          type: "color",
+          color: value,
+        },
       };
       break;
     }
@@ -504,7 +516,10 @@ function fromCompactAction(action: CompactAction): Action | undefined {
       named = {
         type: "clue",
         receiverIndex: target,
-        clue: { type: "rank", rank: value },
+        clue: {
+          type: "rank",
+          rank: value,
+        },
       };
       break;
     }
@@ -537,7 +552,10 @@ function getMinMax(values: readonly number[]): MinMax | undefined {
     return undefined;
   }
 
-  const range: MinMax = { min: first, max: first };
+  const range: MinMax = {
+    min: first,
+    max: first,
+  };
   for (const value of rest) {
     range.min = Math.min(range.min, value);
     range.max = Math.max(range.max, value);

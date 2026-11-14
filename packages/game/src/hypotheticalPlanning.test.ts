@@ -71,8 +71,14 @@ function makeContext(
     metadata,
     variant,
     cardIdentities: [
-      { suitIndex: 0, rank: 1 },
-      { suitIndex: undefined, rank: undefined },
+      {
+        suitIndex: 0,
+        rank: 1,
+      },
+      {
+        suitIndex: undefined,
+        rank: undefined,
+      },
     ],
     morphedIdentities: [],
     showDrawnCards: true,
@@ -81,7 +87,10 @@ function makeContext(
     playing: true,
     cardViews: [view(card0, 1, 1), view(card1, undefined, undefined)],
   };
-  return { ...context, ...overrides };
+  return {
+    ...context,
+    ...overrides,
+  };
 }
 
 function view(
@@ -89,7 +98,12 @@ function view(
   visibleSuitIndex: SuitIndex | undefined,
   visibleRank: CardState["rank"],
 ): HypotheticalCardView {
-  return { state, isStackBase: false, visibleSuitIndex, visibleRank };
+  return {
+    state,
+    isStackBase: false,
+    visibleSuitIndex,
+    visibleRank,
+  };
 }
 
 function cardInput(
@@ -98,7 +112,10 @@ function cardInput(
   const state = getInitialCardState(0 as CardOrder, variant, 2);
   return {
     state,
-    identity: { suitIndex: 0, rank: 1 },
+    identity: {
+      suitIndex: 0,
+      rank: 1,
+    },
     morphedIdentity: undefined,
     note: emptyNote,
     playing: true,
@@ -120,7 +137,10 @@ function makeBottomDeckContext(
     variant: testVariant,
     metadata: {
       ...testMetadata,
-      options: { ...testMetadata.options, deckPlays: true },
+      options: {
+        ...testMetadata.options,
+        deckPlays: true,
+      },
     },
     gameState: {
       ...getInitialGameStateTest(testMetadata),
@@ -132,7 +152,13 @@ function makeBottomDeckContext(
       hands: context.gameState.hands,
       cardsRemainingInTheDeck: 1,
     },
-    cardIdentities: [...context.cardIdentities, { suitIndex: 0, rank: 1 }],
+    cardIdentities: [
+      ...context.cardIdentities,
+      {
+        suitIndex: 0,
+        rank: 1,
+      },
+    ],
     notes: [...context.notes, emptyNote],
     cardViews: [...context.cardViews, view(finalCard, undefined, undefined)],
   };
@@ -157,10 +183,22 @@ describe("hypothetical planning", () => {
       const base = makeContext();
       const context: PlanHypotheticalActionContext = {
         ...base,
-        cardIdentities: [base.cardIdentities[0]!, { suitIndex: 0, rank: 1 }],
+        cardIdentities: [
+          base.cardIdentities[0]!,
+          {
+            suitIndex: 0,
+            rank: 1,
+          },
+        ],
       };
       expect(
-        planHypotheticalAction({ type, order: 1 as CardOrder }, context),
+        planHypotheticalAction(
+          {
+            type,
+            order: 1 as CardOrder,
+          },
+          context,
+        ),
       ).toBeUndefined();
     },
   );
@@ -168,7 +206,10 @@ describe("hypothetical planning", () => {
   test("draws the bottom card before a successful play", () => {
     const context = makeBottomDeckContext();
     const actions = planHypotheticalAction(
-      { type: "play", order: 2 as CardOrder },
+      {
+        type: "play",
+        order: 2 as CardOrder,
+      },
       context,
     );
     expect(actions).toEqual<unknown>([
@@ -176,15 +217,25 @@ describe("hypothetical planning", () => {
         type: "draw",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 1 },
+        identity: {
+          suitIndex: 0,
+          rank: 1,
+        },
       },
       {
         type: "play",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 1 },
+        identity: {
+          suitIndex: 0,
+          rank: 1,
+        },
       },
-      { type: "turn", turn: 7, currentPlayerIndex: 1 },
+      {
+        type: "turn",
+        turn: 7,
+        currentPlayerIndex: 1,
+      },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -201,11 +252,17 @@ describe("hypothetical planning", () => {
       ...base,
       cardIdentities: [
         ...base.cardIdentities.slice(0, 2),
-        { suitIndex: 0 as SuitIndex, rank: 2 as const },
+        {
+          suitIndex: 0 as SuitIndex,
+          rank: 2 as const,
+        },
       ],
     };
     const actions = planHypotheticalAction(
-      { type: "play", order: 2 as CardOrder },
+      {
+        type: "play",
+        order: 2 as CardOrder,
+      },
       context,
     );
     expect(actions).toEqual<unknown>([
@@ -213,15 +270,25 @@ describe("hypothetical planning", () => {
         type: "draw",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 2 },
+        identity: {
+          suitIndex: 0,
+          rank: 2,
+        },
       },
       {
         type: "misplay",
         order: 2,
         playerIndex: 0,
-        identity: { suitIndex: 0, rank: 2 },
+        identity: {
+          suitIndex: 0,
+          rank: 2,
+        },
       },
-      { type: "turn", turn: 7, currentPlayerIndex: 1 },
+      {
+        type: "turn",
+        turn: 7,
+        currentPlayerIndex: 1,
+      },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -237,7 +304,10 @@ describe("hypothetical planning", () => {
   test("keeps normal hand play before the final draw", () => {
     const context = makeBottomDeckContext();
     const actions = planHypotheticalAction(
-      { type: "play", order: 0 as CardOrder },
+      {
+        type: "play",
+        order: 0 as CardOrder,
+      },
       context,
     );
     expect(actions?.map(({ type }) => type)).toEqual(["play", "draw", "turn"]);
@@ -262,11 +332,17 @@ describe("hypothetical planning", () => {
         ...base,
         cardIdentities: [
           ...base.cardIdentities.slice(0, 2),
-          { suitIndex: suitIndex as SuitIndex, rank: 1 as const },
+          {
+            suitIndex: suitIndex as SuitIndex,
+            rank: 1 as const,
+          },
         ],
       };
       const actions = planHypotheticalAction(
-        { type, order: 2 as CardOrder },
+        {
+          type,
+          order: 2 as CardOrder,
+        },
         context,
       );
       const invertedType = type === "play" ? "discard" : "play";
@@ -277,7 +353,10 @@ describe("hypothetical planning", () => {
       ]);
       expect(actions?.[1]).toMatchObject({
         type: invertedType,
-        identity: { suitIndex, rank: 1 },
+        identity: {
+          suitIndex,
+          rank: 1,
+        },
       });
       const state = applyPlan(actions, context);
       expect(state.hands).toEqual(context.gameState.hands);
@@ -295,23 +374,35 @@ describe("hypothetical planning", () => {
       ...base,
       cardIdentities: [
         ...base.cardIdentities.slice(0, 2),
-        { suitIndex: undefined, rank: undefined },
+        {
+          suitIndex: undefined,
+          rank: undefined,
+        },
       ],
       morphedIdentities: [
         undefined,
         undefined,
-        { suitIndex: 0 as SuitIndex, rank: 1 as const },
+        {
+          suitIndex: 0 as SuitIndex,
+          rank: 1 as const,
+        },
       ],
     };
     const actions = planHypotheticalAction(
-      { type: "play", order: 2 as CardOrder },
+      {
+        type: "play",
+        order: 2 as CardOrder,
+      },
       context,
     );
     expect(actions?.[0]).toMatchObject({ type: "draw" });
     expect(actions?.[0]).not.toHaveProperty("identity");
     expect(actions?.[1]).toMatchObject({
       type: "play",
-      identity: { suitIndex: 0, rank: 1 },
+      identity: {
+        suitIndex: 0,
+        rank: 1,
+      },
     });
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -324,11 +415,17 @@ describe("hypothetical planning", () => {
       ...base,
       metadata: {
         ...base.metadata,
-        options: { ...base.metadata.options, deckPlays: false },
+        options: {
+          ...base.metadata.options,
+          deckPlays: false,
+        },
       },
     };
     const actions = planHypotheticalAction(
-      { type: "play", order: 2 as CardOrder },
+      {
+        type: "play",
+        order: 2 as CardOrder,
+      },
       context,
     );
     expect(actions?.map(({ type }) => type)).toEqual(["play", "draw", "turn"]);
@@ -342,7 +439,10 @@ describe("hypothetical planning", () => {
         ...base,
         cardIdentities: [
           ...base.cardIdentities,
-          { suitIndex: 0 as SuitIndex, rank: 1 as const },
+          {
+            suitIndex: 0 as SuitIndex,
+            rank: 1 as const,
+          },
         ],
         notes: [...base.notes, emptyNote],
         cardViews: [
@@ -353,10 +453,16 @@ describe("hypothetical planning", () => {
             undefined,
           ),
         ],
-        gameState: { ...base.gameState, cardsRemainingInTheDeck: 2 },
+        gameState: {
+          ...base.gameState,
+          cardsRemainingInTheDeck: 2,
+        },
       };
       const actions = planHypotheticalAction(
-        { type: "play", order: order as CardOrder },
+        {
+          type: "play",
+          order: order as CardOrder,
+        },
         context,
       );
       expect(actions?.map(({ type }) => type)).toEqual([
@@ -364,13 +470,19 @@ describe("hypothetical planning", () => {
         "draw",
         "turn",
       ]);
-      expect(actions?.[1]).toMatchObject({ type: "draw", order: 2 });
+      expect(actions?.[1]).toMatchObject({
+        type: "draw",
+        order: 2,
+      });
     },
   );
 
   test("plans a successful play", () => {
     const actions = planHypotheticalAction(
-      { type: "play", order: 0 as CardOrder },
+      {
+        type: "play",
+        order: 0 as CardOrder,
+      },
       makeContext(),
     );
     expect(actions?.map(({ type }) => type)).toEqual(["play", "turn"]);
@@ -378,7 +490,10 @@ describe("hypothetical planning", () => {
 
   test("plans a discard", () => {
     const actions = planHypotheticalAction(
-      { type: "discard", order: 0 as CardOrder },
+      {
+        type: "discard",
+        order: 0 as CardOrder,
+      },
       makeContext(),
     );
     expect(actions?.[0]).toMatchObject({ type: "discard" });
@@ -393,7 +508,12 @@ describe("hypothetical planning", () => {
     const context = makeContext({
       variant: invertedVariant!,
       metadata: getDefaultMetadata(2, invertedVariant!.name),
-      cardIdentities: [{ suitIndex: suitIndex as SuitIndex, rank: 1 }],
+      cardIdentities: [
+        {
+          suitIndex: suitIndex as SuitIndex,
+          rank: 1,
+        },
+      ],
       gameState: {
         ...makeContext().gameState,
         playStacks: invertedVariant!.suits.map(
@@ -409,13 +529,19 @@ describe("hypothetical planning", () => {
     });
     expect(
       planHypotheticalAction(
-        { type: "play", order: 0 as CardOrder },
+        {
+          type: "play",
+          order: 0 as CardOrder,
+        },
         context,
       )?.[0]?.type,
     ).toBe("discard");
     expect(
       planHypotheticalAction(
-        { type: "discard", order: 0 as CardOrder },
+        {
+          type: "discard",
+          order: 0 as CardOrder,
+        },
         context,
       )?.[0]?.type,
     ).toBe("play");
@@ -423,9 +549,17 @@ describe("hypothetical planning", () => {
 
   test("turns a failed play into a misplay", () => {
     const actions = planHypotheticalAction(
-      { type: "play", order: 0 as CardOrder },
+      {
+        type: "play",
+        order: 0 as CardOrder,
+      },
       makeContext({
-        cardIdentities: [{ suitIndex: 0, rank: 2 }],
+        cardIdentities: [
+          {
+            suitIndex: 0,
+            rank: 2,
+          },
+        ],
       }),
     );
     expect(actions?.slice(0, 1)).toEqual<unknown>([
@@ -433,7 +567,10 @@ describe("hypothetical planning", () => {
         type: "misplay",
         playerIndex: 0,
         order: 0,
-        identity: { suitIndex: 0, rank: 2 },
+        identity: {
+          suitIndex: 0,
+          rank: 2,
+        },
       },
     ]);
   });
@@ -445,43 +582,75 @@ describe("hypothetical planning", () => {
         deck: [getInitialCardState(0 as CardOrder, variant, 2)],
       },
       cardIdentities: [
-        { suitIndex: 0, rank: 1 },
-        { suitIndex: 1, rank: 2 },
+        {
+          suitIndex: 0,
+          rank: 1,
+        },
+        {
+          suitIndex: 1,
+          rank: 2,
+        },
       ],
     });
     const known = planHypotheticalAction(
-      { type: "discard", order: 0 as CardOrder },
+      {
+        type: "discard",
+        order: 0 as CardOrder,
+      },
       context,
     );
     expect(known?.[1]).toMatchObject({
       type: "draw",
       order: 1,
-      identity: { suitIndex: 1, rank: 2 },
+      identity: {
+        suitIndex: 1,
+        rank: 2,
+      },
     });
 
     const unknown = planHypotheticalAction(
-      { type: "discard", order: 0 as CardOrder },
+      {
+        type: "discard",
+        order: 0 as CardOrder,
+      },
       makeContext({
         gameState: {
           ...makeContext().gameState,
           deck: [getInitialCardState(0 as CardOrder, variant, 2)],
         },
         cardIdentities: [
-          { suitIndex: 0, rank: 1 },
-          { suitIndex: undefined, rank: undefined },
+          {
+            suitIndex: 0,
+            rank: 1,
+          },
+          {
+            suitIndex: undefined,
+            rank: undefined,
+          },
         ],
       }),
     );
-    expect(unknown?.[1]).toMatchObject({ type: "draw", order: 1 });
+    expect(unknown?.[1]).toMatchObject({
+      type: "draw",
+      order: 1,
+    });
     expect(unknown?.[1]).not.toHaveProperty("identity");
   });
 
   test("rejects play or discard when the identity is unknown", () => {
     expect(
       planHypotheticalAction(
-        { type: "play", order: 0 as CardOrder },
+        {
+          type: "play",
+          order: 0 as CardOrder,
+        },
         makeContext({
-          cardIdentities: [{ suitIndex: undefined, rank: undefined }],
+          cardIdentities: [
+            {
+              suitIndex: undefined,
+              rank: undefined,
+            },
+          ],
           notes: [emptyNote],
         }),
       ),
@@ -496,7 +665,10 @@ describe("hypothetical planning", () => {
       rank: 1 as CardState["rank"],
     };
     const actions = planHypotheticalAction(
-      { type: "play", order: 0 as CardOrder },
+      {
+        type: "play",
+        order: 0 as CardOrder,
+      },
       {
         ...context,
         cardIdentities: [],
@@ -512,7 +684,10 @@ describe("hypothetical planning", () => {
     expect(actions?.[0]).toMatchObject({
       type: "play",
       order: 0,
-      identity: { suitIndex: 1, rank: 1 },
+      identity: {
+        suitIndex: 1,
+        rank: 1,
+      },
     });
   });
 
@@ -526,13 +701,19 @@ describe("hypothetical planning", () => {
       {
         type: "clue",
         receiverIndex: 1 as PlayerIndex,
-        clue: { type: "color", color: colorIndex },
+        clue: {
+          type: "color",
+          color: colorIndex,
+        },
       },
       makeContext(),
     );
     expect(colorActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: "color", color: colorIndex },
+      clue: {
+        type: "color",
+        color: colorIndex,
+      },
       playerIndex: 0,
       receiverIndex: 1,
     });
@@ -540,20 +721,38 @@ describe("hypothetical planning", () => {
       {
         type: "clue",
         receiverIndex: 1 as PlayerIndex,
-        clue: { type: "rank", rank: 1 as ClueRank },
+        clue: {
+          type: "rank",
+          rank: 1 as ClueRank,
+        },
       },
       makeContext(),
     );
     expect(rankActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: "rank", rank: 1 },
+      clue: {
+        type: "rank",
+        rank: 1,
+      },
     });
   });
 
   test.each([
-    { showDrawnCards: false, target: 0, ignoreNegative: true },
-    { showDrawnCards: true, target: 0, ignoreNegative: false },
-    { showDrawnCards: false, target: 1, ignoreNegative: false },
+    {
+      showDrawnCards: false,
+      target: 0,
+      ignoreNegative: true,
+    },
+    {
+      showDrawnCards: true,
+      target: 0,
+      ignoreNegative: false,
+    },
+    {
+      showDrawnCards: false,
+      target: 1,
+      ignoreNegative: false,
+    },
   ] as const)(
     "clue negatives with $showDrawnCards shown and target $target",
     ({ showDrawnCards, target, ignoreNegative }) => {
@@ -573,11 +772,17 @@ describe("hypothetical planning", () => {
         {
           type: "clue",
           receiverIndex: target as PlayerIndex,
-          clue: { type: "rank", rank: 3 as ClueRank },
+          clue: {
+            type: "rank",
+            rank: 3 as ClueRank,
+          },
         },
         context,
       );
-      expect(actions?.[0]).toMatchObject({ type: "clue", ignoreNegative });
+      expect(actions?.[0]).toMatchObject({
+        type: "clue",
+        ignoreNegative,
+      });
     },
   );
 
@@ -609,10 +814,16 @@ describe("hypothetical planning", () => {
             [0, 2],
           ],
         },
-        identity: { suitIndex: undefined, rank: undefined },
+        identity: {
+          suitIndex: undefined,
+          rank: undefined,
+        },
       }),
     );
-    const clue = { type: "rank" as const, rank: 1 as ClueRank };
+    const clue = {
+      type: "rank" as const,
+      rank: 1 as ClueRank,
+    };
     expect(getHypotheticalTouchedCards([touchedCard], clue, variant)).toEqual(
       [],
     );
@@ -643,7 +854,10 @@ describe("hypothetical planning", () => {
           possibleCardsFromClues: [[0, 1]],
           possibleCards: [],
         },
-        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: undefined },
+        morphedIdentity: {
+          suitIndex: 0 as SuitIndex,
+          rank: undefined,
+        },
         visibleRank: undefined,
       }),
     );
@@ -655,12 +869,20 @@ describe("hypothetical planning", () => {
 
   test("does not touch a blank morph", () => {
     const blank = getHypotheticalCard(
-      cardInput({ morphedIdentity: { suitIndex: undefined, rank: undefined } }),
+      cardInput({
+        morphedIdentity: {
+          suitIndex: undefined,
+          rank: undefined,
+        },
+      }),
     );
     expect(
       getHypotheticalTouchedCards(
         [blank],
-        { type: "rank", rank: 1 as ClueRank },
+        {
+          type: "rank",
+          rank: 1 as ClueRank,
+        },
         variant,
       ),
     ).toEqual([]);
@@ -681,10 +903,16 @@ describe("hypothetical planning", () => {
     const partial = getHypotheticalCard(
       cardInput({
         state,
-        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: undefined },
+        morphedIdentity: {
+          suitIndex: 0 as SuitIndex,
+          rank: undefined,
+        },
       }),
     );
-    expect(partial.identity).toEqual({ suitIndex: 0, rank: undefined });
+    expect(partial.identity).toEqual({
+      suitIndex: 0,
+      rank: undefined,
+    });
     expect(partial.possibilities).toEqual([
       [0, 1],
       [0, 2],
@@ -693,7 +921,10 @@ describe("hypothetical planning", () => {
     const singleton = getHypotheticalCard(
       cardInput({
         state,
-        identity: { suitIndex: undefined, rank: undefined },
+        identity: {
+          suitIndex: undefined,
+          rank: undefined,
+        },
         note: {
           ...emptyNote,
           possibilities: [
@@ -703,13 +934,19 @@ describe("hypothetical planning", () => {
         },
       }),
     );
-    expect(singleton.identity).toEqual({ suitIndex: 0, rank: 1 });
+    expect(singleton.identity).toEqual({
+      suitIndex: 0,
+      rank: 1,
+    });
     expect(singleton.possibilities).toEqual([[0, 1]]);
   });
 
   test("adds the next player's final turn action", () => {
     const actions = planHypotheticalAction(
-      { type: "discard", order: 0 as CardOrder },
+      {
+        type: "discard",
+        order: 0 as CardOrder,
+      },
       makeContext(),
     );
     expect(actions?.at(-1)).toEqual({
@@ -722,7 +959,10 @@ describe("hypothetical planning", () => {
   test("wraps the final turn action to player zero", () => {
     const context = makeContext();
     const actions = planHypotheticalAction(
-      { type: "discard", order: 0 as CardOrder },
+      {
+        type: "discard",
+        order: 0 as CardOrder,
+      },
       {
         ...context,
         gameState: {
@@ -745,12 +985,18 @@ describe("hypothetical planning", () => {
     const context = makeContext();
     expect(
       planHypotheticalAction(
-        { type: "discard", order: 0 as CardOrder },
+        {
+          type: "discard",
+          order: 0 as CardOrder,
+        },
         {
           ...context,
           gameState: {
             ...context.gameState,
-            turn: { ...context.gameState.turn, currentPlayerIndex: undefined },
+            turn: {
+              ...context.gameState.turn,
+              currentPlayerIndex: undefined,
+            },
           },
         },
       ),
@@ -771,9 +1017,15 @@ function playRedFour(
   if (stackBaseMorph !== undefined) {
     morphedIdentities[getTotalCardsInDeck(testVariant)] = stackBaseMorph;
   }
-  const redFour = { suitIndex: 0 as SuitIndex, rank: 4 as const };
+  const redFour = {
+    suitIndex: 0 as SuitIndex,
+    rank: 4 as const,
+  };
   return planHypotheticalAction(
-    { type: "play", order: 0 as CardOrder },
+    {
+      type: "play",
+      order: 0 as CardOrder,
+    },
     {
       ...base,
       cardIdentities: [redFour, ...base.cardIdentities.slice(1)],
@@ -792,11 +1044,17 @@ function isStrike(actions: readonly GameAction[] | undefined) {
 
 describe("hypothetical plays on a morphed stack base", () => {
   test("plays the next rank after the morphed card", () => {
-    const actions = playRedFour({ suitIndex: 0 as SuitIndex, rank: 3 });
+    const actions = playRedFour({
+      suitIndex: 0 as SuitIndex,
+      rank: 3,
+    });
     expect(actions?.[0]).toMatchObject({
       type: "play",
       order: 0,
-      identity: { suitIndex: 0, rank: 4 },
+      identity: {
+        suitIndex: 0,
+        rank: 4,
+      },
     });
     expect(isStrike(actions)).toBe(false);
   });
@@ -806,9 +1064,14 @@ describe("hypothetical plays on a morphed stack base", () => {
   });
 
   test("ignores a stack base morphed into a card of another suit", () => {
-    expect(isStrike(playRedFour({ suitIndex: 1 as SuitIndex, rank: 3 }))).toBe(
-      true,
-    );
+    expect(
+      isStrike(
+        playRedFour({
+          suitIndex: 1 as SuitIndex,
+          rank: 3,
+        }),
+      ),
+    ).toBe(true);
   });
 
   test("treats a start card morph on an undecided stack like the played start card", () => {
@@ -820,7 +1083,10 @@ describe("hypothetical plays on a morphed stack base", () => {
     expect(
       isStrike(
         playRedFour(
-          { suitIndex: 0 as SuitIndex, rank: START_CARD_RANK },
+          {
+            suitIndex: 0 as SuitIndex,
+            rank: START_CARD_RANK,
+          },
           upOrDown,
         ),
       ),
@@ -835,12 +1101,18 @@ function playWithNote(
   // Our unknown card 0 has a note saying it is a red 1.
   const base = makeContext();
   return planHypotheticalAction(
-    { type: "play", order: 0 as CardOrder },
+    {
+      type: "play",
+      order: 0 as CardOrder,
+    },
     {
       ...base,
       playing,
       cardIdentities: [
-        { suitIndex: undefined, rank: undefined },
+        {
+          suitIndex: undefined,
+          rank: undefined,
+        },
         ...base.cardIdentities.slice(1),
       ],
       cardViews: [
@@ -848,7 +1120,10 @@ function playWithNote(
         ...base.cardViews.slice(1),
       ],
       notes: [
-        { ...emptyNote, possibilities: [[0, 1]] },
+        {
+          ...emptyNote,
+          possibilities: [[0, 1]],
+        },
         ...base.notes.slice(1),
       ],
       morphedIdentities: morphedIdentity === undefined ? [] : [morphedIdentity],
@@ -857,13 +1132,19 @@ function playWithNote(
 }
 
 describe("hypothetical plays of hidden cards with a note", () => {
-  const hidden = { suitIndex: undefined, rank: undefined };
+  const hidden = {
+    suitIndex: undefined,
+    rank: undefined,
+  };
 
   test("uses the note for a card hidden by a blank morph while playing", () => {
     expect(playWithNote(hidden, true)?.[0]).toMatchObject({
       type: "play",
       order: 0,
-      identity: { suitIndex: 0, rank: 1 },
+      identity: {
+        suitIndex: 0,
+        rank: 1,
+      },
     });
   });
 
@@ -873,7 +1154,18 @@ describe("hypothetical plays of hidden cards with a note", () => {
 
   test("prefers a morph to a real identity over the note", () => {
     expect(
-      playWithNote({ suitIndex: 1 as SuitIndex, rank: 3 }, true)?.[0],
-    ).toMatchObject({ identity: { suitIndex: 1, rank: 3 } });
+      playWithNote(
+        {
+          suitIndex: 1 as SuitIndex,
+          rank: 3,
+        },
+        true,
+      )?.[0],
+    ).toMatchObject({
+      identity: {
+        suitIndex: 1,
+        rank: 3,
+      },
+    });
   });
 });

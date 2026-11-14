@@ -22,19 +22,37 @@ function toClue(
   clue: z.output<typeof visibleClueSchema> | undefined,
 ): HiddenClue | MsgClue {
   if (clue === undefined) {
-    return { type: undefined, value: undefined, visibleType: undefined };
+    return {
+      type: undefined,
+      value: undefined,
+      visibleType: undefined,
+    };
   }
   switch (clue.type) {
     case "color": {
       return clue.color === undefined
-        ? { type: undefined, value: undefined, visibleType: "color" }
-        : { type: "color", color: clue.color };
+        ? {
+            type: undefined,
+            value: undefined,
+            visibleType: "color",
+          }
+        : {
+            type: "color",
+            color: clue.color,
+          };
     }
 
     case "rank": {
       return clue.rank === undefined
-        ? { type: undefined, value: undefined, visibleType: "rank" }
-        : { type: "rank", rank: clue.rank };
+        ? {
+            type: undefined,
+            value: undefined,
+            visibleType: "rank",
+          }
+        : {
+            type: "rank",
+            rank: clue.rank,
+          };
     }
   }
 }
@@ -45,7 +63,11 @@ export function toGameAction(event: GameEvent): GameAction {
     return event;
   }
   const { clue, ...rest } = event;
-  return { ...rest, clue: toClue(clue), ignoreNegative: false };
+  return {
+    ...rest,
+    clue: toClue(clue),
+    ignoreNegative: false,
+  };
 }
 
 /** Converts a hypothetical event into the action that the game state applies. */
@@ -56,5 +78,8 @@ export function toHypotheticalAction(
     return event;
   }
   const { clue, ...rest } = event;
-  return { ...rest, clue: toClue(clue) };
+  return {
+    ...rest,
+    clue: toClue(clue),
+  };
 }

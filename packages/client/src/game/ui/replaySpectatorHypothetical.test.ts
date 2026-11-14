@@ -3,7 +3,9 @@ import { describe, expect, test, vi } from "vitest";
 import type { State } from "../types/State.ts";
 import type { Action } from "../types/actions.ts";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("./arrows.ts", () => ({}));
 vi.mock("./getCardOrStackBase.ts", () => ({}));
@@ -39,7 +41,10 @@ function setup(amLeader: boolean) {
     finished: true,
     ongoingGame: {
       ...initial.ongoingGame,
-      turn: { ...initial.ongoingGame.turn, segment: sharedSegment },
+      turn: {
+        ...initial.ongoingGame.turn,
+        segment: sharedSegment,
+      },
     },
     replay: {
       ...initial.replay,

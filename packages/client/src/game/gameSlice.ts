@@ -46,7 +46,10 @@ export function gameSliceReducer(
   const state = previousState ?? initialState;
 
   if (gameStarted.match(action)) {
-    return { ...state, current: action.payload };
+    return {
+      ...state,
+      current: action.payload,
+    };
   }
 
   if (gameCleared.match(action)) {
@@ -60,11 +63,19 @@ export function gameSliceReducer(
     }
 
     const current = stateReducer(state.current, action.payload);
-    return current === state.current ? state : { ...state, current };
+    return current === state.current
+      ? state
+      : {
+          ...state,
+          current,
+        };
   }
 
   if (votesChanged.match(action)) {
-    return { ...state, votes: action.payload };
+    return {
+      ...state,
+      votes: action.payload,
+    };
   }
 
   return state;

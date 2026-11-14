@@ -317,7 +317,10 @@ function getOptionItems(
     });
   }
   if (options.speedrun) {
-    items.push({ icon: OptionIcons.Speedrun, text: "Speedrun" });
+    items.push({
+      icon: OptionIcons.Speedrun,
+      text: "Speedrun",
+    });
   }
   if (options.deckPlays) {
     items.push({
@@ -326,16 +329,28 @@ function getOptionItems(
     });
   }
   if (options.emptyClues) {
-    items.push({ icon: OptionIcons.EmptyClues, text: "Empty Clues" });
+    items.push({
+      icon: OptionIcons.EmptyClues,
+      text: "Empty Clues",
+    });
   }
   if (options.oneExtraCard) {
-    items.push({ icon: OptionIcons.OneExtraCard, text: "One Extra Card" });
+    items.push({
+      icon: OptionIcons.OneExtraCard,
+      text: "One Extra Card",
+    });
   }
   if (options.oneLessCard) {
-    items.push({ icon: OptionIcons.OneLessCard, text: "One Less Card" });
+    items.push({
+      icon: OptionIcons.OneLessCard,
+      text: "One Less Card",
+    });
   }
   if (options.allOrNothing) {
-    items.push({ icon: OptionIcons.AllOrNothing, text: "All or Nothing" });
+    items.push({
+      icon: OptionIcons.AllOrNothing,
+      text: "All or Nothing",
+    });
   }
   if (options.detrimentalCharacters) {
     items.push({
@@ -359,7 +374,10 @@ function ReplayButton({
       id={`replay-${gameId}`}
       onClick={() => {
         globals.connection.send("replayCreate", {
-          source: { type: "saved", gameId },
+          source: {
+            type: "saved",
+            gameId,
+          },
           visibility: replayVisibility(visibility === "shared"),
         });
         if (visibility === "shared") {

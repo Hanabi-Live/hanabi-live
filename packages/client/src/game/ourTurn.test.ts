@@ -5,7 +5,12 @@ import type { State } from "./types/State.ts";
 
 const send = vi.fn();
 vi.mock("../Globals.ts", () => ({
-  globals: { connection: { send }, joinedTableId: 42 },
+  globals: {
+    connection: {
+      send,
+    },
+    joinedTableId: 42,
+  },
 }));
 vi.mock("../notifications.ts", () => ({ send: vi.fn() }));
 vi.mock("./ui/arrows.ts", () => ({ hideAll: vi.fn() }));
@@ -27,7 +32,10 @@ afterEach(() => {
 test("our turn sends the move that we queued, and clears it", () => {
   const state: State = {
     ...initialState(getDefaultMetadata(2)),
-    premove: { type: "play", order: 3 as CardOrder },
+    premove: {
+      type: "play",
+      order: 3 as CardOrder,
+    },
   };
   store.dispatch(gameStarted(state));
 
@@ -38,6 +46,9 @@ test("our turn sends the move that we queued, and clears it", () => {
   vi.runAllTimers();
   expect(send).toHaveBeenCalledWith("playerAction", {
     tableId: 42,
-    action: { type: "play", order: 3 },
+    action: {
+      type: "play",
+      order: 3,
+    },
   });
 });

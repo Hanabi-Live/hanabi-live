@@ -30,7 +30,10 @@ const CRITICAL_CSS_PATH = path.join(ROOT, "public/css/critical.min.css");
 const PRODUCTION_DOMAIN = "critical-css.example";
 
 /** The viewport that is considered to be "above the fold". */
-const VIEWPORT = { width: 1200, height: 900 } as const;
+const VIEWPORT = {
+  width: 1200,
+  height: 900,
+} as const;
 
 /** The name that production pages load the CSS bundle with. */
 const BUNDLE_FILENAME = `main.${VERSION}.min.css`;
@@ -212,7 +215,10 @@ async function generate(): Promise<string> {
       await stopChild(server.child);
     }
     await database.close();
-    await rm(directory, { recursive: true, force: true });
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
   }
 }
 

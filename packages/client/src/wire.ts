@@ -25,7 +25,10 @@ export function toWireAction(
   tableId: number,
   action: ClientAction,
 ): z.input<typeof playerActionRequestSchema> {
-  return { tableId, action };
+  return {
+    tableId,
+    action,
+  };
 }
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */
@@ -43,7 +46,10 @@ export function toPlayerTuple<T>(
 
 /** A card's identity, which the server names once the game ends. */
 export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
-  return { suitIndex: identity.suitIndex, rank: identity.rank };
+  return {
+    suitIndex: identity.suitIndex,
+    rank: identity.rank,
+  };
 }
 
 type WireReplayAction = ServerEventData["replayAction"]["action"];
@@ -64,11 +70,19 @@ export function toWireHypotheticalAction(
   }
   const { clue, ...rest } = action;
   if (clue.type !== undefined) {
-    return { ...rest, clue };
+    return {
+      ...rest,
+      clue,
+    };
   }
   return clue.visibleType === undefined
     ? rest
-    : { ...rest, clue: { type: clue.visibleType } };
+    : {
+        ...rest,
+        clue: {
+          type: clue.visibleType,
+        },
+      };
 }
 
 type WireSound = Extract<WireReplayAction, { type: "sound" }>["sound"];

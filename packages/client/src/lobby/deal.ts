@@ -23,5 +23,10 @@ export function readDeal(
       ...(turn !== undefined && { turn: turn - 1 }),
     };
   }
-  return seed === "" ? undefined : { type: "seed", suffix: seed };
+  return seed === ""
+    ? undefined
+    : {
+        type: "seed",
+        suffix: seed,
+      };
 }

@@ -17,7 +17,10 @@ import {
 } from "./SharedCards.tsx";
 
 /** The smallest and largest card in a hand, in CSS pixels of width. */
-const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
+const HAND_CARD_WIDTH = {
+  MIN: 36,
+  MAX: 150,
+} as const;
 
 /**
  * When the columns stack, the names go beside the cards only if the cards are still at least this
@@ -27,7 +30,10 @@ const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
 /** The smallest and largest card on the play stacks. */
-const STACK_CARD_WIDTH = { MIN: 30, MAX: 96 } as const;
+const STACK_CARD_WIDTH = {
+  MIN: 30,
+  MAX: 96,
+} as const;
 
 /**
  * The largest card in the discard pile. Its column has a fixed width, so its cards stay smaller

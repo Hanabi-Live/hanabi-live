@@ -29,7 +29,9 @@ function setGame(variant: Variant, finished = false) {
   game.variant = variant;
   game.state = {
     finished,
-    metadata: { characterAssignments: QUACKER_ASSIGNMENTS },
+    metadata: {
+      characterAssignments: QUACKER_ASSIGNMENTS,
+    },
   };
 }
 

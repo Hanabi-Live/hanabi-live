@@ -4,7 +4,9 @@ import { settingsChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("../../tooltips.ts", () => ({ close: vi.fn() }));
 vi.mock("./HanabiCardClick.ts", () => ({ HanabiCardClick: vi.fn() }));
 vi.mock("./HanabiCardClickSpeedrun.ts", () => ({
@@ -32,16 +34,27 @@ const tooltips = await import("../../tooltips.ts");
 
 function makeCard(parent: unknown): HanabiCard {
   return {
-    state: { location: 0 },
-    layout: { parent },
+    state: {
+      location: 0,
+    },
+    layout: {
+      parent,
+    },
   } as unknown as HanabiCard;
 }
 
 describe("setEmpathyOnHand", () => {
   test("applies empathy when the card is in its hand layout", () => {
     const setEmpathy = vi.fn();
-    const hand = { children: [{}], setEmpathy };
-    Object.assign(globals, { elements: { playerHands: [hand] } });
+    const hand = {
+      children: [{}],
+      setEmpathy,
+    };
+    Object.assign(globals, {
+      elements: {
+        playerHands: [hand],
+      },
+    });
 
     setEmpathyOnHand(makeCard(hand), true);
 
@@ -50,9 +63,16 @@ describe("setEmpathyOnHand", () => {
 
   test("does not call empathy on another container during a card animation", () => {
     const setEmpathy = vi.fn();
-    const hand = { children: [{}], setEmpathy };
+    const hand = {
+      children: [{}],
+      setEmpathy,
+    };
     const deck = { children: [{}] };
-    Object.assign(globals, { elements: { playerHands: [hand] } });
+    Object.assign(globals, {
+      elements: {
+        playerHands: [hand],
+      },
+    });
 
     // The state still says this card is in hand, but its UI node is in the deck.
     expect(() => {
@@ -64,10 +84,18 @@ describe("setEmpathyOnHand", () => {
   test("does not apply empathy to the wrong player's hand", () => {
     const setEmpathy0 = vi.fn();
     const setEmpathy1 = vi.fn();
-    const firstHand = { children: [{}], setEmpathy: setEmpathy0 };
-    const secondHand = { children: [{}], setEmpathy: setEmpathy1 };
+    const firstHand = {
+      children: [{}],
+      setEmpathy: setEmpathy0,
+    };
+    const secondHand = {
+      children: [{}],
+      setEmpathy: setEmpathy1,
+    };
     Object.assign(globals, {
-      elements: { playerHands: [firstHand, secondHand] },
+      elements: {
+        playerHands: [firstHand, secondHand],
+      },
     });
 
     setEmpathyOnHand(makeCard(secondHand), true);
@@ -83,24 +111,42 @@ describe("hypothetical empathy mouse handling", () => {
     const handlers = new Map<string, () => void>();
     const card = {
       _id: 42,
-      state: { location: 0 },
-      layout: { parent: null as unknown, draggable: () => false },
+      state: {
+        location: 0,
+      },
+      layout: {
+        parent: null as unknown,
+        draggable: () => false,
+      },
       on: vi.fn((event: string, handler: () => void) => {
         handlers.set(event, handler);
       }),
     } as unknown as HanabiCard;
     const hand = {
-      children: [{ card, children: [{ isDecoration: true }] }],
+      children: [
+        {
+          card,
+          children: [{ isDecoration: true }],
+        },
+      ],
       setEmpathy,
     };
     Object.assign(card.layout, { parent: hand });
     Object.assign(globals, {
       globalEmpathyEnabled: false,
       state: {
-        replay: { hypothetical: { startingPlayerIndex: 0 } },
+        replay: {
+          hypothetical: {
+            startingPlayerIndex: 0,
+          },
+        },
       },
-      options: { speedrun: false },
-      elements: { playerHands: [hand] },
+      options: {
+        speedrun: false,
+      },
+      elements: {
+        playerHands: [hand],
+      },
     });
 
     registerMouseHandlers.call(card);
@@ -118,20 +164,30 @@ function pressCard() {
   vi.stubGlobal("addEventListener", window.addEventListener.bind(window));
   const handlers = new Map<string, (event: unknown) => void>();
   let rotation = 0;
-  const position = { x: 10, y: 20 };
+  const position = {
+    x: 10,
+    y: 20,
+  };
   const hand = {
     rotation: () => -90,
     children: [],
     moveToTop: vi.fn(),
   };
-  const cardCanvas = { style: { zIndex: "" } };
+  const cardCanvas = {
+    style: {
+      zIndex: "",
+    },
+  };
   const cardLayer = {
     batchDraw: vi.fn(),
     getNativeCanvasElement: () => cardCanvas,
   };
   const card = {
     tooltipName: "card-0",
-    state: { location: 1, order: 0 },
+    state: {
+      location: 1,
+      order: 0,
+    },
     layout: {
       parent: hand,
       draggable: () => true,
@@ -150,19 +206,41 @@ function pressCard() {
       handlers.set(event, handler);
     }),
   } as unknown as HanabiCard;
-  store.dispatch(settingsChanged({ ...defaultSettings, keldonMode: true }));
+  store.dispatch(
+    settingsChanged({
+      ...defaultSettings,
+      keldonMode: true,
+    }),
+  );
   Object.assign(globals, {
-    state: { replay: { hypothetical: { startingPlayerIndex: undefined } } },
-    options: { speedrun: false },
-    elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
-    layers: { card: cardLayer },
+    state: {
+      replay: {
+        hypothetical: {
+          startingPlayerIndex: undefined,
+        },
+      },
+    },
+    options: {
+      speedrun: false,
+    },
+    elements: {
+      editCardsCheckbox: undefined,
+      playerHands: [],
+      arrows: [],
+    },
+    layers: {
+      card: cardLayer,
+    },
   });
 
   registerMouseHandlers.call(card);
   // Shift disables empathy, which this test does not cover.
-  handlers
-    .get("mousedown")
-    ?.call(card, { evt: { buttons: 1, shiftKey: true } });
+  handlers.get("mousedown")?.call(card, {
+    evt: {
+      buttons: 1,
+      shiftKey: true,
+    },
+  });
   vi.unstubAllGlobals();
   return {
     getRotation: () => rotation,
@@ -216,9 +294,16 @@ describe("touching a card", () => {
     const handlers = new Map<string, (event: unknown) => void>();
     const card = {
       tooltipName: "card-0",
-      state: { location: 0, order: 0 },
-      layout: { parent: null },
-      noteIndicator: { isVisible: () => false },
+      state: {
+        location: 0,
+        order: 0,
+      },
+      layout: {
+        parent: null,
+      },
+      noteIndicator: {
+        isVisible: () => false,
+      },
       setCursor: vi.fn(),
       on: vi.fn((event: string, handler: (event: unknown) => void) => {
         handlers.set(event, handler);
@@ -227,12 +312,20 @@ describe("touching a card", () => {
     Object.assign(globals, {
       editingNote: undefined,
       globalEmpathyEnabled: true,
-      state: { replay: { hypothetical: undefined } },
+      state: {
+        replay: {
+          hypothetical: undefined,
+        },
+      },
     });
 
     registerMouseHandlers.call(card);
     // Shift disables empathy, which this test does not cover.
-    handlers.get("touchstart")?.call(card, { evt: { shiftKey: true } });
+    handlers.get("touchstart")?.call(card, {
+      evt: {
+        shiftKey: true,
+      },
+    });
     vi.mocked(tooltips.close).mockClear();
 
     // Konva sends the release to the shape under the finger, which is no longer this card.

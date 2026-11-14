@@ -15,5 +15,10 @@ export function identityField(card: CardIdentity): {
   const { suitIndex, rank } = card;
   return suitIndex === undefined || rank === undefined
     ? {}
-    : { identity: { suitIndex, rank } };
+    : {
+        identity: {
+          suitIndex,
+          rank,
+        },
+      };
 }

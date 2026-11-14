@@ -113,7 +113,12 @@ commands.set("chatList", (data) => {
   for (const line of data.messages) {
     // The list names its table once, not in each message.
     const message =
-      table === undefined ? line : { ...line, tableId: table.tableId };
+      table === undefined
+        ? line
+        : {
+            ...line,
+            tableId: table.tableId,
+          };
     chat.add(message, true); // The second argument is "fast"
   }
   if (table !== undefined && gameSession.isOpen() && !gameChat.isOpen()) {

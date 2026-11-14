@@ -8,8 +8,12 @@ const WINDOW_MARGIN = 8;
 const dom = new JSDOM("<!doctype html><body></body>");
 const { HTMLElement } = dom.window;
 Object.defineProperties(dom.window, {
-  innerHeight: { value: WINDOW_HEIGHT },
-  innerWidth: { value: 800 },
+  innerHeight: {
+    value: WINDOW_HEIGHT,
+  },
+  innerWidth: {
+    value: 800,
+  },
 });
 
 // The "jsdom" library neither opens popovers nor lays out elements. A bubble is as tall as its

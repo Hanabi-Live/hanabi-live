@@ -268,7 +268,10 @@ export function CreateGame(): React.JSX.Element {
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
   function change(changed: Partial<CreateGameForm>, save: boolean) {
-    const next = { ...form, ...changed };
+    const next = {
+      ...form,
+      ...changed,
+    };
     setForm(next);
     if (save) {
       remember(readTable(next, rememberedTimeControl()));
@@ -276,7 +279,15 @@ export function CreateGame(): React.JSX.Element {
   }
 
   function changeExtraOption(option: ExtraOption, checked: boolean) {
-    change({ extraOptions: { ...form.extraOptions, [option]: checked } }, true);
+    change(
+      {
+        extraOptions: {
+          ...form.extraOptions,
+          [option]: checked,
+        },
+      },
+      true,
+    );
   }
 
   function submit() {
@@ -328,7 +339,10 @@ export function CreateGame(): React.JSX.Element {
       store.dispatch(creatingTableChanged(true));
       globals.connection.send(
         "tableCreate",
-        { settings, ...(password !== "" && { password }) },
+        {
+          settings,
+          ...(password !== "" && { password }),
+        },
         () => {
           // The new table's pregame, if any, arrives before the reply.
           store.dispatch(creatingTableChanged(false));
@@ -537,7 +551,10 @@ export function CreateGame(): React.JSX.Element {
                 <CheckboxRow
                   checked={form.extraOptions[option]}
                   disabled={disabled}
-                  help={{ href: help, text: `About ${label}` }}
+                  help={{
+                    href: help,
+                    text: `About ${label}`,
+                  }}
                   icon={icon}
                   id={id}
                   key={option}

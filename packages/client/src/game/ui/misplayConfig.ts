@@ -14,7 +14,10 @@ export const RECOIL_SECONDS = 0.12;
 export const FALL_SECONDS = 0.5;
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
-export const FLIGHT_CONTROL_POINT = { x: 0.5, y: -1.125 } as const;
+export const FLIGHT_CONTROL_POINT = {
+  x: 0.5,
+  y: -1.125,
+} as const;
 export const FALL_LIFT = 0.325;
 export const SPUTTER_JITTER = 0.019;
 export const SHAKE_AMPLITUDE = 0.06;

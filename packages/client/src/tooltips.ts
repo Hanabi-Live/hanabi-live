@@ -141,6 +141,12 @@ function createGameTooltip(
 ) {
   const anchor = document.createElement("div");
   getHtmlElement("#game-tooltips").append(anchor);
-  const tooltip = new Tooltip(anchor, { content: "", ...options });
-  gameTooltips.set(name, { anchor, tooltip });
+  const tooltip = new Tooltip(anchor, {
+    content: "",
+    ...options,
+  });
+  gameTooltips.set(name, {
+    anchor,
+    tooltip,
+  });
 }

@@ -20,7 +20,12 @@ function event(data: unknown) {
 
 describe("server game events", () => {
   test("the final turn and an unattributed game over have no seat", () => {
-    expect(toGameAction({ type: "turn", turn: 30 })).toEqual({
+    expect(
+      toGameAction({
+        type: "turn",
+        turn: 30,
+      }),
+    ).toEqual({
       type: "turn",
       turn: 30,
     });
@@ -61,7 +66,9 @@ describe("server game events", () => {
     const action = toGameAction(
       event({
         type: "clue",
-        clue: { type: "rank" },
+        clue: {
+          type: "rank",
+        },
         playerIndex: 0,
         receiverIndex: 1,
         orders: [3],
@@ -88,7 +95,10 @@ describe("server game events", () => {
     expect(() =>
       event({
         type: "clue",
-        clue: { type: 1, value: 6 },
+        clue: {
+          type: 1,
+          value: 6,
+        },
         playerIndex: 0,
         receiverIndex: 1,
         orders: [3],
@@ -100,7 +110,10 @@ describe("server game events", () => {
         type: "draw",
         playerIndex: 0,
         order: 66,
-        identity: { suitIndex: 0, rank: 1 },
+        identity: {
+          suitIndex: 0,
+          rank: 1,
+        },
       }),
     ).toThrow();
     expect(() =>
@@ -108,7 +121,10 @@ describe("server game events", () => {
         type: "draw",
         playerIndex: 0,
         order: 0,
-        identity: { suitIndex: 6, rank: 1 },
+        identity: {
+          suitIndex: 6,
+          rank: 1,
+        },
       }),
     ).toThrow();
     expect(() =>
@@ -116,7 +132,10 @@ describe("server game events", () => {
         type: "draw",
         playerIndex: 0,
         order: 0,
-        identity: { suitIndex: 0, rank: 6 },
+        identity: {
+          suitIndex: 0,
+          rank: 6,
+        },
       }),
     ).toThrow();
   });
@@ -128,7 +147,10 @@ describe("card identities", () => {
       type: "cardIdentity",
       playerIndex: 0,
       order: 0,
-      identity: { suitIndex: 2, rank: 7 },
+      identity: {
+        suitIndex: 2,
+        rank: 7,
+      },
     });
     expect(learned.type === "cardIdentity" && learned.identity).toBeTruthy();
     if (learned.type === "cardIdentity" && learned.identity !== undefined) {
@@ -142,7 +164,9 @@ describe("card identities", () => {
         type: "cardIdentity",
         playerIndex: 0,
         order: 0,
-        identity: { rank: 7 },
+        identity: {
+          rank: 7,
+        },
       }),
     ).toThrow();
   });

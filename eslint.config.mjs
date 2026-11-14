@@ -14,9 +14,6 @@ export const hanabiConfigBase = defineConfig(
       // Insert changed or disabled rules here, if necessary.
       // @template-customization-start
 
-      // Let Prettier format object literals.
-      "complete/consistent-object-braces": "off",
-
       // Keep domain-specific property ordering.
       "complete/sort-destructured-properties": "off",
       "complete/sort-objects": "off",
@@ -118,11 +115,13 @@ export const hanabiConfigBase = defineConfig(
   // @template-customization-start
 
   // The wire contracts generated from "server/protocol" keep the line breaks of their Rust doc
-  // comments, and their enums have the values that the wire sends.
+  // comments and the generator's object layout, and their enums have the values that the wire
+  // sends.
   {
     files: ["**/src/generated/**"],
     rules: {
       "complete/consistent-enum-values": "off",
+      "complete/consistent-object-braces": "off",
       "complete/format-jsdoc-comments": "off",
     },
   },

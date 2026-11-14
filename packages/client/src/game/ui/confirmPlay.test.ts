@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const askForConfirmation = vi.fn();
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("../../modals.ts", () => ({ askForConfirmation }));
 const { confirmPlay } = await import("./confirmPlay.ts");
 const { globals } = await import("./UiGlobals.ts");
@@ -30,10 +32,16 @@ function playWithNote(
 ) {
   Object.assign(globals, {
     state: {
-      replay: { hypothetical: undefined },
-      notes: { ourNotes: [{ possibilities }] },
+      replay: {
+        hypothetical: undefined,
+      },
+      notes: {
+        ourNotes: [{ possibilities }],
+      },
       ongoingGame: {
-        turn: { currentPlayerIndex: 0 },
+        turn: {
+          currentPlayerIndex: 0,
+        },
         strikes: [],
         deck: [],
         playStacks: Array.from({ length: NUM_SUITS }, () => []),
@@ -47,7 +55,10 @@ function playWithNote(
   });
   const play = vi.fn<() => void>();
   confirmPlay(
-    { order: 0, possibleCards } as unknown as Parameters<typeof confirmPlay>[0],
+    {
+      order: 0,
+      possibleCards,
+    } as unknown as Parameters<typeof confirmPlay>[0],
     play,
   );
   return play;
@@ -57,8 +68,12 @@ describe("confirmPlay with an identity note", () => {
   beforeEach(() => {
     askForConfirmation.mockClear();
     Object.assign(globals, {
-      metadata: { ourPlayerIndex: 0 },
-      options: { speedrun: false },
+      metadata: {
+        ourPlayerIndex: 0,
+      },
+      options: {
+        speedrun: false,
+      },
       variant: getVariant("No Variant"),
     });
   });

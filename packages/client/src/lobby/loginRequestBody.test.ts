@@ -16,7 +16,10 @@ describe("loginRequestBody", () => {
 
   test("sends a new password", () => {
     expect(
-      loginRequestBody({ ...request, newPassword: "new" }).get("newPassword"),
+      loginRequestBody({
+        ...request,
+        newPassword: "new",
+      }).get("newPassword"),
     ).toBe("new");
   });
 });

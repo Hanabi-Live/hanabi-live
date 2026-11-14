@@ -492,12 +492,21 @@ const HANABI_ALT_WHITE_6_BORDER_TRANSFORM = [
 ] as const;
 
 /** The empty set pip draws its own outline, at this scale and width. */
-const EMPTY_SET_OUTLINE = { scale: 2 / 7, width: 20 } as const;
+const EMPTY_SET_OUTLINE = {
+  scale: 2 / 7,
+  width: 20,
+} as const;
 
 /** Where the gradient of a multi-color infinity pip starts and ends. It runs along the x axis. */
 const INFINITY_GRADIENT = {
-  start: { x: -109.523, y: -1055.622 },
-  end: { x: 90.477, y: -1055.622 },
+  start: {
+    x: -109.523,
+    y: -1055.622,
+  },
+  end: {
+    x: 90.477,
+    y: -1055.622,
+  },
 } as const;
 
 export const DRAW_PIP_FUNCTIONS = {

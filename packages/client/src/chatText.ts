@@ -84,13 +84,19 @@ function splitText(
   let start = 0;
   for (const match of text.matchAll(regex)) {
     if (match.index > start) {
-      segments.push({ type: "text", text: text.slice(start, match.index) });
+      segments.push({
+        type: "text",
+        text: text.slice(start, match.index),
+      });
     }
     segments.push(toSegment(match));
     start = match.index + match[0].length;
   }
   if (start < text.length) {
-    segments.push({ type: "text", text: text.slice(start) });
+    segments.push({
+      type: "text",
+      text: text.slice(start),
+    });
   }
   return segments;
 }
@@ -115,7 +121,11 @@ function emoteSegments(text: string): readonly ChatSegment[] {
         src: `https://cdn.discordapp.com/emojis/${discordId}.png`,
       };
     }
-    return { type: "emote", name, src: emoteSrc(EMOTE_PATHS.get(name)!) };
+    return {
+      type: "emote",
+      name,
+      src: emoteSrc(EMOTE_PATHS.get(name)!),
+    };
   });
 }
 
@@ -123,7 +133,10 @@ function commandSegments(text: string): readonly ChatSegment[] {
   return splitText(
     text,
     new RegExp(COMMAND_REGEX.source, "gu"),
-    ([, command]) => ({ type: "command", command: command! }),
+    ([, command]) => ({
+      type: "command",
+      command: command!,
+    }),
   );
 }
 
@@ -132,13 +145,23 @@ function linkSegments(text: string): readonly ChatSegment[] {
   let start = 0;
   for (const link of linkifyFind(text)) {
     if (link.start > start) {
-      segments.push({ type: "text", text: text.slice(start, link.start) });
+      segments.push({
+        type: "text",
+        text: text.slice(start, link.start),
+      });
     }
-    segments.push({ type: "link", text: link.value, href: link.href });
+    segments.push({
+      type: "link",
+      text: link.value,
+      href: link.href,
+    });
     ({ end: start } = link);
   }
   if (start < text.length) {
-    segments.push({ type: "text", text: text.slice(start) });
+    segments.push({
+      type: "text",
+      text: text.slice(start),
+    });
   }
   return segments;
 }
@@ -156,9 +179,18 @@ function noticeSegments(
   }
   const [before = "", ...after] = segment.text.split(NOTICE_LABEL);
   const parts: readonly ChatSegment[] = [
-    { type: "text", text: before },
-    { type: "notice", text: NOTICE_LABEL },
-    { type: "text", text: after.join(NOTICE_LABEL) },
+    {
+      type: "text",
+      text: before,
+    },
+    {
+      type: "notice",
+      text: NOTICE_LABEL,
+    },
+    {
+      type: "text",
+      text: after.join(NOTICE_LABEL),
+    },
   ];
   return [
     ...segments.slice(0, i),

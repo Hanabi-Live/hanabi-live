@@ -30,14 +30,20 @@ export function selectJoinButton(state: RootState): {
 } {
   const { game } = state.pregame;
   if (game === undefined) {
-    return { type: "join", enabled: false };
+    return {
+      type: "join",
+      enabled: false,
+    };
   }
 
   const seated = game.players.some(
     (player) => player.username === state.session.username,
   );
   return seated
-    ? { type: "spectate", enabled: game.players.length >= MIN_PLAYERS }
+    ? {
+        type: "spectate",
+        enabled: game.players.length >= MIN_PLAYERS,
+      }
     : {
         type: "join",
         enabled: game.players.length < game.settings.maxPlayers,

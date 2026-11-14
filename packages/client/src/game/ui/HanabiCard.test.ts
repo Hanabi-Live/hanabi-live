@@ -1,8 +1,14 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: { activeHover: undefined } }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {
+    activeHover: undefined,
+  },
+}));
 vi.mock("../../tooltips.ts", () => ({}));
-vi.mock("../../Globals.ts", () => ({ globals: {} }));
+vi.mock("../../Globals.ts", () => ({
+  globals: {},
+}));
 vi.mock("./noteCheckImpossibility.ts", () => ({
   checkNoteImpossibility: vi.fn(),
   possibleCardsFromNoteAndClues: vi.fn(),
@@ -47,8 +53,14 @@ describe("removeLayoutChildFromParent", () => {
 });
 
 describe("isMorphedBlank", () => {
-  const UNKNOWN = { suitIndex: undefined, rank: undefined } as const;
-  const RED_ONE = { suitIndex: 0, rank: 1 } as const;
+  const UNKNOWN = {
+    suitIndex: undefined,
+    rank: undefined,
+  } as const;
+  const RED_ONE = {
+    suitIndex: 0,
+    rank: 1,
+  } as const;
   const PRESENT_DECK_LENGTH = 12;
 
   function isBlank(order: number, morph?: typeof UNKNOWN | typeof RED_ONE) {
@@ -56,8 +68,14 @@ describe("isMorphedBlank", () => {
     morphedIdentities[order] = morph;
     Object.assign(globals, {
       state: {
-        replay: { hypothetical: { morphedIdentities } },
-        ongoingGame: { deck: Array.from({ length: PRESENT_DECK_LENGTH }) },
+        replay: {
+          hypothetical: {
+            morphedIdentities,
+          },
+        },
+        ongoingGame: {
+          deck: Array.from({ length: PRESENT_DECK_LENGTH }),
+        },
         // An ongoing game only knows the identities of some cards.
         cardIdentities: [
           ...Array.from({ length: PRESENT_DECK_LENGTH }, () => RED_ONE),
@@ -109,7 +127,10 @@ function visiblePips(suitShown: boolean, rankShown: boolean) {
     possibilityRows: mockShape(),
     // A Pink card clued 3 can be any 3 or any Pink card, so the card has possibility rows.
     possibilityRowsToDraw: [],
-    pipsAllowed: { suit: !suitShown, rank: !rankShown },
+    pipsAllowed: {
+      suit: !suitShown,
+      rank: !rankShown,
+    },
   }) as {
     suitPips: MockShape;
     rankPips: MockShape;

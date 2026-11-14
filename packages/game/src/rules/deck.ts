@@ -153,7 +153,10 @@ export function getDiscardHelpers(
   const isAllDiscarded = (suitIndex: SuitIndex, rank: Rank) =>
     total(suitIndex, rank) === discarded(suitIndex, rank);
 
-  return { isLastCopy, isAllDiscarded };
+  return {
+    isLastCopy,
+    isAllDiscarded,
+  };
 }
 
 export function getAllDiscardedSetForSuit(

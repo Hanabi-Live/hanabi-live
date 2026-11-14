@@ -12,15 +12,31 @@ function makeState(playing: boolean): State {
   return {
     playing,
     shadowing: false,
-    metadata: { playerNames: ["Alice", "Bob"] },
-    visibleState: { deck: [{ location: 1 }] },
+    metadata: {
+      playerNames: ["Alice", "Bob"],
+    },
+    visibleState: {
+      deck: [{ location: 1 }],
+    },
     notes: {
       ourNotes: [parseNote(VARIANT, "r1")],
       allNotes: [
         [
-          { username: "Alice", text: "b5", spectator: false },
-          { username: "Bob", text: "g2", spectator: false },
-          { username: "Carol", text: "y3", spectator: true },
+          {
+            username: "Alice",
+            text: "b5",
+            spectator: false,
+          },
+          {
+            username: "Bob",
+            text: "g2",
+            spectator: false,
+          },
+          {
+            username: "Carol",
+            text: "y3",
+            spectator: true,
+          },
         ],
       ],
     },

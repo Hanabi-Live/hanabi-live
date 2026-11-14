@@ -29,7 +29,13 @@ function message(
   return {
     text: "hello",
     sentAt: "2026-11-09T12:34:00.000Z",
-    kind: { type: "public", author: { type: "user", username: "alice" } },
+    kind: {
+      type: "public",
+      author: {
+        type: "user",
+        username: "alice",
+      },
+    },
     ...fields,
   };
 }
@@ -55,13 +61,28 @@ afterEach(cleanup);
 describe("LobbyChat", () => {
   test("shows lobby messages and private messages, and removes deleted messages", () => {
     act(() => {
-      add(message({ chatId: chatIdSchema.parse(1), text: "first" }), true);
-      add(message({ chatId: chatIdSchema.parse(2), text: "second" }), true);
+      add(
+        message({
+          chatId: chatIdSchema.parse(1),
+          text: "first",
+        }),
+        true,
+      );
+      add(
+        message({
+          chatId: chatIdSchema.parse(2),
+          text: "second",
+        }),
+        true,
+      );
       add(
         message({
           kind: {
             type: "private",
-            author: { type: "user", username: "alice" },
+            author: {
+              type: "user",
+              username: "alice",
+            },
             recipient: "me",
           },
           text: "psst",
@@ -69,7 +90,13 @@ describe("LobbyChat", () => {
         true,
       );
       // Table chat goes to the pre-game or game chat, never the lobby chat.
-      add(message({ tableId: tableIdSchema.parse(5), text: "table" }), true);
+      add(
+        message({
+          tableId: tableIdSchema.parse(5),
+          text: "table",
+        }),
+        true,
+      );
     });
 
     const lines = lineTexts();
@@ -84,7 +111,13 @@ describe("LobbyChat", () => {
     act(() => {
       removeDeletedLobbyMessage(1);
       // A deleted message stays deleted if it arrives again.
-      add(message({ chatId: chatIdSchema.parse(1), text: "first" }), true);
+      add(
+        message({
+          chatId: chatIdSchema.parse(1),
+          text: "first",
+        }),
+        true,
+      );
     });
 
     expect(lineTexts().map((line) => line.split(" ").at(-1))).toStrictEqual([

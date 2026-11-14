@@ -207,7 +207,10 @@ const visibleStateObservers: Subscriptions = [
   ),
   // This must come after the discard stacks, so that a misplayed card is already moving.
   subVs(
-    (s) => ({ maxScore: s.stats.maxScore, discardStacks: s.discardStacks }),
+    (s) => ({
+      maxScore: s.stats.maxScore,
+      discardStacks: s.discardStacks,
+    }),
     cardLayoutView.onMaxScoreOrDiscardStacksChanged,
   ),
   subVs(
@@ -428,7 +431,10 @@ const replayObservers: Subscriptions = [
 
   // "Enter Hypothetical" button
   subAfterInit(
-    (s) => ({ finished: s.finished, shared: s.replay.shared !== undefined }),
+    (s) => ({
+      finished: s.finished,
+      shared: s.replay.shared !== undefined,
+    }),
     replayView.enterHypoButtonLocationChanged,
   ),
 
@@ -443,9 +449,7 @@ const replayObservers: Subscriptions = [
 
   // Remove notes morph from play stacks after game finishes.
   subAfterInit(
-    (s) => ({
-      finished: s.finished,
-    }),
+    (s) => ({ finished: s.finished }),
     cardLayoutView.updatePlayStackVisuals,
   ),
 ];

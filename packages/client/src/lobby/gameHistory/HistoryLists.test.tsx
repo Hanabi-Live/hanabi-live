@@ -55,7 +55,10 @@ function reply(
   return {
     seed,
     offset,
-    page: { games, total },
+    page: {
+      games,
+      total,
+    },
   } as Parameters<typeof otherScoresReceived>[0];
 }
 

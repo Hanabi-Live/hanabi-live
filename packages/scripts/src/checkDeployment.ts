@@ -93,7 +93,10 @@ async function signIn(
   if (typeof body.userId !== "number" || cookie === "") {
     fail("Signing in did not return a user ID and a session cookie.");
   }
-  return { userId: body.userId, cookie };
+  return {
+    userId: body.userId,
+    cookie,
+  };
 }
 
 async function joinLobby(
@@ -103,7 +106,11 @@ async function joinLobby(
   validate: boolean,
 ) {
   const url = `wss://${SITE}/ws?account=${userId}&version=${encodeURIComponent(version)}`;
-  const socket = new BunWebSocket(url, { headers: { Cookie: cookie } });
+  const socket = new BunWebSocket(url, {
+    headers: {
+      Cookie: cookie,
+    },
+  });
   const received = new Set<string>();
   const { promise, resolve, reject } = Promise.withResolvers<undefined>();
   const timer = setTimeout(() => {

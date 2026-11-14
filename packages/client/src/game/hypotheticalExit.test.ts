@@ -6,7 +6,12 @@ import type { Action } from "./types/actions.ts";
 
 const send = vi.fn();
 vi.mock("../Globals.ts", () => ({
-  globals: { connection: { send }, joinedTableId: 42 },
+  globals: {
+    connection: {
+      send,
+    },
+    joinedTableId: 42,
+  },
 }));
 const { initialState } =
   await import("./reducers/initialStates/initialState.ts");
@@ -61,7 +66,12 @@ function startReplay(
 
 function setup(shared: boolean) {
   const store = startReplay(
-    shared ? { amLeader: true, useSharedSegments: true } : undefined,
+    shared
+      ? {
+          amLeader: true,
+          useSharedSegments: true,
+        }
+      : undefined,
   );
   store.dispatch({
     type: "hypotheticalStart",
@@ -80,7 +90,12 @@ describe("hypothetical exit", () => {
 
     expect(send).toHaveBeenCalledWith("replayAction", {
       tableId: 42,
-      action: { type: "hypothetical", control: { type: "end" } },
+      action: {
+        type: "hypothetical",
+        control: {
+          type: "end",
+        },
+      },
     });
     expect(store.getState().replay.hypothetical).not.toBeUndefined();
 
@@ -92,7 +107,10 @@ describe("hypothetical exit", () => {
         {
           type: "morph",
           order: 0 as CardOrder,
-          identity: { suitIndex: 0, rank: 1 },
+          identity: {
+            suitIndex: 0,
+            rank: 1,
+          },
         },
       ],
     });
@@ -126,7 +144,10 @@ describe("hypothetical exit", () => {
 
 describe("hypothetical start", () => {
   test("starts our own hypothetical when we do not lead or follow", () => {
-    const store = startReplay({ amLeader: false, useSharedSegments: false });
+    const store = startReplay({
+      amLeader: false,
+      useSharedSegments: false,
+    });
 
     startHypothetical();
 
@@ -137,7 +158,10 @@ describe("hypothetical start", () => {
   });
 
   test("does not start a hypothetical while we follow the leader", () => {
-    const store = startReplay({ amLeader: false, useSharedSegments: true });
+    const store = startReplay({
+      amLeader: false,
+      useSharedSegments: true,
+    });
 
     startHypothetical();
 

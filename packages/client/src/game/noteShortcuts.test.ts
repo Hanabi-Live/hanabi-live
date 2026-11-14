@@ -19,22 +19,51 @@ describe("getRightClickNoteAction", () => {
     expect(getRightClickNoteAction(NO_KEYS, false)).toEqual({ type: "edit" });
     expect(getRightClickNoteAction(NO_KEYS, true)).toBeUndefined();
     expect(
-      getRightClickNoteAction({ ...NO_KEYS, ctrlKey: true }, true),
+      getRightClickNoteAction(
+        {
+          ...NO_KEYS,
+          ctrlKey: true,
+        },
+        true,
+      ),
     ).toEqual({ type: "edit" });
   });
 
   test("the keys held down choose a common note", () => {
     expect(
-      getRightClickNoteAction({ ...NO_KEYS, shiftKey: true }, false),
-    ).toEqual({ type: "append", text: "f" });
-    expect(
       getRightClickNoteAction(
-        { ...NO_KEYS, ctrlKey: true, shiftKey: true, altKey: true },
+        {
+          ...NO_KEYS,
+          shiftKey: true,
+        },
         false,
       ),
-    ).toEqual({ type: "append", text: "kt" });
+    ).toEqual({
+      type: "append",
+      text: "f",
+    });
     expect(
-      getRightClickNoteAction({ ...NO_KEYS, metaKey: true }, false),
+      getRightClickNoteAction(
+        {
+          ...NO_KEYS,
+          ctrlKey: true,
+          shiftKey: true,
+          altKey: true,
+        },
+        false,
+      ),
+    ).toEqual({
+      type: "append",
+      text: "kt",
+    });
+    expect(
+      getRightClickNoteAction(
+        {
+          ...NO_KEYS,
+          metaKey: true,
+        },
+        false,
+      ),
     ).toBeUndefined();
   });
 });

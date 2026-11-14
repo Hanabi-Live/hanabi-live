@@ -60,7 +60,13 @@ describe("stateReducer", () => {
           leader: "alice",
         },
         actions: [draw(0, 0, 0, 1), draw(1, 1, 0, 2)],
-        notes: [{ username: "bob", notes: ["a note"], spectator: true }],
+        notes: [
+          {
+            username: "bob",
+            notes: ["a note"],
+            spectator: true,
+          },
+        ],
       }),
     );
     // The notes load after the shared replay's efficiency modifier, which they keep.
@@ -92,6 +98,9 @@ describe("stateReducer", () => {
       pausingPlayerIndex: 1,
       queued: true,
     });
-    expect(paused.pause).toMatchObject({ pausingPlayerIndex: 1, queued: true });
+    expect(paused.pause).toMatchObject({
+      pausingPlayerIndex: 1,
+      queued: true,
+    });
   });
 });

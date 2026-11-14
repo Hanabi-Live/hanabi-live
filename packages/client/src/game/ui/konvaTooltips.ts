@@ -96,7 +96,12 @@ export function show(element: NodeWithTooltip): void {
     }
   }
   const { y, height } = element.getClientRect();
-  tooltips.setPosition(element.tooltipName, { x: pos.x, y, width, height });
+  tooltips.setPosition(element.tooltipName, {
+    x: pos.x,
+    y,
+    width,
+    height,
+  });
   tooltips.open(element.tooltipName);
 }
 

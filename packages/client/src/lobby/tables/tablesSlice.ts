@@ -103,7 +103,13 @@ export const selectTableRows = createSelector(
         && action === "join"
         && table.playerNames.length < MAX_PLAYERS;
       foundJoinable ||= firstJoinable;
-      return { table, joined, action, hasFriends, firstJoinable };
+      return {
+        table,
+        joined,
+        action,
+        hasFriends,
+        firstJoinable,
+      };
     });
   },
 );

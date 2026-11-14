@@ -121,11 +121,17 @@ function clueToMsgClue(clue: Clue): MsgClue | undefined {
       const colorIndex = colorToColorIndex(clue.value, globals.variant);
       return colorIndex === undefined
         ? undefined
-        : { type: "color", color: colorIndex };
+        : {
+            type: "color",
+            color: colorIndex,
+          };
     }
 
     case "rank": {
-      return { type: "rank", rank: clue.value };
+      return {
+        type: "rank",
+        rank: clue.value,
+      };
     }
   }
 }

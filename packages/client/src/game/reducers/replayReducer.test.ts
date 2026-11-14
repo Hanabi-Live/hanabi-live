@@ -51,14 +51,20 @@ describe("replayReducer", () => {
     test("can start with drawn cards shown", () => {
       const state = replayReducer(
         testState.replay,
-        { ...hypoStart(), showDrawnCards: true },
+        {
+          ...hypoStart(),
+          showDrawnCards: true,
+        },
         metadata,
       );
       expect(state.hypothetical?.showDrawnCards).toBe(true);
     });
 
     test("replays initial actions sequentially and retains the starting player", () => {
-      const action = { ...rankClue(3, 1, [], 0), ignoreNegative: true };
+      const action = {
+        ...rankClue(3, 1, [], 0),
+        ignoreNegative: true,
+      };
       const state = replayReducer(
         testState.replay,
         {
@@ -67,7 +73,10 @@ describe("replayReducer", () => {
             {
               type: "morph",
               order: 0 as CardOrder,
-              identity: { suitIndex: undefined, rank: 3 },
+              identity: {
+                suitIndex: undefined,
+                rank: 3,
+              },
             },
             action,
             action,
@@ -102,7 +111,10 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 30 as CardOrder,
-          identity: { suitIndex: undefined, rank: undefined },
+          identity: {
+            suitIndex: undefined,
+            rank: undefined,
+          },
         }),
         metadata,
       );
@@ -116,7 +128,10 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 30 as CardOrder,
-          identity: { suitIndex: 1, rank: 2 },
+          identity: {
+            suitIndex: 1,
+            rank: 2,
+          },
         }),
         metadata,
       );
@@ -126,7 +141,10 @@ describe("replayReducer", () => {
       });
       state = replayReducer(
         state,
-        hypoAction({ type: "unmorph", order: 30 as CardOrder }),
+        hypoAction({
+          type: "unmorph",
+          order: 30 as CardOrder,
+        }),
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[30]).toBeUndefined();
@@ -161,7 +179,10 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 0 as CardOrder,
-          identity: { suitIndex: 1, rank: 2 },
+          identity: {
+            suitIndex: 1,
+            rank: 2,
+          },
         }),
         metadata,
       );
@@ -289,7 +310,10 @@ describe("replayReducer", () => {
 
       state = replayReducer(
         state,
-        { type: "replayUseSharedSegments", useSharedSegments: true },
+        {
+          type: "replayUseSharedSegments",
+          useSharedSegments: true,
+        },
         metadata,
       );
       expect(state.hypothetical).toBe(hidden);
@@ -321,7 +345,10 @@ describe("replayReducer", () => {
       };
       state = replayReducer(
         state,
-        { type: "replayLeader", username: "leader" },
+        {
+          type: "replayLeader",
+          username: "leader",
+        },
         metadata,
       );
       state = replayReducer(state, hypoStart(true), metadata);
@@ -338,7 +365,10 @@ describe("replayReducer", () => {
 
       state = replayReducer(
         state,
-        { type: "replayUseSharedSegments", useSharedSegments: true },
+        {
+          type: "replayUseSharedSegments",
+          useSharedSegments: true,
+        },
         metadata,
       );
       expect(state.hypothetical).toBe(state.shared?.hypothetical);

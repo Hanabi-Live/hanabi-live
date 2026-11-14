@@ -107,7 +107,10 @@ export function useCardDrag(
     }
     const timeout = setTimeout(() => {
       if (heldRef.current === dropping) {
-        updateHeld({ ...dropping, phase: "return" });
+        updateHeld({
+          ...dropping,
+          phase: "return",
+        });
       }
     }, DROP_WAIT_MILLISECONDS);
     return () => {
@@ -115,17 +118,29 @@ export function useCardDrag(
     };
   }, [dropping]);
 
-  const pointerRef = useRef({ x: 0, y: 0 });
-  const pressPoint = useRef({ x: 0, y: 0 });
+  const pointerRef = useRef({
+    x: 0,
+    y: 0,
+  });
+  const pressPoint = useRef({
+    x: 0,
+    y: 0,
+  });
   const heldRectRef = useRef<DOMRect>(undefined);
   const mainRef = useRef<HTMLElement>(null);
   const playZoneRef = useRef<HTMLElement>(null);
   const discardZoneRef = useRef<HTMLElement>(null);
 
   // The drag reads the layout when the pointer moves, so it keeps the latest one here.
-  const dropLayout = useRef({ stacked, handsElement });
+  const dropLayout = useRef({
+    stacked,
+    handsElement,
+  });
   useEffect(() => {
-    dropLayout.current = { stacked, handsElement };
+    dropLayout.current = {
+      stacked,
+      handsElement,
+    };
   }, [stacked, handsElement]);
 
   useEffect(() => {
@@ -179,7 +194,11 @@ export function useCardDrag(
         ) >= DRAG_THRESHOLD_PIXELS;
       const zone = zoneAt(event.clientX, event.clientY);
       if (moved !== current.moved || zone !== current.zone) {
-        updateHeld({ ...current, moved, zone });
+        updateHeld({
+          ...current,
+          moved,
+          zone,
+        });
       }
     }
 
@@ -192,13 +211,31 @@ export function useCardDrag(
       const zone =
         event === undefined ? undefined : zoneAt(event.clientX, event.clientY);
       if (zone === "play") {
-        updateHeld({ ...current, phase: "drop", zone });
-        sendAction({ type: "play", order: current.order });
+        updateHeld({
+          ...current,
+          phase: "drop",
+          zone,
+        });
+        sendAction({
+          type: "play",
+          order: current.order,
+        });
       } else if (zone === "discard" && canDiscardNow()) {
-        updateHeld({ ...current, phase: "drop", zone });
-        sendAction({ type: "discard", order: current.order });
+        updateHeld({
+          ...current,
+          phase: "drop",
+          zone,
+        });
+        sendAction({
+          type: "discard",
+          order: current.order,
+        });
       } else {
-        updateHeld({ ...current, phase: "return", zone: undefined });
+        updateHeld({
+          ...current,
+          phase: "return",
+          zone: undefined,
+        });
       }
     }
 
@@ -251,16 +288,25 @@ export function useCardDrag(
       // The card lifts partly as soon as it is pressed, so that the player feels that they hold it
       // before they move it. Released in place, it settles back into the hand.
       const start = measure(element);
-      const pointer = { x: toScreenPixels(x), y: toScreenPixels(y) };
+      const pointer = {
+        x: toScreenPixels(x),
+        y: toScreenPixels(y),
+      };
       pointerRef.current = pointer;
-      pressPoint.current = { x, y };
+      pressPoint.current = {
+        x,
+        y,
+      };
       updateHeld({
         order,
         phase: "drag",
         moved: false,
         zone: undefined,
         start,
-        grab: { x: pointer.x - start.left, y: pointer.y - start.top },
+        grab: {
+          x: pointer.x - start.left,
+          y: pointer.y - start.top,
+        },
       });
     },
     mainRef,

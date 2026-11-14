@@ -11,6 +11,10 @@ export function replayVisibility(
   { joinExisting = false, spoilerFree = false } = {},
 ): ReplayVisibility {
   return shared
-    ? { type: "shared", joinExisting, spoilerFree }
+    ? {
+        type: "shared",
+        joinExisting,
+        spoilerFree,
+      }
     : { type: "solo" };
 }

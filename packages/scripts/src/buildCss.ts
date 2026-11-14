@@ -114,7 +114,13 @@ function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
         // An empty list removes the rule.
         return selectors.length === 0
           ? []
-          : { ...rule, value: { ...rule.value, selectors } };
+          : {
+              ...rule,
+              value: {
+                ...rule.value,
+                selectors,
+              },
+            };
       },
       // Font Awesome names each animation after the class that uses it, such as "fa-spin".
       // eslint-disable-next-line complete/no-mutable-return

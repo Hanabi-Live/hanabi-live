@@ -85,11 +85,26 @@ const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
  * shorter than the height breakpoint, so that both sides of it are seen.
  */
 const SIZES = [
-  { width: 1600, height: 900 },
-  { width: 1200, height: 800 },
-  { width: 800, height: 500 },
-  { width: 600, height: 500 },
-  { width: 375, height: 700 },
+  {
+    width: 1600,
+    height: 900,
+  },
+  {
+    width: 1200,
+    height: 800,
+  },
+  {
+    width: 800,
+    height: 500,
+  },
+  {
+    width: 600,
+    height: 500,
+  },
+  {
+    width: 375,
+    height: 700,
+  },
 ] as const;
 
 const THEMES = ["light", "dark"] as const;
@@ -173,7 +188,10 @@ const NEXT_HAND_NOTE = "r1 maybe :D";
 async function clickRankOneClue(page: Page) {
   await page
     .locator('#game-new-ui [aria-label="Give a clue"]')
-    .getByRole("button", { name: "1", exact: true })
+    .getByRole("button", {
+      name: "1",
+      exact: true,
+    })
     .click();
 }
 
@@ -500,8 +518,16 @@ async function playCard(page: Page, card: Locator) {
 
 function getStates(): readonly State[] {
   return [
-    { name: "login", path: "/", loggedIn: false },
-    { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
+    {
+      name: "login",
+      path: "/",
+      loggedIn: false,
+    },
+    {
+      name: "scores",
+      path: `/scores/${USERNAME}`,
+      loggedIn: false,
+    },
     {
       name: "history",
       path: `/history/${USERNAME}`,
@@ -524,9 +550,21 @@ function getStates(): readonly State[] {
         await page.click("#advanced-filters-toggle");
       },
     },
-    { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
-    { name: "tags", path: `/tags/${USERNAME}`, loggedIn: false },
-    { name: "password-reset", path: "/password-reset", loggedIn: false },
+    {
+      name: "seed",
+      path: `/seed/${SEED}`,
+      loggedIn: false,
+    },
+    {
+      name: "tags",
+      path: `/tags/${USERNAME}`,
+      loggedIn: false,
+    },
+    {
+      name: "password-reset",
+      path: "/password-reset",
+      loggedIn: false,
+    },
     {
       name: "pips-reference",
       path: "/public/standalone/pips-reference.html",
@@ -557,7 +595,11 @@ function getStates(): readonly State[] {
       },
       cleanup: signOutOfNewAccount,
     },
-    { name: "lobby", path: "/", loggedIn: true },
+    {
+      name: "lobby",
+      path: "/",
+      loggedIn: true,
+    },
     // The buttons that switch between the halves of the lobby only show on small screens, so they
     // are clicked without the pointer.
     {
@@ -1025,7 +1067,10 @@ function getStates(): readonly State[] {
       },
       prepare: async (page) => {
         await page
-          .getByRole("button", { name: "End game", exact: true })
+          .getByRole("button", {
+            name: "End game",
+            exact: true,
+          })
           .click();
       },
     },
@@ -1440,7 +1485,10 @@ async function connect(
     "welcome",
     SERVER_EVENT_SCHEMAS.welcome,
   );
-  return { ...peer, userId };
+  return {
+    ...peer,
+    userId,
+  };
 }
 
 /** The events of a game, as a peer sees them. A spectator sees every card. */
@@ -1515,7 +1563,10 @@ async function playGame(
       name: "Seeded game",
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {},
-      deal: { type: "seed", suffix },
+      deal: {
+        type: "seed",
+        suffix,
+      },
     },
   });
   const { tableId } = await alice.receive(
@@ -1536,7 +1587,10 @@ async function playGame(
   }
   first.send("playerAction", {
     tableId,
-    action: { type: "play", order: card.order },
+    action: {
+      type: "play",
+      order: card.order,
+    },
   });
   await first.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
   alice.send("tableTerminate", { tableId });
@@ -1546,7 +1600,10 @@ async function playGame(
   );
   assertDefined(finished.view.gameId, "The seeded game was not saved.");
   if (tag) {
-    alice.send("tagAdd", { tableId, tag: TAG });
+    alice.send("tagAdd", {
+      tableId,
+      tag: TAG,
+    });
   }
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
   await closeTable([bob, alice], tableId);
@@ -1616,7 +1673,10 @@ async function createBobsTable(
   deal?: { readonly type: "seed"; readonly suffix: string },
 ): Promise<number> {
   bob.send("settings", {
-    settings: { hGroupConventions: true, hGroupLevel: H_GROUP_LEVEL },
+    settings: {
+      hGroupConventions: true,
+      hGroupLevel: H_GROUP_LEVEL,
+    },
   });
   bob.send("tableCreate", {
     settings: {
@@ -1681,7 +1741,10 @@ async function clickRow(
     }
     await row.click({ force: true });
     try {
-      await opened.waitFor({ state, timeout: ROW_CLICK_WAIT_MILLISECONDS });
+      await opened.waitFor({
+        state,
+        timeout: ROW_CLICK_WAIT_MILLISECONDS,
+      });
       return;
     } catch (error) {
       if (attempt === MAX_ROW_CLICKS) {
@@ -1695,8 +1758,14 @@ async function clickRow(
 function readTurn(events: GameEvents) {
   const turn = events.findLast((event) => event.type === "turn");
   return turn?.type === "turn"
-    ? { turn: turn.turn, player: turn.currentPlayerIndex ?? 0 }
-    : { turn: 0, player: 0 };
+    ? {
+        turn: turn.turn,
+        player: turn.currentPlayerIndex ?? 0,
+      }
+    : {
+        turn: 0,
+        player: 0,
+      };
 }
 
 /** Creates the accounts of a cast. */
@@ -1741,7 +1810,11 @@ async function createCast(
 
   async function connectAccount(newUi: boolean) {
     account ??= await connect(address, accountName);
-    account.send("settings", { settings: { newUi } });
+    account.send("settings", {
+      settings: {
+        newUi,
+      },
+    });
     // The server does not answer a change of settings. It runs the requests of the lobby in order,
     // so a reply to the next one shows that the change is saved.
     await account.request("chatPmHistory", { limit: 1 });
@@ -1775,7 +1848,10 @@ async function createCast(
     await startTable(bob, players, tableId);
     you.send("tableSpectate", { tableId });
     await you.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
-    table = { id: tableId, owner: bob };
+    table = {
+      id: tableId,
+      owner: bob,
+    };
     let over = false;
     endGame = async () => {
       if (!over) {
@@ -1786,7 +1862,11 @@ async function createCast(
     };
     currentWatchedGame = {
       writeNote: (order, text) => {
-        bob.send("note", { tableId, order, text });
+        bob.send("note", {
+          tableId,
+          order,
+          text,
+        });
       },
     };
     return currentWatchedGame;
@@ -1818,7 +1898,10 @@ async function createCast(
       others.push(peer);
     }
     const seats = await startTable(bob, [bob, you, ...others], tableId);
-    table = { id: tableId, owner: bob };
+    table = {
+      id: tableId,
+      owner: bob,
+    };
     let over = false;
     endGame = async () => {
       if (!over) {
@@ -1860,7 +1943,10 @@ async function createCast(
       }
       const peer = [...seats].find(([, other]) => other === index)?.[0];
       assertDefined(peer, `No player sits in seat ${index}.`);
-      peer.send("playerAction", { tableId, action });
+      peer.send("playerAction", {
+        tableId,
+        action,
+      });
       await viewer.receive(
         "gameEvent",
         SERVER_EVENT_SCHEMAS.gameEvent,
@@ -1943,7 +2029,10 @@ async function createCast(
         card,
         `The ${player} has no card to ${playable ? "play" : "misplay"}. Choose another seed for Bob's game.`,
       );
-      await move(player, { type: "play", order: card.order });
+      await move(player, {
+        type: "play",
+        order: card.order,
+      });
     }
 
     let clueTarget: { order: CardOrder; rank: number } | undefined;
@@ -1964,7 +2053,10 @@ async function createCast(
       await move("bob", {
         type: "clue",
         receiverIndex: seat("account") as PlayerIndex,
-        clue: { type: "rank", rank: card.rank as ClueRank },
+        clue: {
+          type: "rank",
+          rank: card.rank as ClueRank,
+        },
       });
     }
 
@@ -1995,7 +2087,10 @@ async function createCast(
             && variant.suits[other.suitIndex]?.inverted !== true,
         );
         if (card !== undefined && clues < MAX_CLUES) {
-          await moveAt(player, { type: "discard", order: card.order });
+          await moveAt(player, {
+            type: "discard",
+            order: card.order,
+          });
           continue;
         }
 
@@ -2008,7 +2103,10 @@ async function createCast(
         await moveAt(player, {
           type: "clue",
           receiverIndex: receiver as PlayerIndex,
-          clue: { type: "rank", rank: touched.rank as ClueRank },
+          clue: {
+            type: "rank",
+            rank: touched.rank as ClueRank,
+          },
         });
       }
     }
@@ -2052,7 +2150,10 @@ async function createCast(
         );
         const playable = cards.find((card) => card.playable);
         if (playable !== undefined) {
-          await moveAt(player, { type: "play", order: playable.order });
+          await moveAt(player, {
+            type: "play",
+            order: playable.order,
+          });
           continue;
         }
 
@@ -2069,7 +2170,10 @@ async function createCast(
           return played || left > 1;
         });
         if (expendable !== undefined && clues < MAX_CLUES) {
-          await moveAt(player, { type: "discard", order: expendable.order });
+          await moveAt(player, {
+            type: "discard",
+            order: expendable.order,
+          });
           continue;
         }
 
@@ -2087,7 +2191,10 @@ async function createCast(
         await moveAt(player, {
           type: "clue",
           receiverIndex: receiver as PlayerIndex,
-          clue: { type: "rank", rank: touched.rank as ClueRank },
+          clue: {
+            type: "rank",
+            rank: touched.rank as ClueRank,
+          },
         });
       }
     }
@@ -2107,7 +2214,10 @@ async function createCast(
         await move("bob", {
           type: "clue",
           receiverIndex: seat("account") as PlayerIndex,
-          clue: { type: "rank", rank: newest.rank as ClueRank },
+          clue: {
+            type: "rank",
+            rank: newest.rank as ClueRank,
+          },
         });
       }
     }
@@ -2129,7 +2239,10 @@ async function createCast(
         // The oldest card, which the first clue did not touch.
         const [oldest] = await hand("account");
         assertDefined(oldest, "The account has no cards.");
-        await move("account", { type: "discard", order: oldest.order });
+        await move("account", {
+          type: "discard",
+          order: oldest.order,
+        });
         await clueAccount();
       },
       cluedCard: () => clueTarget?.order,
@@ -2147,16 +2260,27 @@ async function createCast(
       },
       end,
       passLeader: () => {
-        bob.send("tableSetOwner", { tableId, userId: you.userId });
+        bob.send("tableSetOwner", {
+          tableId,
+          userId: you.userId,
+        });
       },
       startHypothetical: () => {
         bob.send("replayAction", {
           tableId,
-          action: { type: "hypothetical", control: { type: "start" } },
+          action: {
+            type: "hypothetical",
+            control: {
+              type: "start",
+            },
+          },
         });
       },
       setReady: async (ready) => {
-        await bob.request("tableRestartDecline", { tableId, declined: !ready });
+        await bob.request("tableRestartDecline", {
+          tableId,
+          declined: !ready,
+        });
       },
     };
     return currentBobsGame;
@@ -2324,10 +2448,20 @@ interface Options {
 function parseOptions(): Options {
   const { values } = parseArgs({
     options: {
-      state: { type: "string", multiple: true },
-      width: { type: "string", multiple: true },
-      theme: { type: "string" },
-      compare: { type: "string" },
+      state: {
+        type: "string",
+        multiple: true,
+      },
+      width: {
+        type: "string",
+        multiple: true,
+      },
+      theme: {
+        type: "string",
+      },
+      compare: {
+        type: "string",
+      },
     },
   });
   const widths = (values.width ?? []).map(Number);
@@ -2372,7 +2506,10 @@ async function capture(
   });
   if (compareBundle !== undefined) {
     await page.route(`**${COMPARE_BUNDLE_PATH}`, async (route) => {
-      await route.fulfill({ contentType: "text/css", body: compareBundle });
+      await route.fulfill({
+        contentType: "text/css",
+        body: compareBundle,
+      });
     });
   }
 
@@ -2454,7 +2591,10 @@ async function captureState(
           `${state.name}-${size.width}-${theme}`,
         );
         // Animations that never end, such as a pulse, show their first frame.
-        await page.screenshot({ path: `${file}.png`, animations: "disabled" });
+        await page.screenshot({
+          path: `${file}.png`,
+          animations: "disabled",
+        });
 
         if (compareBundle !== undefined) {
           // A difference counts only if it shows twice, because a page can still change on its own
@@ -2519,7 +2659,10 @@ async function writeReports(options: Options, results: Results) {
 
 async function main() {
   const options = parseOptions();
-  await rm(OUTPUT_DIRECTORY, { recursive: true, force: true });
+  await rm(OUTPUT_DIRECTORY, {
+    recursive: true,
+    force: true,
+  });
   await mkdir(OUTPUT_DIRECTORY, { recursive: true });
   await mkdir(path.join(ROOT, "dist"), { recursive: true });
   const directory = await mkdtemp(path.join(ROOT, "dist/ui-screenshots-"));
@@ -2600,7 +2743,14 @@ async function main() {
       if (cookie !== undefined) {
         const [name = "", value] = cookie.split("=", 2);
         assertDefined(value, "The session cookie has no value.");
-        await context.addCookies([{ name, value, domain: DOMAIN, path: "/" }]);
+        await context.addCookies([
+          {
+            name,
+            value,
+            domain: DOMAIN,
+            path: "/",
+          },
+        ]);
       }
       return context;
     }
@@ -2673,7 +2823,10 @@ async function main() {
       await stopChild(server.child);
     }
     await database.close();
-    await rm(directory, { recursive: true, force: true });
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
   }
 }
 

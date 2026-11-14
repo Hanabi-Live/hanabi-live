@@ -34,7 +34,10 @@ function getUniquePips(): readonly PipInfo[] {
         name: suit.name,
         fill:
           suit.fillColors === undefined
-            ? { fill: suit.fill, fillColorblind: suit.fillColorblind }
+            ? {
+                fill: suit.fill,
+                fillColorblind: suit.fillColorblind,
+              }
             : { fillColors: suit.fillColors },
       });
     }
@@ -42,7 +45,11 @@ function getUniquePips(): readonly PipInfo[] {
 
   for (const pip of getEnumValues(Pip)) {
     if (!uniquePips.has(pip)) {
-      uniquePips.set(pip, { pip, name: pip, fill: undefined });
+      uniquePips.set(pip, {
+        pip,
+        name: pip,
+        fill: undefined,
+      });
       console.warn(`The "${pip}" pip is not assigned a suit.`);
     }
   }

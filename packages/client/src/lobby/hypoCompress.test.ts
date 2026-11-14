@@ -29,7 +29,14 @@ describe("replay URL seed metadata", () => {
     "rejects invalid seed %s",
     (seed) => {
       const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
-      expect(shrink(JSON.stringify({ ...game, seed }))).toBeUndefined();
+      expect(
+        shrink(
+          JSON.stringify({
+            ...game,
+            seed,
+          }),
+        ),
+      ).toBeUndefined();
       expect(expand(`${payload}${seed}`)).toBeUndefined();
     },
   );
@@ -42,7 +49,10 @@ describe("replay URL actions", () => {
   test("reads a compressed action", () => {
     const game: unknown = JSON.parse(expand(payload)!);
     expect(replayGameSchema.parse(game).actions).toEqual([
-      { type: "play", order: 0 },
+      {
+        type: "play",
+        order: 0,
+      },
     ]);
   });
 
@@ -50,10 +60,30 @@ describe("replay URL actions", () => {
     const game = {
       ...replayGameSchema.parse(JSON.parse(expand(payload)!)),
       actions: [
-        { type: "clue", receiverIndex: 1, clue: { type: "rank", rank: 1 } },
-        { type: "clue", receiverIndex: 0, clue: { type: "color", color: 2 } },
-        { type: "play", order: 0 },
-        { type: "discard", order: 1 },
+        {
+          type: "clue",
+          receiverIndex: 1,
+          clue: {
+            type: "rank",
+            rank: 1,
+          },
+        },
+        {
+          type: "clue",
+          receiverIndex: 0,
+          clue: {
+            type: "color",
+            color: 2,
+          },
+        },
+        {
+          type: "play",
+          order: 0,
+        },
+        {
+          type: "discard",
+          order: 1,
+        },
         {
           type: "gameOver",
           endCondition: "terminatedByPlayer",
@@ -71,7 +101,12 @@ describe("replay URL actions", () => {
     (endCondition) => {
       const game = {
         ...replayGameSchema.parse(JSON.parse(expand(payload)!)),
-        actions: [{ type: "gameOver", endCondition }],
+        actions: [
+          {
+            type: "gameOver",
+            endCondition,
+          },
+        ],
       };
       const compressed = shrink(JSON.stringify(game));
       expect(compressed).toBeDefined();

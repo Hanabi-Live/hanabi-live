@@ -14,7 +14,9 @@ const OPERATION = "Generating the hash";
 async function generateHash(password: string): Promise<string> {
   const response = await fetch("/password-reset", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(passwordHashRequestSchema.parse({ password })),
   });
   if (!response.ok) {

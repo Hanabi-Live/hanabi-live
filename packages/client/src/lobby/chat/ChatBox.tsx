@@ -169,7 +169,10 @@ function ChatLineBody({
     );
   }
 
-  const options = { commands: line.commands, notice: line.fromServer };
+  const options = {
+    commands: line.commands,
+    notice: line.fromServer,
+  };
   const body =
     line.localParts === undefined ? (
       <>

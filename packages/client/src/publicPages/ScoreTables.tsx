@@ -110,7 +110,10 @@ export function ScoresTable({
   return (
     <LocalTable
       columns={columns}
-      initialSort={{ column: 0, descending: false }}
+      initialSort={{
+        column: 0,
+        descending: false,
+      }}
       rowKey={(row) => row.variantName}
       rows={table.variants}
       scrollLabel="Scores"

@@ -80,7 +80,10 @@ export function getIdentityFromNote(
   const possibility = possibilities[0];
   assertDefined(possibility, "Expected one note and clue possibility.");
   const [suitIndex, rank] = possibility;
-  return { suitIndex, rank };
+  return {
+    suitIndex,
+    rank,
+  };
 }
 
 export function getHypotheticalCard(
@@ -258,7 +261,10 @@ export function planHypotheticalAction(
     ) {
       return undefined;
     }
-    const identity = cardIdentity ?? { suitIndex: undefined, rank: undefined };
+    const identity = cardIdentity ?? {
+      suitIndex: undefined,
+      rank: undefined,
+    };
     return getHypotheticalCard({
       ...view,
       identity,
@@ -335,12 +341,21 @@ export function planHypotheticalAction(
     const movedCard = {
       playerIndex,
       order: intent.order,
-      ...identityField({ suitIndex, rank }),
+      ...identityField({
+        suitIndex,
+        rank,
+      }),
     };
     if (failed) {
-      actions.push({ type: "misplay", ...movedCard });
+      actions.push({
+        type: "misplay",
+        ...movedCard,
+      });
     } else {
-      actions.push({ type: actionType, ...movedCard });
+      actions.push({
+        type: actionType,
+        ...movedCard,
+      });
     }
 
     if (gameState.deck.length < context.cardIdentities.length) {
@@ -369,7 +384,11 @@ export function planHypotheticalAction(
   } else if (intent.type === "passTurn") {
     actions.push({
       type: "clue",
-      clue: { type: undefined, value: undefined, visibleType: undefined },
+      clue: {
+        type: undefined,
+        value: undefined,
+        visibleType: undefined,
+      },
       playerIndex,
       orders: [],
       receiverIndex: playerIndex,

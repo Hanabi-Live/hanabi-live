@@ -88,7 +88,10 @@ export function useSpacebarEmpathy(): SpacebarEmpathy {
     };
   }, []);
 
-  return { globalEmpathy, globalEmpathyNotes };
+  return {
+    globalEmpathy,
+    globalEmpathyNotes,
+  };
 }
 
 export interface ClueHotkeys {

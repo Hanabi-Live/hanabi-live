@@ -6,7 +6,9 @@ vi.mock("./chat.ts", () => ({
   sendSelfPmFromServer: vi.fn(),
   sendChat: vi.fn(),
 }));
-vi.mock("./Globals.ts", () => ({ globals: {} }));
+vi.mock("./Globals.ts", () => ({
+  globals: {},
+}));
 vi.mock("./lobby/createGame.ts", () => ({}));
 vi.mock("./modals.ts", () => ({}));
 vi.mock("./lobby/createReplayJson.ts", () => ({

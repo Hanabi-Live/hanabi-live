@@ -170,7 +170,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
             options: {
               variantId: DEFAULT_VARIANT_ID,
               timeControl: restart
-                ? { baseSeconds: 600, perTurnSeconds: 2 }
+                ? {
+                    baseSeconds: 600,
+                    perTurnSeconds: 2,
+                  }
                 : undefined,
             },
           },
@@ -232,7 +235,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
             SERVER_EVENT_SCHEMAS.connections,
             (data) => data.connections.every(Boolean),
           );
-          return { init, history };
+          return {
+            init,
+            history,
+          };
         }
         const [aliceGame, bobGame] = await Promise.all([
           bootstrap(alice),
@@ -251,7 +257,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(card.identity).toBeUndefined();
         active.send("playerAction", {
           tableId,
-          action: { type: "play", order: card.order },
+          action: {
+            type: "play",
+            order: card.order,
+          },
         });
         await active.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
         active.send("gameStateLoad", { tableId });
@@ -442,14 +451,20 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         replacement.send("replayAction", {
           tableId,
-          action: { type: "turn", turn: 1 },
+          action: {
+            type: "turn",
+            turn: 1,
+          },
         });
         const replayPosition = await replacement.receive(
           "replayAction",
           SERVER_EVENT_SCHEMAS.replayAction,
         );
         expect(replayPosition).toMatchObject({
-          action: { type: "turn", turn: 1 },
+          action: {
+            type: "turn",
+            turn: 1,
+          },
         });
         replacement.send("gameStateLoad", { tableId });
         const replayHistory = await replacement.receive(
@@ -533,7 +548,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
               await database.close();
             } finally {
               if (directory !== undefined) {
-                await rm(directory, { recursive: true, force: true });
+                await rm(directory, {
+                  recursive: true,
+                  force: true,
+                });
               }
             }
           }
@@ -562,7 +580,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const peer = socketClient(address, cookie);
           sockets.push(peer.socket);
           await peer.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
-          return { ...peer, cookie };
+          return {
+            ...peer,
+            cookie,
+          };
         }),
       );
       const owner = peers[0];
@@ -607,7 +628,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_EVENT_SCHEMAS.gameState,
         );
         peer.send("gameLoaded", { tableId: id });
-        return { init, history };
+        return {
+          init,
+          history,
+        };
       }
       const games = await Promise.all(
         players.map(async (peer) => {
@@ -640,7 +664,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           ),
         ).toBe(true);
       }
-      observer.send("tableSpectate", { tableId, shadowingPlayerIndex: 0 });
+      observer.send("tableSpectate", {
+        tableId,
+        shadowingPlayerIndex: 0,
+      });
       await observer.receive(
         "tableJoined",
         SERVER_EVENT_SCHEMAS.tableJoined,
@@ -648,7 +675,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
       );
       const shadow = await bootstrap(observer, tableId);
       expect(shadow.init).toMatchObject({
-        mode: { type: "shadowing", ourPlayerIndex: 0 },
+        mode: {
+          type: "shadowing",
+          ourPlayerIndex: 0,
+        },
       });
       expect(
         shadow.history.events
@@ -689,11 +719,19 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "replayCreate",
           source === "id"
             ? {
-                source: { type: "saved", gameId: finished.view.gameId },
-                visibility: { type: "solo" },
+                source: {
+                  type: "saved",
+                  gameId: finished.view.gameId,
+                },
+                visibility: {
+                  type: "solo",
+                },
               }
             : {
-                source: { type: "imported", game: replayJson },
+                source: {
+                  type: "imported",
+                  game: replayJson,
+                },
                 visibility: {
                   type: "shared",
                   joinExisting: false,
@@ -732,7 +770,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
             settings: {
               name: "Recover this pregame",
               maxPlayers: 3,
-              options: { variantId: getVariant("Rainbow (6 Suits)").id },
+              options: {
+                variantId: getVariant("Rainbow (6 Suits)").id,
+              },
             },
           });
           const pending = await owner.receive(
@@ -758,7 +798,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
             settings: {
               name: "Recover this pregame",
               maxPlayers: 3,
-              options: { variantId: getVariant("Rainbow (6 Suits)").id },
+              options: {
+                variantId: getVariant("Rainbow (6 Suits)").id,
+              },
             },
           });
           const returningObserver = socketClient(address, observer.cookie);
@@ -792,12 +834,16 @@ databaseDescribe("compiled application entry point (rust)", () => {
             throw new Error("The imported game is not a shared replay.");
           }
           expect(recovered.init).toMatchObject({
-            mode: { type: "sharedReplay" },
+            mode: {
+              type: "sharedReplay",
+            },
             startedAt: imported.init.startedAt,
           });
           expect(recovered.history.phase).toMatchObject({
             type: "replay",
-            sharedReplay: { turn: importedPhase.sharedReplay.turn },
+            sharedReplay: {
+              turn: importedPhase.sharedReplay.turn,
+            },
           });
           expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.events).toEqual(imported.history.events);
@@ -831,7 +877,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
       }
       await sql.end({ timeout: 3 });
       await database.close();
-      await rm(directory, { recursive: true, force: true });
+      await rm(directory, {
+        recursive: true,
+        force: true,
+      });
     }
   }, 600_000);
 });

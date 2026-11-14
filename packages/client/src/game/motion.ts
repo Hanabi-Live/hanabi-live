@@ -35,5 +35,8 @@ export function randomBetween(min: number, max: number): number {
 }
 
 export function rectCenter(rect: DOMRect): Point {
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  };
 }

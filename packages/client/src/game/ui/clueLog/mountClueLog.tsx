@@ -81,7 +81,10 @@ function routePointerEvents(element: HTMLDivElement) {
       (event) => {
         element.style.pointerEvents = isCovered(event) ? "none" : "";
       },
-      { capture: true, signal: pointerListeners.signal },
+      {
+        capture: true,
+        signal: pointerListeners.signal,
+      },
     );
   }
 }

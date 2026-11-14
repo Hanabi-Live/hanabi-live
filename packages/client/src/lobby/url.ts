@@ -215,7 +215,10 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
           ? "shared"
           : "solo";
         globals.connection.send("replayCreate", {
-          source: { type: "saved", gameId },
+          source: {
+            type: "saved",
+            gameId,
+          },
           // A link to a shared replay should join the one that people are already watching.
           visibility: replayVisibility(visibility === "shared", {
             joinExisting: true,
@@ -257,7 +260,10 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       );
 
       globals.connection.send("replayCreate", {
-        source: { type: "imported", game: gameJson },
+        source: {
+          type: "imported",
+          game: gameJson,
+        },
         visibility: replayVisibility(visibility === "shared"),
       });
       return true;

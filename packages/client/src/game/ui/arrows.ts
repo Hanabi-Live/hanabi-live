@@ -50,13 +50,20 @@ import * as konvaHelpers from "./konvaHelpers.ts";
  */
 const ARROW_ANCHOR = {
   /** The top middle of the deck. */
-  DECK: { x: 0.5, y: 0.1 },
+  DECK: {
+    x: 0.5,
+    y: 0.1,
+  },
 
   /** The first digit of the turn, score, plays, and clues numbers. */
-  SCORE_AREA_NUMBER: { x: 0.15 },
+  SCORE_AREA_NUMBER: {
+    x: 0.15,
+  },
 
   /** The max score number, which follows the score. */
-  MAX_SCORE: { x: 0.7 },
+  MAX_SCORE: {
+    x: 0.7,
+  },
 } as const;
 
 /**
@@ -481,8 +488,14 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
             type: "arrow",
             target:
               typeof target === "number"
-                ? { type: "card", order: target }
-                : { type: "board", element: target },
+                ? {
+                    type: "card",
+                    order: target,
+                  }
+                : {
+                    type: "board",
+                    element: target,
+                  },
           }
         : { type: "arrow" },
     });

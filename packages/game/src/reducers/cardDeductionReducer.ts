@@ -189,7 +189,11 @@ export function recalculateDeductions(
       return card;
     }
 
-    return { ...card, possibleCards, possibleCardsForEmpathy };
+    return {
+      ...card,
+      possibleCards,
+      possibleCardsForEmpathy,
+    };
   });
 
   return newDeck.every((card, order) => card === deck[order]) ? deck : newDeck;

@@ -364,7 +364,10 @@ function dragStart(card: HanabiCard) {
           globals.layers.card.batchDraw();
         }
       },
-      { capture: true, once: true },
+      {
+        capture: true,
+        once: true,
+      },
     );
   }
 
@@ -405,7 +408,10 @@ function raiseCardLayer() {
     () => {
       canvas.style.zIndex = "";
     },
-    { capture: true, once: true },
+    {
+      capture: true,
+      once: true,
+    },
   );
 }
 

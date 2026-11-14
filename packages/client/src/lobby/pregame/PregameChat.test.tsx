@@ -34,7 +34,13 @@ function message(
     text: "hello",
     sentAt: "2026-11-09T12:34:00.000Z",
     tableId: TABLE_ID,
-    kind: { type: "public", author: { type: "user", username: "alice" } },
+    kind: {
+      type: "public",
+      author: {
+        type: "user",
+        username: "alice",
+      },
+    },
     ...fields,
   };
 }
@@ -89,12 +95,23 @@ describe("PregameChat", () => {
     act(() => {
       add(
         message({
-          kind: { type: "public", author: { type: "server" } },
+          kind: {
+            type: "public",
+            author: {
+              type: "server",
+            },
+          },
           text: "Try @/setleader bob@",
         }),
         true,
       );
-      addSettingsSuggestion({ tableId: TABLE_ID, settings: suggestion }, true);
+      addSettingsSuggestion(
+        {
+          tableId: TABLE_ID,
+          settings: suggestion,
+        },
+        true,
+      );
     });
 
     act(() => {

@@ -214,7 +214,10 @@ export function useCardMotion(
     if (previous.shownState === shownState) {
       // Keep the positions up to date (for example, after a resize), unless cards are moving.
       if (!areCardsMoving()) {
-        shown.current = { ...previous, settledPositions: measureCards(root) };
+        shown.current = {
+          ...previous,
+          settledPositions: measureCards(root),
+        };
       }
       return;
     }
@@ -240,7 +243,10 @@ export function useCardMotion(
     const move =
       previous.move !== undefined && endsGame && areCardsMoving()
         ? previous.move
-        : { startPositions, startState: previous.shownState };
+        : {
+            startPositions,
+            startState: previous.shownState,
+          };
     stopCardMoves();
     if (!endsGame) {
       finishScoreSignals();
@@ -293,5 +299,8 @@ export function useCardMotion(
     };
   });
 
-  return { rootRef, screenScale };
+  return {
+    rootRef,
+    screenScale,
+  };
 }

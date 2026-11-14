@@ -24,7 +24,10 @@ export function shouldPlayJoinSound(
     previous?.tableId !== next.tableId
     || lastJoin?.tableId !== next.tableId
   ) {
-    lastJoin = { tableId: next.tableId, time: now };
+    lastJoin = {
+      tableId: next.tableId,
+      time: now,
+    };
     return false;
   }
   const previousIds = new Set(previous.players.map((player) => player.userId));
@@ -36,6 +39,9 @@ export function shouldPlayJoinSound(
   }
   const seated = next.players.some((player) => player.userId === ourUserId);
   const quiet = now - lastJoin.time > JOIN_SOUND_INTERVAL_MILLISECONDS;
-  lastJoin = { tableId: next.tableId, time: now };
+  lastJoin = {
+    tableId: next.tableId,
+    time: now,
+  };
   return seated && quiet;
 }

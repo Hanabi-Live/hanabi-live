@@ -17,7 +17,10 @@ function entry(
     giverName: "Alice",
     targetName: "Bob",
     clueName: "1",
-    marker: { type: "rank", label: "1" },
+    marker: {
+      type: "rank",
+      label: "1",
+    },
     touchedCards: touchedCards as readonly CardOrder[],
     missedCards: missedCards as readonly CardOrder[],
   };

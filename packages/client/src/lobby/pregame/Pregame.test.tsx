@@ -32,7 +32,13 @@ function player(
       variant: {
         numGames: 4,
         // This player has not played 3-player games.
-        bestScores: [{ numPlayers: 2, score: 25, modified: false }],
+        bestScores: [
+          {
+            numPlayers: 2,
+            score: 25,
+            modified: false,
+          },
+        ],
       },
     },
   };
@@ -43,9 +49,15 @@ const game: Game = {
   settings: {
     name: "my table",
     maxPlayers: 5,
-    options: { ...defaultOptions, speedrun: true },
+    options: {
+      ...defaultOptions,
+      speedrun: true,
+    },
   },
-  owner: { userId: userIdSchema.parse(1), username: "alice" },
+  owner: {
+    userId: userIdSchema.parse(1),
+    username: "alice",
+  },
   passwordProtected: true,
   players: [player(1, "alice", true), player(2, "bob", false)],
 };
@@ -55,7 +67,10 @@ const table = {
   settings: game.settings,
   playerNames: ["alice", "bob"],
   spectators: [
-    { username: "me", shadowingPlayerIndex: 1 },
+    {
+      username: "me",
+      shadowingPlayerIndex: 1,
+    },
     { username: "dave" },
   ],
 } as unknown as Table;
@@ -73,7 +88,10 @@ beforeEach(() => {
     userChanged({
       userId: userIdSchema.parse(1),
       username: "alice",
-      activity: { type: "pregame", tableId: TABLE_ID },
+      activity: {
+        type: "pregame",
+        tableId: TABLE_ID,
+      },
       hGroupConventions: true,
       hGroupLevel: 3,
       bot: false,

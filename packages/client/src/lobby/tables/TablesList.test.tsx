@@ -35,8 +35,16 @@ const ROW_HEIGHT = 20;
 function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
     tableId: tableIdSchema.parse(id),
-    settings: { name, maxPlayers: 5, options: { variantId: 0 } },
-    phase: { type: "pregame" },
+    settings: {
+      name,
+      maxPlayers: 5,
+      options: {
+        variantId: 0,
+      },
+    },
+    phase: {
+      type: "pregame",
+    },
     passwordProtected: false,
     numPlayers: 1,
     playerNames: ["alice"],
@@ -102,16 +110,32 @@ describe("TablesList", () => {
   test("lists our game, then our friends' tables, then each kind of table", () => {
     store.dispatch(
       tablesListed([
-        table(1, "replay", { phase: { type: "sharedReplay", progress: 0 } }),
-        table(2, "ongoing", { phase: { type: "playing", progress: 0 } }),
+        table(1, "replay", {
+          phase: {
+            type: "sharedReplay",
+            progress: 0,
+          },
+        }),
+        table(2, "ongoing", {
+          phase: {
+            type: "playing",
+            progress: 0,
+          },
+        }),
         table(3, "locked", { passwordProtected: true }),
         table(4, "open"),
         table(5, "friend's", {
-          phase: { type: "playing", progress: 0 },
+          phase: {
+            type: "playing",
+            progress: 0,
+          },
           playerNames: ["bob"],
         }),
         table(6, "ours", {
-          phase: { type: "playing", progress: 0 },
+          phase: {
+            type: "playing",
+            progress: 0,
+          },
           playerNames: ["me"],
         }),
         table(7, "open later"),
@@ -170,7 +194,12 @@ describe("TablesList", () => {
   test("ignores clicks on rows that just appeared or moved", () => {
     store.dispatch(
       tablesListed([
-        table(1, "ongoing", { phase: { type: "playing", progress: 0 } }),
+        table(1, "ongoing", {
+          phase: {
+            type: "playing",
+            progress: 0,
+          },
+        }),
       ]),
     );
     renderList();

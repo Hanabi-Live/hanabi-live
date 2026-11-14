@@ -54,7 +54,10 @@ describe("cardsReducer", () => {
       );
       expect(newDeck[0]!.location).toBe(0);
 
-      const gameStateNextTurn = { ...GAME_STATE, currentPlayerIndex: 1 };
+      const gameStateNextTurn = {
+        ...GAME_STATE,
+        currentPlayerIndex: 1,
+      };
 
       newDeck = cardsReducer(
         deck,
@@ -152,7 +155,10 @@ describe("cardsReducer", () => {
       const clue1Segment = 999;
       const gameStateFirstTurn = {
         ...GAME_STATE,
-        turn: { ...GAME_STATE.turn, segment: clue1Segment },
+        turn: {
+          ...GAME_STATE.turn,
+          segment: clue1Segment,
+        },
       };
 
       const testClue1 = rankClue(5, 1, [0], 0);
@@ -167,7 +173,10 @@ describe("cardsReducer", () => {
       const clue2Segment = clue1Segment + 1;
       const gameStateNextTurn = {
         ...gameStateFirstTurn,
-        turn: { ...gameStateFirstTurn.turn, segment: clue2Segment },
+        turn: {
+          ...gameStateFirstTurn.turn,
+          segment: clue2Segment,
+        },
       };
 
       const testClue2 = colorClue(2, 2, [0], 0);

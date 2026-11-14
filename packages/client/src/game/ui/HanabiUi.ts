@@ -195,8 +195,14 @@ export class HanabiUi {
     stageContainer.style.willChange = "";
 
     // Snap back before rebuilding at the new native size.
-    this.globals.stage.scale({ x: 1, y: 1 });
-    this.globals.stage.position({ x: 0, y: 0 });
+    this.globals.stage.scale({
+      x: 1,
+      y: 1,
+    });
+    this.globals.stage.position({
+      x: 0,
+      y: 0,
+    });
     initStageSize();
 
     // We must also clear the card-related globals or else we will have duplicates.

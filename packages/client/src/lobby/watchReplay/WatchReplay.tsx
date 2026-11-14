@@ -64,7 +64,10 @@ export function WatchReplay(): React.JSX.Element {
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameId);
-      replay = { type: "saved", gameId: id };
+      replay = {
+        type: "saved",
+        gameId: id,
+      };
     } else {
       const parsed = parseGameJson(json);
       if ("error" in parsed) {
@@ -72,7 +75,10 @@ export function WatchReplay(): React.JSX.Element {
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, json);
-      replay = { type: "imported", game: parsed.gameJson };
+      replay = {
+        type: "imported",
+        game: parsed.gameJson,
+      };
     }
 
     localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);

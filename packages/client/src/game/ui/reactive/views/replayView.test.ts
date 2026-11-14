@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-vi.mock("konva", () => ({ default: {} }));
+vi.mock("konva", () => ({
+  default: {},
+}));
 vi.mock("../../../../tooltips.ts", () => ({}));
 vi.mock("../../../../utils.ts", () => ({ escapeHtml: vi.fn() }));
 vi.mock("../../konvaTooltips.ts", () => ({}));
@@ -12,7 +14,9 @@ vi.mock("../../replay.ts", () => ({
 vi.mock("./cluesView.ts", () => ({
   refreshArrows: vi.fn(),
 }));
-vi.mock("../../../../Globals.ts", () => ({ globals: {} }));
+vi.mock("../../../../Globals.ts", () => ({
+  globals: {},
+}));
 vi.mock("../../UiGlobals.ts", () => ({
   globals: {
     elements: {

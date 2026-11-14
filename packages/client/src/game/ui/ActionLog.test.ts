@@ -7,7 +7,12 @@ import { store } from "../../store.ts";
 
 const globals = vi.hoisted(() => {
   const replay: { segment: number | undefined } = { segment: 0 };
-  return { animateFast: false, state: { replay } };
+  return {
+    animateFast: false,
+    state: {
+      replay,
+    },
+  };
 });
 vi.mock("./UiGlobals.ts", () => ({ globals }));
 vi.mock("./controls/FitText.ts", async () => {
@@ -27,16 +32,27 @@ const MAX_LINES = 3;
 const LINE_HEIGHT = 10;
 
 function makeLog(length: number): readonly LogEntry[] {
-  return Array.from({ length }, (_, i) => ({ turn: i + 1, text: `line ${i}` }));
+  return Array.from({ length }, (_, i) => ({
+    turn: i + 1,
+    text: `line ${i}`,
+  }));
 }
 
 function makeActionLog() {
   const actionLog = new ActionLog(
-    { x: 0, y: 0, width: 100, height: MAX_LINES * LINE_HEIGHT },
+    {
+      x: 0,
+      y: 0,
+      width: 100,
+      height: MAX_LINES * LINE_HEIGHT,
+    },
     MAX_LINES,
   );
   const lines = actionLog.children[0] as Konva.Group;
-  return { actionLog, lines };
+  return {
+    actionLog,
+    lines,
+  };
 }
 
 describe("ActionLog", () => {
@@ -62,7 +78,10 @@ describe("ActionLog", () => {
 
   test("does not slide with reduced motion", () => {
     store.dispatch(
-      settingsChanged({ ...defaultSettings, reducedMotion: true }),
+      settingsChanged({
+        ...defaultSettings,
+        reducedMotion: true,
+      }),
     );
     const { actionLog, lines } = makeActionLog();
     actionLog.update(makeLog(5));

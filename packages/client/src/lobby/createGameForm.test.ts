@@ -31,37 +31,58 @@ describe("getErrors", () => {
       timePerTurnSeconds: "x",
     };
     expect(getErrors(badClock)).toStrictEqual({});
-    expect(Object.keys(getErrors({ ...badClock, timed: true }))).toStrictEqual([
-      "timeBaseMinutes",
-      "timePerTurnSeconds",
-    ]);
+    expect(
+      Object.keys(
+        getErrors({
+          ...badClock,
+          timed: true,
+        }),
+      ),
+    ).toStrictEqual(["timeBaseMinutes", "timePerTurnSeconds"]);
     expect(
       getErrors({
         ...badClock,
         timed: true,
-        extraOptions: { ...defaultForm.extraOptions, speedrun: true },
+        extraOptions: {
+          ...defaultForm.extraOptions,
+          speedrun: true,
+        },
       }),
     ).toStrictEqual({});
   });
 
   test("names each character that a seed cannot have once", () => {
-    expect(getErrors({ ...defaultForm, seed: "a b c!" }).seed).toBe(
-      "You cannot have these characters in a seed: (space) !",
-    );
+    expect(
+      getErrors({
+        ...defaultForm,
+        seed: "a b c!",
+      }).seed,
+    ).toBe("You cannot have these characters in a seed: (space) !");
   });
 
   test("does not allow both a seed and a replay", () => {
     expect(
-      getErrors({ ...defaultForm, seed: "abc", replayGameId: "5" })
-        .replayGameId,
+      getErrors({
+        ...defaultForm,
+        seed: "abc",
+        replayGameId: "5",
+      }).replayGameId,
     ).toBe("A replay uses its game's seed, so the custom seed must be blank.");
   });
 
   test("checks the turn only for a replay", () => {
-    expect(getErrors({ ...defaultForm, replayTurn: "0" })).toStrictEqual({});
     expect(
-      getErrors({ ...defaultForm, replayGameId: "5", replayTurn: "0" })
-        .replayTurn,
+      getErrors({
+        ...defaultForm,
+        replayTurn: "0",
+      }),
+    ).toStrictEqual({});
+    expect(
+      getErrors({
+        ...defaultForm,
+        replayGameId: "5",
+        replayTurn: "0",
+      }).replayTurn,
     ).toBe("The turn must be a positive number.");
   });
 });
@@ -84,7 +105,10 @@ describe("readTable", () => {
   });
 
   test("keeps the remembered clock in place of an invalid one", () => {
-    const remembered = { baseSeconds: 300, perTurnSeconds: 15 };
+    const remembered = {
+      baseSeconds: 300,
+      perTurnSeconds: 15,
+    };
     const table = readTable(
       {
         ...defaultForm,
@@ -99,7 +123,10 @@ describe("readTable", () => {
 
   test("keeps no clock for an untimed table", () => {
     const table = readTable(
-      { ...defaultForm, timeBaseMinutes: "10" },
+      {
+        ...defaultForm,
+        timeBaseMinutes: "10",
+      },
       DEFAULT_TIME_CONTROL,
     );
     expect(table.options.timeControl).toBeUndefined();
@@ -107,7 +134,11 @@ describe("readTable", () => {
 
   test("uses the defaults for an unknown variant and an invalid player count", () => {
     const table = readTable(
-      { ...defaultForm, variantName: "Not a variant", maxPlayers: "99" },
+      {
+        ...defaultForm,
+        variantName: "Not a variant",
+        maxPlayers: "99",
+      },
       DEFAULT_TIME_CONTROL,
     );
     expect(table.options.variantId).toBe(getVariant("No Variant").id);
@@ -117,6 +148,14 @@ describe("readTable", () => {
 
 test("a replay takes its turn from 1 and ignores spaces", () => {
   expect(
-    readFormDeal({ ...defaultForm, replayGameId: " 12 ", replayTurn: "3" }),
-  ).toStrictEqual({ type: "replay", gameId: 12, turn: 2 });
+    readFormDeal({
+      ...defaultForm,
+      replayGameId: " 12 ",
+      replayTurn: "3",
+    }),
+  ).toStrictEqual({
+    type: "replay",
+    gameId: 12,
+    turn: 2,
+  });
 });

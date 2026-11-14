@@ -51,7 +51,11 @@ export function tooltipRefHtml(
     if (entry === undefined) {
       const tooltip = new Tooltip(element, { content: "" });
       tooltip.openOnHover(options.instant !== true);
-      entry = { tooltip, content: "", refs: 0 };
+      entry = {
+        tooltip,
+        content: "",
+        refs: 0,
+      };
       elementTooltips.set(element, entry);
     }
     entry.refs++;

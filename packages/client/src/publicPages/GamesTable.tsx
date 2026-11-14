@@ -47,7 +47,12 @@ function gameColumns(
 ): readonly GameColumn[] {
   const seed = table.list === "seed";
   return [
-    { header: "Game ID", sortable: true, filter: "none", server: "gameId" },
+    {
+      header: "Game ID",
+      sortable: true,
+      filter: "none",
+      server: "gameId",
+    },
     {
       header: "# of Players",
       // The games on a seed share its player count and variant.
@@ -60,16 +65,28 @@ function gameColumns(
           })),
       server: "numPlayers",
     },
-    { header: "Score", sortable: true, filter: "text", server: "score" },
+    {
+      header: "Score",
+      sortable: true,
+      filter: "text",
+      server: "score",
+    },
     {
       header: "Variant",
       sortable: false,
       filter: seed
         ? "none"
-        : Object.entries(variants).map(([value, text]) => ({ value, text })),
+        : Object.entries(variants).map(([value, text]) => ({
+            value,
+            text,
+          })),
       server: "variantId",
     },
-    { header: "Players", sortable: false, filter: "none" },
+    {
+      header: "Players",
+      sortable: false,
+      filter: "none",
+    },
     {
       header: "Date & Time",
       sortable: false,
@@ -83,7 +100,13 @@ function gameColumns(
       filter: "none",
     },
     ...(table.list === "tags"
-      ? [{ header: "Tags", sortable: false, filter: "none" } as const]
+      ? [
+          {
+            header: "Tags",
+            sortable: false,
+            filter: "none",
+          } as const,
+        ]
       : []),
   ];
 }

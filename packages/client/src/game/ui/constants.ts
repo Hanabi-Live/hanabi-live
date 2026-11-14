@@ -10,7 +10,10 @@ export const CARD_W = 286;
 export const CARD_H = 406;
 
 /** The middle of a card, in the card's own coordinates. */
-export const CARD_CENTER = { x: CARD_W / 2, y: CARD_H / 2 } as const;
+export const CARD_CENTER = {
+  x: CARD_W / 2,
+  y: CARD_H / 2,
+} as const;
 
 /** The width of the stage divided by its height. */
 export const STAGE_ASPECT_RATIO = 16 / 9;
@@ -202,7 +205,10 @@ export const LINE_SHADOW = {
 export const TEXT_SHADOW = {
   shadowColor: "black",
   shadowBlur: 10,
-  shadowOffset: { x: 0, y: 0 },
+  shadowOffset: {
+    x: 0,
+    y: 0,
+  },
   shadowOpacity: 0.9,
 } as const;
 

@@ -496,10 +496,16 @@ function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
     lobbyGlobals.connection.send(
       "playerAction",
-      toWireAction(lobbyGlobals.joinedTableId, { type: actionType, order }),
+      toWireAction(lobbyGlobals.joinedTableId, {
+        type: actionType,
+        order,
+      }),
     );
   } else {
-    hypothetical.sendHypotheticalAction({ type: actionType, order });
+    hypothetical.sendHypotheticalAction({
+      type: actionType,
+      order,
+    });
   }
 
   arrows.hideAll();

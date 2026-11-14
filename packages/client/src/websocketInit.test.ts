@@ -7,7 +7,11 @@ import { LocalStorageStub } from "./testLocalStorage.ts";
 let clock: Clock;
 
 vi.mock("./Globals.ts", () => ({
-  globals: { conn: undefined, currentScreen: "Login", ui: undefined },
+  globals: {
+    conn: undefined,
+    currentScreen: "Login",
+    ui: undefined,
+  },
 }));
 vi.mock("./commands.ts", () => ({
   commands: new Map([["error", vi.fn()]]),
@@ -189,7 +193,10 @@ describe("initial WebSocket handshake watchdog", () => {
   test("reloads an outdated client once per client version", async () => {
     websocketInit();
     sockets[0]?.emit("open");
-    const error = { message: "Outdated client.", code: "outdatedClient" };
+    const error = {
+      message: "Outdated client.",
+      code: "outdatedClient",
+    };
     globals.conn?.callbacks.get("error")?.(error as never);
     sockets[0]?.emit("close");
 

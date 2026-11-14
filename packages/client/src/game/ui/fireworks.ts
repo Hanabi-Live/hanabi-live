@@ -27,9 +27,10 @@ interface Track {
 }
 
 export function absoluteCenter(node: Konva.Node): Point {
-  return node
-    .getAbsoluteTransform()
-    .point({ x: node.width() / 2, y: node.height() / 2 });
+  return node.getAbsoluteTransform().point({
+    x: node.width() / 2,
+    y: node.height() / 2,
+  });
 }
 
 /**
@@ -63,7 +64,12 @@ export class EffectTimeline {
     update: (t: number) => void,
     end?: () => void,
   ): void {
-    const track: Track = { start, duration, update, ended: false };
+    const track: Track = {
+      start,
+      duration,
+      update,
+      ended: false,
+    };
     if (end !== undefined) {
       track.end = end;
     }
@@ -117,7 +123,10 @@ export class EffectTimeline {
     seconds: number,
   ): void {
     const { unit } = this;
-    const flash = new Konva.Circle({ ...this.toFx(at), fill: color });
+    const flash = new Konva.Circle({
+      ...this.toFx(at),
+      fill: color,
+    });
     this.addShape(start, seconds, flash, (t) => {
       const out = easeOut(t);
       flash.radius(interpolate(FLASH_START_RADIUS, radius, out) * unit);
@@ -134,7 +143,10 @@ export class EffectTimeline {
     seconds: number,
   ): void {
     const { unit } = this;
-    const ring = new Konva.Circle({ ...this.toFx(at), stroke: color });
+    const ring = new Konva.Circle({
+      ...this.toFx(at),
+      stroke: color,
+    });
     this.addShape(start, seconds, ring, (t) => {
       const out = easeOut(t);
       ring.radius(interpolate(RING_START_RADIUS, radius, out) * unit);
@@ -238,8 +250,14 @@ export function addCardGlow(
     width: bandW,
     height: cardH * 3,
     rotation: SHEEN_DEGREES,
-    fillLinearGradientStartPoint: { x: 0, y: 0 },
-    fillLinearGradientEndPoint: { x: bandW, y: 0 },
+    fillLinearGradientStartPoint: {
+      x: 0,
+      y: 0,
+    },
+    fillLinearGradientEndPoint: {
+      x: bandW,
+      y: 0,
+    },
     fillLinearGradientColorStops: [
       0,
       "rgba(255, 255, 255, 0)",
@@ -310,7 +328,10 @@ function localTextCenter(label: Konva.Text): Point {
   } else if (align === "right") {
     left = space;
   }
-  return { x: left + width / 2, y: label.height() / 2 };
+  return {
+    x: left + width / 2,
+    y: label.height() / 2,
+  };
 }
 
 /** A number pops, scaling about its center. It is tinted for the first `colorPart` of the pop. */
@@ -330,7 +351,10 @@ export function addLabelPop(
     pop.text(label.text());
     pop.offset(localTextCenter(label));
     pop.position(timeline.toFx(textCenter(label)));
-    pop.scale({ x: scale, y: scale });
+    pop.scale({
+      x: scale,
+      y: scale,
+    });
     pop.fill(t < colorPart ? color : label.fill());
   });
   timeline.add(

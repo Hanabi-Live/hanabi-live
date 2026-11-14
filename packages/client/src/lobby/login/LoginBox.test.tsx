@@ -58,15 +58,27 @@ test("an empty field explains itself instead of signing in", () => {
   clickSignIn();
   expect(screen.getByText("You must provide a username.")).toBeTruthy();
 
-  fireEvent.change(getInput("login-username"), { target: { value: "Alice" } });
+  fireEvent.change(getInput("login-username"), {
+    target: {
+      value: "Alice",
+    },
+  });
   clickSignIn();
   expect(screen.getByText("You must provide a password.")).toBeTruthy();
   expect(signIn).not.toHaveBeenCalled();
 });
 
 test("a username without an account is created only after a second sign-in", () => {
-  fireEvent.change(getInput("login-username"), { target: { value: "Alice" } });
-  fireEvent.change(getInput("login-password"), { target: { value: "pw" } });
+  fireEvent.change(getInput("login-username"), {
+    target: {
+      value: "Alice",
+    },
+  });
+  fireEvent.change(getInput("login-password"), {
+    target: {
+      value: "pw",
+    },
+  });
   clickSignIn();
   expect(signIn).toHaveBeenLastCalledWith("Alice", "pw", undefined, false);
 
@@ -78,7 +90,11 @@ test("a username without an account is created only after a second sign-in", () 
   expect(signIn).toHaveBeenLastCalledWith("Alice", "pw", undefined, true);
 
   // Editing the username cancels the creation.
-  fireEvent.change(getInput("login-username"), { target: { value: "Alicia" } });
+  fireEvent.change(getInput("login-username"), {
+    target: {
+      value: "Alicia",
+    },
+  });
   expect(document.querySelector("#login-no-account")).toBeNull();
   expect(screen.getByText("Sign In")).toBeTruthy();
 });
@@ -88,9 +104,21 @@ test("the change password form sends the new password", () => {
     document.querySelector<HTMLElement>("#change-password-link")!.click();
   });
   expect(getInput("login-password").placeholder).toBe("Old Password");
-  fireEvent.change(getInput("login-username"), { target: { value: "Alice" } });
-  fireEvent.change(getInput("login-password"), { target: { value: "old" } });
-  fireEvent.change(getInput("change-password"), { target: { value: "new" } });
+  fireEvent.change(getInput("login-username"), {
+    target: {
+      value: "Alice",
+    },
+  });
+  fireEvent.change(getInput("login-password"), {
+    target: {
+      value: "old",
+    },
+  });
+  fireEvent.change(getInput("change-password"), {
+    target: {
+      value: "new",
+    },
+  });
   clickSignIn();
   expect(signIn).toHaveBeenLastCalledWith("Alice", "old", "new", false);
 });

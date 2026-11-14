@@ -151,9 +151,18 @@ function sortState(
 
 /** The arrows of a sortable header: both of them, or the one that shows the direction. */
 const SORT_ARROWS = {
-  none: { height: 9, path: "M7 4h7l-3.5-4zM7 5h7l-3.5 4z" },
-  ascending: { height: 4, path: "M7 4h7l-3.5-4z" },
-  descending: { height: 4, path: "M7 0h7l-3.5 4z" },
+  none: {
+    height: 9,
+    path: "M7 4h7l-3.5-4zM7 5h7l-3.5 4z",
+  },
+  ascending: {
+    height: 4,
+    path: "M7 4h7l-3.5-4z",
+  },
+  descending: {
+    height: 4,
+    path: "M7 0h7l-3.5 4z",
+  },
 } as const;
 
 /** The width of the sort arrows, which leaves room between them and the header's text. */

@@ -42,7 +42,10 @@ export const PIP_RADIUS = 100;
 const POSITIVE_PIP_HIGHLIGHT_RADIUS = PIP_RADIUS;
 
 /** The center of that glow, offset slightly from the pip's origin to sit behind its artwork. */
-const POSITIVE_PIP_HIGHLIGHT_CENTER = { x: 3, y: 5 } as const;
+const POSITIVE_PIP_HIGHLIGHT_CENTER = {
+  x: 3,
+  y: 5,
+} as const;
 
 /**
  * How far right the bottom of a multi-color duplicate-pip ring's gradient is from its top, in the

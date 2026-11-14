@@ -96,7 +96,10 @@ const rustProgressSnapshotSchema = z.object({
 const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
   z.object({ phase: z.literal("pregame") }),
   z.object({ phase: z.literal("replay") }),
-  z.object({ phase: z.literal("live"), snapshot: rustProgressSnapshotSchema }),
+  z.object({
+    phase: z.literal("live"),
+    snapshot: rustProgressSnapshotSchema,
+  }),
 ]);
 
 export const rustProgressTableSchema = z.object({
@@ -191,7 +194,10 @@ export function startProcess(directory: string): ProcessState {
   let output = "";
   let publicAddress: string | undefined;
   let operationsReady = false;
-  const lineBuffers = { stdout: "", stderr: "" };
+  const lineBuffers = {
+    stdout: "",
+    stderr: "",
+  };
   function getOutput() {
     return `${output}${lineBuffers.stdout}${lineBuffers.stderr}`.slice(-32_768);
   }
@@ -294,7 +300,11 @@ export async function installSchema(directory: string): Promise<void> {
     ["migrate", "apply"],
     {
       cwd: directory,
-      env: { PATH: process.env["PATH"], HOME: directory, TMPDIR: directory },
+      env: {
+        PATH: process.env["PATH"],
+        HOME: directory,
+        TMPDIR: directory,
+      },
       stdio: ["ignore", "ignore", "inherit"],
     },
   );
@@ -324,7 +334,10 @@ export async function login(
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
-  expect(body).toEqual({ userId: cookieUserId(cookie), username });
+  expect(body).toEqual({
+    userId: cookieUserId(cookie),
+    username,
+  });
   return cookie;
 }
 
@@ -342,7 +355,9 @@ export function socketClient(address: string, cookie: string): SocketClient {
   const socket = new WebSocket(
     `${address.replace("http:", "ws:")}/ws?version=${encodeURIComponent(VERSION)}`,
     {
-      headers: { Cookie: cookie },
+      headers: {
+        Cookie: cookie,
+      },
       handshakeTimeout: 5000,
     },
   );

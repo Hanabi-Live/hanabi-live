@@ -108,7 +108,9 @@ describe("CreateGame", () => {
   test("creates a table with the default name and remembers its password", () => {
     showPage();
     fireEvent.change(getInput("createTablePassword"), {
-      target: { value: "secret" },
+      target: {
+        value: "secret",
+      },
     });
     click("create-game-submit");
 
@@ -133,7 +135,9 @@ describe("CreateGame", () => {
     showPage();
     click("create-game-show-extra-options");
     fireEvent.change(getInput("create-game-seed"), {
-      target: { value: "a b" },
+      target: {
+        value: "a b",
+      },
     });
     click("create-game-submit");
 
@@ -154,17 +158,23 @@ describe("CreateGame", () => {
       store.getState().session.settings.createTable.options.oneExtraCard,
     ).toBe(true);
     expect(send).toHaveBeenCalledWith("settings", {
-      settings: { createTable: store.getState().session.settings.createTable },
+      settings: {
+        createTable: store.getState().session.settings.createTable,
+      },
     });
   });
 
   test("searching for a basic variant goes back to the dropdown", () => {
     showPage();
     fireEvent.change(getInput("create-game-variant-dropdown1"), {
-      target: { value: "Search custom variants..." },
+      target: {
+        value: "Search custom variants...",
+      },
     });
     fireEvent.change(getInput("create-game-variant-dropdown2"), {
-      target: { value: "6 Suits" },
+      target: {
+        value: "6 Suits",
+      },
     });
 
     expect(getInput("create-game-variant-dropdown1").value).toBe("6 Suits");
@@ -178,12 +188,21 @@ describe("CreateGame", () => {
     globals.tableId = TABLE_ID;
     store.dispatch(
       gameChanged({
-        owner: { userId: 2 as UserId, name: "Bob" },
+        owner: {
+          userId: 2 as UserId,
+          name: "Bob",
+        },
         settings: {
           name: "Bob's game",
           maxPlayers: 4,
-          options: { ...defaultSettings.createTable.options },
-          deal: { type: "replay", gameId: 12, turn: 2 },
+          options: {
+            ...defaultSettings.createTable.options,
+          },
+          deal: {
+            type: "replay",
+            gameId: 12,
+            turn: 2,
+          },
         },
       } as unknown as Game),
     );
@@ -202,7 +221,11 @@ describe("CreateGame", () => {
         name: "Bob's game",
         maxPlayers: 4,
         options: defaultSettings.createTable.options,
-        deal: { type: "replay", gameId: 12, turn: 2 },
+        deal: {
+          type: "replay",
+          gameId: 12,
+          turn: 2,
+        },
       },
     });
   });

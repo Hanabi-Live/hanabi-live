@@ -4,13 +4,28 @@ import type { ClockChange } from "./clock.ts";
 const storeState = {
   game: {
     current: {
-      pause: { pausingPlayerIndex: undefined as number | undefined },
-      metadata: { options: { timeControl: undefined } },
+      pause: {
+        pausingPlayerIndex: undefined as number | undefined,
+      },
+      metadata: {
+        options: {
+          timeControl: undefined,
+        },
+      },
     },
   },
-  session: { settings: { soundTimer: true }, errorOccurred: false },
+  session: {
+    settings: {
+      soundTimer: true,
+    },
+    errorOccurred: false,
+  },
 };
-vi.mock("../store.ts", () => ({ store: { getState: () => storeState } }));
+vi.mock("../store.ts", () => ({
+  store: {
+    getState: () => storeState,
+  },
+}));
 vi.mock("../sounds.ts", () => ({ play: vi.fn() }));
 const clock = await import("./clock.ts");
 
@@ -36,7 +51,10 @@ test("an untimed game's active clock counts up and tells the listeners", () => {
   vi.advanceTimersByTime(1000);
   expect(clock.getPlayerTimes()).toEqual([6000, 0]);
   expect(clock.getTurnTime()).toBe(1000);
-  expect(listener).toHaveBeenLastCalledWith({ type: "tick", warning: false });
+  expect(listener).toHaveBeenLastCalledWith({
+    type: "tick",
+    warning: false,
+  });
   unsubscribe();
 });
 

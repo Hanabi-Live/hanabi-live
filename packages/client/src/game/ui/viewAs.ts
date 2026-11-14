@@ -77,7 +77,10 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
     setTimeout(() => {
       backToLobby();
       lobbyGlobals.connection.send("replayCreate", {
-        source: { type: "saved", gameId },
+        source: {
+          type: "saved",
+          gameId,
+        },
         visibility: replayVisibility(globals.state.replay.shared !== undefined),
         shadowingPlayerIndex: playerIndex,
       });

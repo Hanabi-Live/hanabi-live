@@ -200,9 +200,16 @@ lobbyCommands.set("welcome", (data) => {
     && !store.getState().session.settings.darkMode
   ) {
     store.dispatch(
-      settingsChanged({ ...store.getState().session.settings, darkMode: true }),
+      settingsChanged({
+        ...store.getState().session.settings,
+        darkMode: true,
+      }),
     );
-    globals.connection.send("settings", { settings: { darkMode: true } });
+    globals.connection.send("settings", {
+      settings: {
+        darkMode: true,
+      },
+    });
   }
   theme.setDarkMode(store.getState().session.settings.darkMode);
 

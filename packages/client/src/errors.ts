@@ -6,7 +6,10 @@ import { escapeHtml } from "./utils.ts";
  * Where the Brave browser on iOS reports errors from code it injects: the character directly after
  * the opening `<!doctype HTML>` of each page.
  */
-const INJECTED_ERROR_LOCATION = { lineno: 1, colno: 16 } as const;
+const INJECTED_ERROR_LOCATION = {
+  lineno: 1,
+  colno: 16,
+} as const;
 
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {

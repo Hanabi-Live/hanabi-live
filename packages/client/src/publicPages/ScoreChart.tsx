@@ -68,19 +68,38 @@ export function ScoreChart({
         ],
       },
       options: {
-        layout: { padding: { top: TOP_PADDING } },
+        layout: {
+          padding: {
+            top: TOP_PADDING,
+          },
+        },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false,
+          },
           datalabels: {
             color: "#000000",
             anchor: "end",
             align: "end",
-            font: { weight: "bold", size: LABEL_FONT_SIZE },
+            font: {
+              weight: "bold",
+              size: LABEL_FONT_SIZE,
+            },
           },
         },
         scales: {
-          x: { title: { display: true, text: "Score" } },
-          y: { title: { display: true, text: "Number of games" } },
+          x: {
+            title: {
+              display: true,
+              text: "Score",
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Number of games",
+            },
+          },
         },
       },
     });

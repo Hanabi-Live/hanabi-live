@@ -165,7 +165,10 @@ export function animateCardMoves(
           transformOrigin: "top left",
           transform: `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`,
         },
-        { transformOrigin: "top left", transform: "none" },
+        {
+          transformOrigin: "top left",
+          transform: "none",
+        },
       ],
       {
         id: CARD_MOVE_ANIMATION_ID,
@@ -214,7 +217,10 @@ function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
   const dy = deck.top - from.top;
   const animation = element.animate(
     [
-      { transformOrigin: "top left", transform: "none" },
+      {
+        transformOrigin: "top left",
+        transform: "none",
+      },
       {
         transformOrigin: "top left",
         transform: `translate(${dx}px, ${dy}px) scale(${deck.width / from.width}, ${deck.height / from.height})`,
@@ -339,8 +345,14 @@ export function animateClue(root: HTMLElement): void {
   }
   root.querySelector("[data-clue-rail-head]")?.animate(
     [
-      { scale: 0.2, opacity: 0 },
-      { scale: 1, opacity: 1 },
+      {
+        scale: 0.2,
+        opacity: 0,
+      },
+      {
+        scale: 1,
+        opacity: 1,
+      },
     ],
     {
       id,
@@ -360,23 +372,39 @@ export function animateClue(root: HTMLElement): void {
 
     marker.animate(
       [
-        { transform: `translateY(${-height}px) scale(1.7)`, opacity: 0 },
+        {
+          transform: `translateY(${-height}px) scale(1.7)`,
+          opacity: 0,
+        },
         {
           transform: "translateY(3px) scale(0.88)",
           opacity: 1,
           offset: t.landImpact,
         },
-        { transform: "none", opacity: 1 },
+        {
+          transform: "none",
+          opacity: 1,
+        },
       ],
-      { id, duration: t.land, easing: "ease-in-out" },
+      {
+        id,
+        duration: t.land,
+        easing: "ease-in-out",
+      },
     );
   }
 
   // A clue that touches nothing shows a note on the receiver's hand, which pops in instead.
   root.querySelector<HTMLElement>("[data-clue-empty]")?.animate(
     [
-      { scale: 0.5, opacity: 0 },
-      { scale: 1, opacity: 1 },
+      {
+        scale: 0.5,
+        opacity: 0,
+      },
+      {
+        scale: 1,
+        opacity: 1,
+      },
     ],
     {
       id,

@@ -71,7 +71,12 @@ function comparable(
   checkpoint: Checkpoint,
   reversible: boolean,
 ): Partial<Checkpoint> {
-  return reversible ? checkpoint : { ...checkpoint, stackDirections: [] };
+  return reversible
+    ? checkpoint
+    : {
+        ...checkpoint,
+        stackDirections: [],
+      };
 }
 
 /** The game library's numbers, in the shape of the engine's. */
@@ -107,7 +112,10 @@ test(
       const { numPlayers } = defaults.options;
       const metadata: GameMetadata = {
         ...defaults,
-        options: { ...game.options, numPlayers },
+        options: {
+          ...game.options,
+          numPlayers,
+        },
       };
       const reversible = hasReversedSuits(getVariant(game.variantName));
       let state = getInitialGameState(metadata);

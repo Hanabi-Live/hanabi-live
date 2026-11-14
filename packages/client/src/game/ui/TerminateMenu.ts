@@ -83,7 +83,10 @@ export class TerminateMenu extends Konva.Group {
       winW - w - margin,
     );
     const y = skullBox.y - (MENU.skullGap + MENU.arrowH) * winH - h;
-    const panel = new Konva.Group({ x, y });
+    const panel = new Konva.Group({
+      x,
+      y,
+    });
     this.add(panel);
 
     const fill = getCanvasColors().surfaceArea;
@@ -168,7 +171,11 @@ export class TerminateMenu extends Konva.Group {
       });
       group.add(nameText, detailText);
       panel.add(group);
-      return { group, nameText, detailText };
+      return {
+        group,
+        nameText,
+        detailText,
+      };
     }
 
     const vote = button(voteY, "", "");

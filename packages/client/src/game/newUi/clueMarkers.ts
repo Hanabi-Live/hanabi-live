@@ -43,7 +43,11 @@ function getMarker(
 
   if (visibleType === "color") {
     return color === undefined || variant.cowAndPig
-      ? { type: "color", name: "", fill: HIDDEN_COLOR_FILL }
+      ? {
+          type: "color",
+          name: "",
+          fill: HIDDEN_COLOR_FILL,
+        }
       : {
           type: "color",
           name: color.name,
@@ -52,12 +56,21 @@ function getMarker(
   }
 
   if (rank === undefined || variant.cowAndPig) {
-    return { type: "rank", label: "#" };
+    return {
+      type: "rank",
+      label: "#",
+    };
   }
   if (variant.oddsAndEvens) {
-    return { type: "rank", label: rank === EVEN_RANK_CLUE ? "E" : "O" };
+    return {
+      type: "rank",
+      label: rank === EVEN_RANK_CLUE ? "E" : "O",
+    };
   }
-  return { type: "rank", label: rank.toString() };
+  return {
+    type: "rank",
+    label: rank.toString(),
+  };
 }
 
 /** How the clue being chosen shows on the cards that it would touch. */

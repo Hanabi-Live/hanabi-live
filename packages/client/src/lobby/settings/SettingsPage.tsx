@@ -306,7 +306,10 @@ function RowLabel({
 /** Changes our settings here and on the server. */
 function changeSetting(changed: Partial<Settings>) {
   store.dispatch(
-    settingsChanged({ ...store.getState().session.settings, ...changed }),
+    settingsChanged({
+      ...store.getState().session.settings,
+      ...changed,
+    }),
   );
   globals.connection.send("settings", { settings: changed });
 }

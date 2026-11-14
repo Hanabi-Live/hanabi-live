@@ -49,7 +49,9 @@ describe("SettingsPage", () => {
     });
     expect(store.getState().session.settings.colorblindMode).toBe(true);
     expect(send).toHaveBeenCalledWith("settings", {
-      settings: { colorblindMode: true },
+      settings: {
+        colorblindMode: true,
+      },
     });
     const status = screen.getByRole("status");
     expect(status.textContent).toBe("Saved");
@@ -68,12 +70,20 @@ describe("SettingsPage", () => {
       getInput("hGroupConventions")!.click();
     });
     act(() => {
-      fireEvent.change(getInput("hGroupLevel")!, { target: { value: "3" } });
+      fireEvent.change(getInput("hGroupLevel")!, {
+        target: {
+          value: "3",
+        },
+      });
     });
     expect(store.getState().session.settings.hGroupLevel).toBe(3);
 
     act(() => {
-      fireEvent.change(getInput("hGroupLevel")!, { target: { value: "" } });
+      fireEvent.change(getInput("hGroupLevel")!, {
+        target: {
+          value: "",
+        },
+      });
     });
     expect(store.getState().session.settings).not.toHaveProperty("hGroupLevel");
     expect(send).toHaveBeenLastCalledWith("settings", {
@@ -85,15 +95,27 @@ describe("SettingsPage", () => {
   test("the volume saves only when the slider is released", () => {
     const slider = getInput("settings-volume-slider")!;
     act(() => {
-      fireEvent.input(slider, { target: { value: "80" } });
+      fireEvent.input(slider, {
+        target: {
+          value: "80",
+        },
+      });
     });
     expect(screen.getByText("80%")).toBeTruthy();
     expect(send).not.toHaveBeenCalled();
 
     act(() => {
-      fireEvent.change(slider, { target: { value: "80" } });
+      fireEvent.change(slider, {
+        target: {
+          value: "80",
+        },
+      });
     });
     expect(store.getState().session.settings.volume).toBe(80);
-    expect(send).toHaveBeenCalledWith("settings", { settings: { volume: 80 } });
+    expect(send).toHaveBeenCalledWith("settings", {
+      settings: {
+        volume: 80,
+      },
+    });
   });
 });

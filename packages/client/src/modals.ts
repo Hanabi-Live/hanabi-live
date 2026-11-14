@@ -80,7 +80,10 @@ export function init(): void {
 }
 
 export function askForPassword(tableId: number): void {
-  showMessageModal({ type: "password", tableId });
+  showMessageModal({
+    type: "password",
+    tableId,
+  });
 }
 
 /** A card that the morph dialog changes into another card in a hypothetical. */
@@ -150,7 +153,10 @@ export function showWarning(msg: string): void {
 
   // Store the screen's active element.
   globals.lastActiveElement = document.activeElement as HTMLElement;
-  showMessageModal({ type: "warning", html: msg });
+  showMessageModal({
+    type: "warning",
+    html: msg,
+  });
 }
 
 /**
@@ -210,7 +216,12 @@ export function askForConfirmation(
 
   // Store the screen's active element.
   globals.lastActiveElement = document.activeElement as HTMLElement;
-  showMessageModal({ type: "confirm", title, description, confirmText });
+  showMessageModal({
+    type: "confirm",
+    title,
+    description,
+    confirmText,
+  });
 
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
   // must be stored afterward.

@@ -66,8 +66,16 @@ const KELDON_5P_TOP_NAME_FRAME_GAP_Y = 0.005;
  * left side hand.
  */
 const KELDON_SIDE_NAME_FRAME_OFFSET = {
-  5: { leftX: 0.0095, leftY: 0.022, rightY: 0.025 },
-  6: { leftX: 0.009, leftY: 0.01, rightY: 0.01 },
+  5: {
+    leftX: 0.0095,
+    leftY: 0.022,
+    rightY: 0.025,
+  },
+  6: {
+    leftX: 0.009,
+    leftY: 0.01,
+    rightY: 0.01,
+  },
 } as const;
 
 /** In the Keldon layout for 6 players, how much narrower our own hand and the top hands are. */
@@ -102,11 +110,27 @@ interface BlackLineX {
 }
 
 const KELDON_HAND_BLACK_LINE_X = {
-  2: { start: -0.0075, reversedStart: 0.002 },
-  3: { start: -0.0125, reversedStart: 0.002 },
-  4: { start: -0.005, reversedStart: 0 },
-  5: { start: -0.001, sideStart: -0.01, reversedStart: -0.005 },
-  6: { start: -0.0025, reversedStart: -0.005 },
+  2: {
+    start: -0.0075,
+    reversedStart: 0.002,
+  },
+  3: {
+    start: -0.0125,
+    reversedStart: 0.002,
+  },
+  4: {
+    start: -0.005,
+    reversedStart: 0,
+  },
+  5: {
+    start: -0.001,
+    sideStart: -0.01,
+    reversedStart: -0.005,
+  },
+  6: {
+    start: -0.0025,
+    reversedStart: -0.005,
+  },
 } as const satisfies Record<NumPlayers, BlackLineX>;
 
 /** The top of our own hand at the bottom of the board in Keldon mode. */
@@ -125,15 +149,29 @@ const KELDON_TOP_NAME_FRAME_Y = 0.21;
  * In the Keldon layout for 2 to 4 players, how far the name frames of the hands along the top and
  * bottom of the board extend past each side of them, in fractions of the stage width.
  */
-const KELDON_NAME_FRAME_INSET_X = { 2: 0.015, 3: 0.01, 4: 0.01 } as const;
+const KELDON_NAME_FRAME_INSET_X = {
+  2: 0.015,
+  3: 0.01,
+  4: 0.01,
+} as const;
 
 /**
  * In the Keldon layout for 3 and 4 players, where the name frames of the tilted hands on the sides
  * of the board are, in fractions of the stage.
  */
 const KELDON_TILTED_SIDE_NAME_FRAME = {
-  3: { leftX: 0.0075, rightX: 0.675, y: 0.775, w: SIDE_NAME_FRAME_W },
-  4: { leftX: 0.01, rightX: 0.66, y: 0.74, w: 0.13 },
+  3: {
+    leftX: 0.0075,
+    rightX: 0.675,
+    y: 0.775,
+    w: SIDE_NAME_FRAME_W,
+  },
+  4: {
+    leftX: 0.01,
+    rightX: 0.66,
+    y: 0.74,
+    w: 0.13,
+  },
 } as const;
 
 /**
@@ -144,7 +182,10 @@ const KELDON_TILTED_SIDE_NAME_FRAME = {
  */
 const BGA_TURN_RECT = {
   /** `wide` replaces `default` in games with `wideNumPlayers` players. */
-  paddingW: { default: 0.025, wide: 0.055 },
+  paddingW: {
+    default: 0.025,
+    wide: 0.055,
+  },
   wideNumPlayers: 5,
   paddingH: 0.075,
   /** How much further the bottom edge extends in games with the most players, in stage heights. */
@@ -195,7 +236,10 @@ const KELDON_3P_SIDE_HAND_ROTATION = 82;
 const KELDON_4P_SIDE_HAND_ROTATION = 78;
 
 /** In the Keldon layout, the left edge and width of a hand that spans the board (2 players). */
-const KELDON_WIDE_HAND = { x: 0.19, w: 0.42 } as const;
+const KELDON_WIDE_HAND = {
+  x: 0.19,
+  w: 0.42,
+} as const;
 
 /**
  * In the Keldon layout, the left edge and width of a narrow hand in the middle of the board, as
@@ -212,9 +256,32 @@ const KELDON_CENTERED_NARROW_HAND = {
  * hands along its top.
  */
 const KELDON_HAND_POSITIONS = {
-  3: { left: { x: 0.011, y: 0.73 }, right: { x: 0.735, y: 0.024 } },
-  4: { left: { x: 0.015, y: 0.68 }, right: { x: 0.715, y: 0.095 } },
-  5: { leftY: 0.756, topLeftX: 0.0205, topRightX: 0.44, rightY: 0.238 },
+  3: {
+    left: {
+      x: 0.011,
+      y: 0.73,
+    },
+    right: {
+      x: 0.735,
+      y: 0.024,
+    },
+  },
+  4: {
+    left: {
+      x: 0.015,
+      y: 0.68,
+    },
+    right: {
+      x: 0.715,
+      y: 0.095,
+    },
+  },
+  5: {
+    leftY: 0.756,
+    topLeftX: 0.0205,
+    topRightX: 0.44,
+    rightY: 0.238,
+  },
   6: {
     bottomX: 0.273,
     leftY: 0.72,
@@ -226,7 +293,10 @@ const KELDON_HAND_POSITIONS = {
 } as const;
 
 /** In the Keldon layout with one extra card, how far our own hand and the others move down. */
-const KELDON_EXTRA_CARD_OFFSET_Y = { us: 0.018, other: 0.013 } as const;
+const KELDON_EXTRA_CARD_OFFSET_Y = {
+  us: 0.018,
+  other: 0.013,
+} as const;
 
 /**
  * In the Keldon layout with one extra card, the hands that run down the sides of the board, and
@@ -281,7 +351,12 @@ function nameFrameBelow(
   insetX: number,
   y: number,
 ): HandConfig {
-  return { x: hand.x - insetX, y, w: hand.w + insetX * 2, h: NAME_FRAME_H };
+  return {
+    x: hand.x - insetX,
+    y,
+    w: hand.w + insetX * 2,
+    h: NAME_FRAME_H,
+  };
 }
 
 /** The name frame of a tilted hand on one side of the board in the Keldon layout. */
@@ -310,11 +385,26 @@ export function drawHands(winW: number, winH: number): void {
   const handPos6W =
     KELDON_REDUCED_HAND_H * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
   handPos[2] = [
-    { ...KELDON_WIDE_HAND, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { ...KELDON_WIDE_HAND, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
+    {
+      ...KELDON_WIDE_HAND,
+      y: KELDON_BOTTOM_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
+    {
+      ...KELDON_WIDE_HAND,
+      y: KELDON_TOP_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
   ];
   handPos[3] = [
-    { ...KELDON_WIDE_HAND, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
+    {
+      ...KELDON_WIDE_HAND,
+      y: KELDON_BOTTOM_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
     {
       x: KELDON_HAND_POSITIONS[3].left.x,
       y: KELDON_HAND_POSITIONS[3].left.y,

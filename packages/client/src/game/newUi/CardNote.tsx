@@ -209,7 +209,10 @@ function NoteEditor({
     <div
       className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-black/25"
       ref={boxRef}
-      style={{ width: NOTE_EDITOR_WIDTH, marginLeft: shift }}
+      style={{
+        width: NOTE_EDITOR_WIDTH,
+        marginLeft: shift,
+      }}
     >
       <span className="tw:relative tw:block">
         <input

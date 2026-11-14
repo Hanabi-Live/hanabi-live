@@ -51,7 +51,10 @@ afterAll(() => {
 });
 
 vi.mock("./Globals.ts", () => ({
-  globals: { errorOccurred: false, lastActiveElement: undefined },
+  globals: {
+    errorOccurred: false,
+    lastActiveElement: undefined,
+  },
 }));
 vi.mock("./game/reducers/noteIdentity.ts", () => ({}));
 vi.mock("./game/hypothetical.ts", () => ({ morphCard: vi.fn() }));

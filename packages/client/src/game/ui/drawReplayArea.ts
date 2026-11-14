@@ -21,9 +21,17 @@ const NUM_REPLAY_BUTTONS = 4;
 
 /** The replay area, in fractions of the stage. */
 const REPLAY_AREA = {
-  keldon: { x: 0.15, y: 0.51, w: 0.5 },
+  keldon: {
+    x: 0.15,
+    y: 0.51,
+    w: 0.5,
+  },
   /** In the BGA layout, the replay area lines up with the action log above it. */
-  bga: { x: BGA_ACTION_LOG.x, y: 0.49, w: BGA_ACTION_LOG.w },
+  bga: {
+    x: BGA_ACTION_LOG.x,
+    y: 0.49,
+    w: BGA_ACTION_LOG.w,
+  },
   h: 0.27,
 } as const;
 

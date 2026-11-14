@@ -51,7 +51,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
             frames.push(raw.toString());
           });
           await peer.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
-          return { ...peer, frames };
+          return {
+            ...peer,
+            frames,
+          };
         }
         let alice = await connect(aliceCookie);
         let bob = await connect(bobCookie);
@@ -93,7 +96,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
             SERVER_EVENT_SCHEMAS.gameState,
           );
           peer.send("gameLoaded", { tableId });
-          return { init, history };
+          return {
+            init,
+            history,
+          };
         }
         const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);
         await alice.receive(
@@ -121,7 +127,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         expect(startedState.length).toBeGreaterThan(0);
         const action = {
           tableId,
-          action: { type: "play", order: card.order },
+          action: {
+            type: "play",
+            order: card.order,
+          },
         } as const;
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
         // Holds the table's checkpoint row so that the action's save waits.
@@ -129,7 +138,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         try {
           await active.refused("playerAction", {
             tableId,
-            action: { type: "play", order: 9999 },
+            action: {
+              type: "play",
+              order: 9999,
+            },
           });
           await blocker`SET idle_in_transaction_session_timeout = 0`;
           await blocker`BEGIN`;
@@ -284,7 +296,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         await sql.end({ timeout: 3 });
         await database.close();
-        await rm(directory, { recursive: true, force: true });
+        await rm(directory, {
+          recursive: true,
+          force: true,
+        });
       }
     },
     600_000,

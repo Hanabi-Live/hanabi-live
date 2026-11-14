@@ -126,7 +126,10 @@ interface Stack {
 const ROCKET_CLIMB = 0.5;
 
 /** How far from its left edge the sheen starts and ends, as a fraction of the card's width. */
-const SHEEN_TRAVEL = { start: -0.8, end: 1.2 } as const;
+const SHEEN_TRAVEL = {
+  start: -0.8,
+  end: 1.2,
+} as const;
 const SHEEN_PEAK_OPACITY = 0.85;
 
 /**
@@ -165,7 +168,11 @@ class Fireworks {
     duration: number,
     draw: (context: CanvasRenderingContext2D, t: number) => void,
   ): void {
-    this.tracks.push({ start, duration, draw });
+    this.tracks.push({
+      start,
+      duration,
+      draw,
+    });
   }
 
   /** A bright circle that grows and fades. Its radius is a fraction of the unit. */
@@ -304,7 +311,10 @@ function getStacks(
       `[data-stack-slot="${CSS.escape(suitIndex.toString())}"]`,
     );
     if (slot !== null) {
-      stacks.push({ suit, slot });
+      stacks.push({
+        suit,
+        slot,
+      });
     }
   }
   return stacks;
@@ -343,8 +353,14 @@ function getFlight(root: HTMLElement, stacksMiddle: Point, unit: number) {
     y: toward.y / towardLength - ROCKET_CLIMB,
   };
   const awayLength = Math.hypot(away.x, away.y);
-  const direction = { x: away.x / awayLength, y: away.y / awayLength };
-  const across = { x: -direction.y, y: direction.x };
+  const direction = {
+    x: away.x / awayLength,
+    y: away.y / awayLength,
+  };
+  const across = {
+    x: -direction.y,
+    y: direction.x,
+  };
 
   return (from: Point, along: number, side = 0): Point => ({
     x: from.x + (direction.x * along + across.x * side) * unit,

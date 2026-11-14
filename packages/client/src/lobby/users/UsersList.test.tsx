@@ -80,7 +80,10 @@ function user(
     activity:
       status === "lobby"
         ? { type: status }
-        : { type: status, tableId: TABLE_ID },
+        : {
+            type: status,
+            tableId: TABLE_ID,
+          },
     hGroupConventions: false,
     bot: false,
     inactive: false,
@@ -149,7 +152,12 @@ describe("UsersList", () => {
     expect(name.textContent).not.toContain("\u{1F4A4}");
 
     act(() => {
-      store.dispatch(userChanged({ ...user(1, "Alice"), inactive: true }));
+      store.dispatch(
+        userChanged({
+          ...user(1, "Alice"),
+          inactive: true,
+        }),
+      );
     });
 
     expect(name.style.opacity).toBe(String(DIMMED_OPACITY));
@@ -159,8 +167,15 @@ describe("UsersList", () => {
   test("lists bots on a separate tab and does not count them as users", () => {
     store.dispatch(
       usersListed([
-        { ...user(1, "Alice"), hGroupConventions: true },
-        { ...user(2, "Bot-Bob"), hGroupConventions: true, bot: true },
+        {
+          ...user(1, "Alice"),
+          hGroupConventions: true,
+        },
+        {
+          ...user(2, "Bot-Bob"),
+          hGroupConventions: true,
+          bot: true,
+        },
       ]),
     );
     renderList();

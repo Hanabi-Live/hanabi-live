@@ -83,7 +83,5 @@ export default defineConfig(
     },
   },
 
-  {
-    ignores: ["docs/assets/*.js"],
-  },
+  { ignores: ["docs/assets/*.js"] },
 );

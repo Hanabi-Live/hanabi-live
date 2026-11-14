@@ -69,7 +69,5 @@ export default defineConfig(
     },
   },
 
-  {
-    ignores: ["src/version.js"],
-  },
+  { ignores: ["src/version.js"] },
 );

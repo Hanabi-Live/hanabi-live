@@ -333,7 +333,10 @@ function historyMatchNext(current: string, older: boolean): string | undefined {
     if (!older) {
       return undefined;
     }
-    typedChatHistoryBrowse = { prefix: current, index: undefined };
+    typedChatHistoryBrowse = {
+      prefix: current,
+      index: undefined,
+    };
   }
   const browse = typedChatHistoryBrowse;
 
@@ -519,7 +522,9 @@ export function addSettingsSuggestion(
       tableId: data.tableId,
       kind: {
         type: "private",
-        author: { type: "server" },
+        author: {
+          type: "server",
+        },
         recipient: store.getState().session.username,
       },
     },
@@ -590,8 +595,14 @@ function addInternal(
     ...(recipient !== undefined && {
       privateMessage:
         recipient === store.getState().session.username
-          ? { direction: "from", name: authorName ?? PROJECT_NAME }
-          : { direction: "to", name: recipient },
+          ? {
+              direction: "from",
+              name: authorName ?? PROJECT_NAME,
+            }
+          : {
+              direction: "to",
+              name: recipient,
+            },
     }),
     ...(!fromServer
       && recipient === undefined
@@ -705,7 +716,9 @@ export function sendSelfPmFromServer(
       ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
       kind: {
         type: "private",
-        author: { type: "server" },
+        author: {
+          type: "server",
+        },
         recipient: store.getState().session.username,
       },
     },

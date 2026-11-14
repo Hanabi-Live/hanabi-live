@@ -48,7 +48,10 @@ function requestPage(offset: number) {
   store.dispatch(historyRequested());
   globals.connection.send(
     "gameHistory",
-    { offset, limit: HISTORY_PAGE_SIZE },
+    {
+      offset,
+      limit: HISTORY_PAGE_SIZE,
+    },
     (reply) => {
       // A failed page adds no games.
       store.dispatch(historyReceived(reply.ok ? reply.data.games : []));
@@ -90,10 +93,20 @@ export function showMoreOtherScores(): void {
 function requestOtherScoresPage(seed: string, offset: number) {
   globals.connection.send(
     "seedGames",
-    { seed, offset, limit: HISTORY_PAGE_SIZE },
+    {
+      seed,
+      offset,
+      limit: HISTORY_PAGE_SIZE,
+    },
     (reply) => {
       if (reply.ok) {
-        store.dispatch(otherScoresReceived({ seed, offset, page: reply.data }));
+        store.dispatch(
+          otherScoresReceived({
+            seed,
+            offset,
+            page: reply.data,
+          }),
+        );
       }
     },
   );

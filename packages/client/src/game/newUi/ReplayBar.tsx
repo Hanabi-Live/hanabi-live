@@ -557,7 +557,10 @@ export function TurnsBar({
   const leaderMark =
     shared === undefined || shared.amLeader || shared.useSharedSegments
       ? undefined
-      : { name: shared.leader, segment: shared.segment };
+      : {
+          name: shared.leader,
+          segment: shared.segment,
+        };
 
   // The buttons that step through the turns are together in the middle of the first row, so that a
   // player can click back and forth without moving the mouse far. The leader's menu, which names
@@ -674,8 +677,14 @@ function BackToGame({ state }: { readonly state: State }): React.JSX.Element {
     }
     const pulse = ring.animate(
       [
-        { opacity: 0.8, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(1.15, 1.6)" },
+        {
+          opacity: 0.8,
+          transform: "scale(1)",
+        },
+        {
+          opacity: 0,
+          transform: "scale(1.15, 1.6)",
+        },
       ],
       {
         duration: OUR_TURN_PULSE_MILLISECONDS,
@@ -733,14 +742,22 @@ function useLeaderMove(
   segment: number,
   turn: number,
 ): LeaderMove | undefined {
-  const [previous, setPrevious] = useState({ following, segment, turn });
+  const [previous, setPrevious] = useState({
+    following,
+    segment,
+    turn,
+  });
   const [move, setMove] = useState<LeaderMove>();
   if (
     previous.following !== following
     || previous.segment !== segment
     || previous.turn !== turn
   ) {
-    setPrevious({ following, segment, turn });
+    setPrevious({
+      following,
+      segment,
+      turn,
+    });
     if (following && previous.following && previous.segment !== segment) {
       setMove({
         direction: segment > previous.segment ? 1 : -1,
@@ -776,10 +793,19 @@ function DirectionFlash({
     }
     const pop = icon.animate(
       [
-        { opacity: 0, transform: "scale(0.4)" },
-        { opacity: 1, transform: "scale(1)" },
+        {
+          opacity: 0,
+          transform: "scale(0.4)",
+        },
+        {
+          opacity: 1,
+          transform: "scale(1)",
+        },
       ],
-      { duration: 180, easing: EASE_OUT_BACK },
+      {
+        duration: 180,
+        easing: EASE_OUT_BACK,
+      },
     );
     const fade = icon.animate([{ opacity: 1 }, { opacity: 0 }], {
       delay: 400,

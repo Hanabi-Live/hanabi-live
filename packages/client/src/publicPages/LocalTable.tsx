@@ -100,7 +100,10 @@ export function LocalTable<Row>({
             column.filter === "select"
               ? [...new Set(rows.map((row) => column.text(row)))]
                   .toSorted((a, b) => collator.compare(a, b))
-                  .map((value) => ({ value, text: value }))
+                  .map((value) => ({
+                    value,
+                    text: value,
+                  }))
               : column.filter,
         }))}
         onFilter={(index, value) => {

@@ -139,7 +139,10 @@ function subscribeToCardChanges(order: CardOrder) {
 
   // Subscribes to a set of property changes from cards as well as anywhere else in state.
   function subFullState<T>(s: Selector<State, T>, l: Listener<T>) {
-    subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
+    subscriptions.push({
+      select: checkOrderAndSelect(s),
+      onChange: l,
+    });
   }
 
   // Borders
@@ -162,7 +165,10 @@ function subscribeToCardChanges(order: CardOrder) {
         morphedIdentity
         ?? (card.suitIndex === undefined || card.rank === undefined
           ? s.cardIdentities[order]
-          : { suitIndex: card.suitIndex, rank: card.rank });
+          : {
+              suitIndex: card.suitIndex,
+              rank: card.rank,
+            });
 
       const status =
         identity === undefined
@@ -185,9 +191,7 @@ function subscribeToCardChanges(order: CardOrder) {
 
   // Notes
   sub(
-    (c) => ({
-      possibleCards: c.possibleCards.length,
-    }),
+    (c) => ({ possibleCards: c.possibleCards.length }),
     () => {
       checkNoteDisproved(order);
     },

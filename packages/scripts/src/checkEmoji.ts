@@ -290,7 +290,10 @@ async function fetchFrankerFaceZEmotes(): Promise<readonly UpstreamEmote[]> {
           `The FrankerFaceZ emote "${emote.name}" has no 1x image.`,
         );
       }
-      return { code: emote.name, imageUrl };
+      return {
+        code: emote.name,
+        imageUrl,
+      };
     });
 }
 
@@ -303,7 +306,10 @@ async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
       throw new Error(`The Twitch emote "${emote.code}" has no 1x image.`);
     }
     // The "default" variant of an animated emote is a GIF; the "static" variant is always a PNG.
-    return { code: emote.code, imageUrl: url.replace("/default/", "/static/") };
+    return {
+      code: emote.code,
+      imageUrl: url.replace("/default/", "/static/"),
+    };
   });
 }
 

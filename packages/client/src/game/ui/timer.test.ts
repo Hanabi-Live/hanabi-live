@@ -8,8 +8,14 @@ vi.mock("../../store.ts", () => ({
     getState: () => ({
       game: {
         current: {
-          pause: { pausingPlayerIndex: undefined },
-          metadata: { options: { timeControl: undefined } },
+          pause: {
+            pausingPlayerIndex: undefined,
+          },
+          metadata: {
+            options: {
+              timeControl: undefined,
+            },
+          },
         },
       },
       session: {
@@ -25,15 +31,27 @@ vi.mock("../../store.ts", () => ({
 }));
 vi.mock("./UiGlobals.ts", () => ({
   globals: {
-    state: { finished: false, playing: true },
+    state: {
+      finished: false,
+      playing: true,
+    },
     elements: {
       timer1: undefined,
       timer2: undefined,
       deck: undefined,
     },
-    layers: { timer: { batchDraw: vi.fn() } },
-    options: { speedrun: false, timeControl: undefined },
-    metadata: { ourPlayerIndex: 1 },
+    layers: {
+      timer: {
+        batchDraw: vi.fn(),
+      },
+    },
+    options: {
+      speedrun: false,
+      timeControl: undefined,
+    },
+    metadata: {
+      ourPlayerIndex: 1,
+    },
   },
 }));
 const { globals } = await import("./UiGlobals.ts");
@@ -57,8 +75,14 @@ test("finishing a game hides the timers", () => {
   const timer1 = { hide: vi.fn() };
   const timer2 = { hide: vi.fn() };
   Object.assign(globals, {
-    state: { finished: true, playing: false },
-    elements: { timer1, timer2 },
+    state: {
+      finished: true,
+      playing: false,
+    },
+    elements: {
+      timer1,
+      timer2,
+    },
   });
   try {
     clock.finish();
@@ -66,8 +90,15 @@ test("finishing a game hides the timers", () => {
     expect(timer2.hide).toHaveBeenCalled();
   } finally {
     Object.assign(globals, {
-      state: { finished: false, playing: true },
-      elements: { timer1: undefined, timer2: undefined, deck: undefined },
+      state: {
+        finished: false,
+        playing: true,
+      },
+      elements: {
+        timer1: undefined,
+        timer2: undefined,
+        deck: undefined,
+      },
     });
   }
 });

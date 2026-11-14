@@ -52,7 +52,11 @@ afterEach(() => {
 
 test("the idle warning counts down, and only players can keep the game going", () => {
   vi.useFakeTimers();
-  show({ type: "idle", deadline: Date.now() + 299_000, canKeepPlaying: false });
+  show({
+    type: "idle",
+    deadline: Date.now() + 299_000,
+    canKeepPlaying: false,
+  });
   expect(document.querySelector("#idle-modal strong")?.textContent).toBe(
     "4:59",
   );
@@ -66,7 +70,11 @@ test("the idle warning counts down, and only players can keep the game going", (
   );
 
   cleanup();
-  show({ type: "idle", deadline: Date.now() + 299_000, canKeepPlaying: true });
+  show({
+    type: "idle",
+    deadline: Date.now() + 299_000,
+    canKeepPlaying: true,
+  });
   act(() => {
     screen.getByText("Keep Playing").click();
   });
@@ -75,13 +83,20 @@ test("the idle warning counts down, and only players can keep the game going", (
 
 test("the password modal starts with the last password, and Enter joins the table", () => {
   localStorage.setItem("joinTablePassword", "old");
-  show({ type: "password", tableId: 5 });
+  show({
+    type: "password",
+    tableId: 5,
+  });
   const input = document.querySelector<HTMLInputElement>(
     "#password-modal-password",
   )!;
   expect(input.value).toBe("old");
 
-  fireEvent.change(input, { target: { value: "new" } });
+  fireEvent.change(input, {
+    target: {
+      value: "new",
+    },
+  });
   fireEvent.keyDown(input, { key: "Enter" });
   expect(send).toHaveBeenCalledWith("tableJoin", {
     tableId: 5,

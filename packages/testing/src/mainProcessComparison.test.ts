@@ -118,7 +118,10 @@ databaseDescribe("normal-server protocol workload", () => {
         ) {
           peer.send("gameLoaded", { tableId });
         }
-        return { init, history };
+        return {
+          init,
+          history,
+        };
       }
       const gameplayStart = performance.now();
       await settleLanes(
@@ -136,7 +139,10 @@ databaseDescribe("normal-server protocol workload", () => {
                 name: "Benchmark",
                 maxPlayers: DEFAULT_MAX_PLAYERS,
                 options: {},
-                deal: { type: "seed", suffix: SEED_SUFFIX },
+                deal: {
+                  type: "seed",
+                  suffix: SEED_SUFFIX,
+                },
               },
             });
             const { tableId } = await alice.receive(
@@ -178,7 +184,10 @@ databaseDescribe("normal-server protocol workload", () => {
               const start = performance.now();
               peer.send("playerAction", {
                 tableId,
-                action: { type: "play", order },
+                action: {
+                  type: "play",
+                  order,
+                },
               });
               await peer.receive(
                 "gameEvent",
@@ -293,8 +302,13 @@ databaseDescribe("normal-server protocol workload", () => {
         gameId: number,
       ) {
         peer.send("replayCreate", {
-          source: { type: "saved", gameId },
-          visibility: { type: "solo" },
+          source: {
+            type: "saved",
+            gameId,
+          },
+          visibility: {
+            type: "solo",
+          },
         });
         const { tableId } = await peer.receive(
           "tableJoined",
@@ -302,7 +316,10 @@ databaseDescribe("normal-server protocol workload", () => {
           entersGame,
         );
         const replay = await bootstrap(peer, tableId);
-        expect(replay.init.mode).toMatchObject({ type: "soloReplay", gameId });
+        expect(replay.init.mode).toMatchObject({
+          type: "soloReplay",
+          gameId,
+        });
         expect(
           replay.history.events.filter((event) => event.type === "play"),
         ).toHaveLength(25);
@@ -374,7 +391,10 @@ databaseDescribe("normal-server protocol workload", () => {
       }
       await sql.end({ timeout: 3 });
       await database.close();
-      await rm(directory, { recursive: true, force: true });
+      await rm(directory, {
+        recursive: true,
+        force: true,
+      });
     }
   }, 600_000);
 });

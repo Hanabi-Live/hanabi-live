@@ -157,7 +157,10 @@ export function getCardView({
   // A "blank" note shows the card as one that nobody knows.
   const blank = showsNoteMarks && note.blank;
   const identity = blank
-    ? { suitIndex: undefined, rank: undefined }
+    ? {
+        suitIndex: undefined,
+        rank: undefined,
+      }
     : getCardIdentityToShow(identityOptions);
   const { suitIndex, rank } = identity;
 

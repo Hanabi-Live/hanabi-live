@@ -169,7 +169,11 @@ const CLUE_EDGE_WIDTH = 2;
  * The rail's arrowhead, in CSS pixels: a broad head with a notch in its back, so that it reads as
  * an arrow at a glance.
  */
-const CLUE_RAIL_HEAD = { length: 15, halfHeight: 10, notch: 4 } as const;
+const CLUE_RAIL_HEAD = {
+  length: 15,
+  halfHeight: 10,
+  notch: 4,
+} as const;
 
 /**
  * A rail to the left of the hands, from the name of the player who gave the clue on the turn that
@@ -440,7 +444,11 @@ export function NameColumnSizer({
         />,
         <NameChip
           key={`${seat.playerIndex}-waiting`}
-          seat={{ ...seat, active: false, timeTooltip: undefined }}
+          seat={{
+            ...seat,
+            active: false,
+            timeTooltip: undefined,
+          }}
         />,
       ])}
     </div>

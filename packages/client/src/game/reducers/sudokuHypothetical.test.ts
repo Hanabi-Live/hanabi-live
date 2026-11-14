@@ -98,7 +98,13 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
               },
             ],
           };
-          const actions = planHypotheticalAction({ type, order }, context);
+          const actions = planHypotheticalAction(
+            {
+              type,
+              order,
+            },
+            context,
+          );
           assertDefined(actions, "Failed to plan a hand action.");
 
           let hypothetical = initializeHypotheticalState(
@@ -133,12 +139,46 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     );
 
     const intents = [
-      { type: "clue", receiverIndex: 0, clue: { type: "color", color: 3 } },
-      { type: "clue", receiverIndex: 1, clue: { type: "color", color: 1 } },
-      { type: "clue", receiverIndex: 0, clue: { type: "rank", rank: 4 } },
-      { type: "clue", receiverIndex: 1, clue: { type: "color", color: 0 } },
-      { type: "play", order: 6 as CardOrder },
-      { type: "play", order: 47 as CardOrder },
+      {
+        type: "clue",
+        receiverIndex: 0,
+        clue: {
+          type: "color",
+          color: 3,
+        },
+      },
+      {
+        type: "clue",
+        receiverIndex: 1,
+        clue: {
+          type: "color",
+          color: 1,
+        },
+      },
+      {
+        type: "clue",
+        receiverIndex: 0,
+        clue: {
+          type: "rank",
+          rank: 4,
+        },
+      },
+      {
+        type: "clue",
+        receiverIndex: 1,
+        clue: {
+          type: "color",
+          color: 0,
+        },
+      },
+      {
+        type: "play",
+        order: 6 as CardOrder,
+      },
+      {
+        type: "play",
+        order: 47 as CardOrder,
+      },
     ] as const;
 
     for (const intent of intents) {
@@ -189,9 +229,15 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     const card = after.deck[49];
     assertDefined(card, "Missing the final card.");
     const morphedIdentities: Array<CardIdentity | undefined> = [];
-    morphedIdentities[49] = { suitIndex: 0, rank: 4 };
+    morphedIdentities[49] = {
+      suitIndex: 0,
+      rank: 4,
+    };
     const invalidPlan = planHypotheticalAction(
-      { type: "play", order: 49 as CardOrder },
+      {
+        type: "play",
+        order: 49 as CardOrder,
+      },
       {
         gameState: after,
         metadata,

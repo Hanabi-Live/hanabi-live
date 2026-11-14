@@ -111,7 +111,11 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
     }
   }
 
-  cluePreview.setPotentialClue({ target, clue, touchedCards });
+  cluePreview.setPotentialClue({
+    target,
+    clue,
+    touchedCards,
+  });
 
   return touchedCards.length > 0;
 }
@@ -174,7 +178,10 @@ export function give(): void {
       const clientActionClue: ClientActionClue = {
         type: "clue",
         receiverIndex: playerButton.targetPlayerIndex,
-        clue: { type: "color", color: colorIndex },
+        clue: {
+          type: "color",
+          color: colorIndex,
+        },
       };
       turn.end(clientActionClue);
 
@@ -185,7 +192,10 @@ export function give(): void {
       const clientActionClue: ClientActionClue = {
         type: "clue",
         receiverIndex: playerButton.targetPlayerIndex,
-        clue: { type: "rank", rank: clueOrRankButton.clue.value },
+        clue: {
+          type: "rank",
+          rank: clueOrRankButton.clue.value,
+        },
       };
       turn.end(clientActionClue);
 

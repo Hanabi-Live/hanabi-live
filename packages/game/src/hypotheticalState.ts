@@ -140,7 +140,13 @@ export function hypotheticalStateReducer(
   );
   return {
     ...newState,
-    ongoing: deck === ongoing.deck ? ongoing : { ...ongoing, deck },
+    ongoing:
+      deck === ongoing.deck
+        ? ongoing
+        : {
+            ...ongoing,
+            deck,
+          },
     deducedFromShownIdentities: true,
   };
 }
@@ -281,7 +287,10 @@ function isHypotheticalOver(
       if (suitIndex === undefined || rank === undefined) {
         return true;
       }
-      shownCard = { ...card, possibleCards: [[suitIndex, rank]] };
+      shownCard = {
+        ...card,
+        possibleCards: [[suitIndex, rank]],
+      };
     }
 
     return isCardPotentiallyPlayable(

@@ -155,7 +155,10 @@ export function loadGameJson(gameJson: JsonGame): State {
             jsonCard.rank as Rank,
           );
         });
-        action = { ...a, orders: list };
+        action = {
+          ...a,
+          orders: list,
+        };
         break;
       }
 
@@ -229,7 +232,10 @@ export function loadGameJson(gameJson: JsonGame): State {
   return {
     visibleState: game,
     ongoingGame: game,
-    replay: { ...state.replay, states },
+    replay: {
+      ...state.replay,
+      states,
+    },
     cardIdentities: [],
 
     playing: false,
@@ -277,7 +283,10 @@ function drawCard(
     type: "draw",
     playerIndex,
     order,
-    identity: { suitIndex: cardIdentity.suitIndex, rank: cardIdentity.rank },
+    identity: {
+      suitIndex: cardIdentity.suitIndex,
+      rank: cardIdentity.rank,
+    },
   };
 }
 
@@ -345,8 +354,14 @@ function parseJsonAction(
         type: "clue",
         clue:
           a.type === JsonActionType.ActionTypeColorClue
-            ? { type: "color", color: a.value }
-            : { type: "rank", rank: a.value },
+            ? {
+                type: "color",
+                color: a.value,
+              }
+            : {
+                type: "rank",
+                rank: a.value,
+              },
         playerIndex: currentPlayer,
         receiverIndex: a.target,
         turn,

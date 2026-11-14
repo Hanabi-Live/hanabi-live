@@ -175,7 +175,10 @@ export class Connection {
     const schema = replySchemas[command];
     if (schema === undefined) {
       // `ReplyData` has no data for a command without a reply schema.
-      resolve({ ok: true, data: undefined as ReplyData[ClientRequest] });
+      resolve({
+        ok: true,
+        data: undefined as ReplyData[ClientRequest],
+      });
       return;
     }
     const result = schema.safeParse(data);

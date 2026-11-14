@@ -17,7 +17,10 @@ import type { SuitRankTuple } from "./types/SuitRankTuple.ts";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);
-const unknownIdentity: CardIdentity = { suitIndex: undefined, rank: undefined };
+const unknownIdentity: CardIdentity = {
+  suitIndex: undefined,
+  rank: undefined,
+};
 const emptyNote: CardNote = {
   possibilities: [],
   knownTrash: false,
@@ -51,12 +54,15 @@ function getIdentity(
 describe("card presentation", () => {
   describe("visible identity", () => {
     test("shows a known suit while leaving an unknown rank hidden", () => {
-      expect(getIdentity(emptyNote, { suitIndex: 1, rank: undefined })).toEqual(
-        {
+      expect(
+        getIdentity(emptyNote, {
           suitIndex: 1,
           rank: undefined,
-        },
-      );
+        }),
+      ).toEqual({
+        suitIndex: 1,
+        rank: undefined,
+      });
     });
 
     test("uses note possibilities when they determine a suit or rank", () => {
@@ -103,11 +109,17 @@ describe("card presentation", () => {
           isStackBase: false,
           finished: false,
         }),
-      ).toEqual({ suitIndex: 3, rank: 4 });
+      ).toEqual({
+        suitIndex: 3,
+        rank: 4,
+      });
     });
 
     test("applies the note in empathy mode only when asked", () => {
-      const note: CardNote = { ...emptyNote, possibilities: [[2, 3]] };
+      const note: CardNote = {
+        ...emptyNote,
+        possibilities: [[2, 3]],
+      };
       const options = {
         cardIdentity: unknownIdentity,
         state: baseCard,
@@ -119,8 +131,14 @@ describe("card presentation", () => {
 
       expect(getCardIdentityToShow(options)).toEqual(unknownIdentity);
       expect(
-        getCardIdentityToShow({ ...options, empathyIncludesNotes: true }),
-      ).toEqual({ suitIndex: 2, rank: 3 });
+        getCardIdentityToShow({
+          ...options,
+          empathyIncludesNotes: true,
+        }),
+      ).toEqual({
+        suitIndex: 2,
+        rank: 3,
+      });
     });
 
     describe("identity from a note", () => {
@@ -131,27 +149,43 @@ describe("card presentation", () => {
         isStackBase: false,
         finished: false,
       };
-      const red3Note: CardNote = { ...emptyNote, possibilities: [[0, 3]] };
+      const red3Note: CardNote = {
+        ...emptyNote,
+        possibilities: [[0, 3]],
+      };
 
       test("is set when the note fills in an unknown suit or rank", () => {
-        expect(isCardIdentityFromNote({ ...options, note: red3Note })).toBe(
-          true,
-        );
-      });
-
-      test("is not set when the note does not change the card face", () => {
-        expect(isCardIdentityFromNote({ ...options, note: emptyNote })).toBe(
-          false,
-        );
         expect(
           isCardIdentityFromNote({
             ...options,
-            cardIdentity: { suitIndex: 0, rank: 3 },
+            note: red3Note,
+          }),
+        ).toBe(true);
+      });
+
+      test("is not set when the note does not change the card face", () => {
+        expect(
+          isCardIdentityFromNote({
+            ...options,
+            note: emptyNote,
+          }),
+        ).toBe(false);
+        expect(
+          isCardIdentityFromNote({
+            ...options,
+            cardIdentity: {
+              suitIndex: 0,
+              rank: 3,
+            },
             note: red3Note,
           }),
         ).toBe(false);
         expect(
-          isCardIdentityFromNote({ ...options, empathy: true, note: red3Note }),
+          isCardIdentityFromNote({
+            ...options,
+            empathy: true,
+            note: red3Note,
+          }),
         ).toBe(false);
 
         // The clues already show the rank that the note names.
@@ -206,7 +240,10 @@ describe("card presentation", () => {
     });
 
     test("preserves clue, finesse, discard permission, and chop-move precedence", () => {
-      const finessed = { ...emptyNote, finessed: true };
+      const finessed = {
+        ...emptyNote,
+        finessed: true,
+      };
       expect(getCardBorderPresentation(baseCard, finessed, false)).toEqual({
         clued: false,
         chopMoved: false,
@@ -367,7 +404,10 @@ describe("card presentation", () => {
       }));
       const { Hidden, Eliminated, Visible } = PipState;
       expect(rows).toEqual([
-        { suits: [0, 1], ranks: [Hidden, Hidden, Visible, Hidden, Hidden] },
+        {
+          suits: [0, 1],
+          ranks: [Hidden, Hidden, Visible, Hidden, Hidden],
+        },
         {
           suits: [2],
           ranks: [Visible, Visible, Visible, Visible, Eliminated],
@@ -508,8 +548,14 @@ describe("card presentation", () => {
       }));
       const { Hidden, Eliminated, Visible } = PipState;
       expect(rows).toEqual([
-        { suits: [0], ranks: [Visible, Visible, Hidden, Hidden, Hidden] },
-        { suits: [1], ranks: [Visible, Eliminated, Hidden, Hidden, Hidden] },
+        {
+          suits: [0],
+          ranks: [Visible, Visible, Hidden, Hidden, Hidden],
+        },
+        {
+          suits: [1],
+          ranks: [Visible, Eliminated, Hidden, Hidden, Hidden],
+        },
       ]);
     });
   });

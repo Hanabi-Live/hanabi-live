@@ -362,13 +362,19 @@ export function GameScreen({
       sendAction({
         type: "clue",
         receiverIndex: clueTarget,
-        clue: { type: "color", color: colorIndex },
+        clue: {
+          type: "color",
+          color: colorIndex,
+        },
       });
     } else {
       sendAction({
         type: "clue",
         receiverIndex: clueTarget,
-        clue: { type: "rank", rank: clue.value },
+        clue: {
+          type: "rank",
+          rank: clue.value,
+        },
       });
     }
   }
@@ -580,7 +586,10 @@ export function GameScreen({
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {
-                      sendAction({ type: "discard", order });
+                      sendAction({
+                        type: "discard",
+                        order,
+                      });
                     }
                   }}
                   onEditCard={editingCards ? editCard : undefined}
@@ -588,7 +597,10 @@ export function GameScreen({
                   onHoverCard={setHoveredCard}
                   onPlay={(order) => {
                     setMenuCard(undefined);
-                    sendAction({ type: "play", order });
+                    sendAction({
+                      type: "play",
+                      order,
+                    });
                   }}
                   onPressCard={setPressedCard}
                   onShowPlayerLog={setLogSeat}

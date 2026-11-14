@@ -120,7 +120,10 @@ function uniform(scale: number): {
   readonly scaleX: number;
   readonly scaleY: number;
 } {
-  return { scaleX: scale, scaleY: scale };
+  return {
+    scaleX: scale,
+    scaleY: scale,
+  };
 }
 
 /** The progress (from 0 to 1) of a step that starts at `start` and lasts `duration`. */
@@ -157,7 +160,10 @@ export function animateSampled(
   const keyframes: Keyframe[] = [];
   for (let i = 0; i < count; i++) {
     const offset = i / (count - 1);
-    keyframes.push({ ...frame(offset * duration), offset });
+    keyframes.push({
+      ...frame(offset * duration),
+      offset,
+    });
   }
   return element.animate(keyframes, {
     id,
@@ -290,7 +296,10 @@ function addSpark(
       const out = easeOut(t);
       const x = Math.cos(angle) * distance * out;
       const y = Math.sin(angle) * distance * out + fall * t * t;
-      return { transform: `translate(${x}px, ${y}px)`, opacity: 1 - t };
+      return {
+        transform: `translate(${x}px, ${y}px)`,
+        opacity: 1 - t,
+      };
     },
     delay,
   );
@@ -343,8 +352,14 @@ function addRing(
   addCircle(
     at,
     color,
-    { start: RING_START_RADIUS * unit, end: radius * unit },
-    { start: RING_STROKE.start * unit, end: RING_STROKE.end * unit },
+    {
+      start: RING_START_RADIUS * unit,
+      end: radius * unit,
+    },
+    {
+      start: RING_STROKE.start * unit,
+      end: RING_STROKE.end * unit,
+    },
     duration,
     delay,
   );
@@ -361,7 +376,10 @@ function addFlash(
   addCircle(
     at,
     color,
-    { start: FLASH_START_RADIUS * unit, end: radius * unit },
+    {
+      start: FLASH_START_RADIUS * unit,
+      end: radius * unit,
+    },
     undefined,
     duration,
     delay,
@@ -398,14 +416,20 @@ export function animateMisplay(
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
 
-  const start = { ...rectCenter(from), scale: from.width / stackRect.width };
+  const start = {
+    ...rectCenter(from),
+    scale: from.width / stackRect.width,
+  };
   const end = rectCenter(to);
   const endScale = 1 / stackScale;
   const stackCenter = rectCenter(stackRect);
   // Unlike on the classic screen, the card sputters on its stack, not above it: the stacks are in a
   // column, so above a stack is the stack before it.
   const hover = stackCenter;
-  const fuse = { x: hover.x, y: hover.y - unit / 2 };
+  const fuse = {
+    x: hover.x,
+    y: hover.y - unit / 2,
+  };
   const blast =
     strikeBox === undefined ? hover : rectCenter(measure(strikeBox));
 
@@ -438,7 +462,10 @@ export function animateMisplay(
       const rise = randomBetween(0.5, 0.88) * unit;
       const duration = SMOKE_SECONDS * 1000;
       addEffect(
-        { x, y: origin.y },
+        {
+          x,
+          y: origin.y,
+        },
         {
           borderRadius: "50%",
           background: SMOKE_COLORS[i % SMOKE_COLORS.length]!,
@@ -504,7 +531,11 @@ export function animateMisplay(
     pose: (t: number) => { pose: Pose; scorch: number },
   ): number {
     const stepStart = poses.reduce((sum, step) => sum + step.duration, 0);
-    poses.push({ start: stepStart, duration, pose });
+    poses.push({
+      start: stepStart,
+      duration,
+      pose,
+    });
     return stepStart + duration;
   }
 
@@ -543,7 +574,11 @@ export function animateMisplay(
   }));
 
   // 3. Misfire: it veers off and accelerates into the strike box, trailing sparks.
-  let blastPose: Pose = { ...hover, ...uniform(1), rotation: 0 };
+  let blastPose: Pose = {
+    ...hover,
+    ...uniform(1),
+    rotation: 0,
+  };
   if (strikeBox !== undefined) {
     const control = {
       x: hover.x + FLIGHT_CONTROL_POINT.x * unit,
@@ -579,7 +614,11 @@ export function animateMisplay(
       pose: flightPose(t),
       scorch: interpolate(SPUTTER_SCORCH_OPACITY, FLIGHT_SCORCH_OPACITY, t),
     }));
-    blastPose = { ...blast, ...uniform(FLIGHT_END_SCALE), rotation: heading };
+    blastPose = {
+      ...blast,
+      ...uniform(FLIGHT_END_SCALE),
+      rotation: heading,
+    };
   }
 
   // 4. Boom.
@@ -707,10 +746,27 @@ export function animateMisplay(
     };
     strikeBox.animate(
       [
-        { ...empty, scale: 1, offset: 0 },
-        { ...empty, scale: 1, offset: at },
-        { ...filled, scale: STRIKE_POP_SCALE, offset: at, easing: "ease-out" },
-        { ...filled, scale: 1, offset: 1 },
+        {
+          ...empty,
+          scale: 1,
+          offset: 0,
+        },
+        {
+          ...empty,
+          scale: 1,
+          offset: at,
+        },
+        {
+          ...filled,
+          scale: STRIKE_POP_SCALE,
+          offset: at,
+          easing: "ease-out",
+        },
+        {
+          ...filled,
+          scale: 1,
+          offset: 1,
+        },
       ],
       {
         id: PLAY_EFFECT_ANIMATION_ID,
@@ -748,7 +804,10 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
       delay,
     );
     addEffect(
-      { x: rect.left, y: rect.top },
+      {
+        x: rect.left,
+        y: rect.top,
+      },
       {
         width: `${rect.width}px`,
         height: `${rect.height}px`,
@@ -810,7 +869,12 @@ export function animateBounceMisplay(
     scaleY: startScale,
     rotation: 0,
   };
-  const end: Pose = { ...rectCenter(to), scaleX: 1, scaleY: 1, rotation: 0 };
+  const end: Pose = {
+    ...rectCenter(to),
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+  };
   function between(a: Pose, b: Pose, t: number): Pose {
     const out = easeOut(t);
     return {
@@ -832,7 +896,10 @@ export function animateBounceMisplay(
         ms < stepMilliseconds
           ? between(start, stack, ms / stepMilliseconds)
           : between(stack, end, (ms - stepMilliseconds) / stepMilliseconds);
-      return { transform: poseTransform(to, pose), transformOrigin: "center" };
+      return {
+        transform: poseTransform(to, pose),
+        transformOrigin: "center",
+      };
     },
     0,
     live ? PLAY_EFFECT_ANIMATION_ID : CARD_MOVE_ANIMATION_ID,

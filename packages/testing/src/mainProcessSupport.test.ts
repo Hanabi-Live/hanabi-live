@@ -71,6 +71,9 @@ process.stdout.write("Server listening at http://127.0.0.1:40001\n");
     });
   } finally {
     await stopChild(state.child);
-    await rm(directory, { recursive: true, force: true });
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
   }
 }, 15_000);

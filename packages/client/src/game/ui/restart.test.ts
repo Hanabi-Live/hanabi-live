@@ -17,18 +17,38 @@ const stop = vi.fn();
 const show = vi.fn();
 
 vi.mock("../../Globals.ts", () => ({
-  globals: { joinedTableId: 42, connection: { send } },
+  globals: {
+    joinedTableId: 42,
+    connection: {
+      send,
+    },
+  },
 }));
 vi.mock("./UiGlobals.ts", () => ({
   globals: {
     elements: {
-      restartButton: { setEnabled },
-      restartContents: { visible: contentsVisible },
-      restartWaitingOnServer: { visible: waitingVisible },
-      restartWaitingOnServerAnimation: { start, stop },
-      restartArea: { show },
+      restartButton: {
+        setEnabled,
+      },
+      restartContents: {
+        visible: contentsVisible,
+      },
+      restartWaitingOnServer: {
+        visible: waitingVisible,
+      },
+      restartWaitingOnServerAnimation: {
+        start,
+        stop,
+      },
+      restartArea: {
+        show,
+      },
     },
-    layers: { UI2: { batchDraw: vi.fn() } },
+    layers: {
+      UI2: {
+        batchDraw: vi.fn(),
+      },
+    },
   },
 }));
 const gameSession = await import("../gameSession.ts");
@@ -57,7 +77,10 @@ test.each([true, false])(
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith(
       "tableRestart",
-      { tableId: 42, startNow },
+      {
+        tableId: 42,
+        startNow,
+      },
       expect.any(Function),
     );
     expect(setEnabled).toHaveBeenLastCalledWith(false);
@@ -79,7 +102,10 @@ test("a refused restart restores the controls and allows retrying", () => {
   expect(send).toHaveBeenCalledTimes(2);
   expect(send).toHaveBeenLastCalledWith(
     "tableRestart",
-    { tableId: 42, startNow: false },
+    {
+      tableId: 42,
+      startNow: false,
+    },
     expect.any(Function),
   );
 });

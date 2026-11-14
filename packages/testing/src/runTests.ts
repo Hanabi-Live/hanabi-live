@@ -120,7 +120,10 @@ async function startPostgres(): Promise<DisposablePostgres> {
       child.kill("SIGINT");
       await closed;
     }
-    await rm(directory, { recursive: true, force: true });
+    await rm(directory, {
+      recursive: true,
+      force: true,
+    });
   }
 
   try {
@@ -178,7 +181,10 @@ async function startPostgres(): Promise<DisposablePostgres> {
     }
     /* eslint-enable no-await-in-loop */
 
-    return { url, stop };
+    return {
+      url,
+      stop,
+    };
   } catch (error) {
     await stop();
     throw error;
@@ -226,7 +232,10 @@ async function runInherited(
   args: readonly string[],
   options: { readonly cwd: string; readonly env: NodeJS.ProcessEnv },
 ): Promise<number> {
-  const child = spawn(command, args, { ...options, stdio: "inherit" });
+  const child = spawn(command, args, {
+    ...options,
+    stdio: "inherit",
+  });
   const [code, signal] = (await once(child, "close")) as [
     number | null,
     NodeJS.Signals | null,
@@ -255,7 +264,10 @@ async function runSuite(
       return await runInherited(
         "cargo",
         ["test", "--locked", "--workspace", ...args],
-        { cwd: path.join(ROOT, "server"), env },
+        {
+          cwd: path.join(ROOT, "server"),
+          env,
+        },
       );
     }
 
@@ -264,7 +276,10 @@ async function runSuite(
       return await runInherited(
         process.execPath,
         ["test", "--parallel=4", "--isolate", ...TEST_DIRECTORIES, ...args],
-        { cwd: ROOT, env },
+        {
+          cwd: ROOT,
+          env,
+        },
       );
     }
 
@@ -273,7 +288,10 @@ async function runSuite(
       return await runInherited(
         process.execPath,
         ["packages/testing/src/criticalCss.ts", ...args],
-        { cwd: ROOT, env },
+        {
+          cwd: ROOT,
+          env,
+        },
       );
     }
 
@@ -283,7 +301,10 @@ async function runSuite(
       const code = await runInherited(
         "bash",
         [path.join(ROOT, "scripts/dev/build-client.sh")],
-        { cwd: ROOT, env },
+        {
+          cwd: ROOT,
+          env,
+        },
       );
       if (code !== 0) {
         return code;
@@ -291,7 +312,10 @@ async function runSuite(
       return await runInherited(
         process.execPath,
         ["packages/testing/src/uiScreenshots.ts", ...args],
-        { cwd: ROOT, env },
+        {
+          cwd: ROOT,
+          env,
+        },
       );
     }
   }

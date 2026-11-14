@@ -25,7 +25,11 @@ test("concealed Duck clues play the quack sound", () => {
       state,
       {
         type: "clue",
-        clue: { type: undefined, value: undefined, visibleType: undefined },
+        clue: {
+          type: undefined,
+          value: undefined,
+          visibleType: undefined,
+        },
         playerIndex: 0,
         receiverIndex: 1,
         orders: [],
@@ -102,7 +106,10 @@ function soundAfterPlayingCluedOne(
     ],
     hands: [[], [0 as CardOrder, 1 as CardOrder]],
     playStacks: beforeStacks,
-    turn: { ...startingState.turn, currentPlayerIndex: 1 },
+    turn: {
+      ...startingState.turn,
+      currentPlayerIndex: 1,
+    },
   };
   const afterStacks = beforeStacks.map((stack, index) =>
     index === playedSuitIndex ? [...stack, 0 as CardOrder] : stack,
@@ -110,17 +117,28 @@ function soundAfterPlayingCluedOne(
   const gameState: GameState = {
     ...previousGameState,
     deck: previousGameState.deck.map((card) =>
-      card.order === 0 ? { ...card, location: "playStack" } : card,
+      card.order === 0
+        ? {
+            ...card,
+            location: "playStack",
+          }
+        : card,
     ),
     hands: [[], [1 as CardOrder]],
     playStacks: afterStacks,
-    turn: { ...previousGameState.turn, currentPlayerIndex: 0 },
+    turn: {
+      ...previousGameState.turn,
+      currentPlayerIndex: 0,
+    },
   };
   const action: ActionPlay = {
     type: "play",
     playerIndex: 1,
     order: 0 as CardOrder,
-    identity: { suitIndex: playedSuitIndex, rank: actualRank },
+    identity: {
+      suitIndex: playedSuitIndex,
+      rank: actualRank,
+    },
   };
   return getSoundType(previousGameState, gameState, action, metadata);
 }

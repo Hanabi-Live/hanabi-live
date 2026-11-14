@@ -49,7 +49,10 @@ describe("sending commands", () => {
       expect(sockets[0]?.sent).toHaveLength(1);
       initial.send("playerAction", {
         tableId: 123,
-        action: { type: "play", order: 1 },
+        action: {
+          type: "play",
+          order: 1,
+        },
       });
       expect(sockets[0]?.sent[1]).toBe(
         '{"id":2,"request":"playerAction","data":{"tableId":123,"action":{"type":"play","order":1}}}',
@@ -57,7 +60,10 @@ describe("sending commands", () => {
       initial.setReady(false);
       initial.send("playerAction", {
         tableId: 123,
-        action: { type: "play", order: 1 },
+        action: {
+          type: "play",
+          order: 1,
+        },
       });
       expect(sockets[0]?.sent).toHaveLength(2);
       initial.send("gameStateLoad", { tableId: 123 });
@@ -65,7 +71,10 @@ describe("sending commands", () => {
       initial.setReady(true);
       initial.send("playerAction", {
         tableId: 123,
-        action: { type: "play", order: 1 },
+        action: {
+          type: "play",
+          order: 1,
+        },
       });
       expect(sockets[0]?.sent).toHaveLength(4);
     } finally {
@@ -95,7 +104,10 @@ describe("received messages", () => {
       { text: "Careful" },
     ]) {
       conn.onMessage({
-        data: JSON.stringify({ event: "warning", data }),
+        data: JSON.stringify({
+          event: "warning",
+          data,
+        }),
       } as MessageEvent);
     }
     // An outdated client's error also arrives in the frame of clients from before JSON frames,
@@ -121,31 +133,71 @@ describe("replies", () => {
       conn.onMessage({ data: JSON.stringify(frame) } as MessageEvent);
     }
 
-    conn.send("gameHistory", { offset: 0, limit: 10 }, (answer) => {
-      replies.set("history", answer);
-    });
-    conn.send("tableStart", { tableId: 1, intendedPlayerIds: [] }, (answer) => {
-      replies.set("refused", answer);
-    });
+    conn.send(
+      "gameHistory",
+      {
+        offset: 0,
+        limit: 10,
+      },
+      (answer) => {
+        replies.set("history", answer);
+      },
+    );
+    conn.send(
+      "tableStart",
+      {
+        tableId: 1,
+        intendedPlayerIds: [],
+      },
+      (answer) => {
+        replies.set("refused", answer);
+      },
+    );
     conn.send("tableLeave", { tableId: 1 }, (answer) => {
       replies.set("ignored", answer);
     });
     conn.send("tableLeave", { tableId: 2 }, (answer) => {
       replies.set("unanswered", answer);
     });
-    reply({ reply: 1, data: { games: [], total: 0 } });
-    reply({ reply: 2, error: { message: "Not your table." } });
+    reply({
+      reply: 1,
+      data: {
+        games: [],
+        total: 0,
+      },
+    });
+    reply({
+      reply: 2,
+      error: {
+        message: "Not your table.",
+      },
+    });
     reply({
       reply: 3,
-      error: { message: "Unknown table", code: "commandIgnored" },
+      error: {
+        message: "Unknown table",
+        code: "commandIgnored",
+      },
     });
     conn.onClose({} as CloseEvent);
 
     expect(Object.fromEntries(replies)).toEqual({
-      history: { ok: true, data: { games: [], total: 0 } },
-      refused: { ok: false },
-      ignored: { ok: false },
-      unanswered: { ok: false },
+      history: {
+        ok: true,
+        data: {
+          games: [],
+          total: 0,
+        },
+      },
+      refused: {
+        ok: false,
+      },
+      ignored: {
+        ok: false,
+      },
+      unanswered: {
+        ok: false,
+      },
     });
     expect(warnings).toEqual([{ message: "Not your table." }]);
   });

@@ -50,17 +50,29 @@ interface Spring {
 }
 
 /** The card follows the pointer tightly, with a short lag and no bounce. */
-const FOLLOW_SPRING = { frequency: 34, damping: 0.9 } as const satisfies Spring;
+const FOLLOW_SPRING = {
+  frequency: 34,
+  damping: 0.9,
+} as const satisfies Spring;
 /** On its way back to the hand, the card flies a little slower and settles gently. */
 const RETURN_SPRING = {
   frequency: 22,
   damping: 0.85,
 } as const satisfies Spring;
 /** The card pops up when lifted, overshooting a little. */
-const SCALE_SPRING = { frequency: 26, damping: 0.45 } as const satisfies Spring;
-const LEAN_SPRING = { frequency: 20, damping: 0.55 } as const satisfies Spring;
+const SCALE_SPRING = {
+  frequency: 26,
+  damping: 0.45,
+} as const satisfies Spring;
+const LEAN_SPRING = {
+  frequency: 20,
+  damping: 0.55,
+} as const satisfies Spring;
 /** The swing is loose, so that the card rocks back and forth once when it stops. */
-const SWING_SPRING = { frequency: 15, damping: 0.32 } as const satisfies Spring;
+const SWING_SPRING = {
+  frequency: 15,
+  damping: 0.32,
+} as const satisfies Spring;
 
 /** The longest step of the simulation, so that it stays stable when frames are slow. */
 const MAX_STEP_SECONDS = 1 / 120;
@@ -128,12 +140,30 @@ export function HeldCardGhost({
   // The simulation lasts from when the card is lifted until it lands, through each phase.
   const simulation = useRef<Simulation>(undefined);
   simulation.current ??= {
-    x: { x: start.left + grab.x, v: 0 },
-    y: { x: start.top + grab.y, v: 0 },
-    scale: { x: 1, v: 0 },
-    leanX: { x: 0, v: 0 },
-    leanY: { x: 0, v: 0 },
-    swing: { x: 0, v: 0 },
+    x: {
+      x: start.left + grab.x,
+      v: 0,
+    },
+    y: {
+      x: start.top + grab.y,
+      v: 0,
+    },
+    scale: {
+      x: 1,
+      v: 0,
+    },
+    leanX: {
+      x: 0,
+      v: 0,
+    },
+    leanY: {
+      x: 0,
+      v: 0,
+    },
+    swing: {
+      x: 0,
+      v: 0,
+    },
   };
 
   // The latest props, which the animation reads on each frame.
@@ -233,15 +263,36 @@ export function HeldCardGhost({
         // Without decoration, the card stays flat and the same size, and moves straight to where it
         // goes: under the pointer at once, and back to the hand without a bounce.
         if (current.phase === "return") {
-          follow = { frequency: RETURN_SPRING.frequency, damping: 1 };
+          follow = {
+            frequency: RETURN_SPRING.frequency,
+            damping: 1,
+          };
         } else {
-          sim.x = { x: targetX, v: 0 };
-          sim.y = { x: targetY, v: 0 };
+          sim.x = {
+            x: targetX,
+            v: 0,
+          };
+          sim.y = {
+            x: targetY,
+            v: 0,
+          };
         }
-        sim.scale = { x: 1, v: 0 };
-        sim.leanX = { x: 0, v: 0 };
-        sim.leanY = { x: 0, v: 0 };
-        sim.swing = { x: 0, v: 0 };
+        sim.scale = {
+          x: 1,
+          v: 0,
+        };
+        sim.leanX = {
+          x: 0,
+          v: 0,
+        };
+        sim.leanY = {
+          x: 0,
+          v: 0,
+        };
+        sim.swing = {
+          x: 0,
+          v: 0,
+        };
       }
 
       for (

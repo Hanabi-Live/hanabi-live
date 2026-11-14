@@ -8,7 +8,11 @@ vi.mock("./history.ts", () => ({
   showOtherScores: vi.fn(),
 }));
 vi.mock("../Globals.ts", () => ({
-  globals: { connection: { send: vi.fn() } },
+  globals: {
+    connection: {
+      send: vi.fn(),
+    },
+  },
 }));
 vi.mock("../utils.ts", () => ({ setBrowserAddressBarPath: vi.fn() }));
 vi.mock("../modals.ts", () => ({ showWarning: vi.fn() }));
@@ -60,7 +64,11 @@ describe("replay URL loading", () => {
       "shared-replay-json",
       "p4v0s3",
       "p4v0s3",
-      { type: "shared", joinExisting: false, spoilerFree: false },
+      {
+        type: "shared",
+        joinExisting: false,
+        spoilerFree: false,
+      },
     ],
     ["replay-json", "p4v0e3", "p4v0e3", { type: "solo" }],
     ["replay-json", "", undefined, { type: "solo" }],
@@ -74,7 +82,9 @@ describe("replay URL loading", () => {
       },
       localStorage: {
         configurable: true,
-        value: { setItem },
+        value: {
+          setItem,
+        },
       },
     });
 
@@ -84,7 +94,13 @@ describe("replay URL loading", () => {
       JSON.parse(expand(`${payload}${suffix}`)!),
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {
-      source: { type: "imported", game: { ...gameJson, seed } },
+      source: {
+        type: "imported",
+        game: {
+          ...gameJson,
+          seed,
+        },
+      },
       visibility,
     });
     expect(setItem).toHaveBeenCalledWith(
@@ -160,8 +176,13 @@ describe("replay URL loading", () => {
     expect(send).toHaveBeenCalledWith(
       "replayCreate",
       expect.objectContaining({
-        source: { type: "saved", gameId: 456 },
-        visibility: { type: "solo" },
+        source: {
+          type: "saved",
+          gameId: 456,
+        },
+        visibility: {
+          type: "solo",
+        },
       }),
     );
   });
@@ -189,7 +210,9 @@ describe("replay URL loading", () => {
       },
       localStorage: {
         configurable: true,
-        value: { getItem: vi.fn(() => null) },
+        value: {
+          getItem: vi.fn(() => null),
+        },
       },
     });
 

@@ -147,7 +147,10 @@ function tick() {
     sounds.play(SoundType.Tone);
   }
 
-  notify({ type: "tick", warning });
+  notify({
+    type: "tick",
+    warning,
+  });
 }
 
 /** Stops counting the active player's clock. */

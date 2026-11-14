@@ -30,11 +30,22 @@ const TABLE_ID = tableIdSchema.parse(5);
 function makeGame(maxPlayers: number): Game {
   return {
     tableId: TABLE_ID,
-    settings: { maxPlayers },
-    owner: { userId: userIdSchema.parse(1), username: "alice" },
+    settings: {
+      maxPlayers,
+    },
+    owner: {
+      userId: userIdSchema.parse(1),
+      username: "alice",
+    },
     players: [
-      { userId: userIdSchema.parse(1), username: "alice" },
-      { userId: userIdSchema.parse(2), username: "bob" },
+      {
+        userId: userIdSchema.parse(1),
+        username: "alice",
+      },
+      {
+        userId: userIdSchema.parse(2),
+        username: "bob",
+      },
     ],
   } as unknown as Game;
 }
@@ -81,7 +92,10 @@ describe("Nav", () => {
     expect(send).toHaveBeenCalledOnce();
     expect(send).toHaveBeenCalledWith(
       "tableStart",
-      { tableId: TABLE_ID, intendedPlayerIds: [1, 2] },
+      {
+        tableId: TABLE_ID,
+        intendedPlayerIds: [1, 2],
+      },
       expect.any(Function),
     );
     expect(button("start")!.classList).toContain("disabled");

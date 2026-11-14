@@ -38,7 +38,10 @@ export function request(startNow: boolean): void {
   setPending(true);
   lobbyGlobals.connection.send(
     "tableRestart",
-    { tableId: lobbyGlobals.joinedTableId, startNow },
+    {
+      tableId: lobbyGlobals.joinedTableId,
+      startNow,
+    },
     (reply) => {
       // A restart that succeeds leaves this replay.
       if (!reply.ok) {

@@ -24,7 +24,10 @@ export function show(): void {
         ...store.getState().session.settings,
         createTable: {
           ...createTable,
-          options: { ...createTable.options, variantId: DEFAULT_VARIANT_ID },
+          options: {
+            ...createTable.options,
+            variantId: DEFAULT_VARIANT_ID,
+          },
         },
       }),
     );
@@ -44,9 +47,16 @@ export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
 export function remember(createTable: CreateTable): void {
   if (!equal(createTable, store.getState().session.settings.createTable)) {
     store.dispatch(
-      settingsChanged({ ...store.getState().session.settings, createTable }),
+      settingsChanged({
+        ...store.getState().session.settings,
+        createTable,
+      }),
     );
-    globals.connection.send("settings", { settings: { createTable } });
+    globals.connection.send("settings", {
+      settings: {
+        createTable,
+      },
+    });
   }
 }
 
@@ -55,6 +65,9 @@ export function rememberVariant(variantName: string): void {
   const { createTable } = store.getState().session.settings;
   remember({
     ...createTable,
-    options: { ...createTable.options, variantId: getVariant(variantName).id },
+    options: {
+      ...createTable.options,
+      variantId: getVariant(variantName).id,
+    },
   });
 }

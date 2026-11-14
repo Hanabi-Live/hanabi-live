@@ -42,7 +42,9 @@ function renderLog(
   options: { hoveredCardOrder?: number; colorblindMode?: boolean } = {},
 ) {
   const state = {
-    visibleState: { clues },
+    visibleState: {
+      clues,
+    },
     metadata: {
       playerNames: ["Alice", "Bob"],
       characterAssignments: [undefined, undefined],
@@ -50,7 +52,13 @@ function renderLog(
   } as unknown as State;
   render(
     <Provider
-      store={configureStore({ reducer: () => ({ game: { current: state } }) })}
+      store={configureStore({
+        reducer: () => ({
+          game: {
+            current: state,
+          },
+        }),
+      })}
     >
       <ClueLog
         colorblindMode={options.colorblindMode ?? false}

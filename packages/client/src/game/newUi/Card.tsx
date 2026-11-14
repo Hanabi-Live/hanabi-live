@@ -241,8 +241,14 @@ function getBadgeStyle(
   const inset = width * BADGE_INSET_PER_WIDTH;
   return {
     ...(corner === "topRight"
-      ? { right: inset, top: inset }
-      : { left: inset, bottom: inset }),
+      ? {
+          right: inset,
+          top: inset,
+        }
+      : {
+          left: inset,
+          bottom: inset,
+        }),
     width: width * BADGE_SIZE_PER_WIDTH,
     height: width * BADGE_SIZE_PER_WIDTH,
     fontSize: width * BADGE_SIZE_PER_WIDTH * BADGE_FONT_PER_SIZE,
@@ -293,11 +299,26 @@ const NOTE_MARK_OPACITY = 0.6;
  * on the discard pile.
  */
 const NOTE_MARK_ICONS = {
-  trash: { icon: "fa-trash-alt", label: "Marked as trash" },
-  fix: { icon: "fa-wrench", label: "Marked as needing a fix" },
-  spook: { icon: "fa-ghost", label: "Marked as spooked" },
-  exclamationMark: { icon: "fa-exclamation", label: "Marked with !" },
-  questionMark: { icon: "fa-question", label: "Marked with ?" },
+  trash: {
+    icon: "fa-trash-alt",
+    label: "Marked as trash",
+  },
+  fix: {
+    icon: "fa-wrench",
+    label: "Marked as needing a fix",
+  },
+  spook: {
+    icon: "fa-ghost",
+    label: "Marked as spooked",
+  },
+  exclamationMark: {
+    icon: "fa-exclamation",
+    label: "Marked with !",
+  },
+  questionMark: {
+    icon: "fa-question",
+    label: "Marked with ?",
+  },
 } as const satisfies Record<NoteMark, { icon: string; label: string }>;
 
 /**
@@ -555,11 +576,17 @@ function Possibilities({
               <span
                 className="tw:flex tw:items-center tw:justify-center"
                 key={possibleSuitIndex}
-                style={{ width: pipCell, height: pipCell }}
+                style={{
+                  width: pipCell,
+                  height: pipCell,
+                }}
               >
                 <span
                   className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white tw:shadow-[0_1px_2px_rgb(0_0_0/30%)]"
-                  style={{ width: pipCell * 0.92, height: pipCell * 0.92 }}
+                  style={{
+                    width: pipCell * 0.92,
+                    height: pipCell * 0.92,
+                  }}
                 >
                   <Pip
                     size={pipCell * 0.74}
@@ -757,7 +784,11 @@ export function CardFace({
       {suit !== undefined && (
         <div
           className="tw:absolute tw:flex tw:justify-center"
-          style={{ left: 0, right: 0, top: (height - suitPipSize) / 2 }}
+          style={{
+            left: 0,
+            right: 0,
+            top: (height - suitPipSize) / 2,
+          }}
         >
           <Pip size={suitPipSize} suit={suit} variant={variant} />
         </div>

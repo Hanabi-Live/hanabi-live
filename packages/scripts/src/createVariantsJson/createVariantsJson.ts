@@ -88,7 +88,11 @@ function getPaths(): {
   const variantsPath = path.join(jsonDirectoryPath, "variants.json");
   const textPath = path.join(REPO_ROOT, "misc", "variants.txt");
 
-  return { suitsPath, variantsPath, textPath };
+  return {
+    suitsPath,
+    variantsPath,
+    textPath,
+  };
 }
 
 function getJsonAndParse(jsonPath: string): unknown {

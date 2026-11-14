@@ -41,7 +41,10 @@ type HypotheticalControl = Extract<
 function sendControl(control: HypotheticalControl) {
   globals.connection.send("replayAction", {
     tableId: globals.joinedTableId,
-    action: { type: "hypothetical", control },
+    action: {
+      type: "hypothetical",
+      control,
+    },
   });
 }
 
@@ -305,11 +308,17 @@ export function morphCard(
 ): void {
   sendHypotheticalActionsToServer([
     identity === "original"
-      ? { type: "unmorph", order }
+      ? {
+          type: "unmorph",
+          order,
+        }
       : {
           type: "morph",
           order,
-          identity: { suitIndex: identity.suitIndex, rank: identity.rank },
+          identity: {
+            suitIndex: identity.suitIndex,
+            rank: identity.rank,
+          },
         },
   ]);
 }

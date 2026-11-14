@@ -30,10 +30,22 @@ interface SymbolTab {
 }
 
 const EMOTE_TABS = [
-  { category: "twitch", label: "Twitch" },
-  { category: "betterttv", label: "BetterTTV" },
-  { category: "frankerfacez", label: "FrankerFaceZ" },
-  { category: "frankerfacez-custom", label: "Custom" },
+  {
+    category: "twitch",
+    label: "Twitch",
+  },
+  {
+    category: "betterttv",
+    label: "BetterTTV",
+  },
+  {
+    category: "frankerfacez",
+    label: "FrankerFaceZ",
+  },
+  {
+    category: "frankerfacez-custom",
+    label: "Custom",
+  },
 ] as const satisfies ReadonlyArray<{
   readonly category: keyof typeof CHAT_EMOTES;
   readonly label: string;

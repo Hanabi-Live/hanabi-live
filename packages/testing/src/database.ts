@@ -227,7 +227,11 @@ export async function evaluationDatabase(): Promise<EvaluationDatabase> {
     },
     onnotice: () => undefined,
   };
-  const admin = postgres({ ...options, database, max: 1 });
+  const admin = postgres({
+    ...options,
+    database,
+    max: 1,
+  });
   const name = `hanabi_test_${randomUUID().replaceAll("-", "")}`;
   try {
     await admin`CREATE DATABASE ${admin(name)}`;

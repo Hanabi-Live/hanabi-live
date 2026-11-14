@@ -9,7 +9,9 @@ import {
 } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 const { globals } = await import("./UiGlobals.ts");
 const cluePreview = await import("./cluePreview.ts");
 
@@ -26,7 +28,10 @@ describe("clue preview", () => {
     }
     gameState = {
       ...gameState,
-      turn: { ...gameState.turn, currentPlayerIndex: 0 },
+      turn: {
+        ...gameState.turn,
+        currentPlayerIndex: 0,
+      },
     };
 
     const postClueEmpathyCheckbox = {
@@ -39,7 +44,9 @@ describe("clue preview", () => {
     Object.assign(globals, {
       metadata,
       variant,
-      state: { visibleState: gameState },
+      state: {
+        visibleState: gameState,
+      },
       elements: {
         postClueEmpathyCheckbox,
         playerHands: [
@@ -47,7 +54,11 @@ describe("clue preview", () => {
           { children: cards.map((card) => ({ card })) },
         ],
       },
-      layers: { card: { batchDraw: vi.fn() } },
+      layers: {
+        card: {
+          batchDraw: vi.fn(),
+        },
+      },
     });
 
     // Selecting a clue does not change the hand while the button is off.

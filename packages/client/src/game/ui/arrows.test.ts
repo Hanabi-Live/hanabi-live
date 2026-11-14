@@ -7,8 +7,12 @@ import { store } from "../../store.ts";
 
 import type { Arrow } from "./controls/Arrow.ts";
 
-vi.mock("../../Globals.ts", () => ({ globals: {} }));
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../Globals.ts", () => ({
+  globals: {},
+}));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("./HanabiCard.ts", () => ({ HanabiCard: Date }));
 vi.mock("./CardLayout.ts", () => ({ CardLayout: Date }));
 vi.mock("./controls/StrikeSquare.ts", () => ({ StrikeSquare: Date }));
@@ -59,21 +63,38 @@ describe("clue arrow suit pips", () => {
       setAbsolutePosition: vi.fn(),
     } as unknown as Arrow;
     const deck = {
-      getAbsolutePosition: () => ({ x: 10, y: 20 }),
+      getAbsolutePosition: () => ({
+        x: 10,
+        y: 20,
+      }),
       width: () => 100,
       height: () => 50,
     } as unknown as Konva.Node;
     const variant = getDefaultVariant();
     store.dispatch(
-      settingsChanged({ ...defaultSettings, colorblindMode: true }),
+      settingsChanged({
+        ...defaultSettings,
+        colorblindMode: true,
+      }),
     );
     Object.assign(globals, {
-      elements: { arrows: [arrow], deck },
-      layers: { arrow: { batchDraw: vi.fn() } },
+      elements: {
+        arrows: [arrow],
+        deck,
+      },
+      layers: {
+        arrow: {
+          batchDraw: vi.fn(),
+        },
+      },
       // Character ID 34 is Quacker; player 1 has no character.
-      metadata: { characterAssignments: [34, undefined] },
+      metadata: {
+        characterAssignments: [34, undefined],
+      },
       variant,
-      state: { finished: false },
+      state: {
+        finished: false,
+      },
       animateFast: false,
       isResizing: false,
     });

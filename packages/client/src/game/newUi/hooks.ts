@@ -21,14 +21,20 @@ export function useElementSize(element: HTMLElement | null): {
   width: number;
   height: number;
 } {
-  const [size, setSize] = useState({ width: 0, height: 0 });
+  const [size, setSize] = useState({
+    width: 0,
+    height: 0,
+  });
   useEffect(() => {
     if (element === null) {
       return undefined;
     }
 
     const observer = new ResizeObserver(() => {
-      setSize({ width: element.clientWidth, height: element.clientHeight });
+      setSize({
+        width: element.clientWidth,
+        height: element.clientHeight,
+      });
     });
     observer.observe(element);
     return () => {
@@ -47,7 +53,10 @@ export function useWindowSize(): { width: number; height: number } {
   }));
   useEffect(() => {
     function onResize() {
-      setSize({ width: globalThis.innerWidth, height: globalThis.innerHeight });
+      setSize({
+        width: globalThis.innerWidth,
+        height: globalThis.innerHeight,
+      });
     }
     globalThis.addEventListener("resize", onResize);
     return () => {

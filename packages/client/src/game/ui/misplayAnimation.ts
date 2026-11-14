@@ -147,12 +147,18 @@ export function startMisplayAnimation(
       x: center.x - (halfW * Math.cos(radians) - halfH * Math.sin(radians)),
       y: center.y - (halfW * Math.sin(radians) + halfH * Math.cos(radians)),
     });
-    layoutChild.scale({ x: scale, y: scale });
+    layoutChild.scale({
+      x: scale,
+      y: scale,
+    });
     layoutChild.rotation(pose.rotation);
   }
 
   const start: Pose = {
-    ...layoutChild.getAbsoluteTransform().point({ x: cardW / 2, y: cardH / 2 }),
+    ...layoutChild.getAbsoluteTransform().point({
+      x: cardW / 2,
+      y: cardH / 2,
+    }),
     scale: layoutChild.scaleX() / stackScale,
     rotation: layoutChild.rotation(),
   };
@@ -162,8 +168,14 @@ export function startMisplayAnimation(
     y: target.y + (cardH / 2) * target.scale,
   });
   const stackCenter = absoluteCenter(playStack);
-  const hover = { x: stackCenter.x, y: stackCenter.y - HOVER_HEIGHT * unit };
-  const fuse = { x: hover.x, y: hover.y - unit / 2 };
+  const hover = {
+    x: stackCenter.x,
+    y: stackCenter.y - HOVER_HEIGHT * unit,
+  };
+  const fuse = {
+    x: hover.x,
+    y: hover.y - unit / 2,
+  };
 
   // The card explodes on the square of the strike that it caused, unless the strikes are hidden
   // from this player.
@@ -207,7 +219,11 @@ export function startMisplayAnimation(
     globals.state.replay.segment !== undefined
     || store.getState().session.settings.reducedMotion
   ) {
-    const stackPose: Pose = { ...stackCenter, scale: 1, rotation: 0 };
+    const stackPose: Pose = {
+      ...stackCenter,
+      scale: 1,
+      rotation: 0,
+    };
     timeline.add(0, REPLAY_TO_STACK_SECONDS, (t) => {
       const out = easeOut(t);
       setPose({
@@ -295,7 +311,10 @@ export function startMisplayAnimation(
         puff,
         (t) => {
           const out = easeOut(t);
-          puff.position({ x: x + drift * out, y: local.y - rise * out });
+          puff.position({
+            x: x + drift * out,
+            y: local.y - rise * out,
+          });
           puff.radius((0.06 + 0.18 * out) * unit);
           puff.opacity(0.55 * Math.sin(Math.PI * t));
         },
@@ -355,7 +374,10 @@ export function startMisplayAnimation(
       },
       () => {
         for (const layer of layers) {
-          layer.position({ x: 0, y: 0 });
+          layer.position({
+            x: 0,
+            y: 0,
+          });
           layer.batchDraw();
         }
       },
@@ -368,7 +390,10 @@ export function startMisplayAnimation(
       const halfW = popped.width() / 2;
       const halfH = popped.height() / 2;
       function setScale(scale: number) {
-        popped.scale({ x: scale, y: scale });
+        popped.scale({
+          x: scale,
+          y: scale,
+        });
         popped.position({
           x: origin.x - halfW * (scale - 1),
           y: origin.y - halfH * (scale - 1),
@@ -430,7 +455,11 @@ export function startMisplayAnimation(
   time += SPUTTER_SECONDS;
 
   // 3. Misfire: it veers off and accelerates into the strike square, trailing sparks.
-  let blastPose: Pose = { ...hover, scale: 1, rotation: 0 };
+  let blastPose: Pose = {
+    ...hover,
+    scale: 1,
+    rotation: 0,
+  };
   if (strikeSquare !== undefined) {
     const control = {
       x: hover.x + FLIGHT_CONTROL_POINT.x * unit,
@@ -447,7 +476,11 @@ export function startMisplayAnimation(
       const point = bezier(hover, control, blast, eased);
       const scale = interpolate(1, FLIGHT_END_SCALE, eased);
       const rotation = interpolate(0, heading, easeOut(t));
-      setPose({ ...point, scale, rotation });
+      setPose({
+        ...point,
+        scale,
+        rotation,
+      });
       scorch.opacity(
         interpolate(SPUTTER_SCORCH_OPACITY, FLIGHT_SCORCH_OPACITY, t),
       );
@@ -469,7 +502,11 @@ export function startMisplayAnimation(
       }
     });
     time += FLIGHT_SECONDS;
-    blastPose = { ...blast, scale: FLIGHT_END_SCALE, rotation: heading };
+    blastPose = {
+      ...blast,
+      scale: FLIGHT_END_SCALE,
+      rotation: heading,
+    };
   }
 
   // 4. Boom.
@@ -529,8 +566,14 @@ function playTimeline(
 ): MisplayAnimation {
   timeline.play([globals.layers.card, globals.layers.UI], () => {
     cleanUp();
-    layoutChild.position({ x: target.x, y: target.y });
-    layoutChild.scale({ x: target.scale, y: target.scale });
+    layoutChild.position({
+      x: target.x,
+      y: target.y,
+    });
+    layoutChild.scale({
+      x: target.scale,
+      y: target.scale,
+    });
     layoutChild.rotation(0);
     onFinish();
   });

@@ -144,7 +144,10 @@ export function createJsonFromReplay(room: string): void {
       sendSelfPmFromServer(
         [
           "Click ",
-          { copy: json, label: "here" },
+          {
+            copy: json,
+            label: "here",
+          },
           " to copy the raw JSON data to your clipboard.",
         ],
         room,
@@ -175,19 +178,28 @@ function getGameActionsFromState(
     const action = source.actions[i]!;
     switch (action.type) {
       case "play": {
-        actions.push({ type: "play", order: action.order });
+        actions.push({
+          type: "play",
+          order: action.order,
+        });
         currentSegment++;
         continue;
       }
 
       case "discard": {
-        actions.push({ type: "discard", order: action.order });
+        actions.push({
+          type: "discard",
+          order: action.order,
+        });
         currentSegment++;
         continue;
       }
 
       case "misplay": {
-        actions.push({ type: "play", order: action.order });
+        actions.push({
+          type: "play",
+          order: action.order,
+        });
         currentSegment++;
         continue;
       }
@@ -303,7 +315,10 @@ function getActionFromHypoPlayOrDiscard(
     "Failed to get the card order from the last hypothetical state.",
   );
 
-  return { type: actionType, order: cardOrder };
+  return {
+    type: actionType,
+    order: cardOrder,
+  };
 }
 
 function getActionFromHypoClue(
@@ -336,7 +351,10 @@ function getActionFromHypoClue(
     return {
       type: "clue",
       receiverIndex: playerIndex,
-      clue: { type: "color", color: colorIndex },
+      clue: {
+        type: "color",
+        color: colorIndex,
+      },
     };
   }
 
@@ -350,7 +368,10 @@ function getActionFromHypoClue(
   return {
     type: "clue",
     receiverIndex: playerIndex,
-    clue: { type: "rank", rank: clueNumber },
+    clue: {
+      type: "rank",
+      rank: clueNumber,
+    },
   };
 }
 

@@ -45,7 +45,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       }
       stateReducerFunction(state, getNotesAction(state, action.notes));
       if (action.pause !== undefined) {
-        stateReducerFunction(state, { type: "pause", ...action.pause });
+        stateReducerFunction(state, {
+          type: "pause",
+          ...action.pause,
+        });
       }
       stateReducerFunction(state, {
         type: "spectators",
@@ -385,8 +388,14 @@ export function getNotesAction(
   notes: readonly AuthorNotes[],
 ): ActionNoteList | ActionNoteListPlayer {
   return state.playing && !state.finished
-    ? { type: "noteListPlayer", texts: notes[0]?.notes ?? [] }
-    : { type: "noteList", notes };
+    ? {
+        type: "noteListPlayer",
+        texts: notes[0]?.notes ?? [],
+      }
+    : {
+        type: "noteList",
+        notes,
+      };
 }
 
 // Runs through a list of actions from an initial state, and returns the final state and all
@@ -413,7 +422,10 @@ function reduceGameActions(
     return nextState;
   }, initialState);
 
-  return { game, states };
+  return {
+    game,
+    states,
+  };
 }
 
 /**
@@ -510,7 +522,10 @@ function rehydrateScrubbedActions(
 
       return {
         ...action,
-        identity: { suitIndex, rank },
+        identity: {
+          suitIndex,
+          rank,
+        },
       };
     }
 

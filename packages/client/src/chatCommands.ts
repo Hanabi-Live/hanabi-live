@@ -168,7 +168,10 @@ export function parsePmHistoryCommandArgs(
 
   return username === undefined
     ? { limit: amount }
-    : { recipient: username, limit: amount };
+    : {
+        recipient: username,
+        limit: amount,
+      };
 }
 
 // Request private message history with an optional username and amount.

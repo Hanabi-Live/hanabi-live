@@ -313,7 +313,10 @@ function LoginAlert() {
   const ref = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    ref.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }, [alert?.count]);
 
   if (alert === undefined) {

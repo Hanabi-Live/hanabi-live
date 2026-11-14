@@ -151,7 +151,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     readonly PossibilityRowPresentation[] | undefined;
 
   /** Whether the suit and rank are unknown, so that a kind of pip may show. */
-  private pipsAllowed = { suit: false, rank: false };
+  private pipsAllowed = {
+    suit: false,
+    rank: false,
+  };
 
   private readonly criticalIndicator: Konva.Image;
   private readonly arrow: Konva.Group | undefined = undefined;
@@ -342,8 +345,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   startedTweening(posX: number, scale: number): void {
     this._tweening = true;
-    this.tweenFinalPosition = { x: posX, y: 0 };
-    this.tweenFinalScale = { x: scale, y: scale };
+    this.tweenFinalPosition = {
+      x: posX,
+      y: 0,
+    };
+    this.tweenFinalScale = {
+      x: scale,
+      y: scale,
+    };
   }
 
   finishedTweening(): void {
@@ -384,7 +393,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.vortexTween.destroy();
       this.vortexTween = undefined;
     }
-    this.scale({ x: 1, y: 1 });
+    this.scale({
+      x: 1,
+      y: 1,
+    });
     this.rotation(0);
   }
 
@@ -852,8 +864,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       const top = direction === StackDirection.Up ? y + height : y;
       const bottom = direction === StackDirection.Up ? y : y + height;
       const lastColorIndex = suit.fillColors.length - 1;
-      this.arrowBase!.fillLinearGradientStartPoint({ x: 0, y: top });
-      this.arrowBase!.fillLinearGradientEndPoint({ x: 0, y: bottom });
+      this.arrowBase!.fillLinearGradientStartPoint({
+        x: 0,
+        y: top,
+      });
+      this.arrowBase!.fillLinearGradientEndPoint({
+        x: 0,
+        y: bottom,
+      });
       this.arrowBase!.fillLinearGradientColorStops(
         suit.fillColors.flatMap((color, i) => [i / lastColorIndex, color]),
       );

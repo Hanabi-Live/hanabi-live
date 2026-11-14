@@ -39,7 +39,9 @@ export const store = configureStore({
   // it.
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      immutableCheck: { ignoredPaths: ["game"] },
+      immutableCheck: {
+        ignoredPaths: ["game"],
+      },
       serializableCheck: {
         ignoredPaths: ["game"],
         ignoredActions: [gameStarted.type, gameUpdated.type],

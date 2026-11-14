@@ -75,7 +75,10 @@ function isPlayable(
 ): boolean {
   const { ongoingGame } = globals.state;
   return isCardPotentiallyPlayable(
-    { ...cardState, possibleCards },
+    {
+      ...cardState,
+      possibleCards,
+    },
     ongoingGame.deck,
     ongoingGame.playStacks,
     ongoingGame.playStackDirections,

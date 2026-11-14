@@ -4,7 +4,9 @@ import { settingsChanged } from "../../../../sessionSlice.ts";
 import { store } from "../../../../store.ts";
 import type { State } from "../../../types/State.ts";
 
-vi.mock("../../UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../UiGlobals.ts", () => ({
+  globals: {},
+}));
 const { draggablePlayerIndex } = await import("./draggableView.ts");
 
 const OUR_PLAYER_INDEX = 1;
@@ -30,11 +32,25 @@ function makeState({
     premove,
     metadata: {
       ourPlayerIndex: OUR_PLAYER_INDEX,
-      options: { speedrun: false },
+      options: {
+        speedrun: false,
+      },
     },
-    ongoingGame: { turn: { currentPlayerIndex } },
-    visibleState: { turn: { currentPlayerIndex: OTHER_PLAYER_INDEX } },
-    replay: { hypothetical, ownHypothetical, shared },
+    ongoingGame: {
+      turn: {
+        currentPlayerIndex,
+      },
+    },
+    visibleState: {
+      turn: {
+        currentPlayerIndex: OTHER_PLAYER_INDEX,
+      },
+    },
+    replay: {
+      hypothetical,
+      ownHypothetical,
+      shared,
+    },
   } as unknown as State;
 }
 
@@ -51,13 +67,24 @@ describe("draggablePlayerIndex", () => {
     const state = makeState({ currentPlayerIndex: OTHER_PLAYER_INDEX });
     expect(draggablePlayerIndex(state)).toBeUndefined();
 
-    store.dispatch(settingsChanged({ ...defaultSettings, preplay: true }));
+    store.dispatch(
+      settingsChanged({
+        ...defaultSettings,
+        preplay: true,
+      }),
+    );
     expect(draggablePlayerIndex(state)).toBe(OUR_PLAYER_INDEX);
   });
 
   test("blocks dragging while a premove is queued or when spectating", () => {
     expect(
-      draggablePlayerIndex(makeState({ premove: { type: 0 } })),
+      draggablePlayerIndex(
+        makeState({
+          premove: {
+            type: 0,
+          },
+        }),
+      ),
     ).toBeUndefined();
     expect(draggablePlayerIndex(makeState({ playing: false }))).toBeUndefined();
   });
@@ -66,12 +93,20 @@ describe("draggablePlayerIndex", () => {
     const hypothetical = {};
     expect(
       draggablePlayerIndex(
-        makeState({ hypothetical, ownHypothetical: hypothetical }),
+        makeState({
+          hypothetical,
+          ownHypothetical: hypothetical,
+        }),
       ),
     ).toBe(OTHER_PLAYER_INDEX);
     expect(
       draggablePlayerIndex(
-        makeState({ hypothetical, shared: { amLeader: false } }),
+        makeState({
+          hypothetical,
+          shared: {
+            amLeader: false,
+          },
+        }),
       ),
     ).toBeUndefined();
   });

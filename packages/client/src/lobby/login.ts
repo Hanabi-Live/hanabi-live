@@ -78,13 +78,19 @@ export function signIn(
       }
       if ("outdated" in login) {
         store.dispatch(
-          loginFailed({ message: "", latestVersion: login.outdated }),
+          loginFailed({
+            message: "",
+            latestVersion: login.outdated,
+          }),
         );
         return;
       }
       if ("passwordReset" in login) {
         store.dispatch(
-          loginFailed({ message: login.passwordReset, passwordReset: true }),
+          loginFailed({
+            message: login.passwordReset,
+            passwordReset: true,
+          }),
         );
         return;
       }

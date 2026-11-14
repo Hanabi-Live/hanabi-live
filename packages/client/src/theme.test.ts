@@ -14,9 +14,12 @@ Object.defineProperty(globalThis, "localStorage", {
 });
 
 const matchMediaMock = ((query: string): MediaQueryList =>
-  ({ matches: matchMediaMock.matches, media: query }) as MediaQueryList) as ((
-  query: string,
-) => MediaQueryList) & { matches: boolean };
+  ({
+    matches: matchMediaMock.matches,
+    media: query,
+  }) as MediaQueryList) as ((query: string) => MediaQueryList) & {
+  matches: boolean;
+};
 
 Object.defineProperty(globalThis, "matchMedia", {
   value: matchMediaMock,

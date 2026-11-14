@@ -63,7 +63,10 @@ export function Pip({
       aria-hidden="true"
       className="tw:block tw:shrink-0"
       ref={canvasRef}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+      }}
     />
   );
 }

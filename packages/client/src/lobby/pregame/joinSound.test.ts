@@ -9,14 +9,27 @@ const ALICE = userIdSchema.parse(1);
 function pregame(tableId: number, userIds: readonly number[]): Game {
   return {
     tableId: tableIdSchema.parse(tableId),
-    settings: { name: "table", maxPlayers: 5, options: defaultOptions },
-    owner: { userId: ALICE, username: "alice" },
+    settings: {
+      name: "table",
+      maxPlayers: 5,
+      options: defaultOptions,
+    },
+    owner: {
+      userId: ALICE,
+      username: "alice",
+    },
     passwordProtected: false,
     players: userIds.map((userId) => ({
       userId: userIdSchema.parse(userId),
       username: `user${userId}`,
       present: true,
-      stats: { numGames: 0, variant: { numGames: 0, bestScores: [] } },
+      stats: {
+        numGames: 0,
+        variant: {
+          numGames: 0,
+          bestScores: [],
+        },
+      },
     })),
   };
 }

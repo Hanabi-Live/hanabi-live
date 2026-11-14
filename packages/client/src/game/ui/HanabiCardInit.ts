@@ -78,13 +78,19 @@ const LARGE_ICON_Y = 0.2 * CARD_H;
 const GHOST_OPACITY = 0.5;
 
 /** The size of the trash can drawn over a card that can no longer be played. */
-const TRASHCAN_SIZE = { w: 0.7 * CARD_W, h: 0.6 * CARD_H } as const;
+const TRASHCAN_SIZE = {
+  w: 0.7 * CARD_W,
+  h: 0.6 * CARD_H,
+} as const;
 
 /** The top edge of the wrench drawn over a card, which sits lower than the other large icons. */
 const WRENCH_Y = 0.33 * CARD_H;
 
 /** The top-left corner of the note indicator, as fractions of the card size. */
-const NOTE_INDICATOR_POSITION = { x: 0.78, y: 0.03 } as const;
+const NOTE_INDICATOR_POSITION = {
+  x: 0.78,
+  y: 0.03,
+} as const;
 
 /**
  * The arrow on a card of a reversed suit, which points up or down to show the direction that the
@@ -185,10 +191,16 @@ const RANK_PIP_X_SIZE = 13;
  * the pip's box. The digit is larger than its box, so its middle is below the middle of the box. It
  * has always been drawn half a pixel right of the middle of the box.
  */
-const RANK_PIP_X_CENTER = { x: (RANK_PIP_SIZE + 1) / 2, y: 27 } as const;
+const RANK_PIP_X_CENTER = {
+  x: (RANK_PIP_SIZE + 1) / 2,
+  y: 27,
+} as const;
 
 /** The row of rank pips along the bottom of a card, as fractions of the card height. */
-const RANK_PIP_ROW = { y: 0.81, h: 0.15 } as const;
+const RANK_PIP_ROW = {
+  y: 0.81,
+  h: 0.15,
+} as const;
 
 /** The outline around the X over a rank pip that has been ruled out. */
 const RANK_PIP_X_STROKE_WIDTH = 2;
@@ -199,8 +211,14 @@ const RANK_PIP_X_STROKE_WIDTH = 2;
  * card.
  */
 const RANK_PIP_X = {
-  defaultRanks: { start: -0.14, spacing: 0.19 },
-  otherRanks: { start: 0.05, spacing: 0.15 },
+  defaultRanks: {
+    start: -0.14,
+    spacing: 0.19,
+  },
+  otherRanks: {
+    start: 0.05,
+    spacing: 0.15,
+  },
 } as const;
 
 /**
@@ -214,14 +232,20 @@ const POSSIBILITY_ROWS = {
   /** The height of a row when there are only a few, as a fraction of the card height. */
   maxRowH: 1 / 3,
   /** The space for the suit pips, as fractions of the card width. */
-  suitsX: { start: 0.03, end: 0.27 },
+  suitsX: {
+    start: 0.03,
+    end: 0.27,
+  },
   /** The suit pips of a row go in a grid with up to this many columns. */
   maxSuitColumns: 2,
   /**
    * The space for the rank columns, as fractions of the card width. Each rank gets an equal share
    * of it.
    */
-  ranksX: { start: 0.29, end: 0.94 },
+  ranksX: {
+    start: 0.29,
+    end: 0.94,
+  },
   /** The radius of a suit pip, as a fraction of the smaller side of its cell in the grid. */
   pipRadiusPerCell: 0.48,
   /** The size of a rank's digit, as a fraction of the row height. */
@@ -234,7 +258,10 @@ const POSSIBILITY_ROWS = {
   /** Arial's digits sit slightly high when centered on a point, so move them down this much. */
   digitDropPerFontSize: 0.04,
   /** The line between two rows. */
-  divider: { width: 2, color: "rgba(0, 0, 0, 0.22)" },
+  divider: {
+    width: 2,
+    color: "rgba(0, 0, 0, 0.22)",
+  },
 } as const;
 
 function makeBorder(color: string) {
@@ -314,7 +341,10 @@ export function directionArrow(
   });
   arrow.add(arrowBase);
 
-  return { arrow, arrowBase };
+  return {
+    arrow,
+    arrowBase,
+  };
 }
 
 // Cache the pip objects to save time on the multiple cards.
@@ -618,7 +648,11 @@ function getPossibilityRowLayouts(
     };
   });
 
-  return { rowH, top, layouts };
+  return {
+    rowH,
+    top,
+    layouts,
+  };
 }
 
 function drawPossibilityRows(
@@ -712,7 +746,10 @@ function drawPossibilityRows(
           ctx,
           center,
           SUIT_PIP_X_SIZE * pipScale,
-          { fill: "black", stroke: "white" },
+          {
+            fill: "black",
+            stroke: "white",
+          },
           PIP_OUTLINE_WIDTH * pipScale,
         );
       }
@@ -722,9 +759,15 @@ function drawPossibilityRows(
       if (rankPip.state === PipState.Eliminated) {
         drawCenteredX(
           ctx,
-          { x: columnX.get(rankPip.rank) ?? 0, y: centerY + digitDrop },
+          {
+            x: columnX.get(rankPip.rank) ?? 0,
+            y: centerY + digitDrop,
+          },
           (RANK_PIP_X_SIZE * fontSize) / RANK_PIP_FONT_SIZE,
-          { fill: "black", stroke: "black" },
+          {
+            fill: "black",
+            stroke: "black",
+          },
           RANK_PIP_X_STROKE_WIDTH,
         );
       }

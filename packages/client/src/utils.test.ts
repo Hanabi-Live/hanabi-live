@@ -34,7 +34,10 @@ describe("setBrowserAddressBarPath", () => {
       },
       history: {
         configurable: true,
-        value: { pushState, replaceState },
+        value: {
+          pushState,
+          replaceState,
+        },
       },
     });
 
@@ -54,7 +57,10 @@ describe("setBrowserAddressBarPath", () => {
       },
       history: {
         configurable: true,
-        value: { pushState, replaceState },
+        value: {
+          pushState,
+          replaceState,
+        },
       },
     });
 
@@ -74,7 +80,10 @@ describe("setBrowserAddressBarPath", () => {
       },
       history: {
         configurable: true,
-        value: { pushState, replaceState },
+        value: {
+          pushState,
+          replaceState,
+        },
       },
     });
 

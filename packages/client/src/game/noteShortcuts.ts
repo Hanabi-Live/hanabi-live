@@ -40,7 +40,10 @@ export function getRightClickNoteAction(
 
   // "kt" is short for "known trash".
   if (ctrlKey && shiftKey && altKey) {
-    return { type: "append", text: "kt" };
+    return {
+      type: "append",
+      text: "kt",
+    };
   }
   if (ctrlKey && shiftKey) {
     return { type: "repeatLast" };
@@ -50,15 +53,24 @@ export function getRightClickNoteAction(
   }
   // "ptd" is short for "permission to discard".
   if (shiftKey && altKey) {
-    return { type: "append", text: "ptd" };
+    return {
+      type: "append",
+      text: "ptd",
+    };
   }
   // "f" is short for "finessed".
   if (shiftKey) {
-    return { type: "append", text: "f" };
+    return {
+      type: "append",
+      text: "f",
+    };
   }
   // "cm" is short for "chop moved".
   if (altKey) {
-    return { type: "append", text: "cm" };
+    return {
+      type: "append",
+      text: "cm",
+    };
   }
   if (ctrlKey === isSpeedrun) {
     return { type: "edit" };

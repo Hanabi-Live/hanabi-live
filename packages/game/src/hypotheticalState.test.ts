@@ -49,7 +49,11 @@ describe("hypothetical state", () => {
     (currentPlayerIndex) => {
       const selected = {
         ...startingState,
-        turn: { ...startingState.turn, segment: 7, currentPlayerIndex },
+        turn: {
+          ...startingState.turn,
+          segment: 7,
+          currentPlayerIndex,
+        },
       };
       const state = initializeHypotheticalState(selected, false, [], metadata);
       expect(state.ongoing).toBe(selected);
@@ -59,7 +63,10 @@ describe("hypothetical state", () => {
   );
 
   test("applies initial actions sequentially while retaining the starting player", () => {
-    const action = { ...rankClue(3, 1, [], 0), ignoreNegative: true };
+    const action = {
+      ...rankClue(3, 1, [], 0),
+      ignoreNegative: true,
+    };
     const state = initializeHypotheticalState(
       startingState,
       false,
@@ -67,7 +74,10 @@ describe("hypothetical state", () => {
         {
           type: "morph",
           order: 0 as CardOrder,
-          identity: { suitIndex: undefined, rank: 3 },
+          identity: {
+            suitIndex: undefined,
+            rank: 3,
+          },
         },
         action,
         action,
@@ -100,7 +110,10 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 30 as CardOrder,
-        identity: { suitIndex: undefined, rank: undefined },
+        identity: {
+          suitIndex: undefined,
+          rank: undefined,
+        },
       },
       metadata,
     );
@@ -114,11 +127,17 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 30 as CardOrder,
-        identity: { suitIndex: 1, rank: 2 },
+        identity: {
+          suitIndex: 1,
+          rank: 2,
+        },
       },
       metadata,
     );
-    expect(state.morphedIdentities[30]).toEqual({ suitIndex: 1, rank: 2 });
+    expect(state.morphedIdentities[30]).toEqual({
+      suitIndex: 1,
+      rank: 2,
+    });
     state = hypotheticalStateReducer(
       state,
       {
@@ -135,8 +154,14 @@ describe("hypothetical state", () => {
   });
 
   test.each([
-    { name: "duplicate", order: 0 },
-    { name: "skipped", order: startingState.deck.length + 1 },
+    {
+      name: "duplicate",
+      order: 0,
+    },
+    {
+      name: "skipped",
+      order: startingState.deck.length + 1,
+    },
   ])("ignores a received $name draw order", ({ order }) => {
     const initial = initializeHypotheticalState(
       startingState,
@@ -274,14 +299,20 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 0 as CardOrder,
-        identity: { suitIndex: 1, rank: 2 },
+        identity: {
+          suitIndex: 1,
+          rank: 2,
+        },
       },
       metadata,
     );
     const { ongoing } = state;
     state = hypotheticalStateReducer(
       state,
-      { type: "showDrawnCards", showDrawnCards: true },
+      {
+        type: "showDrawnCards",
+        showDrawnCards: true,
+      },
       metadata,
     );
     expect(state.showDrawnCards).toBe(true);
@@ -292,7 +323,10 @@ describe("hypothetical state", () => {
     const afterDraw = state.ongoing;
     state = hypotheticalStateReducer(
       state,
-      { type: "showDrawnCards", showDrawnCards: false },
+      {
+        type: "showDrawnCards",
+        showDrawnCards: false,
+      },
       metadata,
     );
     expect(state.showDrawnCards).toBe(false);
@@ -302,7 +336,10 @@ describe("hypothetical state", () => {
         rank: undefined,
       });
     }
-    expect(state.morphedIdentities[0]).toEqual({ suitIndex: 1, rank: 2 });
+    expect(state.morphedIdentities[0]).toEqual({
+      suitIndex: 1,
+      rank: 2,
+    });
     expect(state.ongoing).toBe(afterDraw);
     expect(state.drawnCardsInHypothetical).toEqual([
       order,
@@ -319,13 +356,19 @@ describe("hypothetical state", () => {
             type: "play",
             playerIndex: 0,
             order: order as CardOrder,
-            identity: { suitIndex: 0, rank: 1 },
+            identity: {
+              suitIndex: 0,
+              rank: 1,
+            },
           } as const)
         : ({
             type: "discard",
             playerIndex: 0,
             order: order as CardOrder,
-            identity: { suitIndex: 0, rank: 1 },
+            identity: {
+              suitIndex: 0,
+              rank: 1,
+            },
           } as const);
     }
 
@@ -420,13 +463,19 @@ describe("hypothetical state", () => {
         {
           type: "morph",
           order: 0 as CardOrder,
-          identity: { suitIndex: undefined, rank: undefined },
+          identity: {
+            suitIndex: undefined,
+            rank: undefined,
+          },
         },
         metadata,
       );
       state = hypotheticalStateReducer(
         state,
-        { type: "unmorph", order: 0 as CardOrder },
+        {
+          type: "unmorph",
+          order: 0 as CardOrder,
+        },
         metadata,
       );
       expect(reducer).not.toHaveBeenCalled();
@@ -487,7 +536,10 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 0 as CardOrder,
-        identity: { suitIndex: 3, rank: 1 },
+        identity: {
+          suitIndex: 3,
+          rank: 1,
+        },
       },
       metadata,
     );
@@ -498,7 +550,10 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 1 as CardOrder,
-        identity: { suitIndex: 1, rank: 5 },
+        identity: {
+          suitIndex: 1,
+          rank: 5,
+        },
       },
       metadata,
     );
@@ -507,24 +562,39 @@ describe("hypothetical state", () => {
 
     state = hypotheticalStateReducer(
       state,
-      { type: "unmorph", order: 0 as CardOrder },
+      {
+        type: "unmorph",
+        order: 0 as CardOrder,
+      },
       metadata,
     );
     state = hypotheticalStateReducer(
       state,
-      { type: "unmorph", order: 1 as CardOrder },
+      {
+        type: "unmorph",
+        order: 1 as CardOrder,
+      },
       metadata,
     );
     expect(empathy()).not.toContainEqual(green5);
     expect(empathy()).toContainEqual(yellow5);
-    expect(state.ongoing.deck[0]).toMatchObject({ suitIndex: 2, rank: 5 });
+    expect(state.ongoing.deck[0]).toMatchObject({
+      suitIndex: 2,
+      rank: 5,
+    });
   });
 
-  const lastSegment = { ...startingState.turn, segment: 0 };
+  const lastSegment = {
+    ...startingState.turn,
+    segment: 0,
+  };
   test.each([
     {
       name: "the final round",
-      turn: { ...lastSegment, endTurnNum: startingState.turn.turnNum + 1 },
+      turn: {
+        ...lastSegment,
+        endTurnNum: startingState.turn.turnNum + 1,
+      },
     },
     {
       name: "a strikeout",
@@ -542,7 +612,10 @@ describe("hypothetical state", () => {
   ])("ends after $name", (overrides) => {
     const { name: _name, ...stateOverrides } = overrides;
     const ended = initializeHypotheticalState(
-      { ...startingState, ...stateOverrides },
+      {
+        ...startingState,
+        ...stateOverrides,
+      },
       false,
       [rankClue(3, 0, [], 1)],
       metadata,
@@ -558,8 +631,14 @@ describe("hypothetical state", () => {
   });
 
   test.each([
-    { rank: 5, ends: true },
-    { rank: 1, ends: false },
+    {
+      rank: 5,
+      ends: true,
+    },
+    {
+      rank: 1,
+      ends: false,
+    },
   ] as const)(
     "with a rank $rank last in the final round, ends = $ends",
     ({ rank, ends }) => {

@@ -213,7 +213,10 @@ function addFinale(timeline: EffectTimeline, start: number) {
     addRocket(
       timeline,
       time,
-      { x: center.x, y: center.y - unit / 2 },
+      {
+        x: center.x,
+        y: center.y - unit / 2,
+      },
       apex,
       ROCKET_SECONDS,
     );
@@ -237,14 +240,23 @@ function addFinale(timeline: EffectTimeline, start: number) {
   // The large firework bursts over the middle of the stacks.
   const first = absoluteCenter(stacks[0]![1]);
   const last = absoluteCenter(stacks.at(-1)![1]);
-  const middle = { x: (first.x + last.x) / 2, y: (first.y + last.y) / 2 };
-  const finale = { x: middle.x, y: middle.y - FINALE_HEIGHT * unit };
+  const middle = {
+    x: (first.x + last.x) / 2,
+    y: (first.y + last.y) / 2,
+  };
+  const finale = {
+    x: middle.x,
+    y: middle.y - FINALE_HEIGHT * unit,
+  };
   const launch =
     time - VOLLEY_STAGGER_SECONDS + ROCKET_SECONDS + FINALE_PAUSE_SECONDS;
   addRocket(
     timeline,
     launch,
-    { x: middle.x, y: middle.y - unit / 2 },
+    {
+      x: middle.x,
+      y: middle.y - unit / 2,
+    },
     finale,
     FINALE_ROCKET_SECONDS,
   );
@@ -375,7 +387,10 @@ function addBurst(
         t < SPARK_FADE_START
           ? 1
           : 1 - (t - SPARK_FADE_START) / (1 - SPARK_FADE_START);
-      head.position({ x, y });
+      head.position({
+        x,
+        y,
+      });
       head.opacity(fade * (0.75 + 0.25 * Math.sin(t * 40 + twinkle)));
       tail.points([
         origin.x + Math.cos(angle) * distance * lag,
@@ -432,7 +447,10 @@ function addEmber(timeline: EffectTimeline, start: number, at: Point) {
     fill: EMBER_COLORS[Math.floor(Math.random() * EMBER_COLORS.length)]!,
   });
   timeline.addShape(start, EMBER_SECONDS, ember, (t) => {
-    ember.position({ x: at.x + drift * t, y: at.y + EMBER_FALL * unit * t });
+    ember.position({
+      x: at.x + drift * t,
+      y: at.y + EMBER_FALL * unit * t,
+    });
     ember.radius(radius * (1 - t / 2));
     ember.opacity(1 - t);
   });

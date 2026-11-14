@@ -122,7 +122,10 @@ export class FullActionLog extends Konva.Group {
   }
 
   addMessage(turn: number, msg: string): void {
-    this.buffer.push({ turnNum: turn, text: msg });
+    this.buffer.push({
+      turnNum: turn,
+      text: msg,
+    });
     this.needsRefresh = true;
 
     // If the log is already open, apply the change immediately.

@@ -12,14 +12,26 @@ import { WatchReplay } from "./watchReplay/WatchReplay.tsx";
 const ROWS_WIDTH = "tw:max-w-[46em]";
 
 const PAGES = {
-  createGame: { id: "lobby-create-game", Page: CreateGame, width: ROWS_WIDTH },
-  watchReplay: { id: "lobby-replay", Page: WatchReplay, width: ROWS_WIDTH },
+  createGame: {
+    id: "lobby-create-game",
+    Page: CreateGame,
+    width: ROWS_WIDTH,
+  },
+  watchReplay: {
+    id: "lobby-replay",
+    Page: WatchReplay,
+    width: ROWS_WIDTH,
+  },
   resources: {
     id: "lobby-resources",
     Page: Resources,
     width: "tw:max-w-[64em]",
   },
-  settings: { id: "lobby-settings", Page: SettingsPage, width: ROWS_WIDTH },
+  settings: {
+    id: "lobby-settings",
+    Page: SettingsPage,
+    width: ROWS_WIDTH,
+  },
 } as const satisfies Record<
   LobbyPage,
   {

@@ -202,7 +202,10 @@ function evaluateAssignment(
     assignment[assignedLocalSuitIndex] = value;
   }
 
-  return { assignmentValue, assignment };
+  return {
+    assignmentValue,
+    assignment,
+  };
 }
 
 /**

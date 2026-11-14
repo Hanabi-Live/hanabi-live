@@ -39,9 +39,18 @@ describe("getHandDisplayOrder", () => {
 describe("getTouchedCards", () => {
   const hand = [0, 1, 2] as CardOrder[];
   const identities = [
-    { suitIndex: 0, rank: 1 },
-    { suitIndex: 1, rank: 1 },
-    { suitIndex: 0, rank: 3 },
+    {
+      suitIndex: 0,
+      rank: 1,
+    },
+    {
+      suitIndex: 1,
+      rank: 1,
+    },
+    {
+      suitIndex: 0,
+      rank: 3,
+    },
   ] as CardIdentity[];
 
   test("finds the cards of a rank", () => {
@@ -59,7 +68,10 @@ describe("getTouchedCards", () => {
 
   test("skips cards that the viewer cannot see", () => {
     const unknown = [
-      { suitIndex: undefined, rank: undefined },
+      {
+        suitIndex: undefined,
+        rank: undefined,
+      },
       ...identities.slice(1),
     ] as CardIdentity[];
     expect(
@@ -89,14 +101,20 @@ describe("isClueAllowed", () => {
 describe("getCardView", () => {
   const gameState = getInitialGameState(getDefaultMetadata(2));
   const cardState = getInitialCardState(0 as CardOrder, VARIANT, 2);
-  const red1 = { suitIndex: 0 as SuitIndex, rank: 1 } as const;
+  const red1 = {
+    suitIndex: 0 as SuitIndex,
+    rank: 1,
+  } as const;
 
   function getView(note: Partial<CardNote>, { finished = false } = {}) {
     return getCardView({
       gameState,
       cardState,
       cardIdentity: red1,
-      note: { ...BLANK_NOTE, ...note },
+      note: {
+        ...BLANK_NOTE,
+        ...note,
+      },
       variant: VARIANT,
       empathy: false,
       finished,
@@ -107,9 +125,12 @@ describe("getCardView", () => {
   test("shows the mark of a note keyword", () => {
     expect(getView({}).noteMark).toBeUndefined();
     expect(getView({ questionMark: true }).noteMark).toBe("questionMark");
-    expect(getView({ knownTrash: true, questionMark: true }).noteMark).toBe(
-      "trash",
-    );
+    expect(
+      getView({
+        knownTrash: true,
+        questionMark: true,
+      }).noteMark,
+    ).toBe("trash");
   });
 
   test("hides the marks of notes in a finished game", () => {
@@ -126,7 +147,12 @@ describe("getCardView", () => {
 
   test("gives a border from a note to a card that does not show as clued", () => {
     expect(getView({ finessed: true }).noteBorder).toBe("finessed");
-    expect(getView({ clued: true, finessed: true })).toMatchObject({
+    expect(
+      getView({
+        clued: true,
+        finessed: true,
+      }),
+    ).toMatchObject({
       clued: true,
       noteBorder: undefined,
     });
@@ -139,7 +165,10 @@ describe("shouldFadeTrash", () => {
     markedTrash: false,
     clued: false,
     positivelyClued: false,
-    note: { blank: false, chopMoved: false },
+    note: {
+      blank: false,
+      chopMoved: false,
+    },
     throwItInAHole: false,
   };
 
@@ -149,13 +178,27 @@ describe("shouldFadeTrash", () => {
 
   test("keeps clued trash at full strength", () => {
     expect(
-      shouldFadeTrash({ ...plain, clued: true, positivelyClued: true }),
+      shouldFadeTrash({
+        ...plain,
+        clued: true,
+        positivelyClued: true,
+      }),
     ).toBe(false);
   });
 
   test("fades a card marked as trash unless a clue touched it", () => {
-    const marked = { ...plain, trash: false, markedTrash: true, clued: true };
+    const marked = {
+      ...plain,
+      trash: false,
+      markedTrash: true,
+      clued: true,
+    };
     expect(shouldFadeTrash(marked)).toBe(true);
-    expect(shouldFadeTrash({ ...marked, positivelyClued: true })).toBe(false);
+    expect(
+      shouldFadeTrash({
+        ...marked,
+        positivelyClued: true,
+      }),
+    ).toBe(false);
   });
 });

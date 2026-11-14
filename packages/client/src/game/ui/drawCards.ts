@@ -60,7 +60,10 @@ const UNKNOWN_CARD_FILL_ALPHA = 0.5;
 const UNKNOWN_CARD_BORDER_ALPHA = 0.6;
 
 /** The opacity of the faint suit pip in the middle of an unknown card. */
-const UNKNOWN_CARD_LARGE_PIP_ALPHA = { normal: 0.1, colorblind: 0.4 } as const;
+const UNKNOWN_CARD_LARGE_PIP_ALPHA = {
+  normal: 0.1,
+  colorblind: 0.4,
+} as const;
 
 /** The color of the pips on an unknown card or the deck. */
 const UNKNOWN_CARD_PIP_COLOR = "#444444";
@@ -71,8 +74,14 @@ const BLACK_RGB = [0, 0, 0] as const;
 
 /** The size and baseline of the rank label, which is smaller to fit the suit in colorblind mode. */
 const RANK_LABEL_FONT = {
-  normal: { fontSize: 96, textYPos: 110 },
-  colorblind: { fontSize: 68, textYPos: 83 },
+  normal: {
+    fontSize: 96,
+    textYPos: 110,
+  },
+  colorblind: {
+    fontSize: 68,
+    textYPos: 83,
+  },
 } as const;
 
 /**
@@ -81,8 +90,14 @@ const RANK_LABEL_FONT = {
  * abbreviation.
  */
 const SUIT_PIP_OFFSET_Y = {
-  normal: { rank2: 90, ranks3To5: 120 },
-  colorblind: { rank2: 60, ranks3To5: 80 },
+  normal: {
+    rank2: 90,
+    ranks3To5: 120,
+  },
+  colorblind: {
+    rank2: 60,
+    ranks3To5: 80,
+  },
 } as const;
 
 /** The scale of the suit pips at the top, bottom, and sides of a card's face. */
@@ -125,8 +140,16 @@ const FACE_PIP_OFFSET_X = 90;
  * goes to the right of the label, or below it in colorblind mode.
  */
 const DECEPTIVE_RANK_LABEL = {
-  normal: { x: CARD_W / 4 + CARD_W / 50, y: CARD_H / 40, scale: 0.5 },
-  colorblind: { x: CARD_W / 20, y: CARD_H / 5, scale: 0.65 },
+  normal: {
+    x: CARD_W / 4 + CARD_W / 50,
+    y: CARD_H / 40,
+    scale: 0.5,
+  },
+  colorblind: {
+    x: CARD_W / 20,
+    y: CARD_H / 5,
+    scale: 0.65,
+  },
 } as const;
 
 /**
@@ -147,7 +170,10 @@ const RANK_LABEL_X = 19;
 const CARD_FACE_SHADOW_BLUR = 10;
 
 /** The black outline of the rank labels, which is thicker without shadows to keep them readable. */
-const RANK_LABEL_OUTLINE_WIDTH = { withShadows: 2, withoutShadows: 8 } as const;
+const RANK_LABEL_OUTLINE_WIDTH = {
+  withShadows: 2,
+  withoutShadows: 8,
+} as const;
 
 /**
  * How far an Omni card's background gradient extends past the top and bottom of the card, so that

@@ -1,6 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({
+  globals: {},
+}));
 vi.mock("./hypotheticalHands.ts", () => ({
   changeStartingHandVisibility: vi.fn(),
 }));
@@ -13,8 +15,16 @@ describe("setGlobalEmpathy", () => {
     const setEmpathy = vi.fn();
     Object.assign(globals, {
       globalEmpathyEnabled: true,
-      elements: { playerHands: [{ setEmpathy }] },
-      state: { replay: { hypothetical: { startingPlayerIndex: 0 } } },
+      elements: {
+        playerHands: [{ setEmpathy }],
+      },
+      state: {
+        replay: {
+          hypothetical: {
+            startingPlayerIndex: 0,
+          },
+        },
+      },
     });
 
     setGlobalEmpathy(false);
@@ -28,8 +38,14 @@ describe("setGlobalEmpathy", () => {
     Object.assign(globals, {
       globalEmpathyEnabled: true,
       globalEmpathyIncludesNotes: false,
-      elements: { playerHands: [{ setEmpathy }] },
-      state: { replay: { hypothetical: undefined } },
+      elements: {
+        playerHands: [{ setEmpathy }],
+      },
+      state: {
+        replay: {
+          hypothetical: undefined,
+        },
+      },
     });
 
     setGlobalEmpathy(true, true);

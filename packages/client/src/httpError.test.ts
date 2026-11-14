@@ -9,7 +9,12 @@ describe("httpError", () => {
           "Account test-cookie failed: The database is unavailable. [Reference: abc123]",
         code: "databaseUnavailable",
       },
-      { status: 503, headers: { "x-error-id": "abc123" } },
+      {
+        status: 503,
+        headers: {
+          "x-error-id": "abc123",
+        },
+      },
     );
     const error = await httpError(response, "Checking your saved session");
     expect(error.message).toBe(

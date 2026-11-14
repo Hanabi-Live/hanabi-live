@@ -287,7 +287,10 @@ function watchAnchor(tooltip: Tooltip) {
   openTooltips.add(tooltip);
   if (anchorObserver === undefined) {
     anchorObserver = new MutationObserver(closeTooltipsOfRemovedAnchors);
-    anchorObserver.observe(document.body, { childList: true, subtree: true });
+    anchorObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
   }
 }
 

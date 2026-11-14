@@ -288,9 +288,18 @@ const DECK_EDGE_OFFSET = 2;
  * fewer as it runs low, and none for the last card. Each entry is the fewest cards for its edges.
  */
 const DECK_EDGES = [
-  { minCards: 20, edges: 3 },
-  { minCards: 8, edges: 2 },
-  { minCards: 2, edges: 1 },
+  {
+    minCards: 20,
+    edges: 3,
+  },
+  {
+    minCards: 8,
+    edges: 2,
+  },
+  {
+    minCards: 2,
+    edges: 1,
+  },
 ] as const;
 
 /** The most room that the edges under the top of the deck take, below and to the right of it. */

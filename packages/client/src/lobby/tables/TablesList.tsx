@@ -33,17 +33,35 @@ const MOVED_ROW_CLICK_DELAY_MS = 500;
 
 /** The columns, and the classes that hide the less important ones on narrow screens. */
 const COLUMNS = {
-  name: { title: "Name", className: "tw:narrow-736:hidden" },
-  numPlayers: { title: "# of Players", className: "tw:narrow-840:hidden" },
+  name: {
+    title: "Name",
+    className: "tw:narrow-736:hidden",
+  },
+  numPlayers: {
+    title: "# of Players",
+    className: "tw:narrow-840:hidden",
+  },
   // When the "Name" column is hidden, this column is the first one, so it needs a left border.
   variant: {
     title: "Variant",
     className: "tw:narrow-736:[border-left-width:1px]",
   },
-  options: { title: "Options", className: "tw:narrow-530:hidden" },
-  status: { title: "Status", className: "tw:narrow-410:hidden" },
-  players: { title: "Players", className: undefined },
-  spectators: { title: "Spectators", className: "tw:narrow-640:hidden" },
+  options: {
+    title: "Options",
+    className: "tw:narrow-530:hidden",
+  },
+  status: {
+    title: "Status",
+    className: "tw:narrow-410:hidden",
+  },
+  players: {
+    title: "Players",
+    className: undefined,
+  },
+  spectators: {
+    title: "Spectators",
+    className: "tw:narrow-640:hidden",
+  },
 } as const;
 
 /** The background of each kind of row. */
@@ -278,7 +296,10 @@ function useMovedTime(ref: React.RefObject<HTMLTableRowElement | null>) {
     ) {
       movedTime.current = performance.now();
     }
-    position.current = { top, height };
+    position.current = {
+      top,
+      height,
+    };
   });
 
   return movedTime;
