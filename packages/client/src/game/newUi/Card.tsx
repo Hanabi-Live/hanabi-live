@@ -702,7 +702,7 @@ export function CardFace({
     ? "tw:outline-4 tw:outline-offset-4 tw:outline-white"
     : "";
 
-  return (
+  const face = (
     <div
       // A card that a clue newly touches slides up to its raised place, without a bounce.
       className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out tw:select-none ${border} ${outline} ${faceColors.className}`}
@@ -786,6 +786,26 @@ export function CardFace({
       )}
 
       {noteMark !== undefined && <NoteMarkIcon mark={noteMark} width={width} />}
+    </div>
+  );
+
+  if (!trash) {
+    return face;
+  }
+
+  // A faded card lets the felt show through it. A blurred copy of the felt sits behind it, so that
+  // the card blends into smooth green rather than into the texture.
+  return (
+    <div className="tw:relative tw:shrink-0">
+      <div
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:backdrop-blur-lg tw:transition-transform tw:duration-200 tw:ease-out"
+        style={{
+          borderRadius: width * CARD_CORNER_PER_WIDTH,
+          transform: `translateY(${-raise}px)`,
+        }}
+      />
+      {face}
     </div>
   );
 }
