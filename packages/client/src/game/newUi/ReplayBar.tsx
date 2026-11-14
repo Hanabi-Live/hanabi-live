@@ -271,7 +271,7 @@ export function Checkbox({
  * off, and when the leader starts or ends a hypothetical.
  */
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[17px] ${KEY_CLASS}`;
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] ${KEY_CLASS}`;
 
 function FollowToggle({
   state,
