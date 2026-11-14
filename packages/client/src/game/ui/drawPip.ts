@@ -12,6 +12,9 @@ import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions.ts";
 /** The scale of the suit pips arranged in a ring on an unknown card and on the deck. */
 export const SUIT_PIP_SCALE = 0.4;
 
+/** The scale of the suit pips at the top, bottom, and sides of a card's face. */
+export const FACE_PIP_SCALE = 0.4;
+
 /** The distance of each pip in the ring from the middle of the card, before scaling. */
 const SUIT_PIP_RING_RADIUS = 0.7 * CARD_W;
 

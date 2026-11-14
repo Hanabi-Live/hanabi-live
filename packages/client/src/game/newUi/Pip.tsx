@@ -1,6 +1,7 @@
 import type { Suit, Variant } from "@hanabi-live/game";
 import { useLayoutEffect, useRef } from "react";
-import { PIP_RADIUS, drawPip } from "../ui/drawPip.ts";
+import { CARD_FACE_SHADOW_BLUR } from "../ui/constants.ts";
+import { FACE_PIP_SCALE, PIP_RADIUS, drawPip } from "../ui/drawPip.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /**
@@ -11,9 +12,9 @@ const PIP_BOX = 2.2 * PIP_RADIUS;
 
 /**
  * How far the shadow under a pip spreads, in the pip's own units. It matches the shadow under the
- * smaller pips on a classic card's face, which spreads 10 of the card's units at a scale of 0.4.
+ * smaller pips on a classic card's face.
  */
-const PIP_SHADOW_BLUR = 25;
+const PIP_SHADOW_BLUR = CARD_FACE_SHADOW_BLUR / FACE_PIP_SCALE;
 
 /**
  * The width of the area that a pip with a shadow is drawn in, so that the shadow is not cut off.

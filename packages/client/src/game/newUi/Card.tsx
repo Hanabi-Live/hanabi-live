@@ -1,8 +1,14 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
+import { useId } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { CARD_H, CARD_W } from "../ui/constants.ts";
+import {
+  CARD_FACE_SHADOW_BLUR,
+  CARD_H,
+  CARD_IMAGE_SHADOW_COLOR,
+  CARD_W,
+} from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
 import { Pip } from "./Pip.tsx";
 import type { NoteBorder, NoteMark } from "./tableView.ts";
@@ -27,9 +33,16 @@ export const CLUED_RAISE_PER_WIDTH = 0.12;
 
 /**
  * The width of the outline around the rank in a card's corner, in the card's own units. Half of it
- * shows, because the fill covers the inner half.
+ * shows, because the fill covers the inner half. It is wider than the outline on a classic card's
+ * rank, because New UI cards are smaller, and a thinner outline blurs into the fill.
  */
-const RANK_OUTLINE_WIDTH = 4;
+const RANK_OUTLINE_WIDTH = 8;
+
+/**
+ * The spread of the shadow under the rank in a card's corner, in the card's own units. It matches
+ * the shadow on a classic card, whose canvas blur is twice the standard deviation of the blur.
+ */
+const RANK_SHADOW_DEVIATION = CARD_FACE_SHADOW_BLUR / 2;
 
 /**
  * The size of the suit's pip on a card whose rank does not show, as a fraction of the card's width.
@@ -887,6 +900,7 @@ function StylizedRanks({
 }): React.JSX.Element {
   const path = RANK_PATHS.get(rank);
   const corner = `translate(${RANK_CORNER_OFFSET.x} ${RANK_CORNER_OFFSET.y})`;
+  const shadowId = useId();
 
   return (
     <svg
@@ -894,9 +908,18 @@ function StylizedRanks({
       className="tw:pointer-events-none tw:absolute tw:inset-0 tw:size-full"
       viewBox={`0 0 ${CARD_W} ${CARD_H}`}
     >
+      <filter height="200%" id={shadowId} width="200%" x="-50%" y="-50%">
+        <feDropShadow
+          dx={0}
+          dy={0}
+          floodColor={CARD_IMAGE_SHADOW_COLOR}
+          stdDeviation={RANK_SHADOW_DEVIATION}
+        />
+      </filter>
       <path
         className="tw:fill-current tw:stroke-card-ink"
         d={path}
+        filter={`url(#${shadowId})`}
         paintOrder="stroke"
         strokeLinejoin="round"
         strokeWidth={RANK_OUTLINE_WIDTH}
@@ -906,6 +929,7 @@ function StylizedRanks({
         <path
           className="tw:fill-current tw:stroke-card-ink"
           d={path}
+          filter={`url(#${shadowId})`}
           paintOrder="stroke"
           strokeLinejoin="round"
           strokeWidth={RANK_OUTLINE_WIDTH}

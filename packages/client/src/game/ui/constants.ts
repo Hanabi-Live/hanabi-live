@@ -90,6 +90,11 @@ export const FULL_TURN_DEGREES = 2 * HALF_TURN_DEGREES;
 /** The shadow that the card images cast under their pips and rank labels. */
 export const CARD_IMAGE_SHADOW_COLOR = "rgba(0, 0, 0, 0.9)";
 
+/**
+ * How far the shadows under the pips and rank labels on a card image spread, in the card's units.
+ */
+export const CARD_FACE_SHADOW_BLUR = 10;
+
 /** Turns off a canvas shadow. */
 export const NO_SHADOW_COLOR = "rgba(0, 0, 0, 0)";
 

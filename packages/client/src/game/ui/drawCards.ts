@@ -17,6 +17,7 @@ import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import type { CardRendererBackend } from "./cardRendererBackend.ts";
 import {
   CARD_CENTER,
+  CARD_FACE_SHADOW_BLUR,
   CARD_H,
   CARD_IMAGE_SHADOW_COLOR,
   CARD_W,
@@ -24,7 +25,12 @@ import {
   NO_SHADOW_COLOR,
   RANK_FONT_FAMILY,
 } from "./constants.ts";
-import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip.ts";
+import {
+  FACE_PIP_SCALE,
+  SUIT_PIP_SCALE,
+  drawPip,
+  getSuitPipRingPosition,
+} from "./drawPip.ts";
 import { drawStylizedRank } from "./drawStylizedRank.ts";
 
 enum CardArea {
@@ -100,9 +106,6 @@ const SUIT_PIP_OFFSET_Y = {
   },
 } as const;
 
-/** The scale of the suit pips at the top, bottom, and sides of a card's face. */
-const FACE_PIP_SCALE = 0.4;
-
 /** How much larger than {@link FACE_PIP_SCALE} the other suit pips on a card's face are drawn. */
 const FACE_PIP_SCALE_MULTIPLIER = {
   rank1: 1.8,
@@ -165,9 +168,6 @@ const RANK_LABEL_GRADIENT = [
 
 /** The distance of the rank label from the left edge of a card. */
 const RANK_LABEL_X = 19;
-
-/** How far the shadows under the rank labels and pips on a card spread. */
-const CARD_FACE_SHADOW_BLUR = 10;
 
 /** The black outline of the rank labels, which is thicker without shadows to keep them readable. */
 const RANK_LABEL_OUTLINE_WIDTH = {
