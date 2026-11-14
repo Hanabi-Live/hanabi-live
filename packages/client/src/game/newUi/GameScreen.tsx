@@ -39,7 +39,12 @@ import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { HypotheticalActions, ReplayBar, TurnsBar } from "./ReplayBar.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
-import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
+import {
+  DiscardPile,
+  hasSuitLabels,
+  PlayArea,
+  TableTokens,
+} from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
@@ -439,6 +444,7 @@ export function GameScreen({
     playAreaSize.width,
     playAreaSize.height,
     variant.suits.length,
+    hasSuitLabels(variant),
     stacked,
   );
 

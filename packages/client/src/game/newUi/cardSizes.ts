@@ -13,6 +13,7 @@ import {
   PLAY_AREA_GAP,
   PLAY_STACK_GAP,
   PLAY_STACKS_PADDING,
+  SUIT_LABEL_SPACE,
   TABLE_TOKENS_HEIGHT,
 } from "./SharedCards.tsx";
 
@@ -90,18 +91,20 @@ export function getHandCardWidth(
 /**
  * Returns the width of the cards on the play stacks and in the discard pile, before the discard
  * pile's limit. The play stacks and the deck are one column of cards, or one row when the columns
- * stack.
+ * stack. In a column, the labels under the stacks (`suitLabels`) take some of the height.
  */
 export function getTableCardWidth(
   playAreaWidth: number,
   playAreaHeight: number,
   numSuits: number,
+  suitLabels: boolean,
   stacked: boolean,
 ): number {
   const gaps = PLAY_STACK_GAP * (numSuits - 1);
+  const labels = suitLabels ? SUIT_LABEL_SPACE * numSuits : 0;
   const width = stacked
     ? (playAreaWidth - STACKED_PLAY_AREA_OTHER_WIDTH - gaps) / (numSuits + 1)
-    : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps)
+    : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps - labels)
       / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH);
   return clamp(Math.floor(width), STACK_CARD_WIDTH.MIN, STACK_CARD_WIDTH.MAX);
 }

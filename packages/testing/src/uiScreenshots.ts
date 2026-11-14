@@ -253,6 +253,9 @@ const OTHER_PLAYER_NAMES = ["Ivan_Wolfgang", "Heidi", "Grace"] as const;
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
+/** A variant with suits of two colors, whose play stacks have labels that name their suits. */
+const DUAL_COLOR_VARIANT_NAME = "Dual-Color & Rainbow (6 Suits)";
+
 /**
  * The seed of Bob's game, so that every state deals the same cards. Each player has a card that the
  * team can play, and the account has one that it cannot.
@@ -849,6 +852,21 @@ function getStates(): readonly State[] {
       isolated: true,
       setup: async (cast) => {
         await cast.startBobsGame(5);
+      },
+    },
+    // Bob's game with five players in a variant with suits of two colors, so that each play stack
+    // has a label with its letter in notes and its colors. The tooltip of the first label names its
+    // suit.
+    {
+      name: "new-ui-suit-labels",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5, DUAL_COLOR_VARIANT_NAME);
+      },
+      hover: async (page) => {
+        await hoverForTooltip(page, page.locator("[data-suit-label]").first());
       },
     },
     // After every player has discarded cards, so that the discard pile has rows of several suits.
@@ -1493,9 +1511,12 @@ interface Cast {
   readonly setNewUi: (newUi: boolean) => Promise<void>;
   /**
    * Starts Bob's game, where the browser's account plays. It has two players unless the state asks
-   * for more, up to five.
+   * for more, up to five, and the variant of Bob's table unless the state asks for another.
    */
-  readonly startBobsGame: (numPlayers?: number) => Promise<BobsGame>;
+  readonly startBobsGame: (
+    numPlayers?: number,
+    variantName?: string,
+  ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
   /** Starts a five-player game that Bob leads, which the browser's account watches. */
   readonly startWatchedGame: () => Promise<WatchedGame>;
@@ -1698,12 +1719,13 @@ async function seed(address: string): Promise<Seed> {
 
 /**
  * Bob creates his table: a speedrun of a variant with a long name and six suits, so that the
- * screens show how they fit both. Returns the table.
+ * screens show how they fit both, unless a state asks for another variant. Returns the table.
  */
 async function createBobsTable(
   bob: Peer,
   name: string,
   deal?: { readonly type: "seed"; readonly suffix: string },
+  variantName = LONG_VARIANT_NAME,
 ): Promise<number> {
   bob.send("settings", {
     settings: {
@@ -1718,7 +1740,7 @@ async function createBobsTable(
       options: {
         speedrun: true,
         deckPlays: true,
-        variantId: getVariant(LONG_VARIANT_NAME).id,
+        variantId: getVariant(variantName).id,
       },
       ...(deal !== undefined && { deal }),
     },
@@ -1905,13 +1927,21 @@ async function createCast(
     return currentWatchedGame;
   }
 
-  async function startBobsGame(numPlayers = 2): Promise<BobsGame> {
+  async function startBobsGame(
+    numPlayers = 2,
+    variantName = LONG_VARIANT_NAME,
+  ): Promise<BobsGame> {
     const you = await connectAccount(true);
     const bob = await connectPeer(name(BOB));
-    const tableId = await createBobsTable(bob, `${name(BOB)}'s table`, {
-      type: "seed",
-      suffix: BOBS_GAME_SEED_SUFFIX,
-    });
+    const tableId = await createBobsTable(
+      bob,
+      `${name(BOB)}'s table`,
+      {
+        type: "seed",
+        suffix: BOBS_GAME_SEED_SUFFIX,
+      },
+      variantName,
+    );
     const spectators = await spectate(
       address,
       SPECTATOR_NAMES.map(name),

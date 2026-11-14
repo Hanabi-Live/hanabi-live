@@ -41,6 +41,107 @@ export const PLAY_STACK_GAP = 6;
 /** The space between the play stacks, the deck, and the tokens, in CSS pixels. */
 export const PLAY_AREA_GAP = 8;
 
+/** The height of the label under each play stack that names its suit, in CSS pixels. */
+const SUIT_LABEL_HEIGHT = 14;
+
+/** The space between a play stack and its suit label, in CSS pixels. */
+const SUIT_LABEL_GAP = 3;
+
+/** The height that a suit label adds to each play stack, in CSS pixels. */
+export const SUIT_LABEL_SPACE = SUIT_LABEL_HEIGHT + SUIT_LABEL_GAP;
+
+/** The size of each clue color's swatch in a suit label, in CSS pixels. */
+const SUIT_LABEL_SWATCH_SIZE = {
+  normal: 12,
+
+  /** It is larger in colorblind mode to hold the color's letter. */
+  colorblind: SUIT_LABEL_HEIGHT,
+} as const;
+
+/**
+ * Whether the play stacks have labels that name their suits, as on the classic screen. They show
+ * when the suits are hard to tell apart at a glance, such as suits of two colors. The "Up or Down"
+ * and "Sudoku" variants have none, as on the classic screen.
+ */
+export function hasSuitLabels(variant: Variant): boolean {
+  return variant.showSuitNames && !variant.upOrDown && !variant.sudoku;
+}
+
+/** Joins color names into a list, such as "Green and Blue". */
+const COLOR_LIST_FORMAT = new Intl.ListFormat("en", { type: "conjunction" });
+
+/** The tooltip of a play stack's suit label: the suit, the colors that touch it, and its note. */
+function getSuitLabelTooltip(suit: Suit, abbreviation: string): string {
+  let text = suit.displayName;
+  if (suit.allClueColors) {
+    text += ": every color clue touches it.";
+  } else if (suit.clueColors.length >= 2) {
+    const colors = COLOR_LIST_FORMAT.format(
+      suit.clueColors.map((color) => color.name),
+    );
+    text += `: ${colors} clues touch it.`;
+  } else {
+    text += ".";
+  }
+  return `${text} In notes, write "${abbreviation.toLowerCase()}".`;
+}
+
+/**
+ * The label under a play stack: the letter of the suit in notes and, for a suit that two or more
+ * colors touch, a swatch of each color. Its tooltip names the suit.
+ */
+function SuitLabel({
+  suit,
+  abbreviation,
+  colorblindMode,
+  showTooltip,
+}: {
+  readonly suit: Suit;
+  readonly abbreviation: string;
+  readonly colorblindMode: boolean;
+  readonly showTooltip: boolean;
+}): React.JSX.Element {
+  const swatchSize = colorblindMode
+    ? SUIT_LABEL_SWATCH_SIZE.colorblind
+    : SUIT_LABEL_SWATCH_SIZE.normal;
+
+  return (
+    <div
+      aria-label={getSuitLabelTooltip(suit, abbreviation)}
+      className="tw:flex tw:items-center tw:justify-center tw:gap-[3px] tw:whitespace-nowrap"
+      data-suit-label
+      ref={tooltipRef(
+        showTooltip ? getSuitLabelTooltip(suit, abbreviation) : undefined,
+      )}
+      role="note"
+      style={{
+        height: SUIT_LABEL_HEIGHT,
+        marginTop: SUIT_LABEL_GAP,
+      }}
+    >
+      <span className="tw:text-[13px] tw:leading-none tw:font-bold tw:text-game-text">
+        {abbreviation}
+      </span>
+      {suit.clueColors.length >= 2
+        && suit.clueColors.map((color) => (
+          <span
+            className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[3px] tw:border tw:border-solid tw:border-white/70 tw:text-[9px] tw:leading-none tw:font-extrabold tw:text-white tw:[text-shadow:0_0_2px_black]"
+            key={color.name}
+            style={{
+              width: swatchSize,
+              height: swatchSize,
+              backgroundColor: colorblindMode
+                ? color.fillColorblind
+                : color.fill,
+            }}
+          >
+            {colorblindMode && color.abbreviation}
+          </span>
+        ))}
+    </div>
+  );
+}
+
 /** How much of the suit's color tints an empty play stack, in percent. */
 const EMPTY_STACK_TINT_PERCENT = 20;
 
@@ -191,6 +292,7 @@ export const PlayArea = forwardRef<
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+    const suitLabels = hasSuitLabels(variant);
 
     return (
       // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
@@ -255,42 +357,61 @@ export const PlayArea = forwardRef<
                     />
                   );
 
+                const abbreviation = variant.suitAbbreviations[stack.suitIndex];
+
                 return (
-                  <div
-                    aria-label={
-                      stack.topRank === undefined
-                        ? `${name}: nothing played`
-                        : describeCard(variant, stack.suitIndex, stack.topRank)
-                    }
-                    className="tw:relative"
-                    // A misplayed card launches over its stack (see "playMotion.ts").
-                    data-stack-slot={stack.suitIndex}
-                    key={stack.suitIndex}
-                    role="img"
-                  >
-                    {below}
-                    {stack.topRank !== undefined && (
-                      <div
-                        className="tw:absolute tw:inset-0"
-                        data-card-order={stack.topOrder}
-                        data-card-place={`stack-${stack.suitIndex}`}
-                        data-play-stack
-                      >
-                        {stack.topOrder === undefined ? undefined : (
-                          <CardNote notes={notes} order={stack.topOrder}>
-                            <CardFace
-                              colorblindMode={colorblindMode}
-                              note={notes.notesHtml.has(stack.topOrder)}
-                              noteUnread={notes.unreadNotes.has(stack.topOrder)}
-                              rank={stack.topRank}
-                              suitIndex={stack.suitIndex}
-                              variant={variant}
-                              width={cardWidth}
-                            />
-                          </CardNote>
-                        )}
-                      </div>
-                    )}
+                  <div key={stack.suitIndex}>
+                    <div
+                      aria-label={
+                        stack.topRank === undefined
+                          ? `${name}: nothing played`
+                          : describeCard(
+                              variant,
+                              stack.suitIndex,
+                              stack.topRank,
+                            )
+                      }
+                      className="tw:relative"
+                      // A misplayed card launches over its stack (see "playMotion.ts").
+                      data-stack-slot={stack.suitIndex}
+                      role="img"
+                    >
+                      {below}
+                      {stack.topRank !== undefined && (
+                        <div
+                          className="tw:absolute tw:inset-0"
+                          data-card-order={stack.topOrder}
+                          data-card-place={`stack-${stack.suitIndex}`}
+                          data-play-stack
+                        >
+                          {stack.topOrder === undefined ? undefined : (
+                            <CardNote notes={notes} order={stack.topOrder}>
+                              <CardFace
+                                colorblindMode={colorblindMode}
+                                note={notes.notesHtml.has(stack.topOrder)}
+                                noteUnread={notes.unreadNotes.has(
+                                  stack.topOrder,
+                                )}
+                                rank={stack.topRank}
+                                suitIndex={stack.suitIndex}
+                                variant={variant}
+                                width={cardWidth}
+                              />
+                            </CardNote>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {suitLabels
+                      && suit !== undefined
+                      && abbreviation !== undefined && (
+                        <SuitLabel
+                          abbreviation={abbreviation}
+                          colorblindMode={colorblindMode}
+                          showTooltip={zoneState === "idle"}
+                          suit={suit}
+                        />
+                      )}
                   </div>
                 );
               })}
