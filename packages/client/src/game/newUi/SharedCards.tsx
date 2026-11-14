@@ -506,14 +506,14 @@ export const DiscardPile = forwardRef<
  * The box of the clue tokens and the strikes. Under the deck, the clue count is above the strikes,
  * so that the column stays narrow and short. When the columns stack, they are side by side.
  */
-const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[4px] tw:rounded-[14px] tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:rounded-[18px] tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
+const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[8px] tw:rounded-[14px] tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:rounded-[18px] tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
 
 /**
  * The height of the tokens under the deck, with the gap above them. It is the sum of the box's
  * classes, which are in pixels, not "rem", so that this sum stays right: 8 pixels of padding above
- * and below, the clue count (34 pixels), a gap of 4 pixels, and the strike boxes (28 pixels).
+ * and below, the clue count (34 pixels), a gap of 8 pixels, and the strike boxes (28 pixels).
  */
-export const TABLE_TOKENS_HEIGHT = PLAY_AREA_GAP + 8 + 34 + 4 + 28 + 8;
+export const TABLE_TOKENS_HEIGHT = PLAY_AREA_GAP + 8 + 34 + 8 + 28 + 8;
 
 /**
  * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
