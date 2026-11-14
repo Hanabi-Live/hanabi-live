@@ -101,7 +101,9 @@ describe("LobbyChat", () => {
 
     const lines = lineTexts();
     expect(lines).toHaveLength(3);
-    expect(lines[0]).toMatch(/^\[\d{2}:\d{2}\]\u{A0} <alice>\u{A0} first$/u);
+    const time = lines[0]?.slice(1, 6);
+    expect(time).toMatch(/^\d{2}:\d{2}$/u);
+    expect(lines[0]).toBe(`[${time}]\u{A0} <alice>\u{A0} first`);
     expect(lines[2]).toContain("[PM from alice]");
     // The author is bold.
     expect(screen.getAllByText("alice", { selector: "strong" })).toHaveLength(
