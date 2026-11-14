@@ -847,13 +847,14 @@ function Hand({
 
 /**
  * Every hand, one row each: the viewer's own first, then the others in the order that they play.
- * Each row is only as wide as its cards, so that a row of small cards does not end in empty space.
+ * Every row is as wide as the widest, so that their right edges line up when the hands have
+ * different numbers of cards, such as after the deck runs out.
  */
 export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
       aria-label="Hands"
-      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center tw:self-center"
+      className="tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center"
       onPointerDown={(event) => {
         const order = getCardOrderAt(event.target);
         if (event.button === 0 && order !== undefined) {
