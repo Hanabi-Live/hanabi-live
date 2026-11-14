@@ -73,6 +73,8 @@ of the repository.
   it in the clue log, as in the classic screen.
 - In the new game screen, the strike boxes are now larger, in place of the bomb
   icon.
+- In the new game screen, the clue log uses smaller circles, so more clues fit
+  without scrolling.
 
 ## November 12th, 2026
 

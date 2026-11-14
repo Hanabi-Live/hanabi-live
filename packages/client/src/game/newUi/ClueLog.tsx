@@ -6,7 +6,7 @@ import { getClueMarkerColor } from "./Card.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
-const CLUE_DISC_SIZE = 20;
+const CLUE_DISC_SIZE = 16;
 
 /**
  * How close to the bottom of the log, in CSS pixels, the viewer must scroll for the log to stay on
@@ -15,10 +15,10 @@ const CLUE_DISC_SIZE = 20;
 const BOTTOM_SLOP = 2;
 
 /**
- * The height of a line in a row of the log, in CSS pixels. It does not change with the size of a
- * name that is made smaller to fit.
+ * The height of a line in a row of the log, in CSS pixels: the disc and its outline. It does not
+ * change with the size of a name that is made smaller to fit.
  */
-const ROW_LINE_HEIGHT = 21;
+const ROW_LINE_HEIGHT = CLUE_DISC_SIZE + 1;
 
 /** The size of a name in the log, in CSS pixels, if it fits in its column. */
 const NAME_FONT_SIZE = 14;
@@ -298,7 +298,7 @@ function ClueDisc({
   return (
     <span
       aria-label={label}
-      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:text-[12px] tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black]"
+      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-white tw:text-[10px] tw:font-extrabold tw:text-card-ink tw:shadow-[0_0_0_1px_black]"
       role="img"
       style={{
         width: CLUE_DISC_SIZE,
