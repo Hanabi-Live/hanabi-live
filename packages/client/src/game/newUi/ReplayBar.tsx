@@ -504,7 +504,7 @@ export function TurnsBar({
   return (
     <Bar>
       <div className="tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents">
-        <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
+        <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:flex-wrap tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
           {shared !== undefined && (
             <LeaderMenu
               amLeader={shared.amLeader}
