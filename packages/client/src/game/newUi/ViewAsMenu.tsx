@@ -2,15 +2,21 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import {
+  KEY_CLASS,
+  MENU_CLASS,
+  MENU_ITEM_CLASS,
+  MENU_ITEM_COLOR_CLASS,
+  MENU_LABEL_CLASS,
+} from "./surfaces.ts";
 
 const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const VIEW_AS_TOOLTIP =
   "Watch the game from a player's seat. You can also right-click a player's name.";
 
-const ITEM_CLASS =
-  "tw:flex tw:w-full tw:items-center tw:enabled:cursor-pointer tw:gap-2.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-[14px] tw:text-game-text tw:enabled:hover:bg-white/10";
+/** A seat to view the game from. The current one cannot be pressed, so it lies flat. */
+const ITEM_CLASS = `tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 
 /**
  * A menu to view the game from a player's seat, for anyone who does not play in it (see
@@ -66,13 +72,8 @@ export function ViewAsMenu({
         <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
       </button>
       {open && (
-        <div
-          className="tw:absolute tw:right-0 tw:bottom-full tw:z-30 tw:mb-2 tw:flex tw:min-w-52 tw:flex-col tw:gap-0.5 tw:rounded-[14px] tw:bg-game-panel tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line"
-          role="menu"
-        >
-          <span className="tw:px-3 tw:pt-1.5 tw:pb-1 tw:text-[12px] tw:text-game-muted">
-            View the game as
-          </span>
+        <div className={`${MENU_CLASS} tw:right-0 tw:min-w-52`} role="menu">
+          <span className={MENU_LABEL_CLASS}>View the game as</span>
           {playerNames.map((name, i) => {
             const playerIndex = i as PlayerIndex;
             const current = playerIndex === viewedSeat;
@@ -99,7 +100,7 @@ export function ViewAsMenu({
           })}
           {!finished && (
             <>
-              <span className="tw:mx-2 tw:my-1 tw:h-px tw:bg-game-line" />
+              <span className="tw:mx-1 tw:h-px tw:bg-game-line" />
               <button
                 aria-checked={viewedSeat === undefined}
                 className={ITEM_CLASS}

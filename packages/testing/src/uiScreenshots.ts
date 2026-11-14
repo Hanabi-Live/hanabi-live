@@ -995,6 +995,25 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
       },
     },
+    // The menu that views a five-player shared replay from another seat, with the pointer on the
+    // first seat.
+    {
+      name: "new-ui-view-as-menu",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        await page.getByRole("button", { name: /^Viewing as /u }).click();
+        await page.getByRole("menu").waitFor();
+      },
+      hover: async (page) => {
+        await page.getByRole("menu").locator("button").first().hover();
+      },
+    },
     // Bob passes the lead of the shared replay to the account, which opens the menu of "Play
     // again".
     {

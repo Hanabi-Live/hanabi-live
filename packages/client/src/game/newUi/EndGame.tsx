@@ -2,17 +2,21 @@ import type { ServerEventData } from "@hanabi-live/data";
 import { useRef, useState } from "react";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import {
+  KEY_CLASS,
+  MENU_CLASS,
+  MENU_ITEM_CLASS,
+  MENU_ITEM_COLOR_CLASS,
+} from "./surfaces.ts";
 
 /** Our own vote to end the game. The server does not tell us how the others voted. */
 type Votes = Omit<ServerEventData["votes"], "tableId">;
 
 const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
-const ITEM_CLASS =
-  "tw:flex tw:w-full tw:cursor-pointer tw:flex-col tw:items-start tw:gap-0.5 tw:rounded-lg tw:border-0 tw:px-3 tw:py-2.5 tw:text-left";
+const ITEM_CLASS = `tw:flex tw:flex-col tw:items-start tw:gap-0.5 ${MENU_ITEM_CLASS}`;
 
-const ITEM_DETAIL_CLASS = "tw:text-[12px] tw:leading-[16px]";
+const ITEM_DETAIL_CLASS = "tw:text-[12px] tw:leading-[16px] tw:font-normal";
 
 /**
  * The button that ends the game early, for the players of an ongoing game. Its menu casts (or takes
@@ -53,11 +57,8 @@ export function EndGameMenu({
         <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
       </button>
       {open && (
-        <div
-          className="tw:absolute tw:right-0 tw:bottom-full tw:z-30 tw:mb-2 tw:flex tw:w-64 tw:flex-col tw:gap-1 tw:rounded-[14px] tw:bg-game-panel tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line"
-          role="menu"
-        >
-          <div className="tw:flex tw:flex-col tw:gap-0.5 tw:px-3 tw:pt-1.5 tw:pb-1">
+        <div className={`${MENU_CLASS} tw:right-0 tw:w-64`} role="menu">
+          <div className="tw:flex tw:flex-col tw:gap-0.5 tw:px-1 tw:pt-1">
             <span className="tw:text-[15px] tw:font-bold tw:text-game-text">
               End the game?
             </span>
@@ -66,7 +67,7 @@ export function EndGameMenu({
             </span>
           </div>
           <button
-            className={`${ITEM_CLASS} tw:bg-transparent tw:text-game-text tw:hover:bg-white/10`}
+            className={`${ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`}
             onClick={() => {
               setOpen(false);
               setVote(!voted);

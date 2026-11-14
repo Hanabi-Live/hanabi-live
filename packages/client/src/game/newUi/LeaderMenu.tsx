@@ -3,15 +3,18 @@ import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { setLeader } from "../ui/leader.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import {
+  KEY_CLASS,
+  MENU_CLASS,
+  MENU_ITEM_CLASS,
+  MENU_ITEM_COLOR_CLASS,
+  MENU_LABEL_CLASS,
+} from "./surfaces.ts";
 
 const BUTTON_CLASS = `tw:flex tw:h-11 tw:w-full tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`;
 
-/**
- * A person to set as the new leader. Like every button on the game screen, it is a key that stands
- * on the panel, so that it looks like something to press.
- */
-const ITEM_CLASS = `tw:group tw:flex tw:h-10 tw:w-full tw:cursor-pointer tw:items-center tw:gap-2.5 tw:rounded-lg tw:border-0 tw:bg-white/8 tw:px-3 tw:text-left tw:text-[15px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`;
+/** A person to set as the new leader. */
+const ITEM_CLASS = `tw:group tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 
 /**
  * The shared replay's leader menu, which shows who leads and sets a new leader. Everyone in the
@@ -68,10 +71,10 @@ export function LeaderMenu({
       {open && (
         // On a narrow window, the bar is at the top of the page, so the menu opens downward.
         <div
-          className="tw:absolute tw:bottom-full tw:left-0 tw:z-30 tw:mb-2 tw:flex tw:min-w-52 tw:flex-col tw:gap-2 tw:rounded-[14px] tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line tw:narrow-980:top-full tw:narrow-980:bottom-auto tw:narrow-980:mt-2 tw:narrow-980:mb-0"
+          className={`${MENU_CLASS} tw:left-0 tw:min-w-52 tw:narrow-980:top-full tw:narrow-980:bottom-auto tw:narrow-980:mt-2 tw:narrow-980:mb-0`}
           role="menu"
         >
-          <span className="tw:px-1 tw:pt-1 tw:text-[13px] tw:text-game-muted">
+          <span className={MENU_LABEL_CLASS}>
             {others.length === 0 ? "No one else is here" : "Set new leader to"}
           </span>
           {others.map((spectator) => (
