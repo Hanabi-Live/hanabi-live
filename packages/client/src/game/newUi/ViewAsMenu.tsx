@@ -3,14 +3,13 @@ import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import {
-  KEY_CLASS,
+  BOTTOM_BAR_BUTTON_CLASS,
+  BOTTOM_BAR_BUTTON_COLOR_CLASS,
   MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
   MENU_LABEL_CLASS,
 } from "./surfaces.ts";
-
-const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const VIEW_AS_TOOLTIP =
   "Watch the game from a player's seat. You can also right-click a player's name.";
@@ -55,10 +54,10 @@ export function ViewAsMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BUTTON_CLASS} ${
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${
           shadowing
             ? "tw:bg-game-replay/20 tw:ring-2 tw:ring-game-replay tw:hover:bg-game-replay/30"
-            : "tw:bg-game-raised tw:hover:bg-game-line"
+            : BOTTOM_BAR_BUTTON_COLOR_CLASS
         }`}
         onClick={() => {
           setOpen(!open);

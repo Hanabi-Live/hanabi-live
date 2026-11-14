@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import {
-  KEY_CLASS,
+  BOTTOM_BAR_BUTTON_CLASS,
+  BOTTOM_BAR_BUTTON_COLOR_CLASS,
   MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
@@ -11,8 +12,6 @@ import {
 
 /** Our own vote to end the game. The server does not tell us how the others voted. */
 type Votes = Omit<ServerEventData["votes"], "tableId">;
-
-const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const ITEM_CLASS = `tw:flex tw:flex-col tw:items-start tw:gap-0.5 ${MENU_ITEM_CLASS}`;
 
@@ -42,10 +41,10 @@ export function EndGameMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BUTTON_CLASS} ${
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${
           voted
             ? "tw:bg-critical/20 tw:ring-2 tw:ring-critical tw:hover:bg-critical/30"
-            : "tw:bg-game-raised tw:hover:bg-game-line"
+            : BOTTOM_BAR_BUTTON_COLOR_CLASS
         }`}
         onClick={() => {
           setOpen(!open);

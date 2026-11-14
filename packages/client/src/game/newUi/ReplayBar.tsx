@@ -17,7 +17,7 @@ import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
-import { KEY_CLASS } from "./surfaces.ts";
+import { KEY_CLASS, REPLAY_BAR_BUTTON_CLASS } from "./surfaces.ts";
 
 type Mode = "replay" | "hypothetical";
 
@@ -27,7 +27,7 @@ const ACCENT_TEXT_CLASS = {
 } as const satisfies Record<Mode, string>;
 
 /** A quiet button for the actions that are not the main one. */
-const BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:px-4 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
+const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:shrink-0 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8`;
 
 /** The bar's main action: the way back out of the mode. */
 const PRIMARY_BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white ${KEY_CLASS}`;

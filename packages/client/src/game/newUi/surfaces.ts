@@ -18,6 +18,19 @@ export const WELL_CLASS =
 export const KEY_CLASS =
   "tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:shadow-[0_3px_0_rgb(0_0_0/35%),0_4px_8px_rgb(0_0_0/25%)] tw:transition-[translate,box-shadow] tw:duration-75 tw:ease-out tw:active:translate-y-[2px] tw:active:shadow-[0_1px_0_rgb(0_0_0/35%)] tw:disabled:translate-y-0 tw:disabled:shadow-none tw:disabled:inset-shadow-none";
 
+/** A button on a bar of the game screen. It sets no color. */
+const BAR_BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text ${KEY_CLASS}`;
+
+/** A button on the bottom bar, which gets smaller on narrow screens. It sets no color. */
+export const BOTTOM_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm`;
+
+/** The usual color of a button on the bottom bar. */
+export const BOTTOM_BAR_BUTTON_COLOR_CLASS =
+  "tw:bg-game-raised tw:hover:bg-game-line";
+
+/** A button on the replay bar that is not its main action. */
+export const REPLAY_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:justify-center tw:bg-white/8 tw:font-semibold tw:hover:bg-white/15`;
+
 /**
  * A menu that opens above its button. Its bottom has more room, so that the lip of the last key in
  * it does not touch the edge.
