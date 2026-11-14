@@ -578,17 +578,6 @@ function StrikeMark({
   );
 }
 
-/** The tint of the strikes bubble: none without strikes, and strongest one strike from losing. */
-function getStrikeBubbleClass(strikes: number): string {
-  if (strikes >= MAX_STRIKES - 1) {
-    return "tw:bg-critical/20 tw:ring-2 tw:ring-critical/70";
-  }
-  if (strikes > 0) {
-    return "tw:bg-critical/10 tw:ring-1 tw:ring-critical/40";
-  }
-  return "";
-}
-
 /**
  * The clue tokens and the strikes, below the deck. They are real tokens in the physical game, so
  * they sit on the table instead of with the numbers along the bottom.
@@ -639,12 +628,7 @@ export function TableTokens({
           {clues}
         </span>
       </section>
-      {/* Strikes are danger: a frame around the boxes turns red as they add up, and stays quiet
-          without them. It sits in the box's padding, so that it does not change the box's size. */}
-      <section
-        aria-label="Strikes"
-        className={`tw:-m-[3px] tw:rounded-lg tw:p-[3px] ${getStrikeBubbleClass(strikes)}`}
-      >
+      <section aria-label="Strikes">
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
           className="tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
