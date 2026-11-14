@@ -110,30 +110,16 @@ export function onSharedSegmentChanged(
     return;
   }
 
-  if (data.useSharedSegments) {
-    if (data.amLeader === true && previousData !== undefined) {
-      // Tell the rest of the spectators to go to the turn that we are now on.
-      globals.lobby.conn!.send("replayAction", {
-        tableId: globals.lobby.joinedTableId,
-        action: {
-          type: "turn",
-          turn: data.sharedSegment,
-        },
-      });
-    } else {
-      // Go to the turn where the shared replay leader is at. (We set force to true in case a
-      // hypothetical just started and we are being dragged to the starting turn of the
-      // hypothetical.)
-      replay.goToSegment(data.sharedSegment, false, true);
-
-      if (
-        previousData !== undefined
-        && previousData.sharedSegment !== undefined
-        && data.useSharedSegments === previousData.useSharedSegments
-      ) {
-        playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
-      }
-    }
+  // "gameObservers.ts" sends the leader's turn and takes the spectators to it. When the leader
+  // moves, the spectators see which way.
+  if (
+    data.useSharedSegments
+    && data.amLeader !== true
+    && previousData !== undefined
+    && previousData.sharedSegment !== undefined
+    && data.useSharedSegments === previousData.useSharedSegments
+  ) {
+    playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
   }
 
   globals.elements.pauseSharedTurnsButton?.visible(data.useSharedSegments);

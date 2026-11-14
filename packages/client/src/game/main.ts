@@ -15,6 +15,7 @@ import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
 import { gameChatCleared } from "./gameChatSlice.ts";
 import * as newUi from "./newUi/newUi.ts";
+import { setPlayStartSound } from "./soundEffects.ts";
 import { loadGameInit } from "./ui/gameCommands.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
 
@@ -62,7 +63,8 @@ export function show(justStarted: boolean): void {
   }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
-  globals.ui = new HanabiUi(globals, gameExports, justStarted);
+  setPlayStartSound(justStarted);
+  globals.ui = new HanabiUi(globals, gameExports);
   if (store.getState().session.settings.newUi) {
     newUi.mount();
   }

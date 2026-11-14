@@ -5,6 +5,7 @@ import type { Globals as LobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
+import { releaseGameObservers } from "../gameObservers.ts";
 import type { GameExports } from "../main.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
@@ -30,7 +31,7 @@ export class HanabiUi {
   private liveResizeBaseHeight = 0;
   private liveResizeScale = 1;
 
-  constructor(lobby: LobbyGlobals, game: GameExports, justStarted: boolean) {
+  constructor(lobby: LobbyGlobals, game: GameExports) {
     // Each game starts with new globals.
     resetGlobals();
 
@@ -43,7 +44,6 @@ export class HanabiUi {
     // will eventually merge these objects to make it less confusing.
     globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
     // We should also combine this with the UI object in the future.
-    globals.playStartSound = justStarted;
 
     initStageSize();
     cursor.set("default");
@@ -140,6 +140,7 @@ export class HanabiUi {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = undefined;
     }
+    releaseGameObservers();
     releaseSubscriptions();
     unmountClueLog();
     keyboard.destroy();

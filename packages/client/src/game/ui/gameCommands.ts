@@ -33,6 +33,7 @@ import {
   toPlayerTuple,
   toSoundType,
 } from "../../wire.ts";
+import { registerGameObservers } from "../gameObservers.ts";
 import type { Votes } from "../gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
 import { initialState } from "../reducers/initialStates/initialState.ts";
@@ -672,7 +673,8 @@ function initStateStore(data: GameInit) {
   releaseSubscriptions();
   store.dispatch(gameStarted(initialState(metadata)));
 
-  // The various UI views subscribe to the state store.
+  // The observers that work for both screens start first, then the classic screen's views.
+  registerGameObservers();
   globals.stateObserver = new StateObserver();
 
   store.dispatch(

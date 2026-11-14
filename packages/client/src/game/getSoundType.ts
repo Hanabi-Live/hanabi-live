@@ -14,8 +14,8 @@ import {
   isHandLocked,
 } from "@hanabi-live/game";
 import { includes } from "complete-common";
-import { isOurSeat } from "../../ourSeat.ts";
-import { SoundType } from "../../types/SoundType.ts";
+import { isOurSeat } from "./ourSeat.ts";
+import { SoundType } from "./types/SoundType.ts";
 
 /** The sound for each consecutive blind play, starting from the first. */
 const BLIND_PLAY_SOUND_TYPES = [

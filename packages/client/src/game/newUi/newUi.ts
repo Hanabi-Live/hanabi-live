@@ -2,8 +2,8 @@
 // "App.tsx" renders the screen while the store says that it is shown.
 
 // The classic Konva screen still runs, hidden, for every game. It keeps handling the timers, the
-// sounds, the hotkeys, the replays, and the hypotheticals, which change the store that both screens
-// draw from. A player can switch to the classic screen at any time.
+// hotkeys, the replays, and the hypotheticals, which change the store that both screens draw from.
+// A player can switch to the classic screen at any time.
 
 import { flushSync } from "react-dom";
 import { fadeIn, hideElement, showElement } from "../../elementVisibility.ts";

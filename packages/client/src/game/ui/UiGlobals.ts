@@ -100,12 +100,6 @@ export class UiGlobals {
 
   isResizing = false;
 
-  /**
-   * Whether the game started just now, so its first state should play the turn sound. It is false
-   * after a refresh or when joining a game in progress.
-   */
-  playStartSound = false;
-
   // State information
   stateObserver: StateObserver | undefined = undefined;
   cardSubscriptions: Array<() => void> = [];
