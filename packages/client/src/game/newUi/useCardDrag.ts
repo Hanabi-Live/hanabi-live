@@ -70,20 +70,15 @@ interface CardDrag {
     y: number,
     element: Element,
   ) => void;
-  readonly mainRef: RefObject<HTMLElement | null>;
   readonly playZoneRef: RefObject<HTMLElement | null>;
   readonly discardZoneRef: RefObject<HTMLElement | null>;
 }
 
 /**
  * Moves a card with the pointer, and plays or discards it where the player drops it. The drop
- * targets depend on the layout: `stacked` is whether the columns stack, and `handsElement` holds
- * the hands.
+ * targets are the boxes that darken while the player drags a card.
  */
-export function useCardDrag(
-  stacked: boolean,
-  handsElement: HTMLElement | null,
-): CardDrag {
+export function useCardDrag(): CardDrag {
   const [held, setHeld] = useState<HeldCard>();
   const heldRef = useRef<HeldCard>(undefined);
   function updateHeld(next: HeldCard | undefined) {
@@ -116,21 +111,8 @@ export function useCardDrag(
     y: 0,
   });
   const heldRectRef = useRef<DOMRect>(undefined);
-  const mainRef = useRef<HTMLElement>(null);
   const playZoneRef = useRef<HTMLElement>(null);
   const discardZoneRef = useRef<HTMLElement>(null);
-
-  // The drag reads the layout when the pointer moves, so it keeps the latest one here.
-  const dropLayout = useRef({
-    stacked,
-    handsElement,
-  });
-  useEffect(() => {
-    dropLayout.current = {
-      stacked,
-      handsElement,
-    };
-  }, [stacked, handsElement]);
 
   useEffect(() => {
     function discardZone(): DropZone {
@@ -145,19 +127,6 @@ export function useCardDrag(
         playZone?.querySelector<HTMLElement>("[data-play-box]") ?? playZone;
       if (isInside(playBox ?? null, x, y)) {
         return "play";
-      }
-
-      // Beside the hands, everything to the right of the hands discards the card, from the top of
-      // the screen to the bottom. The narrow layout puts the play stacks below the hands, so there
-      // only the discard pile is a target.
-      const main = mainRef.current?.getBoundingClientRect();
-      const hands = dropLayout.current.handsElement?.getBoundingClientRect();
-      if (
-        !dropLayout.current.stacked
-        && main !== undefined
-        && hands !== undefined
-      ) {
-        return x > hands.right && x <= main.right ? discardZone() : undefined;
       }
 
       if (isInside(discardZoneRef.current, x, y)) {
@@ -290,7 +259,6 @@ export function useCardDrag(
         },
       });
     },
-    mainRef,
     playZoneRef,
     discardZoneRef,
   };

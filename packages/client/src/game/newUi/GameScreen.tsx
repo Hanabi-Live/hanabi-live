@@ -214,10 +214,9 @@ export function GameScreen({
     clearDrop,
     finishReturn,
     pressCard,
-    mainRef,
     playZoneRef,
     discardZoneRef,
-  } = useCardDrag(stacked, handsElement);
+  } = useCardDrag();
   const { rootRef, screenScale } = useCardMotion(
     state,
     held?.phase === "drop" ? held.order : undefined,
@@ -499,10 +498,7 @@ export function GameScreen({
       {/* The chat sits above the bar along the bottom, so that the bar's buttons stay in place
           whether the chat is open or not, with "Lobby" in the bottom-right corner. */}
       <div className="tw:relative tw:flex tw:min-h-0 tw:flex-1">
-        <main
-          className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
-          ref={mainRef}
-        >
+        <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
             <div
               className="tw:flex tw:shrink-0 tw:narrow-980:justify-center"
