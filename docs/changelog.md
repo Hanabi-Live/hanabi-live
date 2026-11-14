@@ -65,6 +65,8 @@ of the repository.
   bottom is level with the bottom of the controls below the hands.
 - In the new game screen, everyone in a shared replay has the "Leader" menu, so
   a spectator can make themselves the leader.
+- In the new game screen, the hands are centered between the play stacks and the
+  discard pile.
 
 ## November 12th, 2026
 

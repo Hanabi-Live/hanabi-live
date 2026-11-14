@@ -847,7 +847,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
       aria-label="Hands"
-      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center"
+      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center tw:self-center"
       onPointerDown={(event) => {
         const order = getCardOrderAt(event.target);
         if (event.button === 0 && order !== undefined) {
