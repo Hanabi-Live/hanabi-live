@@ -64,7 +64,7 @@ function fullNameTooltip(name: string) {
 export const CONTROL_PANEL_CLASS =
   "tw:bg-game-panel tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
 
-const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
+const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
 /** Says that a clue touches no cards in the chosen hand. */
 function getTouchesNothingLabel(clue: Clue): string {
@@ -136,7 +136,7 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-[14px] tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
+      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-game-panel tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
         canClue
           ? "tw:inset-ring-3 tw:inset-ring-game-turn"
           : "tw:inset-ring-1 tw:inset-ring-game-line"
@@ -231,7 +231,7 @@ export function CluePanel({
             </div>
           </div>
           <button
-            className={`tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+            className={`tw:min-h-11 tw:shrink-0 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
             disabled={!canGive}
             onClick={onGive}
             type="button"

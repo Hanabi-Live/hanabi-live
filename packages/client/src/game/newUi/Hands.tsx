@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
+  CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
   CLUE_TOKEN_REACH_PER_WIDTH,
@@ -456,10 +457,14 @@ function OwnCard({
   if (dragged) {
     return (
       <div
-        className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line"
+        className="tw:box-border tw:shrink-0 tw:border-2 tw:border-dashed tw:border-game-line"
         data-card-order={card.order}
         data-card-place={place}
-        style={{ width: cardWidth, height }}
+        style={{
+          width: cardWidth,
+          height,
+          borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+        }}
       />
     );
   }
@@ -512,7 +517,7 @@ function OwnCard({
         // Pressed, the card lifts and its shadow deepens, as if picked up, as on the classic
         // screen. It settles back when released. The shadow is a filter, so that it follows a clued
         // card, which is drawn raised. A card that is tapped to move it can still scroll the page.
-        className={`tw:block tw:rounded-[10px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[80ms] tw:ease-out tw:active:-translate-y-1 tw:active:drop-shadow-[0_8px_8px_rgb(0_0_0/45%)] ${
+        className={`tw:block tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[80ms] tw:ease-out tw:active:-translate-y-1 tw:active:drop-shadow-[0_8px_8px_rgb(0_0_0/45%)] ${
           props.tapToMove ? "tw:cursor-pointer" : "tw:cursor-grab tw:touch-none"
         }`}
         onClick={
@@ -529,14 +534,15 @@ function OwnCard({
                 props.onCardPointerDown(event, card.order);
               }
         }
+        style={{ borderRadius: cardWidth * CARD_CORNER_PER_WIDTH }}
         type="button"
       >
         {face}
       </button>
       {menuOpen && (
-        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-game-text tw:p-1.5 tw:shadow-lg">
+        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-game-panel tw:bg-game-text tw:p-1.5 tw:shadow-lg">
           <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
+            className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
             onClick={() => {
               props.onPlay(card.order);
             }}
@@ -545,7 +551,7 @@ function OwnCard({
             Play
           </button>
           <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
+            className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
             disabled={!props.canDiscard}
             onClick={() => {
               props.onDiscard(card.order);
@@ -578,12 +584,13 @@ function EditableCard({
   return (
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
-      className="tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-transparent tw:p-0"
+      className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {
         props.onEditCard?.(card.order);
       }}
+      style={{ borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH }}
       type="button"
     >
       <CardFace
@@ -717,7 +724,7 @@ function Hand({
   return (
     <div
       aria-label={`${seat.name}'s hand`}
-      className={`tw:relative tw:flex tw:rounded-2xl tw:px-4 ${
+      className={`tw:relative tw:flex tw:rounded-game-panel tw:px-4 ${
         props.nameColumnWidth === undefined
           ? "tw:flex-col tw:items-start"
           : "tw:items-center"
@@ -821,7 +828,7 @@ function Hand({
       {props.emptyClueTarget === seat.playerIndex && (
         // A badge on the top edge of the hand, where the markers would be.
         <span
-          className="tw:absolute tw:top-0 tw:left-1/2 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-lg tw:bg-clue tw:px-2.5 tw:py-1 tw:text-sm tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink"
+          className="tw:absolute tw:top-0 tw:left-1/2 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-game-control tw:bg-clue tw:px-2.5 tw:py-1 tw:text-sm tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink"
           data-clue-empty
         >
           The clue touched no cards

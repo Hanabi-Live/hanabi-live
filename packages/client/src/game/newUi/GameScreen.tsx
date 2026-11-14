@@ -653,7 +653,7 @@ export function GameScreen({
                 )}
                 {!showCluePanel && !inReplay && pausedBy !== undefined && (
                   <div
-                    className="tw:self-center tw:justify-self-center tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink tw:[grid-area:1/1]"
+                    className="tw:self-center tw:justify-self-center tw:rounded-game-control tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink tw:[grid-area:1/1]"
                     role="status"
                   >
                     {pausedBy} paused the game.

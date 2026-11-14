@@ -23,7 +23,7 @@ export const KEY_CLASS =
  * it does not touch the edge.
  */
 export const MENU_CLASS =
-  "tw:absolute tw:bottom-full tw:z-30 tw:mb-2 tw:flex tw:flex-col tw:gap-2 tw:rounded-[14px] tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
+  "tw:absolute tw:bottom-full tw:z-30 tw:mb-2 tw:flex tw:flex-col tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
 
 /** The short text at the top of a menu that says what its choices do. */
 export const MENU_LABEL_CLASS =
@@ -33,7 +33,7 @@ export const MENU_LABEL_CLASS =
  * A choice in a menu. Like every button on the game screen, it is a key that stands on the panel,
  * so that it looks like something to press. It sets no color and no layout of its content.
  */
-export const MENU_ITEM_CLASS = `tw:min-h-10 tw:w-full tw:rounded-lg tw:border-0 tw:px-3 tw:py-2 tw:text-left tw:text-[15px] tw:font-semibold tw:enabled:cursor-pointer ${KEY_CLASS}`;
+export const MENU_ITEM_CLASS = `tw:min-h-10 tw:w-full tw:rounded-game-control tw:border-0 tw:px-3 tw:py-2 tw:text-left tw:text-[15px] tw:font-semibold tw:enabled:cursor-pointer ${KEY_CLASS}`;
 
 /** The usual color of a choice in a menu. */
 export const MENU_ITEM_COLOR_CLASS =

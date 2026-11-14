@@ -194,7 +194,7 @@ function NoteEditor({
 
   return (
     <div
-      className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-[10px] tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-black/25"
+      className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-black/25"
       ref={boxRef}
       style={{ width: NOTE_EDITOR_WIDTH, marginLeft: shift }}
     >
@@ -204,7 +204,7 @@ function NoteEditor({
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
-          className="tw:box-border tw:block tw:w-full tw:rounded-lg tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-base tw:text-card-ink tw:outline-none"
+          className="tw:box-border tw:block tw:w-full tw:rounded-game-control tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-base tw:text-card-ink tw:outline-none"
           onBlur={() => {
             chat.tabResetAutoCompleteList();
             onClose();

@@ -173,7 +173,7 @@ export const PlayArea = forwardRef<
         >
           <section
             aria-label="Play stacks"
-            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-[16px] ${zoneClasses[zoneState]}`}
+            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-game-panel ${zoneClasses[zoneState]}`}
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
             ref={ref}
@@ -425,7 +425,7 @@ export const DiscardPile = forwardRef<
     return (
       <section
         aria-label="Discards"
-        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]} ${
+        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]} ${
           // At max clues, a quiet dashed border in the clue color shows that no one can discard,
           // before anyone picks up a card.
           atMaxClues && zoneState === "idle"
@@ -465,11 +465,14 @@ export const DiscardPile = forwardRef<
                 >
                   <button
                     aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                    className="tw:relative tw:block tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
+                    className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
                     data-card-order={card.order}
                     data-card-place={`discard-${rowIndex}-${i}`}
                     onClick={() => {
                       onShowDiscard(card.order);
+                    }}
+                    style={{
+                      borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
                     }}
                     type="button"
                   >
@@ -500,7 +503,7 @@ export const DiscardPile = forwardRef<
  * The box of the clue tokens and the strikes. Under the deck, the clue count is above the strikes,
  * so that the column stays narrow and short. When the columns stack, they are side by side.
  */
-const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[8px] tw:rounded-[14px] tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:rounded-[18px] tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
+const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[8px] tw:rounded-game-panel tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
 
 /**
  * The height of the tokens under the deck, with the gap above them. It is the sum of the box's
@@ -634,7 +637,7 @@ export function TableTokens({
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
-            const className = `tw:box-border tw:flex tw:size-[28px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+            const className = `tw:box-border tw:flex tw:size-[28px] tw:items-center tw:justify-center tw:rounded-game-control tw:narrow-980:size-[32px] tw:border-2 tw:border-solid tw:p-0 ${
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"

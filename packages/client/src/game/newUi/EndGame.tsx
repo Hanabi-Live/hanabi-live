@@ -12,7 +12,7 @@ import {
 /** Our own vote to end the game. The server does not tell us how the others voted. */
 type Votes = Omit<ServerEventData["votes"], "tableId">;
 
-const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
+const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const ITEM_CLASS = `tw:flex tw:flex-col tw:items-start tw:gap-0.5 ${MENU_ITEM_CLASS}`;
 

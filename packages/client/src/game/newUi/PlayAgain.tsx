@@ -11,7 +11,7 @@ import {
   MENU_ITEM_COLOR_CLASS,
 } from "./surfaces.ts";
 
-const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-game-raised tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:hover:bg-game-line tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
+const BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-game-raised tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:hover:bg-game-line tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm ${KEY_CLASS}`;
 
 const ITEM_CLASS = `tw:flex tw:flex-col tw:items-start tw:gap-0.5 tw:disabled:opacity-40 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 

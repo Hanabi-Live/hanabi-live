@@ -100,7 +100,7 @@ export function ChatPanel({
           aria-label={
             unread > 0 ? `Open chat, ${unread} unread messages` : "Open chat"
           }
-          className={`tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
+          className={`tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
           onClick={() => {
             gameChat.show();
           }}
@@ -153,7 +153,7 @@ export function ChatPanel({
         </div>
         <button
           aria-label="Collapse chat"
-          className="tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"
+          className="tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-transparent tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"
           onClick={() => {
             gameChat.hide();
           }}

@@ -71,6 +71,13 @@
   --color-card-ink: var(--card-ink);
   --color-clue: var(--clue-border);
   --color-critical: var(--critical);
+
+  /*
+    The corners of the New UI. They are as flat as the corners of its cards (see "Card.tsx"). A
+    panel's corner is a little rounder than the controls inside it.
+  */
+  --radius-game-control: 6px;
+  --radius-game-panel: 8px;
 }
 
 /*
