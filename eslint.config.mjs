@@ -22,7 +22,8 @@ export const hanabiConfigBase = defineConfig(
       // Enforce the "normal" function style throughout the entire project.
       "func-style": ["error", "declaration"],
 
-      // Preserve compatibility with browsers without the newest regular expression flag ("v").
+      // The "v" flag needs Safari 17, but Vite's default build target still includes Safari 16.4.
+      // iOS 17 dropped the iPhone 8, iPhone X, and first iPad Pro, so they stay on Safari 16.
       "regexp/require-unicode-sets-regexp": "off",
 
       // Class members follow the existing UI style.
