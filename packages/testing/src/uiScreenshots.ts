@@ -948,9 +948,9 @@ function getStates(): readonly State[] {
     },
     // The account's notes: on the first card of its own hand, one that makes it show as its real
     // identity, which the clues always allow, so that its note shows a pencil. Other notes are on
-    // its second card, on the next player's first card, and on a discarded card. The table has five
-    // players, and every player has discarded cards, so that some cards are the last copies. The
-    // pointer is over the first card.
+    // its third card, which no clue touched, on the next player's first card, and on a discarded
+    // card. The table has five players, and every player has discarded cards, so that some cards
+    // are the last copies. The pointer is over the first card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
@@ -968,7 +968,7 @@ function getStates(): readonly State[] {
           first,
           await cast.bobsGame().identityNote(order as CardOrder),
         );
-        await writeNote(page, ownCard(page, 1), "chop?");
+        await writeNote(page, ownCard(page, 2), "chop?");
         await writeNote(
           page,
           page.locator(NEXT_HAND_FIRST_CARD_SELECTOR),

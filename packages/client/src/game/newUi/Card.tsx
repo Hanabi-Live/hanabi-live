@@ -403,6 +403,12 @@ const POSSIBILITIES = {
   /** The most that a suit pip or a rank chip takes, so that two or three are not huge. */
   maxPip: 0.4,
   maxChip: 0.21,
+  /**
+   * The most rows of suits. The top of the card stays free for the sticky note of a note, and the
+   * suits sit where they do on a card that shows its rank, so that they stay in place when a rank
+   * clue arrives.
+   */
+  maxSuitRows: 2,
 } as const;
 
 /**
@@ -416,7 +422,6 @@ function Possibilities({
   possibleSuitIndexes,
   possibleRanks,
   rankShown,
-  suitShown,
 }: {
   readonly variant: Variant;
   readonly width: number;
@@ -424,11 +429,16 @@ function Possibilities({
   readonly possibleRanks: readonly Rank[];
   /** Whether the card shows its rank in the corner, so that the possibilities go below it. */
   readonly rankShown: boolean;
-  /** Whether the card shows its suit in the middle, so that the ranks go below it. */
-  readonly suitShown: boolean;
 }): React.JSX.Element {
-  const { inset, topWithRank, topWithoutRank, gap, maxPip, maxChip } =
-    POSSIBILITIES;
+  const {
+    inset,
+    topWithRank,
+    topWithoutRank,
+    gap,
+    maxPip,
+    maxChip,
+    maxSuitRows,
+  } = POSSIBILITIES;
   const innerWidth = width * (1 - 2 * inset);
 
   const chipSize = Math.min(
@@ -437,8 +447,8 @@ function Possibilities({
       / Math.max(possibleRanks.length, 1),
   );
 
-  // The suits take the rest of the card's height. They go in as many columns as make the pips the
-  // largest, such as two columns of three for six suits.
+  // The suits take the rest of the card's height, in at most two rows. They go in as many columns
+  // as make the pips the largest, such as three columns of two for six suits.
   const top = width * (rankShown ? topWithRank : topWithoutRank);
   const rankRowHeight =
     possibleRanks.length > 0 ? chipSize * 1.1 + width * gap : 0;
@@ -449,6 +459,9 @@ function Possibilities({
   let pipCell = 0;
   for (let columns = 1; columns <= suitCount; columns++) {
     const rows = Math.ceil(suitCount / columns);
+    if (rows > maxSuitRows) {
+      continue;
+    }
     const cell = Math.min(
       innerWidth / columns,
       suitsHeight / rows,
@@ -462,9 +475,9 @@ function Possibilities({
 
   return (
     <div
-      className={`tw:absolute tw:flex tw:flex-col tw:items-center ${
-        suitShown ? "tw:justify-end" : "tw:justify-center"
-      }`}
+      // The possibilities sit at the bottom, below the suit in the middle of the card when it
+      // shows.
+      className="tw:absolute tw:flex tw:flex-col tw:items-center tw:justify-end"
       style={{
         left: width * inset,
         right: width * inset,
@@ -693,7 +706,6 @@ export function CardFace({
           possibleRanks={showRankPips ? possibleRanks : []}
           possibleSuitIndexes={showSuitPips ? possibleSuitIndexes : []}
           rankShown={rank !== undefined}
-          suitShown={suit !== undefined}
           variant={variant}
           width={width}
         />
