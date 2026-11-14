@@ -71,6 +71,8 @@ of the repository.
   above but its ranks, as on the classic screen, so the pile takes less room.
 - In the new game screen, hovering over a card in a hand colors the clues about
   it in the clue log, as in the classic screen.
+- In the new game screen, the strike boxes are now larger, in place of the bomb
+  icon.
 
 ## November 12th, 2026
 

@@ -527,75 +527,6 @@ function ClueTokenIcon(): React.JSX.Element {
   );
 }
 
-/** The color of the body of the bomb icon: blue, like the bombs in "The Legend of Zelda". */
-const BOMB_BODY_COLOR = "#3d6fe0";
-
-/**
- * The color of the outline, cap, and fuse of the bomb icon: a dark navy that stands out on the
- * green table and suits the blue body.
- */
-const BOMB_INK_COLOR = "#0b1a3a";
-
-/** The color of the lit spark on the fuse of the bomb icon. */
-const BOMB_SPARK_COLOR = "#ffd43b";
-
-/** The cap of the bomb icon, which joins the body below the fuse. */
-function BombCap(props: React.SVGProps<SVGRectElement>): React.JSX.Element {
-  return (
-    <rect
-      height={3.6}
-      rx={1}
-      transform="rotate(45 16 8)"
-      width={5}
-      x={13.5}
-      y={6.2}
-      {...props}
-    />
-  );
-}
-
-/**
- * A bomb, the usual name for a strike: a round blue body with a shine, a dark cap, and a lit fuse.
- * One dark outline goes around the body and the cap together, so that the bomb stands out on the
- * green table without a line where the two parts meet.
- */
-function BombIcon(): React.JSX.Element {
-  return (
-    <svg
-      aria-hidden="true"
-      className="tw:size-[22px] tw:narrow-980:mr-0.5 tw:narrow-980:size-[26px]"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M17.2 6.8Q18.4 3.2 21.2 3.4"
-        fill="none"
-        stroke={BOMB_INK_COLOR}
-        strokeLinecap="round"
-        strokeWidth={1.6}
-      />
-      <g stroke={BOMB_INK_COLOR} strokeLinejoin="round" strokeWidth={3}>
-        <BombCap fill={BOMB_INK_COLOR} />
-        <circle cx={10.5} cy={14} fill={BOMB_INK_COLOR} r={8} />
-      </g>
-      <BombCap fill={BOMB_INK_COLOR} />
-      <circle cx={10.5} cy={14} fill={BOMB_BODY_COLOR} r={8} />
-      <ellipse
-        cx={7.6}
-        cy={10.8}
-        fill="white"
-        fillOpacity={0.5}
-        rx={2.4}
-        ry={1.4}
-        transform="rotate(-40 7.6 10.8)"
-      />
-      <path
-        d="M21.4 0.6 22.2 2.6 24 3.4 22.2 4.2 21.4 6.2 20.6 4.2 18.8 3.4 20.6 2.6Z"
-        fill={BOMB_SPARK_COLOR}
-      />
-    </svg>
-  );
-}
-
 /** The color of the clue count: it stands out only at the limits. */
 function getClueCountClass(atMaxClues: boolean, outOfClues: boolean): string {
   if (atMaxClues) {
@@ -620,7 +551,7 @@ function StrikeMark({
   return (
     <svg
       aria-hidden="true"
-      className={`tw:size-[17px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
+      className={`tw:size-[21px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
       viewBox="0 0 24 24"
     >
       <path
@@ -714,20 +645,16 @@ export function TableTokens({
       >
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-          className={`${TOKEN_VALUE_CLASS} tw:gap-[3px] tw:narrow-980:gap-1.5`}
+          className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
           role="group"
         >
-          {/* The tooltip sits on the bomb, not the bubble, since each strike box has its own. */}
-          <span className="tw:flex" ref={tooltipRef("Strikes")}>
-            <BombIcon />
-          </span>
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
             const struck = i < strikes;
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
-            const className = `tw:box-border tw:flex tw:size-[22px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+            const className = `tw:box-border tw:flex tw:size-[28px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"
@@ -739,7 +666,14 @@ export function TableTokens({
               mark = <StrikeMark upcoming />;
             }
             return segment === undefined ? (
-              <span className={className} data-strike-box={i} key={i}>
+              // A box without a strike to show says what the boxes are. A box with one has its own
+              // tooltip.
+              <span
+                className={className}
+                data-strike-box={i}
+                key={i}
+                ref={tooltipRef("Strikes")}
+              >
                 {mark}
               </span>
             ) : (
