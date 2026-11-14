@@ -7,12 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { canDiscardNow, sendAction } from "./screenActions.ts";
 import { measure, toScreenPixels } from "./screenScale.ts";
 
-/**
- * How far the pointer must move after pressing a card before the card is fully lifted and moves
- * with it.
- */
-const DRAG_THRESHOLD_PIXELS = 6;
-
 type DropZone = "play" | "discard";
 
 /**
@@ -24,11 +18,6 @@ type HeldPhase = "drag" | "drop" | "return";
 export interface HeldCard {
   readonly order: CardOrder;
   readonly phase: HeldPhase;
-  /**
-   * Whether the pointer moved far enough after the press for the card to move with it. Until then,
-   * the card is only partly lifted.
-   */
-  readonly moved: boolean;
   /** The drop target under the pointer, while the card moves with it. */
   readonly zone: DropZone | undefined;
   /** Where the card was in the hand when the player pressed it, in the screen's CSS pixels. */
@@ -122,10 +111,6 @@ export function useCardDrag(
     x: 0,
     y: 0,
   });
-  const pressPoint = useRef({
-    x: 0,
-    y: 0,
-  });
   const heldRectRef = useRef<DOMRect>(undefined);
   const mainRef = useRef<HTMLElement>(null);
   const playZoneRef = useRef<HTMLElement>(null);
@@ -184,19 +169,12 @@ export function useCardDrag(
         y: toScreenPixels(event.clientY),
       };
 
-      // The card renders again only when it starts to move or the target under it changes. It
-      // follows the pointer by itself (see "HeldCardGhost.tsx").
-      const moved =
-        current.moved
-        || Math.hypot(
-          event.clientX - pressPoint.current.x,
-          event.clientY - pressPoint.current.y,
-        ) >= DRAG_THRESHOLD_PIXELS;
+      // The card renders again only when the target under it changes. It follows the pointer by
+      // itself (see "HeldCardGhost.tsx").
       const zone = zoneAt(event.clientX, event.clientY);
-      if (moved !== current.moved || zone !== current.zone) {
+      if (zone !== current.zone) {
         updateHeld({
           ...current,
-          moved,
           zone,
         });
       }
@@ -285,22 +263,18 @@ export function useCardDrag(
       if (heldRef.current?.phase === "drop") {
         return;
       }
-      // The card lifts partly as soon as it is pressed, so that the player feels that they hold it
-      // before they move it. Released in place, it settles back into the hand.
+      // The card lifts off the table as soon as it is pressed, so that the player feels that they
+      // hold it before they move it. Moving it does not change it. Released in place, it settles
+      // back into the hand.
       const start = measure(element);
       const pointer = {
         x: toScreenPixels(x),
         y: toScreenPixels(y),
       };
       pointerRef.current = pointer;
-      pressPoint.current = {
-        x,
-        y,
-      };
       updateHeld({
         order,
         phase: "drag",
-        moved: false,
         zone: undefined,
         start,
         grab: {

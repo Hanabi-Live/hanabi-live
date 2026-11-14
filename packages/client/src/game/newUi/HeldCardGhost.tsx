@@ -1,38 +1,27 @@
-// The card that the player holds, drawn above the table. It follows the pointer on springs, so that
-// it feels like a physical card: it lags a little behind fast movement, leans into the air as it
-// moves, swings like a card held at one point when it stops, and grows and casts a deeper shadow
-// while it is lifted. Dropped, it presses down onto the table. Released elsewhere, it flies back to
-// its slot.
+// The card that the player holds, drawn above the table. Pressed, it lifts off the table: it grows
+// a little and casts a deeper shadow. It then follows the pointer closely on stiff springs, and
+// leans and swings only a little as it moves. Dropped, it presses down onto the table. Released
+// elsewhere, it flies back to its slot.
 
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
 import { CARD_CORNER_PER_WIDTH, CARD_HEIGHT_PER_WIDTH } from "./Card.tsx";
 import type { HeldCard } from "./useCardDrag.ts";
 
-/**
- * How much larger the card is while lifted, while pressed but not yet moved (halfway), and while
- * over a drop target.
- */
-const LIFTED_SCALE = 1.12;
-const PRESSED_SCALE = (1 + LIFTED_SCALE) / 2;
-const AIMING_SCALE = 1.05;
-
-/**
- * How far the card rises off the table when it is lifted, in CSS pixels. Its shadow stays on the
- * table.
- */
-const LIFT_RISE_PIXELS = 14;
+/** How much larger the card is while lifted, and while over a drop target. */
+const LIFTED_SCALE = 1.08;
+const AIMING_SCALE = 1.04;
 
 /**
  * How fast the card leans back from the air as it moves, in degrees for each pixel per second, and
  * the most that it leans.
  */
-const LEAN_PER_SPEED = 0.014;
-const MAX_LEAN_DEGREES = 24;
+const LEAN_PER_SPEED = 0.005;
+const MAX_LEAN_DEGREES = 8;
 
 /** How much the card swings around the point where it is held, and the most that it swings. */
-const SWING_PER_SPEED = 0.008;
-const MAX_SWING_DEGREES = 12;
+const SWING_PER_SPEED = 0.003;
+const MAX_SWING_DEGREES = 4;
 
 /** How hard the card presses down when the player drops it, as a speed of its scale. */
 const DROP_PRESS = 2.4;
@@ -49,29 +38,29 @@ interface Spring {
   readonly damping: number;
 }
 
-/** The card follows the pointer tightly, with a short lag and no bounce. */
+/** The card follows the pointer closely, with a very short lag and no bounce. */
 const FOLLOW_SPRING = {
-  frequency: 34,
-  damping: 0.9,
+  frequency: 70,
+  damping: 1,
 } as const satisfies Spring;
 /** On its way back to the hand, the card flies a little slower and settles gently. */
 const RETURN_SPRING = {
   frequency: 22,
   damping: 0.85,
 } as const satisfies Spring;
-/** The card pops up when lifted, overshooting a little. */
+/** The card lifts quickly when pressed, overshooting only slightly. */
 const SCALE_SPRING = {
-  frequency: 26,
-  damping: 0.45,
+  frequency: 30,
+  damping: 0.7,
 } as const satisfies Spring;
 const LEAN_SPRING = {
-  frequency: 20,
-  damping: 0.55,
+  frequency: 24,
+  damping: 0.8,
 } as const satisfies Spring;
-/** The swing is loose, so that the card rocks back and forth once when it stops. */
+/** The swing settles quickly, with only a small rock when the card stops. */
 const SWING_SPRING = {
-  frequency: 15,
-  damping: 0.32,
+  frequency: 20,
+  damping: 0.6,
 } as const satisfies Spring;
 
 /** The longest step of the simulation, so that it stays stable when frames are slow. */
@@ -203,12 +192,11 @@ export function HeldCardGhost({
       const s = sim.scale.x;
       // The higher the card, the farther and softer its shadow.
       const lift = Math.max(0, Math.min(1.2, (s - 1) / (LIFTED_SCALE - 1)));
-      const rise = LIFT_RISE_PIXELS * lift;
       const left = sim.x.x - current.grab.x;
-      const top = sim.y.x - current.grab.y - rise;
+      const top = sim.y.x - current.grab.y;
       heldRectRef.current = new DOMRect(
         sim.x.x - current.grab.x * s,
-        sim.y.x - current.grab.y * s - rise,
+        sim.y.x - current.grab.y * s,
         w * s,
         h * s,
       );
@@ -224,7 +212,7 @@ export function HeldCardGhost({
       // back.
       const shadowX = 2 + 8 * lift - sim.leanY.x * 0.35;
       const shadowY = 4 + 22 * lift + sim.leanX.x * 0.3;
-      shadow.style.transform = `translate3d(${left + shadowX}px, ${top + rise + shadowY}px, 0) rotateZ(${sim.swing.x}deg) scale(${s * (1 - 0.03 * lift)})`;
+      shadow.style.transform = `translate3d(${left + shadowX}px, ${top + shadowY}px, 0) rotateZ(${sim.swing.x}deg) scale(${s * (1 - 0.03 * lift)})`;
       shadow.style.opacity = String(0.55 + 0.15 * lift);
       shadow.style.filter = `blur(${2 + 6 * lift}px)`;
     }
@@ -242,9 +230,7 @@ export function HeldCardGhost({
       let targetY = pointerRef.current.y;
       let follow: Spring = FOLLOW_SPRING;
       let targetScale = LIFTED_SCALE;
-      if (!current.moved) {
-        targetScale = PRESSED_SCALE;
-      } else if (current.zone !== undefined) {
+      if (current.zone !== undefined) {
         targetScale = AIMING_SCALE;
       }
       if (current.phase === "drop") {
