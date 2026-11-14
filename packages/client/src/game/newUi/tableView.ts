@@ -83,7 +83,7 @@ export interface CardView {
 
   /**
    * Whether the card shows a trash badge, because the clues prove to its holder that it is trash.
-   * Other players' trash cards only fade.
+   * As on the classic screen, it shows with or without the empathy view.
    */
   readonly trashIcon: boolean;
 
@@ -188,10 +188,7 @@ export function getCardView({
     : undefined;
   const markedTrash = noteMark === "trash";
   const trashIcon =
-    !realLifeMode
-    && !markedTrash
-    && empathy
-    && cardState.isKnownTrashFromEmpathy;
+    !realLifeMode && !markedTrash && cardState.isKnownTrashFromEmpathy;
 
   return {
     order: cardState.order,

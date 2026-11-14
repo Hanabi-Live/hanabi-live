@@ -195,6 +195,23 @@ describe("getCardView", () => {
     });
   });
 
+  test("shows the trash badge outside of the empathy view", () => {
+    const view = getCardView({
+      gameState,
+      cardState: {
+        ...cardState,
+        isKnownTrashFromEmpathy: true,
+      },
+      cardIdentity: red1,
+      note: BLANK_NOTE,
+      variant: VARIANT,
+      empathy: false,
+      finished: false,
+      realLifeMode: false,
+    });
+    expect(view.trashIcon).toBe(true);
+  });
+
   test("gives a border from a note to a card that does not show as clued", () => {
     expect(getView({ finessed: true }).noteBorder).toBe("finessed");
     expect(
