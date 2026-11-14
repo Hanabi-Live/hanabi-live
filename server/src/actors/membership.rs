@@ -9,7 +9,7 @@ use crate::{
 };
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{TableJoinRequest, TableJoined, TableRef, TableStage};
+use hanabi_protocol::{TableJoinRequest, TableJoined, TableStage};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -336,16 +336,7 @@ impl TableActor {
                 self.credit_review([&a], Instant::now());
             }
             let mut e = self.effects();
-            e.statuses.push((session.clone(), Status::Lobby, None));
-            e.messages.push((
-                session,
-                frame(
-                    hanabi_protocol::event::TABLE_LEFT,
-                    TableRef {
-                        table_id: self.table.id,
-                    },
-                ),
-            ));
+            e.leave(session);
             e
         } else {
             self.effects()

@@ -24,8 +24,8 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientRequest, IdleWarning, Notice, ReplyData, TableJoined, TableRef,
-    TableStage, UserId,
+    Chat, ChatTyping, ClientRequest, IdleWarning, Notice, ReplyData, TableJoined, TableStage,
+    UserId,
 };
 use serde::Serialize;
 use std::{
@@ -1273,16 +1273,7 @@ impl TableActor {
         }
         let mut e = self.effects();
         for a in self.audience() {
-            e.statuses.push((a.session.clone(), Status::Lobby, None));
-            e.messages.push((
-                a.session.clone(),
-                frame(
-                    hanabi_protocol::event::TABLE_LEFT,
-                    TableRef {
-                        table_id: self.table.id,
-                    },
-                ),
-            ));
+            e.leave(a.session.clone());
         }
         self.publish(e).await?;
         self.hub.send(HubCommand::Retire(self.table.id)).await?;

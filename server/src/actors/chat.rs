@@ -1,4 +1,4 @@
-use super::{Status, TableActor, pending::Completed, setup::options_suggestion};
+use super::{TableActor, pending::Completed, setup::options_suggestion};
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, ChatAuthor, ChatMessage, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
+use hanabi_protocol::{Chat, ChatAuthor, ChatMessage, MAX_PLAYERS, MIN_PLAYERS, TableId};
 use std::{
     collections::HashSet,
     sync::Arc,
@@ -549,16 +549,7 @@ impl TableActor {
         let mut e = self.effects();
         if let Some(a) = self.attendees.remove(&kicked_user) {
             self.credit_review([&a], Instant::now());
-            e.statuses.push((a.session.clone(), Status::Lobby, None));
-            e.messages.push((
-                a.session,
-                frame(
-                    hanabi_protocol::event::TABLE_LEFT,
-                    TableRef {
-                        table_id: self.table.id,
-                    },
-                ),
-            ));
+            e.leave(a.session);
         }
         self.pregame_messages(&mut e);
         self.add_chat(&mut e, &authored);

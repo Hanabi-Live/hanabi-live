@@ -225,6 +225,21 @@ pub struct Effects {
     pub statuses: Vec<(Arc<Session>, Status, Option<TableId>)>,
     pub messages: Vec<(Arc<Session>, Frame)>,
 }
+impl Effects {
+    /// Sends a user who leaves the table back to the lobby.
+    pub fn leave(&mut self, session: Arc<Session>) {
+        self.statuses.push((session.clone(), Status::Lobby, None));
+        self.messages.push((
+            session,
+            crate::transport::frame(
+                hanabi_protocol::event::TABLE_LEFT,
+                hanabi_protocol::TableRef {
+                    table_id: self.table,
+                },
+            ),
+        ));
+    }
+}
 pub enum HubCommand {
     Register {
         session: Arc<Session>,

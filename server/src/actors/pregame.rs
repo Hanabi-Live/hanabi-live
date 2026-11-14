@@ -21,9 +21,7 @@ use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientRequest;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{
-    Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableJoined, TableRef, TableStage,
-};
+use hanabi_protocol::{Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableJoined, TableStage};
 use std::{collections::HashSet, sync::Arc};
 
 /// Appended to the name of a table that a split creates.
@@ -182,16 +180,7 @@ impl TableActor {
         let mut e = self.effects();
         for p in removed {
             if let Some(a) = p.id.and_then(|id| self.attendees.remove(&id)) {
-                e.statuses.push((a.session.clone(), Status::Lobby, None));
-                e.messages.push((
-                    a.session,
-                    frame(
-                        hanabi_protocol::event::TABLE_LEFT,
-                        TableRef {
-                            table_id: self.table.id,
-                        },
-                    ),
-                ));
+                e.leave(a.session);
             }
         }
         self.pregame_messages(&mut e);
@@ -369,18 +358,7 @@ impl TableActor {
         let mut effects = self.effects();
         for (session, _, _) in &moving {
             self.attendees.remove(&session.user);
-            effects.messages.push((
-                session.clone(),
-                frame(
-                    hanabi_protocol::event::TABLE_LEFT,
-                    TableRef {
-                        table_id: self.table.id,
-                    },
-                ),
-            ));
-            effects
-                .statuses
-                .push((session.clone(), Status::Lobby, None));
+            effects.leave(session.clone());
         }
         self.pregame_messages(&mut effects);
         for notice in &notices {
