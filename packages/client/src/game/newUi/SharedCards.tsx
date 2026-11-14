@@ -8,7 +8,7 @@ import type {
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import type { ForwardedRef } from "react";
-import { forwardRef } from "react";
+import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
@@ -244,6 +244,14 @@ const zoneClasses: Record<ZoneState, string> = {
   blocked: DROP_ZONE_CLASS,
 };
 
+/** The offsets of a box from its parent's edges, in CSS pixels. */
+interface ZoneInset {
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly left: number;
+}
+
 function isRefusing(state: ZoneState): boolean {
   return state === "unavailable" || state === "blocked";
 }
@@ -313,6 +321,27 @@ export const PlayArea = forwardRef<
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
     const suitLabels = hasSuitLabels(variant);
 
+    // While the player drags a card, the box of the play stacks is twice as far from the stacks on
+    // each side, so that it is easy to see. It grows behind its neighbors, so that nothing moves.
+    const stacksRef = useRef<HTMLDivElement>(null);
+    const [zoneInset, setZoneInset] = useState<ZoneInset | undefined>();
+    const dragging = zoneState !== "idle";
+    useLayoutEffect(() => {
+      const stacksElement = stacksRef.current;
+      const boxElement = stacksElement?.parentElement ?? null;
+      if (!dragging || stacksElement === null || boxElement === null) {
+        return;
+      }
+      const box = boxElement.getBoundingClientRect();
+      const stacksBox = stacksElement.getBoundingClientRect();
+      setZoneInset({
+        top: box.top - stacksBox.top,
+        right: stacksBox.right - box.right,
+        bottom: stacksBox.bottom - box.bottom,
+        left: box.left - stacksBox.left,
+      });
+    }, [dragging]);
+
     return (
       // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
       // the tokens are at the bottom, level with the bottom of the controls below the hands. When
@@ -327,17 +356,26 @@ export const PlayArea = forwardRef<
         >
           <section
             aria-label="Play stacks"
-            // The box shows only while the player drags a card, to show that they can drop it here.
-            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-game-panel ${
-              zoneState === "idle" ? "" : zoneClasses[zoneState]
-            }`}
+            className="tw:relative tw:isolate tw:flex tw:flex-col tw:items-center tw:self-stretch"
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
             ref={zoneRef(ref, zoneState, "Play stacks")}
             style={{ padding: PLAY_STACKS_PADDING }}
           >
+            {/* The box shows only while the player drags a card, to show that they can drop it
+                here. A card dropped inside it plays (see "useCardDrag.ts"). It is behind the
+                stacks. */}
+            {dragging && zoneInset !== undefined && (
+              <div
+                aria-hidden="true"
+                className={`tw:pointer-events-none tw:absolute tw:-z-10 tw:rounded-game-panel ${zoneClasses[zoneState]}`}
+                data-play-box
+                style={zoneInset}
+              />
+            )}
             <div
               className="tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
+              ref={stacksRef}
               style={{ gap: PLAY_STACK_GAP }}
             >
               {stacks.map((stack) => {

@@ -138,10 +138,18 @@ export function useCardDrag(
     }
 
     function zoneAt(x: number, y: number): DropZone | undefined {
-      // Beside the hands, the whole half of the table is the target: everything to the left of the
-      // hands plays the card, and everything to the right discards it, from the top of the screen
-      // to the bottom. The narrow layout puts the play stacks below the hands, so there only the
-      // play stacks and the discard pile are targets.
+      // The card plays inside the box that the play stacks draw while the player drags it, which is
+      // bigger than the play stacks.
+      const playZone = playZoneRef.current;
+      const playBox =
+        playZone?.querySelector<HTMLElement>("[data-play-box]") ?? playZone;
+      if (isInside(playBox ?? null, x, y)) {
+        return "play";
+      }
+
+      // Beside the hands, everything to the right of the hands discards the card, from the top of
+      // the screen to the bottom. The narrow layout puts the play stacks below the hands, so there
+      // only the discard pile is a target.
       const main = mainRef.current?.getBoundingClientRect();
       const hands = dropLayout.current.handsElement?.getBoundingClientRect();
       if (
@@ -149,18 +157,9 @@ export function useCardDrag(
         && main !== undefined
         && hands !== undefined
       ) {
-        if (x >= main.left && x < hands.left) {
-          return "play";
-        }
-        if (x > hands.right && x <= main.right) {
-          return discardZone();
-        }
-        return undefined;
+        return x > hands.right && x <= main.right ? discardZone() : undefined;
       }
 
-      if (isInside(playZoneRef.current, x, y)) {
-        return "play";
-      }
       if (isInside(discardZoneRef.current, x, y)) {
         return discardZone();
       }
