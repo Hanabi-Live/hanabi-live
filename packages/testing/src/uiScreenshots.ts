@@ -103,6 +103,12 @@ const NUM_WORKERS = 4;
  */
 const MAX_ANIMATION_WAIT_MILLISECONDS = 10_000;
 
+/**
+ * How long a step waits for an element, such as a button to click. Playwright's own limit is 30
+ * seconds, so a step that waits for the wrong thing would hold up the run for that long.
+ */
+const STEP_TIMEOUT_MILLISECONDS = 10_000;
+
 /** How often to check whether the fireworks, which a canvas draws, have ended. */
 const FIREWORKS_CHECK_MILLISECONDS = 100;
 
@@ -977,7 +983,8 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
       },
     },
-    // Bob passes the lead of the shared replay to the account.
+    // Bob passes the lead of the shared replay to the account, which opens the menu of "Play
+    // again".
     {
       name: "new-ui-shared-replay-leader",
       path: "/",
@@ -989,8 +996,14 @@ function getStates(): readonly State[] {
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
-        cast.bobsGame().passLeader();
+        const game = cast.bobsGame();
+        game.passLeader();
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
+        // Bob's table is a speedrun, where "Play again" restarts the game at once when everyone is
+        // ready. Bob is not, so that the button opens its menu instead.
+        await game.setReady(false);
+        await page.getByRole("button", { name: "Play again" }).click();
+        await page.getByText(/^Not ready: Bob/u).waitFor();
       },
     },
     // A hypothetical that the account leads, from the first turn, after a player plays a card in
@@ -1171,6 +1184,11 @@ interface BobsGame {
   readonly end: () => Promise<void>;
   /** Makes the browser's account the leader of the shared replay. */
   readonly passLeader: () => void;
+  /**
+   * Tells the leader of the shared replay whether Bob will play again. It returns once the server
+   * has told the others.
+   */
+  readonly setReady: (ready: boolean) => Promise<void>;
 }
 
 /**
@@ -1731,6 +1749,9 @@ async function createCast(
       passLeader: () => {
         bob.send("tableSetOwner", { tableId, userId: you.userId });
       },
+      setReady: async (ready) => {
+        await bob.request("tableRestartDecline", { tableId, declined: !ready });
+      },
     };
     return currentBobsGame;
   }
@@ -1930,6 +1951,7 @@ async function capture(
   results: Results,
 ) {
   const page = await context.newPage();
+  page.setDefaultTimeout(STEP_TIMEOUT_MILLISECONDS);
   page.on("pageerror", (error) => {
     results.errors.push(error.message);
   });
