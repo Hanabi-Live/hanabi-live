@@ -584,7 +584,8 @@ function EditableCard({
   return (
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
-      className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
+      // A button does not take the page font by default, so the card labels would change font.
+      className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:font-[inherit]"
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {
