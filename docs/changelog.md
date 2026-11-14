@@ -45,8 +45,9 @@ of the repository.
 - In the new game screen, the deck no longer says "Last card" or "Final round".
 - In the new game screen, when a clue would touch no cards, the clue button says
   so, such as "No 4s in that hand".
-- In the new game screen, the table is grained felt that is darker toward the
-  edges, and the piles, clue log, and hands sit deeper in it.
+- In the new game screen, the table looks like the cloth on a snooker table. It
+  is darker toward the edges, and the piles, clue log, and hands sit deeper in
+  it.
 - In the new game screen, "Play again" and "Ready" are now in the bottom bar,
   where "End game" is during the game.
 - In the new game screen, the clue log names each clue next to its circle, such

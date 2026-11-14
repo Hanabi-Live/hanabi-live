@@ -1359,7 +1359,7 @@ export function GameScreen({
 
   return (
     <div
-      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text"
       ref={rootRef}
       style={{ zoom: screenScale }}
     >
