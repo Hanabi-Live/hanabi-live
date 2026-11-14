@@ -90,8 +90,32 @@ fn executable(root: &Path) -> Result<PathBuf> {
     );
     Ok(current)
 }
+/// The commit of this server: the one it was built from, or the checkout's when a debug build
+/// starts. A debug build does not embed the commit, so that a new commit does not recompile it.
 pub fn version() -> &'static str {
-    env!("HANABI_BUILD_COMMIT")
+    match option_env!("HANABI_BUILD_COMMIT") {
+        Some(commit) => commit,
+        None => checkout_commit(),
+    }
+}
+
+fn checkout_commit() -> &'static str {
+    static COMMIT: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    COMMIT.get_or_init(|| {
+        crate::git::git(
+            Path::new(env!("CARGO_MANIFEST_DIR")),
+            &["rev-parse", "--verify", "HEAD^{commit}"],
+        )
+        .ok()
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+        .map(|commit| commit.trim().to_owned())
+        .filter(|commit| {
+            commit.len() == crate::git::GIT_REVISION_LENGTH
+                && commit.bytes().all(|byte| byte.is_ascii_hexdigit())
+        })
+        .unwrap_or_else(|| "unknown".into())
+    })
 }
 
 #[cfg(test)]

@@ -1,34 +1,16 @@
 #[path = "src/git.rs"]
 mod git;
 
-use git::GIT_REVISION_LENGTH;
+use git::{GIT_REVISION_LENGTH, git};
 use std::{
     collections::BTreeSet,
     env,
     path::{Path, PathBuf},
-    process::{Command, Output},
 };
 
 pub struct Version {
     pub commit: String,
     pub watched: BTreeSet<PathBuf>,
-}
-
-fn git(root: &Path, arguments: &[&str]) -> std::io::Result<Output> {
-    let mut command = Command::new("git");
-    command.arg("-C").arg(root).args(arguments);
-    for key in [
-        "GIT_DIR",
-        "GIT_WORK_TREE",
-        "GIT_COMMON_DIR",
-        "GIT_INDEX_FILE",
-        "GIT_OBJECT_DIRECTORY",
-        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-        "GIT_CEILING_DIRECTORIES",
-    ] {
-        command.env_remove(key);
-    }
-    command.output()
 }
 
 fn checked(root: &Path, arguments: &[&str]) -> Result<String, String> {
@@ -135,12 +117,16 @@ fn main() {
     let supplied_revision = supplied_revision
         .as_deref()
         .map(|value| value.to_str().expect("Invalid build revision encoding"));
-    let version =
-        discover(&root, supplied_revision).expect("Unable to determine the compiled server commit");
-    for path in version.watched {
-        println!("cargo:rerun-if-changed={}", path.display());
+    // A debug build reads the commit when it starts, so a new commit does not recompile it.
+    let debug = env::var("PROFILE").is_ok_and(|profile| profile == "debug");
+    if supplied_revision.is_some() || !debug {
+        let version = discover(&root, supplied_revision)
+            .expect("Unable to determine the compiled server commit");
+        for path in version.watched {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+        println!("cargo:rustc-env=HANABI_BUILD_COMMIT={}", version.commit);
     }
-    println!("cargo:rustc-env=HANABI_BUILD_COMMIT={}", version.commit);
     write_schema_version(&root);
 }
 
