@@ -708,8 +708,28 @@ const MAX_KICKED_PLAYERS: usize = 4096;
 /// The most spectators that a table remembers, with the seat that each one shadows.
 const MAX_SHADOWS: usize = 4096;
 
-pub fn tag_too_long() -> String {
-    format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")
+/// Normalizes the text of a tag: whitespace becomes spaces, the ends are trimmed, and the case is
+/// folded. Returns the message for a tag that is too long or blank.
+pub fn normalize_tag(raw: &str) -> Result<String, String> {
+    if raw.chars().count() > MAX_TAG_LENGTH {
+        return Err(format!(
+            "Tags cannot be longer than {MAX_TAG_LENGTH} characters."
+        ));
+    }
+    let spaced: String = raw
+        .chars()
+        .map(|c| if c.is_whitespace() { ' ' } else { c })
+        .collect();
+    let tag = crate::accounts::normalize_string(spaced.trim_matches(' '));
+    if tag.is_empty() {
+        return Err("Tags cannot be blank.".into());
+    }
+    Ok(tag)
+}
+
+/// Whether a seed has only the characters that seeds may have: letters, numbers, and hyphens.
+pub fn is_valid_seed(seed: &str) -> bool {
+    seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
 }
 
 /// Converts the engine's options to their wire form. Both destructure every field, so adding an

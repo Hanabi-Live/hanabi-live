@@ -6,34 +6,21 @@ use super::{
     pending::Completed,
     setup::next_requested_seed,
 };
-use crate::errors::CommandResult;
 use crate::errors::OrReject;
+use crate::errors::{CommandError, CommandResult};
 use crate::{
-    model::{ExtraOptions, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Tag, TagEdit, tag_too_long},
+    model::{ExtraOptions, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Tag, TagEdit},
     transport::{Outgoing, Session, frame},
 };
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientRequest;
+use hanabi_protocol::MAX_TABLE_NAME_LENGTH;
 use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
-use hanabi_protocol::{MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
 };
-
-/// Normalizes the text of a tag that a client sends, which may not be blank.
-fn normalize_tag(raw: &str) -> CommandResult<String> {
-    ensure_or_reject!(raw.chars().count() <= MAX_TAG_LENGTH, "{}", tag_too_long());
-    let tag = crate::accounts::normalize_string(
-        raw.chars()
-            .map(|c| if c.is_whitespace() { ' ' } else { c })
-            .collect::<String>()
-            .trim(),
-    );
-    ensure_or_reject!(!tag.is_empty(), "Tags cannot be blank.");
-    Ok(tag)
-}
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
@@ -88,8 +75,12 @@ impl TableActor {
         message: ClientRequest,
     ) -> CommandResult<()> {
         let edit = match message {
-            ClientRequest::TagAdd(r) => TagEdit::Add(normalize_tag(&r.tag)?),
-            ClientRequest::TagRemove(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
+            ClientRequest::TagAdd(r) => {
+                TagEdit::Add(crate::model::normalize_tag(&r.tag).map_err(CommandError::rejected)?)
+            }
+            ClientRequest::TagRemove(r) => TagEdit::Delete(
+                crate::model::normalize_tag(&r.tag).map_err(CommandError::rejected)?,
+            ),
             ClientRequest::TagRemoveAll(_) => TagEdit::DeleteAll,
             message => return Err(wrong_phase(&message)),
         };

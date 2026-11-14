@@ -132,7 +132,7 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
                 .get("tag")
                 .filter(|v| !v.is_empty())
                 .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
-            s.tag = Some(sanitize_tag(tag)?);
+            s.tag = Some(crate::model::normalize_tag(tag).map_err(HttpError::not_found)?);
         }
     }
     Ok(s)
@@ -266,24 +266,6 @@ pub(super) async fn count(state: &PublicState, s: Selection) -> Result<hanabi_pr
     Ok(hanabi_protocol::Count::try_from(total)?)
 }
 
-/// The public history lists the lobby's `GameSummary` contract.
-fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameSummary> {
-    let g = row.game;
-    Ok(hanabi_protocol::GameSummary {
-        game_id: hanabi_protocol::GameId::try_from(g.id)?,
-        num_turns: g.turn_count()?,
-        options: crate::model::wire_options(&crate::archive::options(&g)?),
-        num_games_on_seed: hanabi_protocol::Count::try_from(row.seed_count)?,
-        seed: g.seed.into(),
-        score: hanabi_protocol::Score::try_from(g.score)?,
-        end_condition: crate::archive::end_condition_from_db(i32::from(g.end_condition))?,
-        started_at: hanabi_protocol::Timestamp::from(g.datetime_started),
-        finished_at: hanabi_protocol::Timestamp::from(g.datetime_finished),
-        player_names: row.names.into_iter().map(Into::into).collect(),
-        tags: row.tags,
-    })
-}
-
 /// A page of the selected games, in `order`, which is SQL that sorts `g`.
 async fn history(
     state: &PublicState,
@@ -310,21 +292,6 @@ async fn history(
         .fetch_all(&state.pool)
         .await?
         .into_iter()
-        .map(game_history)
+        .map(|row| row.game.summary(row.names, row.tags, row.seed_count))
         .collect::<anyhow::Result<Vec<_>>>()?)
-}
-
-pub(super) fn sanitize_tag(value: &str) -> Result<String> {
-    if value.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
-        return Err(HttpError::not_found(crate::model::tag_too_long()));
-    }
-    let value: String = value
-        .chars()
-        .map(|c| if c.is_whitespace() { ' ' } else { c })
-        .collect();
-    let value = value.trim_matches(' ');
-    if value.is_empty() {
-        return Err(HttpError::not_found("Tags cannot be blank."));
-    }
-    Ok(crate::accounts::normalize_string(value))
 }

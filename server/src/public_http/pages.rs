@@ -286,7 +286,7 @@ pub(super) async fn page(
                 .get("tag")
                 .filter(|s| !s.is_empty())
                 .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
-            let tag = data::sanitize_tag(raw)?;
+            let tag = crate::model::normalize_tag(raw).map_err(HttpError::not_found)?;
             if api_redirect {
                 return Ok(
                     Redirect::permanent(&format!("{API_PREFIX}/tag/{}", encoded(&tag)))

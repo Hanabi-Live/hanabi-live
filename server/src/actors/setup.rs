@@ -68,7 +68,7 @@ pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<Option<String>
         "Seeds cannot be longer than {MAX_SEED_LENGTH} characters"
     );
     ensure_or_reject!(
-        seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+        crate::model::is_valid_seed(seed),
         "Seeds can only contain letters, numbers, and hyphens"
     );
     Ok((!seed.is_empty()).then(|| seed.into()))

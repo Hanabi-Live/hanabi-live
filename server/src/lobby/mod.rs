@@ -18,7 +18,6 @@ pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::get_settings;
 use settings::set_settings;
 
-use crate::accounts::normalize_string;
 use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Result, ensure};
@@ -229,7 +228,7 @@ pub async fn dispatch(
             // The schema already refuses an empty seed.
             let error = if !seed.bytes().all(|b| b == b' ' || b.is_ascii_graphic()) {
                 Some("Seeds can only contain ASCII characters.")
-            } else if !seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') {
+            } else if !crate::model::is_valid_seed(seed) {
                 Some("Seeds can only contain letters, numbers, and hyphens.")
             } else {
                 None
@@ -249,19 +248,10 @@ pub async fn dispatch(
             ))]
         }
         ClientRequest::TagSearch(request) => {
-            let raw = request.tag.as_str();
-            if raw.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
-                return refused(crate::model::tag_too_long());
-            }
-            let replaced: String = raw
-                .chars()
-                .map(|c| if c.is_whitespace() { ' ' } else { c })
-                .collect();
-            let trimmed = replaced.trim_matches(' ');
-            if trimmed.is_empty() {
-                return refused("Tags cannot be blank.");
-            }
-            let tag = normalize_string(trimmed);
+            let tag = match crate::model::normalize_tag(request.tag.as_str()) {
+                Ok(tag) => tag,
+                Err(message) => return refused(message),
+            };
             let ids: Vec<i32> = sqlx::query_scalar!(
                 "SELECT DISTINCT game_id FROM game_tags WHERE tag=$1 ORDER BY game_id",
                 &tag

@@ -178,6 +178,28 @@ impl GameRecord {
     pub fn turn_count(&self) -> Result<hanabi_protocol::Turn> {
         hanabi_protocol::Turn::new(self.num_turns).context("Invalid stored turn count")
     }
+
+    /// The game as a row of a game list, with its players in seat order.
+    pub fn summary(
+        self,
+        player_names: Vec<String>,
+        tags: Vec<String>,
+        num_games_on_seed: i32,
+    ) -> Result<hanabi_protocol::GameSummary> {
+        Ok(hanabi_protocol::GameSummary {
+            game_id: GameId::try_from(self.id)?,
+            options: crate::model::wire_options(&options(&self)?),
+            score: hanabi_protocol::Score::try_from(self.score)?,
+            num_turns: self.turn_count()?,
+            end_condition: end_condition_from_db(i32::from(self.end_condition))?,
+            started_at: hanabi_protocol::Timestamp::from(self.datetime_started),
+            finished_at: hanabi_protocol::Timestamp::from(self.datetime_finished),
+            num_games_on_seed: hanabi_protocol::Count::try_from(num_games_on_seed)?,
+            seed: self.seed.into(),
+            player_names: player_names.into_iter().map(Into::into).collect(),
+            tags,
+        })
+    }
 }
 
 pub(crate) struct Archive {

@@ -73,25 +73,13 @@ pub async fn get_history(pool: &PgPool, ids: &[i32]) -> Result<Vec<hanabi_protoc
     )
     .fetch_all(pool)
     .await?;
-    let time = hanabi_protocol::Timestamp::from;
-    let mut result = Vec::new();
-    for row in rows {
-        let game = row.game.0;
-        result.push(hanabi_protocol::GameSummary {
-            game_id: hanabi_protocol::GameId::try_from(game.id)?,
-            options: crate::model::wire_options(&crate::archive::options(&game)?),
-            score: hanabi_protocol::Score::try_from(game.score)?,
-            num_turns: game.turn_count()?,
-            end_condition: crate::archive::end_condition_from_db(i32::from(game.end_condition))?,
-            started_at: time(game.datetime_started),
-            finished_at: time(game.datetime_finished),
-            num_games_on_seed: hanabi_protocol::Count::try_from(row.num_games_on_this_seed)?,
-            seed: game.seed.into(),
-            player_names: row.player_names.into_iter().map(Into::into).collect(),
-            tags: row.tags,
-        });
-    }
-    Ok(result)
+    rows.into_iter()
+        .map(|row| {
+            row.game
+                .0
+                .summary(row.player_names, row.tags, row.num_games_on_this_seed)
+        })
+        .collect()
 }
 
 /// Seed scope is directed, exactly one hop. A→B→C must not block C's seeds for A.

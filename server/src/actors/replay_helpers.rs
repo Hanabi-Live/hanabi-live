@@ -30,8 +30,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         .as_ref()
         .map_or("", hanabi_protocol::Seed::as_str);
     ensure_or_reject!(
-        seed.len() <= MAX_IMPORTED_SEED_LENGTH
-            && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+        seed.len() <= MAX_IMPORTED_SEED_LENGTH && crate::model::is_valid_seed(seed),
         "Invalid seed"
     );
     let mut options = crate::model::engine_options(&input.options)?;
