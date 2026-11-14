@@ -1,6 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { ServerEventData, TableId, UserId } from "@hanabi-live/data";
+import type { TableId } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import type { Connection } from "./Connection.ts";
 import type { Loader } from "./Loader.ts";
@@ -25,9 +25,6 @@ class Globals {
   // -----------------------
   // Miscellaneous variables
   // -----------------------
-
-  /** Keys are IDs. */
-  userMap = new Map<UserId, ServerEventData["user"]>();
 
   /** Keys are IDs. */
 

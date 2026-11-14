@@ -9,7 +9,7 @@ import {
 } from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
-import { getOnlineUserId } from "./onlineUsers.ts";
+import { findOnlineUser, getOnlineUserId } from "./onlineUsers.ts";
 import { store } from "./store.ts";
 
 // Define a command handler map.
@@ -105,10 +105,7 @@ function pm(room: string, args: readonly string[]) {
   }
 
   // Validate that the recipient is online.
-  const users = [...globals.userMap.values()];
-  const matchingUser = users.find(
-    (user) => user.username.toLowerCase() === recipient.toLowerCase(),
-  );
+  const matchingUser = findOnlineUser(recipient);
   if (matchingUser === undefined) {
     sendSelfPmFromServer(`User "${recipient}" is not currently online.`, room);
     return;

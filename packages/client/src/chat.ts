@@ -31,6 +31,7 @@ import {
 } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
+import { getOnlineUsernames } from "./onlineUsers.ts";
 import { store } from "./store.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
@@ -417,10 +418,7 @@ function tabInitAutoCompleteList(shiftKey: boolean, finalWord: string) {
   tabCompleteOriginalText = finalWord;
 
   // Make a list of the currently connected users.
-  const userList: string[] = Array.from(
-    globals.userMap.values(),
-    (user) => user.username,
-  );
+  const userList = getOnlineUsernames();
 
   // Combine it with the list of emotes and the list of emoji.
   const usersAndEmojisAndEmotesList = [...userList, ...emojiList, ...emoteList];

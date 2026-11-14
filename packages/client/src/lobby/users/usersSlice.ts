@@ -69,6 +69,9 @@ const usersSelectors = usersAdapter.getSelectors(
   (state: RootState) => state.users,
 );
 
+/** Every online user, bots included. */
+export const selectOnlineUsers = usersSelectors.selectAll;
+
 const selectAllRows = createSelector(
   [
     usersSelectors.selectAll,

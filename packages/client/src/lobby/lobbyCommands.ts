@@ -172,19 +172,14 @@ lobbyCommands.set("tableList", (data) => {
 
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
-  globals.userMap.set(data.userId, data);
   store.dispatch(userChanged(data));
 });
 
 lobbyCommands.set("userList", (data) => {
-  for (const user of data.users) {
-    globals.userMap.set(user.userId, user);
-  }
   store.dispatch(usersListed(data.users));
 });
 
 lobbyCommands.set("userRemoved", (data) => {
-  globals.userMap.delete(data.userId);
   store.dispatch(userLeft(data.userId));
 });
 

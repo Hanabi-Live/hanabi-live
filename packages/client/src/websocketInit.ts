@@ -265,7 +265,6 @@ function openConnection(isReconnect: boolean) {
       reconnectBackoff.reset();
       recovering = false;
       globals.conn = conn;
-      globals.userMap.clear();
       store.dispatch(usersCleared());
       store.dispatch(tablesCleared());
       if (
