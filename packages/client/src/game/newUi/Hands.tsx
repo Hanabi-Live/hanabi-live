@@ -696,15 +696,13 @@ function Hand({
     && props.clueTarget === seat.playerIndex;
 
   let boxClass =
-    "tw:bg-black/12 tw:ring-1 tw:ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
-  // The hands touch, so a box with a thick outline goes above its neighbors, which would otherwise
-  // cover the bottom of the outline.
+    "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
-    boxClass = "tw:z-1 tw:bg-game-turn/10 tw:ring-3 tw:ring-game-turn";
+    boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
-    boxClass = "tw:z-1 tw:bg-clue/10 tw:ring-2 tw:ring-clue";
+    boxClass = "tw:bg-clue/10 tw:inset-ring-2 tw:inset-ring-clue";
   } else if (seat.you) {
-    boxClass = "tw:bg-game-zone tw:ring-1 tw:ring-game-line";
+    boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
 
   const chip = <NameChip seat={seat} />;
