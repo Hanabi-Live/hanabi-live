@@ -20,8 +20,6 @@ class Globals {
   // Miscellaneous variables
   // -----------------------
 
-  idleMinutes = 0;
-
   /** The table we are joined to, if any. */
   tableId: TableId | undefined = undefined;
 
@@ -29,18 +27,22 @@ class Globals {
   // UI variables
   // ------------
 
-  imageLoader: Loader | undefined = undefined;
+  /** Preloads the game screen's images (set in "main.ts"). */
+  loader: Loader | undefined = undefined;
   ui: HanabiUi | undefined = undefined;
 
   zenModeEnabled = false;
-
-  /** Used to keep track of the active element before model warning box. */
-  lastActiveElement: HTMLElement | undefined = undefined;
 
   /** The WebSocket connection, for code that only runs once the client has connected. */
   get connection(): Connection {
     assertDefined(this.conn, "The WebSocket connection is not open yet.");
     return this.conn;
+  }
+
+  /** The image loader, for code that only runs after the page has loaded. */
+  get imageLoader(): Loader {
+    assertDefined(this.loader, "The image loader has not been created yet.");
+    return this.loader;
   }
 
   /** The table we are joined to, for code that only runs at a table. */

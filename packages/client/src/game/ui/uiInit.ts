@@ -1,4 +1,3 @@
-import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
@@ -26,22 +25,16 @@ const LOADING_LABEL = {
 // When the HanabiUi object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(onDrawn: () => void): void {
-  assertDefined(
-    lobbyGlobals.imageLoader,
-    "Failed to find the image loader when initializing the user interface.",
-  );
-
   // Once the initial page (e.g. the login screen / lobby) is finished loading and ready, all of the
-  // images relating to the game screen start to get pre-loaded by the "Loader" class. Copy the
-  // reference to the existing "Loader" object to our UI globals (for convenience).
-  globals.imageLoader = lobbyGlobals.imageLoader;
+  // images relating to the game screen start to get pre-loaded by the "Loader" class.
+  const { imageLoader } = lobbyGlobals;
 
-  if (globals.imageLoader.failed) {
-    showImageLoadError([...globals.imageLoader.failedFiles][0]!);
+  if (imageLoader.failed) {
+    showImageLoadError([...imageLoader.failedFiles][0]!);
     return;
   }
 
-  if (globals.imageLoader.finished) {
+  if (imageLoader.finished) {
     // The user has spent enough time in the lobby before joining a game such that all of the
     // game-related images have had time to fully download. This means we do not have to show the
     // loading screen; skip directly to the next step.
@@ -55,14 +48,14 @@ export function uiInit(onDrawn: () => void): void {
 
   // The Loader object was not instantiated without a progress callback or a finished callback, so
   // attach those now.
-  globals.imageLoader.progressCallback = (done: number, total: number) => {
+  imageLoader.progressCallback = (done: number, total: number) => {
     progressLabel.text(`${done}/${total}`);
     loadingLayer.batchDraw();
   };
-  globals.imageLoader.finishedCallback = () => {
+  imageLoader.finishedCallback = () => {
     finishedDownloadingImages(onDrawn);
   };
-  globals.imageLoader.failedCallback = showImageLoadError;
+  imageLoader.failedCallback = showImageLoadError;
 
   const winW = globals.stage.width();
   const winH = globals.stage.height();
@@ -104,7 +97,7 @@ export function uiInit(onDrawn: () => void): void {
   globals.stage.add(loadingLayer);
 
   // Images may have loaded before this UI subscribed to progress updates.
-  globals.imageLoader.progress();
+  imageLoader.progress();
 }
 
 function showImageLoadError(filePath: string) {

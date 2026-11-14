@@ -804,7 +804,7 @@ export function updateTerminationVotes(): void {
   }
 
   terminateButton.setImage(
-    globals.imageLoader!.get(
+    lobbyGlobals.imageLoader.get(
       store.getState().game.votes?.voted === true ? "skull_vtk" : "skull",
     ),
   );
@@ -818,7 +818,7 @@ function drawBackground() {
     y: 0,
     width: winW,
     height: winH,
-    image: globals.imageLoader!.get("background"),
+    image: lobbyGlobals.imageLoader.get("background"),
     listening: true,
   });
   background.on("mousemove", () => {
@@ -1233,7 +1233,7 @@ function drawBottomLeftButtons() {
       ...row(0),
       visible: !globals.state.finished,
     },
-    [globals.imageLoader!.get("replay")],
+    [lobbyGlobals.imageLoader.get("replay")],
   );
   replayButton.on("click tap", () => {
     if (globals.state.replay.segment === undefined) {
@@ -1395,7 +1395,7 @@ function drawDeck() {
       - gameInfoImageSize,
     width: gameInfoImageSize,
     height: gameInfoImageSize,
-    image: globals.imageLoader!.get("question-mark"),
+    image: lobbyGlobals.imageLoader.get("question-mark"),
     ...TEXT_SHADOW,
     shadowBlur: GAME_INFO_IMAGE.SHADOW_BLUR,
     listening: false,
@@ -1764,7 +1764,7 @@ function drawScoreArea() {
         y: (STRIKE_SQUARE.y + STRIKE_X.insetY) * winH,
         width: STRIKE_X.w * winW,
         height: STRIKE_X.h * winH,
-        image: globals.imageLoader!.get("x"),
+        image: lobbyGlobals.imageLoader.get("x"),
         opacity: 0,
         listening: true,
       },
@@ -1819,7 +1819,7 @@ function drawScoreArea() {
         height: STRIKE_SQUARE.h * winH,
         visible: globals.state.playing,
       },
-      [globals.imageLoader!.get("skull")],
+      [lobbyGlobals.imageLoader.get("skull")],
     );
     globals.elements.scoreArea.add(terminateButton);
     terminateButton.tooltipName = "kill";
@@ -1850,7 +1850,7 @@ function drawSpectators() {
     height: imageSize * winW,
     // (This is not a typo; we want it to have the same width and height.)
     align: "center",
-    image: globals.imageLoader!.get("eyes"),
+    image: lobbyGlobals.imageLoader.get("eyes"),
     ...TEXT_SHADOW,
     visible: false,
     listening: true,
@@ -1905,7 +1905,7 @@ function drawSharedReplay() {
     y: crownCenter.y - size / 2,
     width: size,
     height: size,
-    image: globals.imageLoader!.get("crown"),
+    image: lobbyGlobals.imageLoader.get("crown"),
     ...TEXT_SHADOW,
     visible: false,
     listening: true,
@@ -2217,7 +2217,7 @@ function drawDiscardArea() {
     height:
       (DISCARD_AREA.h - TRASH_CAN_INSET.top - TRASH_CAN_INSET.bottom) * winH,
     opacity: TRASH_CAN_OPACITY,
-    image: globals.imageLoader!.get("trashcan"),
+    image: lobbyGlobals.imageLoader.get("trashcan"),
     listening: false,
   });
   globals.layers.UI.add(trashcan);
@@ -2607,7 +2607,7 @@ function drawClueArea() {
       width: buttonW * winW,
       height: giveClueValues.h! * winH,
     },
-    globals.imageLoader!.get("flashlight"),
+    lobbyGlobals.imageLoader.get("flashlight"),
   );
   globals.elements.lowerClueArea.add(postClueEmpathyCheckbox);
   postClueEmpathyCheckbox.on("click tap", cluePreview.toggle);
@@ -3108,7 +3108,7 @@ function drawPauseArea() {
       width: button2W * winW,
       height: DIALOG.BUTTON_H * winH,
     },
-    [globals.imageLoader!.get("home")],
+    [lobbyGlobals.imageLoader.get("home")],
   );
   globals.elements.pauseArea.add(pauseLobbyButton);
   pauseLobbyButton.on("click tap", lobbyButtonClick);
@@ -3248,7 +3248,7 @@ function drawExtraAnimations() {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get("replay-forward-border"),
+    image: lobbyGlobals.imageLoader.get("replay-forward-border"),
     visible: false,
     listening: false,
   });
@@ -3259,7 +3259,7 @@ function drawExtraAnimations() {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get("replay-back-border"),
+    image: lobbyGlobals.imageLoader.get("replay-back-border"),
     visible: false,
     listening: false,
   });

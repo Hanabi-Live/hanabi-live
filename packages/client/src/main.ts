@@ -93,7 +93,7 @@ function init() {
   sounds.init();
 
   // Start preloading some images that we will need for when a game starts.
-  globals.imageLoader = new Loader();
+  globals.loader = new Loader();
 
   // Now that the UI is initialized, automatically login if the user has cached credentials.
   lobbyLogin.automaticLogin();

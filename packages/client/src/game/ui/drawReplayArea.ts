@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import * as hypothetical from "../hypothetical.ts";
@@ -190,8 +191,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         listening: true,
       },
       [
-        globals.imageLoader!.get("replay-back-full"),
-        globals.imageLoader!.get("replay-back-full-disabled"),
+        lobbyGlobals.imageLoader.get("replay-back-full"),
+        lobbyGlobals.imageLoader.get("replay-back-full-disabled"),
       ],
     );
     globals.elements.replayBackFullButton.on("click tap", replay.backFull);
@@ -207,8 +208,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-back"),
-        globals.imageLoader!.get("replay-back-disabled"),
+        lobbyGlobals.imageLoader.get("replay-back"),
+        lobbyGlobals.imageLoader.get("replay-back-disabled"),
       ],
     );
     globals.elements.replayBackButton.on("click tap", () => {
@@ -235,8 +236,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-forward"),
-        globals.imageLoader!.get("replay-forward-disabled"),
+        lobbyGlobals.imageLoader.get("replay-forward"),
+        lobbyGlobals.imageLoader.get("replay-forward-disabled"),
       ],
     );
     globals.elements.replayForwardButton.on("click tap", () => {
@@ -263,8 +264,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-forward-full"),
-        globals.imageLoader!.get("replay-forward-full-disabled"),
+        lobbyGlobals.imageLoader.get("replay-forward-full"),
+        lobbyGlobals.imageLoader.get("replay-forward-full-disabled"),
       ],
     );
     globals.elements.replayForwardFullButton.on(

@@ -6,7 +6,6 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi-live/game";
-import { globals } from "./Globals.ts";
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
 import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
@@ -23,6 +22,8 @@ let allowCloseModal = true;
 /** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
 let downtimeMessage: string | undefined;
 let currentModal: HTMLElement | undefined;
+/** The element that had focus before the modal opened, which gets focus back when it closes. */
+let lastActiveElement: HTMLElement | undefined;
 let confirmModalOnConfirm: (() => void) | undefined;
 let confirmModalOnCancel: (() => void) | undefined;
 let idleModalKeepPlaying: (() => void) | undefined;
@@ -152,7 +153,7 @@ export function showWarning(msg: string): void {
   }
 
   // Store the screen's active element.
-  globals.lastActiveElement = document.activeElement as HTMLElement;
+  lastActiveElement = document.activeElement as HTMLElement;
   showMessageModal({
     type: "warning",
     html: msg,
@@ -171,7 +172,7 @@ export function showIdleWarning(
     return;
   }
 
-  globals.lastActiveElement = document.activeElement as HTMLElement;
+  lastActiveElement = document.activeElement as HTMLElement;
   showMessageModal({
     type: "idle",
     deadline: Date.now() + remainingMs,
@@ -215,7 +216,7 @@ export function askForConfirmation(
   }
 
   // Store the screen's active element.
-  globals.lastActiveElement = document.activeElement as HTMLElement;
+  lastActiveElement = document.activeElement as HTMLElement;
   showMessageModal({
     type: "confirm",
     title,
@@ -329,8 +330,8 @@ export function closeModals(): void {
   }
   modalDialog.close();
 
-  if (globals.lastActiveElement !== undefined) {
-    globals.lastActiveElement.focus();
+  if (lastActiveElement !== undefined) {
+    lastActiveElement.focus();
   }
 
   const onCancel = confirmModalOnCancel;

@@ -53,7 +53,6 @@ afterAll(() => {
 vi.mock("./Globals.ts", () => ({
   globals: {
     errorOccurred: false,
-    lastActiveElement: undefined,
   },
 }));
 vi.mock("./game/reducers/noteIdentity.ts", () => ({}));

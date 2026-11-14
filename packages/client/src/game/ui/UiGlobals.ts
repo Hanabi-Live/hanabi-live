@@ -1,12 +1,6 @@
-import type {
-  GameAction,
-  GameMetadata,
-  Options,
-  Variant,
-} from "@hanabi-live/game";
+import type { GameMetadata, Options, Variant } from "@hanabi-live/game";
 import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
-import type { Loader } from "../../Loader.ts";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import { currentState, currentVariant } from "../gameSession.ts";
@@ -33,8 +27,6 @@ export class UiGlobals {
   stackBases: HanabiCard[] = [];
 
   // UI elements
-  imageLoader: Loader | undefined = undefined;
-
   layers: Layers = new Layers();
   elements: Elements = new Elements();
 
@@ -43,11 +35,6 @@ export class UiGlobals {
 
   cardImages = new ReadonlyMap<string, HTMLCanvasElement>();
   scaledCardImages = new Map<string, HTMLCanvasElement[]>();
-
-  // Replay feature
-
-  /** Contains all of the "gameEvent" messages for the game. */
-  replayLog: GameAction[] = [];
 
   /**
    * Used to keep track of which card the user is editing. Users can only update one note at a time

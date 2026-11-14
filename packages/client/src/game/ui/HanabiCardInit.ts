@@ -17,6 +17,7 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type * as KonvaUtil from "konva/lib/Util";
 import type { RectConfig } from "konva/lib/shapes/Rect";
+import { globals as lobbyGlobals } from "../../Globals.ts";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import type { Pips } from "../types/Pips.ts";
 import { globals } from "./UiGlobals.ts";
@@ -808,8 +809,8 @@ export function note(
         ? NOTE_INDICATOR_POSITION.y + CORNER_ELEMENT_OFFSET
         : NOTE_INDICATOR_POSITION.y) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("note"),
-    identitySourceImage: globals.imageLoader!.get("note-pencil"),
+    image: lobbyGlobals.imageLoader.get("note"),
+    identitySourceImage: lobbyGlobals.imageLoader.get("note-pencil"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: HALF_TURN_DEGREES,
@@ -831,7 +832,7 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
   const indicator = new Konva.Image({
     ...bottomLeftPosition(offsetCornerElements),
     align: "center",
-    image: globals.imageLoader!.get("critical"),
+    image: lobbyGlobals.imageLoader.get("critical"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: HALF_TURN_DEGREES,
@@ -853,7 +854,7 @@ export function questionMark(): Konva.Image {
     y: LARGE_ICON_Y,
     width: LARGE_ICON_SIZE,
     height: LARGE_ICON_SIZE,
-    image: globals.imageLoader!.get("question-mark2"),
+    image: lobbyGlobals.imageLoader.get("question-mark2"),
     visible: false,
   });
 }
@@ -864,7 +865,7 @@ export function exclamationMark(): Konva.Image {
     y: LARGE_ICON_Y,
     width: LARGE_ICON_SIZE,
     height: LARGE_ICON_SIZE,
-    image: globals.imageLoader!.get("exclamation-mark"),
+    image: lobbyGlobals.imageLoader.get("exclamation-mark"),
     visible: false,
   });
 }
@@ -875,7 +876,7 @@ export function ghost(): Konva.Image {
     y: LARGE_ICON_Y,
     width: LARGE_ICON_SIZE,
     height: LARGE_ICON_SIZE,
-    image: globals.imageLoader!.get("ghost"),
+    image: lobbyGlobals.imageLoader.get("ghost"),
     opacity: GHOST_OPACITY,
     visible: false,
   });
@@ -887,7 +888,7 @@ export function trashcan(): Konva.Image {
     y: LARGE_ICON_Y,
     width: TRASHCAN_SIZE.w,
     height: TRASHCAN_SIZE.h,
-    image: globals.imageLoader!.get("trashcan2"),
+    image: lobbyGlobals.imageLoader.get("trashcan2"),
     visible: false,
   });
 }
@@ -897,7 +898,7 @@ export function wrench(): Konva.Image {
     x: LARGE_ICON_CENTERED_X,
     y: WRENCH_Y,
     width: LARGE_ICON_SIZE,
-    image: globals.imageLoader!.get("wrench"),
+    image: lobbyGlobals.imageLoader.get("wrench"),
     visible: false,
     listening: false,
   });
@@ -909,7 +910,7 @@ export function ddaIndicatorTop(): Konva.Image {
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    image: globals.imageLoader!.get("dda"),
+    image: lobbyGlobals.imageLoader.get("dda"),
     visible: false,
     listening: false,
   });
@@ -919,7 +920,7 @@ export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
   const indicator = new Konva.Image({
     ...bottomLeftPosition(offsetCornerElements),
     align: "center",
-    image: globals.imageLoader!.get("dda"),
+    image: lobbyGlobals.imageLoader.get("dda"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     visible: false,
@@ -934,7 +935,7 @@ export function trashMiniIndicatorTop(): Konva.Image {
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    image: globals.imageLoader!.get("wastebasket"),
+    image: lobbyGlobals.imageLoader.get("wastebasket"),
     visible: false,
     listening: false,
   });
@@ -946,7 +947,7 @@ export function trashMiniIndicatorBottom(
   const indicator = new Konva.Image({
     ...bottomLeftPosition(offsetCornerElements),
     align: "center",
-    image: globals.imageLoader!.get("wastebasket"),
+    image: lobbyGlobals.imageLoader.get("wastebasket"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     visible: false,
