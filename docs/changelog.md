@@ -14,8 +14,6 @@ of the repository.
   narrows each hand by its own player's notes.
 - The emote and emoji picker, and the modals that ask for a turn, a card, an
   efficiency modifier, or a new replay leader, have a close button.
-- In the new game screen, the play stacks grow to fill the space beside the
-  hands, up to a larger size than before.
 
 ## November 12th, 2026
 
