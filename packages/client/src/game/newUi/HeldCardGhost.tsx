@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { CARD_CORNER_PER_WIDTH, CARD_HEIGHT_PER_WIDTH } from "./Card.tsx";
 import type { HeldCard } from "./useCardDrag.ts";
 
-/** How much larger the card is while lifted, and while over a drop target. */
+/** How much larger the card is while lifted, and while over a target that takes it. */
 const LIFTED_SCALE = 1.08;
 const AIMING_SCALE = 1.04;
 
@@ -230,7 +230,9 @@ export function HeldCardGhost({
       let targetY = pointerRef.current.y;
       let follow: Spring = FOLLOW_SPRING;
       let targetScale = LIFTED_SCALE;
-      if (current.zone !== undefined) {
+      // Over the discard pile when the team cannot discard, the card stays lifted, so that it does
+      // not look like it will drop.
+      if (current.zone === "play" || current.zone === "discard") {
         targetScale = AIMING_SCALE;
       }
       if (current.phase === "drop") {

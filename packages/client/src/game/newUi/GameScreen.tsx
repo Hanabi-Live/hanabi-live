@@ -459,7 +459,7 @@ export function GameScreen({
     if (canDiscard) {
       discardZoneState = held.zone === "discard" ? "hovered" : "available";
     } else {
-      discardZoneState = "unavailable";
+      discardZoneState = held.zone === "blocked" ? "blocked" : "unavailable";
     }
   }
 

@@ -196,8 +196,12 @@ export interface DiscardView {
   readonly rank: Rank | undefined;
 }
 
-/** The look of a drop target, which changes while the player drags a card. */
-export type ZoneState = "idle" | "available" | "hovered" | "unavailable";
+/**
+ * The look of a drop target, which changes while the player drags a card. A target that cannot take
+ * the card is "unavailable", and "blocked" while the card is over it.
+ */
+export type ZoneState =
+  "idle" | "available" | "hovered" | "unavailable" | "blocked";
 
 /**
  * Returns a callback ref that gives a drop target to `ref`, with a tooltip that names it. The
@@ -231,8 +235,14 @@ const zoneClasses: Record<ZoneState, string> = {
   idle: WELL_CLASS,
   available: `${WELL_CLASS} tw:inset-ring-2 tw:inset-ring-game-line`,
   hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
-  unavailable: `${WELL_CLASS} tw:opacity-60`,
+  // The discard pile dims its cards itself, so that its sign and label stay bright.
+  unavailable: WELL_CLASS,
+  blocked: WELL_CLASS,
 };
+
+function isRefusing(state: ZoneState): boolean {
+  return state === "unavailable" || state === "blocked";
+}
 
 function ZoneLabel({
   state,
@@ -249,13 +259,19 @@ function ZoneLabel({
 
   return (
     <span
-      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
-        state === "hovered"
+      className={`tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-20 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
+        // A target that refuses the card says why at its top edge, where the held card does not
+        // cover it.
+        isRefusing(state)
+          ? "tw:top-3 tw:-translate-x-1/2"
+          : "tw:top-1/2 tw:-translate-1/2"
+      } ${
+        state === "hovered" || state === "blocked"
           ? "tw:bg-clue tw:text-card-ink"
           : "tw:bg-game-text tw:text-card-ink"
       }`}
     >
-      {state === "unavailable" ? unavailableText : text}
+      {isRefusing(state) ? unavailableText : text}
     </span>
   );
 }
@@ -673,11 +689,15 @@ export const DiscardPile = forwardRef<
         {/* A faint trash can behind the cards names the pile without a heading. */}
         <i
           aria-hidden="true"
-          className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text tw:opacity-20"
+          className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
+            isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
+          }`}
           style={{ fontSize: cardWidth * 1.125 }}
         />
         <div
-          className="tw:relative tw:flex tw:flex-col"
+          className={`tw:relative tw:flex tw:flex-col ${
+            isRefusing(zoneState) ? "tw:opacity-60" : ""
+          }`}
           style={{ height: rowsHeight }}
         >
           {rows.map((row, rowIndex) => (
@@ -727,6 +747,7 @@ export const DiscardPile = forwardRef<
             </div>
           ))}
         </div>
+        {zoneState === "blocked" && <NoEntrySign />}
         <ZoneLabel
           state={zoneState}
           text="Discard"
@@ -736,6 +757,34 @@ export const DiscardPile = forwardRef<
     );
   },
 );
+
+/**
+ * The sign over the discard pile while the player holds a card over it and the team cannot discard.
+ * It is a circle with a slash, not an X, because an X on this screen is a strike. It is in the
+ * color of clues, because the team has too many clues to discard. It is larger than the held card,
+ * so that the card does not cover it. It fills the pile below the label.
+ */
+function NoEntrySign(): React.JSX.Element {
+  return (
+    <div className="tw:pointer-events-none tw:absolute tw:inset-x-3 tw:top-14 tw:bottom-3 tw:z-10">
+      <svg
+        aria-hidden="true"
+        className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]"
+        viewBox="0 0 100 100"
+      >
+        <circle
+          cx={50}
+          cy={50}
+          fill="none"
+          r={45}
+          stroke="currentColor"
+          strokeWidth={8}
+        />
+        <path d="M18.2 18.2 81.8 81.8" stroke="currentColor" strokeWidth={8} />
+      </svg>
+    </div>
+  );
+}
 
 /**
  * The box of the clue tokens and the strikes. Under the deck, the clue count is above the strikes,

@@ -7,7 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import { canDiscardNow, sendAction } from "./screenActions.ts";
 import { measure, toScreenPixels } from "./screenScale.ts";
 
-type DropZone = "play" | "discard";
+/**
+ * What is under the held card: a target that takes it, or the discard pile when the team cannot
+ * discard ("blocked").
+ */
+type DropZone = "play" | "discard" | "blocked";
 
 /**
  * What the held card does: it moves with the pointer, waits where the player dropped it for its
@@ -18,7 +22,7 @@ type HeldPhase = "drag" | "drop" | "return";
 export interface HeldCard {
   readonly order: CardOrder;
   readonly phase: HeldPhase;
-  /** The drop target under the pointer, while the card moves with it. */
+  /** The target under the pointer, while the card moves with it. */
   readonly zone: DropZone | undefined;
   /** Where the card was in the hand when the player pressed it, in the screen's CSS pixels. */
   readonly start: DOMRect;
@@ -129,6 +133,10 @@ export function useCardDrag(
   }, [stacked, handsElement]);
 
   useEffect(() => {
+    function discardZone(): DropZone {
+      return canDiscardNow() ? "discard" : "blocked";
+    }
+
     function zoneAt(x: number, y: number): DropZone | undefined {
       // Beside the hands, the whole half of the table is the target: everything to the left of the
       // hands plays the card, and everything to the right discards it, from the top of the screen
@@ -145,7 +153,7 @@ export function useCardDrag(
           return "play";
         }
         if (x > hands.right && x <= main.right) {
-          return "discard";
+          return discardZone();
         }
         return undefined;
       }
@@ -154,7 +162,7 @@ export function useCardDrag(
         return "play";
       }
       if (isInside(discardZoneRef.current, x, y)) {
-        return "discard";
+        return discardZone();
       }
       return undefined;
     }
@@ -198,7 +206,7 @@ export function useCardDrag(
           type: "play",
           order: current.order,
         });
-      } else if (zone === "discard" && canDiscardNow()) {
+      } else if (zone === "discard") {
         updateHeld({
           ...current,
           phase: "drop",
