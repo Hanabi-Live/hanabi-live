@@ -1019,7 +1019,8 @@ function getStates(): readonly State[] {
         await page.getByText(/^Not ready: Bob/u).waitFor();
       },
     },
-    // The leader of the shared replay opens the menu that passes the lead to someone else.
+    // The leader of the shared replay opens the menu that passes the lead to someone else, and
+    // points at the first person in it.
     {
       name: "new-ui-leader-menu",
       path: "/",
@@ -1034,6 +1035,10 @@ function getStates(): readonly State[] {
         cast.bobsGame().passLeader();
         await page.getByRole("button", { name: "Leader: You" }).click();
         await page.getByRole("menu").waitFor();
+      },
+      // The pointer is on the first person, to show that the names can be pressed.
+      hover: async (page) => {
+        await page.getByRole("menuitem").first().hover();
       },
     },
     // The leader of the shared replay points at the button that starts a hypothetical, which is
