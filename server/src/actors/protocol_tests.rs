@@ -552,8 +552,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 let events = h
                     .frames(index)
                     .into_iter()
-                    .filter(|(name, body)| name == "gameEvent" && body["event"]["type"] == "clue")
-                    .map(|(_, body)| body["event"].clone())
+                    .filter(|(name, _)| name == "gameEvent")
+                    .flat_map(|(_, body)| body["events"].as_array().unwrap().clone())
+                    .filter(|event| event["type"] == "clue")
                     .collect::<Vec<_>>();
                 ensure!(events.len() == 1, "Missing live clue event");
                 ensure!(

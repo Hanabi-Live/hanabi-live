@@ -65,8 +65,8 @@ function cardElements(root: HTMLElement): readonly HTMLElement[] {
 }
 
 /**
- * The server sends one move as several updates, a few milliseconds apart. Updates within this long
- * of the first one are part of the same move.
+ * The server relays a shared hypothetical's move as several messages, a few milliseconds apart.
+ * Updates within this long of the first one are part of the same move.
  */
 export const MOVE_BATCH_MILLISECONDS = 100;
 

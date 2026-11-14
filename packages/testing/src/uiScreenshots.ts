@@ -1712,7 +1712,10 @@ async function createCast(
       await viewer.receive(
         "gameEvent",
         SERVER_EVENT_SCHEMAS.gameEvent,
-        (data) => data.event.type === "turn" && data.event.turn === turn + 1,
+        (data) =>
+          data.events.some(
+            (event) => event.type === "turn" && event.turn === turn + 1,
+          ),
       );
     }
 

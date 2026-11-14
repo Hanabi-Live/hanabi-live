@@ -1189,16 +1189,18 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "clue": {
-          "type": "rank",
-          "rank": 5
-        },
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "clue": {
+            "type": "rank",
+            "rank": 5
+          },
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": true
   },
@@ -1208,12 +1210,14 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": true
   },
@@ -1223,13 +1227,15 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "clue": { "type": "rank" },
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "clue": { "type": "rank" },
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": true
   },
@@ -1239,16 +1245,18 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "clue": {
-          "type": "color",
-          "color": 0
-        },
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "clue": {
+            "type": "color",
+            "color": 0
+          },
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": true
   },
@@ -1258,16 +1266,18 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "clue": {
-          "type": "color",
-          "color": 6
-        },
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "clue": {
+            "type": "color",
+            "color": 6
+          },
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": false
   },
@@ -1277,16 +1287,18 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "clue",
-        "clue": {
-          "type": "rank",
-          "rank": 0
-        },
-        "receiverIndex": 1,
-        "orders": [3, 4],
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "clue",
+          "clue": {
+            "type": "rank",
+            "rank": 0
+          },
+          "receiverIndex": 1,
+          "orders": [3, 4],
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": false
   },
@@ -1296,11 +1308,13 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "gameOver",
-        "endCondition": "normal",
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "gameOver",
+          "endCondition": "normal",
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": false
   },
@@ -1310,15 +1324,17 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "draw",
-        "playerIndex": 0,
-        "order": 0,
-        "identity": {
-          "suitIndex": 0,
-          "rank": 7
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 0,
+          "identity": {
+            "suitIndex": 0,
+            "rank": 7
+          }
         }
-      }
+      ]
     },
     "valid": true
   },
@@ -1328,15 +1344,17 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "draw",
-        "playerIndex": 6,
-        "order": 0,
-        "identity": {
-          "suitIndex": 0,
-          "rank": 1
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 6,
+          "order": 0,
+          "identity": {
+            "suitIndex": 0,
+            "rank": 1
+          }
         }
-      }
+      ]
     },
     "valid": false
   },
@@ -1346,15 +1364,17 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "draw",
-        "playerIndex": 0,
-        "order": 66,
-        "identity": {
-          "suitIndex": 0,
-          "rank": 1
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 66,
+          "identity": {
+            "suitIndex": 0,
+            "rank": 1
+          }
         }
-      }
+      ]
     },
     "valid": false
   },
@@ -1364,15 +1384,17 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "draw",
-        "playerIndex": 0,
-        "order": 0,
-        "identity": {
-          "suitIndex": 6,
-          "rank": 1
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 0,
+          "identity": {
+            "suitIndex": 6,
+            "rank": 1
+          }
         }
-      }
+      ]
     },
     "valid": false
   },
@@ -1382,15 +1404,17 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "draw",
-        "playerIndex": 0,
-        "order": 0,
-        "identity": {
-          "suitIndex": 0,
-          "rank": 6
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 0,
+          "identity": {
+            "suitIndex": 0,
+            "rank": 6
+          }
         }
-      }
+      ]
     },
     "valid": false
   },
@@ -1400,11 +1424,13 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "gameOver",
-        "endCondition": "terminatedByPlayer",
-        "voters": [0, 6]
-      }
+      "events": [
+        {
+          "type": "gameOver",
+          "endCondition": "terminatedByPlayer",
+          "voters": [0, 6]
+        }
+      ]
     },
     "valid": false
   },
@@ -1414,11 +1440,13 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "gameOver",
-        "endCondition": "victory",
-        "playerIndex": 0
-      }
+      "events": [
+        {
+          "type": "gameOver",
+          "endCondition": "victory",
+          "playerIndex": 0
+        }
+      ]
     },
     "valid": false
   },
@@ -1428,11 +1456,13 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "playerTimes",
-        "playerTimesMs": [1000],
-        "durationMs": 1000
-      }
+      "events": [
+        {
+          "type": "playerTimes",
+          "playerTimesMs": [1000],
+          "durationMs": 1000
+        }
+      ]
     },
     "valid": false
   },
@@ -1600,10 +1630,12 @@
     "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "event": {
-        "type": "turn",
-        "turn": -1
-      }
+      "events": [
+        {
+          "type": "turn",
+          "turn": -1
+        }
+      ]
     },
     "valid": false
   },

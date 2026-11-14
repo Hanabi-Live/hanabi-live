@@ -4,7 +4,7 @@ use super::{
     chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, table_name},
-    wire::{game_event, game_events},
+    wire::{game_event_message, game_events},
 };
 use crate::errors::CommandError;
 use crate::transport::test_frame;
@@ -158,12 +158,14 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             }
         }
         assert_eq!(body, expected);
-        for (event, expected) in list.iter().zip(body.as_array().unwrap()) {
-            let encoded = test_frame("gameEvent", game_event(TableId::new(42).unwrap(), event));
-            let (command, body) =
-                crate::transport::event(&encoded).context("Missing game event")?;
-            assert_eq!(command, "gameEvent");
-            assert_eq!(body, json!({"tableId":42,"event":expected}));
+        let encoded = test_frame(
+            "gameEvent",
+            game_event_message(TableId::new(42).unwrap(), game_events(&list)),
+        );
+        let (command, framed) = crate::transport::event(&encoded).context("Missing game event")?;
+        assert_eq!(command, "gameEvent");
+        assert_eq!(framed, json!({"tableId":42,"events":body}));
+        for expected in body.as_array().unwrap() {
             if expected["type"] == "draw" {
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
                 let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();

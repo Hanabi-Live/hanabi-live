@@ -6,13 +6,13 @@ pub(super) fn player_clock(ms: i64) -> hanabi_protocol::PlayerClock {
     hanabi_protocol::PlayerClock::saturating(ms)
 }
 
-pub(crate) fn game_event(
+pub(crate) fn game_event_message(
     table: TableId,
-    event: &hanabi_engine::EngineEvent,
+    events: Vec<GameEvent>,
 ) -> hanabi_protocol::GameEventMessage {
     hanabi_protocol::GameEventMessage {
         table_id: table,
-        event: wire_event(event),
+        events,
     }
 }
 

@@ -956,11 +956,12 @@ export function GameScreen({
     };
   }, []);
 
-  // Move the cards when the game advances or the replay steps through a turn. The server sends one
-  // move as several updates a few milliseconds apart (such as a play, then a draw, then the turn),
-  // and the screen renders after each. So the updates within a short window count as one move:
-  // each one starts the cards again from where they were before the move began, toward their newest
-  // places. This runs before the page is painted, so the cards never flash in their new places.
+  // Move the cards when the game advances or the replay steps through a turn. A game's move arrives
+  // in one message, but a shared hypothetical's move arrives as several (such as a play, then a
+  // draw, then the turn), and the screen renders after each. So the updates within a short window
+  // count as one move: each one starts the cards again from where they were before the move began,
+  // toward their newest places. This runs before the page is painted, so the cards never flash in
+  // their new places.
   const rootRef = useRef<HTMLDivElement>(null);
 
   // The whole screen grows with the window (see "screenScale.ts"). The card moves below measure

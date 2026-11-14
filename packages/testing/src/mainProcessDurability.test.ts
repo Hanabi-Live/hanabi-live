@@ -164,10 +164,13 @@ databaseDescribe("Rust actor durability and ownership", () => {
           await other.receive(
             "gameEvent",
             SERVER_EVENT_SCHEMAS.gameEvent,
-            (event) =>
-              event.event.type === "play"
-              || event.event.type === "discard"
-              || event.event.type === "misplay",
+            (data) =>
+              data.events.some(
+                (event) =>
+                  event.type === "play"
+                  || event.type === "discard"
+                  || event.type === "misplay",
+              ),
           );
           expect(
             active.frames.some((message) => message.startsWith("gameEvent ")),

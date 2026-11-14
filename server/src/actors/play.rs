@@ -2,7 +2,7 @@ use super::table::{game_mut, wrong_phase};
 use super::{
     Attendance, GameInfo, Status, TableActor,
     chat::table_notice,
-    wire::{game_event, game_events},
+    wire::{game_event_message, game_events},
 };
 use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
@@ -141,16 +141,17 @@ impl TableActor {
                     shadowing_player_index: a.shadow.map(i32::from),
                 }
             };
-            for event in hanabi_engine::events_for_recipient(
+            let events = hanabi_engine::events_for_recipient(
                 s.game.state(),
                 recipient,
                 Some(&s.game.events[from..]),
-            )? {
+            )?;
+            if !events.is_empty() {
                 e.messages.push((
                     a.session.clone(),
                     frame(
                         hanabi_protocol::event::GAME_EVENT,
-                        game_event(self.table.id, &event),
+                        game_event_message(self.table.id, game_events(&events)),
                     ),
                 ));
             }

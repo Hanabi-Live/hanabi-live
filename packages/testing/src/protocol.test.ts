@@ -49,11 +49,11 @@ test.each(cases)("$direction: $name", (entry) => {
 test("hidden clue frames omit the clue instead of marking it with -1", () => {
   const event = { type: "clue", playerIndex: 0, receiverIndex: 1, orders: [5] };
   const schema = SERVER_EVENT_SCHEMAS.gameEvent;
-  expect(schema.safeParse({ tableId: 1, event }).success).toBe(true);
+  expect(schema.safeParse({ tableId: 1, events: [event] }).success).toBe(true);
   expect(
     schema.safeParse({
       tableId: 1,
-      event: { ...event, clue: { type: -1, rank: -1 } },
+      events: [{ ...event, clue: { type: -1, rank: -1 } }],
     }).success,
   ).toBe(false);
 });

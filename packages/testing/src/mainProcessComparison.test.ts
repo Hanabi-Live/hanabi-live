@@ -183,8 +183,10 @@ databaseDescribe("normal-server protocol workload", () => {
               await peer.receive(
                 "gameEvent",
                 SERVER_EVENT_SCHEMAS.gameEvent,
-                (event) =>
-                  event.event.type === "play" && event.event.order === order,
+                (data) =>
+                  data.events.some(
+                    (event) => event.type === "play" && event.order === order,
+                  ),
               );
               samples.action.push(performance.now() - start);
               if (turn === 4) {

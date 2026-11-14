@@ -312,13 +312,15 @@ function setNotes(playerNotes: GameState["notes"]) {
   serverUpdates.drawAllNotes();
 }
 
-// Used when the game state changes.
+// The events of one move, such as a play, the draw after it, and the next turn. They are applied in
+// the same task, so React draws the move once.
 gameCommands.set("gameEvent", (data) => {
   // A turn restarts the server's idle timer.
   modals.closeIdleWarning();
 
-  // Update the game state.
-  store.dispatch(gameUpdated(toGameAction(data.event)));
+  for (const event of data.events) {
+    store.dispatch(gameUpdated(toGameAction(event)));
+  }
 });
 
 /**

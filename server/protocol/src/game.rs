@@ -301,11 +301,14 @@ pub enum GameEvent {
     PlayerTimes(PlayerTimesEvent),
 }
 
+/// The events of one action, such as a play, the draw after it, and the next turn. A client applies
+/// them together, as one move.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameEventMessage {
     pub table_id: TableId,
-    pub event: GameEvent,
+    #[schemars(length(min = 1))]
+    pub events: Vec<GameEvent>,
 }
 
 /// What a client shows of a game after its setup (`GameInit`), as the recipient may see it: the

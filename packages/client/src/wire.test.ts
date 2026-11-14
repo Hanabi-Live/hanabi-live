@@ -8,8 +8,14 @@ import { toCardIdentity, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
 function event(data: unknown) {
-  return SERVER_EVENT_SCHEMAS.gameEvent.parse({ tableId: 1, event: data })
-    .event;
+  const [parsed] = SERVER_EVENT_SCHEMAS.gameEvent.parse({
+    tableId: 1,
+    events: [data],
+  }).events;
+  if (parsed === undefined) {
+    throw new Error("The message has no event.");
+  }
+  return parsed;
 }
 
 describe("server game events", () => {

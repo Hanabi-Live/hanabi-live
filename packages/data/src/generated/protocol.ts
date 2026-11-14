@@ -303,8 +303,16 @@ export const emptySchema = z.strictObject({}).readonly();
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string().min(1)).readonly() })
   .readonly();
+
+/**
+ * The events of one action, such as a play, the draw after it, and the next turn. A client applies
+ * them together, as one move.
+ */
 export const gameEventMessageSchema = z
-  .strictObject({ event: gameEventSchema, tableId: tableIdSchema })
+  .strictObject({
+    events: z.array(gameEventSchema).min(1).readonly(),
+    tableId: tableIdSchema,
+  })
   .readonly();
 
 /**
