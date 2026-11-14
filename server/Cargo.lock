@@ -851,6 +851,7 @@ dependencies = [
  "hanabi_protocol",
  "hex",
  "hmac",
+ "http-body-util",
  "hyper-util",
  "minijinja",
  "percent-encoding",

@@ -81,6 +81,7 @@ dotenvy = "0.15"
 futures-util = "0.3"
 hmac = "0.13"
 hex = "0.4"
+http-body-util = "0.1"
 hyper-util = { version = "0.1", features = ["tokio"] }
 hanabi_engine = { path = "engine" }
 hanabi_protocol = { path = "protocol" }

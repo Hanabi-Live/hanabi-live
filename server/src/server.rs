@@ -12,6 +12,8 @@ use crate::{
     web::{App, router},
 };
 use anyhow::{Context, Result, bail, ensure};
+use chrono::Utc;
+use http_body_util::BodyExt;
 use std::{
     net::{SocketAddr, TcpListener},
     path::Path,
@@ -73,8 +75,8 @@ pub fn main() -> Result<()> {
         None
     };
     drop(runtime);
-    if let Some(quiet) = replace {
-        restart::replace(&root, quiet)?;
+    if let Some(replacement) = replace {
+        restart::replace(&root, &replacement)?;
     }
     Ok(())
 }
@@ -102,7 +104,7 @@ const TLS_HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(10);
 const LOBBY_READ_CANCEL_TIMEOUT: Duration = Duration::from_millis(250);
 /// How long shutdown waits for every game to save before it reports a non-durable stop.
 const GAME_DRAIN_DEADLINE: Duration = Duration::from_secs(120);
-/// How long listeners have to finish their connections once shutdown closes them.
+/// How long shutdown waits for the responses in progress to end.
 const LISTENER_SHUTDOWN_GRACE: Duration = Duration::from_secs(30);
 
 fn http_settings<A>(server: &mut axum_server::Server<SocketAddr, A>) {
@@ -120,15 +122,32 @@ fn http_settings<A>(server: &mut axum_server::Server<SocketAddr, A>) {
         .keep_alive_timeout(HTTP2_KEEP_ALIVE_TIMEOUT);
 }
 
-fn request_timeout(router: axum::Router) -> axum::Router {
-    router.layer(tower_http::timeout::TimeoutLayer::with_status_code(
-        axum::http::StatusCode::REQUEST_TIMEOUT,
-        REQUEST_TIMEOUT,
-    ))
+/// Adds the request timeout. Each request also holds a token of `requests` until its response
+/// ends, so that shutdown waits for responses but not for idle connections.
+fn http_layers(router: axum::Router, requests: &TaskTracker) -> axum::Router {
+    let requests = requests.clone();
+    router
+        .layer(tower_http::timeout::TimeoutLayer::with_status_code(
+            axum::http::StatusCode::REQUEST_TIMEOUT,
+            REQUEST_TIMEOUT,
+        ))
+        .layer(axum::middleware::from_fn(
+            move |request: axum::extract::Request, next: axum::middleware::Next| {
+                let token = requests.token();
+                async move {
+                    next.run(request).await.map(|body| {
+                        axum::body::Body::new(body.map_frame(move |frame| {
+                            let _response_in_progress = &token;
+                            frame
+                        }))
+                    })
+                }
+            },
+        ))
 }
 
-/// Runs the server. When it stops to restart, returns whether the restart has no reason.
-async fn run(config: Config, version: String) -> Result<Option<bool>> {
+/// Runs the server. When it stops to restart, returns how to replace this process.
+async fn run(config: Config, version: String) -> Result<Option<restart::Replacement>> {
     let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
     let mut interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
     let tls_config = tls::configuration(&config).await?;
@@ -200,6 +219,7 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
     );
     let mut failures = Vec::new();
     let mut handles = Vec::new();
+    let requests = TaskTracker::new();
     let mut services = JoinSet::new();
     let startup: Result<()> = async {
         let public_handle = axum_server::Handle::new();
@@ -210,7 +230,8 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
         } else {
             routes
         };
-        let service = request_timeout(routes).into_make_service_with_connect_info::<SocketAddr>();
+        let service =
+            http_layers(routes, &requests).into_make_service_with_connect_info::<SocketAddr>();
         if let Some(tls) = tls_config {
             let mut server = axum_server::from_tcp_rustls(public, tls)?
                 .map(|acceptor| {
@@ -232,7 +253,7 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
         handles.push(operations_handle.clone());
         let mut server = axum_server::from_tcp(operations_listener)?.handle(operations_handle);
         http_settings(&mut server);
-        let service = request_timeout(operations::router(control.clone()))
+        let service = http_layers(operations::router(control.clone()), &requests)
             .into_make_service_with_connect_info::<SocketAddr>();
         services.spawn(async move { ("operations", server.serve(service).await) });
         if let Some(redirect) = redirect {
@@ -240,11 +261,10 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
             handles.push(redirect_handle.clone());
             let mut server = axum_server::from_tcp(redirect)?.handle(redirect_handle);
             http_settings(&mut server);
-            let service = request_timeout(tls::redirect_router(
-                &config.root,
-                &config.domain,
-                address.port(),
-            ))
+            let service = http_layers(
+                tls::redirect_router(&config.root, &config.domain, address.port()),
+                &requests,
+            )
             .into_make_service_with_connect_info::<SocketAddr>();
             services.spawn(async move { ("HTTP redirect", server.serve(service).await) });
         }
@@ -295,8 +315,10 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
             service=services.join_next()=>StopReason::Failure(format!("HTTP listener exited unexpectedly: {service:?}"))
         }
     };
+    // Players are turned away from now on, so a restart's downtime starts here.
     let replace = match &reason {
-        StopReason::Restart(message) => Some(message.is_none()),
+        StopReason::Restart(None) => Some(restart::Replacement::Quiet(Utc::now())),
+        StopReason::Restart(Some(_)) => Some(restart::Replacement::Announced),
         _ => None,
     };
     match &reason {
@@ -327,8 +349,20 @@ async fn run(config: Config, version: String) -> Result<Option<bool>> {
         ),
     }
     lifecycle.shut_down();
-    for handle in handles {
+    for handle in &handles {
         handle.graceful_shutdown(Some(LISTENER_SHUTDOWN_GRACE));
+    }
+    // A client that has gone away can keep an idle HTTP/2 connection open until the grace ends,
+    // because the connection waits for the client to acknowledge that it closes. So once every
+    // response has ended, the remaining connections close at once.
+    requests.close();
+    if tokio::time::timeout(LISTENER_SHUTDOWN_GRACE, requests.wait())
+        .await
+        .is_ok()
+    {
+        for handle in &handles {
+            handle.shutdown();
+        }
     }
     while let Some(service) = services.join_next().await {
         match service {

@@ -56,16 +56,27 @@ pub fn quiet_restart() -> Option<DateTime<Utc>> {
         .map(|time| time.with_timezone(&Utc))
 }
 
-/// Replaces this process with the installed executable. A `quiet` restart has no reason.
-pub fn replace(root: &Path, quiet: bool) -> Result<()> {
+/// A restart that replaces this process.
+pub enum Replacement {
+    /// A restart with a reason. The lobby chat records when it began.
+    Announced,
+    /// A restart without a reason, which began to turn players away at this time.
+    Quiet(DateTime<Utc>),
+}
+
+/// Replaces this process with the installed executable.
+pub fn replace(root: &Path, replacement: &Replacement) -> Result<()> {
     use std::os::unix::process::CommandExt;
     let executable = executable(root)?;
     let mut command = Command::new(executable);
     command.current_dir(root);
-    if quiet {
-        command.env(QUIET_RESTART_VARIABLE, Utc::now().to_rfc3339());
-    } else {
-        command.env_remove(QUIET_RESTART_VARIABLE);
+    match replacement {
+        Replacement::Quiet(down) => {
+            command.env(QUIET_RESTART_VARIABLE, down.to_rfc3339());
+        }
+        Replacement::Announced => {
+            command.env_remove(QUIET_RESTART_VARIABLE);
+        }
     }
     Err(command.exec()).context("Native process replacement failed")
 }
