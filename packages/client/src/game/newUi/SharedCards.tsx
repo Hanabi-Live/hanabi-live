@@ -142,18 +142,19 @@ export const PlayArea = forwardRef<
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
 
     return (
-      // One column: the stacks, the deck, and the tokens. When the columns stack, the stacks and
-      // the deck are one row, with the tokens below it.
-      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3">
+      // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
+      // the tokens are at the bottom, level with the bottom of the controls below the hands. When
+      // the columns stack, the stacks and the deck are one row, with the tokens below it.
+      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-[12px]">
         <div className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start tw:narrow-980:gap-3">
           <section
             aria-label="Play stacks"
-            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:self-stretch tw:rounded-[18px] tw:px-4.5 tw:py-[16px] ${zoneClasses[zoneState]}`}
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
             ref={ref}
           >
-            <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
+            <div className="tw:flex tw:flex-col tw:gap-[8px] tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
               {stacks.map((stack) => {
                 const suit = variant.suits[stack.suitIndex];
                 const name = suit?.displayName ?? "";
@@ -480,18 +481,19 @@ export const DiscardPile = forwardRef<
  * small, one above the other, so that the column stays narrow. When the columns stack, they are
  * side by side and share their height, so that their values line up.
  */
-const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:items-center tw:justify-center tw:rounded-[14px] tw:px-1.5 tw:py-2 tw:narrow-980:flex-1 tw:narrow-980:rounded-[18px] tw:narrow-980:px-3 tw:narrow-980:py-5 ${WELL_CLASS}`;
+const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:items-center tw:justify-center tw:rounded-[14px] tw:px-1.5 tw:py-[10px] tw:narrow-980:flex-1 tw:narrow-980:rounded-[18px] tw:narrow-980:px-3 tw:narrow-980:py-5 ${WELL_CLASS}`;
 
 /** The row of a value, as tall as the strike boxes, so that the two values line up. */
 const TOKEN_VALUE_CLASS =
-  "tw:flex tw:h-[30px] tw:items-center tw:narrow-980:h-[32px]";
+  "tw:flex tw:h-[34px] tw:items-center tw:narrow-980:h-[32px]";
 
 /**
  * The height of the tokens under the deck, with the gap above them. It is the sum of the bubbles'
- * classes: two rows of 30 pixels with 8 pixels of padding above and below, and gaps of 12 and 14
- * pixels.
+ * classes, which are in pixels, not "rem", so that this sum stays right: two rows of 34 pixels with
+ * 10 pixels of padding above and below, and gaps of 12 and 20 pixels. The gap between the bubbles
+ * leaves room for the badge on the bottom edge of the clues.
  */
-export const TABLE_TOKENS_HEIGHT = 12 + 2 * (30 + 16) + 14;
+export const TABLE_TOKENS_HEIGHT = 12 + 2 * (34 + 20) + 20;
 
 /**
  * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
@@ -501,7 +503,7 @@ function ClueTokenIcon(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className="tw:size-[20px] tw:text-clue tw:narrow-980:size-[24px]"
+      className="tw:size-[24px] tw:text-clue"
       viewBox="0 0 24 24"
     >
       <circle cx={12} cy={12} fill="currentColor" r={11} />
@@ -554,7 +556,7 @@ function BombIcon(): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className="tw:size-[20px] tw:narrow-980:mr-0.5 tw:narrow-980:size-[26px]"
+      className="tw:size-[22px] tw:narrow-980:mr-0.5 tw:narrow-980:size-[26px]"
       viewBox="0 0 24 24"
     >
       <path
@@ -611,7 +613,7 @@ function StrikeMark({
   return (
     <svg
       aria-hidden="true"
-      className={`tw:size-[15px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
+      className={`tw:size-[17px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
       viewBox="0 0 24 24"
     >
       <path
@@ -665,7 +667,7 @@ export function TableTokens({
   readonly onShowStrike: (segment: number) => void;
 }): React.JSX.Element {
   return (
-    <div className="tw:flex tw:shrink-0 tw:flex-col tw:gap-3.5 tw:self-stretch tw:narrow-980:flex-row tw:narrow-980:gap-3">
+    <div className="tw:mt-auto tw:flex tw:shrink-0 tw:flex-col tw:gap-[20px] tw:self-stretch tw:narrow-980:flex-row tw:narrow-980:gap-3">
       <section
         aria-label="Clue tokens"
         className={TOKEN_BUBBLE_CLASS}
@@ -677,7 +679,7 @@ export function TableTokens({
         <div className={`${TOKEN_VALUE_CLASS} tw:gap-1.5 tw:narrow-980:gap-2`}>
           <ClueTokenIcon />
           <span
-            className={`tw:text-[30px] tw:leading-none tw:narrow-980:text-[34px] tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
+            className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
             // A spark flies to the count when a completed stack gives a clue back (see
             // "scoreMotion.ts").
             data-clue-count
@@ -718,7 +720,7 @@ export function TableTokens({
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
-            const className = `tw:box-border tw:flex tw:size-[20px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+            const className = `tw:box-border tw:flex tw:size-[22px] tw:items-center tw:justify-center tw:rounded-md tw:narrow-980:size-[32px] tw:narrow-980:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"

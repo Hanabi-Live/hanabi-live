@@ -61,6 +61,8 @@ of the repository.
   deck, so that the clue log is taller.
 - In the new game screen, the replay controls are shorter, and the hands of a
   finished game get the space.
+- In the new game screen, the clue tokens and the strikes are larger, and their
+  bottom is level with the bottom of the controls below the hands.
 
 ## November 12th, 2026
 

@@ -158,7 +158,8 @@ const HAND_BOX_HORIZONTAL_PADDING = 32;
 
 /**
  * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
- * deck, the edges under the top of the deck, and the tokens under it.
+ * deck, the edges under the top of the deck, and the tokens under it. The classes of these gaps are
+ * in pixels, not "rem", so that this sum stays right.
  */
 const PLAY_AREA_OTHER_HEIGHT =
   2 * 16 + 12 + DECK_PILE_DEPTH + TABLE_TOKENS_HEIGHT;
