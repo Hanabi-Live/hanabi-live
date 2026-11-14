@@ -160,8 +160,7 @@ function SignIn() {
     <section className="box align-center" id="sign-in">
       <h3>Sign In / Create Account</h3>
       <p>
-        To create a new account, sign in with a new username and a password,
-        then confirm it.
+        To create a new account, sign in with a new username and a password.
         <br />
         Do <strong>NOT</strong> reuse any of your{" "}
         <a
