@@ -7,8 +7,10 @@
     "types": ["bun"],
     "rootDir": ".",
 
-    // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
-    // conservative; the project targets browsers / Node.js within a 2 year time-frame.
+    // "target" specifies the ECMAScript target version. Keep it in lockstep with Vite's build
+    // target: the newest version that its oldest browser (now Safari 16.4) fully supports. The
+    // "game" and "data" packages get their built-in types from it, and the client bundles them.
+    // When it reaches ES2024, turn on "regexp/require-unicode-sets-regexp" in ESLint.
     "target": "ES2022",
 
     // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is
