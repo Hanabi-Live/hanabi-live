@@ -327,7 +327,7 @@ export function CluePanel({
       }`}
     >
       {!canClue && (
-        <div className="tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:px-4 tw:text-center tw:text-[18px] tw:font-semibold tw:text-game-muted tw:narrow-980:static tw:narrow-980:justify-start tw:narrow-980:px-0 tw:narrow-980:text-left tw:narrow-980:text-[15px] tw:narrow-980:font-normal">
+        <div className="tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:px-4 tw:text-center tw:text-[18px] tw:font-semibold tw:text-game-muted tw:narrow-980:static tw:narrow-980:justify-start tw:narrow-980:px-0 tw:narrow-980:text-left tw:narrow-980:text-[15px] tw:narrow-980:font-normal tw:select-none">
           {waitingText}
         </div>
       )}

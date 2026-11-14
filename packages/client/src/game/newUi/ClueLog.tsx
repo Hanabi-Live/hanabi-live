@@ -157,7 +157,7 @@ export function ClueLog({
         <div className="tw:pt-3" />
       )}
       {rows.length === 0 ? (
-        <p className="tw:m-0 tw:px-4.5 tw:py-2 tw:text-[14px] tw:text-game-muted">
+        <p className="tw:m-0 tw:px-4.5 tw:py-2 tw:text-[14px] tw:text-game-muted tw:select-none">
           {filtered ? "No clues about this card yet." : "No clues yet."}
         </p>
       ) : (
