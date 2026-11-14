@@ -246,19 +246,12 @@ function sendText(room: string, msgRaw: string) {
     roomId = `table${globals.joinedTableId}`;
   }
 
-  // Add the chat message to the typed history so that we can use the up arrow later. (But only if
-  // it isn't in the history already.)
-  const index = typedChatHistory.indexOf(msg);
-  if (index !== -1) {
-    typedChatHistory.splice(index, 1);
-  }
-  typedChatHistory.unshift(msg);
-
-  // Prevent the typed history from getting too large.
-  if (typedChatHistory.length > TYPED_HISTORY_MAX_LENGTH) {
-    // Pop off the final element.
-    typedChatHistory.pop();
-  }
+  // Add the chat message to the start of the typed history so that we can use the up arrow later,
+  // and remove its older copy. Keep the history at its maximum length.
+  typedChatHistory = [
+    msg,
+    ...typedChatHistory.filter((typedMsg) => typedMsg !== msg),
+  ].slice(0, TYPED_HISTORY_MAX_LENGTH);
 
   // Save the typed chat history to local storage (cookie).
   localStorage.setItem(
@@ -270,11 +263,9 @@ function sendText(room: string, msgRaw: string) {
   typedChatHistoryBrowse = undefined;
 
   // Check for chat commands.
-  const args = msg.split(" ");
-  const firstArg = args[0];
+  const [firstArg, ...args] = msg.split(" ");
   if (firstArg !== undefined && firstArg.startsWith("/")) {
     const command = trimPrefix(firstArg, "/").toLowerCase();
-    args.shift(); // Remove the command from the rest of the arguments.
 
     const chatCommandFunction = chatCommands.get(command);
     if (chatCommandFunction !== undefined) {

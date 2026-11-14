@@ -346,17 +346,15 @@ export function planHypotheticalAction(
         rank,
       }),
     };
-    if (failed) {
-      actions.push({
-        type: "misplay",
-        ...movedCard,
-      });
-    } else {
-      actions.push({
-        type: actionType,
-        ...movedCard,
-      });
-    }
+    const moveAction: HypotheticalGameAction = failed
+      ? {
+          type: "misplay",
+          ...movedCard,
+        }
+      : {
+          type: actionType,
+          ...movedCard,
+        };
 
     if (gameState.deck.length < context.cardIdentities.length) {
       const nextCardOrder = gameState.deck.length as CardOrder;
@@ -376,10 +374,12 @@ export function planHypotheticalAction(
         && intent.order === nextCardOrder;
       if (isBottomDeckAction) {
         // The final card must exist in state before it can be played or discarded.
-        actions.unshift(drawAction);
+        actions.push(drawAction, moveAction);
       } else {
-        actions.push(drawAction);
+        actions.push(moveAction, drawAction);
       }
+    } else {
+      actions.push(moveAction);
     }
   } else if (intent.type === "passTurn") {
     actions.push({

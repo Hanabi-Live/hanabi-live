@@ -33,10 +33,7 @@ export class MultiFitText extends Konva.Group {
   }
 
   setMultiText(text: string): void {
-    if (this.smallHistory.length >= this.maxLines) {
-      this.smallHistory.shift();
-    }
-    this.smallHistory.push(text);
+    this.smallHistory = [...this.smallHistory, text].slice(-this.maxLines);
 
     // Performance optimization: setText on the children is slow, so do not actually do it until its
     // time to display things. We also have to call refreshText after any time we manipulate replay

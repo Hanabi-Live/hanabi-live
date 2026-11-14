@@ -2453,9 +2453,9 @@ function compareStyles(compare: boolean): readonly string[] {
           ? 0
           : [...current.parentElement.children].indexOf(current);
       const id = current.id === "" ? "" : `#${current.id}`;
-      parts.unshift(`${current.tagName.toLowerCase()}${id}:${index}`);
+      parts.push(`${current.tagName.toLowerCase()}${id}:${index}`);
     }
-    return parts.join(" > ");
+    return parts.toReversed().join(" > ");
   }
   for (const element of [
     document.documentElement,
