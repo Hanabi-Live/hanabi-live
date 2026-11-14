@@ -22,9 +22,6 @@ export const hanabiConfigBase = defineConfig(
       // Enforce the "normal" function style throughout the entire project.
       "func-style": ["error", "declaration"],
 
-      // Unicode code point escapes are enforced by Unicorn, including values below 256.
-      "regexp/hexadecimal-escape": "off",
-
       // The client uses positional captures in URL, chat, and note parsers.
       "regexp/prefer-named-capture-group": "off",
 
