@@ -27,8 +27,13 @@ const MAX_BLOCKED_WAIT: Duration = Duration::from_secs(10);
 /// How often `apply_watched` looks for queries that the migration blocks.
 const BLOCKED_POLL_INTERVAL: Duration = Duration::from_secs(1);
 
-/// The command that brings a database to `SCHEMA_VERSION`.
-pub const APPLY_COMMAND: &str = "hanabi-live migrate apply";
+/// The command that brings a database to `SCHEMA_VERSION`. A debug build runs from a source
+/// checkout, where `bun run dev` builds the server and there is no `hanabi-live` binary to run.
+pub const APPLY_COMMAND: &str = if cfg!(debug_assertions) {
+    "cargo run --manifest-path server/Cargo.toml -- migrate apply"
+} else {
+    "hanabi-live migrate apply"
+};
 
 fn migrator() -> Migrator {
     let mut migrator = sqlx::migrate!("../install/migrations");
