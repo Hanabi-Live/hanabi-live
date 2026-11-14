@@ -248,6 +248,7 @@ export const PlayArea = forwardRef<
                           <CardNote notes={notes} order={stack.topOrder}>
                             <CardFace
                               colorblindMode={colorblindMode}
+                              note={notes.notesHtml.has(stack.topOrder)}
                               rank={stack.topRank}
                               suitIndex={stack.suitIndex}
                               variant={variant}
@@ -534,6 +535,7 @@ export const DiscardPile = forwardRef<
                   >
                     <CardFace
                       colorblindMode={colorblindMode}
+                      note={notes.notesHtml.has(card.order)}
                       rank={card.rank}
                       suitIndex={card.suitIndex}
                       variant={variant}

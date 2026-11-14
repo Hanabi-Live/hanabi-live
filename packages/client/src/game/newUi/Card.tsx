@@ -90,6 +90,9 @@ interface CardFaceProps {
   readonly trash?: boolean;
   readonly trashIcon?: boolean;
 
+  /** Whether the card has a note that the viewer can read. */
+  readonly note?: boolean;
+
   /** Whether a clued card sits higher than the others, as it does in a hand. */
   readonly raiseClued?: boolean;
 
@@ -209,9 +212,30 @@ const STATUS_TOOLTIP = {
   trash: "Known trash. This card can never be played.",
 } as const;
 
+/** The size of a badge in the corner of a card, and its gap from the edges, per card width. */
+const BADGE_SIZE_PER_WIDTH = 0.3;
+const BADGE_INSET_PER_WIDTH = 0.06;
+
+/** The style of a round badge in a corner of a card. */
+function getBadgeStyle(
+  width: number,
+  corner: "topRight" | "bottomLeft",
+): React.CSSProperties {
+  const inset = width * BADGE_INSET_PER_WIDTH;
+  return {
+    ...(corner === "topRight"
+      ? { right: inset, top: inset }
+      : { left: inset, bottom: inset }),
+    width: width * BADGE_SIZE_PER_WIDTH,
+    height: width * BADGE_SIZE_PER_WIDTH,
+    fontSize: width * 0.22,
+  };
+}
+
 /**
- * The badge in the corner of a card. A red badge with an exclamation mark shows the last copy of a
- * card that is still needed. A gray badge with a trash can shows a card that is known to be trash.
+ * The badge in the bottom-left corner of a card, as on the classic screen. A red badge with an
+ * exclamation mark shows the last copy of a card that is still needed. A gray badge with a trash
+ * can shows a card that is known to be trash.
  */
 function StatusBadge({
   critical,
@@ -232,15 +256,28 @@ function StatusBadge({
       )}
       role="img"
       style={{
-        right: width * 0.06,
-        top: width * 0.06,
-        width: width * 0.3,
-        height: width * 0.3,
-        fontSize: width * 0.22,
+        ...getBadgeStyle(width, "bottomLeft"),
         boxShadow: "0 0 0 1.5px white",
       }}
     >
       {critical ? "!" : <i aria-hidden="true" className="fas fa-trash-alt" />}
+    </span>
+  );
+}
+
+/**
+ * The badge in the top-right corner of a card that has a note, as on the classic screen. The card
+ * itself shows the note on hover, so the badge has no tooltip of its own.
+ */
+function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
+  return (
+    <span
+      aria-label="Note"
+      className="tw:pointer-events-none tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white tw:text-card-ink tw:ring-[1.5px] tw:ring-card-ink"
+      role="img"
+      style={getBadgeStyle(width, "topRight")}
+    >
+      <i aria-hidden="true" className="fas fa-sticky-note" />
     </span>
   );
 }
@@ -439,6 +476,7 @@ export function CardFace({
   critical = false,
   trash = false,
   trashIcon = false,
+  note = false,
   raiseClued = false,
   highlighted = false,
   possibleSuitIndexes = [],
@@ -530,6 +568,8 @@ export function CardFace({
       {(critical || trashIcon) && (
         <StatusBadge critical={critical} width={width} />
       )}
+
+      {note && <NoteBadge width={width} />}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities

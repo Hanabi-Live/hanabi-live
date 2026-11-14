@@ -138,17 +138,25 @@ const MAX_ROW_CLICKS = 5;
 /** The tooltip that the site shows, once it is open. */
 const TOOLTIP_SELECTOR = ".tooltip-bubble:popover-open";
 
-/** Cards of the account's own hand, and the cards on the play stacks and in the discards. */
-const OWN_FIRST_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-0"]';
-const OWN_SECOND_CARD_SELECTOR = '#game-new-ui [data-card-place="hand-0-1"]';
-const STACK_CARD_SELECTOR = "#game-new-ui [data-play-stack]";
+/** The cards in the discards, and the first card of the next player's hand. */
 const DISCARD_CARD_SELECTOR = '#game-new-ui [data-card-place^="discard-"]';
 const NEXT_HAND_FIRST_CARD_SELECTOR =
   '#game-new-ui [data-card-place="hand-1-0"]';
 
-/** The notes that the account writes on the next player's first card and on a play stack. */
+/**
+ * A card of the account's own hand, counted from 0 on the left. The account's hand is the first on
+ * the screen, whatever its seat.
+ */
+function ownCard(page: Page, index: number): Locator {
+  return page
+    .locator("#game-new-ui [data-hand]")
+    .first()
+    .locator("[data-card-place]")
+    .nth(index);
+}
+
+/** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
-const STACK_NOTE = "played early";
 
 /** Chooses the "1" clue in the New UI, or clears it when it is already chosen. */
 async function clickRankOneClue(page: Page) {
@@ -939,27 +947,28 @@ function getStates(): readonly State[] {
       },
     },
     // The account's notes: on the first card of its own hand, one that makes it show as its real
-    // identity, which the clues always allow, so that its badge shows a pencil. Other notes are on
-    // its second card, on the next player's first card, on a play stack, and on a discarded card.
-    // The pointer is over the first card.
+    // identity, which the clues always allow. Other notes are on its second card, on the next
+    // player's first card, and on a discarded card. The table has five players, and every player
+    // has discarded cards, so that some cards are the last copies. The pointer is over the first
+    // card.
     {
       name: "new-ui-note-tooltip",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame();
-        await game.playAndMisplay();
+        const game = await cast.startBobsGame(5);
+        await game.discardTurns(15);
       },
       prepare: async (page, cast) => {
-        const first = page.locator(OWN_FIRST_CARD_SELECTOR);
+        const first = ownCard(page, 0);
         const order = Number(await first.getAttribute("data-card-order"));
         await writeNote(
           page,
           first,
           await cast.bobsGame().identityNote(order as CardOrder),
         );
-        await writeNote(page, page.locator(OWN_SECOND_CARD_SELECTOR), "chop?");
+        await writeNote(page, ownCard(page, 1), "chop?");
         await writeNote(
           page,
           page.locator(NEXT_HAND_FIRST_CARD_SELECTOR),
@@ -967,17 +976,13 @@ function getStates(): readonly State[] {
         );
         await writeNote(
           page,
-          page.locator(STACK_CARD_SELECTOR).first(),
-          STACK_NOTE,
-        );
-        await writeNote(
-          page,
-          page.locator(DISCARD_CARD_SELECTOR).first(),
-          "misplayed",
+          // The last card, since the rows of the discard pile overlap.
+          page.locator(DISCARD_CARD_SELECTOR).last(),
+          "discarded",
         );
       },
       hover: async (page) => {
-        await hoverForTooltip(page, page.locator(OWN_FIRST_CARD_SELECTOR));
+        await hoverForTooltip(page, ownCard(page, 0));
       },
     },
     // The menu of the "End game" button.
