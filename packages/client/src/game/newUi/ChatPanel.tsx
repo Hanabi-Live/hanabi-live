@@ -18,7 +18,8 @@ import { KEY_CLASS } from "./surfaces.ts";
  * page's root, so the panel sets it too.
  */
 const CHAT_BOX_COLORS = {
-  "--chat-bg": "transparent",
+  // The messages sit in a dark well, so that the light text stands out from the green.
+  "--chat-bg": "var(--game-screen-well)",
   "--focus": "var(--game-screen-line)",
   "--green-text": "var(--game-screen-green-text)",
   "--error": "var(--game-screen-error)",
@@ -49,6 +50,11 @@ const BORROWED_CHAT_BOX_CLASSES = [
   // on each line of the narrow panel. The text box sets its own size, so it gets the same size too.
   "tw:text-lg",
   "tw:[&_input]:text-lg",
+  // The site's light font weight is hard to read on the green panel. Names stay bolder than the
+  // text, as they are on the rest of the site.
+  "tw:font-normal",
+  "tw:[&_input]:font-normal",
+  "tw:[&_strong]:font-semibold",
   "tw:rounded-none",
   "tw:bg-transparent",
   "tw:shadow-none",
