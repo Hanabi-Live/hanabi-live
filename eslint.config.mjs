@@ -14,7 +14,8 @@ export const hanabiConfigBase = defineConfig(
       // Insert changed or disabled rules here, if necessary.
       // @template-customization-start
 
-      // Keep domain-specific property ordering.
+      // Properties follow a meaningful order, such as `x, y, w, h` for geometry, not alphabetical
+      // order.
       "complete/sort-objects": "off",
 
       // The rule checks types deeply, so it rejects branded numbers, Zod-inferred types, and the
