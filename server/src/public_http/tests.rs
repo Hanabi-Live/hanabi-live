@@ -203,7 +203,7 @@ async fn shell_routes_metadata_and_static_files() {
     );
     let (status, body) = request(app.clone(), "/password-reset").await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    assert!(body.contains("id=\"password-reset-form\""));
+    assert!(body.contains("id=\"password-reset\""));
     let mut unsafe_config = config();
     unsafe_config.domain = "</div><script>alert(7)</script>".into();
     unsafe_config.client_version = "\"><script>alert(8)</script>".into();

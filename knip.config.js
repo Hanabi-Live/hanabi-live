@@ -19,7 +19,7 @@ const config = {
       // The standalone pages are built with esbuild from shell scripts, and the public pages with
       // "vite build --mode public-pages". Knip finds the client's Vite entry point.
       entry: [
-        "src/standalone/*.ts",
+        "src/standalone/*.tsx",
         "src/publicPages/index.tsx",
         "src/**/*.test.ts",
       ],

@@ -37,8 +37,8 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
             include_str!("../../templates/missing-scores.html"),
         ),
         (
-            "public-table-scripts.html",
-            include_str!("../../templates/public-table-scripts.html"),
+            "public-page-scripts.html",
+            include_str!("../../templates/public-page-scripts.html"),
         ),
         (
             "profile-buttons.html",

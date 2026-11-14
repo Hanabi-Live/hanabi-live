@@ -12,7 +12,8 @@ REPO_ROOT="$DIR/../.."
 # separately as "public/js/bundles/[name].min.js". Arguments go to esbuild, such as
 # "--watch=forever".
 exec bunx --bun --no-install esbuild \
-  "$REPO_ROOT"/packages/client/src/standalone/*.ts \
+  "$REPO_ROOT"/packages/client/src/standalone/*.tsx \
+  --jsx=automatic \
   --bundle \
   --outdir="$REPO_ROOT/public/js/bundles" \
   --entry-names="[name].min" \

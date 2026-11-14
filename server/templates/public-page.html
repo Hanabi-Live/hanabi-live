@@ -30,31 +30,7 @@
             website administrator via a private message on
             <a href="https://discord.gg/FADvkJp">the Discord server</a>.
           </p>
-          <form id="password-reset-form">
-            <input
-              id="new-password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              placeholder="New Password"
-              required
-            />
-            <br /><button
-              id="generate-hash-button"
-              class="button fit"
-              type="submit"
-            >
-              <i class="fas fa-key icon-label"></i>Generate Hash
-            </button>
-            <br /><br /><input
-              id="generated-hash"
-              type="text"
-              placeholder="Generated Hash"
-              readonly
-            />
-            <p id="password-reset-error" role="alert" hidden></p>
-          </form>
-          <script src="/public/js/bundles/password-reset.min.js?{{ version }}"></script>
+          <div id="password-reset"></div>
           {% else %} {% if page == "scores" %}
           <div class="history-bullets">
             <ul>
@@ -141,5 +117,5 @@
     </div>
   </section>
 </div>
-{% if table %}{% include "public-table-scripts.html" %}{% endif %} {% endblock
-%}
+{% if table or page == "password-reset" %}{% include "public-page-scripts.html"
+%}{% endif %} {% endblock %}

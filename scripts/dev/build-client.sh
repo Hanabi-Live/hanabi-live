@@ -57,7 +57,7 @@ for file in *; do
     *) ;;
   esac
   page=${file%%.*}
-  if [[ $file == "$page.min.js"* && -f "$CLIENT_DIR/src/standalone/$page.ts" ]]; then
+  if [[ $file == "$page.min.js"* && -f "$CLIENT_DIR/src/standalone/$page.tsx" ]]; then
     continue
   fi
   rm "$file"

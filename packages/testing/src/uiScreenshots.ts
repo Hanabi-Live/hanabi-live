@@ -528,6 +528,14 @@ function getStates(): readonly State[] {
     { name: "tags", path: `/tags/${USERNAME}`, loggedIn: false },
     { name: "password-reset", path: "/password-reset", loggedIn: false },
     {
+      name: "pips-reference",
+      path: "/public/standalone/pips-reference.html",
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.locator(".pip-count").waitFor();
+      },
+    },
+    {
       name: "login-alert",
       path: "/",
       loggedIn: false,
