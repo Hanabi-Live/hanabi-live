@@ -1,6 +1,7 @@
 // Runs Hanab Live for local development:
 // - PostgreSQL in a container (see "compose.yml"), with the schema loaded on first use.
 // - The server, rebuilt and restarted whenever its sources or the checked-out commit change.
+// - New upstream commits, fetched every second and fast-forwarded when no tracked file has changes.
 // - The client from Vite's development server, which reloads the page when the client changes.
 // - A watch build of the scripts of the standalone pages. "bun run dev down" stops the containers;
 //   their data is kept.
@@ -32,6 +33,8 @@ const SERVER_SOURCES = [
 const DEV_PORT = "1212";
 /** How often to check for a new commit, which changes the revision compiled into the server. */
 const HEAD_POLL_MS = 1000;
+/** How long to wait after each check for upstream commits. */
+const UPSTREAM_POLL_MS = 1000;
 
 type Label = "build" | "client" | "dev" | "standalone" | "server" | "services";
 
@@ -348,6 +351,92 @@ function watchServerSources() {
   }, HEAD_POLL_MS);
 }
 
+/** Why the last check did not pull, so that a reason is logged once rather than every second. */
+let pullSkipReason: string | undefined;
+
+function skipPull(reason: string) {
+  if (reason !== pullSkipReason) {
+    log("dev", reason);
+    pullSkipReason = reason;
+  }
+}
+
+/**
+ * Fetches upstream commits and fast-forwards to them when no tracked file has changes. Untracked
+ * files do not block it, because Git refuses a merge that would overwrite one. The new commit then
+ * rebuilds the server, and Vite reloads the client.
+ */
+function pullUpstreamForever() {
+  background(
+    pullUpstream().finally(() => {
+      // The next check waits for the previous one, because a fetch can take longer than the delay.
+      setTimeout(pullUpstreamForever, UPSTREAM_POLL_MS);
+    }),
+  );
+}
+
+async function pullUpstream() {
+  const fetched = await run("dev", ["git", "fetch", "--quiet"], {
+    quiet: true,
+  });
+  if (!fetched.ok) {
+    skipPull(`Could not fetch upstream commits: ${fetched.errors}`);
+    return;
+  }
+  const counts = await run(
+    "dev",
+    ["git", "rev-list", "--left-right", "--count", "HEAD...@{upstream}"],
+    { quiet: true },
+  );
+  if (!counts.ok) {
+    skipPull(
+      "The current branch has no upstream; upstream commits are not pulled.",
+    );
+    return;
+  }
+  const [ahead, behind] = counts.output.split(/\s+/u).map(Number);
+  if (behind === 0) {
+    pullSkipReason = undefined;
+    return;
+  }
+  if (ahead !== 0) {
+    skipPull(
+      "Local commits are not upstream; upstream commits are not pulled.",
+    );
+    return;
+  }
+  // Without optional locks, the check does not block a Git command that the developer runs.
+  const status = await run(
+    "dev",
+    [
+      "git",
+      "--no-optional-locks",
+      "status",
+      "--porcelain",
+      "--untracked-files=no",
+    ],
+    { quiet: true },
+  );
+  if (!status.ok) {
+    return;
+  }
+  if (status.output !== "") {
+    skipPull("Tracked files have changes; upstream commits are not pulled.");
+    return;
+  }
+  const merged = await run(
+    "dev",
+    ["git", "merge", "--ff-only", "--quiet", "@{upstream}"],
+    { quiet: true },
+  );
+  if (!merged.ok) {
+    skipPull(`Could not pull upstream commits: ${merged.errors}`);
+    return;
+  }
+  pullSkipReason = undefined;
+  log("dev", `Pulled ${behind} upstream commit(s).`);
+}
+
 async function shutDown(code: number) {
   if (stopping) {
     return;
@@ -419,6 +508,7 @@ async function main() {
   ]);
   startServer();
   watchServerSources();
+  pullUpstreamForever();
   log("dev", `Ready: http://localhost:${setting(env, "PORT", DEV_PORT)}/`);
 
   // A client watcher that stops is unexpected, so stop everything rather than serve stale code.
