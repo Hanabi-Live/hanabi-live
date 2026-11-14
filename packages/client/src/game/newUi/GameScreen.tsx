@@ -46,6 +46,7 @@ import {
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
 } from "./cardSizes.ts";
+import { getClueMarker, getPreviewMarker } from "./clueMarkers.ts";
 import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
 import {
   canDiscardNow,
@@ -59,11 +60,9 @@ import {
 import {
   getClueForTurn,
   getClueLogEntries,
-  getClueMarker,
   getClueMarkers,
   getDiscardRows,
   getNotesHtml,
-  getPreviewMarker,
   getSeats,
   getShownIdentities,
   getStacks,
@@ -519,7 +518,11 @@ export function GameScreen({
                       ? new Map(
                           touched.map((order) => [
                             order,
-                            getPreviewMarker(clue, settings.colorblindMode),
+                            getPreviewMarker(
+                              clue,
+                              actingPlayerIndex,
+                              settings.colorblindMode,
+                            ),
                           ]),
                         )
                       : getClueMarkers(shownClue, settings.colorblindMode)

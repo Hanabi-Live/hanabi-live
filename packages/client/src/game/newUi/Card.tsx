@@ -108,6 +108,23 @@ export function getClueMarkerColor(marker: ClueMarkerView): string {
   return marker.type === "color" ? marker.fill : "white";
 }
 
+/** The text on a clue token: the clue's number, "?" for a hidden clue, and none for a color. */
+export function getClueMarkerLabel(marker: ClueMarkerView): string {
+  switch (marker.type) {
+    case "color": {
+      return "";
+    }
+
+    case "rank": {
+      return marker.label;
+    }
+
+    case "hidden": {
+      return "?";
+    }
+  }
+}
+
 /**
  * The shape of a clue token, in a box 100 units wide: a disc with a point under it. The sides of
  * the point touch the disc at a tangent, so that the outline runs smoothly from one to the other.
@@ -140,12 +157,7 @@ function ClueMarker({
   readonly width: number;
 }): React.JSX.Element {
   const size = Math.round(width * CLUE_TOKEN_SIZE_PER_WIDTH);
-  let label = "";
-  if (marker.type === "rank") {
-    ({ label } = marker);
-  } else if (marker.type === "hidden") {
-    label = "?";
-  }
+  const label = getClueMarkerLabel(marker);
 
   return (
     <span

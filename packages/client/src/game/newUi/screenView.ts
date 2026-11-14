@@ -4,7 +4,6 @@
 import type {
   CardIdentity,
   CardOrder,
-  Clue,
   GameState,
   PlayerIndex,
   StateClue,
@@ -28,6 +27,7 @@ import type { ClueMarkerView } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import type { Seat } from "./Hands.tsx";
 import type { DiscardView, StackView } from "./SharedCards.tsx";
+import { getClueMarker } from "./clueMarkers.ts";
 import type { CardView } from "./tableView.ts";
 import { BLANK_NOTE, getCardView, getHandDisplayOrder } from "./tableView.ts";
 
@@ -213,41 +213,6 @@ export function getClueForTurn(gameState: GameState): StateClue | undefined {
   }
 
   return gameState.clues.findLast((clue) => clue.segment === segment - 1);
-}
-
-/** How the clue being chosen shows on the cards that it would touch. */
-export function getPreviewMarker(
-  clue: Clue,
-  colorblindMode: boolean,
-): ClueMarkerView {
-  return clue.type === "color"
-    ? {
-        type: "color",
-        name: clue.value.name,
-        fill: colorblindMode ? clue.value.fillColorblind : clue.value.fill,
-      }
-    : { type: "rank", label: clue.value.toString() };
-}
-
-/** How a clue shows on the arrows and beside the name of the player who gave it. */
-export function getClueMarker(
-  clue: StateClue,
-  colorblindMode: boolean,
-): ClueMarkerView {
-  if (clue.type === "color") {
-    const color = globals.variant.clueColors[clue.color];
-    if (color !== undefined) {
-      return {
-        type: "color",
-        name: color.name,
-        fill: colorblindMode ? color.fillColorblind : color.fill,
-      };
-    }
-  } else if (clue.type === "rank") {
-    return { type: "rank", label: clue.rank.toString() };
-  }
-
-  return { type: "hidden" };
 }
 
 /** The clues of the game so far, for the clue log. */

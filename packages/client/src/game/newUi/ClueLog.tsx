@@ -2,7 +2,7 @@ import type { CardOrder } from "@hanabi-live/game";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
-import { getClueMarkerColor } from "./Card.tsx";
+import { getClueMarkerColor, getClueMarkerLabel } from "./Card.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
@@ -283,7 +283,7 @@ function FitName({ name }: { readonly name: string }): React.JSX.Element {
 
 /**
  * The clue as a small disc, like the tokens on the cards: the clue's color, or a white disc with
- * the clue's number. Its label also says whether the clue touched the card under the mouse.
+ * the token's label. Its label also says whether the clue touched the card under the mouse.
  */
 function ClueDisc({
   marker,
@@ -308,9 +308,9 @@ function ClueDisc({
     >
       {/* The number's box is trimmed to the height of the digits, so that the digits are centered
           and not the font's space above and below them. */}
-      {marker.type === "rank" && (
+      {marker.type !== "color" && (
         <span className="tw:block tw:[text-box:trim-both_cap_alphabetic]">
-          {clueName}
+          {getClueMarkerLabel(marker)}
         </span>
       )}
     </span>
