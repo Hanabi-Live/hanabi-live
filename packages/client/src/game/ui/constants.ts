@@ -188,7 +188,7 @@ export const TEXT_SHRINK_FACTOR = 0.9;
  * The width of the thinnest outline on the game board, as a fraction of the stage height. Thicker
  * outlines are multiples of it.
  */
-export const STROKE_WIDTH_UNIT = 0.001_056;
+export const STROKE_WIDTH_UNIT = 0.001056;
 
 /**
  * The width of the thin outlines around small controls and indicators, such as the strike squares

@@ -41,16 +41,6 @@ export const hanabiConfigBase = defineConfig(
       // variable would not make clearer.
       "unicorn/no-unreadable-new-expression": "off",
 
-      // Preserve the existing grouping of fractional drawing coordinates.
-      "unicorn/numeric-separators-style": [
-        "error",
-        {
-          number: {
-            fractionGroupLength: 3,
-          },
-        },
-      ],
-
       // Promise callbacks are used for fire-and-forget operations and CommonJS entry points.
       "unicorn/prefer-await": "off",
 

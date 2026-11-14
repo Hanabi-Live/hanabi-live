@@ -488,7 +488,7 @@ const RAINBOW_CENTER_COLOR = "#000000";
  * drawn in that transform.
  */
 const HANABI_ALT_WHITE_6_BORDER_TRANSFORM = [
-  -0.931_239, 0.319_947, -0.338_943, -0.879_048, 0, 0,
+  -0.931239, 0.319947, -0.338943, -0.879048, 0, 0,
 ] as const;
 
 /** The empty set pip draws its own outline, at this scale and width. */
@@ -647,13 +647,13 @@ export const DRAW_PIP_FUNCTIONS = {
     ctx.scale(150 / 42, 150 / 42);
     ctx.beginPath();
     ctx.transform(1, 0, 0, 1, 16.9774, -22.3191);
-    ctx.moveTo(-16.977_913, 37.727_61);
-    ctx.lineTo(-34.930_431, 6.631_814);
-    ctx.lineTo(0.975_572, 6.632_296);
+    ctx.moveTo(-16.977913, 37.72761);
+    ctx.lineTo(-34.930431, 6.631814);
+    ctx.lineTo(0.975572, 6.632296);
     ctx.closePath();
-    ctx.moveTo(-16.997_733, 26.070_432);
-    ctx.lineTo(-9.120_09, 12.425_835);
-    ctx.lineTo(-24.875_376, 12.425_835);
+    ctx.moveTo(-16.997733, 26.070432);
+    ctx.lineTo(-9.12009, 12.425835);
+    ctx.lineTo(-24.875376, 12.425835);
     ctx.closePath();
     ctx.transform(1, 0, 0, 1, -16.9774, 22.3191);
     ctx.scale(42 / 150, 42 / 150);
