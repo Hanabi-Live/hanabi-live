@@ -63,7 +63,13 @@ export const hanabiConfigBase = defineConfig(
       // Keep explicit comparisons in the game rules and event handlers.
       "unicorn/no-subtraction-comparison": "off",
 
-      // Modules keep their state in top-level variables that functions set.
+      /**
+       * Modules keep their state in top-level variables that functions set. Most of this state
+       * exists once per page: the WebSocket connection and its timers, the open modal, the chat
+       * input, and the React roots. A class would not make it safer, because the page would still
+       * have one instance. Keep the state of a game in the store, or reset it in `closeGame`, so
+       * that it does not carry into the next game.
+       */
       "unicorn/no-top-level-assignment-in-function": "off",
 
       // Loops and constructor expressions follow the existing UI style.
