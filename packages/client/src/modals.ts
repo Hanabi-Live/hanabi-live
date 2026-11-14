@@ -3,32 +3,21 @@
 import type {
   CardIdentity,
   CardOrder,
-  Rank,
-  Suit,
   SuitRankTuple,
   Variant,
 } from "@hanabi-live/game";
-import { START_CARD_RANK } from "@hanabi-live/game";
-import { assertDefined } from "complete-common";
 import { globals } from "./Globals.ts";
-import {
-  CLOSE_BUTTON_CLASS_NAME,
-  MODAL_HEADER_CLASS_NAME,
-} from "./closeButton.ts";
-import { START_CARD_RANK_LABEL } from "./constants.ts";
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
-import { getCardImages } from "./game/cardImages.ts";
 import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import type { MessageModal } from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
+import type { PromptModal } from "./promptModalSlice.ts";
+import { promptModalClosed, promptModalShown } from "./promptModalSlice.ts";
 import { errorOccurredChanged } from "./sessionSlice.ts";
 import { store } from "./store.ts";
-import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
-
-/** Used by the morph dialog. */
-type DragAreaType = "playArea" | "discardArea" | undefined;
+import { getHtmlElement } from "./utils.ts";
 
 let allowCloseModal = true;
 /** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
@@ -37,45 +26,17 @@ let currentModal: HTMLElement | undefined;
 let confirmModalOnConfirm: (() => void) | undefined;
 let confirmModalOnCancel: (() => void) | undefined;
 let idleModalKeepPlaying: (() => void) | undefined;
-let morphDragArea: DragAreaType;
+let promptOnSubmit: ((answer: string) => void) | undefined;
+let promptOnCancel: (() => void) | undefined;
 
 /** The modal that "MessageModal.tsx" renders the content of. */
 const MESSAGE_MODAL_ID = "message-modal";
+/** The modal that "PromptModal.tsx" renders the content of. */
+const PROMPT_MODAL_ID = "prompt-modal";
 export const EMOJI_MODAL_ID = "emoji-modal";
 
 const modalDialog = getModalDialog();
 const modalsContainer = getHtmlElement("#modals-container");
-const morphModalButtonCancel = getHtmlElement("#morph-modal-button-cancel");
-const morphModalButtonOk = getHtmlElement("#morph-modal-button-ok");
-const morphModalDescription = getHtmlElement("#morph-modal-description");
-const morphModalTextbox = getHtmlInputElement("#morph-modal-textbox");
-
-/** The prompts that have no Cancel button, so they get an X beside their heading. */
-const PROMPTS_WITHOUT_CANCEL = [
-  "#set-leader-modal",
-  "#set-turn-modal",
-  "#play-discard-modal",
-  "#set-modifier-modal",
-] as const;
-
-function addCloseButton(modal: HTMLElement) {
-  const heading = modal.querySelector(":scope > h2");
-  if (heading === null) {
-    throw new Error(`Failed to find the heading of: #${modal.id}`);
-  }
-  const button = document.createElement("button");
-  button.ariaLabel = "Close";
-  button.className = CLOSE_BUTTON_CLASS_NAME;
-  button.type = "button";
-  const icon = document.createElement("i");
-  icon.className = "fas fa-times";
-  button.append(icon);
-  button.addEventListener("click", closeModals);
-  const header = document.createElement("div");
-  header.className = MODAL_HEADER_CLASS_NAME;
-  heading.replaceWith(header);
-  header.append(heading, button);
-}
 
 function getModalDialog(): HTMLDialogElement {
   const element = document.querySelector("#modal-dialog");
@@ -86,10 +47,6 @@ function getModalDialog(): HTMLDialogElement {
 }
 
 export function init(): void {
-  for (const selector of PROMPTS_WITHOUT_CANCEL) {
-    addCloseButton(getHtmlElement(selector));
-  }
-
   // The dialog covers the screen, so a click on the dialog itself is a click beside the modal.
   modalDialog.addEventListener("pointerdown", (event) => {
     if (event.target === modalDialog) {
@@ -118,27 +75,6 @@ export function init(): void {
       } else {
         modalDialog.showModal();
       }
-    }
-  });
-
-  // Morph modal textbox.
-  const morphTextboxObserver = new MutationObserver(() => {
-    const { suit } = morphModalTextbox.dataset;
-    const { rank } = morphModalTextbox.dataset;
-    morphModalTextbox.value = `${suit} ${rank}`;
-  });
-  morphTextboxObserver.observe(morphModalTextbox, {
-    attributes: true,
-    attributeFilter: ["data-suit", "data-rank"],
-  });
-  morphModalTextbox.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      morphModalButtonOk.click();
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      morphModalButtonCancel.click();
     }
   });
 }
@@ -170,94 +106,39 @@ export function askForMorph(
   variant: Variant,
   drag?: MorphDrag,
 ): void {
-  morphDragArea = drag?.area;
-  allowCloseModal = false;
+  // The drag finishes whatever the answer, in the area only if the card changed.
+  function finishDrag(changed: boolean) {
+    if (drag !== undefined) {
+      drag.card
+        .getLayoutParent()
+        .continueDragAction(changed ? drag.area : undefined);
+    }
+  }
 
-  const { suits, ranks } = variant;
-  const startSuitIndex = target.identity.suitIndex ?? 0;
-  const startRank = target.identity.rank ?? 1;
-  const startSuit = suits[startSuitIndex];
-  assertDefined(
-    startSuit,
-    `Failed to get the suit at index: ${startSuitIndex}`,
-  );
-
-  fillMorphModalWithRadios(
-    "#morph-modal-cards",
-    suits,
-    ranks,
-    startSuit,
-    startRank,
-    target.possibilities,
-    getCardImages(variant),
-  );
-
-  showModal("#morph-modal", false, () => {
-    morphModalTextbox.focus();
-    morphModalTextbox.select();
-  });
-
-  if (drag === undefined) {
-    morphModalDescription.textContent =
-      "Select the card you want to morph it into.";
-
-    // We can't use "addEventListener" because we can't easily remove the previous listener.
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonOk.onclick = () => {
-      morphOkButton(target, variant);
-    };
-
-    // We can't use "addEventListener" because we can't easily remove the previous listener.
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonCancel.onclick = morphCancelButton;
-  } else {
-    morphModalDescription.textContent =
-      "What will the card will be for the purposes of this hypothetical?";
-
-    // We can't use "addEventListener" because we can't easily remove the previous listener.
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonOk.onclick = () => {
-      if (!morphOkButton(target, variant)) {
-        morphDragArea = undefined;
+  showPrompt(
+    {
+      type: "morph",
+      description:
+        drag === undefined
+          ? "Select the card you want to morph it into."
+          : "What will the card will be for the purposes of this hypothetical?",
+      variantId: variant.id,
+      startSuitIndex: target.identity.suitIndex ?? 0,
+      startRank: target.identity.rank ?? 1,
+      possibilities: target.possibilities,
+    },
+    (answer) => {
+      const cardIdentity = noteIdentity.parseIdentity(variant, answer);
+      if (cardIdentity !== undefined) {
+        morphCard(target.order, cardIdentity);
       }
-      morphFinishDrag(drag.card);
-    };
-
-    // We can't use "addEventListener" because we can't easily remove the previous listener.
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonCancel.onclick = () => {
-      morphCancelButton();
-      morphDragArea = undefined;
-      morphFinishDrag(drag.card);
-    };
-  }
-}
-
-function morphFinishDrag(card: HanabiCard) {
-  card.getLayoutParent().continueDragAction(morphDragArea);
-}
-
-function morphOkButton(target: MorphTarget, variant: Variant): boolean {
-  allowCloseModal = true;
-  closeModals();
-
-  const cardIdentity = noteIdentity.parseIdentity(
-    variant,
-    morphModalTextbox.value,
+      finishDrag(cardIdentity !== undefined);
+    },
+    () => {
+      finishDrag(false);
+    },
+    false,
   );
-
-  if (cardIdentity === undefined) {
-    // The text that they entered does not correspond to a card.
-    return false;
-  }
-
-  morphCard(target.order, cardIdentity);
-  return true;
-}
-
-function morphCancelButton() {
-  allowCloseModal = true;
-  closeModals();
 }
 
 export function showWarning(msg: string): void {
@@ -372,40 +253,45 @@ export function showError(msg: string): void {
   );
 }
 
+/**
+ * Shows a prompt, which runs `onSubmit` with the answer. `onCancel` runs however the prompt is
+ * dismissed without an answer. A prompt that cannot be closed waits for its answer or
+ * `cancelPrompt`.
+ */
 export function showPrompt(
-  selector: string,
-  test?: () => unknown,
-  focusElement?: HTMLInputElement,
-  clickButtonElement?: HTMLElement,
+  prompt: PromptModal,
+  onSubmit: (answer: string) => void,
+  onCancel?: () => void,
+  allowClose = true,
 ): void {
-  // eslint-disable-next-line
-  if (!(test?.call(undefined) ?? true)) {
-    return;
-  }
+  showModal(`#${PROMPT_MODAL_ID}`, allowClose);
+  store.dispatch(promptModalShown(prompt));
+  // Showing the modal closes any previous one (and cancels its prompt), so the new callbacks must
+  // be stored afterward.
+  promptOnSubmit = onSubmit;
+  promptOnCancel = onCancel;
+}
 
-  if (focusElement !== undefined && clickButtonElement !== undefined) {
-    // We can't use "addEventListener" because we can't easily remove the previous listener.
-    // eslint-disable-next-line unicorn/prefer-add-event-listener
-    focusElement.onkeydown = (event) => {
-      if (event.key === "Enter") {
-        clickButtonElement.click();
-      }
-    };
-  }
+/** Closes the prompt, and runs its function with the answer. */
+export function submitPrompt(answer: string): void {
+  const onSubmit = promptOnSubmit;
+  promptOnSubmit = undefined;
+  promptOnCancel = undefined;
+  allowCloseModal = true;
+  closeModals();
+  onSubmit?.(answer);
+}
 
-  showModal(selector, true, () => {
-    if (focusElement === undefined) {
-      return;
-    }
-    focusElement.focus();
-    const oldType = focusElement.type;
-    if (oldType === "number" || oldType === "text") {
-      const { length } = focusElement.value;
-      // Cannot put the cursor past the text unless it's a text input.
-      focusElement.type = "text";
-      focusElement.setSelectionRange(0, length);
-      focusElement.type = oldType;
-    }
+/** Closes the prompt without an answer, even one that cannot otherwise be closed. */
+export function cancelPrompt(): void {
+  allowCloseModal = true;
+  closeModals();
+}
+
+/** Shows the emote and emoji picker, with the focus in its search input. */
+export function showEmojiModal(searchInput: HTMLInputElement): void {
+  showModal(`#${EMOJI_MODAL_ID}`, true, () => {
+    searchInput.focus();
   });
 }
 
@@ -418,6 +304,9 @@ export function closeModals(): void {
   idleModalKeepPlaying = undefined;
   if (currentModal?.id === MESSAGE_MODAL_ID) {
     store.dispatch(messageModalClosed());
+  }
+  if (currentModal?.id === PROMPT_MODAL_ID) {
+    store.dispatch(promptModalClosed());
   }
   if (currentModal?.id === EMOJI_MODAL_ID) {
     store.dispatch(emojiPickerClosed());
@@ -437,6 +326,11 @@ export function closeModals(): void {
   confirmModalOnConfirm = undefined;
   confirmModalOnCancel = undefined;
   onCancel?.();
+
+  const onPromptCancel = promptOnCancel;
+  promptOnSubmit = undefined;
+  promptOnCancel = undefined;
+  onPromptCancel?.();
 }
 
 export function isModalVisible(): boolean {
@@ -462,78 +356,4 @@ function showModal(selector: string, allowClose: boolean, ready?: () => void) {
   modalDialog.append(element);
   modalDialog.showModal();
   ready?.();
-}
-
-function fillMorphModalWithRadios(
-  element: string,
-  suits: readonly Suit[],
-  ranks: readonly Rank[],
-  startSuit: Suit,
-  startRank: Rank,
-  possibilities: readonly SuitRankTuple[],
-  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
-) {
-  const placeholder = getHtmlElement(element);
-  placeholder.replaceChildren();
-  const table = document.createElement("table");
-  table.classList.add("slim-table");
-
-  for (const rank of ranks) {
-    const row = document.createElement("tr");
-
-    for (const [suitIndex, suit] of suits.entries()) {
-      const cell = document.createElement("td");
-      const possibleCardIdentity = possibilities.some(
-        (possibility) =>
-          possibility[0] === suitIndex && possibility[1] === rank,
-      );
-      if (!possibleCardIdentity) {
-        cell.classList.add("faded");
-      }
-      const radio = document.createElement("input");
-      const radioId = `morph-radio-${suitIndex}-${rank}`;
-
-      radio.setAttribute("type", "radio");
-      radio.setAttribute("name", "morph-cards");
-      radio.setAttribute("id", radioId);
-      radio.setAttribute("value", `${suit.displayName} ${rank}`);
-      cell.append(radio);
-
-      const label = document.createElement("label");
-      label.setAttribute("for", radioId);
-      const cardImageLabel = `card-${suit.name}-${rank}`;
-      const image = cardImages.get(cardImageLabel);
-      assertDefined(
-        image,
-        `Failed to get the card image with label: ${cardImageLabel}`,
-      );
-      label.append(image);
-      cell.append(label);
-
-      if (suit === startSuit && rank === startRank) {
-        radio.setAttribute("checked", "checked");
-        morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = getRankLabel(rank);
-      }
-      radio.addEventListener("change", () => {
-        if (!radio.checked) {
-          return;
-        }
-
-        // Set textbox data attribute.
-        morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = getRankLabel(rank);
-      });
-
-      row.append(cell);
-    }
-
-    table.append(row);
-  }
-
-  placeholder.append(table);
-}
-
-function getRankLabel(rank: Rank): string {
-  return rank === START_CARD_RANK ? START_CARD_RANK_LABEL : rank.toString();
 }

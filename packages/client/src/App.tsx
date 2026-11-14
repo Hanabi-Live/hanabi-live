@@ -5,6 +5,7 @@ import { useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { EmojiPicker } from "./EmojiPicker.tsx";
 import { MessageModal } from "./MessageModal.tsx";
+import { PromptModal } from "./PromptModal.tsx";
 import { fadeIn, hideElement } from "./elementVisibility.ts";
 import { GameChatBox } from "./game/GameChatBox.tsx";
 import { GameScreen } from "./game/newUi/GameScreen.tsx";
@@ -28,6 +29,7 @@ type Targets = Readonly<
     | "tutorial"
     | "lobby"
     | "messageModal"
+    | "promptModal"
     | "emojiModal"
     | "gameChat"
     | "newUi",
@@ -42,6 +44,7 @@ export function mountApp(): void {
     tutorial: getHtmlElement("#tutorial"),
     lobby: getHtmlElement("#lobby"),
     messageModal: getHtmlElement("#message-modal"),
+    promptModal: getHtmlElement("#prompt-modal"),
     emojiModal: getHtmlElement(`#${EMOJI_MODAL_ID}`),
     gameChat: getHtmlElement("#game-chat-modal-white"),
     newUi: getHtmlElement("#game-new-ui"),
@@ -75,6 +78,7 @@ function App({ targets }: { readonly targets: Targets }): React.JSX.Element {
       {createPortal(<Tutorial />, targets.tutorial)}
       {createPortal(<Lobby />, targets.lobby)}
       {createPortal(<MessageModal />, targets.messageModal)}
+      {createPortal(<PromptModal />, targets.promptModal)}
       {emojiInputId !== undefined
         && createPortal(
           <EmojiPicker inputId={emojiInputId} />,

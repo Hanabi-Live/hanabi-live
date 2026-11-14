@@ -15,6 +15,7 @@ import { pregameReducer } from "./lobby/pregame/pregameSlice.ts";
 import { tablesReducer } from "./lobby/tables/tablesSlice.ts";
 import { usersReducer } from "./lobby/users/usersSlice.ts";
 import { messageModalReducer } from "./messageModalSlice.ts";
+import { promptModalReducer } from "./promptModalSlice.ts";
 import { sessionReducer } from "./sessionSlice.ts";
 
 export const store = configureStore({
@@ -28,6 +29,7 @@ export const store = configureStore({
     messageModal: messageModalReducer,
     newUi: newUiReducer,
     pregame: pregameReducer,
+    promptModal: promptModalReducer,
     session: sessionReducer,
     tables: tablesReducer,
     users: usersReducer,

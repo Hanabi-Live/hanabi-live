@@ -16,14 +16,10 @@ import type Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import { isElementShown } from "../../elementVisibility.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
-import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
+import { isModalVisible, showPrompt } from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
 import { store } from "../../store.ts";
-import {
-  copyStringToClipboard,
-  getHtmlElement,
-  getHtmlInputElement,
-} from "../../utils.ts";
+import { copyStringToClipboard, getHtmlElement } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
@@ -45,11 +41,6 @@ type Callback = () => void;
 const hotkeyClueMap = new Map<number, Callback>();
 const hotkeyPlayMap = new Map<number, Callback>();
 const hotkeyDiscardMap = new Map<number, Callback>();
-
-const playDiscardButton = getHtmlElement("#play-discard-button");
-const playDiscardCard = getHtmlInputElement("#play-discard-card");
-const playDiscardMessage = getHtmlElement("#play-discard-message");
-const playDiscardTitle = getHtmlElement("#play-discard-title");
 
 function selectNextPlayerTarget() {
   if (globals.state.replay.hypothetical === undefined) {
@@ -447,46 +438,39 @@ function promptCardOrder(actionType: PlayOrDiscard) {
   const maxSlotIndex = hand.length;
   const verb = actionType === "play" ? "Play" : "Discard";
 
-  playDiscardTitle.textContent = `${verb} Card`;
-  playDiscardMessage.textContent = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
-
-  playDiscardCard.min = "1";
-  playDiscardCard.max = maxSlotIndex.toString();
-  playDiscardCard.value = "1";
-
-  // We can't use "addEventListener" because we can't easily remove the previous listener.
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  playDiscardButton.onclick = () => {
-    closeModals();
-
-    const response = playDiscardCard.value;
-    if (response === "") {
-      return;
-    }
-    if (/^deck$/iu.test(response)) {
-      // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
-      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
-      performAction(actionType, cardOrder);
-      return;
-    }
-
-    const slot = parseIntSafe(response);
-    if (slot === undefined || slot < 1 || slot > maxSlotIndex) {
-      return;
-    }
-
-    const cardOrder = hand[maxSlotIndex - slot];
-    if (cardOrder !== undefined) {
-      performAction(actionType, cardOrder);
-    }
-  };
-
   showPrompt(
-    "#play-discard-modal",
-    undefined,
-    playDiscardCard,
-    playDiscardButton,
+    {
+      type: "number",
+      title: `${verb} Card`,
+      description: `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`,
+      current: undefined,
+      label: "Card:",
+      value: "1",
+      min: "1",
+      max: maxSlotIndex.toString(),
+    },
+    (response) => {
+      if (response === "") {
+        return;
+      }
+      if (/^deck$/iu.test(response)) {
+        // Card orders start at 0, so the final card order is the length of the deck - 1.
+        const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+        const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+        performAction(actionType, cardOrder);
+        return;
+      }
+
+      const slot = parseIntSafe(response);
+      if (slot === undefined || slot < 1 || slot > maxSlotIndex) {
+        return;
+      }
+
+      const cardOrder = hand[maxSlotIndex - slot];
+      if (cardOrder !== undefined) {
+        performAction(actionType, cardOrder);
+      }
+    },
   );
 }
 

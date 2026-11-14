@@ -4,12 +4,9 @@
 import { CHAT_EMOJI_GROUPS, CHAT_EMOTES } from "@hanabi-live/data";
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import {
-  CLOSE_BUTTON_CLASS_NAME,
-  MODAL_HEADER_CLASS_NAME,
-} from "./closeButton.ts";
+import { ModalHeader } from "./ModalHeader.tsx";
 import { emojiPickerOpened } from "./emojiPickerSlice.ts";
-import { closeModals, EMOJI_MODAL_ID, showPrompt } from "./modals.ts";
+import { closeModals, EMOJI_MODAL_ID, showEmojiModal } from "./modals.ts";
 import { store } from "./store.ts";
 import { TAB_CLASS_NAME } from "./tabClassName.ts";
 import { tooltipRef } from "./tooltipRef.ts";
@@ -85,11 +82,7 @@ export function openEmojiPicker(inputId: string): void {
   flushSync(() => {
     store.dispatch(emojiPickerOpened(inputId));
   });
-  showPrompt(
-    `#${EMOJI_MODAL_ID}`,
-    undefined,
-    getHtmlInputElement(`#${EMOJI_MODAL_ID} input`),
-  );
+  showEmojiModal(getHtmlInputElement(`#${EMOJI_MODAL_ID} input`));
 }
 
 /** Adds a picked symbol to the chat input, and closes the picker. */
@@ -119,17 +112,7 @@ export function EmojiPicker({
 
   return (
     <div className="tw:w-[min(34em,70vw)]" id="emoji-picker">
-      <div className={MODAL_HEADER_CLASS_NAME}>
-        <h2>Select Emote / Emoji</h2>
-        <button
-          aria-label="Close"
-          className={CLOSE_BUTTON_CLASS_NAME}
-          onClick={closeModals}
-          type="button"
-        >
-          <i className="fas fa-times" />
-        </button>
-      </div>
+      <ModalHeader heading="Select Emote / Emoji" />
       <div className="tw:flex tw:flex-col tw:gap-2">
         <input
           aria-label="Search emotes and emoji"

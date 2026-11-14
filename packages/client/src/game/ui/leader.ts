@@ -3,10 +3,7 @@
 import type { UserId } from "@hanabi-live/data";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
-import { getHtmlElement } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
-
-const leaderPlaceholder = getHtmlElement("#leader-placeholder");
 
 /** Asks who should lead the shared replay, with a button for each other person in it. */
 export function showPassLeaderDialog(): void {
@@ -21,29 +18,26 @@ export function showPassLeaderDialog(): void {
     return;
   }
 
-  leaderPlaceholder.replaceChildren();
+  const { leader } = globals.state.replay.shared;
+  const others = globals.state.spectators.filter(
+    (spectator) => spectator.username !== leader,
+  );
 
-  for (const spectator of globals.state.spectators) {
-    if (spectator.username === globals.state.replay.shared.leader) {
-      continue;
-    }
-
-    const button = document.createElement("button");
-
-    button.textContent = spectator.username;
-    button.classList.add("button");
-    const { userId } = spectator;
-    button.addEventListener("click", () => {
-      setLeader(userId);
-    });
-    button.type = "submit";
-    // The dialog would otherwise focus its close button, which comes first.
-    button.autofocus = leaderPlaceholder.childElementCount === 0;
-
-    leaderPlaceholder.append(button);
-  }
-
-  modals.showPrompt("#set-leader-modal");
+  modals.showPrompt(
+    {
+      type: "choice",
+      title: "Set New Leader",
+      description:
+        "Who is the person that you want to pass the replay leader to?",
+      options: others.map((spectator) => spectator.username),
+    },
+    (username) => {
+      const spectator = others.find((other) => other.username === username);
+      if (spectator !== undefined) {
+        setLeader(spectator.userId);
+      }
+    },
+  );
 }
 
 export function setLeader(userId: UserId): void {

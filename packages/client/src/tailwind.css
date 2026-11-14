@@ -76,6 +76,8 @@
   --color-critical: var(--critical);
   --color-card-note: var(--card-note);
   --color-card-note-fold: var(--card-note-fold);
+  --color-morph-option-border: var(--morph-option-border);
+  --color-morph-option-selected: var(--morph-option-selected);
 
   /*
     The corners of the New UI. They are as flat as the corners of its cards (see "Card.tsx"). A

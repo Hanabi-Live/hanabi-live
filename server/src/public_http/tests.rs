@@ -103,7 +103,7 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
                 "{id} must remain a top-level container"
             );
         }
-        for id in ["emoji-modal", "morph-modal"] {
+        for id in ["message-modal", "prompt-modal", "emoji-modal"] {
             assert_eq!(parents[id].as_deref(), Some("modals-container"));
         }
         assert!(body.contains(if development {

@@ -5,14 +5,7 @@ const dom = new JSDOM(`<!doctype html><body>
   <dialog id="modal-dialog"></dialog>
   <div id="modals-container">
     <div id="message-modal"></div>
-    <button id="morph-modal-button-cancel"></button>
-    <button id="morph-modal-button-ok"></button>
-    <p id="morph-modal-description"></p>
-    <input id="morph-modal-textbox" />
-    <div id="set-leader-modal"><h2></h2></div>
-    <div id="set-turn-modal"><h2></h2></div>
-    <div id="play-discard-modal"><h2></h2></div>
-    <div id="set-modifier-modal"><h2></h2></div>
+    <div id="prompt-modal"></div>
   </div>
 </body>`);
 // The "jsdom" library does not open or close dialogs.
@@ -33,8 +26,6 @@ const domGlobals = {
   document: dom.window.document,
   HTMLDialogElement,
   HTMLElement: dom.window.HTMLElement,
-  HTMLInputElement: dom.window.HTMLInputElement,
-  MutationObserver: dom.window.MutationObserver,
 };
 const savedGlobals = new Map<string, PropertyDescriptor | undefined>();
 
@@ -64,7 +55,6 @@ vi.mock("./Globals.ts", () => ({
 }));
 vi.mock("./game/reducers/noteIdentity.ts", () => ({}));
 vi.mock("./game/hypothetical.ts", () => ({ morphCard: vi.fn() }));
-vi.mock("./game/cardImages.ts", () => ({ getCardImages: vi.fn() }));
 
 function getMessageModal() {
   return dom.window.document.querySelector("#message-modal");

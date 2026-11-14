@@ -3,9 +3,8 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
-import { closeModals, showPrompt } from "../../modals.ts";
+import { showPrompt } from "../../modals.ts";
 import { store } from "../../store.ts";
-import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "./UiGlobals.ts";
@@ -22,9 +21,6 @@ const SHUTTLE_ANIMATION_SECONDS = 0.25;
  * that both stay visible.
  */
 const OVERLAPPING_SHUTTLE_SCALE = 0.7;
-
-const setTurnButton = getHtmlElement("#set-turn-button");
-const setTurnInput = getHtmlInputElement("#set-turn-input");
 
 // ---------------------
 // Main replay functions
@@ -413,23 +409,22 @@ export function promptTurn(): void {
   const finalSegment = globals.state.ongoingGame.turn.segment! + 1;
   const currentSegment = getCurrentReplaySegment() + 1;
 
-  setTurnInput.min = "1";
-  // The maximum turn would show how long the game lasts.
-  setTurnInput.max = isSpoilerFree()
-    ? ""
-    : Math.max(finalSegment, currentSegment).toString();
-  setTurnInput.value = currentSegment.toString();
-
-  // We can't use "addEventListener" because we can't easily remove the previous listener.
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  setTurnButton.onclick = (event) => {
-    event.preventDefault();
-    closeModals();
-
-    goTo(setTurnInput.value);
-  };
-
-  showPrompt("#set-turn-modal", undefined, setTurnInput, setTurnButton);
+  showPrompt(
+    {
+      type: "number",
+      title: "Which turn do you want to go to?",
+      description: undefined,
+      current: undefined,
+      label: "Turn:",
+      value: currentSegment.toString(),
+      min: "1",
+      // The maximum turn would show how long the game lasts.
+      max: isSpoilerFree()
+        ? undefined
+        : Math.max(finalSegment, currentSegment).toString(),
+    },
+    goTo,
+  );
 }
 
 export function goTo(turnString: string): void {

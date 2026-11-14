@@ -133,20 +133,6 @@ body[data-screen="game"] {
   padding-bottom: 0.75em;
 }
 
-.slim-table {
-  margin-bottom: 0.5em;
-}
-
-.slim-table td {
-  padding: 0.25em 0.25em; /* vanilla is 0.75em 0.75em */
-}
-
-/* For text input labels */
-.input-text {
-  position: relative;
-  top: 0.75em;
-}
-
 /* An icon before its label. */
 .icon-label {
   margin-right: 0.4em;

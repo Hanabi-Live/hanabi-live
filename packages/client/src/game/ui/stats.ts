@@ -4,16 +4,11 @@ import type Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
-import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { RIGHT_MOUSE_BUTTON } from "./constants.ts";
 import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
-
-const setModifierButton = getHtmlElement("#set-modifier-button");
-const setModifierCurrent = getHtmlElement("#set-modifier-current");
-const setModifierNew = getHtmlInputElement("#set-modifier-new");
 
 export function setEfficiencyModifier(efficiencyModifier: number): void {
   store.dispatch(
@@ -75,33 +70,34 @@ export function askForEfficiency(): void {
 
   const currentModifier = globals.state.notes.efficiencyModifier;
 
-  setModifierCurrent.textContent = currentModifier.toString();
-  setModifierNew.value = currentModifier.toString();
-
-  // We can't use "addEventListener" because we can't easily remove the previous listener.
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  setModifierButton.onclick = () => {
-    modals.closeModals();
-
-    const efficiencyModifierString = setModifierNew.value;
-    const efficiencyModifier = parseIntSafe(efficiencyModifierString);
-    if (efficiencyModifier === undefined) {
-      // Do not do anything if they entered something that is not a number.
-      return;
-    }
-    if (Math.abs(efficiencyModifier) > MAX_EFFICIENCY_MODIFIER) {
-      modals.showWarning(
-        `The modifier must be between -${MAX_EFFICIENCY_MODIFIER} and ${MAX_EFFICIENCY_MODIFIER}.`,
-      );
-      return;
-    }
-    setEfficiencyModifier(efficiencyModifier);
-  };
-
   modals.showPrompt(
-    "#set-modifier-modal",
-    undefined,
-    setModifierNew,
-    setModifierButton,
+    {
+      type: "number",
+      title: "Set Modifier",
+      description:
+        'Enter a modifier for the "cards currently gotten". (e.g. "1", "-2", etc.)',
+      current: {
+        label: "Current modifier:",
+        value: currentModifier.toString(),
+      },
+      label: "New modifier:",
+      value: currentModifier.toString(),
+      min: undefined,
+      max: undefined,
+    },
+    (efficiencyModifierString) => {
+      const efficiencyModifier = parseIntSafe(efficiencyModifierString);
+      if (efficiencyModifier === undefined) {
+        // Do not do anything if they entered something that is not a number.
+        return;
+      }
+      if (Math.abs(efficiencyModifier) > MAX_EFFICIENCY_MODIFIER) {
+        modals.showWarning(
+          `The modifier must be between -${MAX_EFFICIENCY_MODIFIER} and ${MAX_EFFICIENCY_MODIFIER}.`,
+        );
+        return;
+      }
+      setEfficiencyModifier(efficiencyModifier);
+    },
   );
 }

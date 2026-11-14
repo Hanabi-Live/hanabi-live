@@ -96,13 +96,6 @@
   width: 8em;
 }
 
-#leader-placeholder {
-  display: flex;
-  justify-content: center;
-  align-content: space-evenly;
-  column-gap: 0.625em;
-}
-
 /* Cursors styles for game container */
 .game-cursor-default {
   cursor: auto;
