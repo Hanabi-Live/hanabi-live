@@ -32,10 +32,121 @@ export const CLUED_RAISE_PER_WIDTH = 0.12;
 const RANK_OUTLINE_WIDTH = 4;
 
 /**
- * The size of the suit's pip, as a fraction of the card's width. It is in the middle of the card,
- * between the rank in the corner and the same rank turned over in the opposite corner.
+ * The size of the suit's pip on a card whose rank does not show, as a fraction of the card's width.
+ * It is in the middle of the card.
  */
 const SUIT_PIP_SIZE_PER_WIDTH = 0.5;
+
+/**
+ * A pip on a card's face, in fractions of the card's width from the middle of the space that the
+ * pips fill.
+ */
+interface FacePip {
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+  /** Whether the pip is upside down, as on the bottom half of a playing card. */
+  readonly turned: boolean;
+}
+
+/** The pips on the face of a 2. */
+const RANK_2_PIP = {
+  y: 0.2,
+  size: 0.36,
+} as const;
+
+/** The pips at the top, bottom, and sides of a 3, 4, or 5. */
+const OUTER_PIP = {
+  offset: 0.29,
+  sideOffset: 0.3,
+  size: 0.28,
+} as const;
+
+/** The size of the pip in the middle of a 3 or a 5. */
+const CENTER_PIP_SIZE = 0.3;
+
+/**
+ * The gap between the rank in the corner and the pips under it, as a fraction of a card's width.
+ */
+const RANK_PIP_GAP_PER_WIDTH = 0.03;
+
+/** The one large pip in the middle of a 1, or of a card whose rank does not show. */
+const SINGLE_PIP = {
+  x: 0,
+  y: 0,
+  size: SUIT_PIP_SIZE_PER_WIDTH,
+  turned: false,
+} as const satisfies FacePip;
+
+/**
+ * The pips on a card of each rank: as many pips as the rank, in the pattern of the classic card
+ * images, so that players can tell a rank from the pattern at a glance. Another rank, such as a
+ * start card, has one pip. The pips fill the space under the rank in the corner, so the rank does
+ * not show again, turned over, in the opposite corner.
+ */
+const RANK_PIP_LAYOUTS: ReadonlyMap<number, readonly FacePip[]> = (() => {
+  const center: FacePip = {
+    x: 0,
+    y: 0,
+    size: CENTER_PIP_SIZE,
+    turned: false,
+  };
+  const top: FacePip = {
+    x: 0,
+    y: -OUTER_PIP.offset,
+    size: OUTER_PIP.size,
+    turned: false,
+  };
+  const bottom: FacePip = {
+    ...top,
+    y: OUTER_PIP.offset,
+    turned: true,
+  };
+  const left: FacePip = {
+    x: -OUTER_PIP.sideOffset,
+    y: 0,
+    size: OUTER_PIP.size,
+    turned: false,
+  };
+  const right: FacePip = {
+    ...left,
+    x: OUTER_PIP.sideOffset,
+    turned: true,
+  };
+
+  return new Map([
+    [1, [SINGLE_PIP]],
+    [
+      2,
+      [
+        {
+          x: 0,
+          y: -RANK_2_PIP.y,
+          size: RANK_2_PIP.size,
+          turned: false,
+        },
+        {
+          x: 0,
+          y: RANK_2_PIP.y,
+          size: RANK_2_PIP.size,
+          turned: true,
+        },
+      ],
+    ],
+    [3, [top, center, bottom]],
+    [4, [top, left, right, bottom]],
+    [5, [top, left, center, right, bottom]],
+  ]);
+})();
+
+/** The pips on a card's face, from its rank. */
+function getFacePips(rank: Rank | undefined): readonly FacePip[] {
+  return (
+    (rank === undefined ? undefined : RANK_PIP_LAYOUTS.get(rank)) ?? [
+      SINGLE_PIP,
+    ]
+  );
+}
 
 /**
  * How far the rank and the badges in the corners of a card are from its edges, as a fraction of its
@@ -830,8 +941,17 @@ export function CardFace({
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
   const height = width * CARD_HEIGHT_PER_WIDTH;
-  const suitPipSize = width * SUIT_PIP_SIZE_PER_WIDTH;
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
+
+  // The pips go in the middle of the card, or, under a rank, in the middle of the space between the
+  // rank and the bottom of the card.
+  const pipsTop =
+    rank === undefined
+      ? 0
+      : width * (RANK_BOTTOM_PER_WIDTH + RANK_PIP_GAP_PER_WIDTH);
+  const pipsBottom =
+    rank === undefined ? height : height - width * CORNER_INSET_PER_WIDTH;
+  const pipsCenterY = (pipsTop + pipsBottom) / 2;
 
   // "getCardView" leaves out the possibilities that tell the holder nothing new.
   const showSuitPips = possibleSuitIndexes.length > 0;
@@ -877,22 +997,24 @@ export function CardFace({
       {rank !== undefined && (
         <StylizedRanks
           rank={rank}
-          showTurnedOver={!showSuitPips && !showRankPips}
+          showTurnedOver={suit === undefined && !showSuitPips && !showRankPips}
         />
       )}
 
-      {suit !== undefined && (
-        <div
-          className="tw:absolute tw:flex tw:justify-center"
-          style={{
-            left: 0,
-            right: 0,
-            top: (height - suitPipSize) / 2,
-          }}
-        >
-          <Pip size={suitPipSize} suit={suit} variant={variant} />
-        </div>
-      )}
+      {suit !== undefined
+        && getFacePips(rank).map((pip) => (
+          <div
+            className="tw:absolute"
+            key={`${pip.x} ${pip.y}`}
+            style={{
+              left: width / 2 + width * (pip.x - pip.size / 2),
+              top: pipsCenterY + width * (pip.y - pip.size / 2),
+              transform: pip.turned ? "rotate(180deg)" : undefined,
+            }}
+          >
+            <Pip size={width * pip.size} suit={suit} variant={variant} />
+          </div>
+        ))}
 
       {(critical || trashIcon) && (
         <StatusBadge critical={critical} width={width} />
