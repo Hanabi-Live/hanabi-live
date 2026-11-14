@@ -590,8 +590,9 @@ function EditableCard({
   return (
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
-      // A button does not take the page font by default, so the card labels would change font.
-      className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:font-[inherit]"
+      // A button does not take the page font by default, so the card labels would change font. It
+      // is a block, so that it does not sit on a line of text, which would make the hand taller.
+      className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:font-[inherit]"
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {
