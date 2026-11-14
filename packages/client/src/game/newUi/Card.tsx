@@ -1012,7 +1012,7 @@ export function CardFace({
               transform: pip.turned ? "rotate(180deg)" : undefined,
             }}
           >
-            <Pip size={width * pip.size} suit={suit} variant={variant} />
+            <Pip shadow size={width * pip.size} suit={suit} variant={variant} />
           </div>
         ))}
 

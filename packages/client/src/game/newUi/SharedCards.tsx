@@ -346,6 +346,7 @@ export const PlayArea = forwardRef<
                     >
                       {suit !== undefined && (
                         <Pip
+                          shadow
                           size={cardWidth * 0.6}
                           suit={suit}
                           variant={variant}
