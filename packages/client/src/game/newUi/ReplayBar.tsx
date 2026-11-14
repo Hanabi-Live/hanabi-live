@@ -424,7 +424,10 @@ function OwnHypotheticalBar({
     <Bar>
       <div className={ROWS_CLASS}>
         <LeaderControls state={state} />
-        <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
+        {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
+        <div
+          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
+        >
           <button
             aria-label="Back a turn in the hypothetical"
             className={HYPOTHETICAL_BUTTON_CLASS}
@@ -528,13 +531,13 @@ export function ReplayBar({
 /**
  * The first row of a bar: the left, the middle, and the right. The left and the right are always
  * the same width, and their contents cannot widen them, so the middle stays in the center. Its
- * parts line up at the top, so that the button at its right end is in the same place in every bar.
- * On a narrow window, its parts flow into the bar's own rows, with the left and the right first, so
- * that the button that enters a hypothetical is in the top-right corner, as the button that leaves
- * it is.
+ * parts line up on the middle of the steps through the turns. The middle of every bar is as tall as
+ * the steps, so that the button at its right end is in the same place in every bar. On a narrow
+ * window, its parts flow into the bar's own rows, with the left and the right first, so that the
+ * button that enters a hypothetical is in the top-right corner, as the button that leaves it is.
  */
 const ROWS_CLASS =
-  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-start tw:gap-2.5 tw:narrow-980:contents";
+  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
 
 /** The right of the first row of a bar. On a narrow window, it is in the bar's first row. */
 const RIGHT_CLASS =
