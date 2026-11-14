@@ -17,8 +17,13 @@ import { releaseGameObservers } from "./gameObservers.ts";
 import * as gameSession from "./gameSession.ts";
 import * as newUi from "./newUi/newUi.ts";
 import { setPlayStartSound } from "./soundEffects.ts";
-import { loadGameInit } from "./ui/gameCommands.ts";
+import { drawConnections, loadGameInit } from "./ui/gameCommands.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
+import * as keyboard from "./ui/keyboard.ts";
+import { StateObserver } from "./ui/reactive/StateObserver.ts";
+import * as timer from "./ui/timer.ts";
+import { resetGlobals, globals as uiGlobals } from "./ui/UiGlobals.ts";
+import { uiInit } from "./ui/uiInit.ts";
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
 let historyHash = "";
@@ -58,23 +63,45 @@ export function show(justStarted: boolean): void {
   hideElement(getHtmlElement("#page-wrapper")); // We can't fade this out as it will overlap
   store.dispatch(gameChatCleared()); // Clear the in-game chat box of any previous content
   document.body.addEventListener("contextmenu", preventContextMenu);
-  // The classic screen keeps running underneath the redesigned one, hidden.
-  if (!store.getState().session.settings.newUi) {
-    fadeIn(getHtmlElement("#game"));
-  }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   gameSession.openGame();
   clock.reset();
   setPlayStartSound(justStarted);
-  globals.ui = new HanabiUi();
+  resetGlobals();
   if (store.getState().session.settings.newUi) {
     newUi.mount();
+  } else {
+    fadeIn(getHtmlElement("#game"));
+    globals.ui = new HanabiUi();
   }
 
   // Request what we need to start drawing the UI, such as the number of players and the variant. We
   // request the game's state once the UI is drawn.
   loadGameInit(globals.connection, globals.joinedTableId);
+}
+
+/**
+ * Builds the classic screen for the open game, when a player switches to it from the New UI. If the
+ * server has not described the game yet, the screen is drawn when it does.
+ */
+export function buildClassicScreen(): void {
+  if (globals.ui !== undefined) {
+    return;
+  }
+
+  const ui = new HanabiUi();
+  globals.ui = ui;
+  if (store.getState().game.current === undefined) {
+    return;
+  }
+
+  uiInit(() => {
+    uiGlobals.stateObserver = new StateObserver();
+    timer.draw();
+    drawConnections();
+    ui.updateChatLabel();
+  });
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
@@ -93,6 +120,7 @@ export function closeGame(): void {
   gameSession.closeGame();
   releaseGameObservers();
   clock.reset();
+  keyboard.destroy();
   if (globals.ui !== undefined) {
     globals.ui.destroy();
     globals.ui = undefined;

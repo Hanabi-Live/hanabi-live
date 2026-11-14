@@ -16,7 +16,7 @@ import * as cluesView from "./reactive/views/cluesView.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
 import type { UiGlobals } from "./UiGlobals.ts";
-import { globals, releaseSubscriptions, resetGlobals } from "./UiGlobals.ts";
+import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 
 export class HanabiUi {
   globals: UiGlobals;
@@ -34,9 +34,6 @@ export class HanabiUi {
   private readonly stopDrawingTimers: () => void;
 
   constructor() {
-    // Each game starts with new globals.
-    resetGlobals();
-
     // Expose the globals to functions in the "game" directory.
     this.globals = globals;
 

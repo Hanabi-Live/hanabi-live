@@ -1,15 +1,14 @@
 // Shows a game in the redesigned game screen, for players who turned on the "New UI" setting.
 // "App.tsx" renders the screen while the store says that it is shown.
 
-// The classic Konva screen still runs, hidden, for every game. It keeps handling the timers, the
-// hotkeys, the replays, and the hypotheticals, which change the store that both screens draw from.
-// A player can switch to the classic screen at any time.
+// The classic Konva screen is not built for a game that the New UI shows. A player can switch to
+// the classic screen at any time, which builds it then.
 
 import { flushSync } from "react-dom";
 import { fadeIn, hideElement, showElement } from "../../elementVisibility.ts";
 import { store } from "../../store.ts";
 import { getHtmlElement } from "../../utils.ts";
-import { globals } from "../ui/UiGlobals.ts";
+import { buildClassicScreen } from "../main.ts";
 import { newUiShownChanged } from "./newUiSlice.ts";
 
 export function mount(): void {
@@ -42,6 +41,6 @@ export function switchToClassic(): void {
 
     unmount();
     showElement(getHtmlElement("#game"));
-    globals.stage.batchDraw();
+    buildClassicScreen();
   }, 0);
 }

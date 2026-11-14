@@ -774,12 +774,17 @@ export function drawUi(): void {
 
 /** Shows the latest votes to end the game on the skull and in its menu. */
 export function updateTerminationVotes(): void {
-  globals.elements.terminateButton?.setImage(
+  const { terminateButton, terminateMenu } = globals.elements;
+  if (terminateButton === undefined) {
+    return;
+  }
+
+  terminateButton.setImage(
     globals.imageLoader!.get(
       store.getState().game.votes?.voted === true ? "skull_vtk" : "skull",
     ),
   );
-  globals.elements.terminateMenu?.update();
+  terminateMenu?.update();
 }
 
 function drawBackground() {

@@ -49,6 +49,7 @@ import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import * as keyboard from "./keyboard.ts";
 import * as notes from "./notes.ts";
 import { StateObserver } from "./reactive/StateObserver.ts";
 import * as replay from "./replay.ts";
@@ -78,8 +79,17 @@ gameCommands.set("connections", (data) => {
   setConnected(data.connections);
 });
 
+/** Whether each player is connected, from the last "connections" message. */
+let connections: readonly boolean[] = [];
+
 function setConnected(connectedList: readonly boolean[]) {
-  for (const [i, connected] of connectedList.entries()) {
+  connections = connectedList;
+  drawConnections();
+}
+
+/** Shows on the classic screen's player names which players are connected. */
+export function drawConnections(): void {
+  for (const [i, connected] of connections.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
       nameFrame.setConnected(connected);
@@ -105,7 +115,7 @@ gameCommands.set("gameFinished", (data) => {
   setCardIdentities(data.deck);
 
   // A replay has no players to wait for.
-  setConnected(globals.elements.nameFrames.map(() => true));
+  setConnected(globals.metadata.playerNames.map(() => true));
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
@@ -275,8 +285,22 @@ export function loadGameInit(conn: Connection, tableId: number): void {
     setUrl(tableId, metadata);
     initStateStore(metadata);
 
-    // Now that we know the number of players and the variant, we can start to load & draw the UI.
-    uiInit();
+    // Ask for the game's state once the screen can show it. The classic screen first loads its
+    // images and draws itself, now that it knows the number of players and the variant.
+    if (lobbyGlobals.ui === undefined) {
+      // The New UI handles the clue hotkeys itself, so the other hotkeys need no classic screen.
+      keyboard.init();
+      requestGameState();
+    } else {
+      uiInit(requestGameState);
+    }
+  });
+}
+
+/** Asks for the actions that have taken place in the game so far. */
+function requestGameState() {
+  lobbyGlobals.connection.send("gameStateLoad", {
+    tableId: lobbyGlobals.joinedTableId,
   });
 }
 
@@ -670,11 +694,14 @@ function initStateStore(data: GameInit) {
   };
   // A reconnection can describe the game again, so release the observers of the old state first.
   releaseSubscriptions();
+  connections = [];
   store.dispatch(gameStarted(initialState(metadata)));
 
   // The observers that work for both screens start first, then the classic screen's views.
   registerGameObservers();
-  globals.stateObserver = new StateObserver();
+  if (lobbyGlobals.ui !== undefined) {
+    globals.stateObserver = new StateObserver();
+  }
 
   store.dispatch(
     gameUpdated({

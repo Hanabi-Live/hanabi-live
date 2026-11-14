@@ -113,8 +113,11 @@ export function onLastClueTypeChanged(
   globals.layers.UI.batchDraw();
 }
 
+/**
+ * On our turn, the clue buttons start again from nothing. ("../../../ourTurn.ts" sends a premove.)
+ */
 export function onOngoingTurnChanged(): void {
   if (isOurTurn()) {
-    turn.begin();
+    turn.resetSelectedClue();
   }
 }

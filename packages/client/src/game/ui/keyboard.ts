@@ -497,9 +497,9 @@ function click(element: Konva.Node) {
 }
 
 function performAction(actionType: PlayOrDiscard, order: CardOrder) {
-  const card = globals.deck[order];
-  if (actionType === "play" && card !== undefined) {
-    confirmPlay(card.state, () => {
+  const cardState = globals.state.visibleState?.deck[order];
+  if (actionType === "play" && cardState !== undefined) {
+    confirmPlay(cardState, () => {
       sendAction(actionType, order);
     });
     return;

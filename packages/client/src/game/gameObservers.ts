@@ -1,13 +1,16 @@
 // The observers of the game's state that do work for both game screens: they tell the server when
-// the game has loaded, play sounds, and keep a shared replay on the leader's turn. The classic
-// screen's observers ("ui/reactive/StateObserver.ts") only draw it.
+// the game has loaded, play sounds, send our premove on our turn, and keep a shared replay on the
+// leader's turn. The classic screen's observers ("ui/reactive/StateObserver.ts") only draw it.
 
+import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../Globals.ts";
 import * as gameSession from "./gameSession.ts";
 import { gameStateSource } from "./gameStateSource.ts";
+import { onOurTurn } from "./ourTurn.ts";
 import type { SoundData } from "./soundEffects.ts";
 import { onNewSoundEffect } from "./soundEffects.ts";
 import type { State } from "./types/State.ts";
+import { isOurTurn } from "./ui/isOurTurn.ts";
 import type { Listener, Subscription } from "./ui/reactive/observeStore.ts";
 import { observeStore, SKIP } from "./ui/reactive/observeStore.ts";
 import * as replay from "./ui/replay.ts";
@@ -43,6 +46,33 @@ function subAfterInit<T>(
       }
     },
   };
+}
+
+interface OngoingTurn {
+  readonly segment: number | undefined;
+  readonly currentPlayerIndex: PlayerIndex | undefined;
+}
+
+/**
+ * When it becomes our turn, we get a notification and our premove is sent. Not while the game
+ * loads, or when we catch up on several moves at once, such as after a reconnection.
+ */
+function onOngoingTurnChanged(
+  state: State,
+  data: OngoingTurn,
+  previousData: OngoingTurn | undefined,
+) {
+  if (previousData === undefined || gameSession.isLoading()) {
+    return;
+  }
+
+  const jumped =
+    data.segment !== undefined
+    && previousData.segment !== undefined
+    && Math.abs(data.segment - previousData.segment) >= 2;
+  if (!jumped && isOurTurn()) {
+    onOurTurn(state);
+  }
 }
 
 /** Once the game's first state is shown, the server starts our clock if it is our turn. */
@@ -115,6 +145,14 @@ const subscriptions: Array<Subscription<State, any>> = [
       amLeader: s.replay.shared?.amLeader,
     }),
     onSharedSegmentChanged,
+  ),
+
+  subAfterInit(
+    (s): OngoingTurn => ({
+      segment: s.ongoingGame.turn.segment,
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    }),
+    onOngoingTurnChanged,
   ),
 
   {

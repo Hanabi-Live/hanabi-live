@@ -1,6 +1,4 @@
-import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import { globals as lobbyGlobals } from "../../Globals.ts";
-import * as notifications from "../../notifications.ts";
 import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
 import { gameUpdated } from "../gameSlice.ts";
@@ -10,82 +8,7 @@ import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import * as cluePreview from "./cluePreview.ts";
-import { PREPLAY_DELAY_MILLISECONDS } from "./constants.ts";
-import { isOurTurn } from "./isOurTurn.ts";
 import * as replay from "./replay.ts";
-
-export function begin(): void {
-  resetSelectedClue();
-
-  if (globals.animateFast) {
-    return;
-  }
-
-  if (store.getState().session.settings.desktopNotification) {
-    notifications.send("It is your turn.", "turn");
-  }
-
-  handlePremove();
-}
-
-// Handle pre-playing / pre-discarding / pre-cluing.
-function handlePremove() {
-  const { premove } = globals.state;
-  const { clueTokens } = globals.state.ongoingGame;
-
-  if (premove === undefined) {
-    return;
-  }
-
-  // Make a copy of the premove values and then clear the premove action.
-  const oldPremove = { ...premove };
-  store.dispatch(
-    gameUpdated({
-      type: "premove",
-      premove: undefined,
-    }),
-  );
-
-  // Perform some validation.
-  switch (oldPremove.type) {
-    case "clue": {
-      // Prevent pre-cluing if there is not a clue available.
-      if (clueTokens < getClueCost(globals.variant)) {
-        return;
-      }
-
-      break;
-    }
-
-    case "discard": {
-      // Prevent discarding if the team is at the maximum amount of clues.
-      if (isAtMaxClueTokens(clueTokens, globals.variant)) {
-        return;
-      }
-
-      break;
-    }
-
-    default: {
-      break;
-    }
-  }
-
-  // We do not want to send the action right away, or else it introduces bugs.
-  setTimeout(() => {
-    // As a sanity check, ensure that it is still our turn.
-    if (!isOurTurn()) {
-      return;
-    }
-
-    lobbyGlobals.connection.send(
-      "playerAction",
-      toWireAction(lobbyGlobals.joinedTableId, oldPremove),
-    );
-
-    arrows.hideAll();
-  }, PREPLAY_DELAY_MILLISECONDS);
-}
 
 export function resetSelectedClue(): void {
   // Reset the clue UI, leaving the last target player selected.

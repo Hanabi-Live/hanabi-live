@@ -25,7 +25,7 @@ const LOADING_LABEL = {
 
 // When the HanabiUi object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
-export function uiInit(): void {
+export function uiInit(onDrawn: () => void): void {
   assertDefined(
     lobbyGlobals.imageLoader,
     "Failed to find the image loader when initializing the user interface.",
@@ -45,7 +45,7 @@ export function uiInit(): void {
     // The user has spent enough time in the lobby before joining a game such that all of the
     // game-related images have had time to fully download. This means we do not have to show the
     // loading screen; skip directly to the next step.
-    finishedDownloadingImages();
+    finishedDownloadingImages(onDrawn);
     return;
   }
 
@@ -59,7 +59,9 @@ export function uiInit(): void {
     progressLabel.text(`${done}/${total}`);
     loadingLayer.batchDraw();
   };
-  globals.imageLoader.finishedCallback = finishedDownloadingImages;
+  globals.imageLoader.finishedCallback = () => {
+    finishedDownloadingImages(onDrawn);
+  };
   globals.imageLoader.failedCallback = showImageLoadError;
 
   const winW = globals.stage.width();
@@ -111,7 +113,7 @@ function showImageLoadError(filePath: string) {
   );
 }
 
-function finishedDownloadingImages() {
+function finishedDownloadingImages(onDrawn: () => void) {
   // Build images for every card (with respect to the variant that we are playing and whether or not
   // we have the colorblind UI feature enabled).
   globals.cardImages = getCardImages(globals.variant);
@@ -122,9 +124,5 @@ function finishedDownloadingImages() {
   // Keyboard hotkeys can only be initialized once the clue buttons are drawn.
   keyboard.init();
 
-  // Tell the server that we are finished loading the UI and we now need the specific actions that
-  // have taken place in this game so far.
-  lobbyGlobals.connection.send("gameStateLoad", {
-    tableId: lobbyGlobals.joinedTableId,
-  });
+  onDrawn();
 }
