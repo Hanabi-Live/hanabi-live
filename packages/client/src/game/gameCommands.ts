@@ -3,12 +3,7 @@
 // e.g. in-game replays.
 
 import type { ReplyData, ServerEventData } from "@hanabi-live/data";
-import type {
-  CardOrder,
-  GameMetadata,
-  NumPlayers,
-  Options,
-} from "@hanabi-live/game";
+import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getEndGameLength,
@@ -19,42 +14,35 @@ import {
   toHypotheticalAction,
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
-import { iRange, newArray } from "complete-common";
-import type { Connection } from "../../Connection.ts";
-import { globals as lobbyGlobals } from "../../Globals.ts";
-import { sendSelfPmFromServer } from "../../chat.ts";
-import { PATH } from "../../constants.ts";
-import { Screen } from "../../lobby/types/Screen.ts";
-import * as modals from "../../modals.ts";
-import { ServerHandlers } from "../../serverHandlers.ts";
-import * as sounds from "../../sounds.ts";
-import { store } from "../../store.ts";
-import { setBrowserAddressBarPath } from "../../utils.ts";
-import {
-  toCardIdentity,
-  toPlayerTuple,
-  toSoundType,
-} from "../../wire.ts";
-import * as clock from "../clock.ts";
-import { registerGameObservers } from "../gameObservers.ts";
-import * as gameSession from "../gameSession.ts";
-import type { Votes } from "../gameSlice.ts";
-import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
-import * as hypothetical from "../hypothetical.ts";
-import { initialState } from "../reducers/initialStates/initialState.ts";
-import { playerNamesAt } from "../reducers/stateReducerHelpers.ts";
-import { SoundType } from "../types/SoundType.ts";
-import type { State } from "../types/State.ts";
-import { globals, releaseSubscriptions } from "./UiGlobals.ts";
-import * as arrows from "./arrows.ts";
-import { updateTerminationVotes } from "./drawUi.ts";
-import { getCardOrStackBase } from "./getCardOrStackBase.ts";
-import * as keyboard from "./keyboard.ts";
-import * as notes from "./notes.ts";
-import { StateObserver } from "./reactive/StateObserver.ts";
-import * as replay from "./replay.ts";
-import * as stats from "./stats.ts";
-import { uiInit } from "./uiInit.ts";
+import { newArray } from "complete-common";
+import type { Connection } from "../Connection.ts";
+import { globals as lobbyGlobals } from "../Globals.ts";
+import { sendSelfPmFromServer } from "../chat.ts";
+import { PATH } from "../constants.ts";
+import { Screen } from "../lobby/types/Screen.ts";
+import * as modals from "../modals.ts";
+import { ServerHandlers } from "../serverHandlers.ts";
+import * as sounds from "../sounds.ts";
+import { store } from "../store.ts";
+import { setBrowserAddressBarPath } from "../utils.ts";
+import { toCardIdentity, toPlayerTuple, toSoundType } from "../wire.ts";
+import * as clock from "./clock.ts";
+import { registerGameObservers } from "./gameObservers.ts";
+import * as gameSession from "./gameSession.ts";
+import type { Votes } from "./gameSlice.ts";
+import { gameStarted, gameUpdated, votesChanged } from "./gameSlice.ts";
+import * as hypothetical from "./hypothetical.ts";
+import { initialState } from "./reducers/initialStates/initialState.ts";
+import { playerNamesAt } from "./reducers/stateReducerHelpers.ts";
+import { SoundType } from "./types/SoundType.ts";
+import type { State } from "./types/State.ts";
+import { globals, releaseSubscriptions } from "./ui/UiGlobals.ts";
+import * as keyboard from "./ui/keyboard.ts";
+import { StateObserver } from "./ui/reactive/StateObserver.ts";
+import * as replay from "./ui/replay.ts";
+import * as serverUpdates from "./ui/serverUpdates.ts";
+import * as stats from "./ui/stats.ts";
+import { uiInit } from "./ui/uiInit.ts";
 
 // Define a command handler map.
 export const gameCommands = new ServerHandlers();
@@ -76,28 +64,8 @@ gameCommands.set("clock", (data) => {
 });
 
 gameCommands.set("connections", (data) => {
-  setConnected(data.connections);
+  serverUpdates.setConnections(data.connections);
 });
-
-/** Whether each player is connected, from the last "connections" message. */
-let connections: readonly boolean[] = [];
-
-function setConnected(connectedList: readonly boolean[]) {
-  connections = connectedList;
-  drawConnections();
-}
-
-/** Shows on the classic screen's player names which players are connected. */
-export function drawConnections(): void {
-  for (const [i, connected] of connections.entries()) {
-    const nameFrame = globals.elements.nameFrames[i];
-    if (nameFrame !== undefined) {
-      nameFrame.setConnected(connected);
-    }
-  }
-
-  globals.layers.UI.batchDraw();
-}
 
 function setCardIdentities(deck: ServerEventData["gameFinished"]["deck"]) {
   store.dispatch(
@@ -115,7 +83,7 @@ gameCommands.set("gameFinished", (data) => {
   setCardIdentities(data.deck);
 
   // A replay has no players to wait for.
-  setConnected(globals.metadata.playerNames.map(() => true));
+  serverUpdates.setConnections(globals.metadata.playerNames.map(() => true));
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
@@ -181,11 +149,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
         return;
       }
 
-      arrows.hideAll();
-      const { target } = leaderAction;
-      if (target !== undefined) {
-        arrows.toggle(target.type === "card" ? target.order : target.element);
-      }
+      serverUpdates.drawLeaderArrow(leaderAction.target);
       break;
     }
 
@@ -319,11 +283,7 @@ gameCommands.set("note", (data) => {
     }),
   );
 
-  // Set the note indicator.
-  const card = getCardOrStackBase(data.order);
-  if (card) {
-    card.setNoteIndicator(true);
-  }
+  serverUpdates.drawNoteIndicator(data.order);
 });
 
 /**
@@ -349,7 +309,7 @@ function setNotes(playerNotes: GameState["notes"]) {
     );
   }
 
-  setNoteIndicatorAndCheckForSpecialNote();
+  serverUpdates.drawAllNotes();
 }
 
 // Used when the game state changes.
@@ -388,7 +348,7 @@ gameCommands.set("gameState", (data) => {
     if (phase.votes !== undefined) {
       setVotes(phase.votes);
     }
-    setConnected(phase.connections);
+    serverUpdates.setConnections(phase.connections);
     clock.update(phase.clock);
     store.dispatch(gameUpdated({ type: "pause", ...phase.pause }));
     // We may have missed the idle warning while we were away.
@@ -480,7 +440,7 @@ gameCommands.set("votes", (data) => {
 
 function setVotes(votes: Votes) {
   store.dispatch(votesChanged(votes));
-  updateTerminationVotes();
+  serverUpdates.drawTerminationVotes();
 }
 
 // The table's owner leads its shared replay.
@@ -540,26 +500,6 @@ function setSpectators(spectators: GameState["spectators"]) {
 // -----------
 // Subroutines
 // -----------
-
-function setNoteIndicatorAndCheckForSpecialNote() {
-  // Show the note indicator for currently-visible cards.
-  notes.setAllCardIndicators();
-
-  // Check for special notes.
-  const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
-  for (const order of iRange(indexOfLastDrawnCard)) {
-    const card = getCardOrStackBase(order as CardOrder);
-    if (card) {
-      card.checkSpecialNote();
-      card.setRaiseAndShadowOffset();
-    }
-  }
-
-  // Check for special notes on the stack bases.
-  for (const stackBase of globals.stackBases) {
-    stackBase.checkSpecialNote();
-  }
-}
 
 function canFollowSuggestion(): boolean {
   return (
@@ -694,7 +634,7 @@ function initStateStore(data: GameInit) {
   };
   // A reconnection can describe the game again, so release the observers of the old state first.
   releaseSubscriptions();
-  connections = [];
+  serverUpdates.resetConnections();
   store.dispatch(gameStarted(initialState(metadata)));
 
   // The observers that work for both screens start first, then the classic screen's views.

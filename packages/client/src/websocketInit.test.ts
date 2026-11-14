@@ -16,7 +16,7 @@ vi.mock("./commands.ts", () => ({
 vi.mock("./lobby/lobbyCommands.ts", () => ({
   lobbyCommands: new Map([["welcome", vi.fn()]]),
 }));
-vi.mock("./game/ui/gameCommands.ts", () => ({
+vi.mock("./game/gameCommands.ts", () => ({
   gameCommands: new Map(),
 }));
 vi.mock("./modals.ts", () => ({ showError: vi.fn() }));
