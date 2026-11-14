@@ -301,9 +301,6 @@ const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1.5 12C4.5 6.5 8 4.5 12 4.5s7.5 2 10.5 7.5c-3 5.5-6.5 7.5-10.5 7.5S4.5 17.5 1.5 12z' fill='white' stroke='black' stroke-width='1.5'/><circle cx='12' cy='12' r='4' fill='black'/><circle cx='13.5' cy='10.5' r='1.25' fill='white'/></svg>",
 )}") 12 12, pointer`;
 
-/** The space between cards in a hand, in CSS pixels. */
-export const CARD_GAP = 10;
-
 /**
  * The space in a hand's box above a raised clued card: its border, and a little more so that the
  * border does not touch the box.
@@ -810,7 +807,6 @@ function Hand({
         onPointerLeave={endHold}
         onPointerUp={endHold}
         style={{
-          gap: CARD_GAP,
           cursor: empathyHold ? EMPATHY_CURSOR : undefined,
         }}
       >
