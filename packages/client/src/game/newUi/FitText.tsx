@@ -13,22 +13,26 @@ export function FitText({
   readonly text: string;
 }): React.JSX.Element {
   const outerRef = useRef<HTMLSpanElement>(null);
+  const fullRef = useRef<HTMLSpanElement>(null);
   const shownRef = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
     const outer = outerRef.current!;
+    const full = fullRef.current!;
     const shown = shownRef.current!;
     function fit() {
       const scale =
-        outer.scrollWidth > outer.clientWidth
-          ? Math.floor((100 * outer.clientWidth) / outer.scrollWidth) / 100
+        full.offsetWidth > outer.clientWidth
+          ? Math.floor((100 * outer.clientWidth) / full.offsetWidth) / 100
           : 1;
       shown.style.fontSize = `${scale}em`;
     }
 
     fit();
     const observer = new ResizeObserver(fit);
+    // The space can stay the same while the text gets wider, such as when it turns bold.
     observer.observe(outer);
+    observer.observe(full);
     return () => {
       observer.disconnect();
     };
@@ -39,7 +43,11 @@ export function FitText({
       className="tw:relative tw:min-w-0 tw:overflow-x-clip tw:whitespace-nowrap"
       ref={outerRef}
     >
-      <span aria-hidden="true" className="tw:invisible">
+      <span
+        aria-hidden="true"
+        className="tw:invisible tw:block tw:w-max"
+        ref={fullRef}
+      >
         {text}
       </span>
       <span
