@@ -6,7 +6,6 @@
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
-import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import {
   canToggleDrawnCards,
@@ -17,13 +16,7 @@ import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { MODE_PANEL_CLASS } from "./screenMode.ts";
-import { KEY_CLASS, REPLAY_BAR_BUTTON_CLASS } from "./surfaces.ts";
-
-/** A quiet button for the actions that are not the main one. */
-const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:shrink-0 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8`;
-
-/** The bar's main action: the way back out of the mode. It sets no color. */
-const PRIMARY_BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink ${KEY_CLASS}`;
+import { KEY_CLASS } from "./surfaces.ts";
 
 /** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
 const TIMELINE_SLIDE_MILLISECONDS = 300;
@@ -41,9 +34,9 @@ const STEP_HEIGHT_CLASS = "tw:h-11 tw:text-[20px]";
 /**
  * The sizes of an icon button. Spacing is in "em", so a larger font also makes a larger button. A
  * step to the next or the previous turn is the largest, because a player clicks it many times in a
- * row. The other buttons are as tall as a text button, such as the one that follows the leader
- * again. A normal button's icon is larger than the button's own font. A jump to the first or the
- * last turn is quieter, so that it is not mistaken for a step.
+ * row. The other buttons are as tall as a text button, such as the leader's menu. A normal button's
+ * icon is larger than the button's own font. A jump to the first or the last turn is quieter, so
+ * that it is not mistaken for a step.
  */
 const ICON_BUTTON_SIZE_CLASS = {
   normal: "tw:size-11 tw:text-[15px] tw:text-game-text tw:*:text-[17px]",
@@ -52,8 +45,10 @@ const ICON_BUTTON_SIZE_CLASS = {
 } as const;
 
 /**
- * The panel that holds a bar. On a narrow window, the page scrolls, so the bar goes above the
- * hands, where it is in view.
+ * The panel that holds a bar. It fills the slot of the controls, with its first row at the top,
+ * where the clue panel has its top row, and the timeline at the bottom. Its padding is the clue
+ * panel's, so that the buttons at its ends line up with the clue panel's. On a narrow window, the
+ * page scrolls, so the bar goes above the hands, where it is in view.
  */
 function Bar({
   children,
@@ -62,7 +57,7 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:rounded-game-panel tw:py-3 tw:pr-3 tw:pl-4 ${MODE_PANEL_CLASS}`}
+      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:content-between tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:rounded-game-panel tw:px-4 tw:py-3 ${MODE_PANEL_CLASS}`}
       role="status"
     >
       {children}
@@ -271,24 +266,32 @@ export function Checkbox({
 }
 
 /**
- * A spectator's way back to the shared replay leader, after a step through the turns stops them
- * from following. It shows only then: while they follow the leader, they have nothing to do. It is
- * on the right of the bar, so that the steps in the middle do not move when it shows.
+ * A spectator's switch to follow the shared replay leader, or to move through the turns on their
+ * own. A step through the turns also stops them from following. It is lit while they follow. It is
+ * beside the leader's menu in every bar, so that it stays in one place when it is switched on and
+ * off, and when the leader starts or ends a hypothetical.
  */
-function SyncButton({
+/** The shape of the switch to follow the leader: an icon button that sets no color. */
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[17px] ${KEY_CLASS}`;
+
+function FollowToggle({
   state,
 }: {
   readonly state: State;
 }): React.JSX.Element | undefined {
   const { states, shared } = state.replay;
-  if (shared === undefined || shared.amLeader || shared.useSharedSegments) {
+  if (shared === undefined || shared.amLeader) {
     return undefined;
   }
+
+  const following = shared.useSharedSegments;
 
   // The states are indexed by segment, and their turn numbers start at 0.
   const turnNum = states[shared.segment]?.turn.turnNum;
   let tooltip = `Follow ${shared.leader} again.`;
-  if (shared.hypothetical !== undefined) {
+  if (following) {
+    tooltip = `You follow ${shared.leader}. Stop following them, and move through the turns on your own.`;
+  } else if (shared.hypothetical !== undefined) {
     tooltip = `Join ${shared.leader}'s hypothetical, and follow them again.`;
   } else if (turnNum !== undefined) {
     tooltip = `Go to turn ${turnNum + 1} with ${shared.leader}, and follow them again.`;
@@ -296,21 +299,26 @@ function SyncButton({
 
   return (
     <button
-      className={BUTTON_CLASS}
+      aria-label={`Follow ${shared.leader}`}
+      aria-pressed={following}
+      className={`${FOLLOW_BUTTON_SHAPE_CLASS} ${
+        following
+          ? "tw:bg-game-text tw:text-card-ink tw:hover:bg-white"
+          : "tw:bg-white/8 tw:text-game-mode tw:hover:bg-white/15"
+      }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-sync tw:text-game-mode" />
-      Sync
+      <i aria-hidden="true" className="fas fa-sync" />
     </button>
   );
 }
 
 /**
- * A spectator's bar while the leader tries other moves. The leader's menu and the button to follow
- * the leader again are where the bar of the turns has them, so that they do not move when a click
- * on the button goes back to that bar. The menu names who leads, so the heading does not.
+ * A spectator's bar while the leader tries other moves. The leader's menu and the switch to follow
+ * the leader are where the bar of the turns has them, so that they do not move when the bar
+ * changes. The menu names who leads, so the heading does not.
  */
 function SpectatorHypotheticalBar({
   state,
@@ -327,8 +335,16 @@ function SpectatorHypotheticalBar({
         >
           <Heading icon="fa-flask" label="Shared hypothetical" />
         </div>
+        {/* The space of the button that enters a hypothetical, which the bar of the turns has
+            here. On a narrow window, it shares a row with the switch to follow the leader, so
+            that the switch does not move when the bar changes. */}
         <div className={RIGHT_CLASS}>
-          <SyncButton state={state} />
+          {hypothetical.canStartHypothetical(state) && (
+            <span
+              aria-hidden="true"
+              className={`tw:invisible ${ICON_BUTTON_SIZE_CLASS.normal}`}
+            />
+          )}
         </div>
       </div>
     </Bar>
@@ -336,10 +352,11 @@ function SpectatorHypotheticalBar({
 }
 
 /**
- * A smaller button for the corner of the clue panel, so that the hypothetical's buttons fit beside
- * the players.
+ * A button for the corner of the clue panel. It is as tall as the button of the replay bar that
+ * enters a hypothetical. Its sides are narrow, so that the hypothetical's buttons fit beside the
+ * players.
  */
-const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:h-9 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:text-[14px] tw:font-semibold tw:whitespace-nowrap tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
+const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:text-[15px] tw:font-semibold tw:whitespace-nowrap tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
 const HYPOTHETICAL_BUTTON_CLASS = `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:text-game-text tw:hover:bg-white/15 tw:disabled:hover:bg-white/8`;
 
@@ -382,7 +399,8 @@ function IconToggle({
 /**
  * The buttons of a hypothetical that we control. They are in the top-right corner of the clue
  * panel, which takes the place of the replay bar, so that the hands keep their size. The last one
- * is lit in the color of the mode, and leaves it. It is in the place of the button that entered it.
+ * is lit in the color of the mode, and leaves it. It is the size of the button that entered it, and
+ * in its place.
  */
 export function HypotheticalActions({
   state,
@@ -393,7 +411,8 @@ export function HypotheticalActions({
   readonly editingCards: boolean;
   readonly onToggleEditCards: () => void;
 }): React.JSX.Element {
-  const hypo = state.replay.hypothetical!;
+  // With no hypothetical, the buttons only hold their space in a hidden copy of the clue panel.
+  const hypo = state.replay.hypothetical;
 
   // A hypothetical in a shared replay is the leader's, like the replay around it, and here we lead.
   const name =
@@ -407,7 +426,7 @@ export function HypotheticalActions({
       <button
         aria-label="Back a turn in the hypothetical"
         className={HYPOTHETICAL_BUTTON_CLASS}
-        disabled={hypo.states.length <= 1}
+        disabled={hypo === undefined || hypo.states.length <= 1}
         onClick={hypothetical.sendHypotheticalBack}
         ref={tooltipRef("Back a turn in the hypothetical")}
         type="button"
@@ -430,7 +449,7 @@ export function HypotheticalActions({
         icon="fa-eye"
         label="Show drawn cards"
         onClick={hypothetical.toggleRevealed}
-        pressed={hypo.showDrawnCards}
+        pressed={hypo?.showDrawnCards === true}
         tooltip="Show the faces of the cards drawn during the hypothetical."
       />
       <IconToggle
@@ -442,7 +461,7 @@ export function HypotheticalActions({
       />
       <button
         aria-label="Exit hypothetical"
-        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
+        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:w-11 tw:px-0 tw:*:text-[17px] tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
         onClick={hypothetical.endHypothetical}
         ref={tooltipRef(`Exit ${name}.`)}
         type="button"
@@ -482,19 +501,22 @@ export function ReplayBar({
 
 /**
  * The first row of a bar: the left, the middle, and the right. The left and the right are always
- * the same width, and their contents cannot widen them, so the middle stays in the center. On a
- * narrow window, its parts flow into the bar's own rows.
+ * the same width, and their contents cannot widen them, so the middle stays in the center. Its
+ * parts line up at the top, so that the button at its right end is level with the clue panel's top
+ * row, where the hypothetical's buttons are. On a narrow window, its parts flow into the bar's own
+ * rows, with the left and the right first, so that the button that enters a hypothetical is in the
+ * top-right corner, as the button that leaves it is.
  */
 const ROWS_CLASS =
-  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
+  "tw:grid tw:w-full tw:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] tw:items-start tw:gap-2.5 tw:narrow-980:contents";
 
-/** The right of the first row of a bar. On a narrow window, it is in the bar's last row. */
+/** The right of the first row of a bar. On a narrow window, it is in the bar's first row. */
 const RIGHT_CLASS =
-  "tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-last tw:narrow-980:empty:hidden";
+  "tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-first tw:narrow-980:ml-auto tw:narrow-980:empty:hidden";
 
 /**
- * The shared replay's leader menu, on the left of the bar. On a narrow window, it is in the bar's
- * last row.
+ * The shared replay's leader menu and the switch to follow the leader, on the left of the bar. On a
+ * narrow window, they are in the bar's first row.
  */
 function LeaderControls({
   state,
@@ -503,14 +525,17 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:justify-start tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
+    <div className="tw:flex tw:min-w-0 tw:justify-start tw:gap-2 tw:narrow-980:order-first tw:narrow-980:flex-1 tw:narrow-980:empty:hidden">
       {shared !== undefined && (
-        <LeaderMenu
-          amLeader={shared.amLeader}
-          leader={shared.leader}
-          spectators={state.spectators}
-        />
+        <div className="tw:flex tw:min-w-0 tw:narrow-980:flex-1 tw:narrow-980:*:flex-1">
+          <LeaderMenu
+            amLeader={shared.amLeader}
+            leader={shared.leader}
+            spectators={state.spectators}
+          />
+        </div>
       )}
+      <FollowToggle state={state} />
     </div>
   );
 }
@@ -521,7 +546,7 @@ export function TurnsBar({
 }: {
   readonly state: State;
 }): React.JSX.Element {
-  const { visibleState, replay: replayState, finished } = state;
+  const { visibleState, replay: replayState } = state;
   if (visibleState === undefined) {
     throw new Error("A replay bar needs a turn on screen.");
   }
@@ -551,10 +576,11 @@ export function TurnsBar({
 
   // The buttons that step through the turns are together in the middle of the first row, so that a
   // player can click back and forth without moving the mouse far. The leader's menu, which names
-  // who leads, is on their left, so the bar needs no heading. The button to follow the leader again
-  // is on their right. The timeline has the second row to itself, so that it is wide enough to pick
-  // a turn with the mouse. On a narrow window, the other buttons do not fit beside the steps, so
-  // they go below the timeline.
+  // who leads, and the switch to follow them are on their left, so the bar needs no heading. The
+  // button that enters a hypothetical is on their right. The timeline has the second row to itself,
+  // so that it is wide enough to pick a turn with the mouse. On a narrow window, the other buttons
+  // do not fit beside the steps, so they go above them. The way back to the game is in the bar
+  // along the bottom, where the way into the replay is.
   return (
     <Bar>
       <div className={ROWS_CLASS}>
@@ -600,10 +626,7 @@ export function TurnsBar({
             />
           )}
         </div>
-        <div
-          className={`${RIGHT_CLASS} ${finished ? "" : "tw:narrow-980:flex-1"}`}
-        >
-          <SyncButton state={state} />
+        <div className={RIGHT_CLASS}>
           {canEnterHypothetical && (
             <IconButton
               icon="fa-flask"
@@ -613,7 +636,6 @@ export function TurnsBar({
               tooltip="Enter hypothetical: try out other moves from this turn."
             />
           )}
-          {!finished && <BackToGame state={state} />}
         </div>
       </div>
       {!spoilerFree && (
@@ -625,90 +647,6 @@ export function TurnsBar({
         />
       )}
     </Bar>
-  );
-}
-
-/** How many times the button to go back to the game pulses when it becomes our turn. */
-const OUR_TURN_PULSES = 3;
-
-/** How long one pulse of the button to go back to the game takes, in milliseconds. */
-const OUR_TURN_PULSE_MILLISECONDS = 1200;
-
-/**
- * The way back to the game, with whose turn it is in the game now, which the screen does not show
- * while we look back. When it is our turn, the button is in the color that marks our turn. When our
- * turn comes while we look back, a ring also pulses out of it a few times, so that we do not keep
- * the other players waiting.
- */
-function BackToGame({ state }: { readonly state: State }): React.JSX.Element {
-  const { currentPlayerIndex } = state.ongoingGame.turn;
-  const ourTurn =
-    state.playing && currentPlayerIndex === state.metadata.ourPlayerIndex;
-  const currentName =
-    currentPlayerIndex === undefined
-      ? undefined
-      : state.metadata.playerNames[currentPlayerIndex];
-
-  const ringRef = useRef<HTMLSpanElement>(null);
-  const wasOurTurn = useRef(ourTurn);
-  useLayoutEffect(() => {
-    const ring = ringRef.current;
-    const turnCame = ourTurn && !wasOurTurn.current;
-    wasOurTurn.current = ourTurn;
-    if (
-      ring === null
-      || !turnCame
-      || store.getState().session.settings.reducedMotion
-    ) {
-      return undefined;
-    }
-    const pulse = ring.animate(
-      [
-        {
-          opacity: 0.8,
-          transform: "scale(1)",
-        },
-        {
-          opacity: 0,
-          transform: "scale(1.15, 1.6)",
-        },
-      ],
-      {
-        duration: OUR_TURN_PULSE_MILLISECONDS,
-        easing: "ease-out",
-        iterations: OUR_TURN_PULSES,
-      },
-    );
-    return () => {
-      pulse.cancel();
-    };
-  }, [ourTurn]);
-
-  return (
-    <div className="tw:relative tw:min-w-0 tw:shrink-0 tw:narrow-980:flex-1">
-      <span
-        aria-hidden="true"
-        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-game-control tw:opacity-0 tw:ring-2 tw:ring-game-turn"
-        ref={ringRef}
-      />
-      <button
-        className={`${PRIMARY_BUTTON_CLASS} tw:relative tw:w-full tw:flex-col tw:leading-tight ${ourTurn ? "tw:bg-game-turn tw:hover:brightness-110" : "tw:bg-game-text tw:hover:bg-white"}`}
-        onClick={() => {
-          replay.exit();
-        }}
-        type="button"
-      >
-        Back to the game
-        {currentName !== undefined && (
-          <span
-            className={`tw:max-w-full tw:truncate tw:text-xs ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
-            data-live-turn
-          >
-            {ourTurn ? "Your turn" : `${currentName}'s turn`}
-          </span>
-        )}
-      </button>
-    </div>
   );
 }
 

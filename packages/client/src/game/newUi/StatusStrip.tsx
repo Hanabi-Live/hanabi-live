@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
@@ -55,11 +56,11 @@ interface StatusStripProps {
 
   /** The HTML of the tooltip on the variant: the game's seed, options, and table. */
   readonly gameInfoTooltip: string;
-  readonly canOpenReplay: boolean;
-
-  /** A finished game is all replay, so it has no button to open one. */
-  readonly finished: boolean;
-  readonly onOpenReplay: () => void;
+  /**
+   * The button that goes into the in-game replay and back out. A finished game is all replay, so it
+   * has none.
+   */
+  readonly replayToggle: ReplayToggleProps | undefined;
 
   /** The menu to view the game from a seat, for anyone who does not play in it. */
   readonly viewAsMenu: React.ReactNode;
@@ -179,7 +180,114 @@ function OutOf({
  */
 const FIRST_TWO_DIGIT_TURN = 10;
 
-const buttonClass = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-game-raised tw:px-4 tw:text-[15px] tw:text-game-text tw:hover:bg-game-line tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
+/** The shape of a button on the bar. It sets no color. */
+const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
+
+const buttonClass = `${BUTTON_SHAPE_CLASS} tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line`;
+
+/** How many times the replay button pulses when it becomes our turn while we look back. */
+const OUR_TURN_PULSES = 3;
+
+/** How long one pulse of the replay button takes, in milliseconds. */
+const OUR_TURN_PULSE_MILLISECONDS = 1200;
+
+interface ReplayToggleProps {
+  readonly inReplay: boolean;
+  /** Whose turn it is in the game now, which the screen does not show while we look back. */
+  readonly currentName: string | undefined;
+  readonly ourTurn: boolean;
+  readonly reducedMotion: boolean;
+  readonly onToggle: () => void;
+}
+
+/**
+ * One button goes into the in-game replay and back out, so that a player finds the way out where
+ * they went in. In the replay, it is lit and says whose turn it is in the game. When it is our
+ * turn, it is in the color that marks our turn. When our turn comes while we look back, a ring also
+ * pulses out of it a few times, so that we do not keep the other players waiting. Both labels hold
+ * their space, so the button keeps its size, and the buttons beside it do not move.
+ */
+function ReplayToggle({
+  inReplay,
+  currentName,
+  ourTurn,
+  reducedMotion,
+  onToggle,
+}: ReplayToggleProps): React.JSX.Element {
+  const ringRef = useRef<HTMLSpanElement>(null);
+  const wasOurTurn = useRef(ourTurn);
+  useLayoutEffect(() => {
+    const ring = ringRef.current;
+    const turnCame = ourTurn && !wasOurTurn.current;
+    wasOurTurn.current = ourTurn;
+    if (ring === null || !turnCame || !inReplay || reducedMotion) {
+      return undefined;
+    }
+    const pulse = ring.animate(
+      [
+        {
+          opacity: 0.8,
+          transform: "scale(1)",
+        },
+        {
+          opacity: 0,
+          transform: "scale(1.15, 1.6)",
+        },
+      ],
+      {
+        duration: OUR_TURN_PULSE_MILLISECONDS,
+        easing: "ease-out",
+        iterations: OUR_TURN_PULSES,
+      },
+    );
+    return () => {
+      pulse.cancel();
+    };
+  }, [ourTurn, inReplay, reducedMotion]);
+
+  let colorClass = buttonClass;
+  if (inReplay) {
+    colorClass = ourTurn
+      ? `${BUTTON_SHAPE_CLASS} tw:bg-game-turn tw:font-bold tw:text-card-ink tw:hover:brightness-110`
+      : `${BUTTON_SHAPE_CLASS} tw:bg-game-text tw:font-bold tw:text-card-ink tw:hover:bg-white`;
+  }
+
+  return (
+    <div className="tw:relative tw:shrink-0">
+      <span
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-game-control tw:opacity-0 tw:ring-2 tw:ring-game-turn"
+        ref={ringRef}
+      />
+      <button
+        className={`${colorClass} tw:relative tw:grid tw:leading-tight`}
+        onClick={onToggle}
+        type="button"
+      >
+        <span
+          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:[grid-area:1/1] ${inReplay ? "tw:invisible" : ""}`}
+        >
+          <i aria-hidden="true" className="fas fa-undo" />
+          Replay
+        </span>
+        <span
+          className={`tw:flex tw:flex-col tw:items-center tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
+        >
+          Back to the game
+          {/* The name does not widen the button. A long one is cut off. */}
+          {currentName !== undefined && (
+            <span
+              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
+              data-live-turn
+            >
+              {ourTurn ? "Your turn" : `${currentName}'s turn`}
+            </span>
+          )}
+        </span>
+      </button>
+    </div>
+  );
+}
 
 /**
  * The numbers about the whole game, along the bottom of the screen, most important first. (The clue
@@ -196,9 +304,7 @@ export function StatusStrip({
   minEfficiency,
   variantName,
   gameInfoTooltip,
-  canOpenReplay,
-  finished,
-  onOpenReplay,
+  replayToggle,
   viewAsMenu,
   tableMenu,
   onClassicView,
@@ -284,17 +390,7 @@ export function StatusStrip({
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic UI
         </button>
-        {!finished && (
-          <button
-            className={buttonClass}
-            disabled={!canOpenReplay}
-            onClick={onOpenReplay}
-            type="button"
-          >
-            <i aria-hidden="true" className="fas fa-undo" />
-            Replay
-          </button>
-        )}
+        {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
         {viewAsMenu}
         {tableMenu}
         {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}

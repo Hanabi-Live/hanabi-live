@@ -18,7 +18,6 @@ import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
-import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import { CardFace } from "./Card.tsx";
@@ -58,6 +57,7 @@ import {
   showClue,
   showDiscard,
   showReplayTurn,
+  toggleReplay,
 } from "./screenActions.ts";
 import { getScreenModeStyle } from "./screenMode.ts";
 import { measure } from "./screenScale.ts";
@@ -644,36 +644,41 @@ export function GameScreen({
                 />
               </div>
               {/* The controls are below the hands, nearer the middle of the screen, and in the same
-                  place in every game. While the game goes on, they are in one slot that is always
-                  as tall as both the clue panel and the replay bar: a hidden copy holds the space
-                  of the one not shown. So the hands above it keep their place and size when the
-                  game pauses or goes in and out of a replay. The replay bar keeps its own height at
-                  the bottom of the slot, flush with the boxes beside it. A finished game has no clue panel, so its slot is only as
-                  tall as the replay bar, and the hands get the rest. A spectator's hypothetical bar
-                  is shorter, so a hidden replay bar holds its space too, and the switch to follow
-                  the leader stays in its place. In a hypothetical that we control, the clue panel
-                  takes the place of the replay bar and holds the hypothetical's buttons.
-                  On a narrow window, the page scrolls and the controls go above the hands, with
-                  the replay bar first. */}
+                  place in every game. They are in one slot that is always as tall as both the clue
+                  panel and the replay bar: a hidden copy holds the space of the one not shown. So
+                  the hands above it keep their place and size when the game pauses, goes in and out
+                  of a replay, or starts a hypothetical. The replay bar fills the slot, so that its
+                  first row is level with the top row of the clue panel. In a hypothetical that we
+                  control, the clue panel takes the place of the replay bar and holds the
+                  hypothetical's buttons. The button that leaves it is where the button that
+                  entered it was. On a narrow window, the page scrolls and the controls go above the
+                  hands, with the replay bar first. */}
               <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
-                {!showCluePanel && !state.finished && (
-                  <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
-                    <CluePanel
-                      canClue={false}
-                      canGive={false}
-                      clue={undefined}
-                      clueTouchesNothing={false}
-                      colorblindMode={settings.colorblindMode}
-                      onChooseClue={ignore}
-                      onChooseTarget={ignore}
-                      onGive={ignore}
-                      target={undefined}
-                      targets={clueTargets}
-                      variant={variant}
-                      waitingText=""
-                    />
-                  </div>
-                )}
+                {/* The hidden clue panel has the hypothetical's buttons, so that it is as tall as
+                    the clue panel of a hypothetical. */}
+                <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
+                  <CluePanel
+                    actions={
+                      <HypotheticalActions
+                        editingCards={false}
+                        onToggleEditCards={ignore}
+                        state={state}
+                      />
+                    }
+                    canClue={false}
+                    canGive={false}
+                    clue={undefined}
+                    clueTouchesNothing={false}
+                    colorblindMode={settings.colorblindMode}
+                    onChooseClue={ignore}
+                    onChooseTarget={ignore}
+                    onGive={ignore}
+                    target={undefined}
+                    targets={clueTargets}
+                    variant={variant}
+                    waitingText=""
+                  />
+                </div>
                 {(!showReplayBar || hypo !== undefined) && (
                   <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
                     <TurnsBar state={state} />
@@ -717,7 +722,7 @@ export function GameScreen({
                   </div>
                 )}
                 {showReplayBar && (hypo === undefined || !showCluePanel) && (
-                  <div className="tw:grid tw:self-end tw:[grid-area:1/1] tw:narrow-980:-order-1 tw:narrow-980:self-start">
+                  <div className="tw:grid tw:[grid-area:1/1] tw:narrow-980:-order-1">
                     <ReplayBar state={state} />
                   </div>
                 )}
@@ -768,8 +773,6 @@ export function GameScreen({
       </div>
 
       <StatusStrip
-        canOpenReplay={!inReplay}
-        finished={state.finished}
         futureEfficiency={formatFutureEfficiency(
           visibleState.stats,
           efficiencyModifier,
@@ -790,9 +793,6 @@ export function GameScreen({
         )}
         onClassicView={onSwitchToClassic}
         onLobby={backToLobby}
-        onOpenReplay={() => {
-          replay.enter();
-        }}
         pace={formatPace(
           visibleState.stats.pace,
           visibleState.stats.finalRoundEffectivelyStarted,
@@ -806,6 +806,23 @@ export function GameScreen({
           || options.allOrNothing
             ? undefined
             : getPaceRiskColor(visibleState.stats.paceRisk)
+        }
+        replayToggle={
+          state.finished
+            ? undefined
+            : {
+                inReplay,
+                currentName:
+                  ongoingGame.turn.currentPlayerIndex === undefined
+                    ? undefined
+                    : metadata.playerNames[ongoingGame.turn.currentPlayerIndex],
+                ourTurn:
+                  state.playing
+                  && ongoingGame.turn.currentPlayerIndex
+                    === metadata.ourPlayerIndex,
+                reducedMotion: settings.reducedMotion,
+                onToggle: toggleReplay,
+              }
         }
         score={visibleState.score}
         tableMenu={

@@ -337,7 +337,8 @@ export function CluePanel({
       ) : (
         <>
           {/* The players are on the left of the actions, and the clues are below both. On a
-              narrow window, the actions go first, so that they stay above the reason. */}
+              narrow window, the actions go first, above the players and the reason, so that they
+              are at the top, where the replay bar has its buttons. */}
           <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-2.5 tw:narrow-980:order-first">
             <div
               className={`tw:min-w-0 tw:flex-1 tw:empty:hidden ${hiddenClass}`}
@@ -345,7 +346,7 @@ export function CluePanel({
               {targetButtons}
             </div>
             {/* Over the reason, which covers the panel, so that the buttons can be clicked. */}
-            <div className="tw:relative tw:ml-auto tw:flex tw:flex-wrap tw:justify-end tw:gap-2 tw:narrow-980:w-full tw:narrow-980:*:flex-1">
+            <div className="tw:relative tw:ml-auto tw:flex tw:flex-wrap tw:justify-end tw:gap-2 tw:narrow-980:order-first tw:narrow-980:w-full tw:narrow-980:*:flex-1">
               {actions}
             </div>
           </div>

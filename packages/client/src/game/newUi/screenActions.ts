@@ -63,3 +63,17 @@ export function showReplayTurn(segment: number): void {
     replay.goToSegment(segment, true);
   }
 }
+
+/**
+ * Goes into the in-game replay, or back to the game. A hypothetical in the replay ends with it,
+ * since it starts from a turn of the replay.
+ */
+export function toggleReplay(): void {
+  if (currentState().replay.segment === undefined) {
+    replay.enter();
+    return;
+  }
+
+  hypothetical.endHypothetical();
+  replay.exitButton();
+}
