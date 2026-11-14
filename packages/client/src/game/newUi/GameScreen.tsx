@@ -154,7 +154,6 @@ const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
 const STACKED_PLAY_AREA_OTHER_WIDTH = 48;
 
 const HAND_BOX_HORIZONTAL_PADDING = 32;
-const HAND_ROW_GAP = 6;
 
 /**
  * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
@@ -675,8 +674,7 @@ function getHandCardWidth(
     - HAND_BOX_HORIZONTAL_PADDING
     - CARD_GAP * (cardsPerHand - 1);
   const byWidth = widthForCards / cardsPerHand;
-  const rowHeight =
-    (handsHeight - HAND_ROW_GAP * (numPlayers - 1)) / numPlayers;
+  const rowHeight = handsHeight / numPlayers;
   const byHeight = stacked
     ? Infinity
     : // The padding above the cards grows with them (see "getHandBoxTopPadding").

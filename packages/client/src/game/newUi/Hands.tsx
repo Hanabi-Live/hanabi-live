@@ -697,10 +697,12 @@ function Hand({
 
   let boxClass =
     "tw:bg-black/12 tw:ring-1 tw:ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
+  // The hands touch, so a box with a thick outline goes above its neighbors, which would otherwise
+  // cover the bottom of the outline.
   if (seat.active) {
-    boxClass = "tw:bg-game-turn/10 tw:ring-3 tw:ring-game-turn";
+    boxClass = "tw:z-1 tw:bg-game-turn/10 tw:ring-3 tw:ring-game-turn";
   } else if (chosen) {
-    boxClass = "tw:bg-clue/10 tw:ring-2 tw:ring-clue";
+    boxClass = "tw:z-1 tw:bg-clue/10 tw:ring-2 tw:ring-clue";
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:ring-1 tw:ring-game-line";
   }
@@ -847,7 +849,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
       aria-label="Hands"
-      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center tw:gap-1.5"
+      className="tw:relative tw:flex tw:flex-col tw:items-start tw:justify-center"
       onPointerDown={(event) => {
         const order = getCardOrderAt(event.target);
         if (event.button === 0 && order !== undefined) {
