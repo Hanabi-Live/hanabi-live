@@ -26,9 +26,6 @@ export const hanabiConfigBase = defineConfig(
       // iOS 17 dropped the iPhone 8, iPhone X, and first iPad Pro, so they stay on Safari 16.
       "regexp/require-unicode-sets-regexp": "off",
 
-      // Keep nearby declarations in the game rules and event handlers.
-      "unicorn/no-declarations-before-early-exit": "off",
-
       // Keep explicit branches and comparisons in the game rules and event handlers.
       "unicorn/no-duplicate-if-branches": "off",
 

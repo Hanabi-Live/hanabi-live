@@ -207,14 +207,13 @@ function gameJsonCompress(
   if (!/^[\d\-A-Za-z]*$/u.test(seed)) {
     return undefined;
   }
-  let out = "";
 
   // Number of players
   const numberOfPlayers = data.playerNames?.length ?? 0;
   if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) {
     return undefined;
   }
-  out += numberOfPlayers.toString();
+  let out = numberOfPlayers.toString();
 
   // Deck
   const deck = compressDeck(data.deck ?? []);

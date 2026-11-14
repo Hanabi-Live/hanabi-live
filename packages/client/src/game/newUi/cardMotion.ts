@@ -86,13 +86,12 @@ export function measureCards(root: HTMLElement): CardPositions {
   const positions = new Map<string, CardPosition>();
   for (const element of cardElements(root)) {
     const key = element.dataset["cardOrder"];
-    const place = element.dataset["cardPlace"] ?? "";
     if (key === undefined) {
       continue;
     }
     positions.set(key, {
       rect: measure(element),
-      place,
+      place: element.dataset["cardPlace"] ?? "",
       element,
     });
   }

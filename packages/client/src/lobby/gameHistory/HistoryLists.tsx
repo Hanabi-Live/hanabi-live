@@ -271,6 +271,10 @@ function OtherScoreRow({
 /** A few icons for the options of a game, with a tooltip that lists all of them. */
 function HistoryOptions({ options }: { readonly options: GameOptions }) {
   const items = getOptionItems(options);
+  if (items.length === 0) {
+    return <>[none]</>;
+  }
+
   const tooltip = items
     .map(
       ({ icon, text }) =>
@@ -278,15 +282,9 @@ function HistoryOptions({ options }: { readonly options: GameOptions }) {
     )
     .join("");
   const ref = tooltipRefHtml(
-    tooltip === ""
-      ? undefined
-      : `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
+    `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
     { instant: true },
   );
-
-  if (items.length === 0) {
-    return <>[none]</>;
-  }
 
   // The tooltip's arrow points at the middle of this element, so it must be only as wide as the
   // icons, not the cell.

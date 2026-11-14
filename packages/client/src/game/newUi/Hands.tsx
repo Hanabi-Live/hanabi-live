@@ -492,7 +492,6 @@ function OwnCard({
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const dragged = props.draggedCard === card.order;
-  const menuOpen = props.tapToMove && props.menuCard === card.order;
 
   if (dragged) {
     return (
@@ -509,6 +508,7 @@ function OwnCard({
     );
   }
 
+  const menuOpen = props.tapToMove && props.menuCard === card.order;
   const face = (
     <CardFace
       clued={card.clued}

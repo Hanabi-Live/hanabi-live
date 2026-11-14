@@ -565,14 +565,14 @@ function getExtremelyAmbiguousVariants(
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of [5, 4] as const) {
-      const incrementedNumSuits = numSuits + 1;
-
       // For some suits:
       // 1) "Extremely Ambiguous + X (6 Suit)" is the same as "Extremely Ambiguous (6 Suit)"
       // 2) "Extremely Ambiguous + X (5 Suit)" is the same as "Extremely Ambiguous (5 Suit)"
       if (SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)) {
         continue;
       }
+
+      const incrementedNumSuits = numSuits + 1;
 
       const variantName = `Extremely Ambiguous & ${suit.name} (${incrementedNumSuits} Suits)`;
       const baseSuits = extremelyAmbiguousSuits[numSuits];
