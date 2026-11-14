@@ -93,6 +93,9 @@ interface CardFaceProps {
   /** Whether the card has a note that the viewer can read. */
   readonly note?: boolean;
 
+  /** Whether someone else changed the note while we spectate, and we have not read it since. */
+  readonly noteUnread?: boolean;
+
   /** Whether the note decides the suit or the rank that the card shows. */
   readonly identityFromNote?: boolean;
 
@@ -268,21 +271,27 @@ function StatusBadge({
   );
 }
 
+/** The radius of the dot on an unread note, in the note's box of 100 units. */
+const NOTE_UNREAD_DOT_RADIUS = 26;
+
 /** How far the sticky note on a card with a note turns, so that it looks stuck on by hand. */
 const NOTE_TILT_DEGREES = 8;
 
 /**
  * A sticky note on the top-right corner of a card that has a note, where the classic screen shows
  * its note icon. It is a slip of paper with a folded corner and a few lines of writing. When the
- * note decides what the card shows, a pencil lies across it, as on the classic screen. The card
- * itself shows the note on hover, so the slip has no tooltip of its own.
+ * note decides what the card shows, a pencil lies across it, as on the classic screen. A dot on its
+ * corner shows a spectator a note that changed since they last read it. The card itself shows the
+ * note on hover, so the slip has no tooltip of its own.
  */
 function NoteBadge({
   width,
   pencil,
+  unread,
 }: {
   readonly width: number;
   readonly pencil: boolean;
+  readonly unread: boolean;
 }): React.JSX.Element {
   const size = width * BADGE_SIZE_PER_WIDTH;
   return (
@@ -322,6 +331,19 @@ function NoteBadge({
         strokeWidth={9}
       />
       {pencil && <Pencil />}
+      {/* A spectator has not read the note since it changed. The dot has the color of the chat's
+          count of unread messages. */}
+      {unread && (
+        <circle
+          className="tw:fill-clue tw:stroke-card-ink"
+          cx={94}
+          cy={6}
+          data-note-unread
+          r={NOTE_UNREAD_DOT_RADIUS}
+          strokeWidth={1.5}
+          vectorEffect="non-scaling-stroke"
+        />
+      )}
     </svg>
   );
 }
@@ -564,6 +586,7 @@ export function CardFace({
   trash = false,
   trashIcon = false,
   note = false,
+  noteUnread = false,
   identityFromNote = false,
   raiseClued = false,
   highlighted = false,
@@ -657,7 +680,13 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {note && <NoteBadge pencil={identityFromNote} width={width} />}
+      {note && (
+        <NoteBadge
+          pencil={identityFromNote}
+          unread={noteUnread}
+          width={width}
+        />
+      )}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities

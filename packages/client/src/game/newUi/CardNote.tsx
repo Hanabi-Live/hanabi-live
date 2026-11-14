@@ -5,6 +5,7 @@ import type { CardOrder } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
+import { store } from "../../store.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import { currentState, currentVariant, getLastNote } from "../gameSession.ts";
 import {
@@ -14,6 +15,7 @@ import {
 } from "../noteShortcuts.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
+import { newUiNoteRead } from "./newUiSlice.ts";
 import { toScreenPixels } from "./screenScale.ts";
 
 /** The width of the box to type a note in, in CSS pixels. */
@@ -75,6 +77,9 @@ export interface CardNotes {
   /** The notes that each card's tooltip shows, as HTML. Cards without notes are not in it. */
   readonly notesHtml: ReadonlyMap<CardOrder, string>;
 
+  /** The cards whose notes someone else changed while we spectate, and that we have not read. */
+  readonly unreadNotes: ReadonlySet<CardOrder>;
+
   /** The card whose note the viewer is typing. */
   readonly noteCard: CardOrder | undefined;
 
@@ -126,6 +131,14 @@ export function CardNote({
                 event.preventDefault();
               }
             }
+      }
+      // Showing the note reads it.
+      onPointerEnter={
+        cardNotes.unreadNotes.has(order)
+          ? () => {
+              store.dispatch(newUiNoteRead(order));
+            }
+          : undefined
       }
       // While the box is open, it shows the note instead. The note opens at once, as on the classic
       // screen, so that players can read the notes by moving the pointer along a hand.

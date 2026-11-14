@@ -32,6 +32,7 @@ import * as gameSession from "./gameSession.ts";
 import type { Votes } from "./gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "./gameSlice.ts";
 import * as hypothetical from "./hypothetical.ts";
+import { newUiNoteUnread } from "./newUi/newUiSlice.ts";
 import { initialState } from "./reducers/initialStates/initialState.ts";
 import { getNotesAction } from "./reducers/stateReducer.ts";
 import { playerNamesAt } from "./reducers/stateReducerHelpers.ts";
@@ -281,6 +282,11 @@ gameCommands.set("note", (data) => {
   );
 
   serverUpdates.drawNoteIndicator(data.order);
+
+  // The New UI marks the note as unread until we look at it, while the game goes on.
+  if (!gameSession.currentState().finished && data.note.text !== "") {
+    store.dispatch(newUiNoteUnread(data.order));
+  }
 });
 
 /**

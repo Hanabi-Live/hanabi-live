@@ -481,6 +481,7 @@ function OwnCard({
       critical={card.critical}
       identityFromNote={card.identityFromNote}
       note={props.notes.notesHtml.has(card.order)}
+      noteUnread={props.notes.unreadNotes.has(card.order)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
       raiseClued
@@ -608,6 +609,7 @@ function EditableCard({
         critical={card.critical}
         identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
+        noteUnread={props.notes.unreadNotes.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued
@@ -678,6 +680,7 @@ function HandCard({
         highlighted={props.touchedCards.has(card.order)}
         identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
+        noteUnread={props.notes.unreadNotes.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
         raiseClued

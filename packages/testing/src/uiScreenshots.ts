@@ -1049,6 +1049,24 @@ function getStates(): readonly State[] {
         await page.getByRole("button", { name: /'s turn$/u }).waitFor();
       },
     },
+    // The account watches a five-player game. Bob writes a note on the first card of his hand, so
+    // that its sticky note shows a dot until the account reads it.
+    {
+      name: "new-ui-spectator-note",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startWatchedGame();
+      },
+      prepare: async (page, cast) => {
+        await page.locator("#game-new-ui [data-hand]").first().waitFor();
+        cast.watchedGame().writeNote(0 as CardOrder, "5 save?");
+        await page
+          .locator('#game-new-ui svg[aria-label="Note"] [data-note-unread]')
+          .waitFor();
+      },
+    },
     // Bob, who leads a five-player shared replay, starts a hypothetical that the account follows.
     {
       name: "new-ui-spectator-hypothetical",
@@ -1302,6 +1320,12 @@ async function linkPublicFiles(directory: string) {
   );
 }
 
+/** A game of five other accounts, which the browser's account watches. */
+interface WatchedGame {
+  /** Bob writes a note on a card. */
+  readonly writeNote: (order: CardOrder, text: string) => void;
+}
+
 /** Bob's game with the browser's account. */
 interface BobsGame {
   /**
@@ -1366,6 +1390,9 @@ interface Cast {
    */
   readonly startBobsGame: (numPlayers?: number) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
+  /** Starts a five-player game that Bob leads, which the browser's account watches. */
+  readonly startWatchedGame: () => Promise<WatchedGame>;
+  readonly watchedGame: () => WatchedGame;
   /** Disconnects the browser's account after the setup of a state, so that the page can connect. */
   readonly disconnectAccount: () => void;
   /** Closes the table of the last state and disconnects its accounts. */
@@ -1675,6 +1702,7 @@ async function createCast(
   /** Ends the game of the last state, if it is not over. */
   let endGame: (() => Promise<void>) | undefined;
   let currentBobsGame: BobsGame | undefined;
+  let currentWatchedGame: WatchedGame | undefined;
 
   async function connectPeer(username: string) {
     const peer = await connect(address, username);
@@ -1699,6 +1727,40 @@ async function createCast(
   async function setNewUi(newUi: boolean) {
     await connectAccount(newUi);
     disconnectAccount();
+  }
+
+  async function startWatchedGame(): Promise<WatchedGame> {
+    const you = await connectAccount(true);
+    const bob = await connectPeer(name(BOB));
+    const tableId = await createBobsTable(bob, `${name(BOB)}'s table`, {
+      type: "seed",
+      suffix: BOBS_GAME_SEED_SUFFIX,
+    });
+    const players: Peer[] = [bob];
+    for (const other of [...OTHER_PLAYER_NAMES, SPECTATOR_NAMES[0]]) {
+      const peer = await connectPeer(name(other));
+      peer.send("tableJoin", { tableId });
+      await peer.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+      players.push(peer);
+    }
+    await startTable(bob, players, tableId);
+    you.send("tableSpectate", { tableId });
+    await you.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
+    table = { id: tableId, owner: bob };
+    let over = false;
+    endGame = async () => {
+      if (!over) {
+        bob.send("tableTerminate", { tableId });
+        await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
+        over = true;
+      }
+    };
+    currentWatchedGame = {
+      writeNote: (order, text) => {
+        bob.send("note", { tableId, order, text });
+      },
+    };
+    return currentWatchedGame;
   }
 
   async function startBobsGame(numPlayers = 2): Promise<BobsGame> {
@@ -2080,6 +2142,14 @@ async function createCast(
       assertDefined(currentBobsGame, "The state did not start Bob's game.");
       return currentBobsGame;
     },
+    startWatchedGame,
+    watchedGame: () => {
+      assertDefined(
+        currentWatchedGame,
+        "The state did not start a watched game.",
+      );
+      return currentWatchedGame;
+    },
     disconnectAccount,
     closeState: async () => {
       if (table !== undefined) {
@@ -2100,6 +2170,7 @@ async function createCast(
       table = undefined;
       endGame = undefined;
       currentBobsGame = undefined;
+      currentWatchedGame = undefined;
     },
   };
 }

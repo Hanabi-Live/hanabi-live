@@ -114,6 +114,7 @@ export function GameScreen({
   const votes = useAppSelector((root) => root.game.votes);
   const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
+  const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
@@ -287,6 +288,8 @@ export function GameScreen({
         .filter((order) => order !== undefined),
       ...discardRows.flat().map((card) => card.order),
     ]),
+    // The game screen marks notes unread only while the game goes on.
+    unreadNotes: new Set(state.finished ? [] : unreadNotes),
     noteCard,
     // Notes are only for games that are still going.
     onRightClickCard: state.finished
