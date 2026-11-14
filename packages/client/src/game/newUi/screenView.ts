@@ -15,7 +15,7 @@ import {
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { store } from "../../store.ts";
-import { getActivePlayerIndex, getPlayerTime } from "../clock.ts";
+import { getActivePlayerIndex, getPlayerTime, getTurnTime } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { currentVariant } from "../gameSession.ts";
@@ -124,8 +124,17 @@ export function getSeats(
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
     let clock: string | undefined;
+    let clockTooltip: string | undefined;
     if (showClock && active && getActivePlayerIndex() === playerIndex) {
-      clock = millisecondsToClockString(getPlayerTime(playerIndex) ?? 0);
+      const playerTime = getPlayerTime(playerIndex) ?? 0;
+      if (metadata.options.timeControl === undefined) {
+        // An untimed game's clock shows the time taken on this turn. The time taken in the whole
+        // game is in its tooltip.
+        clock = millisecondsToClockString(getTurnTime() ?? 0);
+        clockTooltip = `Time taken in this game: ${millisecondsToClockString(playerTime)}`;
+      } else {
+        clock = millisecondsToClockString(playerTime);
+      }
     }
 
     seats.push({
@@ -136,6 +145,7 @@ export function getSeats(
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       clock,
+      clockTooltip,
     });
   }
 

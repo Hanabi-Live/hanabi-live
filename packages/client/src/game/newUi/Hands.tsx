@@ -36,8 +36,14 @@ export interface Seat {
 
   readonly cards: readonly CardView[];
 
-  /** The time on the current player's clock, if the clocks show. */
+  /**
+   * The time on the current player's clock, if the clocks show. In a timed game, it is the time
+   * left. In an untimed game, it is the time taken on this turn.
+   */
   readonly clock: string | undefined;
+
+  /** The tooltip of the clock, if it has one. */
+  readonly clockTooltip: string | undefined;
 }
 
 interface HandsProps {
@@ -365,7 +371,10 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
         {youIcon}
         <FitText text={seat.name} />
         {seat.clock !== undefined && (
-          <span className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text">
+          <span
+            className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text"
+            ref={tooltipRef(seat.clockTooltip)}
+          >
             {seat.clock}
           </span>
         )}
@@ -425,6 +434,7 @@ export function NameColumnSizer({
             ...seat,
             active: true,
             clock: showClock ? CLOCK_PLACEHOLDER : undefined,
+            clockTooltip: undefined,
           }}
         />,
         <NameChip
