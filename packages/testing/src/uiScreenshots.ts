@@ -155,6 +155,17 @@ function ownCard(page: Page, index: number): Locator {
     .nth(index);
 }
 
+/** Notes whose keywords draw a mark or a border on a card, by the place of the card. */
+const KEYWORD_NOTES = [
+  ["hand-1-1", "f"],
+  ["hand-1-2", "cm"],
+  ["hand-1-3", "ptd"],
+  ["hand-2-0", "fix"],
+  ["hand-2-1", "spook"],
+  ["hand-2-2", "!"],
+  ["hand-2-3", "blank"],
+] as const;
+
 /** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
 
@@ -949,7 +960,8 @@ function getStates(): readonly State[] {
     // The account's notes: on the first card of its own hand, one that makes it show as its real
     // identity, which the clues always allow, so that its note shows a pencil. Other notes are on
     // its third card, which no clue touched, on its last card, which it marks as trash, on the next
-    // player's first card, and on a discarded card. The table has five players, and every player
+    // player's first card, and on a discarded card. Notes on the other cards of the next two hands
+    // show each mark and border that a keyword draws. The table has five players, and every player
     // has discarded cards, so that some cards are the last copies. The pointer is over the first
     // card.
     {
@@ -976,6 +988,13 @@ function getStates(): readonly State[] {
           page.locator(NEXT_HAND_FIRST_CARD_SELECTOR),
           NEXT_HAND_NOTE,
         );
+        for (const [place, text] of KEYWORD_NOTES) {
+          await writeNote(
+            page,
+            page.locator(`#game-new-ui [data-card-place="${place}"]`),
+            text,
+          );
+        }
         await writeNote(
           page,
           // The last card, since the rows of the discard pile overlap.

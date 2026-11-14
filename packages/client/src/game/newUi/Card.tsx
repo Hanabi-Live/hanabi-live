@@ -4,6 +4,7 @@ import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
+import type { NoteBorder, NoteMark } from "./tableView.ts";
 
 /** Cards keep the proportions of the classic card images. */
 export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
@@ -89,8 +90,11 @@ interface CardFaceProps {
   readonly critical?: boolean;
   readonly trash?: boolean;
 
-  /** Whether the viewer marked the card as trash in a note. */
-  readonly markedTrash?: boolean;
+  /** The border that a note gives a card that does not show as clued. */
+  readonly noteBorder?: NoteBorder;
+
+  /** The large mark that the viewer's note shows over the card. */
+  readonly noteMark?: NoteMark;
 
   readonly trashIcon?: boolean;
 
@@ -278,26 +282,44 @@ function StatusBadge({
   );
 }
 
-/** The size of the trash can over a card that the viewer marked as trash, per card width. */
-const TRASH_CAN_SIZE_PER_WIDTH = 0.7;
+/** The size of the mark over a card from a note, such as a trash can, per card width. */
+const NOTE_MARK_SIZE_PER_WIDTH = 0.7;
 
-/** How opaque the trash can over a card is, so that the possibilities under it stay readable. */
-const TRASH_CAN_OPACITY = 0.6;
+/** How opaque the mark over a card is, so that the possibilities under it stay readable. */
+const NOTE_MARK_OPACITY = 0.6;
 
 /**
- * A large trash can over a card that the viewer marked as trash in a note, as on the classic
- * screen. It is the same icon as the one on the discard pile. It covers the possibilities, so that
- * the mark is never hidden.
+ * The icon and the description of each mark from a note. The trash can is the same icon as the one
+ * on the discard pile.
  */
-function TrashCan({ width }: { readonly width: number }): React.JSX.Element {
+const NOTE_MARK_ICONS = {
+  trash: { icon: "fa-trash-alt", label: "Marked as trash" },
+  fix: { icon: "fa-wrench", label: "Marked as needing a fix" },
+  spook: { icon: "fa-ghost", label: "Marked as spooked" },
+  exclamationMark: { icon: "fa-exclamation", label: "Marked with !" },
+  questionMark: { icon: "fa-question", label: "Marked with ?" },
+} as const satisfies Record<NoteMark, { icon: string; label: string }>;
+
+/**
+ * A large mark over a card from a keyword in the viewer's note, such as a trash can for "kt", as on
+ * the classic screen. It covers the possibilities, so that the mark is never hidden.
+ */
+function NoteMarkIcon({
+  mark,
+  width,
+}: {
+  readonly mark: NoteMark;
+  readonly width: number;
+}): React.JSX.Element {
+  const { icon, label } = NOTE_MARK_ICONS[mark];
   return (
     <i
-      aria-label="Marked as trash"
-      className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-card-ink"
+      aria-label={label}
+      className={`fas ${icon} tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-card-ink`}
       role="img"
       style={{
-        fontSize: width * TRASH_CAN_SIZE_PER_WIDTH,
-        opacity: TRASH_CAN_OPACITY,
+        fontSize: width * NOTE_MARK_SIZE_PER_WIDTH,
+        opacity: NOTE_MARK_OPACITY,
       }}
     />
   );
@@ -622,6 +644,18 @@ export function describeCard(
   return [suitName ?? "Unknown suit", rankLabel ?? "of unknown rank"].join(" ");
 }
 
+/**
+ * The border of a card whose note marks it as finessed, chop moved, or allowed to be discarded. It
+ * is drawn like the border of a clued card, in the colors of the classic screen.
+ */
+const NOTE_BORDER_CLASSES = {
+  finessed: "tw:ring-4 tw:ring-finesse tw:inset-ring-2 tw:inset-ring-card-ink",
+  chopMoved:
+    "tw:ring-4 tw:ring-chop-move tw:inset-ring-2 tw:inset-ring-card-ink",
+  discardPermission:
+    "tw:ring-4 tw:ring-discard-permission tw:inset-ring-2 tw:inset-ring-card-ink",
+} as const satisfies Record<NoteBorder, string>;
+
 /** The front of a card, as it shows in a hand, on a play stack, or in the discard pile. */
 export function CardFace({
   variant,
@@ -632,7 +666,8 @@ export function CardFace({
   clued = false,
   critical = false,
   trash = false,
-  markedTrash = false,
+  noteBorder,
+  noteMark,
   trashIcon = false,
   note = false,
   noteUnread = false,
@@ -657,9 +692,12 @@ export function CardFace({
   // out against faces of a similar color. Other cards get a dark line and a shadow, so that they
   // stand out against the green felt. Cards that a chosen clue would touch get a white outline
   // outside of it.
-  const border = clued
-    ? "tw:ring-4 tw:ring-clue tw:inset-ring-2 tw:inset-ring-card-ink"
-    : "tw:ring-1 tw:ring-black/45";
+  let border = "tw:ring-1 tw:ring-black/45";
+  if (clued) {
+    border = "tw:ring-4 tw:ring-clue tw:inset-ring-2 tw:inset-ring-card-ink";
+  } else if (noteBorder !== undefined) {
+    border = NOTE_BORDER_CLASSES[noteBorder];
+  }
   const outline = highlighted
     ? "tw:outline-4 tw:outline-offset-4 tw:outline-white"
     : "";
@@ -747,7 +785,7 @@ export function CardFace({
         />
       )}
 
-      {markedTrash && <TrashCan width={width} />}
+      {noteMark !== undefined && <NoteMarkIcon mark={noteMark} width={width} />}
     </div>
   );
 }

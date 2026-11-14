@@ -1,11 +1,21 @@
-import type { CardIdentity, CardOrder } from "@hanabi-live/game";
+import type {
+  CardIdentity,
+  CardNote,
+  CardOrder,
+  SuitIndex,
+} from "@hanabi-live/game";
 import {
+  getDefaultMetadata,
   getDefaultVariant,
+  getInitialCardState,
+  getInitialGameState,
   newColorClue,
   newRankClue,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import {
+  BLANK_NOTE,
+  getCardView,
   getHandDisplayOrder,
   getTouchedCards,
   isClueAllowed,
@@ -73,6 +83,53 @@ describe("isClueAllowed", () => {
         emptyClues: true,
       }),
     ).toBe(true);
+  });
+});
+
+describe("getCardView", () => {
+  const gameState = getInitialGameState(getDefaultMetadata(2));
+  const cardState = getInitialCardState(0 as CardOrder, VARIANT, 2);
+  const red1 = { suitIndex: 0 as SuitIndex, rank: 1 } as const;
+
+  function getView(note: Partial<CardNote>, { finished = false } = {}) {
+    return getCardView({
+      gameState,
+      cardState,
+      cardIdentity: red1,
+      note: { ...BLANK_NOTE, ...note },
+      variant: VARIANT,
+      empathy: false,
+      finished,
+      realLifeMode: false,
+    });
+  }
+
+  test("shows the mark of a note keyword", () => {
+    expect(getView({}).noteMark).toBeUndefined();
+    expect(getView({ questionMark: true }).noteMark).toBe("questionMark");
+    expect(getView({ knownTrash: true, questionMark: true }).noteMark).toBe(
+      "trash",
+    );
+  });
+
+  test("hides the marks of notes in a finished game", () => {
+    expect(
+      getView({ questionMark: true }, { finished: true }).noteMark,
+    ).toBeUndefined();
+  });
+
+  test("shows a card with a blank note as unknown", () => {
+    const view = getView({ blank: true });
+    expect(view.suitIndex).toBeUndefined();
+    expect(view.rank).toBeUndefined();
+  });
+
+  test("gives a border from a note to a card that does not show as clued", () => {
+    expect(getView({ finessed: true }).noteBorder).toBe("finessed");
+    expect(getView({ clued: true, finessed: true })).toMatchObject({
+      clued: true,
+      noteBorder: undefined,
+    });
   });
 });
 

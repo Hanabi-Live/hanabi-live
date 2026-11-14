@@ -70,6 +70,9 @@
   --color-card-unknown: var(--card-face-unknown);
   --color-card-ink: var(--card-ink);
   --color-clue: var(--clue-border);
+  --color-chop-move: var(--chop-move-border);
+  --color-finesse: var(--finesse-border);
+  --color-discard-permission: var(--discard-permission-border);
   --color-critical: var(--critical);
   --color-card-note: var(--card-note);
   --color-card-note-fold: var(--card-note-fold);

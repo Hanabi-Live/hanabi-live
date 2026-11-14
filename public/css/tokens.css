@@ -192,6 +192,10 @@
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;
+  /* The borders of cards whose notes mark them as chop moved, finessed, or allowed to be discarded. */
+  --chop-move-border: #fffce6;
+  --finesse-border: #00e5ff;
+  --discard-permission-border: #a32626;
   --critical: #d7363c;
   /* A sticky note on a card that has a note: pale paper, and the darker back of its folded corner. */
   --card-note: #fff1a6;

@@ -480,8 +480,9 @@ function OwnCard({
       colorblindMode={colorblindMode}
       critical={card.critical}
       identityFromNote={card.identityFromNote}
-      markedTrash={card.markedTrash}
       note={props.notes.notesHtml.has(card.order)}
+      noteBorder={card.noteBorder}
+      noteMark={card.noteMark}
       noteUnread={props.notes.unreadNotes.has(card.order)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
@@ -608,8 +609,9 @@ function EditableCard({
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         identityFromNote={card.identityFromNote}
-        markedTrash={card.markedTrash}
         note={props.notes.notesHtml.has(card.order)}
+        noteBorder={card.noteBorder}
+        noteMark={card.noteMark}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
@@ -680,8 +682,9 @@ function HandCard({
         critical={card.critical}
         highlighted={props.touchedCards.has(card.order)}
         identityFromNote={card.identityFromNote}
-        markedTrash={card.markedTrash}
         note={props.notes.notesHtml.has(card.order)}
+        noteBorder={card.noteBorder}
+        noteMark={card.noteMark}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}

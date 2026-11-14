@@ -16,6 +16,7 @@ import type {
 import {
   CardStatus,
   PipState,
+  getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
   getEfficiency,
@@ -24,6 +25,32 @@ import {
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
+
+/**
+ * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
+ * with several keywords shows the first mark in this order.
+ */
+const NOTE_MARKS = [
+  "trash",
+  "fix",
+  "spook",
+  "exclamationMark",
+  "questionMark",
+] as const;
+
+export type NoteMark = (typeof NOTE_MARKS)[number];
+
+/** The keyword in a note that shows each mark. */
+const NOTE_MARK_KEYWORDS = {
+  trash: "knownTrash",
+  fix: "needsFix",
+  spook: "spook",
+  exclamationMark: "exclamationMark",
+  questionMark: "questionMark",
+} as const satisfies Record<NoteMark, keyof CardNote>;
+
+/** A border in another color than the clue color, from a keyword in the viewer's note. */
+export type NoteBorder = "chopMoved" | "finessed" | "discardPermission";
 
 /** How a card in a hand looks. */
 export interface CardView {
@@ -35,7 +62,15 @@ export interface CardView {
   readonly suitIndex: SuitIndex | undefined;
   readonly rank: Rank | undefined;
 
+  /**
+   * Whether the card shows as clued: it is raised and has a border in the clue color. As on the
+   * classic screen, a "clued" note marks an unclued card as clued, and an "unclued" note does the
+   * opposite.
+   */
   readonly clued: boolean;
+
+  /** The border that a note gives a card that does not show as clued. */
+  readonly noteBorder: NoteBorder | undefined;
 
   /** The last copy of a card that still needs to be played. */
   readonly critical: boolean;
@@ -43,11 +78,8 @@ export interface CardView {
   /** Whether the card shows faded, because it can no longer be played (see `shouldFadeTrash`). */
   readonly trash: boolean;
 
-  /**
-   * Whether the viewer marked the card as trash in a note. As on the classic screen, a large trash
-   * can then shows over the card.
-   */
-  readonly markedTrash: boolean;
+  /** The large mark that the viewer's note shows over the card. */
+  readonly noteMark: NoteMark | undefined;
 
   /**
    * Whether the card shows a trash badge, because the clues prove to its holder that it is trash.
@@ -118,7 +150,16 @@ export function getCardView({
     isStackBase: false,
     finished,
   };
-  const { suitIndex, rank } = getCardIdentityToShow(identityOptions);
+  // As on the classic screen, the marks of a note stay off an empathy view that leaves out notes,
+  // and off a finished game.
+  const showsNoteMarks = (!empathy || empathyIncludesNotes) && !finished;
+
+  // A "blank" note shows the card as one that nobody knows.
+  const blank = showsNoteMarks && note.blank;
+  const identity = blank
+    ? { suitIndex: undefined, rank: undefined }
+    : getCardIdentityToShow(identityOptions);
+  const { suitIndex, rank } = identity;
 
   const status =
     suitIndex === undefined || rank === undefined
@@ -140,7 +181,11 @@ export function getCardView({
   }
 
   const clued = isCardClued(cardState);
-  const markedTrash = !realLifeMode && note.knownTrash && !finished;
+  const border = getCardBorderPresentation(cardState, note, finished);
+  const noteMark = showsNoteMarks
+    ? NOTE_MARKS.find((mark) => note[NOTE_MARK_KEYWORDS[mark]])
+    : undefined;
+  const markedTrash = noteMark === "trash";
   const trashIcon =
     !realLifeMode
     && !markedTrash
@@ -151,7 +196,8 @@ export function getCardView({
     order: cardState.order,
     suitIndex,
     rank,
-    clued,
+    clued: border.clued,
+    noteBorder: getNoteBorder(border),
     critical: !realLifeMode && status === CardStatus.Critical,
     trash:
       !realLifeMode
@@ -166,12 +212,27 @@ export function getCardView({
         note,
         throwItInAHole: variant.throwItInAHole,
       }),
-    markedTrash,
+    noteMark,
     trashIcon,
     possibleSuitIndexes,
     possibleRanks,
-    identityFromNote: isCardIdentityFromNote(identityOptions),
+    identityFromNote: !blank && isCardIdentityFromNote(identityOptions),
   };
+}
+
+function getNoteBorder(
+  border: ReturnType<typeof getCardBorderPresentation>,
+): NoteBorder | undefined {
+  if (border.finessed) {
+    return "finessed";
+  }
+  if (border.discardPermission) {
+    return "discardPermission";
+  }
+  if (border.chopMoved) {
+    return "chopMoved";
+  }
+  return undefined;
 }
 
 /**
