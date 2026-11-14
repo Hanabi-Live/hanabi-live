@@ -35,7 +35,7 @@ function alphabetical(names: readonly string[]): readonly string[] {
 const MAX_OPTION_ICONS = 3;
 
 /** Takes the number at the end of a seed, such as "12" from "p2v0s12". */
-const SEED_NUMBER_REGEX = /p\d+v\d+[els](\d+)/u;
+const SEED_NUMBER_REGEX = /p\d+v\d+[els](?<seedNumber>\d+)/u;
 
 /** A larger icon inside a table button. */
 const BUTTON_ICON = "tw:relative tw:top-[0.22em] tw:text-[1.5em]";
@@ -245,7 +245,8 @@ function OtherScoreRow({
     return ourGame ? <strong>{text}</strong> : text;
   }
 
-  const seedNumber = SEED_NUMBER_REGEX.exec(game.seed)?.[1] ?? "Unknown";
+  const seedNumber =
+    SEED_NUMBER_REGEX.exec(game.seed)?.groups?.["seedNumber"] ?? "Unknown";
 
   return (
     <tr>

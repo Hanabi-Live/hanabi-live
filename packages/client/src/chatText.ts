@@ -26,7 +26,7 @@ export interface ChatTextOptions {
 const NOTICE_LABEL = "[Server Notice]";
 
 /** A command that the server suggests looks like "@/command@". */
-const COMMAND_REGEX = /@(\/[^@]*)@/u;
+const COMMAND_REGEX = /@(?<command>\/[^@]*)@/u;
 
 const EMOTE_DIRECTORY = "/public/img/emotes";
 
@@ -130,14 +130,10 @@ function emoteSegments(text: string): readonly ChatSegment[] {
 }
 
 function commandSegments(text: string): readonly ChatSegment[] {
-  return splitText(
-    text,
-    new RegExp(COMMAND_REGEX.source, "gu"),
-    ([, command]) => ({
-      type: "command",
-      command: command!,
-    }),
-  );
+  return splitText(text, new RegExp(COMMAND_REGEX.source, "gu"), (match) => ({
+    type: "command",
+    command: match.groups!["command"]!,
+  }));
 }
 
 function linkSegments(text: string): readonly ChatSegment[] {

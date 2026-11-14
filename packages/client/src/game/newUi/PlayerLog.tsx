@@ -81,7 +81,7 @@ const HIDDEN_CARD_NAME = "a card";
 
 /** A line of the log about a card that left a hand, without the player's name. */
 const CARD_MOVE_PATTERN =
-  /^ (discards|fails to play|plays) (.+) from (?:slot #(\d+)|the deck)(?: \((blind|clued|critical)\))?$/u;
+  /^ (?<words>discards|fails to play|plays) (?<cardName>.+) from (?:slot #(?<slot>\d+)|the deck)(?: \((?<note>blind|clued|critical)\))?$/u;
 
 /**
  * Reads a player's lines of the log (from `getPlayerLog`) as actions. The words of a line say what
@@ -101,8 +101,8 @@ export function getPlayerActions(
     const segment = entry.turn - 1;
 
     const match = CARD_MOVE_PATTERN.exec(rest);
-    if (match !== null) {
-      const [, words, cardName, slot, note] = match;
+    if (match?.groups !== undefined) {
+      const { words, cardName, slot, note } = match.groups;
       const type = (Object.keys(CARD_MOVE_WORDS) as CardMove[]).find(
         (key) => CARD_MOVE_WORDS[key] === words,
       )!;

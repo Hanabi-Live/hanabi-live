@@ -143,9 +143,13 @@ function ensureEnv(): ReadonlyMap<string, string> {
   }
   const values = new Map<string, string>();
   for (const line of readFileSync(ENV_PATH, "utf8").split("\n")) {
-    const match = /^([A-Z_]+)="?(.*?)"?$/u.exec(line.trim());
-    if (match?.[1] !== undefined && match[2] !== undefined) {
-      values.set(match[1], match[2]);
+    const groups = /^(?<key>[A-Z_]+)="?(?<value>.*?)"?$/u.exec(
+      line.trim(),
+    )?.groups;
+    const key = groups?.["key"];
+    const value = groups?.["value"];
+    if (key !== undefined && value !== undefined) {
+      values.set(key, value);
     }
   }
   return values;

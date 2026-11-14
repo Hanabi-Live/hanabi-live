@@ -18,11 +18,13 @@ const DEV_SERVER_PORT = 5173;
 const PUBLIC_PAGES_MODE = "public-pages";
 
 function readVersion(code: string): string {
-  const match = /VERSION = "([^"]+)"/u.exec(code);
-  if (match?.[1] === undefined) {
+  const version = /VERSION = "(?<version>[^"]+)"/u.exec(code)?.groups?.[
+    "version"
+  ];
+  if (version === undefined) {
     throw new Error(`Failed to parse the client version from: ${VERSION_PATH}`);
   }
-  return match[1];
+  return version;
 }
 
 /** The name of the script that a build makes, or `undefined` for Vite's default. */

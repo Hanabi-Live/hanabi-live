@@ -77,7 +77,7 @@ databaseDescribe("normal-server protocol workload", () => {
         );
         peakRssKib = Math.max(
           peakRssKib,
-          Number(/VmHWM:\s+(\d+)/u.exec(status)?.[1] ?? 0),
+          Number(/VmHWM:\s+(?<kib>\d+)/u.exec(status)?.groups?.["kib"] ?? 0),
         );
       }
 

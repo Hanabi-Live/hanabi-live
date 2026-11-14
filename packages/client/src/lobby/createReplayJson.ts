@@ -25,9 +25,11 @@ import type { GameJson } from "./hypoCompress.ts";
 import { shrink } from "./hypoCompress.ts";
 
 const PLAY_REGEX =
-  /^(?:\[Hypo\] )?(.*)(?: fails to play | plays ).* from slot #(\d).*$/u;
-const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
-const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
+  /^(?:\[Hypo\] )?(?<playerName>.*)(?: fails to play | plays ).* from slot #(?<slot>\d).*$/u;
+const DISCARD_REGEX =
+  /^(?:\[Hypo\] )?(?<playerName>.*) discards .* slot #(?<slot>\d).*$/u;
+const CLUE_REGEX =
+  /^.+ tells (?<playerName>.*) about \w+ (?<clueWord>[A-Za-z]+|\d)s?$/u;
 
 export function createJsonFromReplay(room: string): void {
   const { segment } = currentState().replay;
@@ -257,8 +259,8 @@ function getActionFromLogEntry(
   logEntry: LogEntry,
 ): ClientAction | undefined {
   const foundPlay = PLAY_REGEX.exec(logEntry.text);
-  if (foundPlay !== null) {
-    const [, playerName, slotString] = foundPlay;
+  if (foundPlay?.groups !== undefined) {
+    const { playerName, slot: slotString } = foundPlay.groups;
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
@@ -268,8 +270,8 @@ function getActionFromLogEntry(
   }
 
   const foundDiscard = DISCARD_REGEX.exec(logEntry.text);
-  if (foundDiscard !== null) {
-    const [, playerName, slotString] = foundDiscard;
+  if (foundDiscard?.groups !== undefined) {
+    const { playerName, slot: slotString } = foundDiscard.groups;
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
@@ -279,8 +281,8 @@ function getActionFromLogEntry(
   }
 
   const foundClue = CLUE_REGEX.exec(logEntry.text);
-  if (foundClue !== null) {
-    const [, playerName, clueWord] = foundClue;
+  if (foundClue?.groups !== undefined) {
+    const { playerName, clueWord } = foundClue.groups;
     if (playerName !== undefined && clueWord !== undefined) {
       return getActionFromHypoClue(playerName, clueWord);
     }

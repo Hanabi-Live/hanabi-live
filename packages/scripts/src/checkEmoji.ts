@@ -25,9 +25,9 @@ const JSON_DIR = path.join(REPO_ROOT, "packages", "data", "src", "json");
 const EMOJIS_JSON_PATH = path.join(JSON_DIR, "emojis.json");
 const EMOTES_JSON_PATH = path.join(JSON_DIR, "emotes.json");
 /** A key of the root object, which Prettier indents by two spaces. */
-const ROOT_KEY = /^ {2}("(?:[^"\\]|\\.)*"):/gmu;
+const ROOT_KEY = /^ {2}(?<key>"(?:[^"\\]|\\.)*"):/gmu;
 /** A key of an object in the root object, which Prettier indents by four spaces. */
-const NESTED_KEY = /^ {4}("(?:[^"\\]|\\.)*"):/gmu;
+const NESTED_KEY = /^ {4}(?<key>"(?:[^"\\]|\\.)*"):/gmu;
 /** Chat matches emotes at word boundaries, so it cannot match other codes (such as ":)"). */
 const MATCHABLE_CODE = /^\w+$/u;
 const RGBA_CHANNELS = 4;
@@ -160,7 +160,7 @@ function checkAlphabetical(
 async function readRootKeys(filePath: string): Promise<readonly string[]> {
   const text = await Bun.file(filePath).text();
   const keys = Array.from(text.matchAll(ROOT_KEY), (match) => {
-    const key: unknown = JSON.parse(match[1] ?? "");
+    const key: unknown = JSON.parse(match.groups?.["key"] ?? "");
     if (typeof key !== "string") {
       throw new TypeError(`Failed to parse a key in "${filePath}".`);
     }
@@ -192,7 +192,7 @@ async function readEmojiGroups(): Promise<
     groupKeys.map((group, i) => [
       group,
       Array.from((groupTexts[i] ?? "").matchAll(NESTED_KEY), (match) =>
-        String(JSON.parse(match[1] ?? "")),
+        String(JSON.parse(match.groups?.["key"] ?? "")),
       ),
     ]),
   );

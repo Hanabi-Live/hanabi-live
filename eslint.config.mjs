@@ -22,9 +22,6 @@ export const hanabiConfigBase = defineConfig(
       // Enforce the "normal" function style throughout the entire project.
       "func-style": ["error", "declaration"],
 
-      // The client uses positional captures in URL, chat, and note parsers.
-      "regexp/prefer-named-capture-group": "off",
-
       // Preserve compatibility with browsers without the newest regular expression flag ("v").
       "regexp/require-unicode-sets-regexp": "off",
 

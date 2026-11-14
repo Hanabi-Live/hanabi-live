@@ -955,25 +955,27 @@ function colorMixer(
 function hexToRgb(
   hex: string,
 ): { r: number; g: number; b: number } | undefined {
-  const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/iu.exec(hex);
-  if (result === null) {
+  const result = /^#?(?<r>[\da-f]{2})(?<g>[\da-f]{2})(?<b>[\da-f]{2})$/iu.exec(
+    hex,
+  );
+  if (result?.groups === undefined) {
     return undefined;
   }
 
   // We can't use `parseIntSafe` because we need to use a radix of 16.
-  const r = Number.parseInt(result[1]!, 16);
+  const r = Number.parseInt(result.groups["r"]!, 16);
   if (Number.isNaN(r)) {
     return undefined;
   }
 
   // We can't use `parseIntSafe` because we need to use a radix of 16.
-  const g = Number.parseInt(result[2]!, 16);
+  const g = Number.parseInt(result.groups["g"]!, 16);
   if (Number.isNaN(g)) {
     return undefined;
   }
 
   // We can't use `parseIntSafe` because we need to use a radix of 16.
-  const b = Number.parseInt(result[3]!, 16);
+  const b = Number.parseInt(result.groups["b"]!, 16);
   if (Number.isNaN(b)) {
     return undefined;
   }

@@ -343,11 +343,11 @@ function percentile(
 /** A timestamp as the server's pages show it: the date, an em dash, and the time in UTC. */
 function displayTime(timestamp: string): string {
   // Drop the fractional seconds and the time zone from the ISO 8601 timestamp.
-  const match = /^([^T]+)T([^.Z]+)/u.exec(timestamp);
-  if (match === null) {
+  const match = /^(?<date>[^T]+)T(?<time>[^.Z]+)/u.exec(timestamp);
+  if (match?.groups === undefined) {
     return timestamp;
   }
-  const [, date, time] = match;
+  const { date, time } = match.groups;
   return `${date} \u{2014} ${time} UTC`;
 }
 

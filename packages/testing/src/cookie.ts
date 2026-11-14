@@ -12,11 +12,17 @@ export function decodeSessionCookie(
   secret: string,
   now = Math.floor(Date.now() / 1000),
 ): UserId | undefined {
-  const match = /^(\d+)\.(\d+)\.([\w-]+)$/u.exec(encoded);
-  if (match === null) {
+  const match = /^(?<id>\d+)\.(?<timestamp>\d+)\.(?<signature>[\w-]+)$/u.exec(
+    encoded,
+  );
+  if (match?.groups === undefined) {
     return undefined;
   }
-  const [, idText, timestampText, signatureText] = match;
+  const {
+    id: idText,
+    timestamp: timestampText,
+    signature: signatureText,
+  } = match.groups;
   if (
     idText === undefined
     || timestampText === undefined

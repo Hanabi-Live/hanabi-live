@@ -210,9 +210,9 @@ export function startProcess(directory: string): ProcessState {
     lineBuffers[stream] = unfinished;
     for (const line of lines) {
       output = `${output}${line}\n`.slice(-32_768);
-      const address = /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
-        line,
-      )?.[1];
+      const address =
+        /Server listening at (?<address>http:\/\/127\.0\.0\.1:\d+)/u.exec(line)
+          ?.groups?.["address"];
       if (address !== undefined) {
         publicAddress = address;
       }

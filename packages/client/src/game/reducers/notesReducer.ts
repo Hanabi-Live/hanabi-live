@@ -124,14 +124,15 @@ function getNoteKeywords(note: string): readonly string[] {
   }
 
   // Consume unterminated brackets too, so repeated opening brackets do not cause backtracking.
-  const regexp = /\[([^\n\r\]\u{2028}\u{2029}]*)(\])?/gu;
+  const regexp = /\[(?<keyword>[^\n\r\]\u{2028}\u{2029}]*)(?<closing>\])?/gu;
   const keywords: string[] = [];
   let lastBracketEnd = 0;
 
   for (const match of note.matchAll(regexp)) {
-    if (match[2] === "]") {
-      assertDefined(match[1], "Failed to get the bracketed note keyword.");
-      keywords.push(match[1].trim());
+    const keyword = match.groups?.["keyword"];
+    if (match.groups?.["closing"] === "]") {
+      assertDefined(keyword, "Failed to get the bracketed note keyword.");
+      keywords.push(keyword.trim());
       lastBracketEnd = match.index + match[0].length;
     }
   }

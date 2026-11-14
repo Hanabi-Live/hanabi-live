@@ -45,8 +45,10 @@ type ChatData = ServerEventData["chat"];
 
 /** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
 function roomTableId(room: string): TableId | undefined {
-  const match = /^table(\d+)$/u.exec(room);
-  return match === null ? undefined : tableIdSchema.parse(Number(match[1]));
+  const tableId = /^table(?<tableId>\d+)$/u.exec(room)?.groups?.["tableId"];
+  return tableId === undefined
+    ? undefined
+    : tableIdSchema.parse(Number(tableId));
 }
 
 export enum SelfChatMessageType {

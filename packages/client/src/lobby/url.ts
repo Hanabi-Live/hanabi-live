@@ -137,137 +137,126 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
 
   // Automatically join a pre-game if we are using a "/pre-game/123" URL. If we were spectating it
   // (such as before a page refresh), spectate it again instead.
-  const preGameMatch = /\/pre-game\/(\d+)/u.exec(globalThis.location.pathname);
-  if (preGameMatch !== null) {
-    const tableIdString = preGameMatch[1];
-    if (tableIdString !== undefined) {
-      const tableId = parseIntSafe(tableIdString);
-      if (tableId !== undefined && tableId > 0) {
-        // We can be listed at other tables that we spectated, so look for this one.
-        const spectatedTable = data.spectatingAtTables.find(
-          (table) => table.tableId === tableId,
-        );
-        if (spectatedTable !== undefined) {
-          globals.connection.send("tableSpectate", spectatedTable);
-          return true;
-        }
-
-        // Here we unconditionally send password from cookies. If the game has no password, the
-        // server will ignore it.
-        const password =
-          localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
-        globals.connection.send("tableJoin", {
-          tableId,
-          ...(password !== "" && { password }),
-        });
+  const preGameTableId = /\/pre-game\/(?<tableId>\d+)/u.exec(
+    globalThis.location.pathname,
+  )?.groups?.["tableId"];
+  if (preGameTableId !== undefined) {
+    const tableId = parseIntSafe(preGameTableId);
+    if (tableId !== undefined && tableId > 0) {
+      // We can be listed at other tables that we spectated, so look for this one.
+      const spectatedTable = data.spectatingAtTables.find(
+        (table) => table.tableId === tableId,
+      );
+      if (spectatedTable !== undefined) {
+        globals.connection.send("tableSpectate", spectatedTable);
         return true;
       }
+
+      // Here we unconditionally send password from cookies. If the game has no password, the server
+      // will ignore it.
+      const password =
+        localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
+      globals.connection.send("tableJoin", {
+        tableId,
+        ...(password !== "" && { password }),
+      });
+      return true;
     }
   }
 
   // Automatically spectate a game if we are using a "/game/123" URL (or reattend it if we are one
   // of its players). We can also shadow a player in a seat with "/game/123/shadow/0".
-  const gameMatch = /\/game\/(\d+)/u.exec(globalThis.location.pathname);
-  if (gameMatch !== null) {
-    const tableIdString = gameMatch[1];
-    if (tableIdString !== undefined) {
-      const tableId = parseIntSafe(tableIdString);
-      if (tableId !== undefined && tableId > 0) {
-        if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
-          globals.connection.send("tableReattend", {
-            tableId,
-          });
-          return true;
-        }
-
-        const shadowMatch = /\/shadow\/(\d+)/u.exec(
-          globalThis.location.pathname,
-        );
-        let shadowingPlayerIndex: PlayerIndex | undefined;
-        const shadowingPlayerIndexString = shadowMatch?.[1];
-        if (shadowingPlayerIndexString !== undefined) {
-          const shadowingPlayerIndexInt = parseIntSafe(
-            shadowingPlayerIndexString,
-          );
-          if (isValidPlayerIndex(shadowingPlayerIndexInt)) {
-            shadowingPlayerIndex = shadowingPlayerIndexInt;
-          }
-        }
-        globals.connection.send("tableSpectate", {
+  const gameTableId = /\/game\/(?<tableId>\d+)/u.exec(
+    globalThis.location.pathname,
+  )?.groups?.["tableId"];
+  if (gameTableId !== undefined) {
+    const tableId = parseIntSafe(gameTableId);
+    if (tableId !== undefined && tableId > 0) {
+      if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
+        globals.connection.send("tableReattend", {
           tableId,
-          shadowingPlayerIndex,
         });
         return true;
       }
+
+      let shadowingPlayerIndex: PlayerIndex | undefined;
+      const shadowingPlayerIndexString = /\/shadow\/(?<playerIndex>\d+)/u.exec(
+        globalThis.location.pathname,
+      )?.groups?.["playerIndex"];
+      if (shadowingPlayerIndexString !== undefined) {
+        const shadowingPlayerIndexInt = parseIntSafe(
+          shadowingPlayerIndexString,
+        );
+        if (isValidPlayerIndex(shadowingPlayerIndexInt)) {
+          shadowingPlayerIndex = shadowingPlayerIndexInt;
+        }
+      }
+      globals.connection.send("tableSpectate", {
+        tableId,
+        shadowingPlayerIndex,
+      });
+      return true;
     }
   }
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
-  const replayMatch = /\/(?:shared-)?replay\/(\d+)/u.exec(
+  const gameIdString = /\/(?:shared-)?replay\/(?<gameId>\d+)/u.exec(
     globalThis.location.pathname,
-  );
-  if (replayMatch !== null) {
-    const gameIdString = replayMatch[1];
-    if (gameIdString !== undefined) {
-      const gameId = parseIntSafe(gameIdString);
-      if (gameId !== undefined && gameId > 0) {
-        const visibility = globalThis.location.pathname.includes("shared-")
-          ? "shared"
-          : "solo";
-        globals.connection.send("replayCreate", {
-          source: {
-            type: "saved",
-            gameId,
-          },
-          // A link to a shared replay should join the one that people are already watching.
-          visibility: replayVisibility(visibility === "shared", {
-            joinExisting: true,
-          }),
-        });
-        return true;
-      }
+  )?.groups?.["gameId"];
+  if (gameIdString !== undefined) {
+    const gameId = parseIntSafe(gameIdString);
+    if (gameId !== undefined && gameId > 0) {
+      const visibility = globalThis.location.pathname.includes("shared-")
+        ? "shared"
+        : "solo";
+      globals.connection.send("replayCreate", {
+        source: {
+          type: "saved",
+          gameId,
+        },
+        // A link to a shared replay should join the one that people are already watching.
+        visibility: replayVisibility(visibility === "shared", {
+          joinExisting: true,
+        }),
+      });
+      return true;
     }
   }
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJsonMatch = /\/(?:shared-)?replay-json\/([\d,\-A-Za-z]+)$/u.exec(
-    globalThis.location.pathname,
-  );
-  if (replayJsonMatch !== null) {
-    const gameJsonStringCompressed = replayJsonMatch[1];
-    if (gameJsonStringCompressed !== undefined) {
-      // The server expects the uncompressed JSON.
-      const gameJsonString = expand(gameJsonStringCompressed);
-      if (gameJsonString === undefined) {
-        return false;
-      }
-
-      const parsed = parseGameJson(gameJsonString);
-      if ("error" in parsed) {
-        return false;
-      }
-      const { gameJson } = parsed;
-
-      const visibility = globalThis.location.pathname.includes("shared-")
-        ? "shared"
-        : "solo";
-
-      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJsonString);
-      localStorage.setItem(
-        LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY,
-        visibility,
-      );
-
-      globals.connection.send("replayCreate", {
-        source: {
-          type: "imported",
-          game: gameJson,
-        },
-        visibility: replayVisibility(visibility === "shared"),
-      });
-      return true;
+  const gameJsonStringCompressed =
+    /\/(?:shared-)?replay-json\/(?<gameJson>[\d,\-A-Za-z]+)$/u.exec(
+      globalThis.location.pathname,
+    )?.groups?.["gameJson"];
+  if (gameJsonStringCompressed !== undefined) {
+    // The server expects the uncompressed JSON.
+    const gameJsonString = expand(gameJsonStringCompressed);
+    if (gameJsonString === undefined) {
+      return false;
     }
+
+    const parsed = parseGameJson(gameJsonString);
+    if ("error" in parsed) {
+      return false;
+    }
+    const { gameJson } = parsed;
+
+    const visibility = globalThis.location.pathname.includes("shared-")
+      ? "shared"
+      : "solo";
+
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJsonString);
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
+
+    globals.connection.send("replayCreate", {
+      source: {
+        type: "imported",
+        game: gameJson,
+      },
+      visibility: replayVisibility(visibility === "shared"),
+    });
+    return true;
   }
 
   return false;
@@ -275,10 +264,10 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
 
 /** Replaces a "/game/123" or "/pre-game/123" path for the given table with the lobby path. */
 export function leaveTableLink(tableId: number): void {
-  const match = /^(?:\/game|\/pre-game)\/(\d+)(?:\/|$)/u.exec(
+  const tableIdString = /^(?:\/game|\/pre-game)\/(?<tableId>\d+)(?:\/|$)/u.exec(
     globalThis.location.pathname,
-  );
-  if (match?.[1] !== undefined && parseIntSafe(match[1]) === tableId) {
+  )?.groups?.["tableId"];
+  if (tableIdString !== undefined && parseIntSafe(tableIdString) === tableId) {
     setBrowserAddressBarPath(PATH.LOBBY);
   }
 }

@@ -113,9 +113,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(page.status).toBe(200);
         expect(await page.text()).toContain("page-wrapper");
         const operationsAddress =
-          /Localhost operations listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
+          /Localhost operations listening at (?<address>http:\/\/127\.0\.0\.1:\d+)/u.exec(
             processState.output(),
-          )?.[1];
+          )?.groups?.["address"];
         assertDefined(
           operationsAddress,
           "Missing loopback operations listener.",
@@ -522,9 +522,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const listeners = [
           ...processState
             .output()
-            .matchAll(/Server listening at http:\/\/([^\s:]+):/gu),
+            .matchAll(/Server listening at http:\/\/(?<host>[^\s:]+):/gu),
         ];
-        expect(listeners.map((match) => match[1])).toEqual(
+        expect(listeners.map((match) => match.groups?.["host"])).toEqual(
           signal === "HTTP" ? ["127.0.0.1", "127.0.0.1"] : ["127.0.0.1"],
         );
       } catch (error) {
