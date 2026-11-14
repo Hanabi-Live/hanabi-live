@@ -30,6 +30,18 @@ const DISCARD_OVERLAP_PER_WIDTH = 0.4;
  */
 const DISCARD_ROW_GAP_PER_WIDTH = 0.04;
 
+/** The padding inside the play stacks' box, in CSS pixels. */
+export const PLAY_STACKS_PADDING = 8;
+
+/** The space between two play stacks, in CSS pixels. */
+export const PLAY_STACK_GAP = 6;
+
+/**
+ * The space between the play stacks, the deck, and the tokens, in CSS pixels. It leaves room for
+ * the badge on the top edge of the tokens.
+ */
+export const PLAY_AREA_GAP = 12;
+
 /** How much of the suit's color tints an empty play stack, in percent. */
 const EMPTY_STACK_TINT_PERCENT = 45;
 
@@ -153,16 +165,26 @@ export const PlayArea = forwardRef<
       // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
       // the tokens are at the bottom, level with the bottom of the controls below the hands. When
       // the columns stack, the stacks and the deck are one row, with the tokens below it.
-      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-[12px]">
-        <div className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start tw:narrow-980:gap-3">
+      <div
+        className="tw:flex tw:shrink-0 tw:flex-col tw:items-center"
+        style={{ gap: PLAY_AREA_GAP }}
+      >
+        <div
+          className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start"
+          style={{ gap: PLAY_AREA_GAP }}
+        >
           <section
             aria-label="Play stacks"
-            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:self-stretch tw:rounded-[18px] tw:px-4.5 tw:py-[16px] ${zoneClasses[zoneState]}`}
+            className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-[16px] ${zoneClasses[zoneState]}`}
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
             ref={ref}
+            style={{ padding: PLAY_STACKS_PADDING }}
           >
-            <div className="tw:flex tw:flex-col tw:gap-[8px] tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
+            <div
+              className="tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
+              style={{ gap: PLAY_STACK_GAP }}
+            >
               {stacks.map((stack) => {
                 const suit = variant.suits[stack.suitIndex];
                 const name = suit?.displayName ?? "";
@@ -484,23 +506,17 @@ export const DiscardPile = forwardRef<
 );
 
 /**
- * A bubble for the clue tokens or the strikes: its value, centered. Under the deck, the bubbles are
- * small, one above the other, so that the column stays narrow. When the columns stack, they are
- * side by side and share their height, so that their values line up.
+ * The box of the clue tokens and the strikes. Under the deck, the clue count is above the strikes,
+ * so that the column stays narrow and short. When the columns stack, they are side by side.
  */
-const TOKEN_BUBBLE_CLASS = `tw:relative tw:flex tw:items-center tw:justify-center tw:rounded-[14px] tw:px-1.5 tw:py-[10px] tw:narrow-980:flex-1 tw:narrow-980:rounded-[18px] tw:narrow-980:px-3 tw:narrow-980:py-5 ${WELL_CLASS}`;
-
-/** The row of a value, as tall as the strike boxes, so that the two values line up. */
-const TOKEN_VALUE_CLASS =
-  "tw:flex tw:h-[34px] tw:items-center tw:narrow-980:h-[32px]";
+const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[4px] tw:rounded-[14px] tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:rounded-[18px] tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
 
 /**
- * The height of the tokens under the deck, with the gap above them. It is the sum of the bubbles'
- * classes, which are in pixels, not "rem", so that this sum stays right: two rows of 34 pixels with
- * 10 pixels of padding above and below, and gaps of 12 and 20 pixels. The gap between the bubbles
- * leaves room for the badge on the bottom edge of the clues.
+ * The height of the tokens under the deck, with the gap above them. It is the sum of the box's
+ * classes, which are in pixels, not "rem", so that this sum stays right: 8 pixels of padding above
+ * and below, the clue count (34 pixels), a gap of 4 pixels, and the strike boxes (28 pixels).
  */
-export const TABLE_TOKENS_HEIGHT = 12 + 2 * (34 + 20) + 20;
+export const TABLE_TOKENS_HEIGHT = PLAY_AREA_GAP + 8 + 34 + 4 + 28 + 8;
 
 /**
  * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
@@ -605,30 +621,31 @@ export function TableTokens({
   readonly onShowStrike: (segment: number) => void;
 }): React.JSX.Element {
   return (
-    <div className="tw:mt-auto tw:flex tw:shrink-0 tw:flex-col tw:gap-[20px] tw:self-stretch tw:narrow-980:flex-row tw:narrow-980:gap-3">
+    <div
+      className={`tw:mt-auto tw:shrink-0 tw:self-stretch ${TOKENS_BOX_CLASS}`}
+    >
       <section
         aria-label="Clue tokens"
-        className={TOKEN_BUBBLE_CLASS}
+        className="tw:relative tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
         ref={tooltipRef("Clue tokens")}
       >
         {/* One large number: the count that players check most. It stands out only at the
             limits, where the rules change what the team can do: in the color of clues at the
             maximum, when someone must clue, and gray with none, when no one can. */}
-        <div className={`${TOKEN_VALUE_CLASS} tw:gap-1.5 tw:narrow-980:gap-2`}>
-          <ClueTokenIcon />
-          <span
-            className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
-            // A spark flies to the count when a completed stack gives a clue back (see
-            // "scoreMotion.ts").
-            data-clue-count
-          >
-            {clues}
-          </span>
-        </div>
+        <ClueTokenIcon />
+        <span
+          className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
+          // A spark flies to the count when a completed stack gives a clue back (see
+          // "scoreMotion.ts").
+          data-clue-count
+        >
+          {clues}
+        </span>
         {(atMaxClues || outOfClues) && (
-          // A badge on the bottom edge of the bubble, so that the count stays centered.
+          // A badge on the top edge of the box, above the count, so that nothing in the box moves.
+          // It moves up by the box's padding.
           <span
-            className={`tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
+            className={`tw:absolute tw:-top-[8px] tw:left-1/2 tw:narrow-980:-top-[16px] tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
               atMaxClues
                 ? "tw:bg-clue tw:text-card-ink"
                 : "tw:bg-game-raised tw:text-game-text"
@@ -638,14 +655,15 @@ export function TableTokens({
           </span>
         )}
       </section>
-      {/* Strikes are danger: the bubble turns red as they add up, and stays quiet without them. */}
+      {/* Strikes are danger: a frame around the boxes turns red as they add up, and stays quiet
+          without them. It sits in the box's padding, so that it does not change the box's size. */}
       <section
         aria-label="Strikes"
-        className={`${TOKEN_BUBBLE_CLASS} ${getStrikeBubbleClass(strikes)}`}
+        className={`tw:-m-[3px] tw:rounded-lg tw:p-[3px] ${getStrikeBubbleClass(strikes)}`}
       >
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-          className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
+          className="tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
           role="group"
         >
           {[...eRange(MAX_STRIKES)].map((i) => {

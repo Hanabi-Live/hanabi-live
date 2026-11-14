@@ -75,6 +75,8 @@ of the repository.
   icon.
 - In the new game screen, the clue log uses smaller circles, so more clues fit
   without scrolling.
+- In the new game screen, the clues and strikes share one box, so the play
+  stacks are larger.
 
 ## November 12th, 2026
 

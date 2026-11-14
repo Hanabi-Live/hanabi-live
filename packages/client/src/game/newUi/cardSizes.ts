@@ -8,7 +8,13 @@ import {
   HAND_BOX_TOP_SPACE,
   NAME_GAP,
 } from "./Hands.tsx";
-import { DECK_PILE_DEPTH, TABLE_TOKENS_HEIGHT } from "./SharedCards.tsx";
+import {
+  DECK_PILE_DEPTH,
+  PLAY_AREA_GAP,
+  PLAY_STACK_GAP,
+  PLAY_STACKS_PADDING,
+  TABLE_TOKENS_HEIGHT,
+} from "./SharedCards.tsx";
 
 /** The smallest and largest card in a hand, in CSS pixels of width. */
 const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
@@ -24,19 +30,19 @@ export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 export const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
 
 /** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
-const STACKED_PLAY_AREA_OTHER_WIDTH = 48;
+const STACKED_PLAY_AREA_OTHER_WIDTH = 2 * PLAY_STACKS_PADDING + PLAY_AREA_GAP;
 
 const HAND_BOX_HORIZONTAL_PADDING = 32;
 
 /**
  * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
- * deck, the edges under the top of the deck, and the tokens under it. The classes of these gaps are
- * in pixels, not "rem", so that this sum stays right.
+ * deck, the edges under the top of the deck, and the tokens under it.
  */
 const PLAY_AREA_OTHER_HEIGHT =
-  2 * 16 + 12 + DECK_PILE_DEPTH + TABLE_TOKENS_HEIGHT;
-
-const PLAY_STACK_GAP = 8;
+  2 * PLAY_STACKS_PADDING
+  + PLAY_AREA_GAP
+  + DECK_PILE_DEPTH
+  + TABLE_TOKENS_HEIGHT;
 
 /**
  * Returns the width of the cards in the hands. When the columns stack, the page scrolls, so only
