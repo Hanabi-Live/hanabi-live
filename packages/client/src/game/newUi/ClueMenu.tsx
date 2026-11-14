@@ -230,9 +230,15 @@ function ClueRow({
   return <div className="tw:flex tw:flex-wrap tw:gap-2">{children}</div>;
 }
 
-/** The place of a clue that the rules do not allow: an empty well, with no button in it. */
+/**
+ * The place of a clue that the rules do not allow: an empty well, with no button in it. A key
+ * stands on a lip, so the well sits where a pressed key would, to look centered between the keys.
+ */
 function EmptySlot(): React.JSX.Element {
   return (
-    <div aria-hidden="true" className={`${choiceSizeClass} ${WELL_CLASS}`} />
+    <div
+      aria-hidden="true"
+      className={`tw:translate-y-[2px] ${choiceSizeClass} ${WELL_CLASS}`}
+    />
   );
 }
