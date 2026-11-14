@@ -1767,13 +1767,6 @@ async function createCast(
           "The account can only move before the page loads.",
         );
       }
-      console.error(
-        "DEBUG move",
-        turn,
-        index,
-        JSON.stringify(action),
-        JSON.stringify(await handAt(index)),
-      );
       const peer = [...seats].find(([, other]) => other === index)?.[0];
       assertDefined(peer, `No player sits in seat ${index}.`);
       peer.send("playerAction", { tableId, action });
