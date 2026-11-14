@@ -571,6 +571,7 @@ function Possibilities({
   possibleSuitIndexes,
   possibleRanks,
   rankShown,
+  badgeShown,
 }: {
   readonly variant: Variant;
   readonly width: number;
@@ -578,6 +579,8 @@ function Possibilities({
   readonly possibleRanks: readonly Rank[];
   /** Whether the card shows its rank in the corner, so that the possibilities go below it. */
   readonly rankShown: boolean;
+  /** Whether a badge is in the bottom-left corner, so that the possibilities go above it. */
+  readonly badgeShown: boolean;
 }): React.JSX.Element {
   const {
     inset,
@@ -599,10 +602,15 @@ function Possibilities({
   // The suits take the rest of the card's height, in at most two rows. They go in as many columns
   // as make the pips the largest, such as three columns of two for six suits.
   const top = width * (rankShown ? topWithRank : topWithoutRank);
+  const bottom =
+    width
+    * (badgeShown
+      ? CORNER_INSET_PER_WIDTH + BADGE_SIZE_PER_WIDTH + gap
+      : inset);
   const rankRowHeight =
     possibleRanks.length > 0 ? chipSize * 1.1 + width * gap : 0;
   const suitsHeight =
-    width * CARD_HEIGHT_PER_WIDTH - top - width * inset - rankRowHeight;
+    width * CARD_HEIGHT_PER_WIDTH - top - bottom - rankRowHeight;
   const suitCount = Math.max(possibleSuitIndexes.length, 1);
   let suitColumns = 1;
   let pipCell = 0;
@@ -631,7 +639,7 @@ function Possibilities({
         left: width * inset,
         right: width * inset,
         top,
-        bottom: width * inset,
+        bottom,
         gap: width * gap,
       }}
     >
@@ -900,6 +908,7 @@ export function CardFace({
 
       {(showSuitPips || showRankPips) && (
         <Possibilities
+          badgeShown={critical || trashIcon}
           possibleRanks={showRankPips ? possibleRanks : []}
           possibleSuitIndexes={showSuitPips ? possibleSuitIndexes : []}
           rankShown={rank !== undefined}
