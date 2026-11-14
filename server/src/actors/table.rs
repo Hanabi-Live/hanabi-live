@@ -740,7 +740,7 @@ impl TableActor {
             pending.start(
                 async move {
                     Completed::GameCounts(
-                        crate::database::normal_game_counts(&pool, &users, false)
+                        crate::database::normal_game_counts(&pool, &users)
                             .await
                             .map(|counts| (users, counts)),
                     )

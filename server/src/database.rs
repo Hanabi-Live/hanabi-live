@@ -4,20 +4,15 @@ use serde::Serialize;
 use sqlx::PgPool;
 use std::collections::BTreeMap;
 
-// Pregame/player-info exclude speedruns; the welcome/history total includes them.
+/// The counts of games that ended normally, without speedruns, as pregame statistics show them.
 pub(crate) async fn normal_game_counts(
     pool: &PgPool,
     ids: &[UserId],
-    include_speedruns: bool,
 ) -> Result<BTreeMap<UserId, i64>> {
     let ids = ids.iter().map(|id| id.get()).collect::<Vec<_>>();
     let rows = sqlx::query!(
-        "SELECT id AS user_id,
-         (num_normal_games + CASE WHEN $2 THEN num_normal_speedrun_games ELSE 0 END)::bigint
-         AS \"count!\"
-         FROM users WHERE id=ANY($1)",
+        "SELECT id AS user_id, num_normal_games::bigint AS \"count!\" FROM users WHERE id=ANY($1)",
         &ids,
-        include_speedruns,
     )
     .fetch_all(pool)
     .await?;
@@ -26,16 +21,15 @@ pub(crate) async fn normal_game_counts(
         .collect()
 }
 
-pub(crate) async fn normal_game_count(
-    pool: &PgPool,
-    id: UserId,
-    include_speedruns: bool,
-) -> Result<i64> {
-    Ok(normal_game_counts(pool, &[id], include_speedruns)
-        .await?
-        .get(&id)
-        .copied()
-        .unwrap_or(0))
+/// The count of all of a player's games, however each one ended, as their game history shows it.
+pub(crate) async fn game_count(pool: &PgPool, id: UserId) -> Result<i64> {
+    Ok(sqlx::query_scalar!(
+        "SELECT num_games::bigint AS \"count!\" FROM users WHERE id=$1",
+        id.get()
+    )
+    .fetch_optional(pool)
+    .await?
+    .unwrap_or(0))
 }
 
 // The statistics tables have one best-score column for each player count, from `best_score2` to
@@ -82,7 +76,7 @@ impl UserStats {
 
 #[cfg(test)]
 mod tests {
-    use super::{UserId, normal_game_counts};
+    use super::{UserId, game_count, normal_game_counts};
     use crate::accounts::test_support::TestDb;
 
     async fn game(db: &TestDb, end_condition: i16, speedrun: bool, players: &[i32]) -> i32 {
@@ -117,11 +111,13 @@ mod tests {
     async fn stored_counts_match_a_recount(db: &TestDb) -> bool {
         sqlx::query_scalar!(
             "SELECT NOT EXISTS(SELECT 1 FROM users u LEFT JOIN (
-               SELECT p.user_id, count(*) FILTER (WHERE NOT g.speedrun) AS normal,
-                      count(*) FILTER (WHERE g.speedrun) AS speedrun
+               SELECT p.user_id, count(*) AS all_games,
+                      count(*) FILTER (WHERE g.end_condition = 1 AND NOT g.speedrun) AS normal,
+                      count(*) FILTER (WHERE g.end_condition = 1 AND g.speedrun) AS speedrun
                FROM game_participants p JOIN games g ON g.id = p.game_id
-               WHERE g.end_condition = 1 GROUP BY p.user_id) c ON c.user_id = u.id
-             WHERE u.num_normal_games <> COALESCE(c.normal, 0)
+               GROUP BY p.user_id) c ON c.user_id = u.id
+             WHERE u.num_games <> COALESCE(c.all_games, 0)
+                OR u.num_normal_games <> COALESCE(c.normal, 0)
                 OR u.num_normal_speedrun_games <> COALESCE(c.speedrun, 0)) AS \"value!\""
         )
         .fetch_one(&db.pool)
@@ -129,8 +125,16 @@ mod tests {
         .unwrap()
     }
 
+    async fn all_counts(db: &TestDb, ids: &[UserId]) -> Vec<i64> {
+        let mut counts = vec![];
+        for id in ids {
+            counts.push(game_count(&db.pool, *id).await.unwrap());
+        }
+        counts
+    }
+
     #[tokio::test]
-    async fn normal_game_counts_follow_saved_and_deleted_games_postgres() {
+    async fn game_counts_follow_saved_and_deleted_games_postgres() {
         let Some(db) = TestDb::create().await else {
             return;
         };
@@ -143,29 +147,35 @@ mod tests {
         game(&db, 1, true, &[alice]).await;
         game(&db, 4, false, &[alice]).await;
         game(&db, 1, false, &[bob, carol]).await;
+        let ended_early = game(&db, 4, false, &[bob]).await;
         assert!(stored_counts_match_a_recount(&db).await);
         let ids = [alice, bob, carol].map(|id| UserId::new(id).unwrap());
-        let normal = normal_game_counts(&db.pool, &ids, false).await.unwrap();
-        let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
+        let normal = normal_game_counts(&db.pool, &ids).await.unwrap();
         assert_eq!(
             (normal[&ids[0]], normal[&ids[1]], normal[&ids[2]]),
             (1, 2, 1)
         );
-        assert_eq!((all[&ids[0]], all[&ids[1]], all[&ids[2]]), (2, 2, 1));
+        // The game history counts every game, however it ended.
+        assert_eq!(all_counts(&db, &ids).await, [3, 3, 1]);
 
-        sqlx::query!("DELETE FROM games WHERE id=$1", shared)
+        sqlx::query!("DELETE FROM games WHERE id=ANY($1)", &[shared, ended_early])
             .execute(&db.pool)
             .await
             .unwrap();
         assert!(stored_counts_match_a_recount(&db).await);
+        assert_eq!(all_counts(&db, &ids).await, [2, 1, 1]);
         // Deleting a player also deletes their games, which other players lose too.
         sqlx::query!("DELETE FROM users WHERE id=$1", carol)
             .execute(&db.pool)
             .await
             .unwrap();
         assert!(stored_counts_match_a_recount(&db).await);
-        let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
-        assert_eq!((all[&ids[0]], all[&ids[1]], all.get(&ids[2])), (1, 0, None));
+        let normal = normal_game_counts(&db.pool, &ids).await.unwrap();
+        assert_eq!(
+            (normal[&ids[0]], normal[&ids[1]], normal.get(&ids[2])),
+            (0, 0, None)
+        );
+        assert_eq!(all_counts(&db, &ids).await, [2, 0, 0]);
         db.close().await;
     }
 }

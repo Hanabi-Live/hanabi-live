@@ -139,7 +139,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
 
 pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, i64)> {
     let pool = &app.store.lobby_reads;
-    let total = crate::database::normal_game_count(pool, id, true).await?;
+    let total = crate::database::game_count(pool, id).await?;
     let mut initial = vec![];
     let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
     initial.push(frame(

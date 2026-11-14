@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT NOT EXISTS(SELECT 1 FROM users u LEFT JOIN (\n               SELECT p.user_id, count(*) AS all_games,\n                      count(*) FILTER (WHERE g.end_condition = 1 AND NOT g.speedrun) AS normal,\n                      count(*) FILTER (WHERE g.end_condition = 1 AND g.speedrun) AS speedrun\n               FROM game_participants p JOIN games g ON g.id = p.game_id\n               GROUP BY p.user_id) c ON c.user_id = u.id\n             WHERE u.num_games <> COALESCE(c.all_games, 0)\n                OR u.num_normal_games <> COALESCE(c.normal, 0)\n                OR u.num_normal_speedrun_games <> COALESCE(c.speedrun, 0)) AS \"value!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "5faf3791e6a69dcb133f802fddb3bc080691567086a2db78de1d5064283535cf"
+}

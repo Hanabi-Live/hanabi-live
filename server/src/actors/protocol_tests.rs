@@ -2485,8 +2485,8 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
             "Another player's history must not affect the total"
         );
         ensure!(
-            crate::database::normal_game_count(&h.store.primary, UserId::new(1).unwrap(), true).await? == 3,
-            "Welcome/history totals must also include normally completed speedruns"
+            crate::database::game_count(&h.store.primary, UserId::new(1).unwrap()).await? == 9,
+            "Welcome/history totals must count every game, however it ended"
         );
         Ok::<(), anyhow::Error>(())
     }

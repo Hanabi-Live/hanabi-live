@@ -51,7 +51,7 @@ pub(crate) async fn pregame_stats_of(
     ids: &[UserId],
     variant: u32,
 ) -> Result<BTreeMap<UserId, PregameStats>> {
-    let counts = crate::database::normal_game_counts(pool, ids, false).await?;
+    let counts = crate::database::normal_game_counts(pool, ids).await?;
     let raw_ids = ids.iter().map(|id| id.get()).collect::<Vec<_>>();
     let rows = sqlx::query_as!(
         crate::database::UserStats,

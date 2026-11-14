@@ -215,7 +215,7 @@ pub async fn dispatch(
         }
         ClientRequest::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
             let ids = history_ids(pool, caller.user, offset.get(), limit.get()).await?;
-            let total = crate::database::normal_game_count(pool, caller.user, true).await?;
+            let total = crate::database::game_count(pool, caller.user).await?;
             vec![Effect::Reply(hanabi_protocol::reply::GAME_HISTORY.data(
                 hanabi_protocol::GamePage {
                     games: get_history(pool, &ids).await?,
