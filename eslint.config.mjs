@@ -26,9 +26,6 @@ export const hanabiConfigBase = defineConfig(
       // iOS 17 dropped the iPhone 8, iPhone X, and first iPad Pro, so they stay on Safari 16.
       "regexp/require-unicode-sets-regexp": "off",
 
-      // Keep explicit comparisons in the game rules and event handlers.
-      "unicorn/no-subtraction-comparison": "off",
-
       // Modules keep their state in top-level variables that functions set. Most of this state
       // exists once per page: the WebSocket connection and its timers, the open modal, the chat
       // input, and the React roots. A class would not make it safer, because the page would still

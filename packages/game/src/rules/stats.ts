@@ -122,7 +122,7 @@ export function getPaceRisk(
 
   // Formula derived by Hyphen-ated; a conservative estimate of "End-Game" that does not account for
   // the number of players.
-  if (currentPace - numPlayers < 0) {
+  if (currentPace < numPlayers) {
     return PaceRisk.Medium;
   }
 
