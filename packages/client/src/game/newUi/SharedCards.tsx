@@ -36,11 +36,8 @@ export const PLAY_STACKS_PADDING = 8;
 /** The space between two play stacks, in CSS pixels. */
 export const PLAY_STACK_GAP = 6;
 
-/**
- * The space between the play stacks, the deck, and the tokens, in CSS pixels. It leaves room for
- * the badge on the top edge of the tokens.
- */
-export const PLAY_AREA_GAP = 12;
+/** The space between the play stacks, the deck, and the tokens, in CSS pixels. */
+export const PLAY_AREA_GAP = 8;
 
 /** How much of the suit's color tints an empty play stack, in percent. */
 const EMPTY_STACK_TINT_PERCENT = 45;
@@ -626,7 +623,7 @@ export function TableTokens({
     >
       <section
         aria-label="Clue tokens"
-        className="tw:relative tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
+        className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
         ref={tooltipRef("Clue tokens")}
       >
         {/* One large number: the count that players check most. It stands out only at the
@@ -641,19 +638,6 @@ export function TableTokens({
         >
           {clues}
         </span>
-        {(atMaxClues || outOfClues) && (
-          // A badge on the top edge of the box, above the count, so that nothing in the box moves.
-          // It moves up by the box's padding.
-          <span
-            className={`tw:absolute tw:-top-[8px] tw:left-1/2 tw:narrow-980:-top-[16px] tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
-              atMaxClues
-                ? "tw:bg-clue tw:text-card-ink"
-                : "tw:bg-game-raised tw:text-game-text"
-            }`}
-          >
-            {atMaxClues ? "No discards" : "No clues"}
-          </span>
-        )}
       </section>
       {/* Strikes are danger: a frame around the boxes turns red as they add up, and stays quiet
           without them. It sits in the box's padding, so that it does not change the box's size. */}

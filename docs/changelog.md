@@ -77,6 +77,8 @@ of the repository.
   without scrolling.
 - In the new game screen, the clues and strikes share one box, so the play
   stacks are larger.
+- In the new game screen, the "No discards" and "No clues" labels are gone. The
+  color of the clue count still shows both.
 
 ## November 12th, 2026
 
