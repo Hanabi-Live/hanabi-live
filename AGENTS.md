@@ -79,7 +79,8 @@ When a change adds, removes, or changes something that players or server
 operators notice, add a one-line entry for it under today's date in
 `docs/changelog.md` (dates newest first, such as `## November 8th, 2026`), in
 the same commit. Add the entry at the bottom of that date's list. Do not add
-entries for bug fixes, refactors, tests, CI, or other internal changes.
+entries for bug fixes, refactors, tests, CI, or other internal changes. Do not
+add entries for changes to the New UI while it is in testing.
 
 When a change adds, removes, or changes a feature of the website, update
 `docs/features.md` to match, in the same commit.

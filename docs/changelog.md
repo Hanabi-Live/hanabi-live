@@ -12,73 +12,8 @@ of the repository.
 - "Reduced motion" also stops the action log from sliding in replays.
 - In a replay, or when you spectate without shadowing a player, Ctrl + Space
   narrows each hand by its own player's notes.
-- In the new game screen, clues in the clue log have tooltips that say that
-  clicking them goes to their turn.
-- In the new game screen, the replay controls are now larger and below the
-  hands.
-- In the new game screen, a perfect score now sets off the fireworks finale.
-- In the new game screen, a completed stack and a lower maximum score now have
-  the same animations as in the classic screen.
 - The emote and emoji picker, and the modals that ask for a turn, a card, an
   efficiency modifier, or a new replay leader, have a close button.
-- In the new game screen, the clue controls are now larger and below the hands.
-- In the new game screen, the play stacks, discards, deck, clues, strikes, and
-  clue log no longer have text labels. The discard pile shows a trash can, and
-  the clue count and the strikes have icons.
-- In the new game screen, pace has a help icon that explains it.
-- The new game screen is now brighter: the table is green felt, the empty play
-  stacks show their suit colors, and a gold ring marks whose turn it is.
-- In the new game screen, you can right-click a card to write a note on it. A
-  card with a note has a folded corner, which is dark when the note changes what
-  the card shows. Hover over the card to read its notes.
-- In the new game screen, your notes on your own cards now apply, as in the
-  classic screen: a note such as "r1" shows the card as a red 1.
-- In the new game screen, the "Give clue" button says what you still have to
-  pick.
-- In the new game screen, the turn shows once, in the bar along the bottom. In a
-  replay, it also shows the last turn, such as "5 / 21".
-- In the new game screen, buttons stand out from the table like keys, and the
-  clue tokens, strikes, and piles sit in it.
-- In the new game screen, all tooltips are white, and card notes show as soon as
-  the pointer is over the card.
-- In the new game screen, the bomb next to the strikes has a tooltip.
-- In the new game screen, the deck no longer says "Last card" or "Final round".
-- In the new game screen, when a clue would touch no cards, the clue button says
-  so, such as "No 4s in that hand".
-- In the new game screen, the table looks like the cloth on a snooker table. It
-  is darker toward the edges, and the piles, clue log, and hands sit deeper in
-  it.
-- In the new game screen, "Play again" and "Ready" are now in the bottom bar,
-  where "End game" is during the game.
-- In the new game screen, the clue log names each clue next to its circle, such
-  as "Red" or "Number 2".
-- In the new game screen, the "Classic view" button is now called "Classic UI".
-- In the new game screen, the replay's step buttons are larger and side by side,
-  and a spectator follows the leader with a "Follow" switch.
-- In the new game screen, the shared replay leader passes the lead from a
-  "Leader" menu in the replay controls, which no longer have a heading.
-- In the new game screen, the clue tokens and the strikes are now under the
-  deck, so that the clue log is taller.
-- In the new game screen, the replay controls are shorter, and the hands of a
-  finished game get the space.
-- In the new game screen, the clue tokens and the strikes are larger, and their
-  bottom is level with the bottom of the controls below the hands.
-- In the new game screen, everyone in a shared replay has the "Leader" menu, so
-  a spectator can make themselves the leader.
-- In the new game screen, the hands are centered between the play stacks and the
-  discard pile.
-- In the new game screen, each row of the discard pile covers all of the row
-  above but its ranks, as on the classic screen, so the pile takes less room.
-- In the new game screen, hovering over a card in a hand colors the clues about
-  it in the clue log, as in the classic screen.
-- In the new game screen, the strike boxes are now larger, in place of the bomb
-  icon.
-- In the new game screen, the clue log uses smaller circles, so more clues fit
-  without scrolling.
-- In the new game screen, the clues and strikes share one box, so the play
-  stacks are larger.
-- In the new game screen, the "No discards" and "No clues" labels are gone. The
-  color of the clue count still shows both.
 
 ## November 12th, 2026
 
@@ -91,62 +26,18 @@ of the repository.
   notes.
 - When you are not the owner of a table, the button on the "Change Options"
   screen now says "Suggest to Table Owner".
-- The new game screen has an "End game" button, to vote to end the game or to
-  end it right away.
 - On the "Watch a Specific Replay" page, press Ctrl + Enter in the JSON box to
   watch the replay.
 - Trash cards in a hand are now faded in speedruns too, as in other games.
-- In the new game screen, drop a dragged card anywhere to the left of the hands
-  to play it, or anywhere to the right of them to discard it.
-- In the new game screen, the clue panel has a button for each player, and the
-  clue hotkeys (Tab, 1 to 5, Q to Y, and Ctrl + Enter) work in it.
-- In the new game screen, holding the mouse button down on another player's
-  cards shows their view right away. Clicking a hand no longer picks that player
-  for a clue; use the buttons in the clue panel.
 - The profile page no longer shows the total number of max scores. The "Missing
   Scores" page still shows it.
 - Profiles now show the time spent reviewing games in solo and shared replays.
   It includes the time rebuilt from the old server's logs from April 1st to
   September 5th, 2026.
 - Player profiles now show the total time spent playing and reviewing.
-- The new game screen grows with the window, so on a large screen everything is
-  larger instead of surrounded by empty space.
-- In the new game screen, put the mouse on the variant at the bottom to see the
-  game's information, such as its options and its table.
-- In the new game screen, the chat lists how many people are watching and names
-  as many as fit, with you shown as "You".
 - Notes and table names now count down the characters left near their limit, as
   chat messages do, and are not saved when they are too long. Before, the server
   cut them short.
-- In the new game screen, the deck is a pile of face-down cards that gets
-  thinner as it runs low.
-- In the new game screen, the clue count is one large number, and the strikes
-  turn red as they add up.
-- In the new game screen, the pace changes color as discarding gets riskier, as
-  on the classic screen.
-- In the new game screen, the deck marks its last card in orange, and says
-  "Final round" once it is empty.
-- In the new game screen, the cursor turns into an eye over another player's
-  cards, where holding the mouse button down shows their view of them. The eye
-  buttons beside the names now show only on touch screens.
-- In the new game screen, on a narrow window that still has room, the names go
-  beside the cards instead of above them, so that the hands take less space.
-- In the new game screen, clicking a card no longer shows "Play" and "Discard"
-  buttons. Drag the card to play or discard it.
-- In the new game screen, while you follow the leader of a shared replay, the
-  timeline's knob slides, to show which way they moved.
-- In the new game screen, strikes are X's in their squares, and a replay shows
-  the strikes still to come as faded X's, as the classic screen does.
-- In the new game screen, a played card moves to its stack in a straight line,
-  like any other card, without its own animation.
-- In the new game screen on a touch screen or a narrow window, tap a card to
-  play or discard it, since the play stacks and the discard pile may be off the
-  screen. Dragging stays the way on a wide screen with a mouse.
-- In the new game screen, a forward or back icon also flashes beside the turn
-  number when the leader of a shared replay that you follow moves.
-- In the new game screen, the clue log shows only the clues about a card while
-  you hold the mouse button down on it, instead of whenever the mouse is over
-  it.
 - A new "Reduced motion" setting leaves out the fireworks, explosions, shaking,
   and pulses in games. Cards still move.
 - Joining a shared replay no longer keeps it open for another 30 minutes. Only
@@ -157,22 +48,6 @@ of the repository.
 
 - The "Missing Scores" page now shows a dash instead of 0 for a variant that no
   one in the list has played.
-- In the new game screen, when you put the mouse on a card in a hand, the clue
-  log shows only the clues about that card, with a cross on the clues that did
-  not touch it.
-- In the new game screen, a played card now lifts out of its hand, flies to its
-  stack (turning face up if its holder did not know it), and lands with a burst.
-  A misplayed card explodes on its strike box, as on the classic screen.
-- In the new game screen, the discard pile now takes only the room that its
-  cards need, so the clue log has more room.
-- In the new game screen, spectators can now watch the game from a player's seat
-  with the new "View as" button, or by right-clicking a player's name. While you
-  watch from a seat, the button shows whose, and its menu can stop it.
-- In the new game screen, at max clues, the discard pile has a dashed orange
-  border and says that no one can discard.
-- In the new game screen, you can now see another player's hand as they see it:
-  hold the mouse button down on their cards, or click the eye beside their name.
-  Hold the spacebar to see every hand this way.
 - The `/setvariant` command now works for every player at a pre-game table. A
   player who is not the owner proposes the variant to the owner.
 
