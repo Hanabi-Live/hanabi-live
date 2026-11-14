@@ -69,6 +69,7 @@
   --color-game-turn: var(--game-screen-turn);
   --color-card-unknown: var(--card-face-unknown);
   --color-card-ink: var(--card-ink);
+  --color-card-paper: var(--card-paper);
   --color-clue: var(--clue-border);
   --color-critical: var(--critical);
 }
