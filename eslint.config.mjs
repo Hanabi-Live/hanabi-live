@@ -22,7 +22,8 @@ export const hanabiConfigBase = defineConfig(
        */
       "func-style": ["error", "declaration"],
 
-      // State interfaces and third-party declarations intentionally contain mutable fields.
+      // The rule checks types deeply, so it rejects branded numbers, Zod-inferred types, and the
+      // Window and Konva declarations, which must be mutable.
       "complete/type-declaration-immutability": "off",
 
       // Application entry points initialize shared state and register handlers at module scope.
