@@ -22,6 +22,7 @@ import {
   RING_START_RADIUS,
   RING_STROKE,
 } from "../ui/effectConfig.ts";
+import { CARD_CORNER_PER_WIDTH } from "./Card.tsx";
 import { getScreenScale, measure } from "./screenScale.ts";
 
 /** The ID of every card movement, so that the page can tell them from other animations. */
@@ -47,9 +48,6 @@ const PLAYED_CARD_Z_INDEX = "40";
 
 /** The effects go over everything on the screen. */
 export const EFFECT_Z_INDEX = "60";
-
-/** The corners of a card face, as a fraction of its width (as in "Card.tsx"). */
-export const CARD_CORNER_PER_WIDTH = 0.14;
 
 // The misplay is a copy of the classic screen's, so its numbers are the same.
 

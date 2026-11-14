@@ -9,6 +9,12 @@ import { Pip } from "./Pip.tsx";
 export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
 
 /**
+ * How round the corners of a card face are, as a fraction of its width. The corners are tight, as
+ * on a playing card, so that a card does not look like an app icon.
+ */
+export const CARD_CORNER_PER_WIDTH = 0.06;
+
+/**
  * How opaque a trash card is. It fades more than on the classic screen (`CARD_FADE`), so that it
  * stands further apart from the cards that still matter.
  */
@@ -577,7 +583,7 @@ export function CardFace({
       style={{
         width,
         height,
-        borderRadius: width * 0.14,
+        borderRadius: width * CARD_CORNER_PER_WIDTH,
         background: faceColors.background,
         color: faceColors.ink,
         transform: `translateY(${-raise}px)`,

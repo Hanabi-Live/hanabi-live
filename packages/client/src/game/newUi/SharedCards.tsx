@@ -11,6 +11,7 @@ import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
+  CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
   describeCard,
@@ -191,9 +192,10 @@ export const PlayArea = forwardRef<
                 const below =
                   stack.belowRank === undefined ? (
                     <div
-                      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-solid tw:border-game-line"
+                      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:border-2 tw:border-solid tw:border-game-line"
                       style={{
                         width: cardWidth,
+                        borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
                         height,
                         ...(suit !== undefined
                           && getEmptyStackStyle(suit, colorblindMode)),
@@ -342,12 +344,13 @@ function Deck({
           const offset = (edges - i) * DECK_EDGE_OFFSET;
           return (
             <div
-              className="tw:absolute tw:rounded-[10px] tw:ring-1 tw:ring-game-text/80"
+              className="tw:absolute tw:ring-1 tw:ring-game-text/80"
               // The cards under the top one only show their edges, so they keep their order.
               key={offset}
               style={{
                 ...CARD_BACK_STYLE,
                 width: cardWidth,
+                borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
                 height,
                 left: offset,
                 top: offset,
@@ -356,7 +359,7 @@ function Deck({
           );
         })}
         <div
-          className={`tw:absolute tw:top-0 tw:left-0 tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] ${
+          className={`tw:absolute tw:top-0 tw:left-0 tw:box-border tw:flex tw:items-center tw:justify-center ${
             empty
               ? "tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
               : "tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80"
@@ -365,6 +368,7 @@ function Deck({
           style={{
             ...(!empty && CARD_BACK_STYLE),
             width: cardWidth,
+            borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
             height,
           }}
         >

@@ -106,12 +106,8 @@ import {
   burstColors,
   suitColors,
 } from "../ui/effectConfig.ts";
-import {
-  CARD_CORNER_PER_WIDTH,
-  EFFECT_Z_INDEX,
-  animateSampled,
-  onEnd,
-} from "./playMotion.ts";
+import { CARD_CORNER_PER_WIDTH } from "./Card.tsx";
+import { EFFECT_Z_INDEX, animateSampled, onEnd } from "./playMotion.ts";
 import { toScreenPixels } from "./screenScale.ts";
 
 /** Something that the canvas draws for a while, starting at a time in seconds. */
