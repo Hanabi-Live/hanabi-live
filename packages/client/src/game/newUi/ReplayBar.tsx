@@ -122,7 +122,8 @@ function Timeline({
 
   /**
    * The shared replay leader and the turn that they show, while we look at other turns on our own.
-   * A marker with a crown shows that turn, and clicking it follows the leader again.
+   * A second knob shows that turn, as the classic screen's white shuttle does, and clicking it
+   * follows the leader again.
    */
   readonly leader:
     { readonly name: string; readonly segment: number } | undefined;
@@ -135,6 +136,8 @@ function Timeline({
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const knobLeft = timelineLeft(segment, lastSegment);
+  // On the leader's turn, our knob is smaller, so that the leader's knob shows around it.
+  const onLeaderTurn = leader !== undefined && leader.segment === segment;
 
   function showTurnAt(clientX: number) {
     const track = ref.current;
@@ -183,10 +186,10 @@ function Timeline({
         }}
       />
       {leader !== undefined && (
-        // Under the knob, so that our own turn stays in front when the two are on the same turn.
+        // Under our knob, so that our own turn stays in front when the two are on the same turn.
         <button
           aria-label={`${leader.name}'s turn`}
-          className="tw:absolute tw:top-1/2 tw:flex tw:size-7 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-game-text tw:bg-card-ink tw:p-0 tw:text-[11px] tw:text-game-text tw:transition-transform tw:hover:scale-115"
+          className="tw:absolute tw:top-1/2 tw:size-6 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:cursor-pointer tw:rounded-full tw:border-2 tw:border-solid tw:border-card-ink tw:bg-game-text tw:p-0 tw:transition-transform tw:hover:scale-115"
           onClick={replay.toggleSharedSegments}
           onPointerDown={(event) => {
             // The timeline would show the turn under the pointer instead.
@@ -198,14 +201,13 @@ function Timeline({
           style={{ left: timelineLeft(leader.segment, lastSegment) }}
           tabIndex={-1}
           type="button"
-        >
-          <i aria-hidden="true" className="fas fa-crown" />
-        </button>
+        />
       )}
       <span
         className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-115"
         style={{
           left: knobLeft,
+          scale: onLeaderTurn ? OVERLAPPING_KNOB_SCALE : undefined,
           transition: slide
             ? `left ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}, transform 150ms`
             : undefined,
@@ -226,6 +228,9 @@ function Timeline({
     </div>
   );
 }
+
+/** The size of our knob on the leader's turn, as the classic screen's shuttle shrinks. */
+const OVERLAPPING_KNOB_SCALE = 0.7;
 
 /** Where a turn is along the timeline, as a CSS length from its left end. */
 function timelineLeft(segment: number, lastSegment: number): string {
