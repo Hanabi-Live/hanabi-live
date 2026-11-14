@@ -239,6 +239,26 @@ function writeVersion(revision: string) {
   );
 }
 
+/** Installs the schema into a new database and applies pending migrations. */
+async function migrate(env: ReadonlyMap<string, string>): Promise<boolean> {
+  const migrated = await run("services", [SERVER_BINARY, "migrate", "apply"]);
+  if (!migrated.ok) {
+    if (migrated.errors.includes("previously applied but has been modified")) {
+      explainReset(
+        env,
+        "Another checkout applied a different version of this migration.",
+      );
+    } else if (migrated.errors.includes("older than baseline")) {
+      explainReset(env, "It is too old for this checkout to migrate.");
+    }
+    return false;
+  }
+  for (const line of migrated.output.trim().split("\n")) {
+    log("services", line);
+  }
+  return true;
+}
+
 async function buildServer(): Promise<string | undefined> {
   log("build", "Building the server...");
   const build = Bun.spawn(["cargo", "build", "--locked"], {
@@ -295,9 +315,14 @@ function startServer() {
   );
 }
 
-async function rebuild() {
+async function rebuild(env: ReadonlyMap<string, string>) {
   const built = await buildServer();
   if (built === undefined) {
+    return;
+  }
+  // A new commit can add a migration, and the new server refuses an old schema.
+  if (!(await migrate(env))) {
+    log("build", "The migration failed; the previous server keeps running.");
     return;
   }
   await stopServer();
@@ -310,24 +335,24 @@ async function rebuild() {
 }
 
 /** Rebuilds until no change arrived during the previous build. */
-async function rebuildWhileQueued() {
+async function rebuildWhileQueued(env: ReadonlyMap<string, string>) {
   building = true;
   while (rebuildQueued) {
     rebuildQueued = false;
     // eslint-disable-next-line no-await-in-loop -- Builds must not overlap.
-    await rebuild();
+    await rebuild(env);
   }
   building = false;
 }
 
-function watchServerSources() {
+function watchServerSources(env: ReadonlyMap<string, string>) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   function trigger() {
     clearTimeout(timer);
     timer = setTimeout(() => {
       rebuildQueued = true;
       if (!building) {
-        background(rebuildWhileQueued());
+        background(rebuildWhileQueued(env));
       }
     }, 300);
   }
@@ -483,21 +508,8 @@ async function main() {
     fail("Fix the build error, then run this again.");
   }
   writeVersion(revision);
-  // This installs the schema into a new database and applies pending migrations.
-  const migrated = await run("services", [SERVER_BINARY, "migrate", "apply"]);
-  if (!migrated.ok) {
-    if (migrated.errors.includes("previously applied but has been modified")) {
-      explainReset(
-        env,
-        "Another checkout applied a different version of this migration.",
-      );
-    } else if (migrated.errors.includes("older than baseline")) {
-      explainReset(env, "It is too old for this checkout to migrate.");
-    }
+  if (!(await migrate(env))) {
     fail("Could not migrate the database.");
-  }
-  for (const line of migrated.output.trim().split("\n")) {
-    log("services", line);
   }
 
   client = start(
@@ -511,7 +523,7 @@ async function main() {
     "--watch=forever",
   ]);
   startServer();
-  watchServerSources();
+  watchServerSources(env);
   pullUpstreamForever();
   log("dev", `Ready: http://localhost:${setting(env, "PORT", DEV_PORT)}/`);
 
