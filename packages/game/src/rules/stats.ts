@@ -173,30 +173,27 @@ export function getCardsGotten(
   // Go through the deck and count the cards that are gotten.
   for (const cardState of deck) {
     if (
+      // A card is considered to be gotten if it is already played (and misplays count as played for
+      // the purposes of "Throw It in a Hole" variants).
       cardState.location === "playStack"
       || (cardState.location === "discard"
         && cardState.isMisplayed
         && variant.throwItInAHole
         && perspective === "seat")
-    ) {
-      // A card is considered to be gotten if it is already played (and misplays count as played for
-      // the purposes of "Throw It in a Hole" variants).
-      currentCardsGotten++;
-    } else if (
-      isCardInPlayerHand(cardState)
-      && isCardClued(cardState)
-      && !isAllCardPossibilitiesTrash(
-        cardState,
-        deck,
-        playStacks,
-        playStackDirections,
-        playStackStarts,
-        variant,
-        false,
-      )
-    ) {
       // Clued cards in player's hands are considered to be gotten, since they will eventually be
       // played from Good Touch Principle (unless the card is globally known to be trash).
+      || (isCardInPlayerHand(cardState)
+        && isCardClued(cardState)
+        && !isAllCardPossibilitiesTrash(
+          cardState,
+          deck,
+          playStacks,
+          playStackDirections,
+          playStackStarts,
+          variant,
+          false,
+        ))
+    ) {
       currentCardsGotten++;
     }
   }
