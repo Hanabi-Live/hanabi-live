@@ -278,33 +278,26 @@ function StatusBadge({
   );
 }
 
-/**
- * The size and top edge of the trash can over a card that the viewer marked as trash, as fractions
- * of the card's size. They match the classic screen (`TRASHCAN_SIZE` in "HanabiCardInit.ts").
- */
-const TRASH_CAN = { width: 0.7, height: 0.6, top: 0.2 } as const;
+/** The size of the trash can over a card that the viewer marked as trash, per card width. */
+const TRASH_CAN_SIZE_PER_WIDTH = 0.7;
+
+/** How opaque the trash can over a card is, so that the possibilities under it stay readable. */
+const TRASH_CAN_OPACITY = 0.6;
 
 /**
  * A large trash can over a card that the viewer marked as trash in a note, as on the classic
- * screen. It covers the possibilities, so that the mark is never hidden.
+ * screen. It is the same icon as the one on the discard pile. It covers the possibilities, so that
+ * the mark is never hidden.
  */
-function TrashCan({
-  width,
-  height,
-}: {
-  readonly width: number;
-  readonly height: number;
-}): React.JSX.Element {
+function TrashCan({ width }: { readonly width: number }): React.JSX.Element {
   return (
-    <img
-      alt="Marked as trash"
-      className="tw:pointer-events-none tw:absolute"
-      src="/public/img/trashcan2.png"
+    <i
+      aria-label="Marked as trash"
+      className="fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-card-ink"
+      role="img"
       style={{
-        left: (width * (1 - TRASH_CAN.width)) / 2,
-        top: height * TRASH_CAN.top,
-        width: width * TRASH_CAN.width,
-        height: height * TRASH_CAN.height,
+        fontSize: width * TRASH_CAN_SIZE_PER_WIDTH,
+        opacity: TRASH_CAN_OPACITY,
       }}
     />
   );
@@ -754,7 +747,7 @@ export function CardFace({
         />
       )}
 
-      {markedTrash && <TrashCan height={height} width={width} />}
+      {markedTrash && <TrashCan width={width} />}
     </div>
   );
 }
