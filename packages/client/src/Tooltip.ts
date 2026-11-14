@@ -123,6 +123,19 @@ export class Tooltip {
     if (this.content === "") {
       return;
     }
+    // Only the innermost of nested tooltips shows, such as that of a card's note in the discard
+    // pile, and not that of the pile.
+    for (const tooltip of openTooltips) {
+      if (tooltip === this) {
+        continue;
+      }
+      if (this.anchor.contains(tooltip.anchor)) {
+        return;
+      }
+      if (tooltip.anchor.contains(this.anchor)) {
+        tooltip.close();
+      }
+    }
 
     clearTimeout(this.closingTimeout);
     this.closingTimeout = undefined;

@@ -1,6 +1,7 @@
 import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import type { ForwardedRef } from "react";
 import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
@@ -96,6 +97,34 @@ export interface DiscardView {
 /** The look of a drop target, which changes while the player drags a card. */
 export type ZoneState = "idle" | "available" | "hovered" | "unavailable";
 
+/**
+ * Returns a callback ref that gives a drop target to `ref`, with a tooltip that names it. The
+ * tooltip does not show while the player drags a card, because the target shows a label then.
+ */
+function zoneRef(
+  ref: ForwardedRef<HTMLElement>,
+  state: ZoneState,
+  name: string,
+): (element: HTMLElement | null) => () => void {
+  const tooltip = tooltipRef(state === "idle" ? name : undefined);
+  return (element) => {
+    if (typeof ref === "function") {
+      ref(element);
+    } else if (ref !== null) {
+      ref.current = element;
+    }
+    const removeTooltip = tooltip(element);
+    return () => {
+      removeTooltip?.();
+      if (typeof ref === "function") {
+        ref(null);
+      } else if (ref !== null) {
+        ref.current = null;
+      }
+    };
+  };
+}
+
 const zoneClasses: Record<ZoneState, string> = {
   idle: WELL_CLASS,
   available: `${WELL_CLASS} tw:inset-ring-2 tw:inset-ring-game-line`,
@@ -184,7 +213,7 @@ export const PlayArea = forwardRef<
             className={`tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch tw:rounded-game-panel ${zoneClasses[zoneState]}`}
             // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
             data-play-stacks
-            ref={ref}
+            ref={zoneRef(ref, zoneState, "Play stacks")}
             style={{ padding: PLAY_STACKS_PADDING }}
           >
             <div
@@ -501,7 +530,7 @@ export const DiscardPile = forwardRef<
             ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
             : ""
         }`}
-        ref={ref}
+        ref={zoneRef(ref, zoneState, "Discard pile")}
       >
         {/* A faint trash can behind the cards names the pile without a heading. */}
         <i

@@ -43,6 +43,12 @@ function getBubble() {
   return document.querySelector(".tooltip-bubble");
 }
 
+function getOpenTexts(): ReadonlyArray<string | null> {
+  return [...document.querySelectorAll(".tooltip-bubble")]
+    .filter((bubble) => openElements.has(bubble))
+    .map((bubble) => bubble.textContent);
+}
+
 test("an open tooltip stays open when its text changes", async () => {
   const { getByRole, rerender } = render(<Button text="One" />);
   fireEvent.pointerEnter(getByRole("button"));
@@ -91,4 +97,23 @@ test("a tooltip waits for the pointer to rest on its element", () => {
   } finally {
     vi.useRealTimers();
   }
+});
+
+test("only the innermost of nested tooltips opens", () => {
+  const { getByRole } = render(
+    <div ref={tooltipRef("Outer", { instant: true })}>
+      <Button text="Inner" />
+    </div>,
+  );
+  const outer = getByRole("button").parentElement!;
+
+  // The pointer enters the outer element, then the inner one.
+  fireEvent.pointerEnter(outer);
+  expect(getOpenTexts()).toStrictEqual(["Outer"]);
+  fireEvent.pointerEnter(getByRole("button"));
+  expect(getOpenTexts()).toStrictEqual(["Inner"]);
+
+  // The outer tooltip does not open over the inner one.
+  fireEvent.pointerEnter(outer);
+  expect(getOpenTexts()).toStrictEqual(["Inner"]);
 });
