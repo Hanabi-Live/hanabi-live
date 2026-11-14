@@ -22,104 +22,19 @@ chatCommands.set("copy", (room: string) => {
   createJsonFromReplay(room);
 });
 
-// /friend [username]
-function friend(room: string, args: readonly string[]) {
-  // Validate that the format of the command is correct.
-  if (args.length === 0) {
-    sendSelfPmFromServer(
-      ["The format of the /friend command is: ", { code: "/friend Alice" }],
-      room,
-      SelfChatMessageType.Info,
-    );
-    return;
-  }
+// Each command that changes a friend, a linked account, or a blocked user sends one request. The
+// server checks the name, so that a player cannot target themselves.
+const RELATIONSHIP_REQUESTS = {
+  friend: "friendAdd",
+  unfriend: "friendRemove",
+  link: "linkAdd",
+  unlink: "linkRemove",
+  block: "blockAdd",
+  unblock: "blockRemove",
+} as const;
 
-  // Validate that we are not targeting ourselves.
-  const username = args.join(" ");
-  if (
-    username.toLowerCase() === store.getState().session.username.toLowerCase()
-  ) {
-    sendSelfPmFromServer("You cannot friend yourself.", room);
-  }
-
-  globals.conn!.send("friendAdd", {
-    username,
-  });
-}
-chatCommands.set("friend", friend);
-
-// /friends
-function friends(room: string) {
-  const msg =
-    store.getState().session.friends.length === 0
-      ? "Currently, you do not have any friends on your friends list."
-      : `Current friends: ${store.getState().session.friends.join(", ")}`;
-  sendSelfPmFromServer(msg, room);
-}
-chatCommands.set("friends", friends);
-
-// /link <user>
-function link(room: string, args: readonly string[]) {
-  // Validate that the format of the command is correct.
-  if (args.length === 0) {
-    sendSelfPmFromServer(
-      ["The format of the /link command is: ", { code: "/link Alice" }],
-      room,
-      SelfChatMessageType.Info,
-    );
-    return;
-  }
-
-  // Validate that we are not targeting ourselves.
-  const username = args.join(" ");
-  if (
-    username.toLowerCase() === store.getState().session.username.toLowerCase()
-  ) {
-    sendSelfPmFromServer("You cannot link yourself.", room);
-  }
-
-  globals.conn!.send("linkAdd", {
-    username,
-  });
-}
-
-// /unlink <user>
-function unlink(room: string, args: readonly string[]) {
-  // Validate that the format of the command is correct.
-  if (args.length === 0) {
-    sendSelfPmFromServer(
-      ["The format of the /unlink command is: ", { code: "/unlink Alice" }],
-      room,
-      SelfChatMessageType.Info,
-    );
-    return;
-  }
-
-  // Validate that we are not targeting ourselves.
-  const username = args.join(" ");
-  if (
-    username.toLowerCase() === store.getState().session.username.toLowerCase()
-  ) {
-    sendSelfPmFromServer("You cannot unlink yourself.", room);
-  }
-
-  globals.conn!.send("linkRemove", {
-    username,
-  });
-}
-
-// /links
-function links() {
-  globals.conn!.send("linkList", {});
-}
-
-chatCommands.set("link", link);
-chatCommands.set("unlink", unlink);
-chatCommands.set("links", links);
-
-// The /block and /unblock commands share one handler.
-function blockCommand(command: "block" | "unblock") {
-  return (room: string, args: readonly string[]) => {
+for (const [command, request] of Object.entries(RELATIONSHIP_REQUESTS)) {
+  chatCommands.set(command, (room: string, args: readonly string[]) => {
     if (args.length === 0) {
       sendSelfPmFromServer(
         [
@@ -132,14 +47,26 @@ function blockCommand(command: "block" | "unblock") {
       return;
     }
 
-    globals.conn!.send(command === "block" ? "blockAdd" : "blockRemove", {
+    globals.conn!.send(request, {
       username: args.join(" "),
     });
-  };
+  });
 }
 
-chatCommands.set("block", blockCommand("block"));
-chatCommands.set("unblock", blockCommand("unblock"));
+// /friends
+function friends(room: string) {
+  const msg =
+    store.getState().session.friends.length === 0
+      ? "Currently, you do not have any friends on your friends list."
+      : `Current friends: ${store.getState().session.friends.join(", ")}`;
+  sendSelfPmFromServer(msg, room);
+}
+chatCommands.set("friends", friends);
+
+// /links
+chatCommands.set("links", () => {
+  globals.conn!.send("linkList", {});
+});
 
 // /blocked
 chatCommands.set("blocked", (room: string) => {
@@ -501,35 +428,6 @@ chatCommands.set("terminate", (room: string) => {
   }
   globals.conn!.send("tableTerminate", {
     tableId: globals.tableId,
-  });
-});
-
-// /unfriend [username]
-chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
-  // Validate that the format of the command is correct.
-  if (args.length === 0) {
-    sendSelfPmFromServer(
-      ["The format of the /unfriend command is: ", { code: "/unfriend Alice" }],
-      room,
-      SelfChatMessageType.Info,
-    );
-    return;
-  }
-
-  // Validate that we are not targeting ourselves.
-  const username = args.join(" ");
-  if (
-    username.toLowerCase() === store.getState().session.username.toLowerCase()
-  ) {
-    sendSelfPmFromServer(
-      "You cannot unfriend yourself.",
-      room,
-      SelfChatMessageType.Error,
-    );
-  }
-
-  globals.conn!.send("friendRemove", {
-    username,
   });
 });
 
