@@ -3,6 +3,7 @@ import { START_CARD_RANK } from "@hanabi-live/game";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
+import { RANK_PATHS, SHAPE_ORIGIN } from "../ui/drawStylizedRank.ts";
 import { Pip } from "./Pip.tsx";
 import type { NoteBorder, NoteMark } from "./tableView.ts";
 
@@ -24,14 +25,11 @@ const TRASH_CARD_OPACITY = 0.4;
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 export const CLUED_RAISE_PER_WIDTH = 0.12;
 
-/** How far the rank in a card's corner is from the card's left edge, as a fraction of its width. */
-const RANK_LEFT_PER_WIDTH = 0.1;
-
-/** How far the rank in a card's corner is from the card's top edge, as a fraction of its width. */
-const RANK_TOP_PER_WIDTH = 0.05;
-
-/** The size of the rank in a card's corner, as a fraction of the card's width. */
-const RANK_SIZE_PER_WIDTH = 0.46;
+/**
+ * The width of the outline around the rank in a card's corner, in the card's own units. Half of it
+ * shows, because the fill covers the inner half.
+ */
+const RANK_OUTLINE_WIDTH = 4;
 
 /**
  * The size of the suit's pip, as a fraction of the card's width. It is in the middle of the card,
@@ -39,8 +37,12 @@ const RANK_SIZE_PER_WIDTH = 0.46;
  */
 const SUIT_PIP_SIZE_PER_WIDTH = 0.5;
 
-/** How far the bottom of the rank in a card's corner is from the card's top edge. */
-export const RANK_BOTTOM_PER_WIDTH = RANK_TOP_PER_WIDTH + RANK_SIZE_PER_WIDTH;
+/**
+ * How far the bottom of the rank in a card's corner is from the card's top edge, as a fraction of
+ * its width. The lowest shape, the 5, reaches down to `SHAPE_ORIGIN.y`.
+ */
+export const RANK_BOTTOM_PER_WIDTH =
+  (SHAPE_ORIGIN.y + RANK_OUTLINE_WIDTH) / CARD_W;
 
 /** The width of the border in the clue color around a clued card (`tw:ring-4`), in CSS pixels. */
 export const CLUED_BORDER_WIDTH = 4;
@@ -683,6 +685,49 @@ const NOTE_BORDER_CLASSES = {
     "tw:ring-4 tw:ring-discard-permission tw:inset-ring-2 tw:inset-ring-card-ink",
 } as const satisfies Record<NoteBorder, string>;
 
+/**
+ * The rank in the top-left corner of a card, drawn as the stylized shapes of the classic screen's
+ * "stylized numbers" setting. The possibilities fill the bottom of the card, so the same rank,
+ * turned over in the opposite corner as on a playing card, shows only when they do not.
+ */
+function StylizedRanks({
+  rank,
+  showTurnedOver,
+}: {
+  readonly rank: Rank;
+  readonly showTurnedOver: boolean;
+}): React.JSX.Element {
+  const path = RANK_PATHS.get(rank);
+  const corner = `translate(${SHAPE_ORIGIN.x} ${SHAPE_ORIGIN.y})`;
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:size-full"
+      viewBox={`0 0 ${CARD_W} ${CARD_H}`}
+    >
+      <path
+        className="tw:fill-current tw:stroke-card-ink"
+        d={path}
+        paintOrder="stroke"
+        strokeLinejoin="round"
+        strokeWidth={RANK_OUTLINE_WIDTH}
+        transform={corner}
+      />
+      {showTurnedOver && (
+        <path
+          className="tw:fill-current tw:stroke-card-ink"
+          d={path}
+          paintOrder="stroke"
+          strokeLinejoin="round"
+          strokeWidth={RANK_OUTLINE_WIDTH}
+          transform={`rotate(180 ${CARD_W / 2} ${CARD_H / 2}) ${corner}`}
+        />
+      )}
+    </svg>
+  );
+}
+
 /** The front of a card, as it shows in a hand, on a play stack, or in the discard pile. */
 export function CardFace({
   variant,
@@ -753,32 +798,10 @@ export function CardFace({
         <ClueMarker marker={clueMarker} width={width} />
       )}
       {rank !== undefined && (
-        <span
-          className="tw:absolute tw:font-extrabold tw:leading-none"
-          style={{
-            left: width * RANK_LEFT_PER_WIDTH,
-            top: width * RANK_TOP_PER_WIDTH,
-            fontSize: width * RANK_SIZE_PER_WIDTH,
-          }}
-        >
-          {getRankLabel(rank)}
-        </span>
-      )}
-
-      {/* The rank again, turned over in the opposite corner, as on a playing card. The possibilities
-          fill the bottom of the card, so it is left out when they show. */}
-      {rank !== undefined && !showSuitPips && !showRankPips && (
-        <span
-          aria-hidden="true"
-          className="tw:absolute tw:rotate-180 tw:font-extrabold tw:leading-none"
-          style={{
-            right: width * RANK_LEFT_PER_WIDTH,
-            bottom: width * RANK_TOP_PER_WIDTH,
-            fontSize: width * RANK_SIZE_PER_WIDTH,
-          }}
-        >
-          {getRankLabel(rank)}
-        </span>
+        <StylizedRanks
+          rank={rank}
+          showTurnedOver={!showSuitPips && !showRankPips}
+        />
       )}
 
       {suit !== undefined && (

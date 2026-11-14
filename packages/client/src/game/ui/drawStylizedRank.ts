@@ -3,7 +3,7 @@ import { assertDefined } from "complete-common";
 import { tracePath } from "./tracePath.ts";
 
 /** Where the top-left corner of a stylized rank shape is drawn on the card, in pixels. */
-const SHAPE_ORIGIN = {
+export const SHAPE_ORIGIN = {
   x: 60,
   y: 135,
 } as const;
@@ -12,7 +12,7 @@ const SHAPE_ORIGIN = {
  * The outline of each rank, as SVG path data relative to `SHAPE_ORIGIN`. Ranks 0 and 6 have no
  * shape.
  */
-const RANK_PATHS: ReadonlyMap<number, string> = new Map([
+export const RANK_PATHS: ReadonlyMap<number, string> = new Map([
   [
     0,
     `
