@@ -998,12 +998,29 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
         const game = cast.bobsGame();
         game.passLeader();
-        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+        await page.getByRole("button", { name: "Leader: You" }).waitFor();
         // Bob's table is a speedrun, where "Play again" restarts the game at once when everyone is
         // ready. Bob is not, so that the button opens its menu instead.
         await game.setReady(false);
         await page.getByRole("button", { name: "Play again" }).click();
         await page.getByText(/^Not ready: Bob/u).waitFor();
+      },
+    },
+    // The leader of the shared replay opens the menu that passes the lead to someone else.
+    {
+      name: "new-ui-leader-menu",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().passLeader();
+        await page.getByRole("button", { name: "Leader: You" }).click();
+        await page.getByRole("menu").waitFor();
       },
     },
     // The leader of the shared replay points at the button that starts a hypothetical, which is
@@ -1020,7 +1037,7 @@ function getStates(): readonly State[] {
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
-        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+        await page.getByRole("button", { name: "Leader: You" }).waitFor();
       },
       hover: async (page) => {
         await hoverForTooltip(
@@ -1044,7 +1061,7 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
         // Only the leader can start a hypothetical, so wait until the lead reaches the account.
-        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+        await page.getByRole("button", { name: "Leader: You" }).waitFor();
         await page.getByRole("button", { name: "First turn" }).click();
         await page
           .locator('#game-new-ui button[aria-label="First turn"]:disabled')

@@ -45,7 +45,7 @@ export function showPassLeaderDialog(): void {
   modals.showPrompt("#set-leader-modal");
 }
 
-function setLeader(userId: UserId) {
+export function setLeader(userId: UserId): void {
   modals.closeModals();
   globals.lobby.conn!.send("tableSetOwner", {
     tableId: globals.lobby.joinedTableId,

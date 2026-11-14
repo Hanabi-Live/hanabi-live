@@ -12,9 +12,9 @@ import type { State } from "../types/State.ts";
 import { globals } from "../ui/UiGlobals.ts";
 import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
-import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
+import { LeaderMenu } from "./LeaderMenu.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
 
 type Mode = "replay" | "hypothetical";
@@ -258,12 +258,15 @@ export function Checkbox({
 function ToggleButton({
   label,
   pressed,
+  icon,
   disabled = false,
   tooltip,
   onClick,
 }: {
   readonly label: string;
   readonly pressed: boolean;
+  /** An icon between the check box and the label, such as the leader's crown. */
+  readonly icon?: string;
   readonly disabled?: boolean;
   /** What the button does, in the site's tooltip. */
   readonly tooltip: string;
@@ -279,6 +282,9 @@ function ToggleButton({
       type="button"
     >
       <Checkbox checked={pressed} />
+      {icon !== undefined && (
+        <i aria-hidden="true" className={`fas ${icon} tw:text-game-replay`} />
+      )}
       {label}
     </button>
   );
@@ -297,6 +303,7 @@ function FollowButton({
 }): React.JSX.Element {
   return (
     <ToggleButton
+      icon="fa-crown"
       label={`Follow ${leader}`}
       onClick={replay.toggleSharedSegments}
       pressed={following}
@@ -447,41 +454,22 @@ export function TurnsBar({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, segment, turn);
 
-  let label = "Replay";
-  if (shared !== undefined) {
-    label = shared.amLeader
-      ? "Shared replay: you lead"
-      : `Shared replay: ${shared.leader} leads`;
-  }
-
-  // The heading is on the first row. The buttons that step through the turns are together in the
-  // middle of the second row, so that a player can click back and forth without moving the mouse
-  // far. The other buttons are on each side of them. The timeline has the third row to itself, so
-  // that it is wide enough to pick a turn with the mouse. On a narrow window, the other buttons do
-  // not fit beside the steps, so they go below the timeline.
+  // The buttons that step through the turns are together in the middle of the first row, so that a
+  // player can click back and forth without moving the mouse far. The leader's menu, or the switch
+  // to follow the leader, is on their left, and it names who leads, so the bar needs no heading.
+  // The timeline has the second row to itself, so that it is wide enough to pick a turn with the
+  // mouse. On a narrow window, the other buttons do not fit beside the steps, so they go below the
+  // timeline.
   return (
     <Bar>
-      <div className="tw:w-full">
-        <Heading
-          icon={shared === undefined ? "fa-history" : "fa-crown"}
-          label={label}
-          mode="replay"
-        />
-      </div>
       <div className="tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents">
         <div className="tw:flex tw:justify-start tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
           {shared !== undefined
             && (shared.amLeader ? (
-              <button
-                className={BUTTON_CLASS}
-                onClick={showPassLeaderDialog}
-                ref={tooltipRef(
-                  "Pass the lead of the shared replay to someone else.",
-                )}
-                type="button"
-              >
-                Pass leader
-              </button>
+              <LeaderMenu
+                ourUsername={globals.metadata.ourUsername}
+                spectators={state.spectators}
+              />
             ) : (
               <FollowButton
                 following={shared.useSharedSegments}

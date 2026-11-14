@@ -55,6 +55,8 @@ of the repository.
 - In the new game screen, the "Classic view" button is now called "Classic UI".
 - In the new game screen, the replay's step buttons are larger and side by side,
   and a spectator follows the leader with a "Follow" switch.
+- In the new game screen, the shared replay leader passes the lead from a
+  "Leader" menu in the replay controls, which no longer have a heading.
 
 ## November 12th, 2026
 
