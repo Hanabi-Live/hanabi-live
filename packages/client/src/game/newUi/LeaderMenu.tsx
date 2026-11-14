@@ -57,7 +57,7 @@ export function LeaderMenu({
         ref={tooltipRef(open ? undefined : tooltip)}
         type="button"
       >
-        <i aria-hidden="true" className="fas fa-crown tw:text-game-replay" />
+        <i aria-hidden="true" className="fas fa-crown tw:text-game-mode" />
         {/* A long name makes the text smaller, so that the button does not push the steps in the
             middle of the bar to the side. */}
         <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
@@ -94,7 +94,7 @@ export function LeaderMenu({
               {/* The crown lights up on the person that it would make the leader. */}
               <i
                 aria-hidden="true"
-                className="fas fa-crown tw:text-[13px] tw:text-game-muted tw:group-hover:text-game-replay"
+                className="fas fa-crown tw:text-[13px] tw:text-game-muted tw:group-hover:text-game-mode"
               />
               {spectator.username}
             </button>

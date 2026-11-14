@@ -183,10 +183,17 @@
   --game-screen-line: #6c9c7e;
   --game-screen-text: #eef1f3;
   --game-screen-muted: #c3d8ca;
-  --game-screen-link: #8fb2ff;
-  /* The accents of the bar above the hands: looking back in a replay, or trying moves in a hypothetical. */
-  --game-screen-replay: #8fb2ff;
+  /*
+    The colors of the screen's modes: an accent, and the dark color of the mode's panels. Each one
+    belongs to its mode only: looking back during a game, looking at a finished game, or trying
+    moves in a hypothetical.
+  */
+  --game-screen-in-game-replay: #8fb2ff;
+  --game-screen-in-game-replay-panel: #1d2f57;
+  --game-screen-finished-replay: #f7a1c4;
+  --game-screen-finished-replay-panel: #4a2238;
   --game-screen-hypothetical: #c3a6ff;
+  --game-screen-hypothetical-panel: #33245c;
   /* The warm accent that marks the player whose turn it is. */
   --game-screen-turn: #ffd04a;
   --card-face-unknown: #cbd3da;

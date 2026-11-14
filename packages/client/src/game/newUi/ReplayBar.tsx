@@ -1,9 +1,8 @@
 // The controls below the hands while the screen shows a replay: the in-game replay, a finished
 // game, or a hypothetical. They call the same functions as the classic screen's replay controls.
 
-// The bar is a dark felt panel like the other boxes on the table. The color of its heading names
-// the mode: blue to look back at the game, violet to try other moves. The buttons and the timeline
-// are large, because a player clicks them many times in a row.
+// The bar is a dark panel in the colors of the screen's mode (see "screenMode.ts"). The buttons and
+// the timeline are large, because a player clicks them many times in a row.
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -16,16 +15,9 @@ import {
 import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
-import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
+import { MODE_PANEL_CLASS } from "./screenMode.ts";
 import { KEY_CLASS, REPLAY_BAR_BUTTON_CLASS } from "./surfaces.ts";
-
-type Mode = "replay" | "hypothetical";
-
-const ACCENT_TEXT_CLASS = {
-  replay: "tw:text-game-replay",
-  hypothetical: "tw:text-game-hypothetical",
-} as const satisfies Record<Mode, string>;
 
 /** A quiet button for the actions that are not the main one. */
 const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:shrink-0 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8`;
@@ -70,7 +62,7 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:rounded-game-panel tw:py-3 tw:pr-3 tw:pl-4 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
+      className={`tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:rounded-game-panel tw:py-3 tw:pr-3 tw:pl-4 ${MODE_PANEL_CLASS}`}
       role="status"
     >
       {children}
@@ -83,17 +75,17 @@ function Bar({
  * numbers about the game.
  */
 function Heading({
-  mode,
   icon,
   label,
 }: {
-  readonly mode: Mode;
   readonly icon: string;
   readonly label: string;
 }): React.JSX.Element {
   return (
     <span
-      className={`tw:mr-1 tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:text-[15px] tw:font-semibold ${ACCENT_TEXT_CLASS[mode]}`}
+      className={
+        "tw:mr-1 tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:text-[15px] tw:font-semibold tw:text-game-mode"
+      }
     >
       <i aria-hidden="true" className={`fas ${icon}`} />
       {label}
@@ -172,7 +164,7 @@ function Timeline({
     >
       <span className="tw:absolute tw:inset-x-0 tw:top-1/2 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-white/12" />
       <span
-        className="tw:absolute tw:top-1/2 tw:left-0 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-replay"
+        className="tw:absolute tw:top-1/2 tw:left-0 tw:h-2.5 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-mode"
         style={{
           width: knobLeft,
           transition: slide
@@ -203,7 +195,7 @@ function Timeline({
         </button>
       )}
       <span
-        className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-115"
+        className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-mode)] tw:transition-transform tw:group-hover:scale-115"
         style={{
           left: knobLeft,
           transition: slide
@@ -309,7 +301,7 @@ function SyncButton({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-sync tw:text-game-replay" />
+      <i aria-hidden="true" className="fas fa-sync tw:text-game-mode" />
       Sync
     </button>
   );
@@ -333,11 +325,7 @@ function SpectatorHypotheticalBar({
         <div
           className={`tw:flex tw:items-center tw:justify-center tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
         >
-          <Heading
-            icon="fa-flask"
-            label="Shared hypothetical"
-            mode="hypothetical"
-          />
+          <Heading icon="fa-flask" label="Shared hypothetical" />
         </div>
         <div className={RIGHT_CLASS}>
           <SyncButton state={state} />
@@ -394,8 +382,7 @@ function IconToggle({
 /**
  * The buttons of a hypothetical that we control. They are in the top-right corner of the clue
  * panel, which takes the place of the replay bar, so that the hands keep their size. The last one
- * is lit violet, the color of the mode, and leaves it. It is in the place of the button that
- * entered it.
+ * is lit in the color of the mode, and leaves it. It is in the place of the button that entered it.
  */
 export function HypotheticalActions({
   state,
@@ -455,7 +442,7 @@ export function HypotheticalActions({
       />
       <button
         aria-label="Exit hypothetical"
-        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-hypothetical/30 tw:text-game-hypothetical tw:inset-ring-1 tw:inset-ring-game-hypothetical tw:hover:bg-game-hypothetical/45`}
+        className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-mode/30 tw:text-game-mode tw:inset-ring-1 tw:inset-ring-game-mode tw:hover:bg-game-mode/45`}
         onClick={hypothetical.endHypothetical}
         ref={tooltipRef(`Exit ${name}.`)}
         type="button"
@@ -822,7 +809,7 @@ function DirectionFlash({
   return (
     <i
       aria-hidden="true"
-      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:inline-block tw:text-[15px] tw:text-game-replay tw:opacity-0`}
+      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:inline-block tw:text-[15px] tw:text-game-mode tw:opacity-0`}
       key={move?.key}
       ref={ref}
     />

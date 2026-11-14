@@ -143,7 +143,7 @@ function HelpIcon({
   return (
     <button
       aria-label={label}
-      className="tw:ml-1.5 tw:cursor-help tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-link tw:hover:text-game-text"
+      className="tw:ml-1.5 tw:cursor-help tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-muted tw:hover:text-game-text"
       ref={tooltipRefHtml(tooltip, { instant: true })}
       type="button"
     >

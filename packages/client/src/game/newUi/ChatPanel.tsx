@@ -23,7 +23,8 @@ const CHAT_BOX_COLORS = {
   "--surface": "var(--game-screen-panel)",
   "--surface-sunken": "var(--game-screen-bg)",
   "--border": "var(--game-screen-raised)",
-  "--link": "var(--game-screen-link)",
+  // Links are underlined. They are not in a color, because each color on the screen names a mode.
+  "--link": "var(--game-screen-text)",
 } as const;
 
 /**

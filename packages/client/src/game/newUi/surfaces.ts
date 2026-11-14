@@ -10,6 +10,9 @@
 export const WELL_CLASS =
   "tw:bg-game-well tw:inset-shadow-[0_3px_10px_rgb(0_0_0/55%)] tw:shadow-[0_1px_0_rgb(255_255_255/12%)]";
 
+/** The shadow of a panel of controls, such as the clue panel, which sits above the table. */
+export const PANEL_SHADOW_CLASS = "tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
+
 /**
  * A button: a key with a light top edge and a dark lip under it. Pressing it pushes it down onto
  * its lip. The lip is translucent black, so that it suits a button of any color. A disabled button

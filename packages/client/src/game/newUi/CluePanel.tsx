@@ -3,7 +3,7 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
-import { KEY_CLASS } from "./surfaces.ts";
+import { KEY_CLASS, PANEL_SHADOW_CLASS } from "./surfaces.ts";
 
 interface CluePanelProps {
   readonly variant: Variant;
@@ -51,15 +51,6 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
 
   return a?.type === "rank" && b.type === "rank" && a.value === b.value;
 }
-
-/**
- * The surface of the controls below the hands: a solid panel that sits above the table, like the
- * bar along the bottom and the chat, so that it reads as something to operate and not as part of
- * the game. When the viewer can give a clue, a gold ring marks it, like the current player's hand.
- * Otherwise, a thin line edges it.
- */
-export const CONTROL_PANEL_CLASS =
-  "tw:bg-game-panel tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
 
 const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
 
@@ -314,17 +305,24 @@ export function CluePanel({
     </>
   );
 
+  const idleRingClass =
+    actions === undefined
+      ? "tw:inset-ring-1 tw:inset-ring-game-line"
+      : "tw:inset-ring-1 tw:inset-ring-game-mode";
+
   // While the viewer cannot clue, the buttons keep their place, hidden behind the reason. So the
   // panel is the same size on every turn, and the hands above it do not change size. On a narrow
   // window, the page scrolls instead, so the buttons go away and the panel is short.
   return (
     <section
       aria-label="Give a clue"
-      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-game-panel tw:px-4 tw:py-3 ${CONTROL_PANEL_CLASS} ${
-        canClue
-          ? "tw:inset-ring-3 tw:inset-ring-game-turn"
-          : "tw:inset-ring-1 tw:inset-ring-game-line"
-      }`}
+      // A solid panel that sits above the table, like the bar along the bottom and the chat, so
+      // that it reads as something to operate and not as part of the game. When the viewer can give
+      // a clue, a gold ring marks it, like the current player's hand. Otherwise, a thin line edges
+      // it. In a hypothetical, the panel has the colors of the mode, as the replay bar does.
+      className={`tw:relative tw:flex tw:min-h-17 tw:flex-wrap tw:items-center tw:gap-2.5 tw:rounded-game-panel tw:px-4 tw:py-3 ${PANEL_SHADOW_CLASS} ${
+        actions === undefined ? "tw:bg-game-panel" : "tw:bg-game-mode-panel"
+      } ${canClue ? "tw:inset-ring-3 tw:inset-ring-game-turn" : idleRingClass}`}
     >
       {!canClue && (
         <div className="tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:px-4 tw:text-center tw:text-[18px] tw:font-semibold tw:text-game-muted tw:narrow-980:static tw:narrow-980:justify-start tw:narrow-980:px-0 tw:narrow-980:text-left tw:narrow-980:text-[15px] tw:narrow-980:font-normal tw:select-none">

@@ -63,8 +63,12 @@
   --color-game-line: var(--game-screen-line);
   --color-game-text: var(--game-screen-text);
   --color-game-muted: var(--game-screen-muted);
-  --color-game-link: var(--game-screen-link);
-  --color-game-replay: var(--game-screen-replay);
+  /*
+    The colors of the mode that the screen is in. The game screen sets "--game-screen-mode" and
+    "--game-screen-mode-panel" to them.
+  */
+  --color-game-mode: var(--game-screen-mode);
+  --color-game-mode-panel: var(--game-screen-mode-panel);
   --color-game-hypothetical: var(--game-screen-hypothetical);
   --color-game-turn: var(--game-screen-turn);
   --color-card-unknown: var(--card-face-unknown);

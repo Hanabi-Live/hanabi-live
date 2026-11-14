@@ -59,6 +59,7 @@ import {
   showDiscard,
   showReplayTurn,
 } from "./screenActions.ts";
+import { getScreenModeStyle } from "./screenMode.ts";
 import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
@@ -480,7 +481,10 @@ export function GameScreen({
       // and a name measured outside a button fits in one. A button's own classes still win.
       className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       ref={rootRef}
-      style={{ zoom: screenScale }}
+      style={{
+        zoom: screenScale,
+        ...getScreenModeStyle(state),
+      }}
     >
       {/* The chat sits above the bar along the bottom, so that the bar's buttons stay in place
           whether the chat is open or not, with "Lobby" in the bottom-right corner. */}

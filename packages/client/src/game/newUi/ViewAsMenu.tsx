@@ -56,7 +56,7 @@ export function ViewAsMenu({
         aria-haspopup="menu"
         className={`${BOTTOM_BAR_BUTTON_CLASS} ${
           shadowing
-            ? "tw:bg-game-replay/20 tw:ring-2 tw:ring-game-replay tw:hover:bg-game-replay/30"
+            ? "tw:bg-white/20 tw:ring-2 tw:ring-game-text tw:hover:bg-white/30"
             : BOTTOM_BAR_BUTTON_COLOR_CLASS
         }`}
         onClick={() => {
@@ -91,7 +91,7 @@ export function ViewAsMenu({
               >
                 <i
                   aria-hidden="true"
-                  className={`fas fa-check tw:w-3.5 tw:text-game-replay ${current ? "" : "tw:invisible"}`}
+                  className={`fas fa-check tw:w-3.5 tw:text-game-text ${current ? "" : "tw:invisible"}`}
                 />
                 {name}
               </button>
@@ -112,7 +112,7 @@ export function ViewAsMenu({
               >
                 <i
                   aria-hidden="true"
-                  className={`fas fa-check tw:w-3.5 tw:text-game-replay ${viewedSeat === undefined ? "" : "tw:invisible"}`}
+                  className={`fas fa-check tw:w-3.5 tw:text-game-text ${viewedSeat === undefined ? "" : "tw:invisible"}`}
                 />
                 {shadowing ? "Stop: watch as a spectator" : "A spectator"}
               </button>
