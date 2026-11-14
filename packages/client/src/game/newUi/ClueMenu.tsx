@@ -34,18 +34,13 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
 /** The space between the menu and the hand, in CSS pixels. */
 const MENU_GAP = 8;
 
-/**
- * A clue is a key. A clue that the rules do not allow is an empty slot instead: it has no fill and
- * no lip, only a thin outline. The difference is in the shape, not in the color, so that a faded
- * color does not look like another color.
- */
-const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold tw:disabled:cursor-default tw:disabled:inset-ring-2 ${KEY_CLASS}`;
+const choiceClass = `tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-lg tw:font-extrabold ${KEY_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it on their hand.
  * It opens below the hand, so that the cards that the chosen clue would touch stay in view. When
  * there is no room below, it opens above. A clue that the rules do not allow, such as one that
- * touches no cards, is an empty slot. Clicking outside of it or pressing Escape closes it.
+ * touches no cards, is left out. Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -61,6 +56,12 @@ export function ClueMenu({
   onClose,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const colorClues = variant.clueColors
+    .map((color) => newColorClue(color))
+    .filter((choice) => isAllowed(choice));
+  const rankClues = variant.clueRanks
+    .map((rank) => newRankClue(rank))
+    .filter((choice) => isAllowed(choice));
   const [above, setAbove] = useState(false);
 
   useLayoutEffect(() => {
@@ -162,42 +163,36 @@ export function ClueMenu({
           <i aria-hidden="true" className="fas fa-history" />
         </button>
       </div>
-      <div className="tw:flex tw:flex-wrap tw:gap-2">
-        {variant.clueColors.map((color) => {
-          const colorClue = newColorClue(color);
+      <ClueRow>
+        {colorClues.map((colorClue) => {
+          const color = colorClue.value;
           const pressed = isSameClue(clue, colorClue);
           return (
             <button
               aria-label={color.name}
               aria-pressed={pressed}
-              className={`${choiceClass} tw:bg-(--clue-color) tw:disabled:bg-transparent tw:disabled:inset-ring-(--clue-color) ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
-              disabled={!isAllowed(colorClue)}
+              className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
               key={color.name}
               onClick={() => {
                 onChooseClue(pressed ? undefined : colorClue);
               }}
               ref={tooltipRef(color.name)}
-              style={
-                {
-                  "--clue-color": colorblindMode
-                    ? color.fillColorblind
-                    : color.fill,
-                } as React.CSSProperties
-              }
+              style={{
+                background: colorblindMode ? color.fillColorblind : color.fill,
+              }}
               type="button"
             />
           );
         })}
-      </div>
-      <div className="tw:flex tw:flex-wrap tw:gap-2">
-        {variant.clueRanks.map((rank) => {
-          const rankClue = newRankClue(rank);
+      </ClueRow>
+      <ClueRow>
+        {rankClues.map((rankClue) => {
+          const rank = rankClue.value;
           const pressed = isSameClue(clue, rankClue);
           return (
             <button
               aria-pressed={pressed}
-              className={`${choiceClass} tw:bg-game-text tw:text-card-ink tw:disabled:bg-transparent tw:disabled:text-game-muted/60 tw:disabled:inset-ring-game-line/60 ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
-              disabled={!isAllowed(rankClue)}
+              className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
               key={rank}
               onClick={() => {
                 onChooseClue(pressed ? undefined : rankClue);
@@ -208,7 +203,7 @@ export function ClueMenu({
             </button>
           );
         })}
-      </div>
+      </ClueRow>
       <button
         className={`tw:mt-1 tw:min-h-11 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
         disabled={!canGive}
@@ -218,5 +213,16 @@ export function ClueMenu({
         {clue === undefined ? "Pick a color or number" : "Give clue"}
       </button>
     </div>
+  );
+}
+
+/** A row of clues. A row with no clues that the rules allow is left out. */
+function ClueRow({
+  children,
+}: {
+  readonly children: readonly React.JSX.Element[];
+}): React.JSX.Element | null {
+  return children.length === 0 ? null : (
+    <div className="tw:flex tw:flex-wrap tw:gap-2">{children}</div>
   );
 }
