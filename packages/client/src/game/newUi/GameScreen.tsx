@@ -1408,7 +1408,7 @@ export function GameScreen({
 
             <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
               <div
-                className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
+                className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
                 ref={setHandsElement}
               >
                 <NameColumnSizer
