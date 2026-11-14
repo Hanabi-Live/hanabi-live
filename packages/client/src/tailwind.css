@@ -35,6 +35,13 @@
   --color-name-me: var(--name-me);
   --color-friend: var(--friend);
   --color-name-hover: var(--name-hover);
+  --color-table-sorted: var(--table-sorted-bg);
+  --color-difficulty-hard: var(--difficulty-hard);
+  --color-difficulty-very-hard: var(--difficulty-very-hard);
+  --color-spinner-backdrop: var(--spinner-backdrop);
+  --color-spinner-red: var(--spinner-red);
+  --color-spinner-white: var(--spinner-white);
+  --color-spinner-brown: var(--spinner-brown);
   --color-lobby-table-joined: var(--lobby-table-joined);
   --color-lobby-table-joined-hover: var(--lobby-table-joined-hover);
   --color-lobby-table-unstarted: var(--lobby-table-unstarted);

@@ -34,6 +34,7 @@ echo "Packing the TypeScript using Vite..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 bunx --bun --no-install vite build
+bunx --bun --no-install vite build --mode public-pages
 bash "$REPO_ROOT/scripts/dev/build-standalone.sh"
 echo
 
@@ -52,7 +53,7 @@ date > "$JS_BUNDLES_DIR/date_compiled.txt"
 cd "$JS_BUNDLES_DIR"
 for file in *; do
   case $file in
-    "main.$VERSION".* | version.txt | git_revision.txt | date_compiled.txt) continue ;;
+    "main.$VERSION".* | public-pages.min.js* | version.txt | git_revision.txt | date_compiled.txt) continue ;;
     *) ;;
   esac
   page=${file%%.*}

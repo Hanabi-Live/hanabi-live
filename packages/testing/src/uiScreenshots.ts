@@ -482,7 +482,7 @@ function getStates(): readonly State[] {
       loggedIn: false,
       // Sort one column, so that the sort arrows show both states.
       prepare: async (page) => {
-        await page.locator("th[data-sortable]").first().click();
+        await page.locator("th[aria-sort]").first().click();
       },
     },
     {

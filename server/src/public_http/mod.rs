@@ -54,8 +54,6 @@ fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
 }
 
 pub(super) use hanabi_protocol::{DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT};
-/// The page sizes that a public listing's pager offers.
-pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_LIMIT, 20, 50, MAX_PAGE_LIMIT];
 
 /// The query parameters that page a list.
 const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];

@@ -7,11 +7,21 @@ use crate::errors::StatementLimit;
 use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
+use hanabi_protocol::{
+    BestScore, Count, Difficulty, MissingScore, MissingScoresFilters, MissingScoresPlayer,
+    NumPlayers, PublicGameList, PublicPageTable, Score, ScoreModifierOption, VariantScores,
+};
 use std::sync::Arc;
 
 /// The option that a score page names for a best score's stored modifier, if any.
-fn shown_modifier(bits: i16) -> Option<&'static str> {
+fn shown_modifier(bits: i16) -> Option<ScoreModifierOption> {
     crate::model::ScoreModifier::from_bits(bits).shown()
+}
+
+/// Gives a page the data of its table, which the page's script draws.
+fn set_table(values: &mut Value, table: &PublicPageTable) -> Result<()> {
+    values["table"] = json!(serde_json::to_string(table)?);
+    Ok(())
 }
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
@@ -25,10 +35,6 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
         (
             "missing-scores.html",
             include_str!("../../templates/missing-scores.html"),
-        ),
-        (
-            "public-pager.html",
-            include_str!("../../templates/public-pager.html"),
         ),
         (
             "public-table-scripts.html",
@@ -46,6 +52,10 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
             "theme-init.html",
             include_str!("../../templates/theme-init.html"),
         ),
+        (
+            "vite-dev.html",
+            include_str!("../../templates/vite-dev.html"),
+        ),
     ] {
         env.add_template(name, source)
             .expect("native public template");
@@ -58,7 +68,6 @@ fn render(state: &PublicState, template: &str, mut values: Value) -> Result<Resp
     values["version"] = json!(&*state.config.client_version);
     values["domain"] = json!(&*state.config.domain);
     values["isDev"] = json!(state.config.is_dev);
-    values["pagerSizes"] = json!(super::PAGER_SIZES);
     Ok(Html(
         state
             .templates
@@ -153,7 +162,7 @@ pub(super) async fn page(
     };
     // Redirects to the page's JSON API.
     let api_redirect = q.flag("api").map_err(HttpError::bad)?;
-    let mut v = json!({"title":"History","page":mode,"stats":{},"frequencies":[]});
+    let mut v = json!({"title":"History","page":mode,"stats":{}});
     match mode {
         "export" => {
             return Ok(replay::export(&state, &params)
@@ -184,10 +193,9 @@ pub(super) async fn page(
                 "scores" | "profile" => {
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let mut statistics = player_statistics(&state, users[0].0).await?;
-                    let mut summary = score_summary(&state, users[0].0).await?;
-                    statistics["rows"] = summary["rows"].take();
-                    v["stats"] = statistics;
+                    v["stats"] = player_statistics(&state, users[0].0).await?;
+                    let (_, variants) = score_summary(&state, users[0].0).await?;
+                    set_table(&mut v, &PublicPageTable::Scores { variants })?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -202,7 +210,14 @@ pub(super) async fn page(
                     if api_redirect {
                         return Ok(Redirect::permanent(&api).into_response());
                     }
-                    v["apiPath"] = json!(api);
+                    set_table(
+                        &mut v,
+                        &PublicPageTable::Games {
+                            list: PublicGameList::History,
+                            api_path: api,
+                            frequencies: Vec::new(),
+                        },
+                    )?;
                     if names.len() > 1 {
                         v["namesTitle"] =
                             json!(format!("Game History for {}", names_title(&names)));
@@ -214,9 +229,19 @@ pub(super) async fn page(
                         return Ok(Redirect::permanent(&api).into_response());
                     }
                     v["title"] = json!("Tagged Games");
-                    v["apiPath"] = json!(api);
                     let selection = data::selection(&state, &params, mode).await?;
-                    v["total"] = json!(data::count(&state, selection).await?);
+                    let total = data::count(&state, selection).await?;
+                    v["total"] = json!(total);
+                    if total.get() > 0 {
+                        set_table(
+                            &mut v,
+                            &PublicPageTable::Games {
+                                list: PublicGameList::Tags,
+                                api_path: api,
+                                frequencies: Vec::new(),
+                            },
+                        )?;
+                    }
                 }
                 _ => {
                     return missing(
@@ -240,16 +265,21 @@ pub(super) async fn page(
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
-            v["apiPath"] = json!(api);
             let rows = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
                 .fetch_all(&state.pool)
                 .await?
                 .into_iter()
                 .map(serde_json::from_value)
                 .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
-            v["scoreFreqsJson"] = json!(serde_json::to_string(&rows)?);
             v["stats"] = seed_stats(&state, seed, &rows).await?;
-            v["frequencies"] = json!(rows);
+            set_table(
+                &mut v,
+                &PublicPageTable::Games {
+                    list: PublicGameList::Seed,
+                    api_path: api,
+                    frequencies: rows,
+                },
+            )?;
         }
         "tag" => {
             let raw = params
@@ -264,9 +294,19 @@ pub(super) async fn page(
                 );
             }
             v["namesTitle"] = json!(format!("Games With a Tag of: {tag}"));
-            v["apiPath"] = json!(format!("{API_PREFIX}/tag/{}", encoded(&tag)));
             let selection = data::selection(&state, &params, mode).await?;
-            v["total"] = json!(data::count(&state, selection).await?);
+            let total = data::count(&state, selection).await?;
+            v["total"] = json!(total);
+            if total.get() > 0 {
+                set_table(
+                    &mut v,
+                    &PublicPageTable::Games {
+                        list: PublicGameList::Tag,
+                        api_path: format!("{API_PREFIX}/tag/{}", encoded(&tag)),
+                        frequencies: Vec::new(),
+                    },
+                )?;
+            }
         }
         _ => return Err(HttpError::not_found("Not found.")),
     }
@@ -513,14 +553,15 @@ const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
 const VERY_HARD_EFFICIENCY: f64 = 1.5;
 
-async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
+/// A player's count of max scores at each player count, and their best scores on each variant that
+/// they have played.
+async fn score_summary(state: &PublicState, id: i32) -> Result<(Value, Vec<VariantScores>)> {
     let statistics = user_stats(state, id).await?;
     let mut totals = [0; crate::database::PLAYER_COUNTS];
-    let mut rows = Vec::new();
+    let mut played = Vec::new();
     for variant in catalog::variants() {
         let row = statistics.get(&i64::from(variant.id));
         let max = i64::from(variant.max_score);
-        let mut best = Vec::new();
         let best_scores = row.map_or(
             [None; crate::database::PLAYER_COUNTS],
             crate::database::UserStats::best_scores,
@@ -529,24 +570,36 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
             if score.is_some_and(|(score, _)| i64::from(score) == max) {
                 *total += 1;
             }
-            best.push(json!({
-                "score": score.map(|(score, _)| score),
-                "modifierName": score.and_then(|(_, modifier)| shown_modifier(modifier)),
-            }));
         }
         // A variant without a row has no games.
         let games = row.map_or(0, |row| i64::from(row.num_games));
-        rows.push(
-            json!({"id":variant.id,"name":variant.name,"maxScore":max,"numGames":games,
-            "bestScores":best}),
-        );
+        if games > 0 {
+            played.push(VariantScores {
+                variant_name: variant.name.clone(),
+                max_score: Score::try_from(variant.max_score)?,
+                num_games: Count::try_from(games)?,
+                best_scores: best_scores
+                    .into_iter()
+                    .map(best_score)
+                    .collect::<Result<_>>()?,
+            });
+        }
     }
     let total: i64 = totals.iter().sum();
     let variants = i64::try_from(catalog::variants().len())?;
-    Ok(
-        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*i64::try_from(crate::database::PLAYER_COUNTS)?),
+    Ok((
+        json!({"total":total,"percentage":percentage(total,variants*i64::try_from(crate::database::PLAYER_COUNTS)?),
         "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
-    )
+        played,
+    ))
+}
+
+/// A stored best score and its modifier bits, if there is a game.
+fn best_score(score: Option<(i16, i16)>) -> Result<BestScore> {
+    Ok(BestScore {
+        score: score.map(|(score, _)| Score::try_from(score)).transpose()?,
+        modifier: score.and_then(|(_, modifier)| shown_modifier(modifier)),
+    })
 }
 
 async fn missing(
@@ -587,10 +640,16 @@ async fn missing(
             }
         }
     }
-    let players: Vec<Value> = users.iter().map(|u| json!({"name":u.1,"excluded":excluded_players.contains(&crate::accounts::normalize_string(&u.1))})).collect();
+    let players: Vec<MissingScoresPlayer> = users
+        .iter()
+        .map(|u| MissingScoresPlayer {
+            name: u.1.as_str().into(),
+            excluded: excluded_players.contains(&crate::accounts::normalize_string(&u.1)),
+        })
+        .collect();
     let mut statistics = Vec::new();
     for (index, user) in users.iter().enumerate() {
-        if players[index]["excluded"] == false {
+        if !players[index].excluded {
             statistics.push(user_stats(state, user.0).await?);
         }
     }
@@ -655,19 +714,47 @@ async fn missing(
             {
                 continue;
             }
-            rows.push(json!({"name":name,"numPlayers":p,"score":best.map(|(score, _)| score),"maxScore":max,"modifierName":best.and_then(|(_, modifier)| shown_modifier(modifier)),
-                "efficiency":shown,"efficiencyClass":if efficiency<HARD_EFFICIENCY {"normal"}else if efficiency<VERY_HARD_EFFICIENCY {"hard"}else{"very-hard"}}));
+            let BestScore { score, modifier } = best_score(best)?;
+            rows.push(MissingScore {
+                variant_name: name.to_owned(),
+                num_players: NumPlayers::try_from(p)?,
+                score,
+                max_score: Score::try_from(max)?,
+                modifier,
+                efficiency: shown,
+                difficulty: if efficiency < HARD_EFFICIENCY {
+                    Difficulty::Normal
+                } else if efficiency < VERY_HARD_EFFICIENCY {
+                    Difficulty::Hard
+                } else {
+                    Difficulty::VeryHard
+                },
+            });
         }
     }
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
+    let filters = if shared {
+        MissingScoresFilters::Shared {
+            players,
+            exclude_variants: q.get("excludeVariants").unwrap_or("").to_owned(),
+            min_efficiency: q.get("minEfficiency").unwrap_or("").to_owned(),
+            max_efficiency: q.get("maxEfficiency").unwrap_or("").to_owned(),
+            active: !excluded_players.is_empty()
+                || !excluded_variants.is_empty()
+                || bounds.iter().any(Option::is_some),
+        }
+    } else {
+        MissingScoresFilters::Player {
+            name: users[0].1.as_str().into(),
+            num_players: num_players.map(NumPlayers::try_from).transpose()?,
+        }
+    };
     let mut v = json!({"title":"Missing Scores","name":users[0].1,
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
-        "singleMissingScores":!shared,"requestedNumPlayers":num_players,
-        "players":players,"rows":rows,"advancedFiltersActive":!excluded_players.is_empty()||!excluded_variants.is_empty()||bounds.iter().any(Option::is_some),
-        "excludeVariants":q.get("excludeVariants").unwrap_or(""),
-        "minEfficiency":q.get("minEfficiency").unwrap_or(""),"maxEfficiency":q.get("maxEfficiency").unwrap_or("")});
+        "singleMissingScores":!shared});
     if !shared {
-        v["summary"] = score_summary(state, users[0].0).await?;
+        v["summary"] = score_summary(state, users[0].0).await?.0;
     }
+    set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)
 }

@@ -1,15 +1,11 @@
-<div class="hidden">
-  {% for modifier, label in [["deckplays", "Bottom-Deck Blind-Play"],
-  ["emptyclues", "Empty Clue"], ["oneextracard", "One Extra Card"],
-  ["onelesscard", "One Less Card"], ["allornothing", "All or Nothing"]] %}
-  <div id="modifier-{{ modifier }}" class="profile-tooltip">
-    This score is not legitimate since the <strong>{{ label }}</strong> option
-    was used.
-  </div>
-  {% endfor %}
-</div>
-{% if scoreFreqsJson is defined and scoreFreqsJson != "[]" %}
+{% if page == "seed" %}
 <script src="/public/js/lib/chart.min.js"></script>
 <script src="/public/js/lib/chartjs-plugin-datalabels.min.js"></script>
+{% endif %} {% if isDev %} {% include "vite-dev.html" %}
+<script
+  type="module"
+  src="http://localhost:5173/src/publicPages/index.tsx"
+></script>
+{% else %}
+<script src="/public/js/bundles/public-pages.min.js?{{ version }}"></script>
 {% endif %}
-<script src="/public/js/bundles/public-tables.min.js?{{ version }}"></script>

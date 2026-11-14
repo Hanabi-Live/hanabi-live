@@ -4,18 +4,7 @@
     <h1>{% include "logo.html" %}</h1>
     <nav id="nav"></nav>
   </header>
-  <section
-    id="main"
-    class="container max history-page"
-    data-page="{{ page }}"
-    {%
-    if
-    apiPath
-    %}data-api-path="{{ apiPath }}"
-    {%
-    endif
-    %}
-  >
+  <section id="main" class="container max history-page">
     <header>
       <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
     </header>
@@ -133,11 +122,6 @@
               {% endif %}
             </ul>
           </div>
-          {% endif %} {% if frequencies|length > 0 %}<canvas
-            id="score-frequencies"
-            data-frequencies="{{ scoreFreqsJson }}"
-          ></canvas>
-          <hr />
           {% endif %} {% if page in ["tags", "tag"] %}
           <h3 class="align-center">
             {% if total == 0 %}{% if page == "tags" %}No tagged games.{% else
@@ -149,87 +133,13 @@
             Get them to tag some games with the <code>/tag</code> command. (e.g.
             <code>/tag Layered Finesse</code>)
           </h4>
-          {% endif %} {% endif %} {% if page == "scores" or (apiPath and total
-          != 0) %} {% include "public-pager.html" %} {% if page == "scores" %}
-          <div
-            class="public-table-scroll"
-            tabindex="0"
-            role="region"
-            aria-label="Scores"
-          >
-            <table class="history">
-              <thead>
-                <tr>
-                  <th data-filter="select">Variant</th>
-                  <th class="center">Total Games</th>
-                  {% for players in [2,3,4,5,6] %}
-                  <th class="center" data-sort="ratio">
-                    {{ players }}-Player Best Score
-                  </th>
-                  {% endfor %}
-                </tr>
-              </thead>
-              <tbody>
-                {% for row in stats.rows %}{% if row.numGames > 0 %}
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td class="center">{{ row.numGames }}</td>
-                  {% for best in row.bestScores %}
-                  <td class="center">
-                    {% if best.score is none %}&ndash;{% elif best.score ==
-                    row.maxScore %}<strong
-                      >{{ best.score }} / {{ row.maxScore }}</strong
-                    >
-                    {% if best.modifierName %}<i
-                      class="fas fa-times score-modifier red tooltip"
-                      data-tooltip-content="#modifier-{{ best.modifierName }}"
-                    ></i
-                    >{% else %}<i class="fas fa-check score-modifier green"></i
-                    >{% endif %} {% else %}{{ best.score }} / {{ row.maxScore
-                    }}{% endif %}
-                  </td>
-                  {% endfor %}
-                </tr>
-                {% endif %}{% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div
-            class="public-table-scroll"
-            tabindex="0"
-            role="region"
-            aria-label="Game history"
-          >
-            <table id="history-table" class="history personal-history">
-              <thead>
-                <tr>
-                  <th>Game ID</th>
-                  <th data-filter="select"># of Players</th>
-                  <th>Score</th>
-                  <th data-filter="select">Variant</th>
-                  <th>Players</th>
-                  <th>Date &amp; Time</th>
-                  {% if page == "seed" %}
-                  <th>Percentile</th>
-                  {% else %}
-                  <th>Other Scores</th>
-                  {% endif %} {% if page == "tags" %}
-                  <th>Tags</th>
-                  {% endif %}
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          {% endif %} {% include "public-pager.html" %} {% if apiPath %}
-          <div class="table-spinner"><span class="table-spinner"></span></div>
-          <p id="history-error" role="alert" hidden></p>
-          {% endif %} {% endif %}{% endif %}
+          {% endif %} {% endif %} {% if table %}
+          <div id="public-page-table" data-table="{{ table }}"></div>
+          {% endif %}{% endif %}
         </section>
       </div>
     </div>
   </section>
 </div>
-{% if page not in ["password-reset"] %}{% include "public-table-scripts.html"
-%}{% endif %} {% endblock %}
+{% if table %}{% include "public-table-scripts.html" %}{% endif %} {% endblock
+%}

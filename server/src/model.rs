@@ -7,7 +7,8 @@ use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
-    Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex, PregameStats, UserRef,
+    Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex, PregameStats,
+    ScoreModifierOption, UserRef,
 };
 pub use hanabi_protocol::{IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MS_PER_SECOND};
 use serde::{Deserialize, Serialize};
@@ -645,12 +646,12 @@ impl ScoreModifier {
 
     /// Each option and its name on the score pages. The pages show only the first one that a score
     /// has, so the order ranks them.
-    const OPTIONS: [(i16, &str); 5] = [
-        (Self::ALL_OR_NOTHING, "allornothing"),
-        (Self::ONE_EXTRA_CARD, "oneextracard"),
-        (Self::ONE_LESS_CARD, "onelesscard"),
-        (Self::EMPTY_CLUES, "emptyclues"),
-        (Self::DECK_PLAYS, "deckplays"),
+    const OPTIONS: [(i16, ScoreModifierOption); 5] = [
+        (Self::ALL_OR_NOTHING, ScoreModifierOption::AllOrNothing),
+        (Self::ONE_EXTRA_CARD, ScoreModifierOption::OneExtraCard),
+        (Self::ONE_LESS_CARD, ScoreModifierOption::OneLessCard),
+        (Self::EMPTY_CLUES, ScoreModifierOption::EmptyClues),
+        (Self::DECK_PLAYS, ScoreModifierOption::DeckPlays),
     ];
 
     pub fn of(options: &Options) -> Self {
@@ -677,13 +678,13 @@ impl ScoreModifier {
         self.0
     }
 
-    /// The name of the option that the score pages show for this score, or `None` when the score
-    /// is a normal one.
-    pub fn shown(self) -> Option<&'static str> {
+    /// The option that the score pages show for this score, or `None` when the score is a normal
+    /// one.
+    pub fn shown(self) -> Option<ScoreModifierOption> {
         Self::OPTIONS
             .iter()
             .find(|(flag, _)| self.0 & flag != 0)
-            .map(|(_, name)| *name)
+            .map(|(_, option)| *option)
     }
 
     /// Whether a score with this modifier does not count as a normal one.
@@ -795,11 +796,11 @@ mod tests {
         };
         let modifier = ScoreModifier::of(&options);
         assert_eq!(modifier.bits(), 2 + 8);
-        assert_eq!(modifier.shown(), Some("onelesscard"));
+        assert_eq!(modifier.shown(), Some(ScoreModifierOption::OneLessCard));
         assert_eq!(ScoreModifier::from_bits(0).shown(), None);
         assert_eq!(
             ScoreModifier::from_bits(16 + 1).shown(),
-            Some("allornothing")
+            Some(ScoreModifierOption::AllOrNothing)
         );
         assert!(modifier.modified());
         assert!(!ScoreModifier::default().modified());

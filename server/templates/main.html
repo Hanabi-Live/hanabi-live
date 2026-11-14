@@ -260,16 +260,7 @@
 <!-- Used to validate that we are connecting to the correct URL. -->
 <div id="domain" class="hidden">{{ domain }}</div>
 
-{% if isDev %}
-<!-- "bun run dev" serves the client with Vite, which reloads the page when the client changes. -->
-<script type="module" src="http://localhost:5173/@vite/client"></script>
-<!-- React Fast Refresh, which updates edited components without reloading the page. -->
-<script type="module">
-  import { injectIntoGlobalHook } from "http://localhost:5173/@react-refresh";
-  injectIntoGlobalHook(window);
-  window.$RefreshReg$ = () => {};
-  window.$RefreshSig$ = () => (type) => type;
-</script>
+{% if isDev %} {% include "vite-dev.html" %}
 <script
   type="module"
   src="http://localhost:5173/src/main.ts"

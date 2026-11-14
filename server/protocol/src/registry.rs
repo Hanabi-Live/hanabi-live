@@ -126,7 +126,7 @@ macro_rules! exported_types {
             GamePage,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
-            VariantNames, ScoreFrequency, GameListColumn,
+            VariantNames, ScoreFrequency, GameListColumn, PublicPageTable,
         }
     };
 }

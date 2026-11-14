@@ -24,6 +24,19 @@ async fn request(app: Router, path: &str) -> (StatusCode, String) {
     )
     .await
 }
+/// The data of a page's table, from the page's HTML.
+fn page_table(body: &str) -> Value {
+    let start = body.find("data-table=\"").expect("a table") + "data-table=\"".len();
+    let end = start + body[start..].find('"').expect("the end of the attribute");
+    let json = body[start..end]
+        .replace("&quot;", "\"")
+        .replace("&#x27;", "'")
+        .replace("&#x2f;", "/")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&");
+    serde_json::from_str(&json).expect("the table's JSON")
+}
 async fn response(r: Response) -> (StatusCode, String) {
     let status = r.status();
     let body = String::from_utf8(
@@ -227,7 +240,7 @@ fn profile_titles_use_possessive_names() {
 }
 
 #[test]
-fn formatted_templates_preserve_conditional_links_and_selected_options() {
+fn formatted_templates_preserve_conditional_links() {
     let templates = pages::templates();
     let buttons = templates
         .get_template("profile-buttons.html")
@@ -246,29 +259,6 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
         !tagged[1].contains("href="),
         "The selected profile button must not link to itself"
     );
-
-    let missing = templates
-        .get_template("missing-scores.html")
-        .unwrap()
-        .render(minijinja::value::Serde(json!({
-            "projectName":"Hanab Live","version":"1","isDev":false,"title":"Missing Scores",
-            "name":"Alice","namesTitle":"Alice's Profile","singleMissingScores":true,
-            "summary":{"perType":[],"total":0,"percentage":"0"},
-            "requestedNumPlayers":3,"players":[],"rows":[]
-        })))
-        .unwrap();
-    let options = regex!(r"(?s)<option\b([^>]*)>.*?</option>");
-    let selected = options
-        .captures_iter(&missing)
-        .filter(|option| option[1].contains("selected"))
-        .map(|option| option[1].to_owned())
-        .collect::<Vec<_>>();
-    assert_eq!(
-        selected.len(),
-        1,
-        "Only the requested player count should be selected"
-    );
-    assert!(selected[0].contains(r#"value="3""#));
 }
 
 #[tokio::test]
@@ -492,24 +482,23 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     }
     // The tagged games pages count the games and load them from the API.
     let (_, body) = request(app.clone(), "/tags/Alice").await;
-    assert!(
-        body.contains("data-api-path=\"&#x2f;api&#x2f;v1&#x2f;tags&#x2f;Alice\""),
-        "{body}"
-    );
+    assert_eq!(page_table(&body)["apiPath"], "/api/v1/tags/Alice");
     assert!(
         body.contains("<span id=\"total-number-of-games\">2</span>"),
         "{body}"
     );
     let (_, body) = request(app.clone(), "/tag/mine").await;
-    assert!(
-        body.contains("data-api-path=\"&#x2f;api&#x2f;v1&#x2f;tag&#x2f;mine\""),
-        "{body}"
-    );
+    assert_eq!(page_table(&body)["apiPath"], "/api/v1/tag/mine");
     let (_, body) = request(app.clone(), "/history/Alice").await;
-    assert!(body.contains("id=\"history-table\""), "{body}");
-    // A max score shows the option that kept it from counting normally, or a check.
+    assert_eq!(page_table(&body)["list"], "history");
+    // A max score names the option that kept it from counting normally, if any.
     let (_, body) = request(app.clone(), "/scores/Alice").await;
-    assert!(body.contains("fa-check score-modifier green"), "{body}");
+    let variant = &page_table(&body)["variants"][0];
+    assert_eq!(
+        variant["bestScores"][0],
+        json!({"score": variant["maxScore"]}),
+        "{variant}"
+    );
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"
@@ -519,7 +508,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .await
         .unwrap();
     let (_, body) = request(app.clone(), "/scores/Alice").await;
-    assert!(body.contains("#modifier-oneextracard"), "{body}");
+    assert_eq!(
+        page_table(&body)["variants"][0]["bestScores"][0]["modifier"],
+        "oneExtraCard"
+    );
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"
@@ -550,14 +542,22 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert!(!body.contains("<script>alert(1)</script>"));
     assert!(body.contains("&lt;script&gt;"));
     assert!(body.contains("/history/%3Cscript%3Ealert%281%29%3C%2Fscript%3E"));
+    let missing_variants = |body: &str| -> Vec<Value> {
+        page_table(body)["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| row["variantName"].clone())
+            .collect()
+    };
     let (_, body) = request(app.clone(), "/missing-scores/Alice/2").await;
-    assert!(!body.contains("<td>No Variant</td>"));
+    assert!(!missing_variants(&body).contains(&json!("No Variant")));
     let (_, body) = request(
         app.clone(),
         "/shared-missing-scores/2/Alice/Bob?excludePlayers=Alice",
     )
     .await;
-    assert!(body.contains("<td>No Variant</td>"));
+    assert!(missing_variants(&body).contains(&json!("No Variant")));
     for (path, status, text) in [
         ("/scores", 404, "specify a player"),
         ("/history/Missing/Alice/alice", 404, "does not exist"),
@@ -703,7 +703,13 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    assert!(body.contains("missing-scores-row-players-6"));
+    assert!(
+        page_table(&body)["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| row["numPlayers"] == 6)
+    );
     sqlx::query!("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
         .execute(&db.pool)
         .await

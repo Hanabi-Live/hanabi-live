@@ -156,3 +156,130 @@ named_enum! {
         VariantId => "variantId",
     }
 }
+
+named_enum! {
+    /// An option that keeps a best score from counting as a normal one. A score with several of
+    /// them shows only the first in this order.
+    pub enum ScoreModifierOption {
+        AllOrNothing => "allOrNothing",
+        OneExtraCard => "oneExtraCard",
+        OneLessCard => "oneLessCard",
+        EmptyClues => "emptyClues",
+        DeckPlays => "deckPlays",
+    }
+}
+
+/// A best score on a public page, and the option that keeps it from counting as a normal one.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BestScore {
+    /// Absent when no game was played.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub score: Option<Score>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modifier: Option<ScoreModifierOption>,
+}
+
+/// A variant that a player has played, with their best score at each player count.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct VariantScores {
+    pub variant_name: String,
+    pub max_score: Score,
+    pub num_games: Count,
+    /// From the fewest players to the most.
+    #[schemars(length(min = MAX_PLAYERS - MIN_PLAYERS + 1, max = MAX_PLAYERS - MIN_PLAYERS + 1))]
+    pub best_scores: Vec<BestScore>,
+}
+
+named_enum! {
+    /// How hard a max score is, from the clue efficiency that it needs.
+    pub enum Difficulty {
+        Normal => "normal",
+        Hard => "hard",
+        VeryHard => "veryHard",
+    }
+}
+
+/// A variant at a player count that has no normal max score yet.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MissingScore {
+    pub variant_name: String,
+    pub num_players: NumPlayers,
+    /// The best score of the players. Absent when none of them played.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub score: Option<Score>,
+    pub max_score: Score,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modifier: Option<ScoreModifierOption>,
+    /// The clue efficiency that a max score needs, rounded as the page shows it.
+    pub efficiency: String,
+    pub difficulty: Difficulty,
+}
+
+/// A player of a shared missing scores page.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MissingScoresPlayer {
+    pub name: Username,
+    /// Whether the filters leave the player's scores out.
+    pub excluded: bool,
+}
+
+/// The filters of a missing scores page. They are query parameters, so the page reloads to apply
+/// them.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
+pub enum MissingScoresFilters {
+    /// A player's own page, which shows one player count or all of them.
+    #[serde(rename_all = "camelCase")]
+    Player {
+        name: Username,
+        /// Absent when the page shows every player count.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        num_players: Option<NumPlayers>,
+    },
+    /// The page of several players. The text filters are as the address gives them.
+    #[serde(rename_all = "camelCase")]
+    Shared {
+        players: Vec<MissingScoresPlayer>,
+        exclude_variants: String,
+        min_efficiency: String,
+        max_efficiency: String,
+        /// Whether any filter leaves out a player, a variant, or an efficiency.
+        active: bool,
+    },
+}
+
+named_enum! {
+    /// A list of games on a public page, which the page loads from the matching `/api/v1` route.
+    pub enum PublicGameList {
+        History => "history",
+        Seed => "seed",
+        Tags => "tags",
+        Tag => "tag",
+    }
+}
+
+/// What the script of a public page draws: its table, and the controls and chart that go with it.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
+pub enum PublicPageTable {
+    /// A player's best scores, one row for each variant that they have played.
+    Scores { variants: Vec<VariantScores> },
+    /// The max scores that one or more players are missing.
+    MissingScores {
+        rows: Vec<MissingScore>,
+        filters: MissingScoresFilters,
+    },
+    /// A list of games that the page loads one page at a time.
+    #[serde(rename_all = "camelCase")]
+    Games {
+        list: PublicGameList,
+        api_path: String,
+        /// How many games reached each score. Only a seed's page has them.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        frequencies: Vec<ScoreFrequency>,
+    },
+}

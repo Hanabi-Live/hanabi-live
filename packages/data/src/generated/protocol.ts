@@ -63,6 +63,7 @@ export const DEFAULT_BASE_SECONDS = 120;
 export const DEFAULT_PER_TURN_SECONDS = 20;
 export const DEFAULT_PAGE_LIMIT = 10;
 export const MAX_PAGE_LIMIT = 100;
+export const PAGE_SIZES = [10, 20, 50, 100] as const;
 export const MAX_EFFICIENCY_MODIFIER = 60;
 
 /**
@@ -1096,6 +1097,157 @@ export const pregameSchema = z
   .readonly();
 
 /**
+ * How hard a max score is, from the clue efficiency that it needs.
+ */
+const difficultySchema = z.enum(["normal", "hard", "veryHard"]);
+
+/**
+ * An option that keeps a best score from counting as a normal one. A score with several of
+ * them shows only the first in this order.
+ */
+const scoreModifierOptionSchema = z.enum([
+  "allOrNothing",
+  "oneExtraCard",
+  "oneLessCard",
+  "emptyClues",
+  "deckPlays",
+]);
+
+/**
+ * A variant at a player count that has no normal max score yet.
+ */
+const missingScoreSchema = z
+  .strictObject({
+    difficulty: difficultySchema,
+    /**
+     * The clue efficiency that a max score needs, rounded as the page shows it.
+     */
+    efficiency: z.string(),
+    maxScore: scoreSchema,
+    modifier: scoreModifierOptionSchema.optional(),
+    numPlayers: numPlayersSchema,
+    /**
+     * The best score of the players. Absent when none of them played.
+     */
+    score: scoreSchema.optional(),
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
+ * A player of a shared missing scores page.
+ */
+const missingScoresPlayerSchema = z
+  .strictObject({
+    /**
+     * Whether the filters leave the player's scores out.
+     */
+    excluded: z.boolean(),
+    name: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * The filters of a missing scores page. They are query parameters, so the page reloads to apply
+ * them.
+ */
+const missingScoresFiltersSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      name: z.string().min(1),
+      /**
+       * Absent when the page shows every player count.
+       */
+      numPlayers: numPlayersSchema.optional(),
+      type: z.literal("player"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Whether any filter leaves out a player, a variant, or an efficiency.
+       */
+      active: z.boolean(),
+      excludeVariants: z.string(),
+      maxEfficiency: z.string(),
+      minEfficiency: z.string(),
+      players: z.array(missingScoresPlayerSchema).readonly(),
+      type: z.literal("shared"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A list of games on a public page, which the page loads from the matching `/api/v1` route.
+ */
+const publicGameListSchema = z.enum(["history", "seed", "tags", "tag"]);
+
+/**
+ * How many games with a seed reached a score, as the seed page's chart shows them.
+ */
+export const scoreFrequencySchema = z
+  .strictObject({ numGames: countSchema, score: scoreSchema })
+  .readonly();
+
+/**
+ * A best score on a public page, and the option that keeps it from counting as a normal one.
+ */
+const bestScoreSchema = z
+  .strictObject({
+    modifier: scoreModifierOptionSchema.optional(),
+    /**
+     * Absent when no game was played.
+     */
+    score: scoreSchema.optional(),
+  })
+  .readonly();
+
+/**
+ * A variant that a player has played, with their best score at each player count.
+ */
+const variantScoresSchema = z
+  .strictObject({
+    /**
+     * From the fewest players to the most.
+     */
+    bestScores: z.array(bestScoreSchema).min(5).max(5).readonly(),
+    maxScore: scoreSchema,
+    numGames: countSchema,
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
+ * What the script of a public page draws: its table, and the controls and chart that go with it.
+ */
+export const publicPageTableSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      type: z.literal("scores"),
+      variants: z.array(variantScoresSchema).readonly(),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      filters: missingScoresFiltersSchema,
+      rows: z.array(missingScoreSchema).readonly(),
+      type: z.literal("missingScores"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      apiPath: z.string(),
+      /**
+       * How many games reached each score. Only a seed's page has them.
+       */
+      frequencies: z.array(scoreFrequencySchema).readonly().optional(),
+      list: publicGameListSchema,
+      type: z.literal("games"),
+    })
+    .readonly(),
+]);
+
+/**
  * Adds a user to, or removes them from, the sender's friends, links, or blocked users.
  */
 export const relationshipRequestSchema = z
@@ -1315,13 +1467,6 @@ export const requestIdSchema = z
   .min(1)
   .max(9_007_199_254_740_991)
   .brand<"RequestId">();
-
-/**
- * How many games with a seed reached a score, as the seed page's chart shows them.
- */
-export const scoreFrequencySchema = z
-  .strictObject({ numGames: countSchema, score: scoreSchema })
-  .readonly();
 
 /**
  * A page of the games on a seed, best scores first.

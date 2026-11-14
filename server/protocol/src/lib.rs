@@ -248,6 +248,8 @@ constants! {
     /// The most rows that a page of a public listing, a player's game history, or their private
     /// messages can have.
     @data pub const MAX_PAGE_LIMIT: i64 = 100;
+    /// The page sizes that the tables of the public pages offer.
+    @data pub const PAGE_SIZES: &[i64] = &[DEFAULT_PAGE_LIMIT, 20, 50, MAX_PAGE_LIMIT];
     /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
     /// reaches the last turn.
     pub const MAX_PROGRESS: u8 = 100;

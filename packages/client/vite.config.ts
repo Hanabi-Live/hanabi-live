@@ -7,8 +7,15 @@ import { defineConfig } from "vitest/config";
 const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 const VERSION_PATH = path.join(REPO_ROOT, "packages/data/src/version.js");
 
-/** The port that "server/templates/main.html" loads the development client from. */
+/** The port that "server/templates/vite-dev.html" loads the development client from. */
 const DEV_SERVER_PORT = 5173;
+
+/**
+ * The mode that builds the script of the server's public pages, such as a player's history, instead
+ * of the client: `vite build --mode public-pages`. A classic script holds everything that it
+ * imports, so each one is a separate build.
+ */
+const PUBLIC_PAGES_MODE = "public-pages";
 
 function readVersion(code: string): string {
   const match = /VERSION = "([^"]+)"/u.exec(code);
@@ -18,7 +25,17 @@ function readVersion(code: string): string {
   return match[1];
 }
 
-export default defineConfig(({ command }) => ({
+/** The name of the script that a build makes, or `undefined` for Vite's default. */
+function entryFileName(command: string, mode: string): string | undefined {
+  if (mode === PUBLIC_PAGES_MODE) {
+    return "public-pages.min.js";
+  }
+  return command === "build"
+    ? `main.${readVersion(readFileSync(VERSION_PATH, "utf8"))}.min.js`
+    : undefined;
+}
+
+export default defineConfig(({ command, mode }) => ({
   plugins: [react(), tailwindcss()],
   publicDir: false,
   resolve: {
@@ -29,21 +46,23 @@ export default defineConfig(({ command }) => ({
   },
   build: {
     outDir: path.join(REPO_ROOT, "public/js/bundles"),
-    // The directory also holds the pips reference bundle and version metadata.
+    // The directory also holds the other bundles and version metadata.
     emptyOutDir: false,
     sourcemap: true,
     modulePreload: false,
     // The client ships as a single bundle.
     chunkSizeWarningLimit: 2000,
     rolldownOptions: {
-      input: path.join(import.meta.dirname, "src/main.ts"),
+      input: path.join(
+        import.meta.dirname,
+        mode === PUBLIC_PAGES_MODE
+          ? "src/publicPages/index.tsx"
+          : "src/main.ts",
+      ),
       output: {
-        // The server templates load the client as a classic script.
+        // The server templates load the scripts as classic scripts.
         format: "iife",
-        entryFileNames:
-          command === "build"
-            ? `main.${readVersion(readFileSync(VERSION_PATH, "utf8"))}.min.js`
-            : undefined,
+        entryFileNames: entryFileName(command, mode),
       },
     },
   },
