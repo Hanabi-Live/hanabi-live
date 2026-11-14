@@ -122,10 +122,12 @@ export function closeGame(): void {
   releaseGameObservers();
   clock.reset();
   keyboard.destroy();
-  if (globals.ui !== undefined) {
-    globals.ui.destroy();
-    globals.ui = undefined;
+  if (globals.ui === undefined) {
+    return;
   }
+
+  globals.ui.destroy();
+  globals.ui = undefined;
 }
 
 /** Leaves the game screen for the screen that was open before it. */

@@ -198,33 +198,35 @@ databaseDescribe("normal-server protocol workload", () => {
                   ),
               );
               samples.action.push(performance.now() - start);
-              if (turn === 4) {
-                const reconnectStart = performance.now();
-                await close(alice);
-                alice = await connect(aliceCookie);
-                alice.send("tableReattend", { tableId });
-                await alice.receive(
-                  "tableJoined",
-                  SERVER_EVENT_SCHEMAS.tableJoined,
-                  entersGame,
-                );
-                const restored = await bootstrap(alice, tableId);
-                expect(ourPlayerIndex(restored.init)).toBe(aliceSeat);
-                expect(
-                  restored.history.events.filter(
-                    (event) => event.type === "play",
-                  ),
-                ).toHaveLength(5);
-                expect(
-                  restored.history.events.some(
-                    (event) =>
-                      event.type === "draw"
-                      && event.playerIndex === aliceSeat
-                      && event.identity === undefined,
-                  ),
-                ).toBe(true);
-                samples.liveReconnect.push(performance.now() - reconnectStart);
+              if (turn !== 4) {
+                continue;
               }
+
+              const reconnectStart = performance.now();
+              await close(alice);
+              alice = await connect(aliceCookie);
+              alice.send("tableReattend", { tableId });
+              await alice.receive(
+                "tableJoined",
+                SERVER_EVENT_SCHEMAS.tableJoined,
+                entersGame,
+              );
+              const restored = await bootstrap(alice, tableId);
+              expect(ourPlayerIndex(restored.init)).toBe(aliceSeat);
+              expect(
+                restored.history.events.filter(
+                  (event) => event.type === "play",
+                ),
+              ).toHaveLength(5);
+              expect(
+                restored.history.events.some(
+                  (event) =>
+                    event.type === "draw"
+                    && event.playerIndex === aliceSeat
+                    && event.identity === undefined,
+                ),
+              ).toBe(true);
+              samples.liveReconnect.push(performance.now() - reconnectStart);
             }
             await alice.receive(
               "gameHistoryAdded",

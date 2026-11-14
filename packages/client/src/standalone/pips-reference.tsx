@@ -44,14 +44,16 @@ function getUniquePips(): readonly PipInfo[] {
   }
 
   for (const pip of getEnumValues(Pip)) {
-    if (!uniquePips.has(pip)) {
-      uniquePips.set(pip, {
-        pip,
-        name: pip,
-        fill: undefined,
-      });
-      console.warn(`The "${pip}" pip is not assigned a suit.`);
+    if (uniquePips.has(pip)) {
+      continue;
     }
+
+    uniquePips.set(pip, {
+      pip,
+      name: pip,
+      fill: undefined,
+    });
+    console.warn(`The "${pip}" pip is not assigned a suit.`);
   }
 
   return [...uniquePips.values()];

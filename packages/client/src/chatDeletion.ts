@@ -6,11 +6,13 @@ export class LobbyChatDeletionState {
 
   public markDeleted(chatId: number): void {
     this.deletedChatIds.add(chatId);
-    if (this.deletedChatIds.size > MAX_REMEMBERED_DELETIONS) {
-      const oldestId = this.deletedChatIds.values().next().value;
-      if (oldestId !== undefined) {
-        this.deletedChatIds.delete(oldestId);
-      }
+    if (this.deletedChatIds.size <= MAX_REMEMBERED_DELETIONS) {
+      return;
+    }
+
+    const oldestId = this.deletedChatIds.values().next().value;
+    if (oldestId !== undefined) {
+      this.deletedChatIds.delete(oldestId);
     }
   }
 

@@ -809,10 +809,12 @@ function Possibilities({
       suitsHeight / rows,
       width * maxPip,
     );
-    if (cell > pipCell) {
-      pipCell = cell;
-      suitColumns = columns;
+    if (cell <= pipCell) {
+      continue;
     }
+
+    pipCell = cell;
+    suitColumns = columns;
   }
 
   return (

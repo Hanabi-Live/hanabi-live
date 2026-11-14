@@ -186,10 +186,12 @@ function PasswordModal({ tableId }: { readonly tableId: number }) {
           event.target.select();
         }}
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            submit();
+          if (event.key !== "Enter") {
+            return;
           }
+
+          event.preventDefault();
+          submit();
         }}
         placeholder="Password"
         type="text"

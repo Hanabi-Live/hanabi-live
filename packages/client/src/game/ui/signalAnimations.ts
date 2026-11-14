@@ -150,10 +150,12 @@ export function startMaxScoreDropAnimation(
 }
 
 export function stopMaxScoreDropAnimation(): void {
-  if (maxScoreDrop !== undefined) {
-    maxScoreDrop.stop();
-    maxScoreDrop = undefined;
+  if (maxScoreDrop === undefined) {
+    return;
   }
+
+  maxScoreDrop.stop();
+  maxScoreDrop = undefined;
 }
 
 /**
@@ -231,8 +233,10 @@ export function startEmptyDeckAnimation(delay: number): void {
 }
 
 export function stopEmptyDeckAnimation(): void {
-  if (emptyDeck !== undefined) {
-    emptyDeck.stop();
-    emptyDeck = undefined;
+  if (emptyDeck === undefined) {
+    return;
   }
+
+  emptyDeck.stop();
+  emptyDeck = undefined;
 }

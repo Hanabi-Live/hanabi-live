@@ -217,11 +217,9 @@ export function getCardsGottenByNotes(
   let numCardsGottenByNotes = 0;
 
   for (const [i, cardState] of deck.entries()) {
-    const order = i as CardOrder;
-
     if (
-      isCardInPlayerHand(cardState)
-      && !isAllCardPossibilitiesTrash(
+      !isCardInPlayerHand(cardState)
+      || isAllCardPossibilitiesTrash(
         cardState,
         deck,
         playStacks,
@@ -231,13 +229,16 @@ export function getCardsGottenByNotes(
         false,
       )
     ) {
-      const adjustmentFromThisCard = getCardsGottenByNotesAdjustment(
-        notes,
-        order,
-        cardState,
-      );
-      numCardsGottenByNotes += adjustmentFromThisCard;
+      continue;
     }
+
+    const order = i as CardOrder;
+    const adjustmentFromThisCard = getCardsGottenByNotesAdjustment(
+      notes,
+      order,
+      cardState,
+    );
+    numCardsGottenByNotes += adjustmentFromThisCard;
   }
 
   return numCardsGottenByNotes;

@@ -1111,50 +1111,52 @@ function drawPlayStacks() {
 
     playStack.addChild(stackBase.layout);
 
-    // Draw the suit name next to each suit (a text description of the suit).
-    if (globals.variant.showSuitNames) {
-      let text = suit.displayName;
-
-      if (
-        store.getState().session.settings.colorblindMode
-        && suit.clueColors.length === 2
-      ) {
-        const colorList = suit.clueColors
-          .map((color) => color.abbreviation)
-          .join("/");
-        text += ` [${colorList}]`;
-      }
-
-      if (globals.variant.upOrDown) {
-        text = "";
-      }
-
-      if (globals.variant.sudoku) {
-        // Do not show anything here, the starting values will be written by the state observers
-        // updating when the starting or the played cards value changes.
-        text = "";
-      }
-
-      const suitLabelText = new FitText({
-        x:
-          (playStackValues.x
-            - SUIT_LABEL.overhangX
-            + (cardWidth + playStackValues.spacing) * i)
-          * winW,
-        y: (playStackValues.y + cardHeight + SUIT_LABEL.gapY) * winH,
-        width: (cardWidth + SUIT_LABEL.overhangX * 2) * winW,
-        height: SUIT_LABEL.h * winH,
-        fontSize: SUIT_LABEL.fontSize * winH,
-        fontFamily: FONT_FAMILY,
-        align: "center",
-        text,
-        fill: LABEL_COLOR,
-        listening: false,
-      });
-
-      globals.layers.UI.add(suitLabelText);
-      globals.elements.suitLabelTexts.push(suitLabelText);
+    if (!globals.variant.showSuitNames) {
+      continue;
     }
+
+    // Draw the suit name next to each suit (a text description of the suit).
+    let text = suit.displayName;
+
+    if (
+      store.getState().session.settings.colorblindMode
+      && suit.clueColors.length === 2
+    ) {
+      const colorList = suit.clueColors
+        .map((color) => color.abbreviation)
+        .join("/");
+      text += ` [${colorList}]`;
+    }
+
+    if (globals.variant.upOrDown) {
+      text = "";
+    }
+
+    if (globals.variant.sudoku) {
+      // Do not show anything here, the starting values will be written by the state observers
+      // updating when the starting or the played cards value changes.
+      text = "";
+    }
+
+    const suitLabelText = new FitText({
+      x:
+        (playStackValues.x
+          - SUIT_LABEL.overhangX
+          + (cardWidth + playStackValues.spacing) * i)
+        * winW,
+      y: (playStackValues.y + cardHeight + SUIT_LABEL.gapY) * winH,
+      width: (cardWidth + SUIT_LABEL.overhangX * 2) * winW,
+      height: SUIT_LABEL.h * winH,
+      fontSize: SUIT_LABEL.fontSize * winH,
+      fontFamily: FONT_FAMILY,
+      align: "center",
+      text,
+      fill: LABEL_COLOR,
+      listening: false,
+    });
+
+    globals.layers.UI.add(suitLabelText);
+    globals.elements.suitLabelTexts.push(suitLabelText);
   }
 
   // This is the invisible rectangle that players drag cards to in order to play them. Make it a
@@ -1804,29 +1806,31 @@ function drawScoreArea() {
     strikeX.on("click tap", strikeClick);
   }
 
+  if (!globals.state.playing) {
+    return;
+  }
+
   // The terminate button (which immediately ends the current game). This is placed on top of the
   // last strike.
-  if (globals.state.playing) {
-    globals.elements.strikeSquares.at(-1)!.hide();
-    globals.elements.strikeXs.at(-1)!.hide();
-    globals.elements.questionMarkLabels.at(-1)?.hide();
+  globals.elements.strikeSquares.at(-1)!.hide();
+  globals.elements.strikeXs.at(-1)!.hide();
+  globals.elements.questionMarkLabels.at(-1)?.hide();
 
-    const terminateButton = new Button(
-      {
-        x: strikeSquareX(MAX_STRIKES - 1) * winW,
-        y: STRIKE_SQUARE.y * winH,
-        width: STRIKE_SQUARE.w * winW,
-        height: STRIKE_SQUARE.h * winH,
-        visible: globals.state.playing,
-      },
-      [lobbyGlobals.imageLoader.get("skull")],
-    );
-    globals.elements.scoreArea.add(terminateButton);
-    terminateButton.tooltipName = "kill";
-    terminateButton.tooltipContent = "End the game";
-    initKonvaTooltips(terminateButton, true, false);
-    globals.elements.terminateButton = terminateButton;
-  }
+  const terminateButton = new Button(
+    {
+      x: strikeSquareX(MAX_STRIKES - 1) * winW,
+      y: STRIKE_SQUARE.y * winH,
+      width: STRIKE_SQUARE.w * winW,
+      height: STRIKE_SQUARE.h * winH,
+      visible: globals.state.playing,
+    },
+    [lobbyGlobals.imageLoader.get("skull")],
+  );
+  globals.elements.scoreArea.add(terminateButton);
+  terminateButton.tooltipName = "kill";
+  terminateButton.tooltipContent = "End the game";
+  initKonvaTooltips(terminateButton, true, false);
+  globals.elements.terminateButton = terminateButton;
 }
 
 // The "eyes" symbol to show that one or more people are spectating the game.
@@ -2329,12 +2333,14 @@ function drawTimers() {
   });
   globals.layers.timer.add(globals.elements.timer2);
   if (
-    globals.options.timeControl !== undefined
-    || store.getState().session.settings.showTimerInUntimed
+    globals.options.timeControl === undefined
+    && !store.getState().session.settings.showTimerInUntimed
   ) {
-    globals.elements.timer2.tooltipName = "time-taken";
-    initKonvaTooltips(globals.elements.timer2, true, false);
+    return;
   }
+
+  globals.elements.timer2.tooltipName = "time-taken";
+  initKonvaTooltips(globals.elements.timer2, true, false);
 }
 
 function timerClick() {

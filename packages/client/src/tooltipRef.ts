@@ -71,10 +71,12 @@ export function tooltipRefHtml(
       // Each render makes a new ref, so React runs this and then gives the element the new ref, in
       // the same task. Wait until then, so that the tooltip is only destroyed with the element.
       queueMicrotask(() => {
-        if (entry.refs === 0 && elementTooltips.get(element) === entry) {
-          elementTooltips.delete(element);
-          tooltip.destroy();
+        if (!(entry.refs === 0 && elementTooltips.get(element) === entry)) {
+          return;
         }
+
+        elementTooltips.delete(element);
+        tooltip.destroy();
       });
     };
   };

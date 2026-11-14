@@ -769,10 +769,12 @@ function Hand({
   const empathyHold = !seat.you && !editing;
   const heldRef = useRef(false);
   function endHold() {
-    if (heldRef.current) {
-      heldRef.current = false;
-      props.onHoldEmpathy(undefined);
+    if (!heldRef.current) {
+      return;
     }
+
+    heldRef.current = false;
+    props.onHoldEmpathy(undefined);
   }
   const giverColor =
     props.shownClue?.giver === seat.playerIndex

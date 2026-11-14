@@ -231,17 +231,19 @@ export class Deck extends Konva.Group {
   initEmpathy(): void {
     this.on("mousedown", (event: Konva.KonvaEventObject<MouseEvent>) => {
       if (
-        event.evt.buttons === LEFT_MOUSE_BUTTON_HELD
-        && !event.evt.shiftKey
-        && !event.evt.altKey
-        && !event.evt.metaKey
-        && !this.canDragDeck()
+        event.evt.buttons !== LEFT_MOUSE_BUTTON_HELD
+        || event.evt.shiftKey
+        || event.evt.altKey
+        || event.evt.metaKey
+        || this.canDragDeck()
       ) {
-        // The game info tooltip would cover the pips.
-        konvaTooltips.resetActiveHover(this);
-        tooltips.close("deck");
-        this.setEmpathy(true);
+        return;
       }
+
+      // The game info tooltip would cover the pips.
+      konvaTooltips.resetActiveHover(this);
+      tooltips.close("deck");
+      this.setEmpathy(true);
     });
     const stopEmpathy = () => {
       if (!globals.globalEmpathyEnabled) {

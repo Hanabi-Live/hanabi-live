@@ -223,10 +223,12 @@ export function startProcess(directory: string): ProcessState {
       ) {
         operationsReady = true;
       }
-      if (publicAddress !== undefined && operationsReady) {
-        waiter?.resolve(publicAddress);
-        waiter = undefined;
+      if (publicAddress === undefined || !operationsReady) {
+        continue;
       }
+
+      waiter?.resolve(publicAddress);
+      waiter = undefined;
     }
   }
   child.stdout.on("data", (chunk: Buffer) => {

@@ -61,10 +61,12 @@ export class LayoutChild extends Konva.Group {
       this.misplayAnimation.stop();
       this.misplayAnimation = undefined;
     }
-    if (this.stackCompleteAnimation !== undefined) {
-      this.stackCompleteAnimation.stop();
-      this.stackCompleteAnimation = undefined;
+    if (this.stackCompleteAnimation === undefined) {
+      return;
     }
+
+    this.stackCompleteAnimation.stop();
+    this.stackCompleteAnimation = undefined;
   }
 
   // Note that this method cannot be named "setDraggable()", since that would overlap with the Konva

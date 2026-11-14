@@ -499,39 +499,41 @@ function canFollowSuggestion(): boolean {
 }
 
 function suggestTurn(who: string, room: string, segment: number) {
+  if (!canFollowSuggestion()) {
+    return;
+  }
+
   // We minus one to account for the fact that turns are presented to the user starting from 1.
   const internalSegment = segment - 1;
-  if (canFollowSuggestion()) {
-    const leaderSuggested =
-      who === gameSession.currentState().metadata.ourUsername;
-    if (
-      leaderSuggested
-      || internalSegment === gameSession.currentState().replay.shared!.segment
-    ) {
-      replay.goToSegment(internalSegment);
-    } else {
-      modals.askForConfirmation(
-        "Turn Suggestion",
-        `${who} suggests that we go to turn ${segment}. Agree?`,
-        `Go to Turn ${segment}`,
-        () => {
-          // The replay may have changed while the modal was open.
-          if (canFollowSuggestion()) {
-            replay.goToSegment(internalSegment);
-          }
-        },
-      );
-    }
-    if (leaderSuggested) {
-      sendSelfPmFromServer(
-        [
-          "You are the shared replay leader, so you can simply click on the turn number instead of using the ",
-          { code: "/suggest" },
-          " command.",
-        ],
-        room,
-      );
-    }
+  const leaderSuggested =
+    who === gameSession.currentState().metadata.ourUsername;
+  if (
+    leaderSuggested
+    || internalSegment === gameSession.currentState().replay.shared!.segment
+  ) {
+    replay.goToSegment(internalSegment);
+  } else {
+    modals.askForConfirmation(
+      "Turn Suggestion",
+      `${who} suggests that we go to turn ${segment}. Agree?`,
+      `Go to Turn ${segment}`,
+      () => {
+        // The replay may have changed while the modal was open.
+        if (canFollowSuggestion()) {
+          replay.goToSegment(internalSegment);
+        }
+      },
+    );
+  }
+  if (leaderSuggested) {
+    sendSelfPmFromServer(
+      [
+        "You are the shared replay leader, so you can simply click on the turn number instead of using the ",
+        { code: "/suggest" },
+        " command.",
+      ],
+      room,
+    );
   }
 }
 

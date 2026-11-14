@@ -65,16 +65,18 @@ export function sudokuWalkUpAll(
   let lastDead = 0;
 
   for (const currentRank of variant.ranks) {
-    if (allDiscardedSet.has(currentRank)) {
-      // We hit a new dead rank.
-      for (const writeRank of eRange(lastDead + 1, currentRank)) {
-        const maxScore = currentRank - writeRank;
-        maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
-      }
-
-      maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
-      lastDead = currentRank;
+    if (!allDiscardedSet.has(currentRank)) {
+      continue;
     }
+
+    // We hit a new dead rank.
+    for (const writeRank of eRange(lastDead + 1, currentRank)) {
+      const maxScore = currentRank - writeRank;
+      maxScoresForEachStartingValueOfSuit[writeRank - 1] = maxScore;
+    }
+
+    maxScoresForEachStartingValueOfSuit[currentRank - 1] = 0;
+    lastDead = currentRank;
   }
 
   // If no value was dead, we did not write anything so far, so we can just return.

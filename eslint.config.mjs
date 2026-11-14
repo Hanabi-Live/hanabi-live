@@ -46,10 +46,6 @@ export const hanabiConfigBase = defineConfig(
       // waits for.
       "unicorn/prefer-await": "off",
 
-      // Keep explicit branches in the game rules and event handlers.
-      "unicorn/prefer-continue": "off",
-      "unicorn/prefer-early-return": "off",
-
       // Preserve compatibility with browsers without the newest iterator APIs.
       "unicorn/prefer-iterator-to-array": "off",
 

@@ -157,12 +157,14 @@ export function WatchReplay(): React.JSX.Element {
                 // Enter adds a line here, so a modifier is needed to submit.
                 onKeyDown={(event) => {
                   if (
-                    event.key === "Enter"
-                    && (event.ctrlKey || event.metaKey)
+                    event.key !== "Enter"
+                    || (!event.ctrlKey && !event.metaKey)
                   ) {
-                    event.preventDefault();
-                    submit();
+                    return;
                   }
+
+                  event.preventDefault();
+                  submit();
                 }}
                 placeholder="Paste the game's JSON data (Ctrl+Enter to watch)"
                 ref={jsonRef}

@@ -96,17 +96,19 @@ function animateScoreChanges(
     }
   }
 
-  if (segmentChange >= 0 && after.stats.maxScore < before.stats.maxScore) {
-    const discarded = new Set(before.discardStacks.flat());
-    const lost = after.discardStacks
-      .flat()
-      .find((order) => !discarded.has(order));
-    animateMaxScoreDrop(
-      root,
-      before.stats.maxScore,
-      lost === undefined ? undefined : getCardElement(root, lost),
-    );
+  if (segmentChange < 0 || after.stats.maxScore >= before.stats.maxScore) {
+    return;
   }
+
+  const discarded = new Set(before.discardStacks.flat());
+  const lost = after.discardStacks
+    .flat()
+    .find((order) => !discarded.has(order));
+  animateMaxScoreDrop(
+    root,
+    before.stats.maxScore,
+    lost === undefined ? undefined : getCardElement(root, lost),
+  );
 }
 
 function getCardElement(

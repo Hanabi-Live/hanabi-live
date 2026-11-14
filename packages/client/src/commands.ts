@@ -121,10 +121,12 @@ commands.set("chatList", (data) => {
           };
     chat.add(message, true); // The second argument is "fast"
   }
-  if (table !== undefined && gameSession.isOpen() && !gameChat.isOpen()) {
-    store.dispatch(
-      gameChatUnreadChanged(store.getState().gameChat.unread + table.numUnread),
-    );
-    globals.ui?.updateChatLabel();
+  if (table === undefined || !gameSession.isOpen() || gameChat.isOpen()) {
+    return;
   }
+
+  store.dispatch(
+    gameChatUnreadChanged(store.getState().gameChat.unread + table.numUnread),
+  );
+  globals.ui?.updateChatLabel();
 });

@@ -16,10 +16,12 @@ HTMLDialogElement.prototype.showModal = function showModal(
   this.open = true;
 };
 HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
-  if (this.open) {
-    this.open = false;
-    this.dispatchEvent(new dom.window.Event("close"));
+  if (!this.open) {
+    return;
   }
+
+  this.open = false;
+  this.dispatchEvent(new dom.window.Event("close"));
 };
 
 const domGlobals = {

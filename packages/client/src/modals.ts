@@ -55,13 +55,15 @@ export function init(): void {
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && currentModal !== undefined) {
-      // The key press must not also act on the screen behind the modal (e.g. leaving a replay). It
-      // must not close the dialog either, because some modals cannot be closed.
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      closeModals();
+    if (event.key !== "Escape" || currentModal === undefined) {
+      return;
     }
+
+    // The key press must not also act on the screen behind the modal (e.g. leaving a replay). It
+    // must not close the dialog either, because some modals cannot be closed.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeModals();
   });
   // Other requests to close the dialog, such as the back gesture on Android.
   modalDialog.addEventListener("cancel", (event) => {

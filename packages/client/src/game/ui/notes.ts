@@ -65,12 +65,14 @@ export function savedNote(text: string): string {
  */
 function unmountNoteCounter(tooltip?: GameTooltipName) {
   if (
-    noteCounter !== undefined
-    && (tooltip === undefined || noteCounter.tooltip === tooltip)
+    noteCounter === undefined
+    || (tooltip !== undefined && noteCounter.tooltip !== tooltip)
   ) {
-    noteCounter.root.unmount();
-    noteCounter = undefined;
+    return;
   }
+
+  noteCounter.root.unmount();
+  noteCounter = undefined;
 }
 
 function prepareContent(rawNote: string): string {
@@ -94,16 +96,18 @@ function get(order: CardOrder, our: boolean, process = false) {
   for (const noteObject of noteObjectArray) {
     const text = processFunc(noteObject.text);
     const { spectator } = noteObject;
-    if (noteObject.text !== "") {
-      if (!firstSpectator && spectator) {
-        firstSpectator = true;
-        if (content !== "") {
-          content = `<div class='note-title'><span>Players</span></div>${content}`;
-        }
-        content += "<div class='note-title'><span>Spectators</span></div>";
-      }
-      content += `<strong>${escapeHtml(noteObject.username)}:</strong> ${text}<br />`;
+    if (noteObject.text === "") {
+      continue;
     }
+
+    if (!firstSpectator && spectator) {
+      firstSpectator = true;
+      if (content !== "") {
+        content = `<div class='note-title'><span>Players</span></div>${content}`;
+      }
+      content += "<div class='note-title'><span>Spectators</span></div>";
+    }
+    content += `<strong>${escapeHtml(noteObject.username)}:</strong> ${text}<br />`;
   }
 
   content = trimSuffix(content, "<br />");
@@ -152,10 +156,12 @@ export function set(order: CardOrder, text: string): void {
   );
 
   const card = getCardOrStackBase(order);
-  if (card) {
-    card.checkSpecialNote();
-    card.setRaiseAndShadowOffset();
+  if (!card) {
+    return;
   }
+
+  card.checkSpecialNote();
+  card.setRaiseAndShadowOffset();
 }
 
 export function update(card: HanabiCard, text: string): void {
@@ -170,10 +176,12 @@ export function update(card: HanabiCard, text: string): void {
   // Update the card indicator.
   const visibleOld = card.noteIndicator.visible();
   const visibleNew = text !== "";
-  if (visibleOld !== visibleNew) {
-    card.noteIndicator.visible(visibleNew);
-    globals.layers.card.batchDraw();
+  if (visibleOld === visibleNew) {
+    return;
   }
+
+  card.noteIndicator.visible(visibleNew);
+  globals.layers.card.batchDraw();
 }
 
 /** Open the tooltip for this card. */
@@ -323,10 +331,12 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
 
     // Check for emoji substitution.
     const newText = chat.substituteEmoji(text);
-    if (newText !== undefined) {
-      inputElement.value = newText;
-      event.preventDefault();
+    if (newText === undefined) {
+      return;
     }
+
+    inputElement.value = newText;
+    event.preventDefault();
   });
 
   // Automatically add a pipe to a non empty note input box when it is focused.
@@ -346,10 +356,12 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
 
   // Remove the pipe if the user clicks with the mouse buttons.
   inputElement.addEventListener("mousedown", () => {
-    if (shouldRemovePipe) {
-      inputElement.value = note;
-      shouldRemovePipe = false;
+    if (!shouldRemovePipe) {
+      return;
     }
+
+    inputElement.value = note;
+    shouldRemovePipe = false;
   });
 
   // Automatically focus the new text input box. (This will not work properly in speedrun mode

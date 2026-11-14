@@ -51,10 +51,12 @@ export class StateObserver {
   }
 
   unregisterObservers(): void {
-    if (this.unsubscribe !== undefined) {
-      this.unsubscribe();
-      this.unsubscribe = undefined;
+    if (this.unsubscribe === undefined) {
+      return;
     }
+
+    this.unsubscribe();
+    this.unsubscribe = undefined;
   }
 }
 

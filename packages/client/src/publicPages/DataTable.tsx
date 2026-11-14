@@ -187,10 +187,12 @@ function Header({
       className={`tw:relative tw:cursor-pointer tw:whitespace-normal ${sort === "none" ? "" : "tw:bg-table-sorted"} ${column.className ?? ""}`}
       onClick={onSort}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSort();
+        if (!(event.key === "Enter" || event.key === " ")) {
+          return;
         }
+
+        event.preventDefault();
+        onSort();
       }}
       tabIndex={0}
     >

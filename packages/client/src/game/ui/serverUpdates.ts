@@ -78,10 +78,12 @@ export function drawAllNotes(): void {
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (const order of iRange(indexOfLastDrawnCard)) {
     const card = getCardOrStackBase(order as CardOrder);
-    if (card) {
-      card.checkSpecialNote();
-      card.setRaiseAndShadowOffset();
+    if (!card) {
+      continue;
     }
+
+    card.checkSpecialNote();
+    card.setRaiseAndShadowOffset();
   }
 
   for (const stackBase of globals.stackBases) {

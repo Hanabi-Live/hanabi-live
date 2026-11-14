@@ -105,10 +105,12 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
     }
 
     const { card } = child as unknown as LayoutChild;
-    if (isTouched(card, clue)) {
-      touchedCards.push(card.order);
-      arrows.set(i, card, undefined, clue, true);
+    if (!isTouched(card, clue)) {
+      continue;
     }
+
+    touchedCards.push(card.order);
+    arrows.set(i, card, undefined, clue, true);
   }
 
   cluePreview.setPotentialClue({

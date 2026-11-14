@@ -74,10 +74,12 @@ export class Loader {
     img.addEventListener("load", () => {
       this.numLoaded++;
       this.progress();
-      if (this.numLoaded === this.filePathMap.size) {
-        this.finished = true;
-        this.finishedCallback?.();
+      if (this.numLoaded !== this.filePathMap.size) {
+        return;
       }
+
+      this.finished = true;
+      this.finishedCallback?.();
     });
     img.addEventListener("error", () => {
       if (retryCount < MAX_IMAGE_RETRIES) {

@@ -291,12 +291,14 @@ let rebuildQueued = false;
 
 async function stopServer() {
   const child = server;
-  if (child !== undefined) {
-    server = undefined;
-    // The server drains gracefully on SIGTERM; live games survive in PostgreSQL.
-    child.kill("SIGTERM");
-    await child.exited;
+  if (child === undefined) {
+    return;
   }
+
+  server = undefined;
+  // The server drains gracefully on SIGTERM; live games survive in PostgreSQL.
+  child.kill("SIGTERM");
+  await child.exited;
 }
 
 function startServer() {
@@ -304,13 +306,15 @@ function startServer() {
   server = child;
   background(
     child.exited.then((code) => {
-      if (!stopping && server === child) {
-        server = undefined;
-        log(
-          "server",
-          `Exited with code ${code}; it restarts after the next change.`,
-        );
+      if (stopping || server !== child) {
+        return;
       }
+
+      server = undefined;
+      log(
+        "server",
+        `Exited with code ${code}; it restarts after the next change.`,
+      );
     }),
   );
 }
@@ -384,10 +388,12 @@ function watchServerSources(env: ReadonlyMap<string, string>) {
 let pullSkipReason: string | undefined;
 
 function skipPull(reason: string) {
-  if (reason !== pullSkipReason) {
-    log("dev", reason);
-    pullSkipReason = reason;
+  if (reason === pullSkipReason) {
+    return;
   }
+
+  log("dev", reason);
+  pullSkipReason = reason;
 }
 
 /**
@@ -481,10 +487,12 @@ async function shutDown(code: number) {
 function stopWhenExited(label: Label, child: Child) {
   background(
     child.exited.then(async (code) => {
-      if (!stopping) {
-        log(label, `Exited with code ${code}.`);
-        await shutDown(1);
+      if (stopping) {
+        return;
       }
+
+      log(label, `Exited with code ${code}.`);
+      await shutDown(1);
     }),
   );
 }

@@ -88,14 +88,16 @@ lobbyCommands.set("pregame", (data) => {
   }
   store.dispatch(gameChanged(data));
   globals.tableId = data.tableId;
-  if (previousPlayers?.length !== data.players.length) {
-    // Disable the start game button for a short time after the player count changes.
-    clearTimeout(startGameCooldownTimeout);
-    store.dispatch(startGameCooldownChanged(true));
-    startGameCooldownTimeout = setTimeout(() => {
-      store.dispatch(startGameCooldownChanged(false));
-    }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
+  if (previousPlayers?.length === data.players.length) {
+    return;
   }
+
+  // Disable the start game button for a short time after the player count changes.
+  clearTimeout(startGameCooldownTimeout);
+  store.dispatch(startGameCooldownChanged(true));
+  startGameCooldownTimeout = setTimeout(() => {
+    store.dispatch(startGameCooldownChanged(false));
+  }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
 });
 
 lobbyCommands.set("gameHistoryAdded", (data) => {

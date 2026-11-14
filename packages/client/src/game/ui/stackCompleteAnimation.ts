@@ -341,10 +341,12 @@ function addRocket(
       point.x,
       point.y,
     ]);
-    if (t - lastEmber > ROCKET_EMBER_INTERVAL) {
-      lastEmber = t;
-      addEmber(timeline, start + t * seconds, point);
+    if (t - lastEmber <= ROCKET_EMBER_INTERVAL) {
+      return;
     }
+
+    lastEmber = t;
+    addEmber(timeline, start + t * seconds, point);
   });
 }
 
@@ -430,10 +432,12 @@ function addComet(
     const eased = easeInOut(t);
     const point = bezier(a, control, b, eased);
     head.position(point);
-    if (t - lastEmber > EMBER_INTERVAL) {
-      lastEmber = t;
-      addEmber(timeline, start + t * COMET_SECONDS, point);
+    if (t - lastEmber <= EMBER_INTERVAL) {
+      return;
     }
+
+    lastEmber = t;
+    addEmber(timeline, start + t * COMET_SECONDS, point);
   });
 }
 

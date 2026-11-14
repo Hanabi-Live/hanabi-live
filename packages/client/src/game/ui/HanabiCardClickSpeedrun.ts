@@ -61,38 +61,40 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 
   // Left-clicking on cards in other people's hands is a color clue action.
   if (
-    card.state.location !== globals.metadata.ourPlayerIndex
-    && isCardInPlayerHand(card.state)
-    && !event.ctrlKey
-    && !event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && typeof card.state.location === "number"
+    card.state.location === globals.metadata.ourPlayerIndex
+    || !isCardInPlayerHand(card.state)
+    || event.ctrlKey
+    || event.shiftKey
+    || event.altKey
+    || event.metaKey
+    || typeof card.state.location !== "number"
   ) {
-    if (!isClueTokenAvailable()) {
-      rejectClueTokenAction();
-      return;
-    }
-
-    const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
-    if (clueColor === undefined) {
-      return;
-    }
-
-    const colorIndex = colorToColorIndex(clueColor, globals.variant);
-    if (colorIndex === undefined) {
-      return;
-    }
-
-    turn.end({
-      type: "clue",
-      receiverIndex: card.state.location,
-      clue: {
-        type: "color",
-        color: colorIndex,
-      },
-    });
+    return;
   }
+
+  if (!isClueTokenAvailable()) {
+    rejectClueTokenAction();
+    return;
+  }
+
+  const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
+  if (clueColor === undefined) {
+    return;
+  }
+
+  const colorIndex = colorToColorIndex(clueColor, globals.variant);
+  if (colorIndex === undefined) {
+    return;
+  }
+
+  turn.end({
+    type: "clue",
+    receiverIndex: card.state.location,
+    clue: {
+      type: "color",
+      color: colorIndex,
+    },
+  });
 }
 
 /** A card may be clueable by more than one color, so we need to figure out which color to use. */

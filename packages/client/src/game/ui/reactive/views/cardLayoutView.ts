@@ -215,13 +215,15 @@ export function onPlayStacksChanged(
 
   for (const [suitIndex, stack] of playStacks.entries()) {
     if (
-      previousPlayStacks === undefined
-      || !equal(stack, previousPlayStacks[suitIndex])
+      previousPlayStacks !== undefined
+      && equal(stack, previousPlayStacks[suitIndex])
     ) {
-      const suit = globals.variant.suits[suitIndex]!;
-      const playStack = globals.elements.playStacks.get(suit)!;
-      playStack.hideCardsUnderneathTheTopCard();
+      continue;
     }
+
+    const suit = globals.variant.suits[suitIndex]!;
+    const playStack = globals.elements.playStacks.get(suit)!;
+    playStack.hideCardsUnderneathTheTopCard();
   }
 
   if (globals.variant.sudoku) {

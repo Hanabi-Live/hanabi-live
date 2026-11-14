@@ -117,15 +117,19 @@ export function hideAll(potentialClue = false): void {
 
   let changed = false;
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo !== undefined) {
-      changed = true;
-      arrow.pointingTo = undefined;
-      arrow.hide();
-      if (arrow.tween !== undefined) {
-        arrow.tween.destroy();
-        arrow.tween = undefined;
-      }
+    if (arrow.pointingTo === undefined) {
+      continue;
     }
+
+    changed = true;
+    arrow.pointingTo = undefined;
+    arrow.hide();
+    if (arrow.tween === undefined) {
+      continue;
+    }
+
+    arrow.tween.destroy();
+    arrow.tween = undefined;
   }
   if (changed) {
     globals.layers.arrow.batchDraw();

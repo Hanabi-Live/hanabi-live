@@ -81,13 +81,15 @@ export function showOtherScores(seed: string): void {
 export function showMoreOtherScores(): void {
   const shown = store.getState().history.otherScores;
   if (
-    store.getState().session.screen === Screen.HistoryOtherScores
-    && shown !== undefined
-    && !shown.loading
+    store.getState().session.screen !== Screen.HistoryOtherScores
+    || shown === undefined
+    || shown.loading
   ) {
-    store.dispatch(moreOtherScoresRequested());
-    requestOtherScoresPage(shown.seed, shown.games.length);
+    return;
   }
+
+  store.dispatch(moreOtherScoresRequested());
+  requestOtherScoresPage(shown.seed, shown.games.length);
 }
 
 function requestOtherScoresPage(seed: string, offset: number) {

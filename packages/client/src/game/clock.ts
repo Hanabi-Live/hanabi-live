@@ -155,10 +155,12 @@ function tick() {
 
 /** Stops counting the active player's clock. */
 export function stop(): void {
-  if (intervalId !== undefined) {
-    clearInterval(intervalId);
-    intervalId = undefined;
+  if (intervalId === undefined) {
+    return;
   }
+
+  clearInterval(intervalId);
+  intervalId = undefined;
 }
 
 /** Stops the clocks when the game ends. No player's clock runs after it. */

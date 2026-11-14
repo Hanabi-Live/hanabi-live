@@ -189,10 +189,12 @@ export class EffectTimeline {
             running = true;
           }
         }
-        if (!running) {
-          this.stop();
-          onFinish();
+        if (running) {
+          return;
         }
+
+        this.stop();
+        onFinish();
       },
       [...layers, this.fxLayer],
     );
@@ -203,10 +205,12 @@ export class EffectTimeline {
   stop(): void {
     this.animation?.stop();
     for (const track of this.tracks) {
-      if (!track.ended) {
-        track.ended = true;
-        track.end?.();
+      if (track.ended) {
+        continue;
       }
+
+      track.ended = true;
+      track.end?.();
     }
     this.fx.destroy();
     this.fxLayer.batchDraw();

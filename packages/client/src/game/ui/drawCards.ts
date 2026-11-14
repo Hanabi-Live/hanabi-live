@@ -472,26 +472,28 @@ function drawSuitPips(
     ctx.restore();
   }
 
-  // Draw large suit pip.
-  if (rank === CARD_IMAGE_UNKNOWN_CARD_RANK_NAME || rank === START_CARD_RANK) {
-    ctx.save();
-    let lineWidth: number | undefined;
-    if (rank === START_CARD_RANK) {
-      lineWidth = START_CARD_PIP_BORDER_WIDTH;
-    } else {
-      // Make the pip faint.
-      ctx.globalAlpha = colorblindMode
-        ? UNKNOWN_CARD_LARGE_PIP_ALPHA.colorblind
-        : UNKNOWN_CARD_LARGE_PIP_ALPHA.normal;
-    }
-    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
-    ctx.scale(
-      scale * FACE_PIP_SCALE_MULTIPLIER.large,
-      scale * FACE_PIP_SCALE_MULTIPLIER.large,
-    );
-    drawPip(ctx, suit, variant, enableShadows, undefined, lineWidth);
-    ctx.restore();
+  if (rank !== CARD_IMAGE_UNKNOWN_CARD_RANK_NAME && rank !== START_CARD_RANK) {
+    return;
   }
+
+  // Draw large suit pip.
+  ctx.save();
+  let lineWidth: number | undefined;
+  if (rank === START_CARD_RANK) {
+    lineWidth = START_CARD_PIP_BORDER_WIDTH;
+  } else {
+    // Make the pip faint.
+    ctx.globalAlpha = colorblindMode
+      ? UNKNOWN_CARD_LARGE_PIP_ALPHA.colorblind
+      : UNKNOWN_CARD_LARGE_PIP_ALPHA.normal;
+  }
+  ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
+  ctx.scale(
+    scale * FACE_PIP_SCALE_MULTIPLIER.large,
+    scale * FACE_PIP_SCALE_MULTIPLIER.large,
+  );
+  drawPip(ctx, suit, variant, enableShadows, undefined, lineWidth);
+  ctx.restore();
 }
 
 function makeUnknownCard<Canvas>(

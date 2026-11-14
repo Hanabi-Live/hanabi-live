@@ -378,11 +378,13 @@ function getVariantDescriptionForSpecialRankVariant(
 
   // Fill in the behavior for what the special rank will do.
   for (const specialProperty of SUIT_SPECIAL_PROPERTIES) {
-    if (suit[specialProperty] === true) {
-      const specialPropertyName =
-        convertSuitSpecialPropertyToVariantProperty(specialProperty);
-      variantDescription[specialPropertyName] = true;
+    if (suit[specialProperty] !== true) {
+      continue;
     }
+
+    const specialPropertyName =
+      convertSuitSpecialPropertyToVariantProperty(specialProperty);
+    variantDescription[specialPropertyName] = true;
   }
 
   // Exclude certain types of rank clues, if applicable

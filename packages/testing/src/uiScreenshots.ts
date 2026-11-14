@@ -343,10 +343,12 @@ async function settle(page: Page) {
     maxMilliseconds: MAX_ANIMATION_WAIT_MILLISECONDS,
     fireworksCheckMilliseconds: FIREWORKS_CHECK_MILLISECONDS,
   });
-  if (await page.locator(".konvajs-content").isVisible()) {
-    await page.waitForFunction(isGameScreenResized);
-    await page.waitForTimeout(CANVAS_SETTLE_MILLISECONDS);
+  if (!(await page.locator(".konvajs-content").isVisible())) {
+    return;
   }
+
+  await page.waitForFunction(isGameScreenResized);
+  await page.waitForTimeout(CANVAS_SETTLE_MILLISECONDS);
 }
 
 /** Rests the pointer on an element and waits for its tooltip. */
@@ -1936,11 +1938,13 @@ async function createCast(
     };
     let over = false;
     endGame = async () => {
-      if (!over) {
-        bob.send("tableTerminate", { tableId });
-        await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
-        over = true;
+      if (over) {
+        return;
       }
+
+      bob.send("tableTerminate", { tableId });
+      await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
+      over = true;
     };
     currentWatchedGame = {
       writeNote: (order, text) => {
@@ -2086,19 +2090,21 @@ async function createCast(
       }> = [];
       for (const event of events) {
         if (
-          event.type === "draw"
-          && event.playerIndex === index
-          && !gone.has(event.order)
-          && event.identity !== undefined
+          event.type !== "draw"
+          || event.playerIndex !== index
+          || gone.has(event.order)
+          || event.identity === undefined
         ) {
-          const { rank, suitIndex } = event.identity;
-          cards.push({
-            order: event.order,
-            suitIndex,
-            rank,
-            playable: rank === (stacks.get(suitIndex) ?? 0) + 1,
-          });
+          continue;
         }
+
+        const { rank, suitIndex } = event.identity;
+        cards.push({
+          order: event.order,
+          suitIndex,
+          rank,
+          playable: rank === (stacks.get(suitIndex) ?? 0) + 1,
+        });
       }
       return cards;
     }
@@ -2713,37 +2719,39 @@ async function captureState(
           });
         }
 
-        if (compareBundle !== undefined) {
-          // A difference counts only if it shows twice, because a page can still change on its own
-          // (for example, when the server sends an update).
-          let differences: readonly string[] | undefined;
-          for (let i = 0; i < 2 && differences?.length !== 0; i++) {
-            await page.evaluate(compareStyles, false);
-            await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
-            await settle(page);
-            const found = await page.evaluate(compareStyles, true);
-            if (found.length > 0) {
-              await page.screenshot({
-                path: `${file}.compare.png`,
-                animations: "disabled",
-              });
-            }
-            differences =
-              differences === undefined
-                ? found
-                : differences.filter((line) => found.includes(line));
-            await page.evaluate(useStylesheet, bundleHref);
-            await settle(page);
+        if (compareBundle === undefined) {
+          continue;
+        }
+
+        // A difference counts only if it shows twice, because a page can still change on its own
+        // (for example, when the server sends an update).
+        let differences: readonly string[] | undefined;
+        for (let i = 0; i < 2 && differences?.length !== 0; i++) {
+          await page.evaluate(compareStyles, false);
+          await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
+          await settle(page);
+          const found = await page.evaluate(compareStyles, true);
+          if (found.length > 0) {
+            await page.screenshot({
+              path: `${file}.compare.png`,
+              animations: "disabled",
+            });
           }
-          if (differences === undefined || differences.length === 0) {
-            await rm(`${file}.compare.png`, { force: true });
-          } else {
-            results.comparison.push(
-              `## ${state.name} ${size.width} ${theme}`,
-              ...differences,
-              "",
-            );
-          }
+          differences =
+            differences === undefined
+              ? found
+              : differences.filter((line) => found.includes(line));
+          await page.evaluate(useStylesheet, bundleHref);
+          await settle(page);
+        }
+        if (differences === undefined || differences.length === 0) {
+          await rm(`${file}.compare.png`, { force: true });
+        } else {
+          results.comparison.push(
+            `## ${state.name} ${size.width} ${theme}`,
+            ...differences,
+            "",
+          );
         }
       }
     }

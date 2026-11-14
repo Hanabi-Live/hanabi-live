@@ -405,10 +405,12 @@ export function GameScreen({
         ?? (otherPlayers.length === 1
           ? otherPlayers[0]?.playerIndex
           : undefined);
-      if (target !== undefined && isAllowed(target, choice)) {
-        setClueTarget(target);
-        setClue(choice);
+      if (target === undefined || !isAllowed(target, choice)) {
+        return;
       }
+
+      setClueTarget(target);
+      setClue(choice);
     },
     onGive: giveClue,
   };

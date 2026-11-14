@@ -253,10 +253,12 @@ function hasMissingVariants(
 
   let oneOrMoreVariantsIsMissing = false;
   for (const variant of oldVariants) {
-    if (!newVariantNames.has(variant.name)) {
-      oneOrMoreVariantsIsMissing = true;
-      console.log(`Missing variant: ${variant.name}`);
+    if (newVariantNames.has(variant.name)) {
+      continue;
     }
+
+    oneOrMoreVariantsIsMissing = true;
+    console.log(`Missing variant: ${variant.name}`);
   }
 
   return oneOrMoreVariantsIsMissing;

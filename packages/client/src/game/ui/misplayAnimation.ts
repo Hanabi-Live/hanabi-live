@@ -383,41 +383,43 @@ export function startMisplayAnimation(
       },
     );
 
+    if (strikeX === undefined) {
+      return;
+    }
+
     // The strike X pops in, scaling about its center.
-    if (strikeX !== undefined) {
-      const popped = strikeX;
-      const origin = popped.position();
-      const halfW = popped.width() / 2;
-      const halfH = popped.height() / 2;
-      function setScale(scale: number) {
-        popped.scale({
-          x: scale,
-          y: scale,
-        });
-        popped.position({
-          x: origin.x - halfW * (scale - 1),
-          y: origin.y - halfH * (scale - 1),
-        });
-      }
-      if (strikeIndex === MAX_STRIKES - 1) {
-        // This strike ends the game.
-        addStrikeoutFlash(
-          timeline,
-          explosionStart + STRIKE_POP_SECONDS + STRIKEOUT_DELAY_SECONDS,
-        );
-      }
-      timeline.add(
-        explosionStart,
-        STRIKE_POP_SECONDS,
-        (t) => {
-          revealStrike();
-          setScale(interpolate(STRIKE_POP_SCALE, 1, easeOut(t)));
-        },
-        () => {
-          setScale(1);
-        },
+    const popped = strikeX;
+    const origin = popped.position();
+    const halfW = popped.width() / 2;
+    const halfH = popped.height() / 2;
+    function setScale(scale: number) {
+      popped.scale({
+        x: scale,
+        y: scale,
+      });
+      popped.position({
+        x: origin.x - halfW * (scale - 1),
+        y: origin.y - halfH * (scale - 1),
+      });
+    }
+    if (strikeIndex === MAX_STRIKES - 1) {
+      // This strike ends the game.
+      addStrikeoutFlash(
+        timeline,
+        explosionStart + STRIKE_POP_SECONDS + STRIKEOUT_DELAY_SECONDS,
       );
     }
+    timeline.add(
+      explosionStart,
+      STRIKE_POP_SECONDS,
+      (t) => {
+        revealStrike();
+        setScale(interpolate(STRIKE_POP_SCALE, 1, easeOut(t)));
+      },
+      () => {
+        setScale(1);
+      },
+    );
   }
 
   // 1. Launch over the stack.
@@ -484,22 +486,24 @@ export function startMisplayAnimation(
       scorch.opacity(
         interpolate(SPUTTER_SCORCH_OPACITY, FLIGHT_SCORCH_OPACITY, t),
       );
-      if (t - lastSpark > TRAIL_SPARK_INTERVAL) {
-        lastSpark = t;
-        const tail = degreesToRadians(rotation + QUARTER_TURN_DEGREES);
-        const tailPoint = {
-          x: point.x + (Math.cos(tail) * scale * unit) / 2,
-          y: point.y + (Math.sin(tail) * scale * unit) / 2,
-        };
-        sparks(
-          flightStart + t * FLIGHT_SECONDS,
-          tailPoint,
-          2,
-          TRAIL_COLORS,
-          Math.PI,
-          0.3,
-        );
+      if (t - lastSpark <= TRAIL_SPARK_INTERVAL) {
+        return;
       }
+
+      lastSpark = t;
+      const tail = degreesToRadians(rotation + QUARTER_TURN_DEGREES);
+      const tailPoint = {
+        x: point.x + (Math.cos(tail) * scale * unit) / 2,
+        y: point.y + (Math.sin(tail) * scale * unit) / 2,
+      };
+      sparks(
+        flightStart + t * FLIGHT_SECONDS,
+        tailPoint,
+        2,
+        TRAIL_COLORS,
+        Math.PI,
+        0.3,
+      );
     });
     time += FLIGHT_SECONDS;
     blastPose = {

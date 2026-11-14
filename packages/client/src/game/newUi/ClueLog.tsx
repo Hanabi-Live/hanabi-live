@@ -176,15 +176,17 @@ export function ClueLog({
           }`}
           onScroll={(event) => {
             setScrolledDown(event.currentTarget.scrollTop > 0);
-            if (!filtered) {
-              const list = event.currentTarget;
-              savedScroll.current = {
-                top: list.scrollTop,
-                atBottom:
-                  list.scrollHeight - list.scrollTop - list.clientHeight
-                  <= BOTTOM_SLOP,
-              };
+            if (filtered) {
+              return;
             }
+
+            const list = event.currentTarget;
+            savedScroll.current = {
+              top: list.scrollTop,
+              atBottom:
+                list.scrollHeight - list.scrollTop - list.clientHeight
+                <= BOTTOM_SLOP,
+            };
           }}
           ref={listRef}
         >
@@ -264,10 +266,12 @@ function FitName({ name }: { readonly name: string }): React.JSX.Element {
       }
       fittedWidth = span.clientWidth;
       span.style.fontSize = `${NAME_FONT_SIZE}px`;
-      if (span.scrollWidth > span.clientWidth) {
-        const fitted = (NAME_FONT_SIZE * span.clientWidth) / span.scrollWidth;
-        span.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
+      if (span.scrollWidth <= span.clientWidth) {
+        return;
       }
+
+      const fitted = (NAME_FONT_SIZE * span.clientWidth) / span.scrollWidth;
+      span.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
     }
 
     fit();

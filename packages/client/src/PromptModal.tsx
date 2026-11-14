@@ -114,10 +114,12 @@ function NumberPrompt({
               event.target.select();
             }}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                submitPrompt(value);
+              if (event.key !== "Enter") {
+                return;
               }
+
+              event.preventDefault();
+              submitPrompt(value);
             }}
             type="number"
             value={value}
@@ -164,11 +166,13 @@ function MorphPrompt({
       id="morph-modal"
       onKeyDown={(event) => {
         // The prompt must not also close the dialog, which cannot close until the card is chosen.
-        if (event.key === "Escape") {
-          event.preventDefault();
-          event.stopPropagation();
-          cancelPrompt();
+        if (event.key !== "Escape") {
+          return;
         }
+
+        event.preventDefault();
+        event.stopPropagation();
+        cancelPrompt();
       }}
     >
       <h2 className="tw:m-0">Morph</h2>
@@ -247,10 +251,12 @@ function MorphPrompt({
                 event.target.select();
               }}
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  submitPrompt(text);
+                if (event.key !== "Enter") {
+                  return;
                 }
+
+                event.preventDefault();
+                submitPrompt(text);
               }}
               type="text"
               value={text}

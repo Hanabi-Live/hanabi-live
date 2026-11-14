@@ -45,19 +45,21 @@ export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
 
 /** Remembers the table that the form starts from next time, if it changed. */
 export function remember(table: CreateTable): void {
-  if (!equal(table, store.getState().session.settings.createTable)) {
-    store.dispatch(
-      settingsChanged({
-        ...store.getState().session.settings,
-        createTable: table,
-      }),
-    );
-    globals.connection.send("settings", {
-      settings: {
-        createTable: table,
-      },
-    });
+  if (equal(table, store.getState().session.settings.createTable)) {
+    return;
   }
+
+  store.dispatch(
+    settingsChanged({
+      ...store.getState().session.settings,
+      createTable: table,
+    }),
+  );
+  globals.connection.send("settings", {
+    settings: {
+      createTable: table,
+    },
+  });
 }
 
 /** Remembers a variant that a chat command chose. */

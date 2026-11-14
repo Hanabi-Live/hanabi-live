@@ -570,16 +570,18 @@ export const DRAW_PIP_FUNCTIONS = {
   infinity: (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
     ctx.beginPath();
     tracePath(ctx, INFINITY);
-    if (colors !== undefined) {
-      // When multiple colors are passed, create a gradient.
-      const { start, end } = INFINITY_GRADIENT;
-      const gradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
-      for (const [i, color] of colors.entries()) {
-        gradient.addColorStop(i / (colors.length - 1), color);
-      }
-      ctx.fillStyle = gradient;
-      ctx.fill();
+    if (colors === undefined) {
+      return;
     }
+
+    // When multiple colors are passed, create a gradient.
+    const { start, end } = INFINITY_GRADIENT;
+    const gradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+    for (const [i, color] of colors.entries()) {
+      gradient.addColorStop(i / (colors.length - 1), color);
+    }
+    ctx.fillStyle = gradient;
+    ctx.fill();
   },
 
   /** @see https://en.wikipedia.org/wiki/He_(kana) */
@@ -632,11 +634,13 @@ export const DRAW_PIP_FUNCTIONS = {
     for (const { path, colorIndex } of RAINBOW_PARTS) {
       ctx.beginPath();
       tracePath(ctx, path);
-      if (colors !== undefined) {
-        ctx.fillStyle =
-          colorIndex === undefined ? RAINBOW_CENTER_COLOR : colors[colorIndex]!;
-        ctx.fill();
+      if (colors === undefined) {
+        continue;
       }
+
+      ctx.fillStyle =
+        colorIndex === undefined ? RAINBOW_CENTER_COLOR : colors[colorIndex]!;
+      ctx.fill();
     }
 
     ctx.beginPath();

@@ -34,10 +34,12 @@ export function PasswordReset(): React.JSX.Element {
 
   // A new hash is ready to copy.
   useEffect(() => {
-    if (hash !== "") {
-      hashInput.current?.focus();
-      hashInput.current?.select();
+    if (hash === "") {
+      return;
     }
+
+    hashInput.current?.focus();
+    hashInput.current?.select();
   }, [hash]);
 
   function submit(event: React.FormEvent) {

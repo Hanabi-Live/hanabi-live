@@ -283,10 +283,12 @@ export class Tooltip {
     this.anchor.addEventListener(
       "pointerleave",
       (event) => {
-        if (event.pointerType !== "touch") {
-          hoveredTooltips.delete(this);
-          this.close();
+        if (event.pointerType === "touch") {
+          return;
         }
+
+        hoveredTooltips.delete(this);
+        this.close();
       },
       { signal },
     );
@@ -318,21 +320,25 @@ export class Tooltip {
 
 function watchAnchor(tooltip: Tooltip) {
   openTooltips.add(tooltip);
-  if (anchorObserver === undefined) {
-    anchorObserver = new MutationObserver(closeTooltipsOfRemovedAnchors);
-    anchorObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+  if (anchorObserver !== undefined) {
+    return;
   }
+
+  anchorObserver = new MutationObserver(closeTooltipsOfRemovedAnchors);
+  anchorObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 function unwatchAnchor(tooltip: Tooltip) {
   openTooltips.delete(tooltip);
-  if (openTooltips.size === 0) {
-    anchorObserver?.disconnect();
-    anchorObserver = undefined;
+  if (openTooltips.size > 0) {
+    return;
   }
+
+  anchorObserver?.disconnect();
+  anchorObserver = undefined;
 }
 
 function closeTooltipsOfRemovedAnchors() {

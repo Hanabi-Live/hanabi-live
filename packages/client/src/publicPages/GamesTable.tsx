@@ -221,10 +221,12 @@ function GameList({
       setError(undefined);
       setLoading(false);
     })().catch((error_: unknown) => {
-      if (!controller.signal.aborted) {
-        setError(errorDetails(error_, "Loading games"));
-        setLoading(false);
+      if (controller.signal.aborted) {
+        return;
       }
+
+      setError(errorDetails(error_, "Loading games"));
+      setLoading(false);
     });
     return () => {
       controller.abort();
@@ -250,11 +252,13 @@ function GameList({
         columns={columns}
         onFilter={(index, value) => {
           const next = nextFilters(filters, index, value);
-          if (next !== filters) {
-            // A new filter starts again from the first page.
-            setFilters(next);
-            setPage(0);
+          if (next === filters) {
+            return;
           }
+
+          // A new filter starts again from the first page.
+          setFilters(next);
+          setPage(0);
         }}
         onSort={(index) => {
           setSort(nextSort(sort, index));

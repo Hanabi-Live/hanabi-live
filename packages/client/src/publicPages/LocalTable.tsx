@@ -108,10 +108,12 @@ export function LocalTable<Row>({
         }))}
         onFilter={(index, value) => {
           const next = nextFilters(filters, index, value);
-          if (next !== filters) {
-            setFilters(next);
-            setPage(0);
+          if (next === filters) {
+            return;
           }
+
+          setFilters(next);
+          setPage(0);
         }}
         onSort={(index) => {
           setSort(nextSort(sort, index));

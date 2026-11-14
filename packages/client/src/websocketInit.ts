@@ -53,17 +53,21 @@ function isRecoveryCurrent(connection: Connection | undefined) {
 }
 
 function clearWelcomeTimer() {
-  if (welcomeTimer !== undefined) {
-    clearTimeout(welcomeTimer);
-    welcomeTimer = undefined;
+  if (welcomeTimer === undefined) {
+    return;
   }
+
+  clearTimeout(welcomeTimer);
+  welcomeTimer = undefined;
 }
 
 function clearConnectTimer() {
-  if (connectTimer !== undefined) {
-    clearTimeout(connectTimer);
-    connectTimer = undefined;
+  if (connectTimer === undefined) {
+    return;
   }
+
+  clearTimeout(connectTimer);
+  connectTimer = undefined;
 }
 
 function stopRecovery() {
@@ -71,10 +75,12 @@ function stopRecovery() {
   clearConnectTimer();
   recovering = false;
   clearWelcomeTimer();
-  if (reconnectTimer !== undefined) {
-    clearTimeout(reconnectTimer);
-    reconnectTimer = undefined;
+  if (reconnectTimer === undefined) {
+    return;
   }
+
+  clearTimeout(reconnectTimer);
+  reconnectTimer = undefined;
 }
 
 function canRetryNow() {
@@ -244,14 +250,16 @@ function openConnection(isReconnect: boolean) {
     );
   };
   conn.on("serverShutdown", ({ message }) => {
-    if (activeConnection === conn) {
-      conn.setReady(false);
-      reconnectBackoff.reset();
-      sounds.play(SoundType.Shutdown);
-      // An administrator's reason for the downtime stays open through the reconnect.
-      if (message !== undefined) {
-        modals.showDowntime(textToHtml(message));
-      }
+    if (activeConnection !== conn) {
+      return;
+    }
+
+    conn.setReady(false);
+    reconnectBackoff.reset();
+    sounds.play(SoundType.Shutdown);
+    // An administrator's reason for the downtime stays open through the reconnect.
+    if (message !== undefined) {
+      modals.showDowntime(textToHtml(message));
     }
   });
 

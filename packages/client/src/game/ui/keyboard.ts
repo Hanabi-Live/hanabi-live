@@ -316,10 +316,12 @@ function keydown(event: KeyboardEvent) {
 
   // Normal gameplay hotkeys
   const hotkeyFunction = getNormalGameplayHotkeyFunction(event.which);
-  if (hotkeyFunction !== undefined) {
-    event.preventDefault();
-    hotkeyFunction();
+  if (hotkeyFunction === undefined) {
+    return;
   }
+
+  event.preventDefault();
+  hotkeyFunction();
 }
 
 /** The "normal" hotkeys include hotkeys for playing cards, discarding cards, and giving clues. */

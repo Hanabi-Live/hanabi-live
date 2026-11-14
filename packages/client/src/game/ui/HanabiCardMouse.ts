@@ -82,10 +82,12 @@ function touchStart(
     // it will appear like the second tap of a double tap. Do not worry about this if we actually
     // double-tapped.
     this.wasRecentlyTapped = true;
-    if (globals.editingNote !== undefined) {
-      tooltips.close(globals.editingNote);
-      tooltips.close(this.tooltipName);
+    if (globals.editingNote === undefined) {
+      return;
     }
+
+    tooltips.close(globals.editingNote);
+    tooltips.close(this.tooltipName);
   }, DOUBLE_TAP_DELAY_MILLISECONDS);
 
   // Do all of the same things that would occur if we hovered over the card.
@@ -356,13 +358,15 @@ function dragStart(card: HanabiCard) {
       () => {
         const position = card.layout.position();
         if (
-          card.layout.parent === parent
-          && position.x === x
-          && position.y === y
+          card.layout.parent !== parent
+          || position.x !== x
+          || position.y !== y
         ) {
-          card.layout.rotation(rotation);
-          globals.layers.card.batchDraw();
+          return;
         }
+
+        card.layout.rotation(rotation);
+        globals.layers.card.batchDraw();
       },
       {
         capture: true,

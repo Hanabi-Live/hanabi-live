@@ -129,12 +129,14 @@ function getNoteKeywords(note: string): readonly string[] {
   let lastBracketEnd = 0;
 
   for (const match of note.matchAll(regexp)) {
-    const keyword = match.groups?.["keyword"];
-    if (match.groups?.["closing"] === "]") {
-      assertDefined(keyword, "Failed to get the bracketed note keyword.");
-      keywords.push(keyword.trim());
-      lastBracketEnd = match.index + match[0].length;
+    if (match.groups?.["closing"] !== "]") {
+      continue;
     }
+
+    const { keyword } = match.groups;
+    assertDefined(keyword, "Failed to get the bracketed note keyword.");
+    keywords.push(keyword.trim());
+    lastBracketEnd = match.index + match[0].length;
   }
 
   const lastPipe = note.lastIndexOf("|");

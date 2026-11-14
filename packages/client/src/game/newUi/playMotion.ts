@@ -210,11 +210,13 @@ export function raiseMovingCard(
     }
     ended = true;
     rest.moves--;
-    if (rest.moves === 0) {
-      raisedCards.delete(element);
-      element.style.position = rest.position;
-      element.style.zIndex = rest.zIndex;
+    if (rest.moves !== 0) {
+      return;
     }
+
+    raisedCards.delete(element);
+    element.style.position = rest.position;
+    element.style.zIndex = rest.zIndex;
   };
 }
 
@@ -733,54 +735,56 @@ export function animateMisplay(
     );
   }
 
-  // The strike appears in its box, with a pop, when the card explodes on it.
-  if (strikeBox !== undefined) {
-    const at = explosion / (explosion + STRIKE_POP_SECONDS);
-    const empty = {
-      backgroundColor: "transparent",
-      borderColor: cssColor("--game-screen-line"),
-    };
-    const filled = {
-      backgroundColor: cssColor("--critical"),
-      borderColor: cssColor("--critical"),
-    };
-    strikeBox.animate(
-      [
-        {
-          ...empty,
-          scale: 1,
-          offset: 0,
-        },
-        {
-          ...empty,
-          scale: 1,
-          offset: at,
-        },
-        {
-          ...filled,
-          scale: STRIKE_POP_SCALE,
-          offset: at,
-          easing: "ease-out",
-        },
-        {
-          ...filled,
-          scale: 1,
-          offset: 1,
-        },
-      ],
-      {
-        id: PLAY_EFFECT_ANIMATION_ID,
-        duration: (explosion + STRIKE_POP_SECONDS) * 1000,
-      },
-    );
+  if (strikeBox === undefined) {
+    return;
+  }
 
-    if (lastStrike) {
-      strikeout(
-        root,
-        unit,
-        (explosion + STRIKE_POP_SECONDS + STRIKEOUT_DELAY_SECONDS) * 1000,
-      );
-    }
+  // The strike appears in its box, with a pop, when the card explodes on it.
+  const at = explosion / (explosion + STRIKE_POP_SECONDS);
+  const empty = {
+    backgroundColor: "transparent",
+    borderColor: cssColor("--game-screen-line"),
+  };
+  const filled = {
+    backgroundColor: cssColor("--critical"),
+    borderColor: cssColor("--critical"),
+  };
+  strikeBox.animate(
+    [
+      {
+        ...empty,
+        scale: 1,
+        offset: 0,
+      },
+      {
+        ...empty,
+        scale: 1,
+        offset: at,
+      },
+      {
+        ...filled,
+        scale: STRIKE_POP_SCALE,
+        offset: at,
+        easing: "ease-out",
+      },
+      {
+        ...filled,
+        scale: 1,
+        offset: 1,
+      },
+    ],
+    {
+      id: PLAY_EFFECT_ANIMATION_ID,
+      duration: (explosion + STRIKE_POP_SECONDS) * 1000,
+    },
+  );
+
+  if (lastStrike) {
+    strikeout(
+      root,
+      unit,
+      (explosion + STRIKE_POP_SECONDS + STRIKEOUT_DELAY_SECONDS) * 1000,
+    );
   }
 }
 

@@ -199,10 +199,12 @@ function NoteEditor({
   }, []);
 
   function removeSeparator(input: HTMLInputElement) {
-    if (separatorRef.current) {
-      separatorRef.current = false;
-      input.value = noteRef.current;
+    if (!separatorRef.current) {
+      return;
     }
+
+    separatorRef.current = false;
+    input.value = noteRef.current;
   }
 
   return (
@@ -260,14 +262,16 @@ function NoteEditor({
               return;
             }
 
-            if (key === "Enter") {
-              // Keep a note that is too long open, so that the player can shorten it.
-              if (rejectTooLong(input, notes.NOTE_LENGTH_LIMIT)) {
-                return;
-              }
-              notes.set(order, notes.savedNote(input.value));
-              onClose();
+            // Only Enter saves the note. Keep a note that is too long open, so that the player can
+            // shorten it.
+            if (
+              key !== "Enter"
+              || rejectTooLong(input, notes.NOTE_LENGTH_LIMIT)
+            ) {
+              return;
             }
+            notes.set(order, notes.savedNote(input.value));
+            onClose();
           }}
           onKeyUp={(event) => {
             event.stopPropagation();

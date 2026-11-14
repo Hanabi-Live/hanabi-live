@@ -119,20 +119,22 @@ export function init(): void {
     LOCAL_STORAGE_KEY.TYPED_CHAT_HISTORY,
   );
   if (
-    typedChatHistoryString !== null
-    && typedChatHistoryString !== ""
-    && typedChatHistoryString !== "[]"
+    typedChatHistoryString === null
+    || typedChatHistoryString === ""
+    || typedChatHistoryString === "[]"
   ) {
-    let potentialArray: unknown;
-    try {
-      potentialArray = JSON.parse(typedChatHistoryString);
-    } catch {
-      return;
-    }
+    return;
+  }
 
-    if (isArray(potentialArray)) {
-      typedChatHistory = potentialArray as string[];
-    }
+  let potentialArray: unknown;
+  try {
+    potentialArray = JSON.parse(typedChatHistoryString);
+  } catch {
+    return;
+  }
+
+  if (isArray(potentialArray)) {
+    typedChatHistory = potentialArray as string[];
   }
 }
 

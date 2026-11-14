@@ -175,10 +175,12 @@ function SignIn() {
       <form
         id="login-form"
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            submit();
+          if (event.key !== "Enter") {
+            return;
           }
+
+          event.preventDefault();
+          submit();
         }}
         onSubmit={(event) => {
           // By default, the form would reload the page.

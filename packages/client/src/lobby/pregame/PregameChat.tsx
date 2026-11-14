@@ -24,12 +24,14 @@ export function PregameChat(): React.JSX.Element {
 
           // A suggested chat command, which we can edit before we send it.
           const suggestion = event.target.closest("a.suggestion");
-          if (suggestion !== null) {
-            event.preventDefault();
-            const input = inputRef.current!;
-            input.value = suggestion.textContent;
-            input.focus();
+          if (suggestion === null) {
+            return;
           }
+
+          event.preventDefault();
+          const input = inputRef.current!;
+          input.value = suggestion.textContent;
+          input.focus();
         }}
       />
       <ChatInput id={PREGAME_CHAT_INPUT_ID} ref={inputRef} room="table" />

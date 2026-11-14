@@ -453,14 +453,16 @@ function generateDeckPossibilities(
 ): ReadonlyArray<readonly SuitRankTuple[]> {
   const deckPossibilities: Array<readonly SuitRankTuple[]> = [];
   for (const card of deck) {
-    if (canBeUsedToDisprovePossibility(card, excludeCardOrder, playerIndex)) {
-      const cardPossibilities = getCardPossibilitiesForPlayer(
-        card,
-        playerIndex,
-        ourPlayerIndex,
-      );
-      deckPossibilities.push(cardPossibilities);
+    if (!canBeUsedToDisprovePossibility(card, excludeCardOrder, playerIndex)) {
+      continue;
     }
+
+    const cardPossibilities = getCardPossibilitiesForPlayer(
+      card,
+      playerIndex,
+      ourPlayerIndex,
+    );
+    deckPossibilities.push(cardPossibilities);
   }
 
   /**
@@ -572,22 +574,24 @@ function deckPossibilitiesDifferent(
       return true;
     }
 
-    if (currentlyUsed) {
-      const previousPossibilities = getCardPossibilitiesForPlayer(
-        oldCard,
-        playerIndex,
-        ourPlayerIndex,
-      );
+    if (!currentlyUsed) {
+      continue;
+    }
 
-      const currentPossibilities = getCardPossibilitiesForPlayer(
-        card,
-        playerIndex,
-        ourPlayerIndex,
-      );
+    const previousPossibilities = getCardPossibilitiesForPlayer(
+      oldCard,
+      playerIndex,
+      ourPlayerIndex,
+    );
 
-      if (previousPossibilities.length !== currentPossibilities.length) {
-        return true;
-      }
+    const currentPossibilities = getCardPossibilitiesForPlayer(
+      card,
+      playerIndex,
+      ourPlayerIndex,
+    );
+
+    if (previousPossibilities.length !== currentPossibilities.length) {
+      return true;
     }
   }
 
