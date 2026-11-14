@@ -396,6 +396,7 @@ export function ChatInput({
         onClick={() => {
           openEmojiPicker(id);
         }}
+        ref={tooltipRef("Emote picker")}
         type="button"
       >
         <i className="fas fa-smile tw:text-[1.6em]" />
