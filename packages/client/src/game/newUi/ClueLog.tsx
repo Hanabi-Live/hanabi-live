@@ -177,7 +177,7 @@ export function ClueLog({
             const shown = entry.segment === shownSegment;
             const background =
               match === "none"
-                ? `tw:hover:bg-game-raised ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
+                ? `tw:hover:bg-white/18 ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
                 : MATCH_BACKGROUND[match];
             return (
               <li
