@@ -34,6 +34,70 @@
     format("woff2");
 }
 
+/*
+  Semibold and bold, from the "@fontsource/source-sans-pro" package (version 5.3.0). Each script
+  is in its own file, which the browser loads only when a page uses it.
+*/
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/public/webfonts/source-sans-pro-latin-600-normal.woff2")
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/public/webfonts/source-sans-pro-greek-600-normal.woff2")
+    format("woff2");
+  unicode-range: U+0370-03FF;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/public/webfonts/source-sans-pro-cyrillic-600-normal.woff2")
+    format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/public/webfonts/source-sans-pro-latin-700-normal.woff2")
+    format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/public/webfonts/source-sans-pro-greek-700-normal.woff2")
+    format("woff2");
+  unicode-range: U+0370-03FF;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/public/webfonts/source-sans-pro-cyrillic-700-normal.woff2")
+    format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
 html,
 body,
 #page-wrapper {

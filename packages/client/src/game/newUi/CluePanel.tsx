@@ -110,6 +110,12 @@ function getGiveButtonLabels(variant: Variant): readonly string[] {
 /** The size of the players' names when they fit, in pixels. */
 const PLAYER_FONT_SIZE = 16;
 
+/** The smallest size of the players' names, in pixels. */
+const PLAYER_MIN_FONT_SIZE = PLAYER_FONT_SIZE / 2;
+
+/** How much smaller the names get at each step, until they fit, in pixels. */
+const PLAYER_FONT_SIZE_STEP = 0.1;
+
 /**
  * A button for each player who can get the clue. They stay on one row. When the row does not fit,
  * its text, padding, and gaps get smaller together until it fits, so that every name shows in full.
@@ -137,10 +143,18 @@ function PlayerButtons({
       // space that it gets.
       outer.style.flexBasis = `${fullWidth}px`;
       const room = outer.clientWidth;
-      row.style.fontSize =
+      let fontSize =
         fullWidth > room
-          ? `${Math.floor((10 * PLAYER_FONT_SIZE * room) / fullWidth) / 10}px`
-          : `${PLAYER_FONT_SIZE}px`;
+          ? Math.floor((10 * PLAYER_FONT_SIZE * room) / fullWidth) / 10
+          : PLAYER_FONT_SIZE;
+      row.style.fontSize = `${fontSize}px`;
+
+      // Text does not always shrink in proportion to its size: letters can snap to whole pixels,
+      // and letter spacing in pixels does not shrink. So it gets smaller until it really fits.
+      while (row.offsetWidth > room && fontSize > PLAYER_MIN_FONT_SIZE) {
+        fontSize -= PLAYER_FONT_SIZE_STEP;
+        row.style.fontSize = `${fontSize}px`;
+      }
     }
 
     fit();

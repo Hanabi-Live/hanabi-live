@@ -468,7 +468,10 @@ export function GameScreen({
 
   return (
     <div
-      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text"
+      // A browser draws a button in its own font, with normal letter spacing. Here, a button takes
+      // the font and the letter spacing of the page instead, so that it matches the text around it,
+      // and a name measured outside a button fits in one. A button's own classes still win.
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       ref={rootRef}
       style={{ zoom: screenScale }}
     >

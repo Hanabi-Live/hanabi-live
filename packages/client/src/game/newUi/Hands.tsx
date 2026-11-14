@@ -591,9 +591,8 @@ function EditableCard({
   return (
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
-      // A button does not take the page font by default, so the card labels would change font. It
-      // is a block, so that it does not sit on a line of text, which would make the hand taller.
-      className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:font-[inherit]"
+      // It is a block, so that it does not sit on a line of text, which would make the hand taller.
+      className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {
@@ -767,9 +766,7 @@ function Hand({
             clue's color. */}
         <button
           aria-haspopup="dialog"
-          // A button does not take the page's font and letter spacing by default. The name column
-          // is measured with them, so a name in another font could be cut short.
-          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:[font:inherit] tw:tracking-[inherit] tw:text-inherit tw:hover:brightness-110"
+          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110"
           data-name-chip={seat.playerIndex}
           onClick={() => {
             props.onShowPlayerLog(seat.playerIndex);
