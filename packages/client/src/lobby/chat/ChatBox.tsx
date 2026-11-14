@@ -8,6 +8,7 @@ import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatSegment, ChatTextOptions } from "../../chatText.ts";
 import { chatSegments } from "../../chatText.ts";
 import { FADE_TIME_MS } from "../../constants.ts";
+import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
 
@@ -77,6 +78,7 @@ export function ChatTextBox({
   readonly onClick?: React.MouseEventHandler<HTMLDivElement>;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const username = useAppSelector((state) => state.session.username);
 
   // Then the lines do not move while someone reads older ones.
   const atBottomRef = useRef(true);
@@ -114,13 +116,33 @@ export function ChatTextBox({
       ref={ref}
     >
       {lines.map((line) => (
-        <ChatLineView key={line.key} line={line} />
+        <ChatLineView key={line.key} line={line} username={username} />
       ))}
     </div>
   );
 }
 
-function ChatLineView({ line }: { readonly line: ChatLine }) {
+/** The person other than the viewer who wrote the line, if one did. */
+function otherAuthor(line: ChatLine, username: string): string | undefined {
+  if (line.fromServer) {
+    return undefined;
+  }
+  const author =
+    line.privateMessage?.direction === "from"
+      ? line.privateMessage.name
+      : line.author;
+  return author === username ? undefined : author;
+}
+
+function ChatLineView({
+  line,
+  username,
+}: {
+  readonly line: ChatLine;
+
+  /** The viewer's name. */
+  readonly username: string;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     if (line.fadeIn) {
@@ -151,7 +173,15 @@ function ChatLineView({ line }: { readonly line: ChatLine }) {
           &lt;<strong>{author}</strong>&gt;{"\u{A0} "}
         </>
       )}
-      <ChatLineBody line={line} />
+      {/* The game screen of the New UI lets no text be selected, but players copy what other
+          people write, such as a link. */}
+      {otherAuthor(line, username) === undefined ? (
+        <ChatLineBody line={line} />
+      ) : (
+        <span className="tw:select-text">
+          <ChatLineBody line={line} />
+        </span>
+      )}
     </span>
   );
 }
