@@ -337,24 +337,24 @@ function ToggleButton({
 }
 
 /**
- * A spectator's switch to follow the shared replay leader: to show the turn that the leader shows,
- * and to join the leader's hypothetical. A step through the turns turns it off.
+ * A spectator's way back to the shared replay leader, after a step through the turns stops them
+ * from following. It shows only then: while they follow the leader, they have nothing to do.
  */
-function FollowButton({
+function SyncButton({
   leader,
-  following,
 }: {
   readonly leader: string;
-  readonly following: boolean;
 }): React.JSX.Element {
   return (
-    <ToggleButton
-      icon="fa-crown"
-      label="Follow"
+    <button
+      className={BUTTON_CLASS}
       onClick={replay.toggleSharedSegments}
-      pressed={following}
-      tooltip={`Show the turns that ${leader} shows. Going to another turn on your own stops this.`}
-    />
+      ref={tooltipRef(`Follow ${leader} again, from the turn that they show.`)}
+      type="button"
+    >
+      <i aria-hidden="true" className="fas fa-sync tw:text-game-replay" />
+      Sync
+    </button>
   );
 }
 
@@ -369,9 +369,9 @@ function HypotheticalBar({
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical!;
 
-  // A spectator watches the leader's hypothetical. The leader's menu and the switch to follow the
-  // leader are where the bar of the turns has them, so that the switch does not move when a click
-  // on it goes back to that bar. The menu names who leads, so the heading does not.
+  // A spectator watches the leader's hypothetical. The leader's menu and the button to follow the
+  // leader again are where the bar of the turns has them, so that they do not move when a click on
+  // the button goes back to that bar. The menu names who leads, so the heading does not.
   if (!controlsHypothetical(state)) {
     return (
       <Bar>
@@ -487,8 +487,9 @@ const ROWS_CLASS =
   "tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
 
 /**
- * The shared replay's leader menu, and the switch to follow the leader if we do not lead. They are
- * on the left of the bar. On a narrow window, they are in the bar's last row.
+ * The shared replay's leader menu, and the button to follow the leader again if we do not lead and
+ * do not follow them. They are on the left of the bar. On a narrow window, they are in the bar's
+ * last row.
  */
 function LeaderControls({
   state,
@@ -505,12 +506,9 @@ function LeaderControls({
           spectators={state.spectators}
         />
       )}
-      {shared !== undefined && !shared.amLeader && (
-        <FollowButton
-          following={shared.useSharedSegments}
-          leader={shared.leader}
-        />
-      )}
+      {shared !== undefined
+        && !shared.amLeader
+        && !shared.useSharedSegments && <SyncButton leader={shared.leader} />}
     </div>
   );
 }
@@ -547,11 +545,11 @@ export function TurnsBar({
       : { name: shared.leader, segment: shared.segment };
 
   // The buttons that step through the turns are together in the middle of the first row, so that a
-  // player can click back and forth without moving the mouse far. The leader's menu, or the switch
-  // to follow the leader, is on their left, and it names who leads, so the bar needs no heading.
-  // The timeline has the second row to itself, so that it is wide enough to pick a turn with the
-  // mouse. On a narrow window, the other buttons do not fit beside the steps, so they go below the
-  // timeline.
+  // player can click back and forth without moving the mouse far. The leader's menu, which names
+  // who leads, and the button to follow the leader again are on their left, so the bar needs no
+  // heading. The timeline has the second row to itself, so that it is wide enough to pick a turn
+  // with the mouse. On a narrow window, the other buttons do not fit beside the steps, so they go
+  // below the timeline.
   return (
     <Bar>
       <div className={ROWS_CLASS}>
