@@ -265,20 +265,53 @@ function StatusBadge({
   );
 }
 
+/** How far the sticky note on a card with a note turns, so that it looks stuck on by hand. */
+const NOTE_TILT_DEGREES = 8;
+
 /**
- * The badge in the top-right corner of a card that has a note, as on the classic screen. The card
- * itself shows the note on hover, so the badge has no tooltip of its own.
+ * A sticky note on the top-right corner of a card that has a note, where the classic screen shows
+ * its note icon. It is a slip of paper with a folded corner and a few lines of writing. The card
+ * itself shows the note on hover, so the slip has no tooltip of its own.
  */
 function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
+  const size = width * BADGE_SIZE_PER_WIDTH;
   return (
-    <span
+    <svg
       aria-label="Note"
-      className="tw:pointer-events-none tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white tw:text-card-ink tw:ring-[1.5px] tw:ring-card-ink"
+      className="tw:pointer-events-none tw:absolute tw:overflow-visible tw:drop-shadow-[0_1px_2px_rgb(0_0_0/45%)]"
+      height={size}
       role="img"
-      style={getBadgeStyle(width, "topRight")}
+      style={{
+        ...getBadgeStyle(width, "topRight"),
+        transform: `rotate(${NOTE_TILT_DEGREES}deg)`,
+      }}
+      viewBox="0 0 100 100"
+      width={size}
     >
-      <i aria-hidden="true" className="fas fa-sticky-note" />
-    </span>
+      {/* The paper, without the corner that is folded under. */}
+      <path
+        className="tw:fill-card-note tw:stroke-card-ink"
+        d="M 6 6 H 94 V 68 L 68 94 H 6 Z"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
+      {/* The back of the folded corner. */}
+      <path
+        className="tw:fill-card-note-fold tw:stroke-card-ink"
+        d="M 94 68 L 68 68 L 68 94 Z"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
+      {/* The writing. The last line stops before the fold. */}
+      <path
+        className="tw:stroke-card-ink/60"
+        d="M 22 28 H 78 M 22 46 H 72 M 22 64 H 52"
+        strokeLinecap="round"
+        strokeWidth={9}
+      />
+    </svg>
   );
 }
 
