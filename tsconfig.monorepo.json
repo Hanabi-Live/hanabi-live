@@ -10,7 +10,8 @@
     // "target" specifies the ECMAScript target version. Keep it in lockstep with Vite's build
     // target: the newest version that its oldest browser (now Safari 16.4) fully supports. The
     // "game" and "data" packages get their built-in types from it, and the client bundles them.
-    // When it reaches ES2024, turn on "regexp/require-unicode-sets-regexp" in ESLint.
+    // When it reaches ES2024, turn on "regexp/require-unicode-sets-regexp" in ESLint. When it
+    // reaches ES2025, turn on "unicorn/prefer-iterator-to-array".
     "target": "ES2022",
 
     // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is

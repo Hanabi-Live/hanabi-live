@@ -46,7 +46,8 @@ export const hanabiConfigBase = defineConfig(
       // waits for.
       "unicorn/prefer-await": "off",
 
-      // Preserve compatibility with browsers without the newest iterator APIs.
+      // `Iterator.prototype.toArray` needs Safari 18.4, but Vite's default build target still
+      // includes Safari 16.4.
       "unicorn/prefer-iterator-to-array": "off",
 
       // Keep explicit branches in the game rules and event handlers.
