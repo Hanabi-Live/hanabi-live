@@ -723,9 +723,10 @@ export function TableTokens({
                   onShowStrike(segment);
                 }}
                 ref={tooltipRef(
+                  // A turn is one more than its segment, as in the clue log.
                   upcoming
-                    ? "A strike happens later in the game. Click to go to its turn."
-                    : "Click to go to the turn of this strike.",
+                    ? `A strike happens later in the game, on turn ${segment + 1}. Click to go to it.`
+                    : `This strike happened on turn ${segment + 1}. Click to go to it.`,
                 )}
                 type="button"
               >
