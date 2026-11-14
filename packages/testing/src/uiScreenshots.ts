@@ -855,8 +855,8 @@ function getStates(): readonly State[] {
       },
     },
     // Bob's game with five players in a variant with suits of two colors, so that each play stack
-    // has a label with its letter in notes and its colors. The tooltip of the first label names its
-    // suit.
+    // has a label beside it with its letter in notes and its colors. The tooltip of the first label
+    // names its suit.
     {
       name: "new-ui-suit-labels",
       path: "/",

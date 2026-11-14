@@ -41,21 +41,28 @@ export const PLAY_STACK_GAP = 6;
 /** The space between the play stacks, the deck, and the tokens, in CSS pixels. */
 export const PLAY_AREA_GAP = 8;
 
-/** The height of the label under each play stack that names its suit, in CSS pixels. */
-const SUIT_LABEL_HEIGHT = 14;
+/**
+ * The width of the label to the left of each play stack that names its suit, in CSS pixels. When
+ * the columns stack, the label is under the stack instead, as tall as this.
+ */
+const SUIT_LABEL_SIZE = 14;
 
-/** The space between a play stack and its suit label, in CSS pixels. */
-const SUIT_LABEL_GAP = 3;
+/** The space between a suit label and its play stack, in CSS pixels. */
+const SUIT_LABEL_GAP = 4;
 
-/** The height that a suit label adds to each play stack, in CSS pixels. */
-export const SUIT_LABEL_SPACE = SUIT_LABEL_HEIGHT + SUIT_LABEL_GAP;
+/** The variables that place the suit labels (see "SuitLabel"). */
+const SUIT_LABEL_VARIABLES = {
+  "--suit-label-size": `${SUIT_LABEL_SIZE}px`,
+  "--suit-label-gap": `${SUIT_LABEL_GAP}px`,
+  "--suit-label-space": `${SUIT_LABEL_SIZE + SUIT_LABEL_GAP}px`,
+} as React.CSSProperties;
 
 /** The size of each clue color's swatch in a suit label, in CSS pixels. */
 const SUIT_LABEL_SWATCH_SIZE = {
   normal: 12,
 
   /** It is larger in colorblind mode to hold the color's letter. */
-  colorblind: SUIT_LABEL_HEIGHT,
+  colorblind: SUIT_LABEL_SIZE,
 } as const;
 
 /**
@@ -63,7 +70,7 @@ const SUIT_LABEL_SWATCH_SIZE = {
  * when the suits are hard to tell apart at a glance, such as suits of two colors. The "Up or Down"
  * and "Sudoku" variants have none, as on the classic screen.
  */
-export function hasSuitLabels(variant: Variant): boolean {
+function hasSuitLabels(variant: Variant): boolean {
   return variant.showSuitNames && !variant.upOrDown && !variant.sudoku;
 }
 
@@ -87,8 +94,10 @@ function getSuitLabelTooltip(suit: Suit, abbreviation: string): string {
 }
 
 /**
- * The label under a play stack: the letter of the suit in notes and, for a suit that two or more
- * colors touch, a swatch of each color. Its tooltip names the suit.
+ * The label to the left of a play stack: the letter of the suit in notes and, below it for a suit
+ * that two or more colors touch, a swatch of each color. Its tooltip names the suit. When the
+ * columns stack, the stacks are a row with no room beside them, so the label is under its stack,
+ * with the swatches beside the letter.
  */
 function SuitLabel({
   suit,
@@ -108,16 +117,12 @@ function SuitLabel({
   return (
     <div
       aria-label={getSuitLabelTooltip(suit, abbreviation)}
-      className="tw:flex tw:items-center tw:justify-center tw:gap-[3px] tw:whitespace-nowrap"
+      className="tw:absolute tw:top-1/2 tw:left-0 tw:flex tw:w-(--suit-label-size) tw:-translate-y-1/2 tw:flex-col tw:items-center tw:justify-center tw:gap-[3px] tw:narrow-980:static tw:narrow-980:mt-(--suit-label-gap) tw:narrow-980:h-(--suit-label-size) tw:narrow-980:w-auto tw:narrow-980:translate-y-0 tw:narrow-980:flex-row"
       data-suit-label
       ref={tooltipRef(
         showTooltip ? getSuitLabelTooltip(suit, abbreviation) : undefined,
       )}
       role="note"
-      style={{
-        height: SUIT_LABEL_HEIGHT,
-        marginTop: SUIT_LABEL_GAP,
-      }}
     >
       <span className="tw:text-[13px] tw:leading-none tw:font-bold tw:text-game-text">
         {abbreviation}
@@ -360,7 +365,17 @@ export const PlayArea = forwardRef<
                 const abbreviation = variant.suitAbbreviations[stack.suitIndex];
 
                 return (
-                  <div key={stack.suitIndex}>
+                  <div
+                    // In a column, the labels have the same space on the right, so that the stacks
+                    // stay in line with the deck below them.
+                    className={
+                      suitLabels
+                        ? "tw:relative tw:px-(--suit-label-space) tw:narrow-980:px-0"
+                        : undefined
+                    }
+                    key={stack.suitIndex}
+                    style={suitLabels ? SUIT_LABEL_VARIABLES : undefined}
+                  >
                     <div
                       aria-label={
                         stack.topRank === undefined
