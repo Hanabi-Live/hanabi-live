@@ -13,6 +13,7 @@ import {
   controlsHypothetical,
 } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
+import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
@@ -341,15 +342,26 @@ function ToggleButton({
  * from following. It shows only then: while they follow the leader, they have nothing to do.
  */
 function SyncButton({
-  leader,
+  shared,
+  states,
 }: {
-  readonly leader: string;
+  readonly shared: SharedReplayState;
+  readonly states: State["replay"]["states"];
 }): React.JSX.Element {
+  // The states are indexed by segment, and their turn numbers start at 0.
+  const turnNum = states[shared.segment]?.turn.turnNum;
+  let tooltip = `Follow ${shared.leader} again.`;
+  if (shared.hypothetical !== undefined) {
+    tooltip = `Join ${shared.leader}'s hypothetical, and follow them again.`;
+  } else if (turnNum !== undefined) {
+    tooltip = `Go to turn ${turnNum + 1} with ${shared.leader}, and follow them again.`;
+  }
+
   return (
     <button
       className={BUTTON_CLASS}
       onClick={replay.toggleSharedSegments}
-      ref={tooltipRef(`Follow ${leader} again, from the turn that they show.`)}
+      ref={tooltipRef(tooltip)}
       type="button"
     >
       <i aria-hidden="true" className="fas fa-sync tw:text-game-replay" />
@@ -508,7 +520,9 @@ function LeaderControls({
       )}
       {shared !== undefined
         && !shared.amLeader
-        && !shared.useSharedSegments && <SyncButton leader={shared.leader} />}
+        && !shared.useSharedSegments && (
+          <SyncButton shared={shared} states={state.replay.states} />
+        )}
     </div>
   );
 }
