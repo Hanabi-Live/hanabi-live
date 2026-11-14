@@ -190,8 +190,6 @@
   /* The warm accent that marks the player whose turn it is. */
   --game-screen-turn: #ffd04a;
   --card-face-unknown: #cbd3da;
-  /* The paper of a card in the New UI, around the panel in its suit color. */
-  --card-paper: #fbf8f1;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;
   --critical: #d7363c;

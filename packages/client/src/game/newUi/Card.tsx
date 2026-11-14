@@ -24,7 +24,7 @@ const TRASH_CARD_OPACITY = 0.4;
 export const CLUED_RAISE_PER_WIDTH = 0.12;
 
 /** How far the rank in a card's corner is from the card's top edge, as a fraction of its width. */
-const RANK_TOP_PER_WIDTH = 0.08;
+const RANK_TOP_PER_WIDTH = 0.05;
 
 /** The size of the rank in a card's corner, as a fraction of the card's width. */
 const RANK_SIZE_PER_WIDTH = 0.46;
@@ -61,13 +61,7 @@ export type ClueMarkerView =
   | { readonly type: "rank"; readonly label: string }
   | { readonly type: "hidden" };
 
-/**
- * The panel in the suit's color, inside the paper margin of a card face, in fractions of the card's
- * width. Its corners are tighter than the card's, as on a printed card.
- */
-const FACE_PANEL = { inset: 0.05, corner: 0.03 } as const;
-
-/** How much of a suit's color tints the panel of a card face. The rest is white. */
+/** How much of a suit's color tints a card face. The rest is white. */
 const FACE_TINT_PERCENT = 32;
 
 /** How much of a suit's color is in the rank and the possible ranks. The rest is black. */
@@ -494,17 +488,9 @@ function Possibilities({
 function getFaceColors(
   suit: Suit | undefined,
   colorblindMode: boolean,
-): {
-  className: string;
-  panelClassName?: string;
-  background?: string;
-  ink?: string;
-} {
+): { className: string; background?: string; ink?: string } {
   if (suit === undefined) {
-    return {
-      className: "tw:text-card-ink",
-      panelClassName: "tw:bg-card-unknown",
-    };
+    return { className: "tw:bg-card-unknown tw:text-card-ink" };
   }
 
   if (suit.fillColors !== undefined) {
@@ -587,7 +573,7 @@ export function CardFace({
   return (
     <div
       // A card that a clue newly touches slides up to its raised place, without a bounce.
-      className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out tw:select-none tw:bg-card-paper ${border} ${outline} ${faceColors.className}`}
+      className={`tw:relative tw:shrink-0 tw:shadow-[0_3px_8px_rgb(0_0_0/35%)] tw:transition-transform tw:duration-200 tw:ease-out tw:select-none ${border} ${outline} ${faceColors.className}`}
       // A played card that its holder did not know turns over on its way to the stack (see
       // "playMotion.ts").
       data-card-face
@@ -598,6 +584,7 @@ export function CardFace({
         width,
         height,
         borderRadius: width * CARD_CORNER_PER_WIDTH,
+        background: faceColors.background,
         color: faceColors.ink,
         transform: `translateY(${-raise}px)`,
         opacity: trash ? TRASH_CARD_OPACITY : 1,
@@ -607,15 +594,6 @@ export function CardFace({
             : getNoteFoldClipPath(noteFoldCorner, width, height, clued),
       }}
     >
-      {/* The panel in the suit's color, with a thin line around it, inside the paper margin. */}
-      <div
-        className={`tw:absolute tw:inset-ring-1 tw:inset-ring-black/20 ${faceColors.panelClassName ?? ""}`}
-        style={{
-          inset: width * FACE_PANEL.inset,
-          borderRadius: width * FACE_PANEL.corner,
-          background: faceColors.background,
-        }}
-      />
       {clueMarker !== undefined && (
         <ClueMarker marker={clueMarker} width={width} />
       )}
@@ -623,7 +601,7 @@ export function CardFace({
         <span
           className="tw:absolute tw:font-extrabold tw:leading-none"
           style={{
-            left: width * 0.12,
+            left: width * 0.1,
             top: width * RANK_TOP_PER_WIDTH,
             fontSize: width * RANK_SIZE_PER_WIDTH,
           }}
