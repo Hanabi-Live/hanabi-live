@@ -219,8 +219,11 @@ const STATUS_TOOLTIP = {
 } as const;
 
 /** The size of a badge in the corner of a card, and its gap from the edges, per card width. */
-const BADGE_SIZE_PER_WIDTH = 0.3;
+const BADGE_SIZE_PER_WIDTH = 0.225;
 const BADGE_INSET_PER_WIDTH = 0.06;
+
+/** The size of the mark in a badge, such as the exclamation mark, per badge size. */
+const BADGE_FONT_PER_SIZE = 0.73;
 
 /** The style of a round badge in a corner of a card. */
 function getBadgeStyle(
@@ -234,7 +237,7 @@ function getBadgeStyle(
       : { left: inset, bottom: inset }),
     width: width * BADGE_SIZE_PER_WIDTH,
     height: width * BADGE_SIZE_PER_WIDTH,
-    fontSize: width * 0.22,
+    fontSize: width * BADGE_SIZE_PER_WIDTH * BADGE_FONT_PER_SIZE,
   };
 }
 
@@ -354,11 +357,14 @@ function NoteBadge({
  */
 const PENCIL = {
   length: 92,
-  halfThickness: 12,
-  coneEnd: 26,
-  tipEnd: 9,
-  capStart: 80,
+  halfThickness: 9,
+  coneEnd: 22,
+  tipEnd: 8,
+  capStart: 82,
 } as const;
+
+/** The width of the pencil's outline, in the note's box of 100 units, inside and outside. */
+const PENCIL_OUTLINE_WIDTH = 7;
 
 /** A pencil that lies across the sticky note, in the note's box of 100 units, point down-left. */
 function Pencil(): React.JSX.Element {
@@ -373,8 +379,8 @@ function Pencil(): React.JSX.Element {
         d={`M 0 0 L ${coneEnd} ${-halfThickness} H ${length} V ${halfThickness} H ${coneEnd} Z`}
         paintOrder="stroke"
         strokeLinejoin="round"
-        strokeWidth={3}
-        vectorEffect="non-scaling-stroke"
+        // The outline grows with the note, so that it does not cover a small pencil.
+        strokeWidth={PENCIL_OUTLINE_WIDTH}
       />
       <path
         className="tw:fill-card-note"
