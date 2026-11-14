@@ -995,7 +995,8 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
-    // After Bob ends a five-player game. It is now a shared replay that Bob leads.
+    // After Bob ends a five-player game. It is now a shared replay that Bob leads. The account goes
+    // back a turn on its own, so that the timeline also marks the turn that Bob shows.
     {
       name: "new-ui-shared-replay",
       path: "/",
@@ -1006,6 +1007,8 @@ function getStates(): readonly State[] {
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
+        await page.getByRole("button", { name: "Previous turn" }).click();
+        await page.getByRole("button", { name: "Bob's turn" }).waitFor();
       },
     },
     // The menu that views a five-player shared replay from another seat, with the pointer on the

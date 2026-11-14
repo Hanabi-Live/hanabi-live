@@ -115,9 +115,17 @@ function Timeline({
   lastSegment,
   slide,
   leaderMove,
+  leader,
 }: {
   readonly segment: number;
   readonly lastSegment: number;
+
+  /**
+   * The shared replay leader and the turn that they show, while we look at other turns on our own.
+   * A marker with a crown shows that turn, and clicking it follows the leader again.
+   */
+  readonly leader:
+    { readonly name: string; readonly segment: number } | undefined;
 
   /** The shared replay leader's last move, which flashes over the knob while we follow them. */
   readonly leaderMove: LeaderMove | undefined;
@@ -126,9 +134,7 @@ function Timeline({
   readonly slide: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  // A leader on the classic screen can show a segment after the last one here.
-  const fraction = lastSegment === 0 ? 1 : Math.min(segment / lastSegment, 1);
-  const knobLeft = `calc(${KNOB_INSET_PX}px + (100% - ${2 * KNOB_INSET_PX}px) * ${fraction})`;
+  const knobLeft = timelineLeft(segment, lastSegment);
 
   function showTurnAt(clientX: number) {
     const track = ref.current;
@@ -176,6 +182,26 @@ function Timeline({
             : undefined,
         }}
       />
+      {leader !== undefined && (
+        // Under the knob, so that our own turn stays in front when the two are on the same turn.
+        <button
+          aria-label={`${leader.name}'s turn`}
+          className="tw:absolute tw:top-1/2 tw:flex tw:size-7 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-2 tw:border-solid tw:border-game-text tw:bg-card-ink tw:p-0 tw:text-[11px] tw:text-game-text tw:transition-transform tw:hover:scale-115"
+          onClick={replay.toggleSharedSegments}
+          onPointerDown={(event) => {
+            // The timeline would show the turn under the pointer instead.
+            event.stopPropagation();
+          }}
+          ref={tooltipRef(
+            `Follow ${leader.name} again, from the turn that they show.`,
+          )}
+          style={{ left: timelineLeft(leader.segment, lastSegment) }}
+          tabIndex={-1}
+          type="button"
+        >
+          <i aria-hidden="true" className="fas fa-crown" />
+        </button>
+      )}
       <span
         className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-replay)] tw:transition-transform tw:group-hover:scale-115"
         style={{
@@ -199,6 +225,13 @@ function Timeline({
       )}
     </div>
   );
+}
+
+/** Where a turn is along the timeline, as a CSS length from its left end. */
+function timelineLeft(segment: number, lastSegment: number): string {
+  // A leader on the classic screen can show a segment after the last one here.
+  const fraction = lastSegment === 0 ? 1 : Math.min(segment / lastSegment, 1);
+  return `calc(${KNOB_INSET_PX}px + (100% - ${2 * KNOB_INSET_PX}px) * ${fraction})`;
 }
 
 function IconButton({
@@ -456,6 +489,12 @@ export function TurnsBar({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, segment, turn);
 
+  // Once we look at other turns on our own, the timeline marks the turn that the leader shows.
+  const leaderMark =
+    shared === undefined || shared.amLeader || shared.useSharedSegments
+      ? undefined
+      : { name: shared.leader, segment: shared.segment };
+
   // The buttons that step through the turns are together in the middle of the first row, so that a
   // player can click back and forth without moving the mouse far. The leader's menu, or the switch
   // to follow the leader, is on their left, and it names who leads, so the bar needs no heading.
@@ -551,6 +590,7 @@ export function TurnsBar({
       {!spoilerFree && (
         <Timeline
           lastSegment={lastSegment}
+          leader={leaderMark}
           leaderMove={move}
           segment={segment}
           slide={following}
