@@ -4,20 +4,32 @@
 import type { CardOrder } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
-import { CARD_HEIGHT_PER_WIDTH } from "./Card.tsx";
 import { canDiscardNow, sendAction } from "./screenActions.ts";
-import { toScreenPixels } from "./screenScale.ts";
+import { measure, toScreenPixels } from "./screenScale.ts";
 
 /** How far the pointer must move after pressing a card before the card starts to move with it. */
 const DRAG_THRESHOLD_PIXELS = 6;
 
 type DropZone = "play" | "discard";
 
-export interface Drag {
+/**
+ * What the held card does: it moves with the pointer, waits where the player dropped it for its
+ * move to arrive, or goes back to its slot in the hand.
+ */
+type HeldPhase = "drag" | "drop" | "return";
+
+export interface HeldCard {
   readonly order: CardOrder;
-  readonly x: number;
-  readonly y: number;
+  readonly phase: HeldPhase;
+  /** The drop target under the pointer, while the card moves with it. */
   readonly zone: DropZone | undefined;
+  /** Where the card was in the hand when the player pressed it, in the screen's CSS pixels. */
+  readonly start: DOMRect;
+  /**
+   * Where the pointer holds the card, from the card's top left corner, in the screen's CSS pixels.
+   * The card keeps this point under the pointer, and tilts and grows around it.
+   */
+  readonly grab: { readonly x: number; readonly y: number };
 }
 
 /**
@@ -26,20 +38,6 @@ export interface Drag {
  * goes back to the hand.
  */
 const DROP_WAIT_MILLISECONDS = 3000;
-
-/**
- * Where the card under the pointer sits, as the drag draws it (before its slight tilt), in the
- * screen's CSS pixels.
- */
-export function getDropRect(drag: Drag, cardWidth: number): DOMRect {
-  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
-  return new DOMRect(
-    toScreenPixels(drag.x) - cardWidth / 2,
-    toScreenPixels(drag.y) - height / 2,
-    cardWidth,
-    height,
-  );
-}
 
 function isInside(element: HTMLElement | null, x: number, y: number): boolean {
   if (element === null) {
@@ -51,14 +49,26 @@ function isInside(element: HTMLElement | null, x: number, y: number): boolean {
 }
 
 interface CardDrag {
-  /** The card that moves with the pointer. */
-  readonly drag: Drag | undefined;
-  /** The card that the player dropped, which waits where it was dropped for its move. */
-  readonly drop: Drag | undefined;
+  /** The card that the player holds, from when it starts to move until it lands. */
+  readonly held: HeldCard | undefined;
+  /** Where the pointer is, in the screen's CSS pixels. The held card follows it. */
+  readonly pointerRef: RefObject<{ x: number; y: number }>;
+  /**
+   * Where the held card is drawn now (before its tilt), in the screen's CSS pixels. The card's move
+   * to the play stacks or the discard pile starts from here.
+   */
+  readonly heldRectRef: RefObject<DOMRect | undefined>;
   /** The move of the dropped card arrived, so it no longer waits. */
   readonly clearDrop: () => void;
+  /** The card that went back to the hand arrived there. */
+  readonly finishReturn: () => void;
   /** The player pressed a card, which starts to move once the pointer moves far enough. */
-  readonly pressCard: (order: CardOrder, x: number, y: number) => void;
+  readonly pressCard: (
+    order: CardOrder,
+    x: number,
+    y: number,
+    element: Element,
+  ) => void;
   readonly mainRef: RefObject<HTMLElement | null>;
   readonly playZoneRef: RefObject<HTMLElement | null>;
   readonly discardZoneRef: RefObject<HTMLElement | null>;
@@ -73,26 +83,38 @@ export function useCardDrag(
   stacked: boolean,
   handsElement: HTMLElement | null,
 ): CardDrag {
-  const [drag, setDrag] = useState<Drag>();
+  const [held, setHeld] = useState<HeldCard>();
+  const heldRef = useRef<HeldCard>(undefined);
+  function updateHeld(next: HeldCard | undefined) {
+    heldRef.current = next;
+    setHeld(next);
+  }
+
   // A card that the player dropped stays where it was dropped until its move arrives, and then the
-  // move starts from there, not from the hand.
-  const [drop, setDrop] = useState<Drag>();
+  // move starts from there, not from the hand. If the move does not arrive, the card goes back.
+  const dropping = held?.phase === "drop" ? held : undefined;
   useEffect(() => {
-    if (drop === undefined) {
+    if (dropping === undefined) {
       return undefined;
     }
     const timeout = setTimeout(() => {
-      setDrop(undefined);
+      if (heldRef.current === dropping) {
+        updateHeld({ ...dropping, phase: "return" });
+      }
     }, DROP_WAIT_MILLISECONDS);
     return () => {
       clearTimeout(timeout);
     };
-  }, [drop]);
+  }, [dropping]);
 
-  const pendingDrag = useRef<{ order: CardOrder; x: number; y: number }>(
-    undefined,
-  );
-  const dragRef = useRef<Drag>(undefined);
+  const pendingDrag = useRef<{
+    order: CardOrder;
+    x: number;
+    y: number;
+    start: DOMRect;
+  }>(undefined);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const heldRectRef = useRef<DOMRect>(undefined);
   const mainRef = useRef<HTMLElement>(null);
   const playZoneRef = useRef<HTMLElement>(null);
   const discardZoneRef = useRef<HTMLElement>(null);
@@ -139,63 +161,113 @@ export function useCardDrag(
       if (pending === undefined) {
         return;
       }
+      pointerRef.current = {
+        x: toScreenPixels(event.clientX),
+        y: toScreenPixels(event.clientY),
+      };
 
-      const distance = Math.hypot(
-        event.clientX - pending.x,
-        event.clientY - pending.y,
-      );
-      if (dragRef.current === undefined && distance < DRAG_THRESHOLD_PIXELS) {
+      const { current } = heldRef;
+      const dragging =
+        current?.order === pending.order && current.phase === "drag";
+      if (!dragging) {
+        const distance = Math.hypot(
+          event.clientX - pending.x,
+          event.clientY - pending.y,
+        );
+        if (distance < DRAG_THRESHOLD_PIXELS) {
+          return;
+        }
+      }
+
+      // The card renders again only when it starts to move or the target under it changes. It
+      // follows the pointer by itself (see "HeldCardGhost.tsx").
+      const zone = zoneAt(event.clientX, event.clientY);
+      if (dragging) {
+        if (zone !== current.zone) {
+          updateHeld({ ...current, zone });
+        }
+        return;
+      }
+      updateHeld({
+        order: pending.order,
+        phase: "drag",
+        zone,
+        start: pending.start,
+        grab: {
+          x: toScreenPixels(pending.x) - pending.start.left,
+          y: toScreenPixels(pending.y) - pending.start.top,
+        },
+      });
+    }
+
+    function release(event: PointerEvent | undefined) {
+      pendingDrag.current = undefined;
+      const { current } = heldRef;
+      if (current?.phase !== "drag") {
         return;
       }
 
-      const next: Drag = {
-        order: pending.order,
-        x: event.clientX,
-        y: event.clientY,
-        zone: zoneAt(event.clientX, event.clientY),
-      };
-      dragRef.current = next;
-      setDrag(next);
+      const zone =
+        event === undefined ? undefined : zoneAt(event.clientX, event.clientY);
+      if (zone === "play") {
+        updateHeld({ ...current, phase: "drop", zone });
+        sendAction({ type: "play", order: current.order });
+      } else if (zone === "discard" && canDiscardNow()) {
+        updateHeld({ ...current, phase: "drop", zone });
+        sendAction({ type: "discard", order: current.order });
+      } else {
+        updateHeld({ ...current, phase: "return", zone: undefined });
+      }
     }
 
     function onPointerUp(event: PointerEvent) {
-      const { current } = dragRef;
-      pendingDrag.current = undefined;
-      dragRef.current = undefined;
-      setDrag(undefined);
-      if (current === undefined) {
-        return;
-      }
+      release(event);
+    }
 
-      const zone = zoneAt(event.clientX, event.clientY);
-      const dropped = { ...current, x: event.clientX, y: event.clientY, zone };
-      if (zone === "play") {
-        setDrop(dropped);
-        sendAction({ type: "play", order: current.order });
-      } else if (zone === "discard" && canDiscardNow()) {
-        setDrop(dropped);
-        sendAction({ type: "discard", order: current.order });
+    function onPointerCancel() {
+      release(undefined);
+    }
+
+    // Escape puts the card back.
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && heldRef.current?.phase === "drag") {
+        release(undefined);
       }
     }
 
     globalThis.addEventListener("pointermove", onPointerMove);
     globalThis.addEventListener("pointerup", onPointerUp);
-    globalThis.addEventListener("pointercancel", onPointerUp);
+    globalThis.addEventListener("pointercancel", onPointerCancel);
+    globalThis.addEventListener("keydown", onKeyDown);
     return () => {
       globalThis.removeEventListener("pointermove", onPointerMove);
       globalThis.removeEventListener("pointerup", onPointerUp);
-      globalThis.removeEventListener("pointercancel", onPointerUp);
+      globalThis.removeEventListener("pointercancel", onPointerCancel);
+      globalThis.removeEventListener("keydown", onKeyDown);
     };
   }, []);
 
   return {
-    drag,
-    drop,
+    held,
+    pointerRef,
+    heldRectRef,
     clearDrop: () => {
-      setDrop(undefined);
+      if (heldRef.current?.phase === "drop") {
+        updateHeld(undefined);
+      }
     },
-    pressCard: (order, x, y) => {
-      pendingDrag.current = { order, x, y };
+    finishReturn: () => {
+      if (heldRef.current?.phase === "return") {
+        updateHeld(undefined);
+      }
+    },
+    pressCard: (order, x, y, element) => {
+      // A dropped card that waits for its move keeps its place in the hand.
+      if (heldRef.current?.phase === "drop") {
+        return;
+      }
+      pendingDrag.current = { order, x, y, start: measure(element) };
+      pointerRef.current = { x: toScreenPixels(x), y: toScreenPixels(y) };
     },
     mainRef,
     playZoneRef,

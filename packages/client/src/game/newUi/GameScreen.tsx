@@ -34,6 +34,7 @@ import {
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
 } from "./Hands.tsx";
+import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { HypotheticalActions, ReplayBar, TurnsBar } from "./ReplayBar.tsx";
@@ -58,6 +59,7 @@ import {
   showDiscard,
   showReplayTurn,
 } from "./screenActions.ts";
+import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
   getClueLogEntries,
@@ -75,7 +77,7 @@ import {
   getTouchedCards,
   isClueAllowed,
 } from "./tableView.ts";
-import { getDropRect, useCardDrag } from "./useCardDrag.ts";
+import { useCardDrag } from "./useCardDrag.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
 import { useClueHotkeys, useSpacebarEmpathy } from "./useHotkeys.ts";
@@ -196,21 +198,21 @@ export function GameScreen({
   }, [inHypothetical]);
 
   const {
-    drag,
-    drop,
+    held,
+    pointerRef,
+    heldRectRef,
     clearDrop,
+    finishReturn,
     pressCard,
     mainRef,
     playZoneRef,
     discardZoneRef,
   } = useCardDrag(stacked, handsElement);
-  // The card motion reads the width of the cards in the hands, which this render works out below.
-  const handCardWidthRef = useRef(0);
   const { rootRef, screenScale } = useCardMotion(
     state,
-    drop,
+    held?.phase === "drop" ? held.order : undefined,
+    heldRectRef,
     clearDrop,
-    handCardWidthRef,
   );
 
   if (state?.visibleState === undefined) {
@@ -427,7 +429,6 @@ export function GameScreen({
     nameColumnWidth = undefined;
     handCardWidth = getHandCardWidthFor(undefined);
   }
-  handCardWidthRef.current = handCardWidth;
   const tableCardWidth = getTableCardWidth(
     playAreaSize.width,
     playAreaSize.height,
@@ -437,22 +438,21 @@ export function GameScreen({
 
   let playZoneState: ZoneState = "idle";
   let discardZoneState: ZoneState = "idle";
-  if (drag !== undefined) {
-    playZoneState = drag.zone === "play" ? "hovered" : "available";
+  if (held?.phase === "drag") {
+    playZoneState = held.zone === "play" ? "hovered" : "available";
     if (canDiscard) {
-      discardZoneState = drag.zone === "discard" ? "hovered" : "available";
+      discardZoneState = held.zone === "discard" ? "hovered" : "available";
     } else {
       discardZoneState = "unavailable";
     }
   }
 
-  const ghost = drag ?? drop;
-  const draggedView =
-    ghost === undefined
+  const heldView =
+    held === undefined
       ? undefined
       : seats
           .find((seat) => seat.acting)
-          ?.cards.find((card) => card.order === ghost.order);
+          ?.cards.find((card) => card.order === held.order);
 
   // A game of "All or Nothing" has no final round. The game sends one more turn after the last, to
   // show the times, so the turns left never go below 0.
@@ -550,7 +550,7 @@ export function GameScreen({
                   }
                   clueTarget={clueTarget}
                   colorblindMode={settings.colorblindMode}
-                  draggedCard={ghost?.order}
+                  draggedCard={held?.order}
                   empathyToggled={empathyToggled}
                   emptyClueTarget={
                     !previewing
@@ -564,7 +564,12 @@ export function GameScreen({
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
                     if (canMoveCards && !tapToMove && event.button === 0) {
-                      pressCard(order, event.clientX, event.clientY);
+                      pressCard(
+                        order,
+                        event.clientX,
+                        event.clientY,
+                        event.currentTarget,
+                      );
                     }
                   }}
                   onCardTap={(order) => {
@@ -836,25 +841,41 @@ export function GameScreen({
         />
       )}
 
-      {ghost !== undefined && draggedView !== undefined && (
-        <div
-          aria-hidden="true"
-          className="tw:pointer-events-none tw:fixed tw:z-50 tw:rotate-6 tw:opacity-95 tw:drop-shadow-2xl"
-          style={{
-            left: getDropRect(ghost, handCardWidth).left,
-            top: getDropRect(ghost, handCardWidth).top,
+      {held !== undefined && heldView !== undefined && (
+        <HeldCardGhost
+          held={held}
+          heldRectRef={heldRectRef}
+          key={held.order}
+          onReturned={finishReturn}
+          pointerRef={pointerRef}
+          reducedMotion={settings.reducedMotion}
+          slotElement={() => {
+            const slot = rootRef.current?.querySelector(
+              `[data-card-order="${CSS.escape(held.order.toString())}"]`,
+            );
+            return slot === null || slot === undefined
+              ? undefined
+              : measure(slot);
           }}
+          width={handCardWidth}
         >
           <CardFace
+            clued={heldView.clued}
             colorblindMode={settings.colorblindMode}
-            possibleRanks={draggedView.possibleRanks}
-            possibleSuitIndexes={draggedView.possibleSuitIndexes}
-            rank={draggedView.rank}
-            suitIndex={draggedView.suitIndex}
+            critical={heldView.critical}
+            identityFromNote={heldView.identityFromNote}
+            noteBorder={heldView.noteBorder}
+            noteMark={heldView.noteMark}
+            possibleRanks={heldView.possibleRanks}
+            possibleSuitIndexes={heldView.possibleSuitIndexes}
+            rank={heldView.rank}
+            suitIndex={heldView.suitIndex}
+            trash={heldView.trash}
+            trashIcon={heldView.trashIcon}
             variant={variant}
             width={handCardWidth}
           />
-        </div>
+        </HeldCardGhost>
       )}
     </div>
   );

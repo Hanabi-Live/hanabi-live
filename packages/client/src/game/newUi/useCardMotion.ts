@@ -26,8 +26,6 @@ import {
 } from "./scoreMotion.ts";
 import { getScreenScaleForWindow, setScreenScale } from "./screenScale.ts";
 import { getClueForTurn } from "./screenView.ts";
-import type { Drag } from "./useCardDrag.ts";
-import { getDropRect } from "./useCardDrag.ts";
 
 /**
  * Returns what the cards did on a move from one state to the next: the cards that were misplayed,
@@ -148,15 +146,15 @@ interface CardMotion {
 }
 
 /**
- * Moves the cards when the shown state changes. `drop` is a card that the player dropped, whose
- * move starts from where it was dropped, at the width in `handCardWidthRef`. `clearDrop` is called
- * once its move starts.
+ * Moves the cards when the shown state changes. `dropOrder` is a card that the player dropped,
+ * whose move starts from where it is drawn now, in `dropRectRef`. `clearDrop` is called once its
+ * move starts.
  */
 export function useCardMotion(
   state: State | undefined,
-  drop: Drag | undefined,
+  dropOrder: CardOrder | undefined,
+  dropRectRef: RefObject<DOMRect | undefined>,
   clearDrop: () => void,
-  handCardWidthRef: RefObject<number>,
 ): CardMotion {
   // Move the cards when the game advances or the replay steps through a turn. Each move arrives in
   // one message, so the screen renders it once. This runs before the page is painted, so the cards
@@ -223,12 +221,13 @@ export function useCardMotion(
 
     let startPositions = previous.settledPositions;
     // A card that the player dropped starts its move from where it was dropped.
-    if (drop !== undefined) {
-      const dropped = startPositions.get(drop.order.toString());
-      if (dropped !== undefined) {
-        startPositions = new Map(startPositions).set(drop.order.toString(), {
+    if (dropOrder !== undefined) {
+      const dropped = startPositions.get(dropOrder.toString());
+      const rect = dropRectRef.current;
+      if (dropped !== undefined && rect !== undefined) {
+        startPositions = new Map(startPositions).set(dropOrder.toString(), {
           ...dropped,
-          rect: getDropRect(drop, handCardWidthRef.current),
+          rect,
         });
       }
       clearDrop();

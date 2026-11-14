@@ -523,11 +523,14 @@ function OwnCard({
             ? `${label}. Play or discard`
             : `${label}. Drag it to the play stacks or the discard pile`
         }
-        // Pressed, the card lifts and its shadow deepens, as if picked up, as on the classic
+        // Under the pointer, a card that the player can drag rises a little, to invite them to pick
+        // it up. Pressed, it lifts and its shadow deepens, as if picked up, as on the classic
         // screen. It settles back when released. The shadow is a filter, so that it follows a clued
         // card, which is drawn raised. A card that is tapped to move it can still scroll the page.
-        className={`tw:block tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[80ms] tw:ease-out tw:active:-translate-y-1 tw:active:drop-shadow-[0_8px_8px_rgb(0_0_0/45%)] ${
-          props.tapToMove ? "tw:cursor-pointer" : "tw:cursor-grab tw:touch-none"
+        className={`tw:block tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:active:-translate-y-1 tw:active:drop-shadow-[0_8px_8px_rgb(0_0_0/45%)] ${
+          props.tapToMove
+            ? "tw:cursor-pointer"
+            : "tw:cursor-grab tw:touch-none tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
         }`}
         onClick={
           props.tapToMove
