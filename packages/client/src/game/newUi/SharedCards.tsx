@@ -324,7 +324,7 @@ function Deck({
   return (
     <div
       aria-label={`${cardsInDeck} cards in the deck`}
-      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
+      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5 tw:select-none"
       ref={tooltipRef("Cards left in the deck")}
       role="img"
     >
@@ -605,7 +605,7 @@ export function TableTokens({
 }): React.JSX.Element {
   return (
     <div
-      className={`tw:mt-auto tw:shrink-0 tw:self-stretch ${TOKENS_BOX_CLASS}`}
+      className={`tw:mt-auto tw:shrink-0 tw:self-stretch tw:select-none ${TOKENS_BOX_CLASS}`}
     >
       <section
         aria-label="Clue tokens"

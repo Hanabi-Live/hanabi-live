@@ -354,7 +354,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
     return (
       // The clock's own pill sits close to the right edge, so the padding there is smaller.
       <span
-        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink ${
+        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink tw:select-none ${
           seat.clock === undefined ? "tw:pr-3.5" : "tw:pr-2"
         }`}
       >
@@ -370,7 +370,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   }
 
   return (
-    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text">
+    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:select-none">
       {youIcon}
       <span className="tw:truncate">{seat.name}</span>
     </span>
