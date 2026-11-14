@@ -36,7 +36,19 @@ const TIMELINE_SLIDE_MILLISECONDS = 300;
 /** A fast start and a soft stop, so that a slide reads as a move to a place. */
 const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
-const ICON_BUTTON_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:text-[17px] tw:text-game-text tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
+const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
+
+/**
+ * The sizes of an icon button. Spacing is in "em", so a larger icon also makes a larger button. A
+ * step to the next or the previous turn is the largest, because a player clicks it many times in a
+ * row. A jump to the first or the last turn is as tall as a text button and quieter, so that it is
+ * not mistaken for a step.
+ */
+const ICON_BUTTON_SIZE_CLASS = {
+  normal: "tw:size-11 tw:text-[17px] tw:text-game-text",
+  step: "tw:size-11 tw:text-[20px] tw:text-game-text",
+  jump: "tw:size-11 tw:text-[15px] tw:text-game-muted tw:hover:text-game-text",
+} as const;
 
 /**
  * The bar's buttons, kept together on the right. On a narrow window, they take a row of their own.
@@ -88,7 +100,7 @@ function Heading({
 
 /**
  * How far the knob's center stays from each end of the timeline. It is half the knob, with its
- * ring, when the pointer is over it, so that the knob does not cover the buttons beside it.
+ * ring, when the pointer is over it, so that the knob stays inside the bar.
  */
 const KNOB_INSET_PX = 16;
 
@@ -137,7 +149,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className="tw:group tw:relative tw:h-11 tw:min-w-12 tw:flex-1 tw:cursor-pointer tw:touch-none"
+      className="tw:group tw:relative tw:h-8 tw:w-full tw:cursor-pointer tw:touch-none"
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -189,24 +201,32 @@ function Timeline({
 function IconButton({
   label,
   icon,
+  size = "normal",
   disabled = false,
+  tooltip = label,
+  iconClassName = "",
   onClick,
 }: {
   readonly label: string;
   readonly icon: string;
+  readonly size?: keyof typeof ICON_BUTTON_SIZE_CLASS;
   readonly disabled?: boolean;
+  /** What the button does, in the site's tooltip, when its label does not say enough. */
+  readonly tooltip?: string;
+  /** Classes for the icon, such as its color. */
+  readonly iconClassName?: string;
   readonly onClick: () => void;
 }): React.JSX.Element {
   return (
     <button
       aria-label={label}
-      className={ICON_BUTTON_CLASS}
+      className={`${ICON_BUTTON_CLASS} ${ICON_BUTTON_SIZE_CLASS[size]}`}
       disabled={disabled}
       onClick={onClick}
-      ref={tooltipRef(label)}
+      ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className={`fas ${icon}`} />
+      <i aria-hidden="true" className={`fas ${icon} ${iconClassName}`} />
     </button>
   );
 }
@@ -264,6 +284,27 @@ function ToggleButton({
   );
 }
 
+/**
+ * A spectator's switch to follow the shared replay leader: to show the turn that the leader shows,
+ * and to join the leader's hypothetical. A step through the turns turns it off.
+ */
+function FollowButton({
+  leader,
+  following,
+}: {
+  readonly leader: string;
+  readonly following: boolean;
+}): React.JSX.Element {
+  return (
+    <ToggleButton
+      label={`Follow ${leader}`}
+      onClick={replay.toggleSharedSegments}
+      pressed={following}
+      tooltip={`Show the turns that ${leader} shows. Going to another turn on your own stops this.`}
+    />
+  );
+}
+
 function HypotheticalBar({
   state,
   editingCards,
@@ -288,16 +329,14 @@ function HypotheticalBar({
     return (
       <Bar>
         <Heading icon="fa-flask" label={label} mode="hypothetical" />
-        <button
-          className={`${PRIMARY_BUTTON_CLASS} tw:ml-auto`}
-          onClick={replay.toggleSharedSegments}
-          ref={tooltipRef(
-            "Leave the leader's hypothetical, and look at the turns on your own.",
-          )}
-          type="button"
-        >
-          Pause shared turns
-        </button>
+        {shared !== undefined && (
+          <div className="tw:ml-auto tw:flex">
+            <FollowButton
+              following={shared.useSharedSegments}
+              leader={shared.leader}
+            />
+          </div>
+        )}
       </Bar>
     );
   }
@@ -408,13 +447,6 @@ export function TurnsBar({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, segment, turn);
 
-  let sharedTurnsLabel = "Use shared turns";
-  if (shared?.useSharedSegments === true) {
-    sharedTurnsLabel = "Pause shared turns";
-  } else if (shared?.hypothetical !== undefined) {
-    sharedTurnsLabel = "Join hypothetical";
-  }
-
   let label = "Replay";
   if (shared !== undefined) {
     label = shared.amLeader
@@ -422,18 +454,22 @@ export function TurnsBar({
       : `Shared replay: ${shared.leader} leads`;
   }
 
-  // The heading and the buttons are on the first row. The timeline has the second row to itself, so
-  // that it is wide enough to pick a turn with the mouse. On a narrow window, the buttons take rows
-  // of their own, so they go below the timeline.
+  // The heading is on the first row. The buttons that step through the turns are together in the
+  // middle of the second row, so that a player can click back and forth without moving the mouse
+  // far. The other buttons are on each side of them. The timeline has the third row to itself, so
+  // that it is wide enough to pick a turn with the mouse. On a narrow window, the other buttons do
+  // not fit beside the steps, so they go below the timeline.
   return (
     <Bar>
-      <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-3 tw:narrow-980:contents">
+      <div className="tw:w-full">
         <Heading
           icon={shared === undefined ? "fa-history" : "fa-crown"}
           label={label}
           mode="replay"
         />
-        <div className={`${ACTIONS_CLASS} tw:narrow-980:order-last`}>
+      </div>
+      <div className="tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents">
+        <div className="tw:flex tw:justify-start tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
           {shared !== undefined
             && (shared.amLeader ? (
               <button
@@ -447,31 +483,70 @@ export function TurnsBar({
                 Pass leader
               </button>
             ) : (
-              <button
-                className={BUTTON_CLASS}
-                onClick={replay.toggleSharedSegments}
-                type="button"
-              >
-                {sharedTurnsLabel}
-              </button>
-            ))}
-          {canEnterHypothetical && (
-            <button
-              className={BUTTON_CLASS}
-              onClick={hypothetical.startHypothetical}
-              ref={tooltipRef("Try out other moves from this turn.")}
-              type="button"
-            >
-              <i
-                aria-hidden="true"
-                className="fas fa-flask tw:text-game-hypothetical"
+              <FollowButton
+                following={shared.useSharedSegments}
+                leader={shared.leader}
               />
-              Enter hypothetical
-            </button>
+            ))}
+        </div>
+        <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
+          {finished && (
+            <IconButton
+              disabled={atStart}
+              icon="fa-step-backward"
+              label="First turn"
+              onClick={replay.backFull}
+              size="jump"
+            />
+          )}
+          <IconButton
+            disabled={atStart}
+            icon="fa-chevron-left"
+            label="Previous turn"
+            onClick={() => {
+              replay.back();
+            }}
+            size="step"
+          />
+          {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline, and the
+              leader's moves flash between these buttons instead of over the knob. */}
+          {spoilerFree && following && (
+            <span className="tw:flex tw:w-6 tw:justify-center">
+              <DirectionFlash move={move} />
+            </span>
+          )}
+          <IconButton
+            disabled={atEnd}
+            icon="fa-chevron-right"
+            label="Next turn"
+            onClick={replay.forward}
+            size="step"
+          />
+          {finished && !spoilerFree && (
+            <IconButton
+              disabled={atEnd}
+              icon="fa-step-forward"
+              label="Last turn"
+              onClick={replay.forwardFull}
+              size="jump"
+            />
+          )}
+        </div>
+        <div
+          className={`tw:flex tw:items-center tw:justify-end tw:gap-2 tw:narrow-980:order-last ${finished ? "" : "tw:narrow-980:flex-1"}`}
+        >
+          {canEnterHypothetical && (
+            <IconButton
+              icon="fa-flask"
+              iconClassName="tw:text-game-hypothetical"
+              label="Enter hypothetical"
+              onClick={hypothetical.startHypothetical}
+              tooltip="Enter hypothetical: try out other moves from this turn."
+            />
           )}
           {!finished && (
             <button
-              className={PRIMARY_BUTTON_CLASS}
+              className={`${PRIMARY_BUTTON_CLASS} tw:narrow-980:flex-1`}
               onClick={() => {
                 replay.exit();
               }}
@@ -482,52 +557,14 @@ export function TurnsBar({
           )}
         </div>
       </div>
-      <div className="tw:flex tw:w-full tw:items-center tw:gap-2.5 tw:narrow-980:gap-1.5">
-        {finished && (
-          <IconButton
-            disabled={atStart}
-            icon="fa-angle-double-left"
-            label="First turn"
-            onClick={replay.backFull}
-          />
-        )}
-        <IconButton
-          disabled={atStart}
-          icon="fa-chevron-left"
-          label="Previous turn"
-          onClick={() => {
-            replay.back();
-          }}
+      {!spoilerFree && (
+        <Timeline
+          lastSegment={lastSegment}
+          leaderMove={move}
+          segment={segment}
+          slide={following}
         />
-        {/* Spoiler-free reviews hide how long the game lasts, so the leader's moves flash in the
-            middle of the row instead of over the knob. */}
-        {spoilerFree ? (
-          <span className="tw:flex tw:flex-1 tw:justify-center">
-            {following && <DirectionFlash move={move} />}
-          </span>
-        ) : (
-          <Timeline
-            lastSegment={lastSegment}
-            leaderMove={move}
-            segment={segment}
-            slide={following}
-          />
-        )}
-        <IconButton
-          disabled={atEnd}
-          icon="fa-chevron-right"
-          label="Next turn"
-          onClick={replay.forward}
-        />
-        {finished && !spoilerFree && (
-          <IconButton
-            disabled={atEnd}
-            icon="fa-angle-double-right"
-            label="Last turn"
-            onClick={replay.forwardFull}
-          />
-        )}
-      </div>
+      )}
     </Bar>
   );
 }

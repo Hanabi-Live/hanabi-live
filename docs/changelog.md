@@ -52,6 +52,8 @@ of the repository.
 - In the new game screen, the clue log names each clue next to its circle, such
   as "Red" or "Number 2".
 - In the new game screen, the "Classic view" button is now called "Classic UI".
+- In the new game screen, the replay's step buttons are larger and side by side,
+  and a spectator follows the leader with a "Follow" switch.
 
 ## November 12th, 2026
 

@@ -1006,6 +1006,29 @@ function getStates(): readonly State[] {
         await page.getByText(/^Not ready: Bob/u).waitFor();
       },
     },
+    // The leader of the shared replay points at the button that starts a hypothetical, which is
+    // only an icon, so its tooltip says what it does.
+    {
+      name: "new-ui-enter-hypothetical-tooltip",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame();
+        await game.playAndMisplay();
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().passLeader();
+        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+      },
+      hover: async (page) => {
+        await hoverForTooltip(
+          page,
+          page.getByRole("button", { name: "Enter hypothetical" }),
+        );
+      },
+    },
     // A hypothetical that the account leads, from the first turn, after a player plays a card in
     // it, with "Edit cards" on.
     {
