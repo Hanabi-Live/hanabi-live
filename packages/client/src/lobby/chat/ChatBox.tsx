@@ -373,16 +373,20 @@ export function ChatInput({
   id,
   room,
   ref,
+  emojiPicker = true,
 }: {
   readonly id: string;
   readonly room: "lobby" | "table";
   readonly ref: React.RefObject<HTMLInputElement | null>;
+
+  /** Whether the input has the button. The picker opens only in the page's own window. */
+  readonly emojiPicker?: boolean;
 }): React.JSX.Element {
   return (
     <div className="tw:relative">
       <input
         autoComplete="off"
-        className="tw:pr-10"
+        className={emojiPicker ? "tw:pr-10" : undefined}
         id={id}
         onInput={(event) => {
           onChatInput(event.currentTarget, room);
@@ -394,17 +398,23 @@ export function ChatInput({
         ref={ref}
         type="text"
       />
-      <button
-        className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text tw:hover:text-text-strong"
-        onClick={() => {
-          openEmojiPicker(id);
-        }}
-        ref={tooltipRef("Emote picker")}
-        type="button"
-      >
-        <i className="fas fa-smile tw:text-[1.6em]" />
-      </button>
-      <LengthCounter besideButton input={ref} limit={CHAT_LENGTH_LIMIT} />
+      {emojiPicker && (
+        <button
+          className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text tw:hover:text-text-strong"
+          onClick={() => {
+            openEmojiPicker(id);
+          }}
+          ref={tooltipRef("Emote picker")}
+          type="button"
+        >
+          <i className="fas fa-smile tw:text-[1.6em]" />
+        </button>
+      )}
+      <LengthCounter
+        besideButton={emojiPicker}
+        input={ref}
+        limit={CHAT_LENGTH_LIMIT}
+      />
     </div>
   );
 }

@@ -284,6 +284,11 @@ interface State {
   readonly setup?: (cast: Cast) => Promise<void>;
   /** Runs at the setup size, after the page loads. */
   readonly prepare?: (page: Page, cast: Cast) => Promise<void>;
+  /**
+   * Runs after `prepare`, and opens a window, such as the New UI's chat window. Each screenshot of
+   * the page has one of the window beside it, which ends in ".window".
+   */
+  readonly openWindow?: (page: Page) => Promise<Page>;
   /** Runs after the screenshots, so that the next state starts from the lobby. */
   readonly cleanup?: (page: Page) => Promise<void>;
   /**
@@ -852,6 +857,33 @@ function getStates(): readonly State[] {
       isolated: true,
       setup: async (cast) => {
         await cast.startBobsGame(5);
+      },
+    },
+    // Bob's game with five players, with the chat in its own window. The account sends a message
+    // from the window.
+    {
+      name: "new-ui-chat-window",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      openWindow: async (page) => {
+        const [chatWindow] = await Promise.all([
+          page.waitForEvent("popup"),
+          page
+            .getByRole("button", { name: "Open chat in a new window" })
+            .click(),
+        ]);
+        const input = chatWindow.locator("#game-chat-input");
+        await input.fill("Hello from the chat window");
+        await input.press("Enter");
+        await chatWindow
+          .locator("#game-chat-text")
+          .getByText("Hello from the chat window")
+          .waitFor();
+        return chatWindow;
       },
     },
     // Bob's game with five players in a variant with suits of two colors, so that each play stack
@@ -2642,6 +2674,7 @@ async function captureState(
     await page.evaluate(useStylesheet, bundleHref);
     await settle(page);
     await state.prepare?.(page, cast);
+    const openedWindow = await state.openWindow?.(page);
     // Keep the pointer off of the page, so that no element shows its hover style.
     await page.mouse.move(0, SETUP_SIZE.height - 1);
     await settle(page);
@@ -2667,6 +2700,13 @@ async function captureState(
           path: `${file}.png`,
           animations: "disabled",
         });
+        if (openedWindow !== undefined) {
+          await settle(openedWindow);
+          await openedWindow.screenshot({
+            path: `${file}.window.png`,
+            animations: "disabled",
+          });
+        }
 
         if (compareBundle !== undefined) {
           // A difference counts only if it shows twice, because a page can still change on its own
@@ -2702,6 +2742,7 @@ async function captureState(
         }
       }
     }
+    await openedWindow?.close();
     await state.cleanup?.(page);
     if (state.isolated === true) {
       await page.goto("about:blank");

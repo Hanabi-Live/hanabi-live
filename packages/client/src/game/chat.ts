@@ -9,6 +9,7 @@ import { store } from "../store.ts";
 import { getHtmlElement } from "../utils.ts";
 import { GAME_CHAT_INPUT_ID, GAME_CHAT_TEXT_ID } from "./GameChatBox.tsx";
 import { gameChatUnreadChanged } from "./gameChatSlice.ts";
+import { focusChatWindow } from "./newUi/chatWindow.ts";
 import { newUiChatOpenChanged } from "./newUi/newUiSlice.ts";
 
 /** The size of the chat modal before the player has moved or resized it, in percent of the page. */
@@ -148,12 +149,13 @@ export function init(): void {
 export function isOpen(): boolean {
   const { newUi } = store.getState();
   return newUi.shown
-    ? newUi.chatOpen
+    ? newUi.chatOpen || newUi.chatPoppedOut
     : isElementShown(getHtmlElement("#game-chat-modal"));
 }
 
 export function toggle(focusInput = true): void {
-  if (isOpen()) {
+  // A chat in its own window comes to the front instead of closing.
+  if (isOpen() && !store.getState().newUi.chatPoppedOut) {
     hide();
   } else {
     show(focusInput);
@@ -163,7 +165,13 @@ export function toggle(focusInput = true): void {
 export function show(focusInput = true): void {
   markRead();
 
-  if (store.getState().newUi.shown) {
+  const { newUi } = store.getState();
+  if (newUi.shown && newUi.chatPoppedOut) {
+    focusChatWindow(focusInput);
+    return;
+  }
+
+  if (newUi.shown) {
     // The redesigned game screen shows the chat in its side panel instead of in the modal.
     store.dispatch(newUiChatOpenChanged(true));
     if (focusInput) {

@@ -115,6 +115,7 @@ export function GameScreen({
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
   const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
+  const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
@@ -747,6 +748,7 @@ export function GameScreen({
         <ChatPanel
           open={chatOpen}
           overlay={chatOverlay}
+          poppedOut={chatPoppedOut}
           spectators={spectators.map((spectator) =>
             spectator.username === metadata.ourUsername
               ? YOU

@@ -10,6 +10,8 @@ interface NewUiState {
   readonly shown: boolean;
   /** Whether the chat panel is open, as opposed to collapsed into a thin rail. */
   readonly chatOpen: boolean;
+  /** Whether the chat is in its own browser window, which the player can move to another screen. */
+  readonly chatPoppedOut: boolean;
   /**
    * The cards whose notes someone else changed while we spectate, and that we have not looked at
    * since.
@@ -20,6 +22,7 @@ interface NewUiState {
 const initialState: NewUiState = {
   shown: false,
   chatOpen: true,
+  chatPoppedOut: false,
   unreadNotes: [],
 };
 
@@ -32,6 +35,9 @@ const newUiSlice = createSlice({
     },
     newUiChatOpenChanged(state, action: PayloadAction<boolean>) {
       state.chatOpen = action.payload;
+    },
+    newUiChatPoppedOutChanged(state, action: PayloadAction<boolean>) {
+      state.chatPoppedOut = action.payload;
     },
     newUiNoteUnread(state, action: PayloadAction<CardOrder>) {
       if (!state.unreadNotes.includes(action.payload)) {
@@ -59,6 +65,7 @@ const newUiSlice = createSlice({
 export const {
   newUiShownChanged,
   newUiChatOpenChanged,
+  newUiChatPoppedOutChanged,
   newUiNoteUnread,
   newUiNoteRead,
 } = newUiSlice.actions;

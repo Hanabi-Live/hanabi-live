@@ -19,8 +19,11 @@ const CLOSE_DURATION_IN_MILLISECONDS = 80;
 /** How far a tooltip slides toward its anchor as it opens. */
 const SLIDE_IN_PIXELS = 4;
 
-/** The redesigned game screen, whose tooltips are white in both themes. */
-const GAME_SCREEN_SELECTOR = "#game-new-ui";
+/** The element in the popped-out chat window of the New UI that holds the chat box. */
+export const CHAT_WINDOW_ID = "game-chat-window";
+
+/** The redesigned game screen and its chat window, whose tooltips are white in both themes. */
+const GAME_SCREEN_SELECTOR = `#game-new-ui, #${CHAT_WINDOW_ID}`;
 
 /** The closest that a tooltip comes to the edge of the window. */
 const WINDOW_MARGIN_IN_PIXELS = 8;
@@ -150,7 +153,8 @@ export class Tooltip {
     clearTimeout(this.closingTimeout);
     this.closingTimeout = undefined;
     if (!this.bubble.isConnected) {
-      document.body.append(this.bubble);
+      // The anchor can be in another window, such as the popped-out chat of the New UI.
+      this.anchor.ownerDocument.body.append(this.bubble);
     }
     // The redesigned game screen looks the same in both themes, so its tooltips are white in both.
     this.bubble.classList.toggle(
@@ -168,15 +172,17 @@ export class Tooltip {
   /** Opens the tooltip until the next click outside of the anchor and the tooltip. */
   openUntilClickElsewhere(): void {
     this.open();
-    document.addEventListener("pointerdown", this.closeOnPointerDownElsewhere, {
-      capture: true,
-    });
+    this.anchor.ownerDocument.addEventListener(
+      "pointerdown",
+      this.closeOnPointerDownElsewhere,
+      { capture: true },
+    );
   }
 
   close(): void {
     clearTimeout(this.openingTimeout);
     this.openingTimeout = undefined;
-    document.removeEventListener(
+    this.anchor.ownerDocument.removeEventListener(
       "pointerdown",
       this.closeOnPointerDownElsewhere,
       { capture: true },
@@ -277,12 +283,13 @@ export class Tooltip {
     this.bubble.style.top = "0px";
     this.bubble.style.removeProperty("--tooltip-room");
     const anchor = this.anchor.getBoundingClientRect();
+    const anchorWindow = this.anchor.ownerDocument.defaultView ?? globalThis;
     const { offsetWidth: width } = this.bubble;
     let { offsetHeight: height } = this.bubble;
 
     const roomAbove = anchor.top - WINDOW_MARGIN_IN_PIXELS;
     const roomBelow =
-      window.innerHeight - WINDOW_MARGIN_IN_PIXELS - anchor.bottom;
+      anchorWindow.innerHeight - WINDOW_MARGIN_IN_PIXELS - anchor.bottom;
     const side =
       height <= roomAbove || (height > roomBelow && roomAbove >= roomBelow)
         ? "top"
@@ -296,7 +303,7 @@ export class Tooltip {
     }
 
     const center = anchor.left + anchor.width / 2;
-    const maxLeft = window.innerWidth - WINDOW_MARGIN_IN_PIXELS - width;
+    const maxLeft = anchorWindow.innerWidth - WINDOW_MARGIN_IN_PIXELS - width;
     const left = Math.max(
       WINDOW_MARGIN_IN_PIXELS,
       Math.min(center - width / 2, maxLeft),
