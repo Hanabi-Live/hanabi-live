@@ -50,8 +50,9 @@
   --checkbox-border: #8f8f8f;
   --row-hover-bg: #e6e6e6;
   --button-alt-bg: transparent;
-  --button-alt-hover-bg: #f8f8f8;
-  --button-alt-active-bg: #f0f0f0;
+  /* Lights up like a row, and a step more when pressed. */
+  --button-alt-hover-bg: var(--row-hover-bg);
+  --button-alt-active-bg: #d9d9d9;
   --name-me: #e69500;
   --friend: hotpink;
   --name-hover: #3350cb;
@@ -241,8 +242,7 @@
   /* Lighter than the row, so that it lights up */
   --row-hover-bg: #363b42;
   --button-alt-bg: var(--surface-sunken);
-  --button-alt-hover-bg: var(--surface);
-  --button-alt-active-bg: var(--surface);
+  --button-alt-active-bg: #424850;
 
   --header-bg: #15181c;
   --header-border: 1px solid var(--border);
