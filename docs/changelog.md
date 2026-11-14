@@ -51,6 +51,7 @@ of the repository.
   where "End game" is during the game.
 - In the new game screen, the clue log names each clue next to its circle, such
   as "Red" or "Number 2".
+- In the new game screen, the "Classic view" button is now called "Classic UI".
 
 ## November 12th, 2026
 

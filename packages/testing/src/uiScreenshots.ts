@@ -1053,7 +1053,7 @@ async function useClassicScreen(cast: Cast) {
 
 /** Switches the New UI to the classic screen. */
 async function showClassic(page: Page) {
-  await page.getByRole("button", { name: "Classic view" }).click();
+  await page.getByRole("button", { name: "Classic UI" }).click();
   await page.waitForSelector(".konvajs-content");
   await settle(page);
 }

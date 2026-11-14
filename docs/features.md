@@ -363,7 +363,7 @@ These options are on the "Settings" page.
 
 - The "New UI" setting shows games and replays in a redesigned game screen. It
   is in testing and off by default.
-- In a game, a "Classic view" button switches to the classic screen, and a "New
+- In a game, a "Classic UI" button switches to the classic screen, and a "New
   UI" button switches back.
 
 ### Keldon Mode

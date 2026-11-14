@@ -264,7 +264,7 @@ export function StatusStrip({
       </div>
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
         <button className={buttonClass} onClick={onClassicView} type="button">
-          Classic view
+          Classic UI
         </button>
         {!finished && (
           <button
