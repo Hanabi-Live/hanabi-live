@@ -37,6 +37,7 @@ import {
 } from "../../wire.ts";
 import * as clock from "../clock.ts";
 import { registerGameObservers } from "../gameObservers.ts";
+import * as gameSession from "../gameSession.ts";
 import type { Votes } from "../gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
@@ -256,7 +257,7 @@ function showsTable(conn: Connection, tableId: number): boolean {
   return (
     lobbyGlobals.conn === conn
     && store.getState().session.screen === Screen.Game
-    && lobbyGlobals.ui !== undefined
+    && gameSession.isOpen()
     && lobbyGlobals.joinedTableId === tableId
   );
 }

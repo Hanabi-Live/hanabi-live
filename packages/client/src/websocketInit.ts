@@ -13,6 +13,7 @@ import { commands } from "./commands.ts";
 import { Connection } from "./Connection.ts";
 import { HTTP_STATUS } from "./constants.ts";
 import * as gameSession from "./game/gameSession.ts";
+import * as gameMain from "./game/main.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 import { gameCommands } from "./game/ui/gameCommands.ts";
 import { globals } from "./Globals.ts";
@@ -269,7 +270,7 @@ function openConnection(isReconnect: boolean) {
       store.dispatch(tablesCleared());
       if (
         store.getState().session.screen === Screen.Game
-        && globals.ui !== undefined
+        && gameSession.isOpen()
         && data.userId === store.getState().session.userId
       ) {
         globals.muted = data.muted;
@@ -287,19 +288,17 @@ function openConnection(isReconnect: boolean) {
           } else if (
             table.tableId === retained
             && table.stage !== "replay"
-            && globals.ui !== undefined
-            && store.getState().game.current !== undefined
-            && !globals.ui.globals.state.finished
+            && gameSession.isOpen()
+            && store.getState().game.current?.finished === false
           ) {
             conn.send("gameStateLoad", { tableId: retained });
           } else {
-            globals.ui?.destroy();
-            globals.ui = undefined;
+            gameMain.closeGame();
             lobbyCommands.get("tableJoined")?.(table);
           }
         });
         conn.on("gameState", (state) => {
-          if (!isCurrentConnection(conn) || globals.ui === undefined) {
+          if (!isCurrentConnection(conn) || !gameSession.isOpen()) {
             return;
           }
           const rebuilding = gameSession.isLoading();
@@ -318,18 +317,14 @@ function openConnection(isReconnect: boolean) {
             tableId: retained,
             ...(!data.playingAtTables.includes(retained) && {
               shadowingPlayerIndex:
-                store.getState().game.current !== undefined
-                && globals.ui.globals.state.shadowing
-                  ? globals.ui.globals.metadata.ourPlayerIndex
+                store.getState().game.current?.shadowing === true
+                  ? store.getState().game.current?.metadata.ourPlayerIndex
                   : undefined,
             }),
           },
         );
       } else {
-        if (globals.ui !== undefined) {
-          globals.ui.destroy();
-          globals.ui = undefined;
-        }
+        gameMain.closeGame();
         conn.setReady(true);
         lobbyCommands.get("welcome")?.(data);
       }
@@ -438,7 +433,7 @@ function gameCallback<Command extends ServerEvent>(
     if (
       !isCurrentConnection(conn)
       || store.getState().session.screen !== Screen.Game
-      || globals.ui === undefined
+      || !gameSession.isOpen()
     ) {
       return;
     }

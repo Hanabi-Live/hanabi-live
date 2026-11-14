@@ -60,13 +60,15 @@ lobbyCommands.set("friends", (data) => {
 
   // Since our list of friends has changed, we need to redraw the spectators of the game so that
   // users that happen to be our friend will be shown in the correct color.
+  const state = store.getState().game.current;
   if (
     store.getState().session.screen === Screen.Game
     && globals.ui !== undefined
+    && state !== undefined
   ) {
     spectatorsView.onSpectatorsChanged({
-      spectators: globals.ui.globals.state.spectators,
-      finished: globals.ui.globals.state.finished,
+      spectators: state.spectators,
+      finished: state.finished,
     });
   }
 });

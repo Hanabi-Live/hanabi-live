@@ -1,6 +1,6 @@
 // In-game chat
 
-import { assertDefined, parseFloatSafe } from "complete-common";
+import { parseFloatSafe } from "complete-common";
 import interact from "interactjs";
 import { globals } from "../Globals.ts";
 import { LOCAL_STORAGE_KEY } from "../constants.ts";
@@ -244,9 +244,8 @@ function markRead() {
     tableId: globals.joinedTableId,
   });
 
-  // Reset the "Chat" UI button back to normal.
-  assertDefined(globals.ui, 'The "globals.ui" object is not initialized.');
-  globals.ui.updateChatLabel();
+  // Reset the classic screen's "Chat" button back to normal.
+  globals.ui?.updateChatLabel();
 }
 
 /** Subroutine to move an element (using the "transform" CSS property). */

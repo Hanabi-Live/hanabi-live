@@ -5,8 +5,6 @@ import { globals as lobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
-import * as clock from "../clock.ts";
-import { releaseGameObservers } from "../gameObservers.ts";
 import * as gameSession from "../gameSession.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
@@ -138,12 +136,10 @@ export class HanabiUi {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = undefined;
     }
-    releaseGameObservers();
     releaseSubscriptions();
     unmountClueLog();
     keyboard.destroy();
     this.stopDrawingTimers();
-    clock.reset();
     globals.elements.restartWaitingOnServerAnimation?.stop();
     globals.stage.destroy();
   }

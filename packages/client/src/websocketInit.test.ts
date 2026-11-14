@@ -20,6 +20,7 @@ vi.mock("./game/ui/gameCommands.ts", () => ({
   gameCommands: new Map(),
 }));
 vi.mock("./modals.ts", () => ({ showError: vi.fn() }));
+vi.mock("./game/main.ts", () => ({ closeGame: vi.fn() }));
 const { globals } = await import("./Globals.ts");
 const { commands } = await import("./commands.ts");
 const { websocketInit } = await import("./websocketInit.ts");

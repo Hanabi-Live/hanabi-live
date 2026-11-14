@@ -13,6 +13,7 @@ import * as tooltips from "../tooltips.ts";
 import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
 import * as clock from "./clock.ts";
 import { gameChatCleared } from "./gameChatSlice.ts";
+import { releaseGameObservers } from "./gameObservers.ts";
 import * as gameSession from "./gameSession.ts";
 import * as newUi from "./newUi/newUi.ts";
 import { setPlayStartSound } from "./soundEffects.ts";
@@ -63,7 +64,7 @@ export function show(justStarted: boolean): void {
   }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
-  gameSession.startLoading();
+  gameSession.openGame();
   clock.reset();
   setPlayStartSound(justStarted);
   globals.ui = new HanabiUi();
@@ -82,6 +83,20 @@ export function showNewUi(): void {
   hideElement(getHtmlElement("#game-chat-modal"));
   hideElement(getHtmlElement("#game"));
   newUi.mount();
+}
+
+/**
+ * Closes the open game without leaving the game screen: it stops the game's observers and clocks,
+ * and removes the classic screen.
+ */
+export function closeGame(): void {
+  gameSession.closeGame();
+  releaseGameObservers();
+  clock.reset();
+  if (globals.ui !== undefined) {
+    globals.ui.destroy();
+    globals.ui = undefined;
+  }
 }
 
 /** Leaves the game screen for the screen that was open before it. */
@@ -108,10 +123,7 @@ export function hide(): void {
   document.body.dataset["screen"] = "lobby";
 
   newUi.unmount();
-  if (globals.ui !== undefined) {
-    globals.ui.destroy();
-    globals.ui = undefined;
-  }
+  closeGame();
 
   hideElement(getHtmlElement("#game")); // We can't fade this out as it will overlap
   document.body.removeEventListener("contextmenu", preventContextMenu);

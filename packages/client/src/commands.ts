@@ -1,10 +1,11 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import { globals } from "./Globals.ts";
 import * as chat from "./chat.ts";
 import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
 import { gameChatUnreadChanged } from "./game/gameChatSlice.ts";
+import * as gameSession from "./game/gameSession.ts";
+import { globals } from "./Globals.ts";
 import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
@@ -64,7 +65,7 @@ function acknowledgeChatRead(
     });
   } else if (
     store.getState().session.screen === Screen.Game
-    && globals.ui !== undefined
+    && gameSession.isOpen()
   ) {
     if (gameChat.isOpen()) {
       // The chat window was open; notify the server that we have read the chat message that was
@@ -75,18 +76,18 @@ function acknowledgeChatRead(
       return;
     }
 
-    if (store.getState().game.current === undefined) {
+    const state = store.getState().game.current;
+    if (state === undefined) {
       return;
     }
 
-    const UiState = globals.ui.globals.state;
-    if (UiState.playing || UiState.finished) {
+    if (state.playing || state.finished) {
       // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
       // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
       store.dispatch(
         gameChatUnreadChanged(store.getState().gameChat.unread + 1),
       );
-      globals.ui.updateChatLabel();
+      globals.ui?.updateChatLabel();
     } else {
       // The chat window was not open; pop open the chat window every time for spectators.
       gameChat.toggle(false);
@@ -115,10 +116,10 @@ commands.set("chatList", (data) => {
       table === undefined ? line : { ...line, tableId: table.tableId };
     chat.add(message, true); // The second argument is "fast"
   }
-  if (table !== undefined && globals.ui !== undefined && !gameChat.isOpen()) {
+  if (table !== undefined && gameSession.isOpen() && !gameChat.isOpen()) {
     store.dispatch(
       gameChatUnreadChanged(store.getState().gameChat.unread + table.numUnread),
     );
-    globals.ui.updateChatLabel();
+    globals.ui?.updateChatLabel();
   }
 });
