@@ -1508,14 +1508,17 @@ export function GameScreen({
                 />
               </div>
               {/* The controls are below the hands, nearer the middle of the screen, and in the same
-                  place in every game. They are in one slot that is always as tall as both the clue
-                  panel and the replay bar: a hidden copy holds the space of the one not shown. So
-                  the hands above it keep their place and size when the game pauses, ends, or goes
-                  in and out of a replay. Only a hypothetical with both moves them: its bar is the
-                  lower one, so that it stays where it is in a replay. On a narrow window, the page
-                  scrolls and the controls go above the hands, with the replay bar first. */}
+                  place in every game. While the game goes on, they are in one slot that is always
+                  as tall as both the clue panel and the replay bar: a hidden copy holds the space
+                  of the one not shown. So the hands above it keep their place and size when the
+                  game pauses or goes in and out of a replay. The replay bar keeps its own height at
+                  the top of the slot. A finished game has no clue panel, so its slot is only as
+                  tall as the replay bar, and the hands get the rest. Only a hypothetical with both
+                  moves them: its bar is the lower one, so that it stays where it is in a replay.
+                  On a narrow window, the page scrolls and the controls go above the hands, with
+                  the replay bar first. */}
               <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
-                {!showCluePanel && (
+                {!showCluePanel && !state.finished && (
                   <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
                     <CluePanel
                       canClue={false}
@@ -1566,7 +1569,7 @@ export function GameScreen({
                 )}
                 {showReplayBar && (
                   <div
-                    className={`tw:grid tw:narrow-980:-order-1 ${hypo !== undefined && showCluePanel ? "" : "tw:[grid-area:1/1]"}`}
+                    className={`tw:grid tw:self-start tw:narrow-980:-order-1 ${hypo !== undefined && showCluePanel ? "" : "tw:[grid-area:1/1]"}`}
                   >
                     <ReplayBar
                       editingCards={editingCards}

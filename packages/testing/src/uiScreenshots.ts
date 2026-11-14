@@ -982,15 +982,14 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
-    // After Bob ends the game. It is now a shared replay that Bob leads.
+    // After Bob ends a five-player game. It is now a shared replay that Bob leads.
     {
       name: "new-ui-shared-replay",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame();
-        await game.playAndMisplay();
+        await cast.startBobsGame(5);
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);

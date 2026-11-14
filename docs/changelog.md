@@ -59,6 +59,8 @@ of the repository.
   "Leader" menu in the replay controls, which no longer have a heading.
 - In the new game screen, the clue tokens and the strikes are now under the
   deck, so that the clue log is taller.
+- In the new game screen, the replay controls are shorter, and the hands of a
+  finished game get the space.
 
 ## November 12th, 2026
 
