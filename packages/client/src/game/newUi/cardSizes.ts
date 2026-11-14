@@ -26,8 +26,14 @@ const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
  */
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
-/** The smallest and largest card on the play stacks and in the discard pile. */
-export const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
+/** The smallest and largest card on the play stacks. */
+const STACK_CARD_WIDTH = { MIN: 30, MAX: 96 } as const;
+
+/**
+ * The largest card in the discard pile. Its column has a fixed width, so its cards stay smaller
+ * than the play stacks can be.
+ */
+export const DISCARD_CARD_MAX_WIDTH = 64;
 
 /** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
 const STACKED_PLAY_AREA_OTHER_WIDTH = 2 * PLAY_STACKS_PADDING + PLAY_AREA_GAP;
@@ -76,8 +82,9 @@ export function getHandCardWidth(
 }
 
 /**
- * Returns the width of the cards on the play stacks and in the discard pile. The play stacks and
- * the deck are one column of cards, or one row when the columns stack.
+ * Returns the width of the cards on the play stacks and in the discard pile, before the discard
+ * pile's limit. The play stacks and the deck are one column of cards, or one row when the columns
+ * stack.
  */
 export function getTableCardWidth(
   playAreaWidth: number,
@@ -90,5 +97,5 @@ export function getTableCardWidth(
     ? (playAreaWidth - STACKED_PLAY_AREA_OTHER_WIDTH - gaps) / (numSuits + 1)
     : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps)
       / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH);
-  return clamp(Math.floor(width), TABLE_CARD_WIDTH.MIN, TABLE_CARD_WIDTH.MAX);
+  return clamp(Math.floor(width), STACK_CARD_WIDTH.MIN, STACK_CARD_WIDTH.MAX);
 }

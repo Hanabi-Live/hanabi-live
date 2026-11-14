@@ -41,10 +41,10 @@ import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
+  DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
-  TABLE_CARD_WIDTH,
 } from "./cardSizes.ts";
 import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
 import {
@@ -675,7 +675,7 @@ export function GameScreen({
             <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
               <DiscardPile
                 atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
-                cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
+                cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
                 colorblindMode={settings.colorblindMode}
                 notes={cardNotes}
                 onShowDiscard={showDiscard}
