@@ -88,8 +88,8 @@ export interface CardView {
   readonly trashIcon: boolean;
 
   /**
-   * For a card that its holder cannot see: the suits and ranks that it can still be. A list with
-   * one entry or none means that the holder knows that part, so the screen does not show it.
+   * For a card that its holder cannot see: the suits and ranks that it can still be, as the card
+   * shows them. A list is empty when it would tell the holder nothing that the card face does not.
    */
   readonly possibleSuitIndexes: readonly SuitIndex[];
   readonly possibleRanks: readonly Rank[];
@@ -175,12 +175,10 @@ export function getCardView({
     const pips = getCardPipPresentation(variant, cardState, note, true, {
       empathyIncludesNotes,
     });
-    possibleSuitIndexes = pips.suitPips
-      .filter((pip) => pip.state === PipState.Visible)
-      .map((pip) => pip.suitIndex as SuitIndex);
-    possibleRanks = pips.rankPips
-      .filter((pip) => pip.state === PipState.Visible)
-      .map((pip) => pip.rank);
+    possibleSuitIndexes = getShownPips(pips.suitPips, suitIndex).map(
+      (pip) => pip.suitIndex as SuitIndex,
+    );
+    possibleRanks = getShownPips(pips.rankPips, rank).map((pip) => pip.rank);
   }
 
   const clued = isCardClued(cardState);
@@ -221,6 +219,26 @@ export function getCardView({
     possibleRanks,
     identityFromNote: !blank && isCardIdentityFromNote(identityOptions),
   };
+}
+
+/**
+ * The pips that a card shows: the ones that it can still be. One pip shows only when the holder
+ * learned it by elimination, as on the classic screen. When the clues already say it, or when the
+ * card face shows it, it tells the holder nothing new.
+ */
+function getShownPips<T extends { readonly state: PipState }>(
+  pips: readonly T[],
+  faceValue: unknown,
+): readonly T[] {
+  const visible = pips.filter((pip) => pip.state === PipState.Visible);
+  if (visible.length > 1) {
+    return visible;
+  }
+
+  const fromClues = pips.filter((pip) => pip.state !== PipState.Hidden);
+  return visible.length === 1 && fromClues.length > 1 && faceValue === undefined
+    ? visible
+    : [];
 }
 
 function getNoteBorder(

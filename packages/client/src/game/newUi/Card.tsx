@@ -711,9 +711,9 @@ export function CardFace({
   const suitPipSize = width * SUIT_PIP_SIZE_PER_WIDTH;
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
-  // A row of possibilities with one entry or none tells the holder nothing new, so it is left out.
-  const showSuitPips = possibleSuitIndexes.length > 1;
-  const showRankPips = possibleRanks.length > 1;
+  // "getCardView" leaves out the possibilities that tell the holder nothing new.
+  const showSuitPips = possibleSuitIndexes.length > 0;
+  const showRankPips = possibleRanks.length > 0;
 
   // Clued cards get a thick border in the clue color, with a dark line inside it so that it stands
   // out against faces of a similar color. Other cards get a dark line and a shadow, so that they

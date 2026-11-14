@@ -145,6 +145,56 @@ describe("getCardView", () => {
     expect(view.rank).toBeUndefined();
   });
 
+  test("shows the one suit and rank that the holder learned by elimination", () => {
+    const view = getCardView({
+      gameState,
+      cardState: {
+        ...cardState,
+        // The clues say a red or yellow 3 or 4, but the holder sees all of them except a yellow 4.
+        possibleCardsFromClues: [
+          [0, 3],
+          [0, 4],
+          [1, 3],
+          [1, 4],
+        ],
+        possibleCardsForEmpathy: [[1, 4]],
+      },
+      cardIdentity: red1,
+      note: BLANK_NOTE,
+      variant: VARIANT,
+      empathy: true,
+      finished: false,
+      realLifeMode: false,
+    });
+    expect(view).toMatchObject({
+      suitIndex: undefined,
+      rank: undefined,
+      possibleSuitIndexes: [1],
+      possibleRanks: [4],
+    });
+  });
+
+  test("leaves out the one suit and rank that the clues say", () => {
+    const view = getCardView({
+      gameState,
+      cardState: {
+        ...cardState,
+        possibleCardsFromClues: [[1, 4]],
+        possibleCardsForEmpathy: [[1, 4]],
+      },
+      cardIdentity: red1,
+      note: BLANK_NOTE,
+      variant: VARIANT,
+      empathy: true,
+      finished: false,
+      realLifeMode: false,
+    });
+    expect(view).toMatchObject({
+      possibleSuitIndexes: [],
+      possibleRanks: [],
+    });
+  });
+
   test("gives a border from a note to a card that does not show as clued", () => {
     expect(getView({ finessed: true }).noteBorder).toBe("finessed");
     expect(
