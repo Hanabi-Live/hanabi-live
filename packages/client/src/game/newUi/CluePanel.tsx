@@ -1,5 +1,6 @@
 import type { Clue, PlayerIndex, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
+import { useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
@@ -49,16 +50,6 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
   }
 
   return a?.type === "rank" && b.type === "rank" && a.value === b.value;
-}
-
-/**
- * A name longer than this many characters may not fit in its space, which ends it with an ellipsis.
- * Such a name shows in full in a tooltip.
- */
-const LONG_NAME_LENGTH = 10;
-
-function fullNameTooltip(name: string) {
-  return tooltipRef(name.length > LONG_NAME_LENGTH ? name : undefined);
 }
 
 /**
@@ -116,6 +107,89 @@ function getGiveButtonLabels(variant: Variant): readonly string[] {
   ];
 }
 
+/** The size of the players' names when they fit, in pixels. */
+const PLAYER_FONT_SIZE = 16;
+
+/**
+ * A button for each player who can get the clue. They stay on one row. When the row does not fit,
+ * its text, padding, and gaps get smaller together until it fits, so that every name shows in full.
+ * At narrow widths, the players take a row of their own above the clues.
+ */
+function PlayerButtons({
+  targets,
+  target,
+  onChooseTarget,
+}: Pick<
+  CluePanelProps,
+  "targets" | "target" | "onChooseTarget"
+>): React.JSX.Element {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const names = targets.map(({ name }) => name).join("\n");
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current!;
+    const row = rowRef.current!;
+    function fit() {
+      row.style.fontSize = `${PLAYER_FONT_SIZE}px`;
+      const fullWidth = row.offsetWidth;
+      // The full width is the space that the row asks for, so that its new size does not change the
+      // space that it gets.
+      outer.style.flexBasis = `${fullWidth}px`;
+      const room = outer.clientWidth;
+      row.style.fontSize =
+        fullWidth > room
+          ? `${Math.floor((10 * PLAYER_FONT_SIZE * room) / fullWidth) / 10}px`
+          : `${PLAYER_FONT_SIZE}px`;
+    }
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(outer);
+    // The names are measured again when a font loads, which can change their width.
+    document.fonts.addEventListener("loadingdone", fit);
+    return () => {
+      observer.disconnect();
+      document.fonts.removeEventListener("loadingdone", fit);
+    };
+  }, [names]);
+
+  return (
+    <div
+      className="tw:mr-2 tw:max-w-full tw:min-w-0 tw:narrow-980:mr-0 tw:narrow-980:w-full"
+      ref={outerRef}
+    >
+      <div
+        aria-label="Player to clue"
+        className="tw:flex tw:w-max tw:gap-[0.5em]"
+        ref={rowRef}
+        role="group"
+      >
+        {targets.map(({ playerIndex, name }) => {
+          const chosen = playerIndex === target;
+          return (
+            <button
+              aria-pressed={chosen}
+              className={`${KEY_CLASS} tw:h-11 tw:cursor-pointer tw:rounded-full tw:border-0 tw:px-[1em] tw:font-semibold tw:whitespace-nowrap ${
+                chosen
+                  ? "tw:bg-game-text tw:text-card-ink"
+                  : "tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
+              }`}
+              key={playerIndex}
+              onClick={() => {
+                onChooseTarget(chosen ? undefined : playerIndex);
+              }}
+              type="button"
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /**
  * The controls for giving a clue: pick a player (with their button here, or by clicking their
  * hand), then a color or a rank. The buttons are large, because a player clicks them every turn.
@@ -144,34 +218,11 @@ export function CluePanel({
       {/* With one other player, such as in a 2-player game, the clue can only go to them, and
           their hand stands out, so the panel shows only the clues. */}
       {targets.length > 1 && (
-        // At narrow widths, the players take a row of their own above the clues.
-        <div
-          aria-label="Player to clue"
-          className="tw:mr-2 tw:flex tw:flex-wrap tw:gap-2 tw:narrow-980:mr-0 tw:narrow-980:w-full"
-          role="group"
-        >
-          {targets.map(({ playerIndex, name }) => {
-            const chosen = playerIndex === target;
-            return (
-              <button
-                aria-pressed={chosen}
-                className={`${KEY_CLASS} tw:h-11 tw:max-w-40 tw:cursor-pointer tw:truncate tw:rounded-full tw:border-0 tw:px-4 tw:text-[16px] tw:font-semibold ${
-                  chosen
-                    ? "tw:bg-game-text tw:text-card-ink"
-                    : "tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
-                }`}
-                key={playerIndex}
-                onClick={() => {
-                  onChooseTarget(chosen ? undefined : playerIndex);
-                }}
-                ref={fullNameTooltip(name)}
-                type="button"
-              >
-                {name}
-              </button>
-            );
-          })}
-        </div>
+        <PlayerButtons
+          onChooseTarget={onChooseTarget}
+          target={target}
+          targets={targets}
+        />
       )}
     </>
   );
@@ -276,7 +327,9 @@ export function CluePanel({
           {/* The players are on the left of the actions, and the clues are below both. On a
               narrow window, the actions go first, so that they stay above the reason. */}
           <div className="tw:flex tw:w-full tw:flex-wrap tw:items-center tw:gap-2.5 tw:narrow-980:order-first">
-            <div className={`tw:flex-1 tw:empty:hidden ${hiddenClass}`}>
+            <div
+              className={`tw:min-w-0 tw:flex-1 tw:empty:hidden ${hiddenClass}`}
+            >
               {targetButtons}
             </div>
             {/* Over the reason, which covers the panel, so that the buttons can be clicked. */}
