@@ -328,15 +328,21 @@ impl TableActor {
                     replay.hypothetical = false;
                     replay.hypothetical_actions.clear();
                 }
-                H::Event { event } => {
+                H::Events { events } => {
+                    ensure_or_reject!(!events.is_empty(), "No hypothetical actions");
+                    let mut added = 0;
+                    for event in events {
+                        added += serde_json::to_string(event)?.len();
+                    }
                     ensure_or_reject!(
-                        replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
+                        replay.hypothetical_actions.len() + events.len()
+                            <= crate::model::MAX_HYPOTHETICAL_ACTIONS
                             && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
-                                + serde_json::to_string(event)?.len()
+                                + added
                                 <= crate::model::MAX_HYPOTHETICAL_BYTES,
                         "Too many hypothetical actions"
                     );
-                    replay.hypothetical_actions.push(event.clone());
+                    replay.hypothetical_actions.extend(events.iter().cloned());
                 }
                 H::Back {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
                 H::ShowDrawnCards { show } => replay.show_drawn_cards = *show,

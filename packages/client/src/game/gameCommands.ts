@@ -191,13 +191,12 @@ function onHypotheticalControl(control: HypotheticalControl) {
       break;
     }
 
-    case "event": {
-      const action = toHypotheticalAction(control.event);
+    case "events": {
       store.dispatch(
         gameUpdated({
-          type: "hypotheticalAction",
+          type: "hypotheticalActions",
           shared: true,
-          action,
+          actions: control.events.map(toHypotheticalAction),
         }),
       );
       break;

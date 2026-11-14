@@ -2,7 +2,7 @@
 
 import { gameIdSchema } from "@hanabi-live/data";
 import type {
-  ActionHypotheticalAction,
+  ActionHypotheticalActions,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
   ActionHypotheticalStart,
@@ -52,11 +52,11 @@ export function hypoEnd(shared = false): ActionHypotheticalEnd {
 export function hypoAction(
   action: ActionIncludingHypothetical,
   shared = false,
-): ActionHypotheticalAction {
+): ActionHypotheticalActions {
   return {
-    type: "hypotheticalAction",
+    type: "hypotheticalActions",
     shared,
-    action,
+    actions: [action],
   };
 }
 

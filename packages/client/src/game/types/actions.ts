@@ -38,7 +38,7 @@ export type ReplayAction =
 type HypotheticalAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
-  | ActionHypotheticalAction
+  | ActionHypotheticalActions
   | ActionHypotheticalBack
   | ActionHypotheticalShowDrawnCards;
 
@@ -178,11 +178,12 @@ export interface ActionHypotheticalEnd {
   readonly shared: boolean;
 }
 
-export interface ActionHypotheticalAction {
-  readonly type: "hypotheticalAction";
+/** The actions of one move in a hypothetical, or one changed card. */
+export interface ActionHypotheticalActions {
+  readonly type: "hypotheticalActions";
   /** Whether this is for the shared replay's hypothetical, rather than our own. */
   readonly shared: boolean;
-  readonly action: ActionIncludingHypothetical;
+  readonly actions: readonly ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalBack {

@@ -1825,7 +1825,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"event","event":action}}}),
+                json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"events","events":[action]}}}),
             )
             .await?;
             let tables = store.load().await?;

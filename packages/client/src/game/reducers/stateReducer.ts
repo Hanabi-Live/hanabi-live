@@ -219,7 +219,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "hypotheticalStart":
     case "hypotheticalBack":
     case "hypotheticalEnd":
-    case "hypotheticalAction":
+    case "hypotheticalActions":
     case "hypotheticalShowDrawnCards": {
       state.replay = castDraft(
         replayReducer(state.replay, action, state.metadata),

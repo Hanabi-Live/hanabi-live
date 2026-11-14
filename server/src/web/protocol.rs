@@ -230,7 +230,7 @@ mod tests {
         assert!(
             request(
                 "replayAction",
-                &json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"event","event":"{\"type\":\"turn\"}"}}})
+                &json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"events","events":["{\"type\":\"turn\"}"]}}})
             )
             .is_err()
         );

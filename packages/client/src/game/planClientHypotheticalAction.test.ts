@@ -1,4 +1,5 @@
 import type {
+  ActionIncludingHypothetical,
   CardOrder,
   GameAction,
   GameState,
@@ -133,13 +134,14 @@ describe("client hypothetical planning", () => {
         context,
       );
       expect(actions).not.toBeUndefined();
-      expect(dispatch).toHaveBeenCalledTimes(3);
-      for (const [index, action] of actions!.entries()) {
-        expect(dispatch).toHaveBeenNthCalledWith(
-          index + 1,
-          gameUpdated({ type: "hypotheticalAction", shared: false, action }),
-        );
-      }
+      expect(dispatch).toHaveBeenCalledOnce();
+      expect(dispatch).toHaveBeenCalledWith(
+        gameUpdated({
+          type: "hypotheticalActions",
+          shared: false,
+          actions: actions!,
+        }),
+      );
     },
   );
 
@@ -169,16 +171,18 @@ describe("client hypothetical planning", () => {
 
     expect(dispatch).toHaveBeenCalledWith(
       gameUpdated({
-        type: "hypotheticalAction",
+        type: "hypotheticalActions",
         shared: false,
-        action: {
-          type: "clue",
-          clue: { type: "rank", rank: 1 },
-          playerIndex: 0 as PlayerIndex,
-          orders: [1 as CardOrder],
-          receiverIndex: 1 as PlayerIndex,
-          ignoreNegative: false,
-        },
+        actions: expect.arrayContaining([
+          {
+            type: "clue",
+            clue: { type: "rank", rank: 1 },
+            playerIndex: 0 as PlayerIndex,
+            orders: [1 as CardOrder],
+            receiverIndex: 1 as PlayerIndex,
+            ignoreNegative: false,
+          },
+        ]) as unknown as readonly ActionIncludingHypothetical[],
       }),
     );
   });

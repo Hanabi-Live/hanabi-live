@@ -186,30 +186,35 @@ function replayReducerFunction(
 
     case "hypotheticalBack":
     case "hypotheticalShowDrawnCards":
-    case "hypotheticalAction": {
+    case "hypotheticalActions": {
       const hypotheticalDraft = getHypothetical(state, action.shared);
       assertDefined(
         hypotheticalDraft,
         `A "${action.type}" action was dispatched with a undefined hypothetical state.`,
       );
 
-      const hypothetical = original(hypotheticalDraft);
-      let coreAction: HypotheticalStateAction;
-      if (action.type === "hypotheticalAction") {
-        coreAction = action.action;
+      let hypothetical = original(hypotheticalDraft)!;
+      let coreActions: readonly HypotheticalStateAction[];
+      if (action.type === "hypotheticalActions") {
+        coreActions = action.actions;
       } else if (action.type === "hypotheticalBack") {
-        coreAction = { type: "back" };
+        coreActions = [{ type: "back" }];
       } else {
-        coreAction = {
-          type: "showDrawnCards",
-          showDrawnCards: action.showDrawnCards,
-        };
+        coreActions = [
+          {
+            type: "showDrawnCards",
+            showDrawnCards: action.showDrawnCards,
+          },
+        ];
       }
-      setHypothetical(
-        state,
-        action.shared,
-        castDraft(hypotheticalStateReducer(hypothetical, coreAction, metadata)),
-      );
+      for (const coreAction of coreActions) {
+        hypothetical = hypotheticalStateReducer(
+          hypothetical,
+          coreAction,
+          metadata,
+        );
+      }
+      setHypothetical(state, action.shared, castDraft(hypothetical));
       break;
     }
   }

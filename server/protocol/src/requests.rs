@@ -319,9 +319,11 @@ pub enum ReplayLeaderAction {
 pub enum HypotheticalControl {
     Start {},
     End {},
-    /// Adds an event to the hypothetical.
-    Event {
-        event: HypotheticalEvent,
+    /// Adds the events of one move to the hypothetical, such as a play, the draw after it, and the
+    /// next turn, or one changed card. Clients apply them together, as one move.
+    Events {
+        #[schemars(length(min = 1))]
+        events: Vec<HypotheticalEvent>,
     },
     /// Undoes the hypothetical's last turn.
     Back {},

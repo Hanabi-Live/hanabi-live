@@ -52,8 +52,8 @@ type OutgoingHypotheticalEvent = Extract<
     ClientRequestData["replayAction"]["action"],
     { type: "hypothetical" }
   >["control"],
-  { type: "event" }
->["event"];
+  { type: "events" }
+>["events"][number];
 
 /** Converts a hypothetical action for the server, which omits a hidden clue. */
 export function toWireHypotheticalAction(

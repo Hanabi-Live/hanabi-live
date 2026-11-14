@@ -223,27 +223,26 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
     playing: state.playing,
     cardViews,
   });
-  if (actions !== undefined) {
-    for (const action of actions) {
-      sendHypotheticalActionToServer(action);
-    }
+  if (actions !== undefined && actions.length > 0) {
+    sendHypotheticalActionsToServer(actions);
   }
 }
 
-function sendHypotheticalActionToServer(
-  hypoAction: ActionIncludingHypothetical,
+/** Applies the actions of one move, or one changed card, in one message or store update. */
+function sendHypotheticalActionsToServer(
+  hypoActions: readonly ActionIncludingHypothetical[],
 ) {
   if (getState().replay.ownHypothetical === undefined) {
     sendControl({
-      type: "event",
-      event: toWireHypotheticalAction(hypoAction),
+      type: "events",
+      events: hypoActions.map(toWireHypotheticalAction),
     });
   } else {
     store.dispatch(
       gameUpdated({
-        type: "hypotheticalAction",
+        type: "hypotheticalActions",
         shared: false,
-        action: hypoAction,
+        actions: hypoActions,
       }),
     );
   }
@@ -294,7 +293,7 @@ export function morphCard(
   order: CardOrder,
   identity: CardIdentity | "original",
 ): void {
-  sendHypotheticalActionToServer(
+  sendHypotheticalActionsToServer([
     identity === "original"
       ? { type: "unmorph", order }
       : {
@@ -302,7 +301,7 @@ export function morphCard(
           order,
           identity: { suitIndex: identity.suitIndex, rank: identity.rank },
         },
-  );
+  ]);
 }
 
 /** A card in a hand, as the morph dialog starts with it. */

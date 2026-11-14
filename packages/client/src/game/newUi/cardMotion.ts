@@ -64,12 +64,6 @@ function cardElements(root: HTMLElement): readonly HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>("[data-card-order]")];
 }
 
-/**
- * The server relays a shared hypothetical's move as several messages, a few milliseconds apart.
- * Updates within this long of the first one are part of the same move.
- */
-export const MOVE_BATCH_MILLISECONDS = 100;
-
 function cardMoves(): readonly Animation[] {
   return document
     .getAnimations()

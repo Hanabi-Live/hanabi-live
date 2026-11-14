@@ -937,7 +937,7 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
         let action = json!({"type":"turn","turn":1,"currentPlayerIndex":1});
         for request in [
             json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"start"}}}),
-            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"event","event":action}}}),
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"events","events":[action]}}}),
             json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"back"}}}),
         ] {
             let mut next = actor.candidate();

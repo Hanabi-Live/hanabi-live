@@ -14,7 +14,6 @@ import {
   areCardsMoving,
   MAX_ANIMATED_SEGMENT_CHANGE,
   measureCards,
-  MOVE_BATCH_MILLISECONDS,
   stopCardMoves,
 } from "./cardMotion.ts";
 import { useWindowSize } from "./hooks.ts";
@@ -64,8 +63,7 @@ function getMoveEffects(
 }
 
 /**
- * Shows the changes of the score on a move, as the classic screen does. A move can arrive in
- * several updates, so each one starts on the update that changes its numbers.
+ * Shows the changes of the score on a move, as the classic screen does.
  *
  * - In a game in progress, a play that completes a stack celebrates it, and a play that gives the
  *   team a perfect score sets off the finale instead.
@@ -160,12 +158,9 @@ export function useCardMotion(
   clearDrop: () => void,
   handCardWidthRef: RefObject<number>,
 ): CardMotion {
-  // Move the cards when the game advances or the replay steps through a turn. A game's move arrives
-  // in one message, but a shared hypothetical's move arrives as several (such as a play, then a
-  // draw, then the turn), and the screen renders after each. So the updates within a short window
-  // count as one move: each one starts the cards again from where they were before the move began,
-  // toward their newest places. This runs before the page is painted, so the cards never flash in
-  // their new places.
+  // Move the cards when the game advances or the replay steps through a turn. Each move arrives in
+  // one message, so the screen renders it once. This runs before the page is painted, so the cards
+  // never flash in their new places.
   const rootRef = useRef<HTMLDivElement>(null);
 
   // The whole screen grows with the window (see "screenScale.ts"). The card moves below measure
@@ -185,17 +180,18 @@ export function useCardMotion(
     readonly shownState: GameState | undefined;
     /** The clue whose markers show, so that they fly in only once. */
     readonly shownClue: StateClue | undefined;
+    readonly finished: boolean;
     readonly move:
       | {
           readonly startPositions: CardPositions;
           readonly startState: GameState;
-          readonly startedAt: number;
         }
       | undefined;
   }>({
     settledPositions: new Map(),
     shownState: undefined,
     shownClue: undefined,
+    finished: false,
     move: undefined,
   });
   useLayoutEffect(() => {
@@ -211,6 +207,7 @@ export function useCardMotion(
         settledPositions: measureCards(root),
         shownState,
         shownClue: getClueForTurn(shownState),
+        finished: state.finished,
         move: undefined,
       };
       return;
@@ -224,7 +221,6 @@ export function useCardMotion(
       return;
     }
 
-    const now = performance.now();
     let startPositions = previous.settledPositions;
     // A card that the player dropped starts its move from where it was dropped.
     if (drop !== undefined) {
@@ -237,17 +233,17 @@ export function useCardMotion(
       }
       clearDrop();
     }
+    // The end of a game ("gameFinished") arrives just after its last move, and turns the game into
+    // a replay, which shows the turn before the end. While the cards of the last move still move,
+    // it joins that move: the cards start again from where they were before the move, toward their
+    // newest places. It never stops the score's animations, such as the finale.
+    const endsGame = state.finished && !previous.finished;
     const move =
-      previous.move !== undefined
-      && now - previous.move.startedAt <= MOVE_BATCH_MILLISECONDS
+      previous.move !== undefined && endsGame && areCardsMoving()
         ? previous.move
-        : {
-            startPositions,
-            startState: previous.shownState,
-            startedAt: now,
-          };
+        : { startPositions, startState: previous.shownState };
     stopCardMoves();
-    if (move !== previous.move) {
+    if (!endsGame) {
       finishScoreSignals();
     }
     const positions = measureCards(root);
@@ -293,6 +289,7 @@ export function useCardMotion(
       settledPositions: positions,
       shownState,
       shownClue: newClue,
+      finished: state.finished,
       move,
     };
   });

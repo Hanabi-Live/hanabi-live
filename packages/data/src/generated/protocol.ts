@@ -1269,7 +1269,10 @@ const hypotheticalControlSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("start") }).readonly(),
   z.strictObject({ type: z.literal("end") }).readonly(),
   z
-    .strictObject({ event: hypotheticalEventSchema, type: z.literal("event") })
+    .strictObject({
+      events: z.array(hypotheticalEventSchema).min(1).readonly(),
+      type: z.literal("events"),
+    })
     .readonly(),
   z.strictObject({ type: z.literal("back") }).readonly(),
   z

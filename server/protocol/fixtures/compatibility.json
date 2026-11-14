@@ -1143,15 +1143,17 @@
       "action": {
         "type": "hypothetical",
         "control": {
-          "type": "event",
-          "event": {
-            "type": "morph",
-            "order": 3,
-            "identity": {
-              "suitIndex": 0,
-              "rank": 2
+          "type": "events",
+          "events": [
+            {
+              "type": "morph",
+              "order": 3,
+              "identity": {
+                "suitIndex": 0,
+                "rank": 2
+              }
             }
-          }
+          ]
         }
       }
     },
@@ -1475,13 +1477,15 @@
       "action": {
         "type": "hypothetical",
         "control": {
-          "type": "event",
-          "event": {
-            "type": "morph",
-            "order": 66,
-            "suitIndex": 0,
-            "rank": 2
-          }
+          "type": "events",
+          "events": [
+            {
+              "type": "morph",
+              "order": 66,
+              "suitIndex": 0,
+              "rank": 2
+            }
+          ]
         }
       }
     },

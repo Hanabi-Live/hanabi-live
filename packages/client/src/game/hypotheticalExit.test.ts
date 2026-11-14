@@ -75,13 +75,15 @@ describe("hypothetical exit", () => {
 
     // An earlier action can arrive after Exit was clicked but before the hypothetical ends.
     store.dispatch({
-      type: "hypotheticalAction",
+      type: "hypotheticalActions",
       shared: true,
-      action: {
-        type: "morph",
-        order: 0 as CardOrder,
-        identity: { suitIndex: 0, rank: 1 },
-      },
+      actions: [
+        {
+          type: "morph",
+          order: 0 as CardOrder,
+          identity: { suitIndex: 0, rank: 1 },
+        },
+      ],
     });
     expect(store.getState().replay.hypothetical?.morphedIdentities[0]).toEqual({
       suitIndex: 0,
