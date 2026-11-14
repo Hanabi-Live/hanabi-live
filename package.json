@@ -32,7 +32,7 @@
       "@vitejs/plugin-react": "6.3.0",
       "complete-cli": "1.5.35",
       "complete-common": "2.32.0",
-      "complete-lint": "5.28.0",
+      "complete-lint": "5.28.1",
       "complete-node": "18.1.2",
       "esbuild": "0.28.2",
       "fast-deep-equal": "3.1.3",
