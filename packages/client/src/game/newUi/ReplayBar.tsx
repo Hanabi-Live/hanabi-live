@@ -115,7 +115,6 @@ function Timeline({
   segment,
   lastSegment,
   slide,
-  leaderMove,
   leader,
 }: {
   readonly segment: number;
@@ -128,9 +127,6 @@ function Timeline({
    */
   readonly leader:
     { readonly name: string; readonly segment: number } | undefined;
-
-  /** The shared replay leader's last move, which flashes over the knob while we follow them. */
-  readonly leaderMove: LeaderMove | undefined;
 
   /** Whether the knob slides to a new turn instead of moving at once, for a leader's moves. */
   readonly slide: boolean;
@@ -214,18 +210,6 @@ function Timeline({
             : undefined,
         }}
       />
-      {slide && (
-        // Above the knob, and it moves with the knob.
-        <span
-          className="tw:pointer-events-none tw:absolute tw:bottom-[calc(50%+16px)] tw:flex tw:-translate-x-1/2"
-          style={{
-            left: knobLeft,
-            transition: `left ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}`,
-          }}
-        >
-          <DirectionFlash move={leaderMove} />
-        </span>
-      )}
     </div>
   );
 }
@@ -598,8 +582,8 @@ export function TurnsBar({
             }}
             size="step"
           />
-          {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline, and the
-              leader's moves flash between these buttons instead of over the knob. */}
+          {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline to show the
+              leader's moves. They flash between these buttons instead. */}
           {spoilerFree && following && (
             <span className="tw:flex tw:w-6 tw:justify-center">
               <DirectionFlash move={move} />
@@ -641,7 +625,6 @@ export function TurnsBar({
         <Timeline
           lastSegment={lastSegment}
           leader={leaderMark}
-          leaderMove={move}
           segment={segment}
           slide={following}
         />
@@ -772,8 +755,8 @@ const DIRECTION_FLASH_MILLISECONDS = 1000;
 const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 /**
- * A forward or back icon over the timeline's knob, which pops in on each of the leader's moves and
- * fades out, as the classic screen's arrow does over the board.
+ * A forward or back icon between the step buttons of a spoiler-free review, which pops in on each
+ * of the leader's moves and fades out, as the classic screen's arrow does over the board.
  */
 function DirectionFlash({
   move,
