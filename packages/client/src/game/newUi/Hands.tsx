@@ -479,6 +479,7 @@ function OwnCard({
       clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
+      identityFromNote={card.identityFromNote}
       note={props.notes.notesHtml.has(card.order)}
       possibleRanks={card.possibleRanks}
       possibleSuitIndexes={card.possibleSuitIndexes}
@@ -604,6 +605,7 @@ function EditableCard({
         clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
+        identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}
@@ -673,6 +675,7 @@ function HandCard({
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         highlighted={props.touchedCards.has(card.order)}
+        identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
         possibleRanks={card.possibleRanks}
         possibleSuitIndexes={card.possibleSuitIndexes}

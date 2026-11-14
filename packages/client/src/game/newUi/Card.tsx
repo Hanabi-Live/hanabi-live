@@ -93,6 +93,9 @@ interface CardFaceProps {
   /** Whether the card has a note that the viewer can read. */
   readonly note?: boolean;
 
+  /** Whether the note decides the suit or the rank that the card shows. */
+  readonly identityFromNote?: boolean;
+
   /** Whether a clued card sits higher than the others, as it does in a hand. */
   readonly raiseClued?: boolean;
 
@@ -270,10 +273,17 @@ const NOTE_TILT_DEGREES = 8;
 
 /**
  * A sticky note on the top-right corner of a card that has a note, where the classic screen shows
- * its note icon. It is a slip of paper with a folded corner and a few lines of writing. The card
+ * its note icon. It is a slip of paper with a folded corner and a few lines of writing. When the
+ * note decides what the card shows, a pencil lies across it, as on the classic screen. The card
  * itself shows the note on hover, so the slip has no tooltip of its own.
  */
-function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
+function NoteBadge({
+  width,
+  pencil,
+}: {
+  readonly width: number;
+  readonly pencil: boolean;
+}): React.JSX.Element {
   const size = width * BADGE_SIZE_PER_WIDTH;
   return (
     <svg
@@ -311,7 +321,51 @@ function NoteBadge({ width }: { readonly width: number }): React.JSX.Element {
         strokeLinecap="round"
         strokeWidth={9}
       />
+      {pencil && <Pencil />}
     </svg>
+  );
+}
+
+/**
+ * The outline of a pencil that lies along the x axis, with its point at the origin: a cone of wood
+ * with a graphite tip, a body, and a cap at the end.
+ */
+const PENCIL = {
+  length: 92,
+  halfThickness: 12,
+  coneEnd: 26,
+  tipEnd: 9,
+  capStart: 80,
+} as const;
+
+/** A pencil that lies across the sticky note, in the note's box of 100 units, point down-left. */
+function Pencil(): React.JSX.Element {
+  const { length, halfThickness, coneEnd, tipEnd, capStart } = PENCIL;
+  const tipHalf = (halfThickness * tipEnd) / coneEnd;
+  return (
+    <g transform={`translate(50 54) rotate(-45) translate(${-length / 2} 0)`}>
+      {/* One path for the whole outline, so that it does not break where the parts meet. The stroke
+          is drawn first and is twice as wide, so the parts cover its inner half. */}
+      <path
+        className="tw:fill-card-ink tw:stroke-card-ink"
+        d={`M 0 0 L ${coneEnd} ${-halfThickness} H ${length} V ${halfThickness} H ${coneEnd} Z`}
+        paintOrder="stroke"
+        strokeLinejoin="round"
+        strokeWidth={3}
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        className="tw:fill-card-note"
+        d={`M ${tipEnd} ${-tipHalf} L ${coneEnd} ${-halfThickness} V ${halfThickness} L ${tipEnd} ${tipHalf} Z`}
+      />
+      <rect
+        className="tw:fill-clue"
+        height={2 * halfThickness}
+        width={capStart - coneEnd}
+        x={coneEnd}
+        y={-halfThickness}
+      />
+    </g>
   );
 }
 
@@ -510,6 +564,7 @@ export function CardFace({
   trash = false,
   trashIcon = false,
   note = false,
+  identityFromNote = false,
   raiseClued = false,
   highlighted = false,
   possibleSuitIndexes = [],
@@ -602,7 +657,7 @@ export function CardFace({
         <StatusBadge critical={critical} width={width} />
       )}
 
-      {note && <NoteBadge width={width} />}
+      {note && <NoteBadge pencil={identityFromNote} width={width} />}
 
       {(showSuitPips || showRankPips) && (
         <Possibilities
