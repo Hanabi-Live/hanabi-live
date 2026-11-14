@@ -1011,6 +1011,21 @@ function getStates(): readonly State[] {
         await page.getByRole("button", { name: /'s turn$/u }).waitFor();
       },
     },
+    // Bob, who leads a five-player shared replay, starts a hypothetical that the account follows.
+    {
+      name: "new-ui-spectator-hypothetical",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().startHypothetical();
+        await page.getByText("Shared hypothetical").waitFor();
+      },
+    },
     // The menu that views a five-player shared replay from another seat, with the pointer on the
     // first seat.
     {
@@ -1281,6 +1296,8 @@ interface BobsGame {
   readonly end: () => Promise<void>;
   /** Makes the browser's account the leader of the shared replay. */
   readonly passLeader: () => void;
+  /** Bob, who leads the shared replay, starts a hypothetical that everyone watches. */
+  readonly startHypothetical: () => void;
   /**
    * Tells the leader of the shared replay whether Bob will play again. It returns once the server
    * has told the others.
@@ -1919,6 +1936,12 @@ async function createCast(
       end,
       passLeader: () => {
         bob.send("tableSetOwner", { tableId, userId: you.userId });
+      },
+      startHypothetical: () => {
+        bob.send("replayAction", {
+          tableId,
+          action: { type: "hypothetical", control: { type: "start" } },
+        });
       },
       setReady: async (ready) => {
         await bob.request("tableRestartDecline", { tableId, declined: !ready });

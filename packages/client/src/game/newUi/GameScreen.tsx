@@ -605,8 +605,10 @@ export function GameScreen({
                   of the one not shown. So the hands above it keep their place and size when the
                   game pauses or goes in and out of a replay. The replay bar keeps its own height at
                   the top of the slot. A finished game has no clue panel, so its slot is only as
-                  tall as the replay bar, and the hands get the rest. Only a hypothetical with both
-                  moves them: its bar is the lower one, so that it stays where it is in a replay.
+                  tall as the replay bar, and the hands get the rest. A spectator's hypothetical bar
+                  is shorter, so a hidden replay bar holds its space too, and the switch to follow
+                  the leader stays in its place. Only a hypothetical with both moves them: its bar
+                  is the lower one, so that it stays where it is in a replay.
                   On a narrow window, the page scrolls and the controls go above the hands, with
                   the replay bar first. */}
               <div className="tw:grid tw:shrink-0 tw:gap-3.5 tw:narrow-980:-order-1 tw:narrow-980:flex tw:narrow-980:flex-col">
@@ -628,7 +630,7 @@ export function GameScreen({
                     />
                   </div>
                 )}
-                {!showReplayBar && (
+                {(!showReplayBar || (hypo !== undefined && !showCluePanel)) && (
                   <div className="tw:invisible tw:grid tw:[grid-area:1/1] tw:narrow-980:hidden">
                     <TurnsBar state={state} />
                   </div>

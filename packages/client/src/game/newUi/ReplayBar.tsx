@@ -46,9 +46,14 @@ const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center
  * row. A jump to the first or the last turn is as tall as a text button and quieter, so that it is
  * not mistaken for a step.
  */
+/**
+ * The height of a step to the next or the previous turn, which is the height of a bar's first row.
+ */
+const STEP_HEIGHT_CLASS = "tw:h-11 tw:text-[20px]";
+
 const ICON_BUTTON_SIZE_CLASS = {
   normal: "tw:size-11 tw:text-[17px] tw:text-game-text",
-  step: "tw:size-11 tw:text-[20px] tw:text-game-text",
+  step: `tw:w-11 ${STEP_HEIGHT_CLASS} tw:text-game-text`,
   jump: "tw:size-11 tw:text-[15px] tw:text-game-muted tw:hover:text-game-text",
 } as const;
 
@@ -363,31 +368,36 @@ function HypotheticalBar({
   readonly onToggleEditCards: () => void;
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical!;
-  const { shared } = state.replay;
 
-  // A hypothetical in a shared replay is the leader's, like the replay around it.
-  let label = "Hypothetical";
-  if (shared !== undefined && state.replay.ownHypothetical === undefined) {
-    label = shared.amLeader
-      ? "Shared hypothetical: you lead"
-      : `Shared hypothetical: ${shared.leader} leads`;
-  }
-
+  // A spectator watches the leader's hypothetical. The leader's menu and the switch to follow the
+  // leader are where the bar of the turns has them, so that the switch does not move when a click
+  // on it goes back to that bar. The menu names who leads, so the heading does not.
   if (!controlsHypothetical(state)) {
     return (
       <Bar>
-        <Heading icon="fa-flask" label={label} mode="hypothetical" />
-        {shared !== undefined && (
-          <div className="tw:ml-auto tw:flex">
-            <FollowButton
-              following={shared.useSharedSegments}
-              leader={shared.leader}
+        <div className={ROWS_CLASS}>
+          <LeaderControls state={state} />
+          {/* As tall as the steps that the bar of the turns has here, so that the row is too. */}
+          <div
+            className={`tw:flex tw:items-center tw:justify-center tw:narrow-980:w-full ${STEP_HEIGHT_CLASS}`}
+          >
+            <Heading
+              icon="fa-flask"
+              label="Shared hypothetical"
+              mode="hypothetical"
             />
           </div>
-        )}
+        </div>
       </Bar>
     );
   }
+
+  // A hypothetical in a shared replay is the leader's, like the replay around it, and here we lead.
+  const label =
+    state.replay.shared !== undefined
+    && state.replay.ownHypothetical === undefined
+      ? "Shared hypothetical: you lead"
+      : "Hypothetical";
 
   return (
     <Bar>
@@ -469,6 +479,42 @@ export function ReplayBar({
   return <TurnsBar state={state} />;
 }
 
+/**
+ * The first row of a bar: the left, the middle, and the right. On a narrow window, its parts flow
+ * into the bar's own rows.
+ */
+const ROWS_CLASS =
+  "tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents";
+
+/**
+ * The shared replay's leader menu, and the switch to follow the leader if we do not lead. They are
+ * on the left of the bar. On a narrow window, they are in the bar's last row.
+ */
+function LeaderControls({
+  state,
+}: {
+  readonly state: State;
+}): React.JSX.Element {
+  const { shared } = state.replay;
+  return (
+    <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:flex-wrap tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
+      {shared !== undefined && (
+        <LeaderMenu
+          amLeader={shared.amLeader}
+          leader={shared.leader}
+          spectators={state.spectators}
+        />
+      )}
+      {shared !== undefined && !shared.amLeader && (
+        <FollowButton
+          following={shared.useSharedSegments}
+          leader={shared.leader}
+        />
+      )}
+    </div>
+  );
+}
+
 /** The bar of a replay that is not a hypothetical, with the controls to move through its turns. */
 export function TurnsBar({
   state,
@@ -508,22 +554,8 @@ export function TurnsBar({
   // timeline.
   return (
     <Bar>
-      <div className="tw:grid tw:w-full tw:grid-cols-[1fr_auto_1fr] tw:items-center tw:gap-2.5 tw:narrow-980:contents">
-        <div className="tw:flex tw:justify-start tw:gap-2.5 tw:narrow-980:order-last tw:narrow-980:flex-1 tw:narrow-980:flex-wrap tw:narrow-980:*:flex-1 tw:narrow-980:empty:hidden">
-          {shared !== undefined && (
-            <LeaderMenu
-              amLeader={shared.amLeader}
-              leader={shared.leader}
-              spectators={state.spectators}
-            />
-          )}
-          {shared !== undefined && !shared.amLeader && (
-            <FollowButton
-              following={shared.useSharedSegments}
-              leader={shared.leader}
-            />
-          )}
-        </div>
+      <div className={ROWS_CLASS}>
+        <LeaderControls state={state} />
         <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
           {finished && (
             <IconButton
