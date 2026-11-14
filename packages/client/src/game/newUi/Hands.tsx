@@ -42,8 +42,8 @@ export interface Seat {
    */
   readonly clock: string | undefined;
 
-  /** The tooltip of the clock, if it has one. */
-  readonly clockTooltip: string | undefined;
+  /** The tooltip of the player's name, with the time that they have taken, if it has one. */
+  readonly timeTooltip: string | undefined;
 }
 
 interface HandsProps {
@@ -367,14 +367,12 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
         className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink tw:select-none ${
           seat.clock === undefined ? "tw:pr-3.5" : "tw:pr-2"
         }`}
+        ref={tooltipRef(seat.timeTooltip)}
       >
         {youIcon}
         <FitText text={seat.name} />
         {seat.clock !== undefined && (
-          <span
-            className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text"
-            ref={tooltipRef(seat.clockTooltip)}
-          >
+          <span className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text">
             {seat.clock}
           </span>
         )}
@@ -383,7 +381,10 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   }
 
   return (
-    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:select-none">
+    <span
+      className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:select-none"
+      ref={tooltipRef(seat.timeTooltip)}
+    >
       {youIcon}
       <FitText text={seat.name} />
     </span>
@@ -434,12 +435,12 @@ export function NameColumnSizer({
             ...seat,
             active: true,
             clock: showClock ? CLOCK_PLACEHOLDER : undefined,
-            clockTooltip: undefined,
+            timeTooltip: undefined,
           }}
         />,
         <NameChip
           key={`${seat.playerIndex}-waiting`}
-          seat={{ ...seat, active: false }}
+          seat={{ ...seat, active: false, timeTooltip: undefined }}
         />,
       ])}
     </div>

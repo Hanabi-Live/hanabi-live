@@ -123,19 +123,20 @@ export function getSeats(
     }
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
+    // An untimed game's clock shows the time taken on this turn. Each player's name has a tooltip
+    // with the time that they have taken in the whole game.
+    const timed = metadata.options.timeControl !== undefined;
+    const playerTime = getPlayerTime(playerIndex);
     let clock: string | undefined;
-    let clockTooltip: string | undefined;
     if (showClock && active && getActivePlayerIndex() === playerIndex) {
-      const playerTime = getPlayerTime(playerIndex) ?? 0;
-      if (metadata.options.timeControl === undefined) {
-        // An untimed game's clock shows the time taken on this turn. The time taken in the whole
-        // game is in its tooltip.
-        clock = millisecondsToClockString(getTurnTime() ?? 0);
-        clockTooltip = `Time taken in this game: ${millisecondsToClockString(playerTime)}`;
-      } else {
-        clock = millisecondsToClockString(playerTime);
-      }
+      clock = millisecondsToClockString(
+        (timed ? playerTime : getTurnTime()) ?? 0,
+      );
     }
+    const timeTooltip =
+      showClock && !timed && playerTime !== undefined
+        ? `Time taken in this game: ${millisecondsToClockString(playerTime)}`
+        : undefined;
 
     seats.push({
       playerIndex,
@@ -145,7 +146,7 @@ export function getSeats(
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       clock,
-      clockTooltip,
+      timeTooltip,
     });
   }
 
