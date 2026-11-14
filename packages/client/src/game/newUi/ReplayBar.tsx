@@ -42,18 +42,19 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
 
 /**
- * The sizes of an icon button. Spacing is in "em", so a larger icon also makes a larger button. A
- * step to the next or the previous turn is the largest, because a player clicks it many times in a
- * row. A jump to the first or the last turn is as tall as a text button and quieter, so that it is
- * not mistaken for a step.
- */
-/**
  * The height of a step to the next or the previous turn, which is the height of a bar's first row.
  */
 const STEP_HEIGHT_CLASS = "tw:h-11 tw:text-[20px]";
 
+/**
+ * The sizes of an icon button. Spacing is in "em", so a larger font also makes a larger button. A
+ * step to the next or the previous turn is the largest, because a player clicks it many times in a
+ * row. The other buttons are as tall as a text button, such as the one that follows the leader
+ * again. A normal button's icon is larger than the button's own font. A jump to the first or the
+ * last turn is quieter, so that it is not mistaken for a step.
+ */
 const ICON_BUTTON_SIZE_CLASS = {
-  normal: "tw:size-11 tw:text-[17px] tw:text-game-text",
+  normal: "tw:size-11 tw:text-[15px] tw:text-game-text tw:*:text-[17px]",
   step: `tw:w-11 ${STEP_HEIGHT_CLASS} tw:text-game-text`,
   jump: "tw:size-11 tw:text-[15px] tw:text-game-muted tw:hover:text-game-text",
 } as const;
