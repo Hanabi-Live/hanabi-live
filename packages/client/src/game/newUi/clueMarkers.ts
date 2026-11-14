@@ -12,14 +12,16 @@ import { EVEN_RANK_CLUE, getCharacterNameForPlayer } from "@hanabi-live/game";
 import { currentState, currentVariant } from "../gameSession.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 
-/** The fill of a color clue whose color is hidden ("Cow & Pig"), as on the classic screen. */
-const HIDDEN_COLOR_FILL = "white";
+/** The animal that stands for a clue that the variant hides, after the clue's sound. */
+export const QUACK_EMOJI = "\u{1F986}";
+export const MOO_EMOJI = "\u{1F42E}";
+export const OINK_EMOJI = "\u{1F437}";
 
 /**
- * How a clue shows on a token, following the classic screen's arrows. Duck clues and the clues of a
- * Quacker (until the game ends) hide the clue. "Cow & Pig" clues show only the clue's type: a white
- * disc for a color, and "#" for a rank. These rules hold for every viewer, even when the server
- * sends spectators and replays the real clue.
+ * How a clue shows on a token. Duck clues and the clues of a Quacker (until the game ends) hide the
+ * clue, so they show a duck. "Cow & Pig" clues show only the clue's type: a cow for a color, and a
+ * pig for a rank. These rules hold for every viewer, even when the server sends spectators and
+ * replays the real clue.
  */
 function getMarker(
   visibleType: ClueType | undefined,
@@ -38,15 +40,17 @@ function getMarker(
     || variant.duck
     || (giverCharacterName === "Quacker" && !currentState().finished)
   ) {
-    return { type: "hidden" };
+    return {
+      type: "sound",
+      emoji: QUACK_EMOJI,
+    };
   }
 
   if (visibleType === "color") {
     return color === undefined || variant.cowAndPig
       ? {
-          type: "color",
-          name: "",
-          fill: HIDDEN_COLOR_FILL,
+          type: "sound",
+          emoji: MOO_EMOJI,
         }
       : {
           type: "color",
@@ -57,8 +61,8 @@ function getMarker(
 
   if (rank === undefined || variant.cowAndPig) {
     return {
-      type: "rank",
-      label: "#",
+      type: "sound",
+      emoji: OINK_EMOJI,
     };
   }
   if (variant.oddsAndEvens) {

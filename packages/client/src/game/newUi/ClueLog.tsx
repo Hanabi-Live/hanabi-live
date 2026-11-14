@@ -2,7 +2,11 @@ import type { CardOrder } from "@hanabi-live/game";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
-import { getClueMarkerColor, getClueMarkerLabel } from "./Card.tsx";
+import {
+  CLUE_EMOJI_FONT_PER_SIZE,
+  getClueMarkerColor,
+  getClueMarkerLabel,
+} from "./Card.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
@@ -315,10 +319,19 @@ export function ClueDisc({
       }}
     >
       {/* The number's box is trimmed to the height of the digits, so that the digits are centered
-          and not the font's space above and below them. */}
-      {marker.type !== "color" && (
+          and not the font's space above and below them. An emoji fills its whole box, so it is
+          not trimmed. */}
+      {marker.type === "rank" && (
         <span className="tw:block tw:[text-box:trim-both_cap_alphabetic]">
           {getClueMarkerLabel(marker)}
+        </span>
+      )}
+      {marker.type === "sound" && (
+        <span
+          className="tw:block tw:leading-none"
+          style={{ fontSize: size * CLUE_EMOJI_FONT_PER_SIZE }}
+        >
+          {marker.emoji}
         </span>
       )}
     </span>

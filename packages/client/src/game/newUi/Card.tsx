@@ -218,13 +218,13 @@ export const CLUE_TOKEN_REACH_PER_WIDTH =
   + CLUED_RAISE_PER_WIDTH;
 
 /**
- * The clue that a marker on a card shows: a color, a rank, or a clue that the viewer may not see
- * (in some variants).
+ * The clue that a marker on a card shows: a color, a rank, or the animal of a clue that the viewer
+ * may not see (in some variants).
  */
 export type ClueMarkerView =
   | { readonly type: "color"; readonly name: string; readonly fill: string }
   | { readonly type: "rank"; readonly label: string }
-  | { readonly type: "hidden" };
+  | { readonly type: "sound"; readonly emoji: string };
 
 /** How much of a suit's color tints a card face. The rest is white. */
 const FACE_TINT_PERCENT = 32;
@@ -280,7 +280,15 @@ export function getClueMarkerColor(marker: ClueMarkerView): string {
   return marker.type === "color" ? marker.fill : "white";
 }
 
-/** The text on a clue token: the clue's number, "?" for a hidden clue, and none for a color. */
+/**
+ * The size of the animal on a clue token or disc, per the token's width. It is smaller than a
+ * number, since an emoji fills its whole box, and it must fit inside the white ring.
+ */
+export const CLUE_EMOJI_FONT_PER_SIZE = 0.55;
+
+/**
+ * The text on a clue token: the clue's number, the animal of a hidden clue, and none for a color.
+ */
 export function getClueMarkerLabel(marker: ClueMarkerView): string {
   switch (marker.type) {
     case "color": {
@@ -291,8 +299,8 @@ export function getClueMarkerLabel(marker: ClueMarkerView): string {
       return marker.label;
     }
 
-    case "hidden": {
-      return "?";
+    case "sound": {
+      return marker.emoji;
     }
   }
 }
@@ -367,7 +375,10 @@ function ClueMarker({
       </svg>
       <span
         className="tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:font-extrabold tw:leading-none tw:text-card-ink"
-        style={{ fontSize: size * 0.66 }}
+        style={{
+          fontSize:
+            size * (marker.type === "sound" ? CLUE_EMOJI_FONT_PER_SIZE : 0.66),
+        }}
       >
         {label}
       </span>

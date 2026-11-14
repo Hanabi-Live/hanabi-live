@@ -234,6 +234,9 @@ const OTHER_PLAYER_NAMES = ["Ivan_Wolfgang", "Heidi", "Grace"] as const;
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
+/** A variant whose clues show as animals, since players hear them only as "moo" and "oink". */
+const ANIMAL_CLUE_VARIANT_NAME = "Cow & Pig (6 Suits)";
+
 /** A variant with suits of two colors, whose play stacks have labels that name their suits. */
 const DUAL_COLOR_VARIANT_NAME = "Dual-Color & Rainbow (6 Suits)";
 
@@ -890,6 +893,18 @@ function getStates(): readonly State[] {
       isolated: true,
       setup: async (cast) => {
         const game = await cast.startBobsGame(5);
+        await game.discardTurns(15);
+      },
+    },
+    // After every player has discarded cards in a "Cow & Pig" game, so that the clue log and the
+    // clue tokens show the animal of each clue instead of its number.
+    {
+      name: "new-ui-animal-clues",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, ANIMAL_CLUE_VARIANT_NAME);
         await game.discardTurns(15);
       },
     },
