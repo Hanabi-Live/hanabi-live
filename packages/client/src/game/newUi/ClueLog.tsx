@@ -69,10 +69,21 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
 }
 
 /**
+ * The clue as words next to its disc, such as "Red" or "Number 2". A bare number gets the word
+ * "Number", so that it does not read as a count.
+ */
+function getClueText(entry: ClueLogEntry): string {
+  const { marker, clueName } = entry;
+  return marker.type === "rank" && clueName === marker.label
+    ? `Number ${clueName}`
+    : clueName;
+}
+
+/**
  * The clues of the game so far, newest at the bottom, like the classic screen's clue log. They are
- * in columns: the turn, the giver, an arrow, the receiver, and the clue. A name that is too long
- * for its column is made smaller to fit, not cut off. Each one is a button that shows the turn
- * after it. The clue of the turn on screen stands out.
+ * in columns: the turn, the giver, an arrow, the receiver, and the clue (a disc and its name). A
+ * name that is too long for its column is made smaller to fit, not cut off. Each one is a button
+ * that shows the turn after it. The clue of the turn on screen stands out.
  *
  * While the mouse button is held down on a card in a hand, the log shows only the clues about that
  * card: the ones that touched it (on green), and the ones to its hand that did not (on red). So all
@@ -193,11 +204,17 @@ export function ClueLog({
                     role="img"
                   />
                   <FitName name={entry.targetName} />
-                  <ClueDisc
-                    clueName={entry.clueName}
-                    marker={entry.marker}
-                    match={match}
-                  />
+                  <span className="tw:flex tw:items-center tw:gap-1.5">
+                    <ClueDisc
+                      clueName={entry.clueName}
+                      marker={entry.marker}
+                      match={match}
+                    />
+                    {/* The disc's label already says this to screen readers. */}
+                    <span aria-hidden className="tw:whitespace-nowrap">
+                      {getClueText(entry)}
+                    </span>
+                  </span>
                 </button>
               </li>
             );

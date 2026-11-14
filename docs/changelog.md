@@ -49,6 +49,8 @@ of the repository.
   edges, and the piles, clue log, and hands sit deeper in it.
 - In the new game screen, "Play again" and "Ready" are now in the bottom bar,
   where "End game" is during the game.
+- In the new game screen, the clue log names each clue next to its circle, such
+  as "Red" or "Number 2".
 
 ## November 12th, 2026
 
