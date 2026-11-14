@@ -876,16 +876,16 @@ function getStates(): readonly State[] {
         await game.playAndMisplay();
       },
     },
-    // After the account plays a card and steps back over it in the in-game replay, where the drawn
-    // card goes back to the deck.
+    // After a player discards a card, the account steps back over it in the in-game replay, where
+    // the drawn card goes back to the deck. The bar says whose turn it is in the game.
     {
       name: "new-ui-replay",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame();
-        await game.play("account", true);
+        const game = await cast.startBobsGame(5);
+        await game.discardTurns(1);
       },
       prepare: async (page) => {
         await page.getByRole("button", { name: "Replay" }).click();

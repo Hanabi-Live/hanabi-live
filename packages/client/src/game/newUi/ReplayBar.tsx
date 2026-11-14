@@ -7,6 +7,7 @@
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
+import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import {
   canToggleDrawnCards,
@@ -30,8 +31,8 @@ const ACCENT_TEXT_CLASS = {
 /** A quiet button for the actions that are not the main one. */
 const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:shrink-0 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8`;
 
-/** The bar's main action: the way back out of the mode. */
-const PRIMARY_BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-game-text tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:hover:bg-white ${KEY_CLASS}`;
+/** The bar's main action: the way back out of the mode. It sets no color. */
+const PRIMARY_BUTTON_CLASS = `tw:flex tw:h-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:font-bold tw:whitespace-nowrap tw:text-card-ink ${KEY_CLASS}`;
 
 /** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
 const TIMELINE_SLIDE_MILLISECONDS = 300;
@@ -635,17 +636,7 @@ export function TurnsBar({
               tooltip="Enter hypothetical: try out other moves from this turn."
             />
           )}
-          {!finished && (
-            <button
-              className={`${PRIMARY_BUTTON_CLASS} tw:narrow-980:flex-1`}
-              onClick={() => {
-                replay.exit();
-              }}
-              type="button"
-            >
-              Back to the game
-            </button>
-          )}
+          {!finished && <BackToGame state={state} />}
         </div>
       </div>
       {!spoilerFree && (
@@ -658,6 +649,84 @@ export function TurnsBar({
         />
       )}
     </Bar>
+  );
+}
+
+/** How many times the button to go back to the game pulses when it becomes our turn. */
+const OUR_TURN_PULSES = 3;
+
+/** How long one pulse of the button to go back to the game takes, in milliseconds. */
+const OUR_TURN_PULSE_MILLISECONDS = 1200;
+
+/**
+ * The way back to the game, with whose turn it is in the game now, which the screen does not show
+ * while we look back. When it is our turn, the button is in the color that marks our turn. When our
+ * turn comes while we look back, a ring also pulses out of it a few times, so that we do not keep
+ * the other players waiting.
+ */
+function BackToGame({ state }: { readonly state: State }): React.JSX.Element {
+  const { currentPlayerIndex } = state.ongoingGame.turn;
+  const ourTurn =
+    state.playing && currentPlayerIndex === state.metadata.ourPlayerIndex;
+  const currentName =
+    currentPlayerIndex === undefined
+      ? undefined
+      : state.metadata.playerNames[currentPlayerIndex];
+
+  const ringRef = useRef<HTMLSpanElement>(null);
+  const wasOurTurn = useRef(ourTurn);
+  useLayoutEffect(() => {
+    const ring = ringRef.current;
+    const turnCame = ourTurn && !wasOurTurn.current;
+    wasOurTurn.current = ourTurn;
+    if (
+      ring === null
+      || !turnCame
+      || store.getState().session.settings.reducedMotion
+    ) {
+      return undefined;
+    }
+    const pulse = ring.animate(
+      [
+        { opacity: 0.8, transform: "scale(1)" },
+        { opacity: 0, transform: "scale(1.15, 1.6)" },
+      ],
+      {
+        duration: OUR_TURN_PULSE_MILLISECONDS,
+        easing: "ease-out",
+        iterations: OUR_TURN_PULSES,
+      },
+    );
+    return () => {
+      pulse.cancel();
+    };
+  }, [ourTurn]);
+
+  return (
+    <div className="tw:relative tw:min-w-0 tw:shrink-0 tw:narrow-980:flex-1">
+      <span
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-game-control tw:opacity-0 tw:ring-2 tw:ring-game-turn"
+        ref={ringRef}
+      />
+      <button
+        className={`${PRIMARY_BUTTON_CLASS} tw:relative tw:w-full tw:flex-col tw:leading-tight ${ourTurn ? "tw:bg-game-turn tw:hover:brightness-110" : "tw:bg-game-text tw:hover:bg-white"}`}
+        onClick={() => {
+          replay.exit();
+        }}
+        type="button"
+      >
+        Back to the game
+        {currentName !== undefined && (
+          <span
+            className={`tw:max-w-full tw:truncate tw:text-xs ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
+            data-live-turn
+          >
+            {ourTurn ? "Your turn" : `${currentName}'s turn`}
+          </span>
+        )}
+      </button>
+    </div>
   );
 }
 
