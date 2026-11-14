@@ -582,15 +582,13 @@ export function TurnsBar({
       <div className={ROWS_CLASS}>
         <LeaderControls state={state} />
         <div className="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:narrow-980:w-full">
-          {finished && (
-            <IconButton
-              disabled={atStart}
-              icon="fa-step-backward"
-              label="First turn"
-              onClick={replay.backFull}
-              size="jump"
-            />
-          )}
+          <IconButton
+            disabled={atStart}
+            icon="fa-step-backward"
+            label="First turn"
+            onClick={replay.backFull}
+            size="jump"
+          />
           <IconButton
             disabled={atStart}
             icon="fa-chevron-left"
@@ -614,7 +612,7 @@ export function TurnsBar({
             onClick={replay.forward}
             size="step"
           />
-          {finished && !spoilerFree && (
+          {!spoilerFree && (
             <IconButton
               disabled={atEnd}
               icon="fa-step-forward"
