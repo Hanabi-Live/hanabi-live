@@ -50,9 +50,6 @@ export const hanabiConfigBase = defineConfig(
       // includes Safari 16.4.
       "unicorn/prefer-iterator-to-array": "off",
 
-      // Keep explicit branches in the game rules and event handlers.
-      "unicorn/prefer-logical-operator-over-ternary": "off",
-
       // Factoring ternaries can erase the correlation between discriminated union members.
       "unicorn/prefer-minimal-ternary": "off",
 

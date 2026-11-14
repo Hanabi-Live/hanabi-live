@@ -4,9 +4,8 @@ import { globals } from "./UiGlobals.ts";
 import { onSpectatorsChanged } from "./reactive/views/spectatorsView.ts";
 
 export function toggleZen(): void {
-  lobbyGlobals.zenModeEnabled = globals.state.finished
-    ? false
-    : !lobbyGlobals.zenModeEnabled;
+  lobbyGlobals.zenModeEnabled =
+    !globals.state.finished && !lobbyGlobals.zenModeEnabled;
 
   if (lobbyGlobals.zenModeEnabled) {
     gameChat.hide();
