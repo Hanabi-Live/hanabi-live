@@ -2,6 +2,7 @@
 
 import type { CardOrder, GameState } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
+import { flushSync } from "react-dom";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { confirmPlay } from "../confirmPlay.ts";
@@ -132,6 +133,18 @@ export function showTurnAndIndicateCard(
 ): void {
   showReplayTurn(segment);
   toggleArrow(order, true);
+}
+
+/**
+ * Shows the turn on which a card was drawn, and then the next turn, so that the card moves from the
+ * deck into its hand, as on the classic screen. The arrow points at the card.
+ */
+export function showDraw(segment: number, order: CardOrder): void {
+  // The screen must render the first turn, so that the card moves on the next one.
+  flushSync(() => {
+    showReplayTurn(segment);
+  });
+  showTurnAndIndicateCard(segment + 1, order);
 }
 
 /** Shows a turn in the in-game replay. */

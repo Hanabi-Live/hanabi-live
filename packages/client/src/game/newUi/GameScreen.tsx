@@ -107,6 +107,7 @@ import {
   sendAction,
   showClue,
   showDiscard,
+  showDraw,
   showReplayTurn,
   showStrike,
   showTurnAndIndicateCard,
@@ -602,6 +603,11 @@ export function GameScreen({
 
         case "showCard": {
           showTurnAndIndicateCard(command.segment, order);
+          break;
+        }
+
+        case "showDraw": {
+          showDraw(command.segment, order);
           break;
         }
 

@@ -138,7 +138,7 @@ describe("getCardClickCommand", () => {
     });
   });
 
-  test("Alt + click shows the turn after the card was drawn", () => {
+  test("Alt + click shows the card being drawn", () => {
     expect(
       getCardClickCommand(
         click(LEFT, { altKey: true }),
@@ -147,8 +147,8 @@ describe("getCardClickCommand", () => {
         false,
       ),
     ).toStrictEqual({
-      type: "showCard",
-      segment: 5,
+      type: "showDraw",
+      segment: 4,
     });
     expect(
       getCardClickCommand(
