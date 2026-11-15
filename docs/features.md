@@ -715,7 +715,6 @@ move for the current situation.
   - Go to the beginning: `Home`
   - Go to the end: `End`
   - Enter a hypothetical: `Page Up`
-  - Copy the game ID: `Ctrl + c`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`
   - Play a sound for everyone: `Alt + a` (clap), `Alt + b` (buzz), `Alt + h`

@@ -19,7 +19,7 @@ import { Screen } from "../../lobby/types/Screen.ts";
 import { isModalVisible, showPrompt } from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
 import { store } from "../../store.ts";
-import { copyStringToClipboard, getHtmlElement } from "../../utils.ts";
+import { getHtmlElement } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
@@ -159,27 +159,18 @@ function keydown(event: KeyboardEvent) {
     return;
   }
 
-  // Ctrl hotkeys
-  if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-    // Ctrl + Enter = Give a clue / click on the "Give Clue" button. (The redesigned game screen
-    // handles the clue hotkeys itself.)
-    if (event.which === KeyCode.KEY_RETURN && !store.getState().newUi.shown) {
-      clues.give(); // This function has validation inside of it
-      return;
-    }
-
-    // Ctrl + c = Copy the current game ID.
-    if (
-      event.which === KeyCode.KEY_C
-      && globals.state.finished
-      // Account for users copying text from the chat window.
-      && !isElementShown(getHtmlElement("#game-chat-modal"))
-    ) {
-      if (globals.state.replay.gameId !== undefined) {
-        copyStringToClipboard(globals.state.replay.gameId.toString());
-      }
-      return;
-    }
+  // Ctrl + Enter = Give a clue / click on the "Give Clue" button. (The redesigned game screen
+  // handles the clue hotkeys itself.)
+  if (
+    event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && event.which === KeyCode.KEY_RETURN
+    && !store.getState().newUi.shown
+  ) {
+    clues.give(); // This function has validation inside of it
+    return;
   }
 
   // Alt hotkeys
