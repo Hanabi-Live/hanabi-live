@@ -68,6 +68,12 @@ const PLAY_MOTION = {
   /** How much the card grows as it leaves the hand, relative to its size there. */
   growScale: 1.2,
   growSeconds: 0.12,
+  /**
+   * When the card starts to shrink, as a fraction of its travel time. The card brakes hard, so by
+   * then it has covered about 95% of the way. It shrinks as it settles into its slot, and does not
+   * hover over the stack at its large size.
+   */
+  landStart: 0.73,
   landSeconds: 0.14,
 } as const;
 
@@ -230,11 +236,19 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
     ) * SECOND_IN_MILLISECONDS;
   // The growth and the landing only decorate the move, so "Reduced motion" leaves them out.
   const decorated = !store.getState().session.settings.reducedMotion;
-  const duration =
-    travel + (decorated ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
+  const landStart = travel * PLAY_MOTION.landStart;
+  const duration = decorated
+    ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
+    : travel;
+
+  // The card goes over the hand cards that move into its old place. They move at the same time, and
+  // the hands come after the play stacks in the page, so at the same height they would cover it. It
+  // stays over them until both of its animations end.
+  const restorePath = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
+  const restoreSize = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
 
   // The card moves on its "translate" property, so that its changes of size do not scale its path.
-  element.animate(
+  const path = element.animate(
     [
       { translate: `${start.x - end.x}px ${start.y - end.y}px` },
       { translate: "0px 0px" },
@@ -246,6 +260,7 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
       composite: "add",
     },
   );
+  onEnd(path, restorePath);
 
   // The card also changes size between a hand and the smaller cards on the stacks.
   const scaleX = from.width / to.width;
@@ -261,7 +276,7 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
           transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
         },
         {
-          offset: travel / duration,
+          offset: landStart / duration,
           transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
           easing: EASE_OUT_BACK,
         },
@@ -275,9 +290,6 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
         { transform: "none" },
       ];
 
-  // The card goes over the hand cards that move into its old place. They move at the same time, and
-  // the hands come after the play stacks in the page, so at the same height they would cover it.
-  const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
   playLandings.set(element, travel);
   const size = element.animate(
     keyframes.map((keyframe) => ({
@@ -289,7 +301,7 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
       duration,
     },
   );
-  onEnd(size, restore);
+  onEnd(size, restoreSize);
 }
 
 /**
