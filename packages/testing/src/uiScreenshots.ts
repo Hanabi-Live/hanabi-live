@@ -841,14 +841,15 @@ function getStates(): readonly State[] {
         await cast.startBobsGame();
       },
     },
-    // Bob's game with five players, so that the game screen shows a crowded table.
+    // Bob's game with five players, so that the game screen shows a crowded table. The account
+    // shows the clocks, which an untimed game hides by default.
     {
       name: "new-ui-five-players",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame(5);
+        await cast.startBobsGame(5, undefined, { showClocks: true });
       },
     },
     // Bob's game with five players, with the chat in its own window. The account sends a message
@@ -1545,6 +1546,7 @@ interface Cast {
   readonly startBobsGame: (
     numPlayers?: number,
     variantName?: string,
+    options?: { readonly showClocks?: boolean },
   ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
   /** Starts a five-player game that Bob leads, which the browser's account watches. */
@@ -1892,11 +1894,12 @@ async function createCast(
     return peer;
   }
 
-  async function connectAccount(newUi: boolean) {
+  async function connectAccount(newUi: boolean, showClocks = false) {
     account ??= await connect(address, accountName);
     account.send("settings", {
       settings: {
         newUi,
+        showTimerInUntimed: showClocks,
       },
     });
     // The server does not answer a change of settings. It runs the requests of the lobby in order,
@@ -1961,8 +1964,9 @@ async function createCast(
   async function startBobsGame(
     numPlayers = 2,
     variantName = LONG_VARIANT_NAME,
+    { showClocks = false }: { readonly showClocks?: boolean } = {},
   ): Promise<BobsGame> {
-    const you = await connectAccount(true);
+    const you = await connectAccount(true, showClocks);
     const bob = await connectPeer(name(BOB));
     const tableId = await createBobsTable(
       bob,

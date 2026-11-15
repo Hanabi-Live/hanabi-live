@@ -40,13 +40,13 @@ export interface Seat {
   readonly cards: readonly CardView[];
 
   /**
-   * The time on the current player's clock, if the clocks show. In a timed game, it is the time
-   * left. In an untimed game, it is the time taken on this turn.
+   * The time on the player's clock, if the clocks show. In a timed game, it is the time left. In an
+   * untimed game, it is the time taken.
    */
   readonly clock: string | undefined;
 
-  /** The tooltip of the player's name, with the time that they have taken, if it has one. */
-  readonly timeTooltip: string | undefined;
+  /** What the clock shows, for its tooltip. */
+  readonly clockTooltip: string;
 }
 
 interface HandsProps {
@@ -430,20 +430,9 @@ function NameChip({
 
   if (seat.active) {
     return (
-      // The clock's own pill sits close to the right edge, so the padding there is smaller.
-      <span
-        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink ${
-          seat.clock === undefined ? "tw:pr-3.5" : "tw:pr-2"
-        }`}
-        ref={tooltipRef(seat.timeTooltip)}
-      >
+      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:font-bold tw:text-card-ink">
         {youIcon}
         <FitText text={seat.name} />
-        {seat.clock !== undefined && (
-          <span className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text">
-            {seat.clock}
-          </span>
-        )}
       </span>
     );
   }
@@ -455,7 +444,6 @@ function NameChip({
           ? "tw:bg-game-text tw:text-card-ink"
           : "tw:bg-game-raised tw:text-game-text"
       }`}
-      ref={tooltipRef(seat.timeTooltip)}
     >
       {youIcon}
       <FitText text={seat.name} />
@@ -463,22 +451,47 @@ function NameChip({
   );
 }
 
-/** The widest text that a clock usually shows, which the name column leaves room for. */
-const CLOCK_PLACEHOLDER = "00:00";
+/**
+ * The time under a player's name. The current player's clock is the one that runs, so it is
+ * brighter.
+ */
+function PlayerClock({
+  seat,
+  underName,
+}: {
+  readonly seat: Seat;
+
+  /** Whether the clock is under the name, where it lines up with the name's text. */
+  readonly underName: boolean;
+}): React.JSX.Element | undefined {
+  if (seat.clock === undefined) {
+    return undefined;
+  }
+
+  return (
+    <span
+      className={`tw:text-sm tw:tabular-nums ${underName ? "tw:pl-3.5" : ""} ${
+        seat.active
+          ? "tw:font-bold tw:text-game-text"
+          : "tw:font-medium tw:text-game-muted"
+      }`}
+      ref={tooltipRef(seat.clockTooltip)}
+    >
+      {seat.clock}
+    </span>
+  );
+}
 
 /**
  * Measures the width that the name column needs. It draws every player's name, hidden, in both of
- * its styles: bold for the current player (with a clock when the clocks show), and plain for the
- * others. The column fits the widest, so it does not change size as the turn moves from player to
- * player.
+ * its styles: bold for the current player, and plain for the others. The column fits the widest, so
+ * it does not change size as the turn moves from player to player.
  */
 export function NameColumnSizer({
   seats,
-  showClock,
   onWidthChange,
 }: {
   readonly seats: readonly Seat[];
-  readonly showClock: boolean;
   readonly onWidthChange: (width: number) => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
@@ -506,8 +519,6 @@ export function NameColumnSizer({
           seat={{
             ...seat,
             active: true,
-            clock: showClock ? CLOCK_PLACEHOLDER : undefined,
-            timeTooltip: undefined,
           }}
         />,
         <NameChip
@@ -515,7 +526,6 @@ export function NameColumnSizer({
           seat={{
             ...seat,
             active: false,
-            timeTooltip: undefined,
           }}
         />,
       ])}
@@ -848,65 +858,78 @@ function Hand({
             : NAME_GAP,
       }}
     >
+      {/* Beside the cards, the clock goes under the name, so that it does not take width from the
+          name. Above the cards, it goes after the name, so that it does not take height from the
+          cards. */}
       <div
-        className="tw:flex tw:max-w-full tw:shrink-0"
+        className={`tw:flex tw:max-w-full tw:shrink-0 ${
+          props.nameColumnWidth === undefined
+            ? "tw:items-center tw:gap-3"
+            : "tw:flex-col tw:items-start tw:gap-1"
+        }`}
         style={{ width: props.nameColumnWidth }}
       >
-        {/* The name of the player who gave the clue on the turn that shows keeps a ring, where the
+        <div className="tw:flex tw:max-w-full">
+          {/* The name of the player who gave the clue on the turn that shows keeps a ring, where the
             clue rail starts. While the viewer can clue a player, the player's name is a key, like
             every other button on the screen, and opens the clues. */}
-        <button
-          aria-expanded={canClueSeat ? chosen : undefined}
-          aria-haspopup="dialog"
-          className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${
-            canClueSeat ? KEY_CLASS : ""
-          }`}
-          data-name-chip={seat.playerIndex}
-          onClick={() => {
-            if (canClueSeat) {
-              props.onChooseClueTarget(chosen ? undefined : seat.playerIndex);
-            } else {
-              props.onShowPlayerLog(seat.playerIndex);
-            }
-          }}
-          // Right-clicking a name views the game from that seat, as on the classic screen.
-          onContextMenu={(event) => {
-            event.preventDefault();
-            props.onViewAs?.(seat.playerIndex);
-          }}
-          style={
-            isClueGiver
-              ? {
-                  boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
-                    CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
-                  }px ${CLUE_EDGE_COLOR}`,
-                }
-              : undefined
-          }
-          type="button"
-        >
-          {chip}
-        </button>
-        {!seat.you && props.onToggleEmpathy !== undefined && (
           <button
-            aria-label={`Show ${seat.name}'s view of their hand`}
-            aria-pressed={props.empathyToggled.has(seat.playerIndex)}
-            className={`tw:ml-1.5 tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:self-center tw:rounded-full tw:border-0 tw:text-[13px] ${
-              props.empathyToggled.has(seat.playerIndex)
-                ? "tw:bg-game-text tw:text-card-ink"
-                : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+            aria-expanded={canClueSeat ? chosen : undefined}
+            aria-haspopup="dialog"
+            className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${
+              canClueSeat ? KEY_CLASS : ""
             }`}
+            data-name-chip={seat.playerIndex}
             onClick={() => {
-              props.onToggleEmpathy?.(seat.playerIndex);
+              if (canClueSeat) {
+                props.onChooseClueTarget(chosen ? undefined : seat.playerIndex);
+              } else {
+                props.onShowPlayerLog(seat.playerIndex);
+              }
             }}
-            ref={tooltipRef(
-              `Show ${seat.name}'s hand as they see it. You can also hold your finger on their cards.`,
-            )}
+            // Right-clicking a name views the game from that seat, as on the classic screen.
+            onContextMenu={(event) => {
+              event.preventDefault();
+              props.onViewAs?.(seat.playerIndex);
+            }}
+            style={
+              isClueGiver
+                ? {
+                    boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
+                      CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
+                    }px ${CLUE_EDGE_COLOR}`,
+                  }
+                : undefined
+            }
             type="button"
           >
-            <i aria-hidden="true" className="fas fa-eye" />
+            {chip}
           </button>
-        )}
+          {!seat.you && props.onToggleEmpathy !== undefined && (
+            <button
+              aria-label={`Show ${seat.name}'s view of their hand`}
+              aria-pressed={props.empathyToggled.has(seat.playerIndex)}
+              className={`tw:ml-1.5 tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:self-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+                props.empathyToggled.has(seat.playerIndex)
+                  ? "tw:bg-game-text tw:text-card-ink"
+                  : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+              }`}
+              onClick={() => {
+                props.onToggleEmpathy?.(seat.playerIndex);
+              }}
+              ref={tooltipRef(
+                `Show ${seat.name}'s hand as they see it. You can also hold your finger on their cards.`,
+              )}
+              type="button"
+            >
+              <i aria-hidden="true" className="fas fa-eye" />
+            </button>
+          )}
+        </div>
+        <PlayerClock
+          seat={seat}
+          underName={props.nameColumnWidth !== undefined}
+        />
       </div>
       <div
         // A long press on a touch screen shows the player's view instead of opening the browser's

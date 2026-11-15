@@ -15,7 +15,7 @@ import {
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { store } from "../../store.ts";
-import { getActivePlayerIndex, getPlayerTime, getTurnTime } from "../clock.ts";
+import { getPlayerTime } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { currentVariant } from "../gameSession.ts";
@@ -69,10 +69,10 @@ export function getSeats(
   const hasSeat = state.playing || state.shadowing;
   // In the replay of a game that we played, our hand stays first.
   const firstPlayerIndex = getViewPlayerIndex(metadata);
-  // The clock belongs to the game as it stands. A replay shows a past turn, so its current player
-  // is not the one whose clock runs.
+  const timed = metadata.options.timeControl !== undefined;
+  // The clocks belong to the game as it stands, so a replay of a past turn does not show them.
   const showClock =
-    (metadata.options.timeControl !== undefined || settings.showTimerInUntimed)
+    (timed || settings.showTimerInUntimed)
     && state.replay.segment === undefined
     && !state.finished;
   const hypo = state.replay.hypothetical;
@@ -123,20 +123,13 @@ export function getSeats(
     }
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
-    // An untimed game's clock shows the time taken on this turn. Each player's name has a tooltip
-    // with the time that they have taken in the whole game.
-    const timed = metadata.options.timeControl !== undefined;
-    const playerTime = getPlayerTime(playerIndex);
-    let clock: string | undefined;
-    if (showClock && active && getActivePlayerIndex() === playerIndex) {
-      clock = millisecondsToClockString(
-        (timed ? playerTime : getTurnTime()) ?? 0,
-      );
-    }
-    const timeTooltip =
-      showClock && !timed && playerTime !== undefined
-        ? `Time taken in this game: ${millisecondsToClockString(playerTime)}`
-        : undefined;
+    // Every player's name has their clock: the time left in a timed game, or the time taken in an
+    // untimed one.
+    const playerTime = showClock ? getPlayerTime(playerIndex) : undefined;
+    const clock =
+      playerTime === undefined
+        ? undefined
+        : millisecondsToClockString(playerTime);
 
     seats.push({
       playerIndex,
@@ -146,7 +139,7 @@ export function getSeats(
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       clock,
-      timeTooltip,
+      clockTooltip: timed ? "Time left" : "Time taken in this game",
     });
   }
 
