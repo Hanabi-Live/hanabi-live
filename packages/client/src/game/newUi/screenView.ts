@@ -360,7 +360,10 @@ export function getDiscardRows(
     .filter((row: readonly DiscardView[]) => row.length > 0);
 }
 
-/** The notes that the tooltip of each card shows, for the cards that have notes. */
+/**
+ * The notes that the tooltip of each card shows, for the cards that have notes. The lines are
+ * closer together than the site's body text, so that the notes of many players stay compact.
+ */
 export function getNotesHtml(
   orders: Iterable<CardOrder>,
 ): ReadonlyMap<CardOrder, string> {
@@ -368,7 +371,7 @@ export function getNotesHtml(
   for (const order of orders) {
     const html = notes.getShownNoteHtml(order);
     if (html !== "") {
-      notesHtml.set(order, html);
+      notesHtml.set(order, `<div class="tw:leading-tight">${html}</div>`);
     }
   }
   return notesHtml;

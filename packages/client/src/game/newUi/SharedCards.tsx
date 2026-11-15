@@ -554,7 +554,8 @@ export function PlayArea({
                         {stack.topOrder === undefined ? undefined : (
                           <CardNote
                             // The note of the top card comes first, and then the description of its
-                            // suit, as on the classic screen.
+                            // suit, as on the classic screen. The notes are a block, so one line
+                            // break leaves a blank line after them.
                             notes={
                               topNotesHtml === undefined
                                 ? notes
@@ -562,7 +563,7 @@ export function PlayArea({
                                     ...notes,
                                     notesHtml: new Map(notes.notesHtml).set(
                                       stack.topOrder,
-                                      `${topNotesHtml}<br><br>${descriptionHtml}`,
+                                      `${topNotesHtml}<br>${descriptionHtml}`,
                                     ),
                                   }
                             }
