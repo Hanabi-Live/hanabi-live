@@ -11,7 +11,6 @@ import type {
   GameMetadata,
   GameState,
   MsgClue,
-  Options,
   PlayerIndex,
   Rank,
   StackDirection,
@@ -488,24 +487,6 @@ export function getCluePreviewDeck(
     },
     gameState,
     metadata,
-  );
-}
-
-/**
- * Whether a clue may be given. It must touch a card, unless the options or the variant allow clues
- * that touch nothing. (The server checks the rules that depend on characters.)
- */
-export function isClueAllowed(
-  clue: Clue,
-  numTouched: number,
-  variant: Variant,
-  options: Options,
-): boolean {
-  return (
-    numTouched > 0
-    || options.emptyClues
-    || (clue.type === "color" && variant.colorCluesTouchNothing)
-    || (clue.type === "rank" && variant.rankCluesTouchNothing)
   );
 }
 

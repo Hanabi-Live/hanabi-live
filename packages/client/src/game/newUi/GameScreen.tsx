@@ -24,6 +24,7 @@ import {
 } from "../efficiency.ts";
 import { askForEfficiency } from "../efficiencyModifier.ts";
 import { currentVariant } from "../gameSession.ts";
+import { isClueAllowed } from "../isClueAllowed.ts";
 import { getPauseAction, pause, unpause } from "../pause.ts";
 import type { ClientClue } from "../types/ClientAction.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
@@ -93,6 +94,7 @@ import {
   canDiscardNow,
   editCard,
   getActionState,
+  moveCard,
   sendAction,
   showClue,
   showDiscard,
@@ -119,7 +121,6 @@ import {
   formatPace,
   getCluePreviewDeck,
   getTouchedCards,
-  isClueAllowed,
 } from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
 import { useCardMotion } from "./useCardMotion.ts";
@@ -422,10 +423,15 @@ export function GameScreen({
 
   function isAllowed(target: PlayerIndex, choice: Clue) {
     return isClueAllowed(
-      choice,
-      getTouched(target, choice).length,
+      {
+        clue: choice,
+        numTouched: getTouched(target, choice).length,
+        giverIndex: actingPlayerIndex,
+        receiverIndex: target,
+      },
       variant,
       options,
+      metadata.characterAssignments,
     );
   }
   const touched = getTouched(menuTarget, clue);
@@ -819,10 +825,7 @@ export function GameScreen({
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {
-                      sendAction({
-                        type: "discard",
-                        order,
-                      });
+                      moveCard("discard", order);
                     }
                   }}
                   onEditCard={editingCards ? editCard : undefined}
@@ -831,10 +834,7 @@ export function GameScreen({
                   onPause={pause}
                   onPlay={(order) => {
                     setMenuCard(undefined);
-                    sendAction({
-                      type: "play",
-                      order,
-                    });
+                    moveCard("play", order);
                   }}
                   onShowPlayerLog={setLogSeat}
                   onToggleEmpathy={

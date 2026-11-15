@@ -21,7 +21,6 @@ import {
   getHandDisplayOrder,
   getTouchedCards,
   getTurnWarning,
-  isClueAllowed,
   shouldFadeTrash,
 } from "./tableView.ts";
 
@@ -80,24 +79,6 @@ describe("getTouchedCards", () => {
     expect(
       getTouchedCards(VARIANT, hand, unknown, newRankClue(1)),
     ).toStrictEqual([1]);
-  });
-});
-
-describe("isClueAllowed", () => {
-  const options = { emptyClues: false } as Parameters<typeof isClueAllowed>[3];
-
-  test("needs a clue to touch a card", () => {
-    expect(isClueAllowed(newRankClue(1), 0, VARIANT, options)).toBe(false);
-    expect(isClueAllowed(newRankClue(1), 2, VARIANT, options)).toBe(true);
-  });
-
-  test("allows a clue that touches nothing when the table allows empty clues", () => {
-    expect(
-      isClueAllowed(newRankClue(1), 0, VARIANT, {
-        ...options,
-        emptyClues: true,
-      }),
-    ).toBe(true);
   });
 });
 

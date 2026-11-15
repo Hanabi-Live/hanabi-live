@@ -1,10 +1,7 @@
 import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
-import {
-  getCharacterNameForPlayer,
-  getClueCost,
-  isCardTouchedByClue,
-} from "@hanabi-live/game";
+import { getClueCost, isCardTouchedByClue } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
+import { isClueAllowed } from "../isClueAllowed.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientActionClue } from "../types/ClientAction.ts";
 import type { ColorButton } from "./ColorButton.ts";
@@ -58,32 +55,17 @@ export function checkLegal(): void {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const { ourPlayerIndex } = globals.metadata;
-  const { numPlayers } = globals.options;
-  const ourCharacterName = getCharacterNameForPlayer(
-    ourPlayerIndex,
+  const enabled = isClueAllowed(
+    {
+      clue: clueButton.clue,
+      numTouched: touchedAtLeastOneCard ? 1 : 0,
+      giverIndex: globals.metadata.ourPlayerIndex,
+      receiverIndex: who,
+    },
+    globals.variant,
+    globals.options,
     globals.metadata.characterAssignments,
   );
-
-  // By default, only enable the "Give Clue" button if the clue "touched" one or more cards in the
-  // hand.
-  const enabled =
-    touchedAtLeastOneCard
-    // Make an exception if they have the optional setting for "Empty Clues" turned on.
-    || globals.options.emptyClues
-    // Make an exception for variants where color clues are always allowed.
-    || (globals.variant.colorCluesTouchNothing
-      && clueButton.clue.type === "color")
-    // Make an exception for variants where number clues are always allowed.
-    || (globals.variant.rankCluesTouchNothing
-      && clueButton.clue.type === "rank")
-    // Make an exception for certain characters.
-    || (ourPlayerIndex !== undefined
-      && ourCharacterName === "Blind Spot"
-      && who === (ourPlayerIndex + 1) % numPlayers)
-    || (ourPlayerIndex !== undefined
-      && ourCharacterName === "Oblivious"
-      && who === (ourPlayerIndex - 1 + numPlayers) % numPlayers);
 
   globals.elements.giveClueButton!.setEnabled(enabled);
 }
