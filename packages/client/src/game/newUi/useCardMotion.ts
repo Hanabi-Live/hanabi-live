@@ -6,6 +6,7 @@ import type { RefObject } from "react";
 import { useLayoutEffect, useRef } from "react";
 import { store } from "../../store.ts";
 import { currentVariant } from "../gameSession.ts";
+import { areReplayAnimationsOn } from "../replayAnimations.ts";
 import type { State } from "../types/State.ts";
 import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
@@ -30,7 +31,8 @@ import { getClueForTurn } from "./screenView.ts";
 /**
  * Returns what the cards did on a move from one state to the next: the cards that were misplayed,
  * and whether plays and misplays show in full. They show only in a game in progress, as on the
- * classic screen, and not when the viewer steps through a replay.
+ * classic screen, and not when the viewer steps through a replay, unless the `animations()` console
+ * command is on.
  */
 function getMoveEffects(
   state: State,
@@ -55,7 +57,9 @@ function getMoveEffects(
 
   return {
     // A play or a misplay comes a moment before its turn, so the segment does not change yet.
-    live: state.replay.segment === undefined && segmentChange >= 0,
+    live:
+      (state.replay.segment === undefined || areReplayAnimationsOn())
+      && segmentChange >= 0,
     misplays,
   };
 }

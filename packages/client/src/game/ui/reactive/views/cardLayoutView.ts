@@ -9,6 +9,7 @@ import { ReadonlyMap, assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
 import { store } from "../../../../store.ts";
+import { areReplayAnimationsOn } from "../../../replayAnimations.ts";
 import type { HanabiCard } from "../../HanabiCard.ts";
 import type { LayoutChild } from "../../LayoutChild.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -124,12 +125,13 @@ export function onStackCompletionDataChanged(
   data: StackCompletionData,
   previousData: StackCompletionData | undefined,
 ): void {
-  // Celebrate only in a game in progress, not in a replay, and not with reduced motion.
+  // Celebrate only in a game in progress, not in a replay (unless the `animations()` console
+  // command is on), and not with reduced motion.
   if (
     previousData === undefined
     || globals.animateFast
     || store.getState().session.settings.reducedMotion
-    || globals.state.replay.segment !== undefined
+    || (globals.state.replay.segment !== undefined && !areReplayAnimationsOn())
   ) {
     return;
   }
