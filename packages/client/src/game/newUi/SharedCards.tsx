@@ -613,10 +613,10 @@ export function DiscardPile({
     <section
       aria-label="Discards"
       className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${
-        // At max clues, a quiet dashed border in the clue color shows that no one can discard,
-        // before anyone picks up a card and while they drag one.
+        // At max clues, a dashed border shows that no one can discard, before anyone picks up a
+        // card and while they drag one. It has the color of the clue tokens' border with no clues.
         atMaxClues
-          ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
+          ? "tw:outline-2 tw:-outline-offset-2 tw:outline-game-muted tw:outline-dashed"
           : ""
       }`}
       ref={tooltipRef(zoneState === "idle" ? "Discard pile" : undefined)}
