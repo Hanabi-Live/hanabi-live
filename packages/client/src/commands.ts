@@ -5,6 +5,7 @@ import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
 import { gameChatUnreadChanged } from "./game/gameChatSlice.ts";
 import * as gameSession from "./game/gameSession.ts";
+import { newUiSentMoveCleared } from "./game/newUi/newUiSlice.ts";
 import { globals } from "./Globals.ts";
 import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
@@ -18,6 +19,8 @@ export const commands = new ServerHandlers();
 
 commands.set("warning", (data) => {
   console.warn(data.message);
+  // The server refuses a move with a warning, so a move that was sent no longer waits.
+  store.dispatch(newUiSentMoveCleared());
   modals.showWarning(noticeHtml(data));
 });
 

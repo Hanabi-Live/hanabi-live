@@ -39,7 +39,7 @@ import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { CardClueMarker } from "./Card.tsx";
-import { CardFace } from "./Card.tsx";
+import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
@@ -60,6 +60,7 @@ import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { QueuedMove } from "./QueuedMove.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
+import { SendingMark } from "./SendingMark.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import {
   CardBack,
@@ -208,6 +209,7 @@ export function GameScreen({
   const zenOn = useAppSelector((root) => root.gameChat.zen);
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const arrow = useAppSelector((root) => root.newUi.arrow);
+  const sentMove = useAppSelector((root) => root.newUi.sentMove);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
@@ -374,6 +376,14 @@ export function GameScreen({
         && !inReplay
         && ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex
       : controlsHypo && actingPlayerIndex !== undefined;
+  // The move that the player sent on this turn, while it waits for the server. Until it arrives,
+  // the player cannot make another move.
+  const sendingMove =
+    hypo === undefined
+    && !inReplay
+    && sentMove?.turnNum === ongoingGame.turn.turnNum
+      ? sentMove.move
+      : undefined;
   // Speedruns use clicks instead of dragging.
   const speedrunClicks = usesSpeedrunClicks(state, settings.speedrunFeatures);
   // A queued move must be canceled before another card moves.
@@ -383,6 +393,7 @@ export function GameScreen({
         && !inReplay
         && !speedrunClicks
         && state.premove === undefined
+        && sendingMove === undefined
         && (ourTurn || settings.preplay)
       : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
@@ -395,7 +406,12 @@ export function GameScreen({
   const paused = hypo === undefined && pausedBy !== undefined;
   // Speedrun clicks give the clues, so the clue menu never opens.
   const canClue =
-    ourTurn && clueAvailable && !editingCards && !paused && !speedrunClicks;
+    ourTurn
+    && clueAvailable
+    && !editingCards
+    && !paused
+    && !speedrunClicks
+    && sendingMove === undefined;
   const onlyOtherPlayer =
     actingPlayerIndex !== undefined && metadata.playerNames.length === 2
       ? ((1 - actingPlayerIndex) as PlayerIndex)
@@ -1097,6 +1113,17 @@ export function GameScreen({
                   queuedCard={queuedCard}
                   reducedMotion={settings.reducedMotion}
                   seats={seats}
+                  sendingCard={
+                    sendingMove?.type === "play"
+                    || sendingMove?.type === "discard"
+                      ? sendingMove.order
+                      : undefined
+                  }
+                  sendingClueTarget={
+                    sendingMove?.type === "clue"
+                      ? sendingMove.receiverIndex
+                      : undefined
+                  }
                   shownClue={
                     previewing || shownClue === undefined
                       ? undefined
@@ -1390,6 +1417,16 @@ export function GameScreen({
           }}
           width={handCardWidth}
         >
+          {held.phase === "drop"
+            && (sendingMove?.type === "play" || sendingMove?.type === "discard")
+            && sendingMove.order === held.order && (
+              <SendingMark
+                label="Sending your move"
+                labelEdge="bottom"
+                radius={handCardWidth * CARD_CORNER_PER_WIDTH}
+                reducedMotion={settings.reducedMotion}
+              />
+            )}
           <CardFace
             blank={heldView.blank}
             clued={heldView.clued}

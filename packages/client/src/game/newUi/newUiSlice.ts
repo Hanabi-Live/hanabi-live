@@ -5,11 +5,18 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import { gameCleared, gameStarted } from "../gameSlice.ts";
 import type { ArrowTarget } from "../highlightArrow.ts";
+import type { ClientAction } from "../types/ClientAction.ts";
 
 /** The highlight arrow, and the view of the game that it was drawn on (see "arrow.ts"). */
 export interface ShownArrow {
   readonly target: ArrowTarget;
   readonly view: string;
+}
+
+/** A move that the player sent to the server, and the turn that it was sent on. */
+interface SentMove {
+  readonly move: ClientAction;
+  readonly turnNum: number;
 }
 
 interface NewUiState {
@@ -26,6 +33,11 @@ interface NewUiState {
   readonly unreadNotes: readonly CardOrder[];
   /** The highlight arrow, if one is drawn. */
   readonly arrow: ShownArrow | undefined;
+  /**
+   * The move that the player sent on their turn, until the server refuses it. It waits only on the
+   * turn that it was sent on, since the move ends that turn when it arrives.
+   */
+  readonly sentMove: SentMove | undefined;
 }
 
 const initialState: NewUiState = {
@@ -34,6 +46,7 @@ const initialState: NewUiState = {
   chatPoppedOut: false,
   unreadNotes: [],
   arrow: undefined,
+  sentMove: undefined,
 };
 
 const newUiSlice = createSlice({
@@ -62,17 +75,25 @@ const newUiSlice = createSlice({
     newUiArrowChanged(state, action: PayloadAction<ShownArrow | undefined>) {
       state.arrow = action.payload;
     },
+    newUiMoveSent(state, action: PayloadAction<SentMove>) {
+      state.sentMove = action.payload;
+    },
+    newUiSentMoveCleared(state) {
+      state.sentMove = undefined;
+    },
   },
   extraReducers: (builder) => {
-    // The notes and the arrow of another game do not belong in this one.
+    // The notes, the arrow, and the sent move of another game do not belong in this one.
     builder
       .addCase(gameStarted, (state) => {
         state.unreadNotes = [];
         state.arrow = undefined;
+        state.sentMove = undefined;
       })
       .addCase(gameCleared, (state) => {
         state.unreadNotes = [];
         state.arrow = undefined;
+        state.sentMove = undefined;
       });
   },
 });
@@ -84,5 +105,7 @@ export const {
   newUiNoteUnread,
   newUiNoteRead,
   newUiArrowChanged,
+  newUiMoveSent,
+  newUiSentMoveCleared,
 } = newUiSlice.actions;
 export const newUiReducer = newUiSlice.reducer;

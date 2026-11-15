@@ -3,6 +3,7 @@ import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
+import { newUiMoveSent } from "../newUi/newUiSlice.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
@@ -29,7 +30,7 @@ export function end(clientAction: ClientAction): void {
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
     arrows.hideAll();
-    showWaitingOnServerAnimation();
+    showWaitingOnServer(clientAction);
     lobbyGlobals.connection.send(
       "playerAction",
       toWireAction(lobbyGlobals.joinedTableId, clientAction),
@@ -47,9 +48,20 @@ export function end(clientAction: ClientAction): void {
   }
 }
 
-/** On the classic screen, shows that the move is on its way. The New UI has no such animation. */
-function showWaitingOnServerAnimation() {
+/**
+ * Shows that the move is on its way, until the server's answer arrives. The classic screen shows an
+ * animation in place of the clue area. The New UI marks the place where the player acted (see
+ * "SendingMark.tsx").
+ */
+function showWaitingOnServer(clientAction: ClientAction) {
   globals.elements.clueArea?.hide();
   globals.elements.waitingOnServer?.show();
   globals.elements.waitingOnServerAnimation?.start();
+
+  store.dispatch(
+    newUiMoveSent({
+      move: clientAction,
+      turnNum: globals.state.ongoingGame.turn.turnNum,
+    }),
+  );
 }

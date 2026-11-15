@@ -19,6 +19,7 @@ import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
+import { SendingMark } from "./SendingMark.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
 
@@ -123,6 +124,12 @@ interface HandsProps {
    */
   readonly queuedCard: CardOrder | undefined;
 
+  /** The card that the viewer played or discarded, while the move waits for the server. */
+  readonly sendingCard?: CardOrder;
+
+  /** The player who gets the viewer's clue, while the clue waits for the server. */
+  readonly sendingClueTarget?: PlayerIndex;
+
   /**
    * Whether clicks on cards make moves at once, as in speedruns (see "cardClicks.ts"). Then holding
    * the pointer down on a hand does not show its player's view.
@@ -192,6 +199,9 @@ interface HandsProps {
  * stack). Otherwise, the rail runs halfway between the play stacks and the hands.
  */
 const CLUE_RAIL_OFFSET = 16;
+
+/** The corner radius of a hand's box, in CSS pixels, as `tw:rounded-game-panel` draws it. */
+const HAND_BOX_RADIUS = 8;
 
 /**
  * The least space between the rail and the left edge of the window. On a narrow window, where the
@@ -853,12 +863,21 @@ function OwnCard({
   if (!movable) {
     return (
       <div
-        aria-label={label}
+        className="tw:relative"
         data-card-order={card.order}
         data-card-place={place}
-        role="img"
       >
-        {face}
+        <div aria-label={label} role="img">
+          {face}
+        </div>
+        {props.sendingCard === card.order && (
+          <SendingMark
+            label="Sending your move"
+            labelEdge="bottom"
+            radius={cardWidth * CARD_CORNER_PER_WIDTH}
+            reducedMotion={props.reducedMotion}
+          />
+        )}
       </div>
     );
   }
@@ -1252,6 +1271,14 @@ function Hand({
         >
           The clue touched no cards
         </span>
+      )}
+      {props.sendingClueTarget === seat.playerIndex && (
+        <SendingMark
+          label="Sending your clue"
+          labelEdge="top"
+          radius={HAND_BOX_RADIUS}
+          reducedMotion={props.reducedMotion}
+        />
       )}
       {chosen && props.clueMenu}
     </div>
