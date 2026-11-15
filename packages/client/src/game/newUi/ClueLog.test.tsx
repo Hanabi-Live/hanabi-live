@@ -29,10 +29,9 @@ function entry(
 /** The card that the mouse is over in these tests. */
 const HOVERED_CARD = 2 as CardOrder;
 
-function renderLog(entries: readonly ClueLogEntry[], colorblindMode = false) {
+function renderLog(entries: readonly ClueLogEntry[]) {
   render(
     <ClueLog
-      colorblindMode={colorblindMode}
       entries={entries}
       hoveredCard={HOVERED_CARD}
       onShowClue={onShowClue}
@@ -84,16 +83,11 @@ describe("ClueLog", () => {
     expect(labels).toEqual(["missed", "none", "touched"]);
   });
 
-  test("crosses the clues that missed the hovered card in colorblind mode", () => {
-    renderLog(entries, true);
-    const crossed = screen
+  test("strikes through the clues that missed the hovered card", () => {
+    renderLog(entries);
+    const struck = screen
       .getAllByRole("listitem")
-      .map(
-        (item) =>
-          item
-            .querySelector("[data-negative-marker]")
-            ?.classList.contains("tw:invisible") === false,
-      );
-    expect(crossed).toEqual([true, false, false]);
+      .map((item) => item.querySelector("[data-missed]") !== null);
+    expect(struck).toEqual([true, false, false]);
   });
 });
