@@ -269,10 +269,10 @@ function markedStyle(
 }
 
 /**
- * The turn holds the space of a two-digit turn from the start. With digits of equal width, every
- * two-digit turn takes the same space. (A turn of 100 or more is rare.)
+ * The turn and the score hold the space of a two-digit number from the start. With digits of equal
+ * width, every two-digit number takes the same space. (A turn of 100 or more is rare.)
  */
-const FIRST_TWO_DIGIT_TURN = 10;
+const FIRST_TWO_DIGIT_NUMBER = 10;
 
 /** The shape of a button on the bar. It sets no color. */
 const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
@@ -456,7 +456,8 @@ export function StatusStrip({
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
-  const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_TURN);
+  const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
+  const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
   const [footer, setFooter] = useState<HTMLElement | null>(null);
   const inReplay = replayControls !== undefined;
   const controlsRef = useRef<HTMLDivElement>(null);
@@ -522,22 +523,27 @@ export function StatusStrip({
               colorblindMode,
             )}
           >
-            {/* The score holds the space of two digits, so that the bar does not move when the
-                score reaches 10. */}
-            {maxScore === undefined ? (
-              <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
-                {score}
+            {/* Like the turn, an invisible "10 / 25" holds the space, so that the bar does not
+                move when the score reaches 10. The score starts at the left, under its label. */}
+            <span className="tw:inline-grid tw:tabular-nums">
+              <span
+                aria-hidden="true"
+                className="tw:invisible tw:col-start-1 tw:row-start-1"
+              >
+                {maxScore === undefined ? (
+                  reservedScore
+                ) : (
+                  <OutOf max={maxScore} value={reservedScore} />
+                )}
               </span>
-            ) : (
-              <OutOf
-                max={maxScore}
-                value={
-                  <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
-                    {score}
-                  </span>
-                }
-              />
-            )}
+              <span className="tw:col-start-1 tw:row-start-1">
+                {maxScore === undefined ? (
+                  score
+                ) : (
+                  <OutOf max={maxScore} value={score} />
+                )}
+              </span>
+            </span>
           </span>
         </Stat>
         {result !== undefined && (
