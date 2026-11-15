@@ -132,6 +132,18 @@ function progress(time: number, start: number, duration: number): number {
 }
 
 /**
+ * Stops every play and misplay that is showing, and removes its effects, such as the smoke of a
+ * misplay. The cards are in their places again.
+ */
+export function stopPlayEffects(): void {
+  for (const animation of document.getAnimations()) {
+    if (animation.id === PLAY_EFFECT_ANIMATION_ID) {
+      animation.cancel();
+    }
+  }
+}
+
+/**
  * Whether a card is in the middle of a play or a misplay. The server sends a move as several
  * updates, so the same play can be found more than once, but it shows only once.
  */

@@ -19,6 +19,7 @@ import {
 } from "./cardMotion.ts";
 import { useWindowSize } from "./hooks.ts";
 import type { Misplay } from "./playMotion.ts";
+import { stopPlayEffects } from "./playMotion.ts";
 import {
   animateFinale,
   animateMaxScoreDrop,
@@ -256,6 +257,12 @@ export function useCardMotion(
     stopCardMoves();
     if (!endsGame) {
       finishScoreSignals();
+      // A play or a misplay goes on through the next update of a game in progress, since the server
+      // sends the turn a moment after the play. A step in a replay shows another turn, so it stops
+      // them.
+      if (state.replay.segment !== undefined) {
+        stopPlayEffects();
+      }
     }
     const positions = measureCards(root);
     const segmentChange =
