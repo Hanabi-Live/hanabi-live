@@ -183,9 +183,9 @@ const CLUE_EDGE_WIDTH = 2;
  * an arrow at a glance.
  */
 const CLUE_RAIL_HEAD = {
-  length: 15,
-  halfHeight: 10,
-  notch: 4,
+  length: 30,
+  halfHeight: 20,
+  notch: 8,
 } as const;
 
 /**
@@ -255,7 +255,14 @@ function ClueRail({
           : -Math.min(CLUE_RAIL_OFFSET, box.left - CLUE_RAIL_WINDOW_MARGIN);
       const corner = Math.min(CLUE_RAIL_CORNER, Math.abs(toY - fromY) / 2);
       const down = toY > fromY ? 1 : -1;
-      const { length, halfHeight, notch } = CLUE_RAIL_HEAD;
+      // On a narrow window, the head shrinks to fit between the rail's corner and the name.
+      const headScale = Math.min(
+        1,
+        Math.max(0, toX - railX - corner) / CLUE_RAIL_HEAD.length,
+      );
+      const length = CLUE_RAIL_HEAD.length * headScale;
+      const halfHeight = CLUE_RAIL_HEAD.halfHeight * headScale;
+      const notch = CLUE_RAIL_HEAD.notch * headScale;
       const backX = toX - length;
       const route = [
         `H ${railX + corner}`,
