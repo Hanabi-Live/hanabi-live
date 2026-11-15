@@ -1666,27 +1666,25 @@ function drawScoreArea() {
 
   // Add an animation to signify that discarding at 8 clues is illegal. With reduced motion, the
   // count only turns red, and does not grow.
-  if (!globals.isResizing) {
-    const grow = !store.getState().session.settings.reducedMotion;
-    globals.elements.cluesNumberLabelPulse = new Konva.Tween({
-      node: cluesNumberLabel,
-      fill: WARNING_COLOR,
-      ...(grow && {
-        fontSize: CLUES_PULSE.fontSize * winH,
-        offsetX: CLUES_PULSE.offsetX * winH,
-        offsetY: CLUES_PULSE.offsetY * winH,
-      }),
-      duration: CARD_ANIMATION_LENGTH_SECONDS,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      easing: Konva.Easings.EaseInOut,
-      onFinish: () => {
-        if (globals.elements.cluesNumberLabelPulse !== undefined) {
-          globals.elements.cluesNumberLabelPulse.reverse();
-        }
-      },
-    });
-    globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
-  }
+  const grow = !store.getState().session.settings.reducedMotion;
+  globals.elements.cluesNumberLabelPulse = new Konva.Tween({
+    node: cluesNumberLabel,
+    fill: WARNING_COLOR,
+    ...(grow && {
+      fontSize: CLUES_PULSE.fontSize * winH,
+      offsetX: CLUES_PULSE.offsetX * winH,
+      offsetY: CLUES_PULSE.offsetY * winH,
+    }),
+    duration: CARD_ANIMATION_LENGTH_SECONDS,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    easing: Konva.Easings.EaseInOut,
+    onFinish: () => {
+      if (globals.elements.cluesNumberLabelPulse !== undefined) {
+        globals.elements.cluesNumberLabelPulse.reverse();
+      }
+    },
+  });
+  globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
   // Draw the strike (bomb) black squares / X's.
   function strikeClick(
@@ -1910,7 +1908,7 @@ function drawSharedReplay() {
   globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
   // Add an animation to alert everyone when shared replay leadership has been transferred.
-  if (!globals.isResizing && !store.getState().session.settings.reducedMotion) {
+  if (!store.getState().session.settings.reducedMotion) {
     globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
       node: sharedReplayLeaderLabel,
       // Grow from the center of the crown.

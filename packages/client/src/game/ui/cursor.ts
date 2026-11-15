@@ -5,13 +5,28 @@ import type { Deck } from "./Deck.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 
-export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
+const CURSOR_TYPES = ["default", "hand", "dragging", "look", "edit"] as const;
 
-// Module variables. (This does not have to be on the globals because it is explicitly reset in
-// HanabiUi constructor.)
-let currentCursorType = "default";
+export type CursorType = (typeof CURSOR_TYPES)[number];
+
+// Module variables. (This does not have to be on the globals because the HanabiUi constructor
+// resets it.)
+let currentCursorType: CursorType = "default";
 
 const gameDiv = getHtmlElement("#game");
+
+function show(cursorType: CursorType) {
+  currentCursorType = cursorType;
+  for (const type of CURSOR_TYPES) {
+    gameDiv.classList.remove(`game-cursor-${type}`);
+  }
+  gameDiv.classList.add(`game-cursor-${cursorType}`);
+}
+
+/** Shows the default cursor, for a new game screen, whatever the last game left. */
+export function reset(): void {
+  show("default");
+}
 
 export function set(cursorType: CursorType): void {
   // It is possible to receive cursor events before the UI has initialized.
@@ -31,14 +46,7 @@ export function set(cursorType: CursorType): void {
     return;
   }
 
-  currentCursorType = cursorType;
-  const cursorTypes = ["default", "hand", "dragging", "look", "edit"];
-
-  for (const type of cursorTypes) {
-    gameDiv.classList.remove(`game-cursor-${type}`);
-  }
-
-  gameDiv.classList.add(`game-cursor-${cursorType}`);
+  show(cursorType);
 
   // If the Chrome development tools are open, then the cursor may not update properly:
   // https://stackoverflow.com/questions/37462132/update-mouse-cursor-without-moving-mouse-with-changed-css-cursor-property

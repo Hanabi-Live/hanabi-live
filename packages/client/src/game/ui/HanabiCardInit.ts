@@ -348,8 +348,9 @@ export function directionArrow(
   };
 }
 
-// Cache the pip objects to save time on the multiple cards.
+// Cache the pip objects to save time on the multiple cards. Speedruns draw them without shadows.
 let cachedVariant: Variant | undefined;
+let cachedSpeedrun: boolean | undefined;
 let cachedPips: {
   suitPipsMap: Map<number, Konva.Shape>;
   suitPipsPositiveMap: Map<number, Konva.Shape>;
@@ -494,10 +495,14 @@ function makeCachedPips(variant: Variant) {
   };
 
   cachedVariant = variant;
+  cachedSpeedrun = globals.options.speedrun;
 }
 
 export function pips(variant: Variant): Pips {
-  if (cachedVariant !== variant) {
+  if (
+    cachedVariant !== variant
+    || cachedSpeedrun !== globals.options.speedrun
+  ) {
     makeCachedPips(variant);
   }
 

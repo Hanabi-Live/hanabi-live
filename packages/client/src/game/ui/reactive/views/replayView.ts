@@ -296,7 +296,10 @@ export function onRestartChanged(
   const canPlayAgain = shared?.canPlayAgain === true;
   const canRestart =
     shared !== undefined && restart.canRestart(shared, playerNames);
-  globals.elements.restartButton?.visible(amLeader && canPlayAgain);
+  // The button stays hidden during a hypothetical (see "hypotheticalView.ts").
+  globals.elements.restartButton?.visible(
+    amLeader && canPlayAgain && globals.state.replay.hypothetical === undefined,
+  );
 
   const { readyCheckbox } = globals.elements;
   readyCheckbox?.visible(!amLeader && canPlayAgain);

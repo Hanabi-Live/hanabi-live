@@ -32,7 +32,7 @@ export class HanabiUi {
 
   constructor() {
     initStageSize();
-    cursor.set("default");
+    cursor.reset();
     this.stopDrawingTimers = timer.init();
 
     // Add a window resize listener.
@@ -45,7 +45,6 @@ export class HanabiUi {
       }
 
       if (!this.liveResizeActive) {
-        console.log("[resize-v4] css-scale during drag, rebuild on settle");
         tooltips.closeAllTooltips();
         globals.isResizing = true;
         globals.animateFast = true;
@@ -157,6 +156,7 @@ export class HanabiUi {
     // We must also clear the card-related globals or else we will have duplicates.
     const { visibleState } = globals.state;
     globals.deck = [];
+    globals.stackBases = [];
     for (const unsubscribe of globals.cardSubscriptions) {
       unsubscribe();
     }
@@ -228,6 +228,7 @@ export class HanabiUi {
 
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
+    window.screen.orientation.removeEventListener("change", this.resizeHandler);
     document.removeEventListener("theme_change", this.themeChangeHandler);
     if (this.resizeRequestAnimationFrame !== undefined) {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
