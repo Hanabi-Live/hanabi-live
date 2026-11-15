@@ -24,7 +24,7 @@ import {
   shouldModifyEfficiency,
 } from "../efficiency.ts";
 import { askForEfficiency } from "../efficiencyModifier.ts";
-import { getGameEndTooltipHtml, getShownGameEnd } from "../gameEnd.ts";
+import { getGameEnd, getGameEndTooltipHtml } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
 import { isClueAllowed } from "../isClueAllowed.ts";
 import { getPauseAction, pause, unpause } from "../pause.ts";
@@ -403,7 +403,7 @@ export function GameScreen({
     previewHand === undefined || clue === undefined
       ? []
       : getTouchedCards(variant, previewHand, getShownIdentities(state), clue);
-  const gameEnd = getShownGameEnd(state);
+  const gameEnd = getGameEnd(state);
   const seats = getSeats(
     state,
     empathyPlayers,

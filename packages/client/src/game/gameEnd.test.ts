@@ -1,7 +1,11 @@
 import type { GameAction, PlayerIndex } from "@hanabi-live/game";
 import { getDefaultMetadata } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { getGameEndTooltipHtml, getShownGameEnd } from "./gameEnd.ts";
+import {
+  getGameEnd,
+  getGameEndTooltipHtml,
+  getShownGameEnd,
+} from "./gameEnd.ts";
 import { initialState } from "./reducers/initialStates/initialState.ts";
 import type { State } from "./types/State.ts";
 
@@ -63,6 +67,12 @@ describe("how the game ended", () => {
 
   test("does not show in a game that has not ended", () => {
     expect(getShownGameEnd(showing({ finished: false }))).toBeUndefined();
+    expect(getGameEnd(showing({ finished: false }))).toBeUndefined();
+  });
+
+  test("is known on every turn of a finished game", () => {
+    const gameEnd = getGameEnd(showing({ currentPlayerIndex: 0 }));
+    expect(gameEnd?.summary).toBe("Strikeout");
   });
 
   test("shows without times when the server did not send them", () => {

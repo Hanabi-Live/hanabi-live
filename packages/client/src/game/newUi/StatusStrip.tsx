@@ -76,9 +76,9 @@ interface StatusStripProps {
   readonly lowScorePhase: boolean;
 
   /**
-   * How the game ended, on the turn on which it ended, with a tooltip in HTML. The classic screen
-   * writes it in its action log. Here, an icon beside the score shows it, so that the bar does not
-   * grow on the last turn of a replay.
+   * How a finished game ended, on every turn of its replay, with a tooltip in HTML. The classic
+   * screen writes it in its action log. Here, an icon beside the score shows it, so that the bar
+   * does not grow.
    */
   readonly result:
     { readonly summary: string; readonly tooltipHtml: string } | undefined;

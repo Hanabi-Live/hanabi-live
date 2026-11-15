@@ -41,14 +41,20 @@ export interface GameEnd {
  * on the other turns, in a hypothetical, and in a game that has not ended.
  */
 export function getShownGameEnd(state: State): GameEnd | undefined {
-  const { visibleState } = state;
-  if (
-    visibleState === undefined
-    || !state.finished
-    || state.replay.hypothetical !== undefined
+  const onLastTurn =
+    state.visibleState !== undefined
+    && state.replay.hypothetical === undefined
     // The game is over from the turn of the "gameOver" action on (see "turnReducer.ts").
-    || visibleState.turn.currentPlayerIndex !== undefined
-  ) {
+    && state.visibleState.turn.currentPlayerIndex === undefined;
+  return onLastTurn ? getGameEnd(state) : undefined;
+}
+
+/**
+ * Returns how a finished game ended, on any turn of its replay. It is `undefined` in a game that
+ * has not ended.
+ */
+export function getGameEnd(state: State): GameEnd | undefined {
+  if (!state.finished) {
     return undefined;
   }
 
