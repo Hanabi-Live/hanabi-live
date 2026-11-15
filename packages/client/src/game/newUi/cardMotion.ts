@@ -55,7 +55,8 @@ const DECK_KEY = "deck";
 
 /**
  * How a played card moves to its stack. It starts from rest, speeds up, and brakes hard into its
- * slot. Then it lands: it arrives a little too large and settles to its size.
+ * slot. On the way, it rises in an arc, as if it were tossed. Then it lands: it arrives a little
+ * too large and settles to its size.
  */
 const PLAY_MOTION = {
   /** How fast the card travels, in pixels of the unscaled screen per second. */
@@ -64,6 +65,10 @@ const PLAY_MOTION = {
   minSeconds: 0.25,
   maxSeconds: 0.55,
   ease: "cubic-bezier(0.45, 0, 0.2, 1)",
+  /** How high the arc rises above a straight line, per pixel that the card goes sideways. */
+  arcHeightPerWidth: 0.15,
+  /** How many keyframes draw the arc. */
+  arcSamples: 16,
   /** How large the card is when it reaches its slot, relative to its size at rest. */
   landScale: 1.06,
   landSeconds: 0.14,
@@ -226,9 +231,10 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
       PLAY_MOTION.minSeconds,
       PLAY_MOTION.maxSeconds,
     ) * SECOND_IN_MILLISECONDS;
-  const lands = !store.getState().session.settings.reducedMotion;
+  // The arc and the landing only decorate the move, so "Reduced motion" leaves them out.
+  const decorated = !store.getState().session.settings.reducedMotion;
   const duration =
-    travel + (lands ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
+    travel + (decorated ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
 
   // The card also changes size between a hand and the smaller cards on the stacks.
   const keyframes: Keyframe[] = [
@@ -238,7 +244,7 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
       easing: PLAY_MOTION.ease,
     },
   ];
-  if (lands) {
+  if (decorated) {
     keyframes.push({
       offset: travel / duration,
       transformOrigin: "center",
@@ -260,6 +266,41 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
     duration,
   });
   onEnd(animation, restore);
+
+  if (decorated) {
+    animatePlayArc(
+      element,
+      Math.abs(start.x - end.x) * PLAY_MOTION.arcHeightPerWidth,
+      travel,
+    );
+  }
+}
+
+/**
+ * Lifts a played card in an arc above its straight path. The arc has the same timing as the travel,
+ * so it is a smooth curve. It moves the card's "translate" property, which adds to the transform of
+ * the travel.
+ */
+function animatePlayArc(element: HTMLElement, height: number, travel: number) {
+  if (height < 1) {
+    return;
+  }
+
+  const keyframes: Keyframe[] = [];
+  for (let i = 0; i <= PLAY_MOTION.arcSamples; i++) {
+    const offset = i / PLAY_MOTION.arcSamples;
+    keyframes.push({
+      offset,
+      translate: `0px ${-height * Math.sin(Math.PI * offset)}px`,
+    });
+  }
+  element.animate(keyframes, {
+    id: CARD_MOVE_ANIMATION_ID,
+    duration: travel,
+    easing: PLAY_MOTION.ease,
+    // The card keeps any "translate" of its own.
+    composite: "add",
+  });
 }
 
 /**
