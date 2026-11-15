@@ -5,7 +5,7 @@
 //   when the spark arrives.
 // - A play that gives the team a perfect score sets off a finale instead: a rocket climbs from each
 //   play stack and bursts in its suit's colors, one stack at a time. Then one large firework bursts
-//   in every suit's colors, every top card flashes gold, and the score pops.
+//   in every suit's colors, every top card flashes gold, and the score glows gold.
 // - A lost card that lowers the maximum score flashes red when it lands in the discard pile. Then
 //   the maximum score changes, pops in red, and fades back to its normal color.
 // - When the last card leaves the deck, an amber ring spreads from the deck, and its number pops.
@@ -95,7 +95,6 @@ import {
   ROCKET_WOBBLE_RADIANS,
   SCORE_GLOW_BLUR,
   SCORE_GLOW_SECONDS,
-  SCORE_POP_SCALE,
   SCORE_POP_SECONDS,
   SHEEN_DEGREES,
   SHEEN_WIDTH,
@@ -479,7 +478,7 @@ export function animateFinale(
   for (const card of root.querySelectorAll<HTMLElement>("[data-play-stack]")) {
     glowCard(card, boom, GOLD, CARD_GLOW_SECONDS, true);
   }
-  popScore(root, boom, unit);
+  glowScore(root, boom, unit);
 
   finaleFireworks.add(fireworks);
   fireworks.play(root, () => {
@@ -1037,21 +1036,21 @@ function glowCard(
   );
 }
 
-/** The score turns gold, pops, and glows. The unit is in the window's pixels. */
-function popScore(root: HTMLElement, start: number, unit: number) {
+/**
+ * The score turns gold and glows. It keeps its size, so that the bar under the table does not move.
+ * The unit is in the window's pixels.
+ */
+function glowScore(root: HTMLElement, start: number, unit: number) {
   const score = root.querySelector("[data-score]");
   if (score === null) {
     return;
   }
   const delay = start * SECOND_IN_MILLISECONDS;
-  const pop = SCORE_POP_SECONDS * SECOND_IN_MILLISECONDS;
+  const gold = SCORE_POP_SECONDS * SECOND_IN_MILLISECONDS;
   animateSampled(
     score,
-    pop,
-    (ms) => ({
-      scale: interpolate(SCORE_POP_SCALE, 1, easeOut(ms / pop)),
-      color: GOLD,
-    }),
+    gold,
+    () => ({ color: GOLD }),
     delay,
     undefined,
     "none",
