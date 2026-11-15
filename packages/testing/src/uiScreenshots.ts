@@ -917,6 +917,17 @@ function getStates(): readonly State[] {
         await game.discardTurns(15, { mixClueTypes: true });
       },
     },
+    // It is the account's turn and the team has no clues, so that no name opens the clues.
+    {
+      name: "new-ui-no-clues",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.spendClues();
+      },
+    },
     // The deck is empty, so that it shows the turns left in the final round.
     {
       name: "new-ui-empty-deck",
@@ -1498,6 +1509,11 @@ interface BobsGame {
    * The players before the account discard as in `discardTurns`, until it is the account's turn.
    */
   readonly discardUntilAccountsTurn: () => Promise<void>;
+  /**
+   * Each player in turn gives the next player a rank clue, until it is the account's turn and the
+   * team has no clue tokens. A player with no clue to give discards as in `discardTurns`.
+   */
+  readonly spendClues: () => Promise<void>;
   /**
    * The players take turns until the deck is empty: each plays a card if they can, or else discards
    * a card that the team can lose, or else gives a clue.
@@ -2168,6 +2184,39 @@ async function createCast(
       }
     }
 
+    async function spendClues() {
+      for (;;) {
+        const events = await loadEvents(viewer, tableId);
+        const { player } = readTurn(events);
+        const clues =
+          MAX_CLUES
+          - events.filter((event) => event.type === "clue").length
+          + events.filter((event) => event.type === "discard").length;
+        if (clues === 0) {
+          if (player === seat("account")) {
+            return;
+          }
+          await discardTurns(1);
+          continue;
+        }
+
+        const receiver = (player + 1) % seats.size;
+        const receiverCards = await handAt(receiver);
+        const touched = receiverCards.find((other) =>
+          isValidClueRank(other.rank),
+        );
+        assertDefined(touched, `Seat ${receiver} has no card to clue.`);
+        await moveAt(player, {
+          type: "clue",
+          receiverIndex: receiver as PlayerIndex,
+          clue: {
+            type: "rank",
+            rank: touched.rank as ClueRank,
+          },
+        });
+      }
+    }
+
     async function discardTurns(
       turns: number,
       { mixClueTypes = false }: { readonly mixClueTypes?: boolean } = {},
@@ -2348,6 +2397,7 @@ async function createCast(
         await play("account", false);
       },
       discardTurns,
+      spendClues,
       discardUntilAccountsTurn,
       emptyDeck,
       clueTwice: async () => {

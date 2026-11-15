@@ -67,6 +67,12 @@ interface HandsProps {
    */
   readonly canChooseClueTarget: boolean;
 
+  /**
+   * Whether the viewer could give a clue but the team has no clue tokens. Then the other players'
+   * names look like keys that are turned off.
+   */
+  readonly outOfClues: boolean;
+
   /** The player whose clue menu is open, if any. Their hand stands out. */
   readonly clueTarget: PlayerIndex | undefined;
   readonly onChooseClueTarget: (playerIndex: PlayerIndex | undefined) => void;
@@ -418,11 +424,15 @@ export const NAME_COLUMN_MAX_WIDTH = {
 function NameChip({
   seat,
   chosen = false,
+  noClues = false,
 }: {
   readonly seat: Seat;
 
   /** Whether the player's clue menu is open. */
   readonly chosen?: boolean;
+
+  /** Whether the viewer could clue the player but the team has no clue tokens. */
+  readonly noClues?: boolean;
 }): React.JSX.Element {
   const youIcon = seat.you ? (
     <i aria-label="You" className="fas fa-user tw:text-[0.85em]" role="img" />
@@ -437,13 +447,17 @@ function NameChip({
     );
   }
 
+  let colorClass = "tw:bg-game-raised tw:text-game-text";
+  if (chosen) {
+    colorClass = "tw:bg-game-text tw:text-card-ink";
+  } else if (noClues) {
+    colorClass = "tw:bg-game-raised/40 tw:text-game-muted";
+  }
+
   return (
     <span
-      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium ${
-        chosen
-          ? "tw:bg-game-text tw:text-card-ink"
-          : "tw:bg-game-raised tw:text-game-text"
-      }`}
+      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium ${colorClass}`}
+      ref={tooltipRef(noClues ? "The team has no clues to give." : undefined)}
     >
       {youIcon}
       <FitText text={seat.name} />
@@ -810,6 +824,7 @@ function Hand({
   const editing = props.onEditCard !== undefined;
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
+  const noClueSeat = props.outOfClues && !seat.acting && !editing;
 
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
@@ -821,7 +836,7 @@ function Hand({
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
 
-  const chip = <NameChip chosen={chosen} seat={seat} />;
+  const chip = <NameChip chosen={chosen} noClues={noClueSeat} seat={seat} />;
 
   // Holding the pointer down on another player's cards shows their view of them until it lifts, as
   // on the classic screen. While editing cards, a press picks the card to change instead.

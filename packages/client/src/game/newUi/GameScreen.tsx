@@ -252,6 +252,8 @@ export function GameScreen({
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
   const canClue = ourTurn && clueAvailable && !editingCards && !paused;
+  const outOfCluesOnTurn =
+    ourTurn && !clueAvailable && !editingCards && !paused;
 
   const empathyPlayers = new Set<PlayerIndex>(
     globalEmpathy
@@ -641,6 +643,7 @@ export function GameScreen({
                       : undefined
                   }
                   onViewAs={canChooseSeat() ? viewAs : undefined}
+                  outOfClues={outOfCluesOnTurn}
                   seats={seats}
                   shownClue={
                     previewing || shownClue === undefined

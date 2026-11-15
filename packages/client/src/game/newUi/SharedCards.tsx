@@ -839,8 +839,18 @@ export function TableTokens({
     >
       <section
         aria-label="Clue tokens"
-        className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
-        ref={tooltipRef("Clue tokens")}
+        className={`tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:rounded-game-control tw:narrow-980:gap-2 ${
+          // With no clues, a dashed border shows that no one can give a clue, as the discard pile
+          // has one at the maximum to show that no one can discard.
+          outOfClues
+            ? "tw:outline-2 tw:outline-offset-2 tw:outline-game-muted tw:outline-dashed"
+            : ""
+        }`}
+        ref={tooltipRef(
+          outOfClues
+            ? "Clue tokens: the team has none, so no one can give a clue."
+            : "Clue tokens",
+        )}
       >
         {/* One large number: the count that players check most. It stands out only at the
             limits, where the rules change what the team can do: in the color of clues at the
