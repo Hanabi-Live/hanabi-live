@@ -1,5 +1,6 @@
 import type { Spectator } from "@hanabi-live/data";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { setLeader } from "../ui/leader.ts";
 import { FitText } from "./FitText.tsx";
@@ -13,6 +14,9 @@ import {
 } from "./surfaces.ts";
 
 const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:w-full tw:min-w-0`;
+
+/** How long the crown pulses when the leader changes, in milliseconds. */
+const CROWN_PULSE_MILLISECONDS = 1000;
 
 /** A person to set as the new leader. */
 const ITEM_CLASS = `tw:group tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
@@ -37,6 +41,42 @@ export function LeaderMenu({
 
   useCloseOnOutsideClick(open, containerRef, setOpen);
 
+  // The crown pulses when the leader changes, so that everyone sees it. It does not pulse when the
+  // menu first shows, such as when the game ends. It only decorates.
+  const crownRef = useRef<HTMLElement>(null);
+  const previousLeaderRef = useRef(leader);
+  useLayoutEffect(() => {
+    const previousLeader = previousLeaderRef.current;
+    previousLeaderRef.current = leader;
+    const crown = crownRef.current;
+    if (
+      crown === null
+      || previousLeader === leader
+      || store.getState().session.settings.reducedMotion
+    ) {
+      return undefined;
+    }
+
+    const animation = crown.animate(
+      [
+        { transform: "scale(1)" },
+        {
+          transform: "scale(1.6)",
+          filter: "drop-shadow(0 0 6px var(--game-screen-mode))",
+          offset: 0.35,
+        },
+        { transform: "scale(1)" },
+      ],
+      {
+        duration: CROWN_PULSE_MILLISECONDS,
+        easing: "cubic-bezier(0.33, 1, 0.68, 1)",
+      },
+    );
+    return () => {
+      animation.cancel();
+    };
+  }, [leader]);
+
   const others = spectators.filter(
     (spectator) => spectator.username !== leader,
   );
@@ -57,7 +97,11 @@ export function LeaderMenu({
         ref={tooltipRef(open ? undefined : tooltip)}
         type="button"
       >
-        <i aria-hidden="true" className="fas fa-crown tw:text-game-mode" />
+        <i
+          aria-hidden="true"
+          className="fas fa-crown tw:inline-block tw:text-game-mode"
+          ref={crownRef}
+        />
         {/* A long name makes the text smaller, so that the button does not push the steps in the
             middle of the bar to the side. */}
         <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
