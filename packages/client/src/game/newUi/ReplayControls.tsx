@@ -126,7 +126,12 @@ function Timeline({
    * leader again.
    */
   readonly leader:
-    { readonly name: string; readonly segment: number } | undefined;
+    | {
+        readonly name: string;
+        readonly amLeader: boolean;
+        readonly segment: number;
+      }
+    | undefined;
 
   /** Whether the knob slides to a new turn instead of moving at once, for a leader's moves. */
   readonly slide: boolean;
@@ -192,15 +197,25 @@ function Timeline({
         // knob, so that its ends show even when it is one turn away from ours. The button is wider
         // than the bar, so that it is easy to click.
         <button
-          aria-label={`${leader.name}'s turn`}
+          aria-label={
+            leader.amLeader ? "Everyone's turn" : `${leader.name}'s turn`
+          }
           className="tw:group/leader tw:absolute tw:-inset-y-1.5 tw:flex tw:w-5 tw:-translate-x-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:p-0"
-          onClick={replay.toggleSharedSegments}
+          onClick={() => {
+            // The leader goes back to the turn that everyone sees, and takes them along again.
+            if (leader.amLeader) {
+              replay.goToSegment(leader.segment);
+            }
+            replay.toggleSharedSegments();
+          }}
           onPointerDown={(event) => {
             // The timeline would show the turn under the pointer instead.
             event.stopPropagation();
           }}
           ref={tooltipRef(
-            `Follow ${leader.name} again, from the turn that they show.`,
+            leader.amLeader
+              ? "Everyone else sees this turn. Go back to it, and take everyone along again."
+              : `Follow ${leader.name} again, from the turn that they show.`,
           )}
           style={{ left: timelineLeft(leader.segment, lastSegment) }}
           tabIndex={-1}
@@ -289,7 +304,8 @@ export function Checkbox({
  * A spectator's switch to follow the shared replay leader, or to move through the turns on their
  * own. A step through the turns also stops them from following. It is lit while they follow. It is
  * beside the leader's menu in every mode, so that it stays in one place when it is switched on and
- * off, and when the leader starts or ends a hypothetical.
+ * off, and when the leader starts or ends a hypothetical. The leader has a switch to share their
+ * turns in its place.
  */
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
 const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] ${KEY_CLASS}`;
@@ -300,8 +316,14 @@ function FollowToggle({
   readonly state: State;
 }): React.JSX.Element | undefined {
   const { states, shared } = state.replay;
-  if (shared === undefined || shared.amLeader) {
+  if (shared === undefined) {
     return undefined;
+  }
+
+  if (shared.amLeader) {
+    return state.replay.hypothetical === undefined ? (
+      <ShareTurnsToggle state={state} />
+    ) : undefined;
   }
 
   const following = shared.useSharedSegments;
@@ -323,6 +345,52 @@ function FollowToggle({
       aria-pressed={following}
       className={`${FOLLOW_BUTTON_SHAPE_CLASS} ${
         following
+          ? "tw:bg-game-text tw:text-card-ink tw:hover:bg-white"
+          : "tw:bg-white/8 tw:text-game-mode tw:hover:bg-white/15"
+      }`}
+      onClick={replay.toggleSharedSegments}
+      ref={tooltipRef(tooltip)}
+      type="button"
+    >
+      <i aria-hidden="true" className="fas fa-sync" />
+    </button>
+  );
+}
+
+/**
+ * The leader's switch to take everyone along through the turns, or to look at turns on their own.
+ * It is in the place of a spectator's switch to follow the leader, and it is lit while everyone
+ * sees the leader's turns. Up and Down also switch it.
+ */
+function ShareTurnsToggle({
+  state,
+}: {
+  readonly state: State;
+}): React.JSX.Element | undefined {
+  const { states, shared } = state.replay;
+  if (shared === undefined) {
+    return undefined;
+  }
+
+  const sharing = shared.useSharedSegments;
+
+  // The states are indexed by segment, and their turn numbers start at 0.
+  const turnNum = states[shared.segment]?.turn.turnNum;
+  let tooltip =
+    "Everyone sees the turns that you show. Stop this to look at turns on your own.";
+  if (!sharing) {
+    tooltip =
+      turnNum === undefined
+        ? "You look at turns on your own. Take everyone to the turn that you show."
+        : `You look at turns on your own, and everyone else stays on turn ${turnNum + 1}. Take everyone to the turn that you show.`;
+  }
+
+  return (
+    <button
+      aria-label="Share your turns"
+      aria-pressed={sharing}
+      className={`${FOLLOW_BUTTON_SHAPE_CLASS} ${
+        sharing
           ? "tw:bg-game-text tw:text-card-ink tw:hover:bg-white"
           : "tw:bg-white/8 tw:text-game-mode tw:hover:bg-white/15"
       }`}
@@ -634,12 +702,14 @@ function TurnsControls({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, segment, turn);
 
-  // Once we look at other turns on our own, the timeline marks the turn that the leader shows.
+  // Once we look at other turns on our own, the timeline marks the turn that the leader shows. For
+  // the leader, it marks the turn that everyone else sees.
   const leaderMark =
-    shared === undefined || shared.amLeader || shared.useSharedSegments
+    shared === undefined || shared.useSharedSegments
       ? undefined
       : {
           name: shared.leader,
+          amLeader: shared.amLeader,
           segment: shared.segment,
         };
 
