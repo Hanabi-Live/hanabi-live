@@ -46,7 +46,10 @@ const PACE_HELP_LABEL =
 interface StatusStripProps {
   readonly turn: number;
 
-  /** The HTML of the tooltip of the turn's help icon: the most turns and rounds that are left. */
+  /**
+   * The HTML of the tooltip of the turn's information icon: the most turns and rounds that are
+   * left.
+   */
   readonly turnTooltip: string;
 
   /** Asks which turn to go to. */
@@ -483,6 +486,7 @@ export function StatusStrip({
             <>
               Turn
               <HelpIcon
+                icon="fa-info-circle"
                 label="About the turns: how many turns and rounds are left at most."
                 tooltip={valueTooltip(turnTooltip)}
               />
