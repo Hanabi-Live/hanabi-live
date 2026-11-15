@@ -375,14 +375,23 @@ function ShareTurnsToggle({
   const sharing = shared.useSharedSegments;
 
   // The states are indexed by segment, and their turn numbers start at 0.
-  const turnNum = states[shared.segment]?.turn.turnNum;
+  const sharedTurnNum = states[shared.segment]?.turn.turnNum;
+  const ourTurnNum =
+    state.replay.segment === undefined
+      ? undefined
+      : states[state.replay.segment]?.turn.turnNum;
   let tooltip =
     "Everyone sees the turns that you show. Stop this to look at turns on your own.";
   if (!sharing) {
-    tooltip =
-      turnNum === undefined
-        ? "You look at turns on your own. Take everyone to the turn that you show."
-        : `You look at turns on your own, and everyone else stays on turn ${turnNum + 1}. Take everyone to the turn that you show.`;
+    const others =
+      sharedTurnNum === undefined
+        ? "You look at turns on your own."
+        : `You look at turns on your own, and everyone else stays on turn ${sharedTurnNum + 1}.`;
+    const take =
+      ourTurnNum === undefined
+        ? "Take everyone to the turn that you show."
+        : `Take everyone to turn ${ourTurnNum + 1}.`;
+    tooltip = `${others} ${take}`;
   }
 
   return (
