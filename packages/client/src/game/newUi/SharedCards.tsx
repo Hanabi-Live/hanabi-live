@@ -19,6 +19,11 @@ import {
   describeCard,
   RANK_BOTTOM_PER_WIDTH,
 } from "./Card.tsx";
+import {
+  DISCARD_PLACE_PREFIX,
+  HOLE_PLACE,
+  STACK_PLACE_PREFIX,
+} from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
@@ -356,7 +361,7 @@ function Hole({
           <div
             className="tw:absolute"
             data-card-order={topOrder}
-            data-card-place="hole"
+            data-card-place={HOLE_PLACE}
             data-play-stack
           >
             <div className="tw:-rotate-12 tw:opacity-60">
@@ -548,7 +553,7 @@ export function PlayArea({
                         // "cardClicks.ts").
                         className="tw:absolute tw:inset-0 tw:cursor-pointer"
                         data-card-order={stack.topOrder}
-                        data-card-place={`stack-${stack.suitIndex}`}
+                        data-card-place={`${STACK_PLACE_PREFIX}${stack.suitIndex}`}
                         data-play-stack
                       >
                         {stack.topOrder === undefined ? undefined : (
@@ -1136,7 +1141,7 @@ export function DiscardPile({
                   aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
                   className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
                   data-card-order={card.order}
-                  data-card-place={`discard-${rowIndex}-${i}`}
+                  data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
                   onClick={() => {
                     onShowDiscard(card.order);
                   }}

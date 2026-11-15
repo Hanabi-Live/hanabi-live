@@ -14,6 +14,7 @@ import {
   describeCard,
   getClueTokenSize,
 } from "./Card.tsx";
+import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
@@ -186,12 +187,6 @@ interface HandsProps {
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
   readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
-
-  /**
-   * The mouse moved onto a card in a hand, or off the cards (`undefined`). The clue log then
-   * highlights the clues about the card. A touch screen has no hover, so a tap does not count.
-   */
-  readonly onHoverCard: (order: CardOrder | undefined) => void;
 
   /** What the pause button beside the viewer's clock does, if it shows (see "../pause.ts"). */
   readonly pauseAction: PauseAction | undefined;
@@ -1025,7 +1020,7 @@ function HandCard({
   readonly editing: boolean;
   readonly props: HandsProps;
 }): React.JSX.Element {
-  const place = `hand-${seat.playerIndex}-${slot - 1}`;
+  const place = `${HAND_PLACE_PREFIX}${seat.playerIndex}-${slot - 1}`;
   if (editing) {
     return (
       <EditableCard
@@ -1302,14 +1297,6 @@ export function Hands(props: HandsProps): React.JSX.Element {
       aria-hidden={props.hidden === true ? true : undefined}
       aria-label="Hands"
       className={`tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center ${props.hidden === true ? "tw:invisible" : ""}`}
-      onPointerLeave={() => {
-        props.onHoverCard(undefined);
-      }}
-      onPointerOver={(event) => {
-        if (event.pointerType === "mouse") {
-          props.onHoverCard(getCardOrderAt(event.target));
-        }
-      }}
     >
       {props.seats.map((seat) => (
         <Hand key={seat.playerIndex} props={props} seat={seat} />
@@ -1327,14 +1314,4 @@ export function Hands(props: HandsProps): React.JSX.Element {
       )}
     </section>
   );
-}
-
-/** The card that an element is part of, if any. */
-function getCardOrderAt(target: EventTarget): CardOrder | undefined {
-  if (!(target instanceof Element)) {
-    return undefined;
-  }
-  const order =
-    target.closest<HTMLElement>("[data-card-order]")?.dataset["cardOrder"];
-  return order === undefined ? undefined : (Number(order) as CardOrder);
 }

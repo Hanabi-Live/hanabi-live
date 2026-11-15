@@ -82,6 +82,11 @@ import {
 import { getArrowTargetAt } from "./arrowAnchor.ts";
 import { usesSpeedrunClicks } from "./cardClicks.ts";
 import {
+  DISCARD_PLACE_PREFIX,
+  HAND_PLACE_PREFIX,
+  STACK_PLACE_PREFIX,
+} from "./cardMotion.ts";
+import {
   DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
   getHandsTopPadding,
@@ -132,7 +137,7 @@ import {
   getTouchedCards,
 } from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
-import type { CardInput } from "./useCardInput.ts";
+import type { CardInput, HoveredCard } from "./useCardInput.ts";
 import { useCardInput } from "./useCardInput.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
@@ -238,7 +243,7 @@ export function GameScreen({
     chooseClueTarget(undefined);
   }, [chooseClueTarget]);
   // The card that the mouse is over, for the clue log.
-  const [hoveredCard, setHoveredCard] = useState<CardOrder>();
+  const [hoveredCard, setHoveredCard] = useState<HoveredCard>();
   const [editingCards, setEditingCards] = useState(false);
   // The card whose note the viewer is typing.
   const [noteCard, setNoteCard] = useState<CardOrder>();
@@ -400,13 +405,11 @@ export function GameScreen({
       : metadata.playerNames[state.pause.pausingPlayerIndex];
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
-  // Speedrun clicks give the clues, so the clue menu never opens.
   const canClue =
     ourTurn
     && clueAvailable
     && !editingCards
     && !paused
-    && !speedrunClicks
     && sendingMove === undefined
     && !reconnecting;
   const onlyOtherPlayer =
@@ -456,11 +459,27 @@ export function GameScreen({
           }),
         },
   );
-  /** The card, if it is still in a hand. */
-  function inHands(order: CardOrder | undefined): CardOrder | undefined {
-    return seats.some((seat) => seat.cards.some((card) => card.order === order))
-      ? order
-      : undefined;
+  /**
+   * The hovered card, if it is still where the mouse went over it: in a hand, on top of a play
+   * stack, or in the discard pile. A card that leaves its place, such as one just played, no longer
+   * counts.
+   */
+  function getHoveredCardInPlace(): CardOrder | undefined {
+    if (hoveredCard === undefined) {
+      return undefined;
+    }
+    const { order, place = "" } = hoveredCard;
+    const location = visibleState.deck[order]?.location;
+    if (place.startsWith(HAND_PLACE_PREFIX)) {
+      return typeof location === "number" ? order : undefined;
+    }
+    if (place.startsWith(STACK_PLACE_PREFIX)) {
+      return location === "playStack" ? order : undefined;
+    }
+    if (place.startsWith(DISCARD_PLACE_PREFIX)) {
+      return location === "discard" ? order : undefined;
+    }
+    return undefined;
   }
   const shownClue = getClueForTurn(visibleState);
   const stacks = getStacks(state);
@@ -596,8 +615,10 @@ export function GameScreen({
       state,
       variant,
       identities: shownIdentities,
+      chosenClue: menuTarget === undefined ? undefined : clue,
     },
     speedrunClicks,
+    onHoverCard: setHoveredCard,
     run: (command, order) => {
       switch (command.type) {
         case "editNote": {
@@ -1082,7 +1103,6 @@ export function GameScreen({
                   }}
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
-                  onHoverCard={setHoveredCard}
                   onPause={pause}
                   onPlay={(order) => {
                     setMenuCard(undefined);
@@ -1175,11 +1195,10 @@ export function GameScreen({
               {queuedMove?.type === "discard" && queuedMoveElement}
               <ClueLog
                 entries={getClueLogEntries(state)}
-                // A card that left the hands while hovered, such as one just played, no longer
-                // counts. Nor does any card while the player holds a card: the held card is under
-                // the pointer, not the card below it.
+                // No card counts while the player holds a card: the held card is under the pointer,
+                // not the card below it.
                 hoveredCard={
-                  held === undefined ? inHands(hoveredCard) : undefined
+                  held === undefined ? getHoveredCardInPlace() : undefined
                 }
                 onShowClue={showClue}
                 shownSegment={shownClue?.segment}

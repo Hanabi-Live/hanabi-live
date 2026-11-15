@@ -4,6 +4,7 @@ import type { Clue, PlayerIndex, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useState } from "react";
+import { isModalVisible } from "../../modals.ts";
 
 /**
  * The keys that choose a color clue, in the order of the variant's colors, as on the classic
@@ -31,13 +32,21 @@ export function getRankKeyIndex(
 }
 
 /** Whether a key press goes into a text box, such as the chat, rather than to the game. */
-export function isTyping(target: EventTarget | null): boolean {
+function isTyping(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLElement
     && (target.isContentEditable
       || target instanceof HTMLInputElement
       || target instanceof HTMLTextAreaElement)
   );
+}
+
+/**
+ * Whether a key press goes to the game: not into a text box, and not while a dialog covers the
+ * screen, as on the classic screen.
+ */
+export function isGameKey(event: KeyboardEvent): boolean {
+  return !isTyping(event.target) && !isModalVisible();
 }
 
 interface SpacebarEmpathy {
@@ -66,7 +75,7 @@ export function useSpacebarEmpathy(): SpacebarEmpathy {
         }
         return;
       }
-      if (event.key !== " " || isTyping(event.target)) {
+      if (event.key !== " " || !isGameKey(event)) {
         return;
       }
       // Otherwise, the spacebar would also press the button that has the focus.
@@ -149,7 +158,7 @@ export function useClueHotkeys(
 
 function onClueKey(event: KeyboardEvent, hotkeys: ClueHotkeys) {
   const { canClue, variant, clueTargets, clueTarget } = hotkeys;
-  if (!canClue || isTyping(event.target)) {
+  if (!canClue || !isGameKey(event)) {
     return;
   }
 

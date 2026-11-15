@@ -69,6 +69,12 @@ export interface CardClickContext {
 
   /** The identity of each card, as the screen shows it. */
   readonly identities: readonly CardIdentity[];
+
+  /**
+   * The clue chosen in the open clue menu, if any. A speedrun click gives it when it touches the
+   * card, as the classic screen does with its pressed clue button.
+   */
+  readonly chosenClue?: Clue;
 }
 
 function hasModifier(click: CardClick): boolean {
@@ -107,7 +113,7 @@ function isStackBase(order: CardOrder, variant: Variant): boolean {
 export function getSpeedrunCommand(
   click: CardClick,
   order: CardOrder,
-  { state, variant, identities }: CardClickContext,
+  { state, variant, identities, chosenClue }: CardClickContext,
 ): CardCommand | undefined {
   const { ongoingGame, metadata } = state;
   if (
@@ -145,6 +151,7 @@ export function getSpeedrunCommand(
       variant,
       identity?.suitIndex,
       identity?.rank,
+      chosenClue?.type === "color" ? chosenClue.value : undefined,
     );
     return color === undefined
       ? undefined
@@ -171,6 +178,7 @@ export function getSpeedrunCommand(
     variant,
     identity.suitIndex,
     identity.rank,
+    chosenClue?.type === "rank" ? chosenClue.value : undefined,
   );
   return rank === undefined
     ? undefined

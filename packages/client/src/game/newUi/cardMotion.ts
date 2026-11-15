@@ -5,7 +5,12 @@ import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { store } from "../../store.ts";
 import { rectCenter } from "../motion.ts";
-import { CARD_ANIMATION_LENGTH_SECONDS } from "../ui/constants.ts";
+import {
+  CARD_ANIMATION_LENGTH_SECONDS,
+  FULL_TURN_DEGREES,
+  PLAY_ANIMATION_SECONDS,
+  VORTEX_TURNS,
+} from "../ui/constants.ts";
 import type { Misplay, TossLook } from "./playMotion.ts";
 import {
   CARD_MOVE_ANIMATION_ID,
@@ -51,7 +56,13 @@ export interface MoveEffects {
 }
 
 /** The prefix of the place of a card in a hand (see "data-card-place"). */
-const HAND_PLACE_PREFIX = "hand-";
+export const HAND_PLACE_PREFIX = "hand-";
+
+/** The prefix of the place of the top card of a play stack (see "data-card-place"). */
+export const STACK_PLACE_PREFIX = "stack-";
+
+/** The place of the top card in the hole of a "Throw It in a Hole" variant. */
+export const HOLE_PLACE = "hole";
 
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
 export const DECK_KEY = "deck";
@@ -64,7 +75,7 @@ const PLAY_LOOK = {
 } as const satisfies TossLook;
 
 /** The prefix of the place of a card in the discard pile (see "data-card-place"). */
-const DISCARD_PLACE_PREFIX = "discard-";
+export const DISCARD_PLACE_PREFIX = "discard-";
 
 /** When each played card reaches its stack, in milliseconds from the start of its move. */
 const playLandings = new WeakMap<HTMLElement, number>();
@@ -167,6 +178,13 @@ export function animateCardMoves(
       continue;
     }
 
+    if (
+      now.place === HOLE_PLACE
+      && !store.getState().session.settings.reducedMotion
+    ) {
+      animateIntoHole(element, from, to);
+      continue;
+    }
     if (Object.hasOwn(element.dataset, "playStack")) {
       animateToss(element, from, to, PLAY_LOOK);
       continue;
@@ -395,6 +413,37 @@ function animateToss(
     );
     onEnd(animation, restore);
   }
+}
+
+/**
+ * Moves a played card into the hole of a "Throw It in a Hole" variant. It spins and shrinks as it
+ * goes, as if the hole sucks it in, as on the classic screen. The spin only decorates the move, so
+ * with "Reduced motion" the card moves as other played cards do.
+ */
+function animateIntoHole(element: HTMLElement, from: DOMRect, to: DOMRect) {
+  const rest = rectCenter(to);
+  const start = rectCenter(from);
+  const duration = PLAY_ANIMATION_SECONDS * SECOND_IN_MILLISECONDS;
+  const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
+  const animation = element.animate(
+    [
+      {
+        transformOrigin: "center",
+        transform: `translate(${start.x - rest.x}px, ${start.y - rest.y}px) rotate(0deg) scale(${from.width / to.width})`,
+      },
+      {
+        transformOrigin: "center",
+        transform: `translate(0px, 0px) rotate(${VORTEX_TURNS * FULL_TURN_DEGREES}deg) scale(1)`,
+      },
+    ],
+    {
+      id: CARD_MOVE_ANIMATION_ID,
+      duration,
+      // The hole pulls the card in faster and faster.
+      easing: "ease-in",
+    },
+  );
+  onEnd(animation, restore);
 }
 
 /**

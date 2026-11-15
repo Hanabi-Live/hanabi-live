@@ -2,7 +2,8 @@ import type { Clue, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { getRankLabel } from "./Card.tsx";
+import { ColorSymbolView, getRankClueLabel } from "./Card.tsx";
+import { getColorSymbol } from "./clueMarkers.ts";
 import { onEscapeKey } from "./escapeKey.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
@@ -59,6 +60,9 @@ const BELOW_CLASS =
 /** The menu above the hand, the other way around. */
 const ABOVE_CLASS =
   "tw:bottom-full tw:origin-bottom tw:rounded-t-game-panel tw:pb-1 tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),0_-16px_20px_-10px_rgb(0_0_0/55%)]";
+
+/** The width and height of a clue choice, in CSS pixels (`tw:size-11`). */
+const CHOICE_SIZE = 44;
 
 const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
 
@@ -221,6 +225,7 @@ export function ClueMenu({
                 return <EmptySlot key={color.name} />;
               }
               const pressed = isSameClue(clue, colorClue);
+              const symbol = getColorSymbol(variant, color, colorblindMode);
               return (
                 <button
                   aria-label={color.name}
@@ -236,7 +241,11 @@ export function ClueMenu({
                       : color.fill,
                   }}
                   type="button"
-                />
+                >
+                  {symbol !== undefined && (
+                    <ColorSymbolView size={CHOICE_SIZE} symbol={symbol} />
+                  )}
+                </button>
               );
             })}
           </ClueRow>
@@ -257,7 +266,7 @@ export function ClueMenu({
                   }}
                   type="button"
                 >
-                  {getRankLabel(rank)}
+                  {getRankClueLabel(variant, rank)}
                 </button>
               );
             })}

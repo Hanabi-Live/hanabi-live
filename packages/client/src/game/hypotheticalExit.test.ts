@@ -168,4 +168,19 @@ describe("hypothetical start", () => {
     expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).not.toHaveBeenCalled();
   });
+
+  test("starts the leader's own hypothetical while they do not share their turns", () => {
+    const store = startReplay({
+      amLeader: true,
+      useSharedSegments: false,
+    });
+
+    startHypothetical();
+
+    const { replay } = store.getState();
+    expect(replay.ownHypothetical).not.toBeUndefined();
+    expect(replay.hypothetical).toBe(replay.ownHypothetical);
+    expect(replay.shared?.hypothetical).toBeUndefined();
+    expect(send).not.toHaveBeenCalled();
+  });
 });

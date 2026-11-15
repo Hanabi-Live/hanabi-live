@@ -1,5 +1,13 @@
-import type { Color, Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
+import type {
+  ClueRank,
+  Color,
+  Rank,
+  Suit,
+  SuitIndex,
+  Variant,
+} from "@hanabi-live/game";
 import {
+  EVEN_RANK_CLUE,
   START_CARD_RANK,
   StackDirection,
   getColorForPrismCard,
@@ -249,7 +257,13 @@ export const CLUE_TOKEN_REACH_PER_WIDTH =
  * may not see (in some variants).
  */
 export type ClueMarkerView =
-  | { readonly type: "color"; readonly name: string; readonly fill: string }
+  | {
+      readonly type: "color";
+      readonly name: string;
+      readonly fill: string;
+      /** The symbol on the color in colorblind mode. */
+      readonly symbol?: ColorSymbol;
+    }
   | { readonly type: "rank"; readonly label: string }
   | {
       readonly type: "sound";
@@ -275,6 +289,56 @@ export interface CardClueMarker {
    * gray, so that the viewer sees that the clue may only confirm the chop move.
    */
   readonly chopMoved?: boolean;
+}
+
+/**
+ * What colorblind mode shows on a clue color, as the classic screen does: the pip of the color's
+ * suit, or the color's abbreviation in a dual-color variant, where a color stands for many suits.
+ */
+export type ColorSymbol =
+  | { readonly type: "pip"; readonly suit: Suit; readonly variant: Variant }
+  | { readonly type: "text"; readonly text: string };
+
+/** How much of a clue token or button the symbol of a color fills. */
+const COLOR_SYMBOL_PER_SIZE = 0.6;
+
+/** How much of the white disc behind a pip the pip fills. */
+const PIP_PER_DISC = 0.8;
+
+/**
+ * The symbol of a color, centered in a box `size` pixels wide. A pip has the color of its suit, so
+ * it sits on a white disc, or it would not show on the color.
+ */
+export function ColorSymbolView({
+  symbol,
+  size,
+}: {
+  readonly symbol: ColorSymbol;
+  readonly size: number;
+}): React.JSX.Element {
+  const symbolSize = size * COLOR_SYMBOL_PER_SIZE;
+  return symbol.type === "pip" ? (
+    <span
+      className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white"
+      style={{
+        width: symbolSize,
+        height: symbolSize,
+      }}
+    >
+      <Pip
+        size={symbolSize * PIP_PER_DISC}
+        suit={symbol.suit}
+        variant={symbol.variant}
+      />
+    </span>
+  ) : (
+    <span
+      className="tw:block tw:font-extrabold tw:leading-none tw:text-white tw:[paint-order:stroke] tw:[-webkit-text-stroke:2px_black] tw:[text-box:trim-both_cap_alphabetic]"
+      style={{ fontSize: symbolSize }}
+    >
+      {symbol.text}
+    </span>
+  );
 }
 
 /** What a badge on the edge of a clue token shows. */
@@ -528,6 +592,12 @@ export function ClueToken({
         }}
       >
         {label}
+        {marker.type === "color" && marker.symbol !== undefined && (
+          <ColorSymbolView
+            size={(size * PIN_DISC_RADIUS) / PIN_RADIUS}
+            symbol={marker.symbol}
+          />
+        )}
       </span>
       {marker.type === "sound" && marker.badge !== undefined && (
         <ClueBadge badge={marker.badge} size={size} />
@@ -1541,8 +1611,16 @@ function getFaceColors(
   };
 }
 
-export function getRankLabel(rank: Rank): string {
+function getRankLabel(rank: Rank): string {
   return rank === START_CARD_RANK ? START_CARD_RANK_LABEL : rank.toString();
+}
+
+/** The label of a rank clue: "O" and "E" in "Odds and Evens" variants, else the rank. */
+export function getRankClueLabel(variant: Variant, rank: ClueRank): string {
+  if (variant.oddsAndEvens) {
+    return rank === EVEN_RANK_CLUE ? "E" : "O";
+  }
+  return getRankLabel(rank);
 }
 
 /** Describes a card for screen readers. */

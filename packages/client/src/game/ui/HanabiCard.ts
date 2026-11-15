@@ -57,6 +57,7 @@ import {
   DRAGGED_CARD_SHADOW_OFFSET,
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
+  VORTEX_TURNS,
 } from "./constants.ts";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
 import type { NoteIndicator } from "./controls/NoteIndicator.ts";
@@ -84,9 +85,6 @@ const CLUED_CARD_RAISE = 0.1;
  * height.
  */
 const DRAGGED_CARD_LIFT = 0.02;
-
-/** How many times a card spins as it vanishes into the hole in "Throw It in a Hole" variants. */
-const VORTEX_TURNS = 4;
 
 /**
  * How large a card is when it finishes vanishing into the hole. (Konva cannot invert the transform

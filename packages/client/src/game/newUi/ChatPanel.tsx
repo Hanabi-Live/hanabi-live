@@ -286,8 +286,15 @@ export function ChatPanel({
     >
       <header className="tw:flex tw:items-start tw:gap-2 tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
         {/* With no one watching, the header stays blank. It names everyone, and wraps when the
-            names need more than one line. */}
-        <div className="tw:min-w-0 tw:flex-1 tw:leading-relaxed">
+            names need more than one line. Its tooltip also says whom each person shadows. */}
+        <div
+          className="tw:min-w-0 tw:flex-1 tw:leading-relaxed"
+          ref={
+            spectators.length > 0
+              ? tooltipRefHtml(spectatorsTooltip, { instant: true })
+              : undefined
+          }
+        >
           {spectators.length > 0 && (
             <>
               <i aria-hidden="true" className="fas fa-eye tw:mr-1.5" />

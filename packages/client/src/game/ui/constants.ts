@@ -324,6 +324,9 @@ export const CARD_ANIMATION_LENGTH_SECONDS = 0.5;
 export const CARD_ANIMATION_DELAY_SECONDS = 0.1;
 /** How long a card takes to move between a hand and a play stack. */
 export const PLAY_ANIMATION_SECONDS = 0.8;
+
+/** How many times a card spins as it goes into the hole in "Throw It in a Hole" variants. */
+export const VORTEX_TURNS = 4;
 export const PREPLAY_DELAY_MILLISECONDS = 75;
 export const DOUBLE_TAP_DELAY_MILLISECONDS = 500;
 

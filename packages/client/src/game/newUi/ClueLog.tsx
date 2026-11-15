@@ -4,6 +4,7 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CLUE_EMOJI_FONT_PER_SIZE,
+  ColorSymbolView,
   getClueMarkerColor,
   getClueMarkerLabel,
 } from "./Card.tsx";
@@ -307,6 +308,9 @@ export function ClueDisc({
         <span className="tw:block tw:[text-box:trim-both_cap_alphabetic]">
           {getClueMarkerLabel(marker)}
         </span>
+      )}
+      {marker.type === "color" && marker.symbol !== undefined && (
+        <ColorSymbolView size={size} symbol={marker.symbol} />
       )}
       {marker.type === "sound" && (
         <span

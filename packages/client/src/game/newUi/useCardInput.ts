@@ -4,7 +4,6 @@
 import type { CardOrder } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
-import { isModalVisible } from "../../modals.ts";
 import {
   DOUBLE_TAP_DELAY_MILLISECONDS,
   MIDDLE_MOUSE_BUTTON,
@@ -12,7 +11,7 @@ import {
 } from "../ui/constants.ts";
 import type { CardClickContext, CardCommand } from "./cardClicks.ts";
 import { getCardClickCommand, getSpeedrunCommand } from "./cardClicks.ts";
-import { isTyping } from "./useHotkeys.ts";
+import { isGameKey } from "./useHotkeys.ts";
 
 /** What the screen shows now, which each render replaces. */
 export interface CardInput {
@@ -22,6 +21,15 @@ export interface CardInput {
 
   /** Removes our note from a card, or is `undefined` when we cannot write notes. */
   readonly deleteNote: ((order: CardOrder) => void) | undefined;
+
+  /** Says which card the mouse is over, when that changes. */
+  readonly onHoverCard: (card: HoveredCard | undefined) => void;
+}
+
+/** The card under the mouse, and its place on the screen (from "data-card-place"). */
+export interface HoveredCard {
+  readonly order: CardOrder;
+  readonly place: string | undefined;
 }
 
 /**
@@ -32,12 +40,21 @@ const CARD_SELECTOR = "[data-card-order], [data-stack-base]";
 
 /** The card that an element is part of, if any. */
 function getCardAt(target: EventTarget | null): CardOrder | undefined {
+  return getHoveredCardAt(target)?.order;
+}
+
+function getHoveredCardAt(target: EventTarget | null): HoveredCard | undefined {
   if (!(target instanceof Element)) {
     return undefined;
   }
   const element = target.closest<HTMLElement>(CARD_SELECTOR);
   const order = element?.dataset["cardOrder"] ?? element?.dataset["stackBase"];
-  return order === undefined ? undefined : (Number(order) as CardOrder);
+  return order === undefined
+    ? undefined
+    : {
+        order: Number(order) as CardOrder,
+        place: element?.dataset["cardPlace"],
+      };
 }
 
 interface CardInputHandlers {
@@ -47,6 +64,7 @@ interface CardInputHandlers {
   readonly onAuxClickCapture: (event: React.MouseEvent) => void;
   readonly onContextMenuCapture: (event: React.MouseEvent) => void;
   readonly onPointerOver: (event: React.PointerEvent) => void;
+  readonly onPointerLeave: () => void;
 }
 
 /**
@@ -57,7 +75,7 @@ interface CardInputHandlers {
 export function useCardInput(
   input: RefObject<CardInput | undefined>,
 ): CardInputHandlers {
-  const hoveredRef = useRef<CardOrder>(undefined);
+  const hoveredRef = useRef<HoveredCard>(undefined);
   const pointerTypeRef = useRef("mouse");
   const lastTapRef = useRef<{ order: CardOrder; time: number }>(undefined);
   // A right-click that made a speedrun move must not also edit the card's note.
@@ -65,7 +83,7 @@ export function useCardInput(
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      const order = hoveredRef.current;
+      const order = hoveredRef.current?.order;
       const deleteNote = input.current?.deleteNote;
       if (
         order === undefined
@@ -75,8 +93,7 @@ export function useCardInput(
         || event.shiftKey
         || event.altKey
         || event.metaKey
-        || isTyping(event.target)
-        || isModalVisible()
+        || !isGameKey(event)
       ) {
         return;
       }
@@ -192,8 +209,21 @@ export function useCardInput(
 
     onPointerOver: (event) => {
       if (event.pointerType === "mouse") {
-        hoveredRef.current = getCardAt(event.target);
+        setHovered(getHoveredCardAt(event.target));
       }
     },
+
+    onPointerLeave: () => {
+      setHovered(undefined);
+    },
   };
+
+  function setHovered(card: HoveredCard | undefined) {
+    const previous = hoveredRef.current;
+    if (previous?.order === card?.order && previous?.place === card?.place) {
+      return;
+    }
+    hoveredRef.current = card;
+    input.current?.onHoverCard(card);
+  }
 }

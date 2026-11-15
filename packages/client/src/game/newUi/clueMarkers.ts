@@ -8,10 +8,12 @@ import type {
   Color,
   PlayerIndex,
   StateClue,
+  Variant,
 } from "@hanabi-live/game";
-import { EVEN_RANK_CLUE, getCharacterNameForPlayer } from "@hanabi-live/game";
+import { getCharacterNameForPlayer, isDualColor } from "@hanabi-live/game";
 import { currentState, currentVariant } from "../gameSession.ts";
-import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
+import type { CardClueMarker, ClueMarkerView, ColorSymbol } from "./Card.tsx";
+import { getRankClueLabel } from "./Card.tsx";
 
 /** The animal that stands for a clue that the variant hides, after the clue's sound. */
 export const QUACK_EMOJI = "\u{1F986}";
@@ -27,6 +29,34 @@ function getAnyColorFill(
     colorblindMode ? color.fillColorblind : color.fill,
   );
   return `conic-gradient(${[...fills, fills[0]].join(", ")})`;
+}
+
+/**
+ * The symbol of a clue color in colorblind mode: its abbreviation in a dual-color variant, else the
+ * pip of the first suit that the color touches.
+ */
+export function getColorSymbol(
+  variant: Variant,
+  color: Color,
+  colorblindMode: boolean,
+): ColorSymbol | undefined {
+  if (!colorblindMode) {
+    return undefined;
+  }
+  if (isDualColor(variant)) {
+    return {
+      type: "text",
+      text: color.abbreviation,
+    };
+  }
+  const suit = variant.suits.find((s) => s.clueColors.includes(color));
+  return suit === undefined
+    ? undefined
+    : {
+        type: "pip",
+        suit,
+        variant,
+      };
 }
 
 /**
@@ -72,6 +102,7 @@ function getMarker(
           type: "color",
           name: color.name,
           fill: colorblindMode ? color.fillColorblind : color.fill,
+          symbol: getColorSymbol(variant, color, colorblindMode),
         };
   }
 
@@ -85,15 +116,9 @@ function getMarker(
       },
     };
   }
-  if (variant.oddsAndEvens) {
-    return {
-      type: "rank",
-      label: rank === EVEN_RANK_CLUE ? "E" : "O",
-    };
-  }
   return {
     type: "rank",
-    label: rank.toString(),
+    label: getRankClueLabel(variant, rank),
   };
 }
 
