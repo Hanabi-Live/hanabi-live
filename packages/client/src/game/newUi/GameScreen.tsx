@@ -109,6 +109,7 @@ import {
   showDiscard,
   showReplayTurn,
   showStrike,
+  showTurnAndIndicateCard,
   toggleReplay,
 } from "./screenActions.ts";
 import { getScreenModeStyle } from "./screenMode.ts";
@@ -596,6 +597,11 @@ export function GameScreen({
 
         case "showSegment": {
           showReplayTurn(command.segment);
+          break;
+        }
+
+        case "showCard": {
+          showTurnAndIndicateCard(command.segment, order);
           break;
         }
 

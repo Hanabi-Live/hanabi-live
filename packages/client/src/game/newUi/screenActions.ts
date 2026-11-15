@@ -126,7 +126,10 @@ export function showStrike(segment: number): void {
 }
 
 /** Shows a turn, and points the arrow at a card on it, so that the card is easy to find. */
-function showTurnAndIndicateCard(segment: number, order: CardOrder) {
+export function showTurnAndIndicateCard(
+  segment: number,
+  order: CardOrder,
+): void {
   showReplayTurn(segment);
   toggleArrow(order, true);
 }

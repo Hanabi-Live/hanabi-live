@@ -47,6 +47,8 @@ export type CardCommand =
   | { readonly type: "morph" }
   /** Shows a turn in the replay. */
   | { readonly type: "showSegment"; readonly segment: number }
+  /** Shows a turn in the replay, and points the arrow at the card, so that it is easy to find. */
+  | { readonly type: "showCard"; readonly segment: number }
   | { readonly type: "play" | "discard" }
   | {
       readonly type: "clue";
@@ -245,7 +247,7 @@ export function getCardClickCommand(
   // the first deal was drawn before the first turn.
   if (click.altKey) {
     return {
-      type: "showSegment",
+      type: "showCard",
       segment:
         cardState.segmentDrawn === undefined ? 0 : cardState.segmentDrawn + 1,
     };
@@ -254,13 +256,13 @@ export function getCardClickCommand(
   // A click on a played or discarded card shows the turn on which it left its hand.
   if (isCardPlayed(cardState) && cardState.segmentPlayed !== undefined) {
     return {
-      type: "showSegment",
+      type: "showCard",
       segment: cardState.segmentPlayed,
     };
   }
   if (isCardDiscarded(cardState) && cardState.segmentDiscarded !== undefined) {
     return {
-      type: "showSegment",
+      type: "showCard",
       segment: cardState.segmentDiscarded,
     };
   }

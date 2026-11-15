@@ -133,7 +133,7 @@ describe("getCardClickCommand", () => {
     expect(
       getCardClickCommand(click(LEFT), PLAYED_CARD, context(), false),
     ).toStrictEqual({
-      type: "showSegment",
+      type: "showCard",
       segment: 8,
     });
   });
@@ -147,7 +147,7 @@ describe("getCardClickCommand", () => {
         false,
       ),
     ).toStrictEqual({
-      type: "showSegment",
+      type: "showCard",
       segment: 5,
     });
     expect(
@@ -158,7 +158,7 @@ describe("getCardClickCommand", () => {
         false,
       ),
     ).toStrictEqual({
-      type: "showSegment",
+      type: "showCard",
       segment: 0,
     });
   });
