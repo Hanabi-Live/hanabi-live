@@ -11,6 +11,25 @@ import { useEffect, useState } from "react";
  */
 const COLOR_CLUE_KEYS = ["q", "w", "e", "r", "t", "y"] as const;
 
+/** The number keys of the top row and of the number pad, as `event.code` names them. */
+const RANK_KEY_CODE = /^(?:Digit|Numpad)(?<digit>[1-9])$/u;
+
+/**
+ * The index of the rank that a number key chooses, if it is one. The top row counts by where the
+ * key is, as on the classic screen, so that it works on keyboards that need Shift for the digits,
+ * such as French ones. A number pad key counts only while it types a digit: without Num Lock, it is
+ * an arrow or Home or End.
+ */
+export function getRankKeyIndex(
+  event: Pick<KeyboardEvent, "code" | "key">,
+): number | undefined {
+  const digit = RANK_KEY_CODE.exec(event.code)?.groups?.["digit"];
+  return digit === undefined
+    || (event.code.startsWith("Numpad") && !/^\d$/u.test(event.key))
+    ? undefined
+    : Number(digit) - 1;
+}
+
 /** Whether a key press goes into a text box, such as the chat, rather than to the game. */
 export function isTyping(target: EventTarget | null): boolean {
   return (
@@ -107,10 +126,10 @@ export interface ClueHotkeys {
 }
 
 /**
- * The clue hotkeys of the classic screen: Tab or ";" picks the next player, "1" to "5" pick a rank,
- * "q" to "y" pick a color, and Ctrl + Enter gives the clue. The listener stays the same, so it
- * reads the latest screen from `hotkeys`, which each render of the screen replaces. They do nothing
- * while it is empty.
+ * The clue hotkeys of the classic screen: Tab or ";" picks the next player, "1" to "5" pick a rank
+ * (see `getRankKeyIndex`), "q" to "y" pick a color by the letter that they type, and Ctrl + Enter
+ * gives the clue. The listener stays the same, so it reads the latest screen from `hotkeys`, which
+ * each render of the screen replaces. They do nothing while it is empty.
  */
 export function useClueHotkeys(
   hotkeys: RefObject<ClueHotkeys | undefined>,
@@ -155,8 +174,10 @@ function onClueKey(event: KeyboardEvent, hotkeys: ClueHotkeys) {
     return;
   }
 
-  const rank = variant.clueRanks[Number(event.key) - 1];
-  if (rank !== undefined && /^\d$/u.test(event.key)) {
+  const rankIndex = getRankKeyIndex(event);
+  const rank =
+    rankIndex === undefined ? undefined : variant.clueRanks[rankIndex];
+  if (rank !== undefined) {
     hotkeys.onChooseClue(newRankClue(rank));
     return;
   }
