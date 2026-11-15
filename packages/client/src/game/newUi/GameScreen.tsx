@@ -474,8 +474,10 @@ export function GameScreen({
           if (canDrawArrowNow(event)) {
             return;
           }
+          // A second right-click on the card closes its box without saving, as on the classic
+          // screen.
           if (rightClickNote(event, order)) {
-            setNoteCard(order);
+            setNoteCard((current) => (current === order ? undefined : order));
           }
         },
     onCloseNote: () => {

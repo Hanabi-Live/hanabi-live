@@ -116,6 +116,10 @@ export function CardNote({
         onRightClickCard === undefined
           ? undefined
           : (event) => {
+              // A right-click in the box leaves it open.
+              if (editing && event.target instanceof HTMLInputElement) {
+                return;
+              }
               event.preventDefault();
               onRightClickCard(event, order);
             }
