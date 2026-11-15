@@ -244,10 +244,18 @@ function OutOf({
 
 /**
  * A value that opens a prompt when clicked. It looks like the other values, and a dotted line under
- * it on hover shows that it does something.
+ * it on hover shows that it does something. The line goes under a child with `VALUE_LINE_CLASS`.
  */
 const VALUE_BUTTON_CLASS =
-  "tw:cursor-pointer tw:rounded-sm tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:text-inherit tw:[font:inherit] tw:decoration-dotted tw:decoration-2 tw:underline-offset-4 tw:outline-none tw:hover:underline tw:focus-visible:underline";
+  "tw:group tw:cursor-pointer tw:rounded-sm tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:text-inherit tw:[font:inherit] tw:outline-none";
+
+/**
+ * The dotted line under the text of a value button. It is a border, not an underline, so it runs on
+ * under the parts of a value such as " / 66", which are boxes of their own that an underline skips.
+ * It goes on an inline element, where a border takes no space, so the bar does not move.
+ */
+const VALUE_LINE_CLASS =
+  "tw:border-b-2 tw:border-dotted tw:border-transparent tw:group-hover:border-current tw:group-focus-visible:border-current";
 
 /**
  * Puts the tooltip of a value in the smaller text of the screen's other tooltips. Its labels are
@@ -508,11 +516,13 @@ export function StatusStrip({
               <OutOf max={reservedTurn} value={reservedTurn} />
             </span>
             <span className="tw:col-start-1 tw:row-start-1" data-turn>
-              {lastTurn === undefined ? (
-                turn
-              ) : (
-                <OutOf max={lastTurn} value={turn} />
-              )}
+              <span className={VALUE_LINE_CLASS}>
+                {lastTurn === undefined ? (
+                  turn
+                ) : (
+                  <OutOf max={lastTurn} value={turn} />
+                )}
+              </span>
             </span>
           </button>
         </Stat>
@@ -614,7 +624,7 @@ export function StatusStrip({
                   )}
                   type="button"
                 >
-                  {futureEfficiency}
+                  <span className={VALUE_LINE_CLASS}>{futureEfficiency}</span>
                 </button>
               }
             />
