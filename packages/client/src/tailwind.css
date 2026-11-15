@@ -17,6 +17,7 @@
   */
   --spacing: 0.25em;
   --color-*: initial;
+  --color-black: #000;
   --color-white: #fff;
   --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
