@@ -130,16 +130,16 @@ export function getSeats(
       playerTime === undefined
         ? undefined
         : millisecondsToClockString(playerTime);
-    // The tooltip of the clock that runs also has the time taken on this turn.
-    const clockLabel = timed ? "Time left" : "Time taken in this game";
+    // The clock shows its time, so its tooltip says what the time is. The tooltip of the clock that
+    // runs gives the time taken on this turn instead.
     const turnTime =
       clock !== undefined && getActivePlayerIndex() === playerIndex
         ? getTurnTime()
         : undefined;
-    const clockTooltip =
-      turnTime === undefined
-        ? clockLabel
-        : `${clockLabel}: ${clock}<br>Time taken on this turn: ${millisecondsToClockString(turnTime)}`;
+    let clockTooltip = timed ? "Time left" : "Time taken in this game";
+    if (turnTime !== undefined) {
+      clockTooltip = `Time taken on this turn: ${millisecondsToClockString(turnTime)}`;
+    }
 
     seats.push({
       playerIndex,
