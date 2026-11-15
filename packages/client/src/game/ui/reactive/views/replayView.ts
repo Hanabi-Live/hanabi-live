@@ -1,4 +1,3 @@
-import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips.ts";
 import { escapeHtml } from "../../../../utils.ts";
@@ -340,29 +339,15 @@ export function onSharedAmLeaderChanged(amLeader: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export function onLeaderOrSpectatorsChanged(data: {
-  leader: string | undefined;
-  spectators: Spectator[];
-}): void {
-  if (data.leader === undefined) {
+export function onLeaderChanged(leader: string | undefined): void {
+  if (leader === undefined) {
     return;
   }
 
-  // Find out if the leader is away.
-  let away = true;
-  for (const spectator of data.spectators) {
-    if (spectator.username === data.leader) {
-      away = false;
-      break;
-    }
-  }
-
-  // Update the tooltip
-  let content = `<strong>Leader:</strong> ${escapeHtml(data.leader)}`;
-  if (away) {
-    content += " (away)";
-  }
-  tooltips.setContent("leader", content);
+  tooltips.setContent(
+    "leader",
+    `<strong>Leader:</strong> ${escapeHtml(leader)}`,
+  );
 }
 
 /** Paused spectators can see that the leader is in a hypothetical, and join it. */

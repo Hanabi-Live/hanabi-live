@@ -317,13 +317,7 @@ const replayObservers: Subscriptions = [
           },
     replayView.onRestartChanged,
   ),
-  subAfterInit(
-    (s) => ({
-      leader: s.replay.shared?.leader,
-      spectators: s.spectators,
-    }),
-    replayView.onLeaderOrSpectatorsChanged,
-  ),
+  subAfterInit((s) => s.replay.shared?.leader, replayView.onLeaderChanged),
 
   // Hypothetical
   subAfterInit(
