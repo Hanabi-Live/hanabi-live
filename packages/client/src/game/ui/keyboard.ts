@@ -20,7 +20,6 @@ import { isModalVisible, showPrompt } from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
 import { store } from "../../store.ts";
 import { getHtmlElement } from "../../utils.ts";
-import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
 import { confirmPlay } from "../confirmPlay.ts";
@@ -35,6 +34,7 @@ import { backToLobby } from "./backToLobby.ts";
 import * as clues from "./clues.ts";
 import * as replay from "./replay.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
+import * as turn from "./turn.ts";
 
 type Callback = () => void;
 
@@ -503,20 +503,10 @@ function performAction(actionType: PlayOrDiscard, order: CardOrder) {
 }
 
 function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
-  if (globals.state.replay.hypothetical === undefined) {
-    lobbyGlobals.connection.send(
-      "playerAction",
-      toWireAction(lobbyGlobals.joinedTableId, {
-        type: actionType,
-        order,
-      }),
-    );
-  } else {
-    hypothetical.sendHypotheticalAction({
-      type: actionType,
-      order,
-    });
-  }
-
+  // This shows that the move waits for the server, as a move made with the mouse does.
+  turn.end({
+    type: actionType,
+    order,
+  });
   arrows.hideAll();
 }

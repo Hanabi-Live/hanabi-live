@@ -25,9 +25,14 @@ export function end(clientAction: ClientAction): void {
     return;
   }
 
-  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
+  const { turnNum, currentPlayerIndex } = globals.state.ongoingGame.turn;
 
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
+    // Until the server answers the move that we sent on this turn, a second move would be refused.
+    // This stops a fast double click in a speedrun.
+    if (store.getState().newUi.sentMove?.turnNum === turnNum) {
+      return;
+    }
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
     arrows.hideAll();
     showWaitingOnServer(clientAction);
