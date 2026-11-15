@@ -108,8 +108,8 @@ function Heading({
 const KNOB_INSET_PX = 16;
 
 /**
- * A line from the first turn to the last, with a knob on the turn on screen. Clicking it or
- * dragging along it shows another turn.
+ * A line from the first turn to the last, with a knob on the turn on screen. Clicking it, dragging
+ * along it, or turning the mouse wheel over it shows another turn.
  */
 function Timeline({
   segment,
@@ -163,6 +163,14 @@ function Timeline({
       onPointerMove={(event) => {
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           showTurnAt(event.clientX);
+        }
+      }}
+      // As on the classic screen, the mouse wheel steps through the turns: down is forward.
+      onWheel={(event) => {
+        if (event.deltaY > 0) {
+          replay.forward();
+        } else if (event.deltaY < 0) {
+          replay.back();
         }
       }}
       ref={ref}
