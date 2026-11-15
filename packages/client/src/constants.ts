@@ -32,7 +32,10 @@ export const HTTP_STATUS = {
 /** How the start card's rank is written on cards, in notes, and in the morph dialog. */
 export const START_CARD_RANK_LABEL = "S";
 
-/** The `localStorage` keys that remember lobby and chat inputs between visits. */
+/**
+ * The `localStorage` keys that remember lobby and chat inputs, and the `animations()` console
+ * command, between visits.
+ */
 export const LOCAL_STORAGE_KEY = {
   CHAT_WINDOW_WIDTH: "chatWindowWidth",
   CHAT_WINDOW_HEIGHT: "chatWindowHeight",
@@ -41,6 +44,7 @@ export const LOCAL_STORAGE_KEY = {
   CREATE_TABLE_NAME: "createTableName",
   CREATE_TABLE_PASSWORD: "createTablePassword",
   JOIN_TABLE_PASSWORD: "joinTablePassword",
+  REPLAY_ANIMATIONS: "replayAnimations",
   TYPED_CHAT_HISTORY: "typedChatHistory",
   WATCH_REPLAY_ID: "watchReplayId",
   WATCH_REPLAY_JSON: "watchReplayJson",
