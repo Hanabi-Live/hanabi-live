@@ -480,10 +480,6 @@ function NameChip({
   readonly seat: Seat;
   readonly look: NameChipLook;
 }): React.JSX.Element {
-  const youIcon = seat.you ? (
-    <i aria-label="You" className="fas fa-user tw:text-[0.85em]" role="img" />
-  ) : undefined;
-
   // A player who left has a red ring and a broken link on their name, as the classic screen draws
   // their name in red. The badge sits on the ring, so that it does not change the chip's width.
   const disconnectedClass = seat.disconnected
@@ -508,7 +504,6 @@ function NameChip({
       <span
         className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:font-bold tw:text-card-ink ${disconnectedClass}`}
       >
-        {youIcon}
         <FitText text={seat.name} />
         {disconnectedBadge}
       </span>
@@ -522,7 +517,6 @@ function NameChip({
         look === "noClues" ? "The team has no clues to give." : undefined,
       )}
     >
-      {youIcon}
       <FitText text={seat.name} />
       {disconnectedBadge}
     </span>
