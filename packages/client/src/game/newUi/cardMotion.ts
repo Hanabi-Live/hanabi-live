@@ -4,7 +4,6 @@
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, clamp } from "complete-common";
 import { store } from "../../store.ts";
-import type { Point } from "../motion.ts";
 import { rectCenter } from "../motion.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../ui/constants.ts";
 import type { Misplay } from "./playMotion.ts";
@@ -285,10 +284,11 @@ function stepKeyframes(
  * Moves a played card to its stack, or a discarded card to the discard pile. The move takes longer
  * the farther the card goes, so that a card dropped near its place snaps into place.
  *
- * A misplayed card that does not show the whole misplay moves the same way, and then bounces off
- * its stack into the discard pile, as on the classic screen. This happens in a replay, and in a
- * game in progress with the "Reduced motion" setting. In a game in progress, the next update of the
- * game does not finish the move, as it does not finish a normal misplay.
+ * A misplayed card that does not show the whole misplay moves the same way. Then it bounces off its
+ * stack, as on the classic screen, and goes to the discard pile as a discarded card does. This
+ * happens in a replay, and in a game in progress with the "Reduced motion" setting. In a game in
+ * progress, the next update of the game does not finish the move, as it does not finish a normal
+ * misplay.
  *
  * @param element The card, where it rests.
  * @param from Where the card was.
@@ -303,145 +303,131 @@ function animateToss(
   look: TossLook,
   bounce?: Bounce,
 ) {
-  const rest = rectCenter(to);
-  const start = rectCenter(from);
-  const land = bounce === undefined ? to : bounce.stackSlot;
-  const landCenter = rectCenter(land);
-  const distance = Math.hypot(start.x - landCenter.x, start.y - landCenter.y);
-  const travel =
-    clamp(
-      distance / PLAY_MOTION.speed,
-      PLAY_MOTION.minSeconds,
-      PLAY_MOTION.maxSeconds,
-    ) * SECOND_IN_MILLISECONDS;
   // The growth, the tilt, and the landing only decorate the move, so "Reduced motion" leaves them
   // out.
   const decorated = !store.getState().session.settings.reducedMotion;
-  const landStart = travel * PLAY_MOTION.landStart;
-  const landEnd = decorated
-    ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
-    : travel;
-  // A misplayed card bounces off its stack once it has reached it and settled to its size there.
-  const bounceStart = Math.max(travel, landEnd);
-  const bounceEnd =
-    bounceStart + CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS;
   const id =
     bounce?.live === true ? PLAY_EFFECT_ANIMATION_ID : CARD_MOVE_ANIMATION_ID;
+  const rest = rectCenter(to);
+
+  // The card moves on its "translate" property, so that its changes of size do not scale its path.
+  function offset(rect: DOMRect): string {
+    const { x, y } = rectCenter(rect);
+    return `${x - rest.x}px ${y - rest.y}px`;
+  }
+
+  // The card also changes size between a hand, the smaller cards on the stacks, and the discard
+  // pile. Every card has the same shape, so its width gives its scale.
+  function scale(factor: number, rect: DOMRect, rotation = 0): string {
+    return `rotate(${rotation}deg) scale(${(factor * rect.width) / to.width})`;
+  }
+
+  const pathSteps: Step[] = [];
+  const sizeSteps: Step[] = [];
+
+  /**
+   * Adds a leg of the move, from one place to another, that starts at a time. Returns when the card
+   * has reached its new place and settled to its size there.
+   */
+  function addLeg(
+    start: number,
+    legFrom: DOMRect,
+    legTo: DOMRect,
+    legLook: TossLook,
+  ): number {
+    const a = rectCenter(legFrom);
+    const b = rectCenter(legTo);
+    const travel =
+      clamp(
+        Math.hypot(a.x - b.x, a.y - b.y) / PLAY_MOTION.speed,
+        PLAY_MOTION.minSeconds,
+        PLAY_MOTION.maxSeconds,
+      ) * SECOND_IN_MILLISECONDS;
+    const landStart = travel * PLAY_MOTION.landStart;
+    const landEnd = decorated
+      ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
+      : travel;
+
+    pathSteps.push(
+      {
+        time: start,
+        value: offset(legFrom),
+        easing: PLAY_MOTION.ease,
+      },
+      {
+        time: start + travel,
+        value: offset(legTo),
+      },
+    );
+
+    if (decorated) {
+      // The card tilts toward the side that it goes to.
+      const tilt = (b.x < a.x ? -1 : 1) * legLook.tiltDegrees;
+      sizeSteps.push(
+        {
+          time: start,
+          value: scale(1, legFrom),
+          easing: "ease-out",
+        },
+        {
+          time: start + PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS,
+          value: scale(legLook.growScale, legFrom, tilt),
+        },
+        {
+          time: start + landStart,
+          value: scale(legLook.growScale, legFrom, tilt),
+          easing: legLook.landEasing,
+        },
+      );
+    } else {
+      sizeSteps.push({
+        time: start,
+        value: scale(1, legFrom),
+        easing: PLAY_MOTION.ease,
+      });
+    }
+    sizeSteps.push({
+      time: start + landEnd,
+      value: scale(1, legTo),
+    });
+
+    if (legLook === PLAY_LOOK && bounce === undefined) {
+      playLandings.set(element, start + travel);
+    }
+    return start + Math.max(travel, landEnd);
+  }
+
+  // A misplayed card bounces off its stack once it has reached it and settled to its size there. It
+  // goes on to the discard pile as a discarded card does.
+  if (bounce === undefined) {
+    addLeg(0, from, to, look);
+  } else {
+    const settled = addLeg(0, from, bounce.stackSlot, look);
+    addLeg(settled, bounce.stackSlot, to, DISCARD_LOOK);
+  }
 
   // The card goes over the hand cards that move into its old place. They move at the same time, and
   // the hands come after the play stacks in the page, so at the same height they would cover it. It
   // stays over them until both of its animations end.
-  const restorePath = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
-  const restoreSize = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
-
-  // The card moves on its "translate" property, so that its changes of size do not scale its path.
-  function offset(point: Point): string {
-    return `${point.x - rest.x}px ${point.y - rest.y}px`;
-  }
-  const pathSteps: Step[] = [
-    {
-      time: 0,
-      value: offset(start),
-      easing: PLAY_MOTION.ease,
-    },
-  ];
-  if (bounce === undefined) {
-    pathSteps.push({
-      time: travel,
-      value: "0px 0px",
-    });
-  } else {
-    pathSteps.push(
+  for (const [property, steps] of [
+    ["translate", pathSteps],
+    ["transform", sizeSteps],
+  ] as const) {
+    const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
+    const duration = steps.at(-1)!.time;
+    const animation = element.animate(
+      stepKeyframes(property, steps, duration).map((keyframe) => ({
+        ...keyframe,
+        transformOrigin: "center",
+      })),
       {
-        time: travel,
-        value: offset(landCenter),
-      },
-      {
-        time: bounceStart,
-        value: offset(landCenter),
-        easing: "ease-out",
-      },
-      {
-        time: bounceEnd,
-        value: "0px 0px",
+        id,
+        duration,
+        // The card keeps any "translate" of its own.
+        composite: property === "translate" ? "add" : "replace",
       },
     );
-  }
-  const pathDuration = pathSteps.at(-1)!.time;
-  const path = element.animate(
-    [...stepKeyframes("translate", pathSteps, pathDuration)],
-    {
-      id,
-      duration: pathDuration,
-      composite: "add",
-    },
-  );
-  onEnd(path, restorePath);
-
-  // The card also changes size between a hand, the smaller cards on the stacks, and the discard
-  // pile. Every card has the same shape, so its width gives its scale. It tilts toward the side
-  // that it goes to.
-  const tilt =
-    (landCenter.x < start.x ? -1 : 1) * (decorated ? look.tiltDegrees : 0);
-  function scale(factor: number, rect: DOMRect, rotation = 0): string {
-    return `rotate(${rotation}deg) scale(${(factor * rect.width) / to.width})`;
-  }
-  const sizeSteps: Step[] = decorated
-    ? [
-        {
-          time: 0,
-          value: scale(1, from),
-          easing: "ease-out",
-        },
-        {
-          time: PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS,
-          value: scale(look.growScale, from, tilt),
-        },
-        {
-          time: landStart,
-          value: scale(look.growScale, from, tilt),
-          easing: look.landEasing,
-        },
-      ]
-    : [
-        {
-          time: 0,
-          value: scale(1, from),
-          easing: PLAY_MOTION.ease,
-        },
-      ];
-  sizeSteps.push({
-    time: landEnd,
-    value: scale(1, land),
-  });
-  if (bounce !== undefined) {
-    sizeSteps.push(
-      {
-        time: bounceStart,
-        value: scale(1, land),
-        easing: "ease-out",
-      },
-      {
-        time: bounceEnd,
-        value: scale(1, to),
-      },
-    );
-  }
-  const sizeDuration = sizeSteps.at(-1)!.time;
-  const size = element.animate(
-    stepKeyframes("transform", sizeSteps, sizeDuration).map((keyframe) => ({
-      ...keyframe,
-      transformOrigin: "center",
-    })),
-    {
-      id,
-      duration: sizeDuration,
-    },
-  );
-  onEnd(size, restoreSize);
-
-  if (look === PLAY_LOOK && bounce === undefined) {
-    playLandings.set(element, travel);
+    onEnd(animation, restore);
   }
 }
 
