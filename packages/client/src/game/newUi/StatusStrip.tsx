@@ -522,20 +522,13 @@ export function StatusStrip({
               colorblindMode,
             )}
           >
-            {/* The score holds the space of two digits, so that the bar does not move when the
-                score reaches 10. */}
+            {/* The score starts at the left, under its label. */}
             {maxScore === undefined ? (
-              <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
-                {score}
-              </span>
+              <span className="tw:tabular-nums">{score}</span>
             ) : (
               <OutOf
                 max={maxScore}
-                value={
-                  <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
-                    {score}
-                  </span>
-                }
+                value={<span className="tw:tabular-nums">{score}</span>}
               />
             )}
           </span>
