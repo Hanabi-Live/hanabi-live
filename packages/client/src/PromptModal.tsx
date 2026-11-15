@@ -92,52 +92,57 @@ function NumberPrompt({
     <>
       <ModalHeader heading={prompt.title} />
       {prompt.description !== undefined && <p>{prompt.description}</p>}
-      {prompt.current !== undefined && (
-        <div className="row">
-          <div className="col-6">{prompt.current.label}</div>
-          <div className="col-6">
-            <span className="tw:ml-[0.9em]">{prompt.current.value}</span>
-          </div>
-        </div>
-      )}
-      <div className="row">
-        <div className="col-6">{prompt.label}</div>
-        <div className="col-6">
-          <input
-            autoFocus
-            max={prompt.max}
-            min={prompt.min}
-            onChange={(event) => {
-              setValue(event.target.value);
-            }}
-            onFocus={(event) => {
-              event.target.select();
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter") {
-                return;
-              }
+      {/* The labels and their values line up in two columns, each label beside its value. */}
+      <div className="tw:mt-4 tw:grid tw:grid-cols-[auto_auto] tw:items-center tw:justify-center tw:gap-x-4 tw:gap-y-2">
+        {prompt.current !== undefined && (
+          <>
+            {/* It looks like the label of the input below. */}
+            <span className="tw:text-[0.9em] tw:font-light tw:text-text-strong">
+              {prompt.current.label}
+            </span>
+            {/* Lined up with the number in the input below, after its border and padding. */}
+            <span className="tw:pl-[calc(1em+1px)]">
+              {prompt.current.value}
+            </span>
+          </>
+        )}
+        <label className="tw:m-0" htmlFor="prompt-number">
+          {prompt.label}
+        </label>
+        <input
+          autoFocus
+          className="tw:m-0 tw:w-32"
+          id="prompt-number"
+          max={prompt.max}
+          min={prompt.min}
+          onChange={(event) => {
+            setValue(event.target.value);
+          }}
+          onFocus={(event) => {
+            event.target.select();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") {
+              return;
+            }
 
-              event.preventDefault();
-              submitPrompt(value);
-            }}
-            type="number"
-            value={value}
-          />
-        </div>
+            event.preventDefault();
+            submitPrompt(value);
+          }}
+          type="number"
+          value={value}
+        />
       </div>
-      <div className="row">
-        <div className="col-2 off-5">
-          <button
-            className="button"
-            onClick={() => {
-              submitPrompt(value);
-            }}
-            type="submit"
-          >
-            Go
-          </button>
-        </div>
+      <div className="tw:mt-4 tw:flex tw:justify-center">
+        <button
+          className="button tw:m-0"
+          onClick={() => {
+            submitPrompt(value);
+          }}
+          type="submit"
+        >
+          Go
+        </button>
       </div>
     </>
   );
