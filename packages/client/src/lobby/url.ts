@@ -16,7 +16,7 @@ import {
 } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import * as modals from "../modals.ts";
-import { setBrowserAddressBarPath } from "../utils.ts";
+import { escapeHtml, setBrowserAddressBarPath } from "../utils.ts";
 import { DEFAULT_TIME_CONTROL } from "./createGameForm.ts";
 import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
@@ -83,7 +83,10 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
     // The URL names its variant, as people write it.
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     if (!doesVariantExist(variantName)) {
-      modals.showWarning(`The variant of "${variantName}" does not exist.`);
+      // The warning is HTML, and the name comes from the URL.
+      modals.showWarning(
+        `The variant of "${escapeHtml(variantName)}" does not exist.`,
+      );
       return false;
     }
     const timeControl =

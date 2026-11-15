@@ -14,7 +14,10 @@ vi.mock("../Globals.ts", () => ({
     },
   },
 }));
-vi.mock("../utils.ts", () => ({ setBrowserAddressBarPath: vi.fn() }));
+vi.mock("../utils.ts", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  setBrowserAddressBarPath: vi.fn(),
+}));
 vi.mock("../modals.ts", () => ({ showWarning: vi.fn() }));
 const { globals } = await import("../Globals.ts");
 const modals = await import("../modals.ts");
@@ -292,12 +295,12 @@ describe("table creation URL", () => {
     expect(data).toHaveProperty("settings.options.variantId", 3);
   });
 
-  test("warns about a variant that does not exist", () => {
+  test("warns about a variant that does not exist, with its name escaped", () => {
     const send = vi.spyOn(globals.connection, "send");
-    visit("No Such Variant");
+    visit("<img src=x onerror=alert(1)>");
     expect(send).not.toHaveBeenCalled();
     expect(modals.showWarning).toHaveBeenCalledWith(
-      'The variant of "No Such Variant" does not exist.',
+      'The variant of "&lt;img src=x onerror=alert(1)&gt;" does not exist.',
     );
   });
 });
