@@ -429,6 +429,14 @@ const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1.5 12C4.5 6.5 8 4.5 12 4.5s7.5 2 10.5 7.5c-3 5.5-6.5 7.5-10.5 7.5S4.5 17.5 1.5 12z' fill='white' stroke='black' stroke-width='1.5'/><circle cx='12' cy='12' r='4' fill='black'/><circle cx='13.5' cy='10.5' r='1.25' fill='white'/></svg>",
 )}") 12 12, pointer`;
 
+/**
+ * The cursor over a card while editing cards, where a click changes the card: a white pencil with a
+ * dark outline, like the eye. It points with its tip.
+ */
+const EDIT_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M2 22 3.4 16.3 18.3 1.5 22.5 5.7 7.7 20.6z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/><path d='M3.4 16.3 7.7 20.6M14.7 5 19 9.3' fill='none' stroke='black' stroke-width='1.5'/></svg>",
+)}") 2 22, pointer`;
+
 /** The space between cards in a hand, in CSS pixels. */
 export const CARD_GAP = 10;
 
@@ -970,13 +978,16 @@ function EditableCard({
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
       // It is a block, so that it does not sit on a line of text, which would make the hand taller.
-      className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
+      className="tw:block tw:border-0 tw:bg-transparent tw:p-0"
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {
         props.onEditCard?.(card.order);
       }}
-      style={{ borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH }}
+      style={{
+        borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH,
+        cursor: EDIT_CURSOR,
+      }}
       type="button"
     >
       <CardFace
