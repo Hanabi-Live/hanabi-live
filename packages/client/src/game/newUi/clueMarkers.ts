@@ -1,6 +1,7 @@
 // How a clue shows on the New UI's clue tokens, its clue rail, and its clue log.
 
 import type {
+  CardOrder,
   Clue,
   ClueRank,
   ClueType,
@@ -10,7 +11,7 @@ import type {
 } from "@hanabi-live/game";
 import { EVEN_RANK_CLUE, getCharacterNameForPlayer } from "@hanabi-live/game";
 import { currentState, currentVariant } from "../gameSession.ts";
-import type { ClueMarkerView } from "./Card.tsx";
+import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
 
 /** The animal that stands for a clue that the variant hides, after the clue's sound. */
 export const QUACK_EMOJI = "\u{1F986}";
@@ -143,4 +144,41 @@ export function getClueMarker(
       );
     }
   }
+}
+
+/** The cards that the clues before a segment touched. With no segment, every clue's cards. */
+export function getCardsTouchedBefore(
+  clues: readonly StateClue[],
+  segment?: number,
+): ReadonlySet<CardOrder> {
+  return new Set(
+    clues
+      .filter((clue) => segment === undefined || clue.segment < segment)
+      .flatMap((clue) => clue.list),
+  );
+}
+
+/**
+ * The markers for the cards that a clue touched. A card that an earlier clue touched too gets a dot
+ * without a point, so that the cards that the clue touches for the first time stand out.
+ */
+export function getClueMarkers(
+  clue: StateClue | undefined,
+  clues: readonly StateClue[],
+  colorblindMode: boolean,
+): ReadonlyMap<CardOrder, CardClueMarker> {
+  const markers = new Map<CardOrder, CardClueMarker>();
+  if (clue === undefined) {
+    return markers;
+  }
+
+  const marker = getClueMarker(clue, colorblindMode);
+  const touchedBefore = getCardsTouchedBefore(clues, clue.segment);
+  for (const order of clue.list) {
+    markers.set(order, {
+      marker,
+      touchedBefore: touchedBefore.has(order),
+    });
+  }
+  return markers;
 }

@@ -23,7 +23,6 @@ import { getViewPlayerIndex } from "../ourSeat.ts";
 import type { State } from "../types/State.ts";
 import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
-import type { ClueMarkerView } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import type { Seat } from "./Hands.tsx";
 import type { DiscardView, StackView } from "./SharedCards.tsx";
@@ -246,23 +245,6 @@ export function getClueLogEntries(state: State): readonly ClueLogEntry[] {
     touchedCards: clue.list,
     missedCards: clue.negativeList,
   }));
-}
-
-/** The markers for the cards that a clue touched. */
-export function getClueMarkers(
-  clue: StateClue | undefined,
-  colorblindMode: boolean,
-): ReadonlyMap<CardOrder, ClueMarkerView> {
-  const markers = new Map<CardOrder, ClueMarkerView>();
-  if (clue === undefined) {
-    return markers;
-  }
-
-  const marker = getClueMarker(clue, colorblindMode);
-  for (const order of clue.list) {
-    markers.set(order, marker);
-  }
-  return markers;
 }
 
 /**

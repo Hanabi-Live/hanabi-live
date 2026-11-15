@@ -209,6 +209,16 @@ const CLUE_TOKEN_SIZE_PER_WIDTH = 0.46;
 const CLUE_TOKEN_PART_ABOVE_CARD = 0.8;
 
 /**
+ * The size of the dot on a card that an earlier clue touched too, as a fraction of the full token.
+ * The dot has no point, so that the pins of the cards that the clue touches for the first time
+ * stand out.
+ */
+const CLUE_DOT_SCALE = 0.8;
+
+/** How much of the dot is above the card's top edge. It sits on the edge. */
+const CLUE_DOT_PART_ABOVE_CARD = 0.5;
+
+/**
  * How far a clue token reaches above the place where its card rests in a hand, as a fraction of the
  * card's width. (A touched card is clued, so it is also raised.) A hand whose name sits above its
  * cards leaves this much room between them.
@@ -234,6 +244,14 @@ export type ClueMarkerView =
        */
       readonly badge?: ClueBadgeView;
     };
+
+/** The token of a clue on a card that the clue touched. */
+export interface CardClueMarker {
+  readonly marker: ClueMarkerView;
+
+  /** Whether an earlier clue touched the card too. Then the token is a dot, without a point. */
+  readonly touchedBefore: boolean;
+}
 
 /** What a badge on the edge of a clue token shows. */
 type ClueBadgeView =
@@ -286,7 +304,7 @@ interface CardFaceProps {
   readonly possibleRanks?: readonly Rank[];
 
   /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
-  readonly clueMarker?: ClueMarkerView;
+  readonly clueMarker?: CardClueMarker;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -365,6 +383,9 @@ const PIN_PATH = (() => {
   return `M ${PIN_RADIUS} ${PIN_TIP_Y} L ${PIN_RADIUS - x} ${y} A ${PIN_RADIUS} ${PIN_RADIUS} 0 1 1 ${PIN_RADIUS + x} ${y} Z`;
 })();
 
+/** The shape of a clue token without a point: only the disc, in the same units. */
+const DOT_PATH = `M 0 ${PIN_RADIUS} A ${PIN_RADIUS} ${PIN_RADIUS} 0 1 1 ${2 * PIN_RADIUS} ${PIN_RADIUS} A ${PIN_RADIUS} ${PIN_RADIUS} 0 1 1 0 ${PIN_RADIUS} Z`;
+
 /** The radius of the disc in the clue's color, inside the white ring, in the same units. */
 const PIN_DISC_RADIUS = 40;
 
@@ -372,17 +393,22 @@ const PIN_DISC_RADIUS = 40;
 const PIN_OUTLINE_WIDTH = 2;
 
 /**
- * A token that sits on the top edge of a card that a clue touched, with a point toward the card.
- * The "data-" attributes let it land on the card when the clue is given (see "cardMotion.ts").
+ * A token that sits on the top edge of a card that a clue touched, with a point toward the card. On
+ * a card that an earlier clue touched too, it is a smaller dot without a point. The "data-"
+ * attributes let it land on the card when the clue is given (see "cardMotion.ts").
  */
 function ClueMarker({
-  marker,
+  marker: { marker, touchedBefore },
   width,
 }: {
-  readonly marker: ClueMarkerView;
+  readonly marker: CardClueMarker;
   readonly width: number;
 }): React.JSX.Element {
-  const size = getClueTokenSize(width);
+  const fullSize = getClueTokenSize(width);
+  const size = touchedBefore ? Math.round(fullSize * CLUE_DOT_SCALE) : fullSize;
+  const partAboveCard = touchedBefore
+    ? CLUE_DOT_PART_ABOVE_CARD
+    : CLUE_TOKEN_PART_ABOVE_CARD;
 
   return (
     <span
@@ -390,13 +416,13 @@ function ClueMarker({
       className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
       data-clue-marker
       style={{
-        top: -size * CLUE_TOKEN_PART_ABOVE_CARD,
+        top: -size * partAboveCard,
         marginLeft: -size / 2,
         width: size,
         height: size,
       }}
     >
-      <ClueToken marker={marker} size={size} />
+      <ClueToken marker={marker} pointed={!touchedBefore} size={size} />
     </span>
   );
 }
@@ -408,16 +434,19 @@ export function getClueTokenSize(cardWidth: number): number {
 
 /**
  * The inside of a clue token, which fills a positioned box `size` pixels square: a disc of the
- * clue's color, or a white disc with the clue's number, with a point under it.
+ * clue's color, or a white disc with the clue's number. A `pointed` token has a point under it.
  */
 export function ClueToken({
   marker,
   size,
+  pointed = true,
 }: {
   readonly marker: ClueMarkerView;
   readonly size: number;
+  readonly pointed?: boolean;
 }): React.JSX.Element {
   const label = getClueMarkerLabel(marker);
+  const pinHeight = pointed ? PIN_TIP_Y : 2 * PIN_RADIUS;
 
   return (
     <>
@@ -425,13 +454,13 @@ export function ClueToken({
           drawn first and is twice as wide, so the fill covers its inner half. */}
       <svg
         className="tw:absolute tw:top-0 tw:left-0 tw:overflow-visible tw:drop-shadow-[0_3px_8px_rgb(0_0_0/60%)]"
-        height={(size * PIN_TIP_Y) / (2 * PIN_RADIUS)}
-        viewBox={`0 0 ${2 * PIN_RADIUS} ${PIN_TIP_Y}`}
+        height={(size * pinHeight) / (2 * PIN_RADIUS)}
+        viewBox={`0 0 ${2 * PIN_RADIUS} ${pinHeight}`}
         width={size}
       >
         <path
           className="tw:fill-white tw:stroke-card-ink"
-          d={PIN_PATH}
+          d={pointed ? PIN_PATH : DOT_PATH}
           paintOrder="stroke"
           strokeWidth={2 * PIN_OUTLINE_WIDTH}
           vectorEffect="non-scaling-stroke"

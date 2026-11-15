@@ -20,6 +20,7 @@ import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
+import type { CardClueMarker } from "./Card.tsx";
 import { CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
@@ -48,7 +49,12 @@ import {
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
 } from "./cardSizes.ts";
-import { getClueMarker, getPreviewMarker } from "./clueMarkers.ts";
+import {
+  getCardsTouchedBefore,
+  getClueMarker,
+  getClueMarkers,
+  getPreviewMarker,
+} from "./clueMarkers.ts";
 import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
 import {
   canDiscardNow,
@@ -65,7 +71,6 @@ import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
   getClueLogEntries,
-  getClueMarkers,
   getDiscardRows,
   getNotesHtml,
   getSeats,
@@ -342,6 +347,26 @@ export function GameScreen({
   // While the player chooses a clue, its tokens show on the cards that it would touch, as the
   // classic screen shows arrows. They take the place of the last clue's tokens and rail.
   const previewing = clue !== undefined && menuTarget !== undefined;
+  function getPreviewMarkers(): ReadonlyMap<CardOrder, CardClueMarker> {
+    if (clue === undefined) {
+      return new Map<CardOrder, CardClueMarker>();
+    }
+    const marker = getPreviewMarker(
+      clue,
+      actingPlayerIndex,
+      settings.colorblindMode,
+    );
+    const touchedBefore = getCardsTouchedBefore(visibleState.clues);
+    return new Map(
+      touched.map((order) => [
+        order,
+        {
+          marker,
+          touchedBefore: touchedBefore.has(order),
+        },
+      ]),
+    );
+  }
   const canGive = previewing && isAllowed(menuTarget, clue);
 
   const clueTargets = otherPlayers.map((seat) => ({
@@ -545,17 +570,12 @@ export function GameScreen({
                   cardWidth={handCardWidth}
                   clueMarkers={
                     previewing
-                      ? new Map(
-                          touched.map((order) => [
-                            order,
-                            getPreviewMarker(
-                              clue,
-                              actingPlayerIndex,
-                              settings.colorblindMode,
-                            ),
-                          ]),
+                      ? getPreviewMarkers()
+                      : getClueMarkers(
+                          shownClue,
+                          visibleState.clues,
+                          settings.colorblindMode,
                         )
-                      : getClueMarkers(shownClue, settings.colorblindMode)
                   }
                   clueMenu={
                     menuTarget === undefined ? undefined : (

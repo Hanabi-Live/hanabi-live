@@ -1,4 +1,5 @@
 import type {
+  CardOrder,
   ColorIndex,
   PlayerIndex,
   StateClue,
@@ -20,8 +21,14 @@ vi.mock("../gameSession.ts", () => ({
   currentVariant: () => game.variant,
   currentState: () => game.state,
 }));
-const { getPreviewMarker, getClueMarker, QUACK_EMOJI, MOO_EMOJI, OINK_EMOJI } =
-  await import("./clueMarkers.ts");
+const {
+  getPreviewMarker,
+  getClueMarker,
+  getClueMarkers,
+  QUACK_EMOJI,
+  MOO_EMOJI,
+  OINK_EMOJI,
+} = await import("./clueMarkers.ts");
 
 /** Character ID 34 is Quacker; player 1 has no character. */
 const QUACKER_ASSIGNMENTS = [34, undefined] as const;
@@ -102,5 +109,32 @@ describe("getPreviewMarker", () => {
       type: "rank",
       label: "E",
     });
+  });
+});
+
+/** A rank clue on a segment that touches the cards. */
+function rankClue(segment: number, list: readonly number[]): StateClue {
+  return {
+    type: "rank",
+    rank: 3,
+    giver: 0 as PlayerIndex,
+    target: 1 as PlayerIndex,
+    segment,
+    list: list as CardOrder[],
+    negativeList: [],
+  };
+}
+
+describe("getClueMarkers", () => {
+  test("marks the cards that an earlier clue touched", () => {
+    setGame(getDefaultVariant());
+    const earlier = rankClue(0, [1, 2]);
+    const clue = rankClue(2, [2, 3]);
+    // A later clue, as in a replay that shows an earlier turn.
+    const later = rankClue(4, [3]);
+    const markers = getClueMarkers(clue, [earlier, clue, later], false);
+    expect(markers.get(2 as CardOrder)?.touchedBefore).toBe(true);
+    expect(markers.get(3 as CardOrder)?.touchedBefore).toBe(false);
+    expect(markers.has(1 as CardOrder)).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
-import type { ClueMarkerView } from "./Card.tsx";
+import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
 import {
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
@@ -82,7 +82,7 @@ interface HandsProps {
   readonly touchedCards: ReadonlySet<CardOrder>;
 
   /** The cards that the clue on the turn that shows touched, with the clue to mark them with. */
-  readonly clueMarkers: ReadonlyMap<CardOrder, ClueMarkerView>;
+  readonly clueMarkers: ReadonlyMap<CardOrder, CardClueMarker>;
 
   /** The player who got the clue on the turn that shows, when it touched no cards. */
   readonly emptyClueTarget: PlayerIndex | undefined;

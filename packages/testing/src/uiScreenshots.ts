@@ -842,14 +842,18 @@ function getStates(): readonly State[] {
       },
     },
     // Bob's game with five players, so that the game screen shows a crowded table. The account
-    // shows the clocks, which an untimed game hides by default.
+    // shows the clocks, which an untimed game hides by default. The last clue touches a card that
+    // an earlier clue touched, and a card that no clue touched.
     {
       name: "new-ui-five-players",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame(5, undefined, { showClocks: true });
+        const game = await cast.startBobsGame(5, undefined, {
+          showClocks: true,
+        });
+        await game.clueAgain();
       },
     },
     // Bob's game with five players, with the chat in its own window. The account sends a message
@@ -1524,6 +1528,12 @@ interface BobsGame {
    * card, and Bob gives a clue that misses the newest card.
    */
   readonly clueTwice: () => Promise<void>;
+  /**
+   * Two players in turn clue the hand of a player who is not the account. The first gives a rank
+   * clue. The second gives a color clue that touches a card of the first clue and a card that no
+   * clue touched.
+   */
+  readonly clueAgain: () => Promise<void>;
   /** The card that the first clue of `clueTwice` touched. */
   readonly cluedCard: () => CardOrder | undefined;
   /** A note that names a card's identity, such as "r3". */
@@ -2176,6 +2186,59 @@ async function createCast(
       });
     }
 
+    async function clueAgain() {
+      const variant = getVariant(LONG_VARIANT_NAME);
+      const { player } = readTurn(await loadEvents(viewer, tableId));
+      // The receiver is neither of the two players who give the clues. It is not the account
+      // either, whose cards do not show.
+      for (let offset = 2; offset < seats.size; offset++) {
+        const receiver = (player + offset) % seats.size;
+        if (receiver === seat("account")) {
+          continue;
+        }
+        const cards = await handAt(receiver);
+        for (const first of cards) {
+          // The color clue names the suit index, so the suit must have a clue color of its own.
+          const suit = variant.suits[first.suitIndex];
+          const color = variant.clueColors[first.suitIndex];
+          const second = cards.find(
+            (other) =>
+              other.suitIndex === first.suitIndex && other.rank !== first.rank,
+          );
+          if (
+            second === undefined
+            || suit === undefined
+            || color === undefined
+            || suit.name !== color.name
+            || !isValidClueRank(first.rank)
+          ) {
+            continue;
+          }
+
+          await moveAt(player, {
+            type: "clue",
+            receiverIndex: receiver as PlayerIndex,
+            clue: {
+              type: "rank",
+              rank: first.rank,
+            },
+          });
+          await moveAt((player + 1) % seats.size, {
+            type: "clue",
+            receiverIndex: receiver as PlayerIndex,
+            clue: {
+              type: "color",
+              color: first.suitIndex as ColorIndex,
+            },
+          });
+          return;
+        }
+      }
+      throw new Error(
+        "No hand has two cards of a suit to clue. Choose another seed for Bob's game.",
+      );
+    }
+
     async function discardUntilAccountsTurn() {
       while (
         readTurn(await loadEvents(viewer, tableId)).player !== seat("account")
@@ -2400,6 +2463,7 @@ async function createCast(
       spendClues,
       discardUntilAccountsTurn,
       emptyDeck,
+      clueAgain,
       clueTwice: async () => {
         if ((await turnOf()) === "account") {
           await play("account", true);
