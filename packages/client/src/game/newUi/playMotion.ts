@@ -817,7 +817,7 @@ export function animateMisplay(
   }
 
   // The strike appears in its box, with a pop, when the card explodes on it. Until then, the box
-  // looks empty. After that, it has its own look of a strike.
+  // looks empty, without its cross. After that, it has its own look of a strike.
   const explosionMilliseconds = explosion * 1000;
   const empty = {
     backgroundColor: "transparent",
@@ -827,6 +827,13 @@ export function animateMisplay(
     id: PLAY_EFFECT_ANIMATION_ID,
     duration: explosionMilliseconds,
   });
+  const hidden = { opacity: 0 };
+  for (const mark of strikeBox.children) {
+    mark.animate([hidden, hidden], {
+      id: PLAY_EFFECT_ANIMATION_ID,
+      duration: explosionMilliseconds,
+    });
+  }
   strikeBox.animate(
     [
       {
