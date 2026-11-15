@@ -57,8 +57,17 @@ interface StatusStripProps {
    * It is `undefined` in the game as it stands, in a hypothetical, and in a spoiler-free replay.
    */
   readonly lastTurn: number | undefined;
+  /**
+   * The score, or in "Throw It in a Hole" variants, where the players cannot see the score, the
+   * cards that they played.
+   */
   readonly score: number;
-  readonly maxScore: number;
+
+  /** The maximum score, or `undefined` when the players cannot see the score. */
+  readonly maxScore: number | undefined;
+
+  /** "Score", or "Plays" when the players cannot see the score. */
+  readonly scoreLabel: string;
 
   /**
    * Whether the score is in the H-Group's "Low Score Phase" and the player follows the H-Group's
@@ -417,6 +426,7 @@ export function StatusStrip({
   lastTurn,
   score,
   maxScore,
+  scoreLabel,
   lowScorePhase,
   pace,
   paceColor,
@@ -482,7 +492,7 @@ export function StatusStrip({
             </span>
           </button>
         </Stat>
-        <Stat label="Score" size="large" truncate={false}>
+        <Stat label={scoreLabel} size="large" truncate={false}>
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span
             className="tw:inline-block"
@@ -495,14 +505,20 @@ export function StatusStrip({
           >
             {/* The score holds the space of two digits, so that the bar does not move when the
                 score reaches 10. */}
-            <OutOf
-              max={maxScore}
-              value={
-                <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
-                  {score}
-                </span>
-              }
-            />
+            {maxScore === undefined ? (
+              <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
+                {score}
+              </span>
+            ) : (
+              <OutOf
+                max={maxScore}
+                value={
+                  <span className="tw:inline-block tw:min-w-[2ch] tw:text-right tw:tabular-nums">
+                    {score}
+                  </span>
+                }
+              />
+            )}
           </span>
         </Stat>
       </div>

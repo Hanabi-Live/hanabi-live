@@ -10,8 +10,10 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import {
+  StackDirection,
   getCharacterNameForPlayer,
   getClueName,
+  getDeckPossibilities,
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { store } from "../../store.ts";
@@ -25,12 +27,21 @@ import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { currentVariant } from "../gameSession.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
+import {
+  getStackDirectionLabel,
+  getSudokuStackLabels,
+} from "../stackLabels.ts";
 import type { State } from "../types/State.ts";
 import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import type { Seat } from "./Hands.tsx";
-import type { DiscardView, StackView } from "./SharedCards.tsx";
+import type {
+  DeckEmpathy,
+  DiscardView,
+  HoleView,
+  StackView,
+} from "./SharedCards.tsx";
 import { getClueMarker } from "./clueMarkers.ts";
 import type { CardView } from "./tableView.ts";
 import {
@@ -186,7 +197,15 @@ export function getSeats(
 export function getStacks(state: State): readonly StackView[] {
   const visibleState = state.visibleState!;
   const identities = getShownIdentities(state);
-  return currentVariant().suits.map((_suit, i) => {
+  const variant = currentVariant();
+  const sudokuLabels = variant.sudoku
+    ? getSudokuStackLabels(
+        variant,
+        visibleState.playStacks,
+        visibleState.playStackStarts,
+      )
+    : undefined;
+  return variant.suits.map((_suit, i) => {
     const suitIndex = i as SuitIndex;
     const stack = visibleState.playStacks[suitIndex] ?? [];
     function rankOf(order: CardOrder | undefined) {
@@ -201,8 +220,77 @@ export function getStacks(state: State): readonly StackView[] {
       topOrder: top,
       topRank: rankOf(top),
       belowRank: rankOf(stack.at(-2)),
+      label:
+        sudokuLabels?.[i]
+        ?? getStackDirectionLabel(
+          variant,
+          suitIndex,
+          visibleState.playStackDirections[suitIndex]
+            ?? StackDirection.Undecided,
+        ),
     };
   });
+}
+
+/**
+ * Whether the players cannot see the score, the maximum score, or the strikes, as in "Throw It in a
+ * Hole" variants. Players and those who shadow them see the game from a seat, and the cards that
+ * they play go into the hole. Spectators and replays see everything.
+ */
+export function isScoreHidden(state: State): boolean {
+  return (
+    currentVariant().throwItInAHole
+    && (state.playing || state.shadowing)
+    && !state.finished
+  );
+}
+
+/**
+ * The hole of a "Throw It in a Hole" variant. It is `undefined` in other variants, and when it is
+ * empty for a viewer who does not count it.
+ */
+export function getHole(state: State): HoleView | undefined {
+  if (!currentVariant().throwItInAHole) {
+    return undefined;
+  }
+
+  const visibleState = state.visibleState!;
+  const count = isScoreHidden(state)
+    ? visibleState.stats.numAttemptedCardsPlayed
+    : undefined;
+  const topOrder = visibleState.hole.at(-1);
+  const identity =
+    topOrder === undefined ? undefined : getShownIdentities(state)[topOrder];
+  return count === undefined && topOrder === undefined
+    ? undefined
+    : {
+        count,
+        topOrder,
+        topSuitIndex: identity?.suitIndex,
+        topRank: identity?.rank,
+      };
+}
+
+/**
+ * The suits and ranks that the cards left in the deck can still be, from the viewer's point of
+ * view. The classic screen shows them on the deck while the viewer holds the mouse button on it.
+ */
+export function getDeckEmpathy(state: State): DeckEmpathy {
+  const possibilities = getDeckPossibilities(
+    state.visibleState!.deck,
+    state.metadata,
+  );
+  const variant = currentVariant();
+  return {
+    possibleSuitIndexes: variant.suits
+      .map((_suit, i) => i as SuitIndex)
+      .filter((suitIndex) =>
+        possibilities.some(([possibleSuit]) => possibleSuit === suitIndex),
+      ),
+    possibleRanks: variant.ranks.filter((rank) =>
+      possibilities.some(([, possibleRank]) => possibleRank === rank),
+    ),
+  };
 }
 
 /** Discarded cards go in order of rank, with cards of unknown rank last. */
@@ -278,12 +366,12 @@ export function getClueLogEntries(state: State): readonly ClueLogEntry[] {
 /**
  * For each strike box, the segment of its strike, as the classic screen's strike boxes have them.
  * In a replay, the boxes also stand for the strikes that come later, except in a spoiler-free
- * review. The strikes are hidden in the "Throw It in a Hole" variant.
+ * review. The strikes are hidden from the players in "Throw It in a Hole" variants.
  */
 export function getStrikeSegments(
   state: State,
 ): ReadonlyArray<number | undefined> {
-  if (currentVariant().throwItInAHole) {
+  if (isScoreHidden(state)) {
     return [];
   }
 

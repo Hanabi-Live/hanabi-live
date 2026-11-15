@@ -54,7 +54,7 @@ export interface MoveEffects {
 const HAND_PLACE_PREFIX = "hand-";
 
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
-const DECK_KEY = "deck";
+export const DECK_KEY = "deck";
 
 /** A play is the big moment of a turn: the card is held up, and lands with a small bounce. */
 const PLAY_LOOK = {

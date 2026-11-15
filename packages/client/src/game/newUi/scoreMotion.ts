@@ -8,6 +8,7 @@
 //   in every suit's colors, every top card flashes gold, and the score pops.
 // - A lost card that lowers the maximum score flashes red when it lands in the discard pile. Then
 //   the maximum score changes, pops in red, and fades back to its normal color.
+// - When the last card leaves the deck, an amber ring spreads from the deck, and its number pops.
 
 // The play stacks are in a column here (or in a row on a narrow screen), so the fireworks do not go
 // straight up from the stacks, as they do on the classic screen: they would burst over the other
@@ -29,6 +30,7 @@ import {
 } from "../motion.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  EMPTY_DECK_COLOR,
   WARNING_COLOR,
 } from "../ui/constants.ts";
 import type { BurstConfig } from "../ui/effectConfig.ts";
@@ -59,6 +61,10 @@ import {
   EMBER_INTERVAL,
   EMBER_RADIUS,
   EMBER_SECONDS,
+  EMPTY_DECK_POP_SCALE,
+  EMPTY_DECK_POP_SECONDS,
+  EMPTY_DECK_RING_RADIUS,
+  EMPTY_DECK_RING_SECONDS,
   FINALE_BURST,
   FINALE_HEIGHT,
   FINALE_PAUSE_SECONDS,
@@ -619,6 +625,40 @@ export function animateMaxScoreDrop(
     SCORE_SIGNAL_ANIMATION_ID,
     "none",
   );
+}
+
+/**
+ * Shows that the last card left the deck, so that each player has one more turn. When the card has
+ * left, an amber ring spreads from the deck, and the number on it pops, as on the classic screen.
+ */
+export function animateEmptyDeck(root: HTMLElement): void {
+  const slot = root.querySelector("[data-stack-slot]");
+  const deck = root.querySelector("[data-deck]");
+  if (slot === null || deck === null) {
+    return;
+  }
+
+  const fireworks = new Fireworks(slot.getBoundingClientRect().height);
+  fireworks.addRing(
+    CARD_ANIMATION_LENGTH_SECONDS,
+    center(deck),
+    EMPTY_DECK_RING_RADIUS,
+    EMPTY_DECK_COLOR,
+    EMPTY_DECK_RING_SECONDS,
+  );
+  playSignal(fireworks, root);
+
+  const count = deck.querySelector<HTMLElement>("[data-deck-count]");
+  if (count !== null) {
+    popNumber(
+      count,
+      CARD_ANIMATION_LENGTH_SECONDS,
+      EMPTY_DECK_COLOR,
+      EMPTY_DECK_POP_SCALE,
+      EMPTY_DECK_POP_SECONDS,
+      1,
+    );
+  }
 }
 
 /** How long until a card stops moving, in seconds. It moves for at least a normal card move. */

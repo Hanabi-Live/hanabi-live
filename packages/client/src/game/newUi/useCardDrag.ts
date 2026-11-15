@@ -31,6 +31,18 @@ export interface HeldCard {
    * The card keeps this point under the pointer, and tilts and grows around it.
    */
   readonly grab: { readonly x: number; readonly y: number };
+
+  /**
+   * Whether the card is the last card of the deck, which the player plays from the deck when the
+   * "Bottom-Deck Blind Plays" option allows it.
+   */
+  readonly fromDeck: boolean;
+
+  /**
+   * Whether the discard pile takes the card at all. The last card of the deck can only be played,
+   * except for an inverted suit, which plays when it is discarded.
+   */
+  readonly discardAllowed: boolean;
 }
 
 /**
@@ -63,12 +75,16 @@ interface CardDrag {
   readonly clearDrop: () => void;
   /** The card that went back to the hand arrived there. */
   readonly finishReturn: () => void;
-  /** The player pressed a card, which lifts at once and moves with the pointer. */
+  /**
+   * The player pressed a card, which lifts at once and moves with the pointer. A card from the deck
+   * says whether the discard pile takes it.
+   */
   readonly pressCard: (
     order: CardOrder,
     x: number,
     y: number,
     element: Element,
+    fromDeck?: { readonly discardAllowed: boolean },
   ) => void;
   readonly playZoneRef: RefObject<HTMLElement | null>;
   readonly discardZoneRef: RefObject<HTMLElement | null>;
@@ -119,12 +135,16 @@ export function useCardDrag(): CardDrag {
       return canDiscardNow() ? "discard" : "blocked";
     }
 
-    function zoneAt(x: number, y: number): DropZone | undefined {
+    function zoneAt(
+      current: HeldCard,
+      x: number,
+      y: number,
+    ): DropZone | undefined {
       if (isInside(playZoneRef.current, x, y)) {
         return "play";
       }
 
-      if (isInside(discardZoneRef.current, x, y)) {
+      if (current.discardAllowed && isInside(discardZoneRef.current, x, y)) {
         return discardZone();
       }
       return undefined;
@@ -142,7 +162,7 @@ export function useCardDrag(): CardDrag {
 
       // The card renders again only when the target under it changes. It follows the pointer by
       // itself (see "HeldCardGhost.tsx").
-      const zone = zoneAt(event.clientX, event.clientY);
+      const zone = zoneAt(current, event.clientX, event.clientY);
       if (zone !== current.zone) {
         updateHeld({
           ...current,
@@ -158,7 +178,9 @@ export function useCardDrag(): CardDrag {
       }
 
       const zone =
-        event === undefined ? undefined : zoneAt(event.clientX, event.clientY);
+        event === undefined
+          ? undefined
+          : zoneAt(current, event.clientX, event.clientY);
       if (zone === "play") {
         updateHeld({
           ...current,
@@ -229,7 +251,7 @@ export function useCardDrag(): CardDrag {
         updateHeld(undefined);
       }
     },
-    pressCard: (order, x, y, element) => {
+    pressCard: (order, x, y, element, fromDeck) => {
       // A dropped card that waits for its move keeps its place in the hand.
       if (heldRef.current?.phase === "drop") {
         return;
@@ -252,6 +274,8 @@ export function useCardDrag(): CardDrag {
           x: pointer.x - start.left,
           y: pointer.y - start.top,
         },
+        fromDeck: fromDeck !== undefined,
+        discardAllowed: fromDeck?.discardAllowed ?? true,
       });
     },
     playZoneRef,

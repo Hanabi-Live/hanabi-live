@@ -13,6 +13,7 @@ import {
   animateCardMoves,
   animateClue,
   areCardsMoving,
+  DECK_KEY,
   MAX_ANIMATED_SEGMENT_CHANGE,
   measureCards,
   stopCardMoves,
@@ -21,6 +22,7 @@ import { useWindowSize } from "./hooks.ts";
 import type { Misplay } from "./playMotion.ts";
 import { stopPlayEffects } from "./playMotion.ts";
 import {
+  animateEmptyDeck,
   animateFinale,
   animateMaxScoreDrop,
   animateStackComplete,
@@ -83,6 +85,14 @@ function animateScoreChanges(
 ) {
   const variant = currentVariant();
   if (live) {
+    // Each player has one more turn once the last card leaves the deck.
+    if (
+      after.cardsRemainingInTheDeck === 0
+      && before.cardsRemainingInTheDeck > 0
+    ) {
+      animateEmptyDeck(root);
+    }
+
     const completed = after.playStacks.findIndex(
       (stack, suitIndex) =>
         stack.length === variant.stackSize
@@ -231,9 +241,12 @@ export function useCardMotion(
     }
 
     let startPositions = previous.settledPositions;
-    // A card that the player dropped starts its move from where it was dropped.
+    // A card that the player dropped starts its move from where it was dropped. The last card of
+    // the deck, which the player can play from the deck, was not on the table before.
     if (dropOrder !== undefined) {
-      const dropped = startPositions.get(dropOrder.toString());
+      const dropped =
+        startPositions.get(dropOrder.toString())
+        ?? startPositions.get(DECK_KEY);
       const rect = dropRectRef.current;
       if (dropped !== undefined && rect !== undefined) {
         startPositions = new Map(startPositions).set(dropOrder.toString(), {

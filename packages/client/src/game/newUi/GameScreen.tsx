@@ -5,6 +5,7 @@ import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getClueCost,
+  getTotalCardsInDeck,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
@@ -54,7 +55,12 @@ import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
-import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
+import {
+  CardBack,
+  DiscardPile,
+  PlayArea,
+  TableTokens,
+} from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
@@ -94,12 +100,15 @@ import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
   getClueLogEntries,
+  getDeckEmpathy,
   getDiscardRows,
+  getHole,
   getNotesHtml,
   getSeats,
   getShownIdentities,
   getStacks,
   getStrikeSegments,
+  isScoreHidden,
 } from "./screenView.ts";
 import { formatPace, getTouchedCards, isClueAllowed } from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
@@ -171,6 +180,8 @@ export function GameScreen({
   const [editingCards, setEditingCards] = useState(false);
   // The card whose note the viewer is typing.
   const [noteCard, setNoteCard] = useState<CardOrder>();
+  // Whether the viewer holds the pointer down on the deck, to see which cards can still be in it.
+  const [deckEmpathy, setDeckEmpathy] = useState(false);
 
   const [handsElement, setHandsElement] = useState<HTMLDivElement | null>(null);
   const [playAreaElement, setPlayAreaElement] = useState<HTMLDivElement | null>(
@@ -509,10 +520,13 @@ export function GameScreen({
   let discardZoneState: ZoneState = "idle";
   if (held?.phase === "drag") {
     playZoneState = held.zone === "play" ? "hovered" : "available";
-    if (canDiscard) {
-      discardZoneState = held.zone === "discard" ? "hovered" : "available";
-    } else {
-      discardZoneState = held.zone === "blocked" ? "blocked" : "unavailable";
+    // The last card of the deck can usually only be played, so the discard pile does not take it.
+    if (held.discardAllowed) {
+      if (canDiscard) {
+        discardZoneState = held.zone === "discard" ? "hovered" : "available";
+      } else {
+        discardZoneState = held.zone === "blocked" ? "blocked" : "unavailable";
+      }
     }
   }
 
@@ -522,6 +536,17 @@ export function GameScreen({
       : seats
           .find((seat) => seat.acting)
           ?.cards.find((card) => card.order === held.order);
+
+  // With the "Bottom-Deck Blind Plays" option, the player whose turn it is can play the last card
+  // of the deck instead of drawing it. The cards are numbered in the order that they are drawn, so
+  // the last card of the deck has the last number.
+  const deckOrder = (getTotalCardsInDeck(variant) - 1) as CardOrder;
+  const deckPlayable =
+    options.deckPlays
+    && ourTurn
+    && !editingCards
+    && actionState.cardsRemainingInTheDeck === 1;
+  const scoreHidden = isScoreHidden(state);
 
   // A game of "All or Nothing" has no final round. The game sends one more turn after the last, to
   // show the times, so the turns left never go below 0.
@@ -580,9 +605,66 @@ export function GameScreen({
               ref={setPlayAreaElement}
             >
               <PlayArea
-                cardsInDeck={visibleState.cardsRemainingInTheDeck}
                 cardWidth={tableCardWidth}
                 colorblindMode={settings.colorblindMode}
+                deck={{
+                  cardsInDeck: visibleState.cardsRemainingInTheDeck,
+                  turnsLeft,
+                  deckPlays: options.deckPlays,
+                  play: deckPlayable
+                    ? {
+                        held: held?.fromDeck === true,
+                        tapToMove,
+                        menuOpen: menuCard === deckOrder,
+                        // Only an inverted suit plays when it is discarded.
+                        canDiscard: variant.hasInverted
+                          ? canDiscard
+                          : undefined,
+                        onPointerDown: (event) => {
+                          if (event.button === 0) {
+                            pressCard(
+                              deckOrder,
+                              event.clientX,
+                              event.clientY,
+                              event.currentTarget,
+                              { discardAllowed: variant.hasInverted },
+                            );
+                          }
+                        },
+                        onTap: () => {
+                          setMenuCard((current) =>
+                            current === deckOrder ? undefined : deckOrder,
+                          );
+                        },
+                        onPlay: () => {
+                          setMenuCard(undefined);
+                          sendAction({
+                            type: "play",
+                            order: deckOrder,
+                          });
+                        },
+                        onDiscard: () => {
+                          setMenuCard(undefined);
+                          if (canDiscardNow()) {
+                            sendAction({
+                              type: "discard",
+                              order: deckOrder,
+                            });
+                          }
+                        },
+                      }
+                    : undefined,
+                  // Holding the space bar shows every player's view, and the deck's too.
+                  empathy:
+                    deckEmpathy || globalEmpathy
+                      ? getDeckEmpathy(state)
+                      : undefined,
+                  onHoldEmpathy: setDeckEmpathy,
+                  colorblindMode: settings.colorblindMode,
+                  variant,
+                  reducedMotion: settings.reducedMotion,
+                }}
+                hole={getHole(state)}
                 notes={cardNotes}
                 stacks={stacks}
                 tokens={
@@ -595,13 +677,16 @@ export function GameScreen({
                       visibleState.clueTokens,
                       variant,
                     )}
+                    oneClueLeft={
+                      visibleState.clueTokens === getClueCost(variant)
+                    }
                     onShowStrike={showStrike}
                     outOfClues={visibleState.clueTokens < getClueCost(variant)}
+                    realLifeMode={settings.realLifeMode}
                     strikes={visibleState.strikes.length}
                     strikeSegments={getStrikeSegments(state)}
                   />
                 }
-                turnsLeft={turnsLeft}
                 variant={variant}
                 zoneState={playZoneState}
               />
@@ -749,8 +834,13 @@ export function GameScreen({
                 atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
                 cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
                 colorblindMode={settings.colorblindMode}
+                doubleDiscard={
+                  settings.hGroupConventions
+                  && visibleState.stats.doubleDiscardCard !== undefined
+                }
                 notes={cardNotes}
                 onShowDiscard={showDiscard}
+                realLifeMode={settings.realLifeMode}
                 reducedMotion={settings.reducedMotion}
                 rows={discardRows}
                 variant={variant}
@@ -816,7 +906,9 @@ export function GameScreen({
           settings.hGroupConventions
           && isLowScorePhase(visibleState.score, variant.suits.length)
         }
-        maxScore={visibleState.stats.maxScore}
+        // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
+        // cards they played instead, as on the classic screen.
+        maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
         minEfficiency={metadata.minEfficiency.toFixed(
           EFFICIENCY_DECIMAL_PLACES,
         )}
@@ -869,7 +961,12 @@ export function GameScreen({
                 onToggle: toggleReplay,
               }
         }
-        score={visibleState.score}
+        score={
+          scoreHidden
+            ? visibleState.stats.numAttemptedCardsPlayed
+            : visibleState.score
+        }
+        scoreLabel={scoreHidden ? "Plays" : "Score"}
         tableMenu={
           state.playing && !state.finished ? (
             <EndGameMenu
@@ -940,6 +1037,27 @@ export function GameScreen({
           }}
           variant={variant}
         />
+      )}
+
+      {held?.fromDeck === true && (
+        <HeldCardGhost
+          held={held}
+          heldRectRef={heldRectRef}
+          key={held.order}
+          onReturned={finishReturn}
+          pointerRef={pointerRef}
+          reducedMotion={settings.reducedMotion}
+          // The card goes back to the deck.
+          slotElement={() => {
+            const deck = rootRef.current?.querySelector("[data-deck]");
+            return deck === null || deck === undefined
+              ? undefined
+              : measure(deck);
+          }}
+          width={tableCardWidth}
+        >
+          <CardBack width={tableCardWidth} />
+        </HeldCardGhost>
       )}
 
       {held !== undefined && heldView !== undefined && (

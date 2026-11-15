@@ -204,6 +204,11 @@
   --game-screen-turn: #ffd04a;
   /* The arrow that points at a card or a number: the yellow of the classic screen's arrow. */
   --game-screen-arrow: #ffdf00;
+  /*
+    A warning that is not yet a limit: the team has one clue left, or the last discard makes a
+    "Double Discard" situation. It is a cooler yellow than the turn, and not the orange of clues.
+  */
+  --game-screen-caution: #ffeb3b;
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;
