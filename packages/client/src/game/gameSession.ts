@@ -16,12 +16,15 @@ let lastNote = "";
 /** Whether we asked to play again and the server has not answered yet. */
 let restartPending = false;
 
+/** The functions to call when `restartPending` changes. */
+const restartPendingListeners = new Set<() => void>();
+
 /** Called when the game screen opens a game. */
 export function openGame(): void {
   open = true;
   loading = true;
   lastNote = "";
-  restartPending = false;
+  setRestartPending(false);
 }
 
 /** Called when the game closes, for "game/main.ts" to stop what the game started. */
@@ -73,5 +76,23 @@ export function isRestartPending(): boolean {
 }
 
 export function setRestartPending(pending: boolean): void {
+  if (pending === restartPending) {
+    return;
+  }
+
   restartPending = pending;
+  for (const listener of restartPendingListeners) {
+    listener();
+  }
+}
+
+/**
+ * Calls the function each time `isRestartPending` changes, until the returned function is called.
+ * Its shape suits React's `useSyncExternalStore`.
+ */
+export function subscribeToRestartPending(listener: () => void): () => void {
+  restartPendingListeners.add(listener);
+  return () => {
+    restartPendingListeners.delete(listener);
+  };
 }

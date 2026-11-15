@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import * as gameSession from "../gameSession.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import * as restart from "../ui/restart.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
@@ -88,6 +89,27 @@ function PlayAgainMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   useCloseOnOutsideClick(open, containerRef, setOpen);
+
+  // From the request to play again until the server answers, the button waits instead.
+  const pending = useSyncExternalStore(
+    gameSession.subscribeToRestartPending,
+    gameSession.isRestartPending,
+  );
+
+  if (pending) {
+    // It is not "disabled", so that its tooltip still shows.
+    return (
+      <button
+        aria-disabled="true"
+        className={`${BOTTOM_BAR_BUTTON_CLASS} tw:cursor-default tw:bg-game-raised tw:opacity-60`}
+        ref={tooltipRef("Waiting for the server to answer.")}
+        type="button"
+      >
+        <i aria-hidden="true" className="fas fa-hourglass-half" />
+        Waiting...
+      </button>
+    );
+  }
 
   const declined = restart.declinedPlayers(shared);
   const canRestart = restart.canRestart(shared, playerNames);
