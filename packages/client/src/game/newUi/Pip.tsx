@@ -34,6 +34,7 @@ export function Pip({
   variant,
   size,
   shadow = false,
+  fill,
 }: {
   readonly suit: Suit;
   readonly variant: Variant;
@@ -42,6 +43,9 @@ export function Pip({
   readonly size: number;
 
   readonly shadow?: boolean;
+
+  /** One color for the whole pip, instead of the suit's colors. */
+  readonly fill?: string;
 }): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -63,6 +67,7 @@ export function Pip({
       suit,
       variant,
       shadow,
+      fill,
       Math.ceil(canvasSize * getScreenScale() * window.devicePixelRatio),
     );
 
@@ -70,7 +75,7 @@ export function Pip({
       ([entry]: readonly ResizeObserverEntry[]) => {
         const box = entry?.devicePixelContentBoxSize[0];
         if (box !== undefined && box.inlineSize !== canvas.width) {
-          drawOnCanvas(canvas, suit, variant, shadow, box.inlineSize);
+          drawOnCanvas(canvas, suit, variant, shadow, fill, box.inlineSize);
         }
       },
     );
@@ -79,7 +84,7 @@ export function Pip({
     return () => {
       observer.disconnect();
     };
-  }, [suit, variant, shadow, canvasSize]);
+  }, [suit, variant, shadow, fill, canvasSize]);
 
   return (
     <canvas
@@ -101,6 +106,7 @@ function drawOnCanvas(
   suit: Suit,
   variant: Variant,
   shadow: boolean,
+  fill: string | undefined,
   pixels: number,
 ) {
   const ctx = canvas.getContext("2d");
@@ -119,5 +125,5 @@ function drawOnCanvas(
     // The canvas does not scale a shadow's blur with the drawing.
     ctx.shadowBlur = PIP_SHADOW_BLUR * scale;
   }
-  drawPip(ctx, suit, variant, shadow);
+  drawPip(ctx, suit, variant, shadow, fill);
 }

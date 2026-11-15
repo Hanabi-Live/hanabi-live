@@ -299,15 +299,15 @@ export type ColorSymbol =
   | { readonly type: "pip"; readonly suit: Suit; readonly variant: Variant }
   | { readonly type: "text"; readonly text: string };
 
-/** How much of a clue token or button the symbol of a color fills. */
+/** How much of a clue token or button the abbreviation of a color fills. */
 const COLOR_SYMBOL_PER_SIZE = 0.6;
 
-/** How much of the white disc behind a pip the pip fills. */
-const PIP_PER_DISC = 0.8;
+/** How much of a clue token or button the pip of a color fills. */
+const COLOR_PIP_PER_SIZE = 1.3;
 
 /**
- * The symbol of a color, centered in a box `size` pixels wide. A pip has the color of its suit, so
- * it sits on a white disc, or it would not show on the color.
+ * The symbol of a color, centered in a box `size` pixels wide. It is white with a dark border, so
+ * that it shows on every color.
  */
 export function ColorSymbolView({
   symbol,
@@ -316,25 +316,18 @@ export function ColorSymbolView({
   readonly symbol: ColorSymbol;
   readonly size: number;
 }): React.JSX.Element {
-  const symbolSize = size * COLOR_SYMBOL_PER_SIZE;
   return symbol.type === "pip" ? (
-    <span
-      className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white"
-      style={{
-        width: symbolSize,
-        height: symbolSize,
-      }}
-    >
-      <Pip
-        size={symbolSize * PIP_PER_DISC}
-        suit={symbol.suit}
-        variant={symbol.variant}
-      />
-    </span>
+    <Pip
+      fill="white"
+      shadow
+      size={size * COLOR_PIP_PER_SIZE}
+      suit={symbol.suit}
+      variant={symbol.variant}
+    />
   ) : (
     <span
       className="tw:block tw:font-extrabold tw:leading-none tw:text-white tw:[paint-order:stroke] tw:[-webkit-text-stroke:2px_black] tw:[text-box:trim-both_cap_alphabetic]"
-      style={{ fontSize: symbolSize }}
+      style={{ fontSize: size * COLOR_SYMBOL_PER_SIZE }}
     >
       {symbol.text}
     </span>
