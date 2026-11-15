@@ -4,12 +4,13 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const askForConfirmation = vi.fn();
 
-vi.mock("./UiGlobals.ts", () => ({
-  globals: {},
+const globals: { state?: unknown; variant?: unknown } = {};
+vi.mock("./gameSession.ts", () => ({
+  currentState: () => globals.state,
+  currentVariant: () => globals.variant,
 }));
-vi.mock("../../modals.ts", () => ({ askForConfirmation }));
+vi.mock("../modals.ts", () => ({ askForConfirmation }));
 const { confirmPlay } = await import("./confirmPlay.ts");
-const { globals } = await import("./UiGlobals.ts");
 
 const NUM_SUITS = 5;
 const BLUE = 3;
@@ -32,6 +33,12 @@ function playWithNote(
 ) {
   Object.assign(globals, {
     state: {
+      metadata: {
+        ourPlayerIndex: 0,
+        options: {
+          speedrun: false,
+        },
+      },
       replay: {
         hypothetical: undefined,
       },
@@ -67,15 +74,7 @@ function playWithNote(
 describe("confirmPlay with an identity note", () => {
   beforeEach(() => {
     askForConfirmation.mockClear();
-    Object.assign(globals, {
-      metadata: {
-        ourPlayerIndex: 0,
-      },
-      options: {
-        speedrun: false,
-      },
-      variant: getVariant("No Variant"),
-    });
+    globals.variant = getVariant("No Variant");
   });
 
   test("warns when every noted identity is unplayable", () => {

@@ -4,6 +4,7 @@ import type { CardOrder, GameState } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
+import { confirmPlay } from "../confirmPlay.ts";
 import { currentState, currentVariant } from "../gameSession.ts";
 import * as hypothetical from "../hypothetical.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
@@ -19,6 +20,59 @@ export function sendAction(action: ClientAction): void {
   } else {
     hypothetical.sendHypotheticalAction(action);
   }
+}
+
+/**
+ * Plays or discards a card, after asking the player when the move needs it, as on the classic
+ * screen. Playing a card that cannot be played, or that the player's note says cannot be, asks
+ * first. In a hypothetical, a card of unknown identity asks which card it is. `onSend` is called
+ * when the move goes, and `onCancel` when the player cancels it.
+ */
+export function moveCard(
+  type: "play" | "discard",
+  order: CardOrder,
+  {
+    onSend,
+    onCancel,
+  }: {
+    readonly onSend?: () => void;
+    readonly onCancel?: () => void;
+  } = {},
+): void {
+  const state = currentState();
+  function send() {
+    onSend?.();
+    sendAction({
+      type,
+      order,
+    });
+  }
+
+  if (state.replay.hypothetical !== undefined) {
+    const target = hypothetical.getMorphTarget(state, order);
+    if (
+      target !== undefined
+      && (target.identity.suitIndex === undefined
+        || target.identity.rank === undefined)
+    ) {
+      modals.askForMorph(target, currentVariant(), (changed) => {
+        if (changed) {
+          send();
+        } else {
+          onCancel?.();
+        }
+      });
+      return;
+    }
+  }
+
+  const cardState = state.visibleState?.deck[order];
+  if (type === "play" && cardState !== undefined) {
+    confirmPlay(cardState, send, onCancel);
+    return;
+  }
+
+  send();
 }
 
 /** The state that the player's moves change: the hypothetical's, or else the game's. */

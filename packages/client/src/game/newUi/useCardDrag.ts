@@ -4,7 +4,8 @@
 import type { CardOrder } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
-import { canDiscardNow, sendAction } from "./screenActions.ts";
+import { onEscapeKey } from "./escapeKey.ts";
+import { canDiscardNow, moveCard } from "./screenActions.ts";
 import { measure, toScreenPixels } from "./screenScale.ts";
 
 /**
@@ -43,6 +44,11 @@ export interface HeldCard {
    * except for an inverted suit, which plays when it is discarded.
    */
   readonly discardAllowed: boolean;
+  /**
+   * Whether a dropped card waits for the player to answer a question about its move, such as
+   * whether to play a card that cannot be played. It waits without a time limit.
+   */
+  readonly asking?: boolean;
 }
 
 /**
@@ -104,7 +110,8 @@ export function useCardDrag(): CardDrag {
 
   // A card that the player dropped stays where it was dropped until its move arrives, and then the
   // move starts from there, not from the hand. If the move does not arrive, the card goes back.
-  const dropping = held?.phase === "drop" ? held : undefined;
+  const dropping =
+    held?.phase === "drop" && held.asking !== true ? held : undefined;
   useEffect(() => {
     if (dropping === undefined) {
       return undefined;
@@ -181,25 +188,35 @@ export function useCardDrag(): CardDrag {
         event === undefined
           ? undefined
           : zoneAt(current, event.clientX, event.clientY);
-      if (zone === "play") {
-        updateHeld({
+      if (zone === "play" || zone === "discard") {
+        // The card waits where it was dropped while the player answers any question about the move.
+        // Then it waits for its move, or goes back if the player cancels the move.
+        const dropped: HeldCard = {
           ...current,
           phase: "drop",
           zone,
-        });
-        sendAction({
-          type: "play",
-          order: current.order,
-        });
-      } else if (zone === "discard") {
-        updateHeld({
-          ...current,
-          phase: "drop",
-          zone,
-        });
-        sendAction({
-          type: "discard",
-          order: current.order,
+          asking: true,
+        };
+        updateHeld(dropped);
+        moveCard(zone, current.order, {
+          onSend: () => {
+            if (heldRef.current === dropped) {
+              updateHeld({
+                ...dropped,
+                asking: false,
+              });
+            }
+          },
+          onCancel: () => {
+            if (heldRef.current === dropped) {
+              updateHeld({
+                ...dropped,
+                phase: "return",
+                zone: undefined,
+                asking: false,
+              });
+            }
+          },
         });
       } else {
         updateHeld({
@@ -219,21 +236,21 @@ export function useCardDrag(): CardDrag {
     }
 
     // Escape puts the card back.
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && heldRef.current?.phase === "drag") {
+    const stopEscape = onEscapeKey(
+      () => {
         release(undefined);
-      }
-    }
+      },
+      () => heldRef.current?.phase === "drag",
+    );
 
     globalThis.addEventListener("pointermove", onPointerMove);
     globalThis.addEventListener("pointerup", onPointerUp);
     globalThis.addEventListener("pointercancel", onPointerCancel);
-    globalThis.addEventListener("keydown", onKeyDown);
     return () => {
+      stopEscape();
       globalThis.removeEventListener("pointermove", onPointerMove);
       globalThis.removeEventListener("pointerup", onPointerUp);
       globalThis.removeEventListener("pointercancel", onPointerCancel);
-      globalThis.removeEventListener("keydown", onKeyDown);
     };
   }, []);
 

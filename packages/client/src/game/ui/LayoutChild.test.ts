@@ -5,7 +5,7 @@ vi.mock("./UiGlobals.ts", () => ({
 }));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("../../sounds.ts", () => ({}));
-vi.mock("./confirmPlay.ts", () => ({ confirmPlay: vi.fn() }));
+vi.mock("../confirmPlay.ts", () => ({ confirmPlay: vi.fn() }));
 vi.mock("./cursor.ts", () => ({}));
 vi.mock("./reactive/views/draggableView.ts", () => ({
   draggablePlayerIndex: () => 0,

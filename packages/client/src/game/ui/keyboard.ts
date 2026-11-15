@@ -23,6 +23,7 @@ import { copyStringToClipboard, getHtmlElement } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
+import { confirmPlay } from "../confirmPlay.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
@@ -32,7 +33,6 @@ import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { backToLobby } from "./backToLobby.ts";
 import * as clues from "./clues.ts";
-import { confirmPlay } from "./confirmPlay.ts";
 import * as replay from "./replay.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 

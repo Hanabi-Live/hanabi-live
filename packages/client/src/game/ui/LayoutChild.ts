@@ -3,17 +3,17 @@ import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
+import { confirmPlay } from "../confirmPlay.ts";
 import { SoundType } from "../types/SoundType.ts";
 import type { CardLayout } from "./CardLayout.ts";
-import type { HanabiCard } from "./HanabiCard.ts";
-import type { PlayStack } from "./PlayStack.ts";
-import { globals } from "./UiGlobals.ts";
-import { confirmPlay } from "./confirmPlay.ts";
 import * as cursor from "./cursor.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
 import type { MisplayAnimation } from "./misplayAnimation.ts";
+import type { PlayStack } from "./PlayStack.ts";
 import { draggablePlayerIndex } from "./reactive/views/draggableView.ts";
 import type { StackCompleteAnimation } from "./stackCompleteAnimation.ts";
 import * as turn from "./turn.ts";
+import { globals } from "./UiGlobals.ts";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
 export class LayoutChild extends Konva.Group {
@@ -162,9 +162,8 @@ export class LayoutChild extends Konva.Group {
       return true; // Known card
     }
 
-    modals.askForMorph(this.card.morphTarget(), globals.variant, {
-      card: this.card,
-      area: draggedTo,
+    modals.askForMorph(this.card.morphTarget(), globals.variant, (changed) => {
+      this.continueDragAction(changed ? draggedTo : undefined);
     });
     return false; // Unknown card
   }

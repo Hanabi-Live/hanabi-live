@@ -1,8 +1,8 @@
 import type { CardState, SuitRankTuple } from "@hanabi-live/game";
 import { MAX_STRIKES, isCardPotentiallyPlayable } from "@hanabi-live/game";
-import { askForConfirmation } from "../../modals.ts";
-import { isOurSeat } from "../ourSeat.ts";
-import { globals } from "./UiGlobals.ts";
+import { askForConfirmation } from "../modals.ts";
+import { currentState, currentVariant } from "./gameSession.ts";
+import { isOurSeat } from "./ourSeat.ts";
 
 /**
  * Plays a card, first asking the user for confirmation if the card is known to be unplayable or if
@@ -17,15 +17,16 @@ export function confirmPlay(
   play: () => void,
   cancel?: () => void,
 ): void {
-  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ongoingGame } = globals.state;
+  const state = currentState();
+  const { ongoingGame, metadata } = state;
+  const { currentPlayerIndex } = ongoingGame.turn;
 
   const shouldWarn =
-    globals.state.replay.hypothetical === undefined
-    && !globals.options.speedrun
-    && !globals.variant.throwItInAHole
+    state.replay.hypothetical === undefined
+    && !metadata.options.speedrun
+    && !currentVariant().throwItInAHole
     // Do not use warnings for preplays unless the next strike would end the game.
-    && (isOurSeat(currentPlayerIndex, globals.metadata)
+    && (isOurSeat(currentPlayerIndex, metadata)
       || ongoingGame.strikes.length === MAX_STRIKES - 1);
   if (!shouldWarn) {
     play();
@@ -46,7 +47,7 @@ export function confirmPlay(
   // Ignore note identities that contradict what we know about the card, since the note is then
   // already wrong.
   const notePossibilities = (
-    globals.state.notes.ourNotes[cardState.order]?.possibilities ?? []
+    state.notes.ourNotes[cardState.order]?.possibilities ?? []
   ).filter(([noteSuitIndex, noteRank]) =>
     cardState.possibleCards.some(
       ([suitIndex, rank]) => suitIndex === noteSuitIndex && rank === noteRank,
@@ -73,7 +74,7 @@ function isPlayable(
   cardState: CardState,
   possibleCards: readonly SuitRankTuple[],
 ): boolean {
-  const { ongoingGame } = globals.state;
+  const { ongoingGame } = currentState();
   return isCardPotentiallyPlayable(
     {
       ...cardState,
@@ -83,6 +84,6 @@ function isPlayable(
     ongoingGame.playStacks,
     ongoingGame.playStackDirections,
     ongoingGame.playStackStarts,
-    globals.variant,
+    currentVariant(),
   );
 }

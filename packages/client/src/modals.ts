@@ -9,7 +9,6 @@ import type {
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
 import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
-import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import type { MessageModal } from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
 import type { PromptModal } from "./promptModalSlice.ts";
@@ -99,33 +98,20 @@ export interface MorphTarget {
 }
 
 /**
- * On the classic screen, a card of unknown identity that is dragged in a hypothetical asks for its
- * identity first. The drag finishes after the dialog closes.
+ * Asks which card a card in a hypothetical is, and changes it into that card. A card of unknown
+ * identity that is played or discarded in a hypothetical asks for its identity first: then `onMove`
+ * gets whether the card changed, after the dialog closes, so that the move goes on only if it did.
  */
-export interface MorphDrag {
-  readonly card: HanabiCard;
-  readonly area: "playArea" | "discardArea";
-}
-
 export function askForMorph(
   target: MorphTarget,
   variant: Variant,
-  drag?: MorphDrag,
+  onMove?: (changed: boolean) => void,
 ): void {
-  // The drag finishes whatever the answer, in the area only if the card changed.
-  function finishDrag(changed: boolean) {
-    if (drag !== undefined) {
-      drag.card
-        .getLayoutParent()
-        .continueDragAction(changed ? drag.area : undefined);
-    }
-  }
-
   showPrompt(
     {
       type: "morph",
       description:
-        drag === undefined
+        onMove === undefined
           ? "Select the card you want to morph it into."
           : "What will the card will be for the purposes of this hypothetical?",
       variantId: variant.id,
@@ -138,10 +124,10 @@ export function askForMorph(
       if (cardIdentity !== undefined) {
         morphCard(target.order, cardIdentity);
       }
-      finishDrag(cardIdentity !== undefined);
+      onMove?.(cardIdentity !== undefined);
     },
     () => {
-      finishDrag(false);
+      onMove?.(false);
     },
     false,
   );
