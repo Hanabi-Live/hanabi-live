@@ -196,10 +196,10 @@
   */
   --game-screen-in-game-replay: #8fb2ff;
   --game-screen-in-game-replay-panel: #1d2f57;
-  --game-screen-finished-replay: #f7a1c4;
-  --game-screen-finished-replay-panel: #4a2238;
-  --game-screen-hypothetical: #c3a6ff;
-  --game-screen-hypothetical-panel: #33245c;
+  --game-screen-finished-replay: #cfd6e0;
+  --game-screen-finished-replay-panel: #2a2e35;
+  --game-screen-hypothetical: #f7a1c4;
+  --game-screen-hypothetical-panel: #4a2238;
   /* The warm accent that marks the player whose turn it is. */
   --game-screen-turn: #ffd04a;
   /* The arrow that points at a card or a number: the yellow of the classic screen's arrow. */
