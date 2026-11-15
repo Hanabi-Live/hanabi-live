@@ -29,19 +29,36 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
     : a?.type === "rank" && b.type === "rank" && a.value === b.value;
 }
 
-/** The space between the menu and the hand, in CSS pixels. */
-const MENU_GAP = 8;
+/**
+ * A hand that has its clue menu open. The menu is a drawer that opens out of the hand, so the hand
+ * has the menu's color, and one outline goes around both. The hand has no outline and no round
+ * corners on the side where the menu opens.
+ */
+export const CLUE_DRAWER_HAND_CLASS =
+  "tw:bg-game-panel tw:rounded-b-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=above]]:rounded-t-none tw:has-[>[data-clue-drawer=above]]:rounded-b-game-panel tw:has-[>[data-clue-drawer=above]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
+
+/**
+ * The menu below the hand. It has no outline on its top, where it joins the hand, and its shadow
+ * falls down.
+ */
+const BELOW_CLASS =
+  "tw:top-full tw:origin-top tw:rounded-b-game-panel tw:pt-1 tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),0_16px_20px_-10px_rgb(0_0_0/55%)]";
+
+/** The menu above the hand, the other way around. */
+const ABOVE_CLASS =
+  "tw:bottom-full tw:origin-bottom tw:rounded-t-game-panel tw:pb-1 tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),0_-16px_20px_-10px_rgb(0_0_0/55%)]";
 
 const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
 
 const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
- * The clues that the viewer can give a player. Clicking the player's name opens it on their hand.
- * It opens below the hand, so that the cards that the chosen clue would touch stay in view. When
- * there is no room below, it opens above. A clue that the rules do not allow, such as one that
- * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
- * Clicking outside of it or pressing Escape closes it.
+ * The clues that the viewer can give a player. Clicking the player's name opens it out of their
+ * hand, as a drawer as wide as the hand (see `CLUE_DRAWER_HAND_CLASS`). It opens below the hand, so
+ * that the cards that the chosen clue would touch stay in view. When there is no room below, it
+ * opens above. A clue that the rules do not allow, such as one that touches no cards, leaves an
+ * empty well in its place, so that every clue keeps its position. Clicking outside of it or
+ * pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -78,7 +95,7 @@ export function ClueMenu({
     ref.current?.scrollIntoView({ block: "nearest" });
   }, [name]);
 
-  // The menu pops in, so that it reads as coming from the name. It only decorates.
+  // The drawer slides open out of the hand. It only decorates.
   useLayoutEffect(() => {
     if (reducedMotion) {
       return undefined;
@@ -87,11 +104,11 @@ export function ClueMenu({
       [
         {
           opacity: 0,
-          transform: "scale(0.96)",
+          transform: "scaleY(0.9)",
         },
         {
           opacity: 1,
-          transform: "scale(1)",
+          transform: "scaleY(1)",
         },
       ],
       {
@@ -136,14 +153,12 @@ export function ClueMenu({
   return (
     <div
       aria-label={`Give ${name} a clue`}
-      className={`tw:absolute tw:left-0 tw:z-30 tw:flex tw:w-max tw:max-w-full tw:flex-col tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-3 tw:shadow-[0_8px_24px_rgb(0_0_0/45%)] tw:ring-1 tw:ring-game-line tw:outline-none ${
-        above
-          ? "tw:bottom-full tw:origin-bottom-left"
-          : "tw:top-full tw:origin-top-left"
+      className={`tw:absolute tw:inset-x-0 tw:z-30 tw:flex tw:flex-col tw:gap-2 tw:bg-game-panel tw:p-3 tw:outline-none ${
+        above ? ABOVE_CLASS : BELOW_CLASS
       }`}
+      data-clue-drawer={above ? "above" : "below"}
       ref={ref}
       role="dialog"
-      style={above ? { marginBottom: MENU_GAP } : { marginTop: MENU_GAP }}
       tabIndex={-1}
     >
       <div className="tw:flex tw:items-center tw:gap-2">

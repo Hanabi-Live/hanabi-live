@@ -15,6 +15,7 @@ import {
 } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
+import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS } from "./surfaces.ts";
@@ -805,9 +806,7 @@ function Hand({
   if (seat.active) {
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
-    // White, like the player's name while their clue menu is open, so that it does not look like
-    // the gold of the current player. The cards that the clue would touch keep the clue's orange.
-    boxClass = "tw:bg-game-text/8 tw:inset-ring-2 tw:inset-ring-game-text";
+    boxClass = CLUE_DRAWER_HAND_CLASS;
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
