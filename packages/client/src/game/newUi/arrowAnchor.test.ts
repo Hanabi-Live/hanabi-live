@@ -19,8 +19,16 @@ function add(
 
 beforeEach(() => {
   document.body.replaceChildren();
-  const stack = add(document.body, { "data-stack-slot": "2" });
+  const stack = add(document.body, {
+    "data-stack-base-arrow": "52",
+    "data-stack-slot": "2",
+  });
   add(add(stack, { "data-card-order": "9" }), { id: "top" });
+  const emptyStack = add(document.body, {
+    "data-stack-base-arrow": "53",
+    "data-stack-slot": "3",
+  });
+  add(emptyStack, { id: "base" });
   const score = add(document.body, { "data-score": "" });
   add(score, { id: "score" });
   add(score, {
@@ -44,6 +52,7 @@ function byId(id: string): Element {
 
 test("a right-click finds the card or the number that it lands on", () => {
   expect(getArrowTargetAt(byId("top"))).toBe(9);
+  expect(getArrowTargetAt(byId("base"))).toBe(53);
   expect(getArrowTargetAt(byId("score"))).toBe("score");
   expect(getArrowTargetAt(byId("max"))).toBe("maxScore");
   expect(getArrowTargetAt(byId("min"))).toBe("minEfficiency");
@@ -62,6 +71,9 @@ test("a played card under the top of its stack points at the stack", () => {
   );
   expect(findArrowAnchor(document, 9 as CardOrder, deck)).toBe(
     document.querySelector('[data-card-order="9"]'),
+  );
+  expect(findArrowAnchor(document, 53 as CardOrder, deck)).toBe(
+    document.querySelector('[data-stack-slot="3"]'),
   );
   expect(findArrowAnchor(document, "maxScore", deck)).toBe(byId("max"));
 });

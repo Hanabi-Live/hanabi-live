@@ -37,10 +37,19 @@ function getCardSelector(order: CardOrder): string {
   return `[data-card-order="${order}"]`;
 }
 
-/** What a right-click on an element points the arrow at, if anything. */
+function getStackBaseSelector(order: CardOrder): string {
+  return `[data-stack-base-arrow="${order}"]`;
+}
+
+/**
+ * What a right-click on an element points the arrow at, if anything. A right-click on a play stack
+ * lands on its top card, or on its stack base when the stack is empty.
+ */
 export function getArrowTargetAt(element: Element): ArrowTarget | undefined {
-  const card = element.closest<HTMLElement>("[data-card-order]");
-  const order = card?.dataset["cardOrder"];
+  const card = element.closest<HTMLElement>(
+    "[data-card-order], [data-stack-base-arrow]",
+  );
+  const order = card?.dataset["cardOrder"] ?? card?.dataset["stackBaseArrow"];
   if (order !== undefined && order !== "") {
     return Number(order) as CardOrder;
   }
@@ -55,8 +64,8 @@ export function getArrowTargetAt(element: Element): ArrowTarget | undefined {
 }
 
 /**
- * Finds the element that the arrow points at. A played card under the top card of its stack points
- * at the stack.
+ * Finds the element that the arrow points at. A played card under the top card of its stack, and a
+ * stack base, point at the stack.
  */
 export function findArrowAnchor(
   root: ParentNode,
@@ -64,7 +73,9 @@ export function findArrowAnchor(
   deck: readonly CardState[],
 ): Element | undefined {
   if (typeof target === "number") {
-    const card = root.querySelector(getCardSelector(target));
+    const card =
+      root.querySelector(getCardSelector(target))
+      ?? root.querySelector(getStackBaseSelector(target));
     if (card !== null) {
       return card;
     }

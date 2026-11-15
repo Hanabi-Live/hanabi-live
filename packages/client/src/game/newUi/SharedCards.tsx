@@ -524,6 +524,12 @@ export function PlayArea({
                         : describeCard(variant, stack.suitIndex, stack.topRank)
                     }
                     className="tw:relative"
+                    // A right-click on an empty stack draws an arrow on its stack base, as on the
+                    // classic screen (see "arrowAnchor.ts").
+                    data-stack-base-arrow={getStackBase(
+                      variant,
+                      stack.suitIndex,
+                    )}
                     // A misplayed card launches over its stack (see "playMotion.ts").
                     data-stack-slot={stack.suitIndex}
                     ref={tooltipRefHtml(dragging ? undefined : descriptionHtml)}
@@ -612,16 +618,22 @@ export function PlayArea({
 }
 
 /**
+ * The order of the stack base of a suit. Stack bases use the orders after the final card in the
+ * deck.
+ */
+function getStackBase(variant: Variant, suitIndex: SuitIndex): CardOrder {
+  return (getTotalCardsInDeck(variant) + suitIndex) as CardOrder;
+}
+
+/**
  * The order of the stack base of a suit, when it takes notes: only in "Throw It in a Hole"
- * variants, as on the classic screen. Stack bases use the orders after the final card in the deck.
+ * variants, as on the classic screen.
  */
 export function getNotedStackBase(
   variant: Variant,
   suitIndex: SuitIndex,
 ): CardOrder | undefined {
-  return variant.throwItInAHole
-    ? ((getTotalCardsInDeck(variant) + suitIndex) as CardOrder)
-    : undefined;
+  return variant.throwItInAHole ? getStackBase(variant, suitIndex) : undefined;
 }
 
 /**
