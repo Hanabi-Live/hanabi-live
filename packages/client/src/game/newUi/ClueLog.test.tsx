@@ -26,14 +26,15 @@ function entry(
   };
 }
 
-function renderLog(
-  entries: readonly ClueLogEntry[],
-  hoveredCard: number | undefined,
-) {
+/** The card that the mouse is over in these tests. */
+const HOVERED_CARD = 2 as CardOrder;
+
+function renderLog(entries: readonly ClueLogEntry[], colorblindMode = false) {
   render(
     <ClueLog
+      colorblindMode={colorblindMode}
       entries={entries}
-      hoveredCard={hoveredCard as CardOrder | undefined}
+      hoveredCard={HOVERED_CARD}
       onShowClue={onShowClue}
       shownSegment={undefined}
     />,
@@ -70,7 +71,7 @@ describe("ClueLog", () => {
   const entries = [entry(0, [1], [2]), entry(1, [3], [4]), entry(2, [2], [1])];
 
   test("marks the clues about the hovered card and keeps the others", () => {
-    renderLog(entries, 2);
+    renderLog(entries);
     expect(getTurns()).toEqual(["#1", "#2", "#3"]);
     const labels = screen.getAllByRole("listitem").map((item) => {
       if (within(item).queryByLabelText(/did not touch it$/u) !== null) {
@@ -81,5 +82,18 @@ describe("ClueLog", () => {
         : "touched";
     });
     expect(labels).toEqual(["missed", "none", "touched"]);
+  });
+
+  test("crosses the clues that missed the hovered card in colorblind mode", () => {
+    renderLog(entries, true);
+    const crossed = screen
+      .getAllByRole("listitem")
+      .map(
+        (item) =>
+          item
+            .querySelector("[data-negative-marker]")
+            ?.classList.contains("tw:invisible") === false,
+      );
+    expect(crossed).toEqual([true, false, false]);
   });
 });

@@ -94,12 +94,15 @@ export function getClueText(entry: ClueLogEntry): string {
  *
  * While the mouse is over a card in a hand, the clues about that card stand out, as on the classic
  * screen: the ones that touched it (on green), and the ones to its hand that did not (on red). The
- * other clues stay, so that the log does not jump as the mouse passes over the hands.
+ * other clues stay, so that the log does not jump as the mouse passes over the hands. In colorblind
+ * mode, a clue that did not touch the card also gets a cross, so that the match does not depend on
+ * color alone.
  */
 export function ClueLog({
   entries,
   shownSegment,
   hoveredCard,
+  colorblindMode,
   onShowClue,
 }: {
   readonly entries: readonly ClueLogEntry[];
@@ -107,6 +110,7 @@ export function ClueLog({
   readonly shownSegment: number | undefined;
   /** The card in a hand that the mouse is over, if any. */
   readonly hoveredCard: CardOrder | undefined;
+  readonly colorblindMode: boolean;
   readonly onShowClue: (segment: number) => void;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
@@ -205,6 +209,16 @@ export function ClueLog({
                     <span aria-hidden className="tw:whitespace-nowrap">
                       {getClueText(entry)}
                     </span>
+                    {/* The cross keeps its space on every row, so that the column does not
+                        change width as the mouse passes over the hands. The disc's label already
+                        says this to screen readers. */}
+                    {colorblindMode && (
+                      <i
+                        aria-hidden
+                        className={`fas fa-times tw:text-[12px] tw:text-game-text ${match === "negative" ? "" : "tw:invisible"}`}
+                        data-negative-marker
+                      />
+                    )}
                   </span>
                 </button>
               </li>

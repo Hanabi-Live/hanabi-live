@@ -1147,6 +1147,7 @@ export function GameScreen({
               />
               {queuedMove?.type === "discard" && queuedMoveElement}
               <ClueLog
+                colorblindMode={settings.colorblindMode}
                 entries={getClueLogEntries(state)}
                 // A card that left the hands while hovered, such as one just played, no longer
                 // counts. Nor does any card while the player holds a card: the held card is under
