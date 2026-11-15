@@ -54,18 +54,20 @@ const HAND_PLACE_PREFIX = "hand-";
 const DECK_KEY = "deck";
 
 /**
- * How a played card moves to its stack. It starts from rest, speeds up, and brakes hard into its
- * slot. Then it lands: it arrives a little too large and settles to its size.
+ * How a played card moves to its stack. It grows as it leaves the hand, as if it were picked up. It
+ * starts from rest, speeds up, and brakes hard into its slot. Then it lands: it shrinks to its size
+ * on the stack.
  */
 const PLAY_MOTION = {
   /** How fast the card travels, in pixels of the unscaled screen per second. */
-  speed: 1400,
+  speed: 1120,
   /** The shortest and longest time that the card travels, in seconds. */
-  minSeconds: 0.25,
-  maxSeconds: 0.55,
+  minSeconds: 0.31,
+  maxSeconds: 0.69,
   ease: "cubic-bezier(0.45, 0, 0.2, 1)",
-  /** How large the card is when it reaches its slot, relative to its size at rest. */
-  landScale: 1.06,
+  /** How much the card grows as it leaves the hand, relative to its size there. */
+  growScale: 1.2,
+  growSeconds: 0.12,
   landSeconds: 0.14,
 } as const;
 
@@ -226,40 +228,68 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
       PLAY_MOTION.minSeconds,
       PLAY_MOTION.maxSeconds,
     ) * SECOND_IN_MILLISECONDS;
-  const lands = !store.getState().session.settings.reducedMotion;
+  // The growth and the landing only decorate the move, so "Reduced motion" leaves them out.
+  const decorated = !store.getState().session.settings.reducedMotion;
   const duration =
-    travel + (lands ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
+    travel + (decorated ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
+
+  // The card moves on its "translate" property, so that its changes of size do not scale its path.
+  element.animate(
+    [
+      { translate: `${start.x - end.x}px ${start.y - end.y}px` },
+      { translate: "0px 0px" },
+    ],
+    {
+      id: CARD_MOVE_ANIMATION_ID,
+      duration: travel,
+      easing: PLAY_MOTION.ease,
+      composite: "add",
+    },
+  );
 
   // The card also changes size between a hand and the smaller cards on the stacks.
-  const keyframes: Keyframe[] = [
-    {
-      transformOrigin: "center",
-      transform: `translate(${start.x - end.x}px, ${start.y - end.y}px) scale(${from.width / to.width}, ${from.height / to.height})`,
-      easing: PLAY_MOTION.ease,
-    },
-  ];
-  if (lands) {
-    keyframes.push({
-      offset: travel / duration,
-      transformOrigin: "center",
-      transform: `translate(0px, 0px) scale(${PLAY_MOTION.landScale})`,
-      easing: EASE_OUT_BACK,
-    });
-  }
-  keyframes.push({
-    transformOrigin: "center",
-    transform: "none",
-  });
+  const scaleX = from.width / to.width;
+  const scaleY = from.height / to.height;
+  const keyframes: Keyframe[] = decorated
+    ? [
+        {
+          transform: `scale(${scaleX}, ${scaleY})`,
+          easing: "ease-out",
+        },
+        {
+          offset: (PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS) / duration,
+          transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
+        },
+        {
+          offset: travel / duration,
+          transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
+          easing: EASE_OUT_BACK,
+        },
+        { transform: "none" },
+      ]
+    : [
+        {
+          transform: `scale(${scaleX}, ${scaleY})`,
+          easing: PLAY_MOTION.ease,
+        },
+        { transform: "none" },
+      ];
 
   // The card goes over the hand cards that move into its old place. They move at the same time, and
   // the hands come after the play stacks in the page, so at the same height they would cover it.
   const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
   playLandings.set(element, travel);
-  const animation = element.animate(keyframes, {
-    id: CARD_MOVE_ANIMATION_ID,
-    duration,
-  });
-  onEnd(animation, restore);
+  const size = element.animate(
+    keyframes.map((keyframe) => ({
+      ...keyframe,
+      transformOrigin: "center",
+    })),
+    {
+      id: CARD_MOVE_ANIMATION_ID,
+      duration,
+    },
+  );
+  onEnd(size, restore);
 }
 
 /**
