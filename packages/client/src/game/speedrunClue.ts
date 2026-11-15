@@ -1,5 +1,6 @@
 // In speedrun mode, a click on a teammate's card gives them a clue at once: a left-click gives a
-// color, and a right-click gives a rank. These functions choose the clue for both game screens.
+// color, and a right-click gives a rank. These functions choose the clue for both game screens. The
+// New UI has no clue menu in speedrun mode, so it never passes a chosen clue.
 
 import type {
   ClueRank,
@@ -23,7 +24,7 @@ export function getColorForSpeedrunClue(
   variant: Variant,
   suitIndex: SuitIndex | undefined,
   rank: Rank | undefined,
-  chosenColor: Color | undefined,
+  chosenColor?: Color,
 ): Color | undefined {
   if (suitIndex === undefined || rank === undefined) {
     return undefined;
@@ -66,7 +67,7 @@ export function getRankForSpeedrunClue(
   variant: Variant,
   suitIndex: SuitIndex | undefined,
   rank: Rank | undefined,
-  chosenRank: ClueRank | undefined,
+  chosenRank?: ClueRank,
 ): ClueRank | undefined {
   if (suitIndex === undefined || rank === undefined) {
     return undefined;

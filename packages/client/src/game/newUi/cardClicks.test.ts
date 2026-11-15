@@ -105,7 +105,6 @@ function context({
         rank: 1,
       },
     ] as CardIdentity[],
-    chosenClue: undefined,
   };
 }
 

@@ -393,7 +393,9 @@ export function GameScreen({
       : metadata.playerNames[state.pause.pausingPlayerIndex];
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
-  const canClue = ourTurn && clueAvailable && !editingCards && !paused;
+  // Speedrun clicks give the clues, so the clue menu never opens.
+  const canClue =
+    ourTurn && clueAvailable && !editingCards && !paused && !speedrunClicks;
   const onlyOtherPlayer =
     actingPlayerIndex !== undefined && metadata.playerNames.length === 2
       ? ((1 - actingPlayerIndex) as PlayerIndex)
@@ -581,7 +583,6 @@ export function GameScreen({
       state,
       variant,
       identities: shownIdentities,
-      chosenClue: menuTarget === undefined ? undefined : clue,
     },
     speedrunClicks,
     run: (command, order) => {
