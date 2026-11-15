@@ -78,6 +78,8 @@ export function ClueMenu({
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
   const [above, setAbove] = useState(false);
 
+  // The drawer opens below the hand, or above it when only that fits. It unfolds out of the hand,
+  // from the edge that touches it. The unfolding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current!;
     const hand = menu.parentElement!;
@@ -87,39 +89,40 @@ export function ClueMenu({
     const { height } = menu.getBoundingClientRect();
     const fitsBelow = handRect.bottom + height <= roomRect.bottom;
     const fitsAbove = handRect.top - height >= roomRect.top;
-    setAbove(!fitsBelow && fitsAbove);
-  }, [name]);
+    const opensAbove = !fitsBelow && fitsAbove;
+    setAbove(opensAbove);
 
-  // On a narrow window, the page scrolls, so it scrolls to show all of the menu.
-  useEffect(() => {
-    ref.current?.scrollIntoView({ block: "nearest" });
-  }, [name]);
-
-  // The drawer slides open out of the hand. It only decorates.
-  useLayoutEffect(() => {
     if (reducedMotion) {
       return undefined;
     }
-    const animation = ref.current!.animate(
+    const transformOrigin = opensAbove ? "bottom" : "top";
+    const animation = menu.animate(
       [
         {
           opacity: 0,
-          transform: "scaleY(0.9)",
+          transform: "scaleY(0.6)",
+          transformOrigin,
         },
         {
           opacity: 1,
           transform: "scaleY(1)",
+          transformOrigin,
         },
       ],
       {
-        duration: 120,
-        easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        duration: 200,
+        easing: "cubic-bezier(0.33, 1, 0.68, 1)",
       },
     );
     return () => {
       animation.cancel();
     };
   }, [name, reducedMotion]);
+
+  // On a narrow window, the page scrolls, so it scrolls to show all of the menu.
+  useEffect(() => {
+    ref.current?.scrollIntoView({ block: "nearest" });
+  }, [name]);
 
   useEffect(() => {
     ref.current?.focus({ preventScroll: true });
