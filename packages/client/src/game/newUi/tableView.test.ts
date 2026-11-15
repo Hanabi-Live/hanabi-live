@@ -267,6 +267,28 @@ describe("getCardView", () => {
     });
   });
 
+  test("shows the card back in real life mode until the whole card is known", () => {
+    const suitKnown = {
+      suitIndex: 0 as SuitIndex,
+      suitDetermined: true,
+    };
+    expect(getEmpathyView(suitKnown).suitIndex).toBe(0);
+    expect(getEmpathyView(suitKnown, { realLifeMode: true })).toMatchObject({
+      suitIndex: undefined,
+      rank: undefined,
+    });
+
+    const red1Known = {
+      ...suitKnown,
+      rank: 1 as const,
+      rankDetermined: true,
+    };
+    expect(getEmpathyView(red1Known, { realLifeMode: true })).toMatchObject({
+      suitIndex: 0,
+      rank: 1,
+    });
+  });
+
   test("shows the double discard mark only with the H-Group conventions", () => {
     const inDoubleDiscard = { inDoubleDiscard: true };
     expect(getEmpathyView(inDoubleDiscard).doubleDiscard).toBe(false);

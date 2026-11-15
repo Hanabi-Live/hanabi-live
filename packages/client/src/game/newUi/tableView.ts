@@ -222,12 +222,22 @@ export function getCardView({
 
   // A "blank" note shows the card as one that nobody knows.
   const blank = showsNoteMarks && note.blank;
-  const identity = blank
-    ? {
-        suitIndex: undefined,
-        rank: undefined,
-      }
+  const shownIdentity = blank
+    ? undefined
     : getCardIdentityToShow(identityOptions);
+
+  // As on the classic screen, real life mode shows the plain card back until both the suit and the
+  // rank are known.
+  const identity =
+    shownIdentity === undefined
+    || (realLifeMode
+      && (shownIdentity.suitIndex === undefined
+        || shownIdentity.rank === undefined))
+      ? {
+          suitIndex: undefined,
+          rank: undefined,
+        }
+      : shownIdentity;
   const { suitIndex, rank } = identity;
 
   const status =
@@ -280,7 +290,8 @@ export function getCardView({
     noteMark,
     trashIcon,
     pips,
-    identityFromNote: !blank && isCardIdentityFromNote(identityOptions),
+    identityFromNote:
+      identity === shownIdentity && isCardIdentityFromNote(identityOptions),
     blank,
     // As on the classic screen, the question mark leaves out the cards that already show a reason
     // to keep or discard them.
