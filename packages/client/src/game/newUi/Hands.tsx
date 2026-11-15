@@ -11,7 +11,6 @@ import {
   CLUED_RAISE_PER_WIDTH,
   ClueToken,
   describeCard,
-  getClueMarkerColor,
   getClueTokenSize,
 } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
@@ -171,12 +170,17 @@ const CLUE_RAIL_TOKEN_MAX_SIZE = 40;
 /** The radius of the rail's corners, in CSS pixels. */
 const CLUE_RAIL_CORNER = 6;
 
-/** The width of the rail's colored line, and of the ring around the giver's name. */
+/** The width of the rail's white line, and of the ring around the giver's name. */
 const CLUE_RAIL_WIDTH = 4;
 const CLUE_RING_WIDTH = 3;
 
 /** The width of the edge around the rail and around the ring, which keeps them visible. */
 const CLUE_EDGE_WIDTH = 2;
+
+/** The color of the rail and of the ring around the giver's name, and of the edge around them. */
+const CLUE_RAIL_COLOR = "white";
+const CLUE_EDGE_COLOR = "black";
+const CLUE_EDGE_CLASS = "tw:stroke-[black]";
 
 /**
  * The rail's arrowhead, in CSS pixels: a broad head with a notch in its back, so that it reads as
@@ -207,8 +211,6 @@ function ClueRail({
 }): React.JSX.Element {
   const ref = useRef<SVGSVGElement>(null);
   const tokenRef = useRef<HTMLSpanElement>(null);
-  const color = getClueMarkerColor(marker);
-  const edgeClass = color === "white" ? "tw:stroke-[black]" : "tw:stroke-white";
 
   // The rail follows the names, which move when the window or the cards change size. The shapes are
   // set here instead of through state, so that they are in place before the screen's own layout
@@ -317,9 +319,10 @@ function ClueRail({
       className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:size-full tw:overflow-visible"
       ref={ref}
     >
-      {/* The edge keeps the rail visible on the table: white, or dark around a white rail. */}
+      {/* The rail is white for every clue, since its token shows the clue. The dark edge keeps it
+          visible on the table. */}
       <path
-        className={edgeClass}
+        className={CLUE_EDGE_CLASS}
         data-clue-rail-edge
         data-clue-rail-line
         fill="none"
@@ -332,15 +335,15 @@ function ClueRail({
         data-clue-rail-line
         fill="none"
         pathLength={1}
-        stroke={color}
+        stroke={CLUE_RAIL_COLOR}
         strokeDasharray={1}
         strokeWidth={CLUE_RAIL_WIDTH}
       />
       {/* The arrowhead grows from its own center when it pops in. */}
       <polygon
-        className={`${edgeClass} tw:origin-center tw:[transform-box:fill-box]`}
+        className={`${CLUE_EDGE_CLASS} tw:origin-center tw:[transform-box:fill-box]`}
         data-clue-rail-head
-        fill={color}
+        fill={CLUE_RAIL_COLOR}
         strokeLinejoin="round"
         strokeWidth={CLUE_EDGE_WIDTH}
       />
@@ -826,10 +829,7 @@ function Hand({
     heldRef.current = false;
     props.onHoldEmpathy(undefined);
   }
-  const giverColor =
-    props.shownClue?.giver === seat.playerIndex
-      ? getClueMarkerColor(props.shownClue.marker)
-      : undefined;
+  const isClueGiver = props.shownClue?.giver === seat.playerIndex;
 
   return (
     <div
@@ -856,8 +856,8 @@ function Hand({
         className="tw:flex tw:max-w-full tw:shrink-0"
         style={{ width: props.nameColumnWidth }}
       >
-        {/* The name of the player who gave the clue on the turn that shows keeps a ring in the
-            clue's color. While the viewer can clue a player, the player's name is a key, like
+        {/* The name of the player who gave the clue on the turn that shows keeps a ring, where the
+            clue rail starts. While the viewer can clue a player, the player's name is a key, like
             every other button on the screen, and opens the clues. */}
         <button
           aria-expanded={canClueSeat ? chosen : undefined}
@@ -879,13 +879,13 @@ function Hand({
             props.onViewAs?.(seat.playerIndex);
           }}
           style={
-            giverColor === undefined
-              ? undefined
-              : {
-                  boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${giverColor}, 0 0 0 ${
+            isClueGiver
+              ? {
+                  boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
                     CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
-                  }px ${giverColor === "white" ? "black" : "white"}`,
+                  }px ${CLUE_EDGE_COLOR}`,
                 }
+              : undefined
           }
           type="button"
         >
