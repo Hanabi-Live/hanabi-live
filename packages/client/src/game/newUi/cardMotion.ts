@@ -107,6 +107,142 @@ export function stopCardMoves(): void {
   }
 }
 
+/** The card that each card move is for, by card order. */
+const cardMoveOrders = new WeakMap<Animation, string>();
+
+/**
+ * Notes the card that a move is for. An element can show another card later, such as the top card
+ * of a stack, and then the move is stopped.
+ */
+function trackCardMove(element: HTMLElement, animation: Animation) {
+  const order = element.dataset["cardOrder"];
+  if (order !== undefined) {
+    cardMoveOrders.set(animation, order);
+  }
+}
+
+/** Stops the moves of a card, so that it can start a new move from where it shows. */
+function stopMovesOf(element: HTMLElement) {
+  for (const animation of element.getAnimations()) {
+    if (animation.id === CARD_MOVE_ANIMATION_ID) {
+      animation.finish();
+    }
+  }
+}
+
+/**
+ * Takes the moves of the cards off an element for a moment, so that it can be measured where it
+ * rests. An "!important" style overrides an animation. Returns a function that puts them back.
+ */
+function holdStill(element: HTMLElement): () => void {
+  const properties = ["transform", "translate"] as const;
+  const saved = properties.map(
+    (property) =>
+      [
+        property,
+        element.style.getPropertyValue(property),
+        element.style.getPropertyPriority(property),
+      ] as const,
+  );
+  for (const property of properties) {
+    element.style.setProperty(property, "none", "important");
+  }
+  return () => {
+    for (const [property, value, priority] of saved) {
+      element.style.setProperty(property, value, priority);
+    }
+  };
+}
+
+/**
+ * Measures the cards while some of them still move from the last turn, as when the viewer steps
+ * quickly through a replay. As on the classic screen, the moves are not cut off: a card that does
+ * not move again goes on to its place, and a card that moves again starts from where it shows now.
+ *
+ * @param root The game screen.
+ * @param settled Where the cards rested after the last turn, which their moves go to.
+ * @returns Where the cards rest now, and where the next moves start: where the cards rested after
+ *          the last turn, except for the cards that still move, which start from where they show.
+ */
+export function measureMovingCards(
+  root: HTMLElement,
+  settled: CardPositions,
+): {
+  readonly positions: CardPositions;
+  readonly startPositions: CardPositions;
+} {
+  const moving = new Set<HTMLElement>();
+  for (const animation of cardMoves()) {
+    const { effect } = animation;
+    const target = effect instanceof KeyframeEffect ? effect.target : null;
+    const order = cardMoveOrders.get(animation);
+    if (
+      order === undefined
+      || !(target instanceof HTMLElement)
+      || target.dataset["cardOrder"] !== order
+    ) {
+      animation.finish();
+      continue;
+    }
+
+    // A card that goes back to the deck is not in the game screen. It stops when the card is on the
+    // table again.
+    if (!root.contains(target)) {
+      if (
+        root.querySelector(`[data-card-order="${CSS.escape(order)}"]`) !== null
+      ) {
+        animation.finish();
+      }
+      continue;
+    }
+    moving.add(target);
+  }
+
+  const shown = new Map(
+    [...moving].map((element) => [element, measure(element)] as const),
+  );
+  const releases = [...moving].map((element) => holdStill(element));
+  const positions = measureCards(root);
+  const resting = new Map(
+    [...moving].map((element) => [element, measure(element)] as const),
+  );
+  for (const release of releases) {
+    release();
+  }
+
+  // A move offsets a card from where it rests. A card that moves again was offset from where it
+  // rested after the last turn.
+  const startPositions = new Map(settled);
+  for (const [element, now] of shown) {
+    const key = element.dataset["cardOrder"];
+    const rest = resting.get(element);
+    const was = key === undefined ? undefined : settled.get(key);
+    if (
+      key === undefined
+      || rest === undefined
+      || was === undefined
+      || rest.width === 0
+      || rest.height === 0
+    ) {
+      continue;
+    }
+    startPositions.set(key, {
+      ...was,
+      rect: new DOMRect(
+        was.rect.x + now.x - rest.x,
+        was.rect.y + now.y - rest.y,
+        (was.rect.width * now.width) / rest.width,
+        (was.rect.height * now.height) / rest.height,
+      ),
+    });
+  }
+
+  return {
+    positions,
+    startPositions,
+  };
+}
+
 /** Returns where the cards and the deck are now. */
 export function measureCards(root: HTMLElement): CardPositions {
   const positions = new Map<string, CardPosition>();
@@ -157,6 +293,8 @@ export function animateCardMoves(
     if (now === undefined || now.rect.width === 0 || was?.place === now.place) {
       continue;
     }
+    // A card that still moves from the last turn starts its new move from where it shows.
+    stopMovesOf(element);
 
     const to = now.rect;
     // A card that was not on the table before was just drawn, if the game moved forward.
@@ -222,6 +360,7 @@ export function animateCardMoves(
         easing: "ease-out",
       },
     );
+    trackCardMove(element, animation);
     if (restore !== undefined) {
       onEnd(animation, restore);
     }
@@ -411,6 +550,7 @@ function animateToss(
         composite: property === "translate" ? "add" : "replace",
       },
     );
+    trackCardMove(element, animation);
     onEnd(animation, restore);
   }
 }
@@ -495,6 +635,7 @@ function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
       fill: "forwards",
     },
   );
+  trackCardMove(element, animation);
   onEnd(animation, () => {
     element.remove();
   });

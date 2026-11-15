@@ -16,6 +16,7 @@ import {
   DECK_KEY,
   MAX_ANIMATED_SEGMENT_CHANGE,
   measureCards,
+  measureMovingCards,
   stopCardMoves,
 } from "./cardMotion.ts";
 import { useWindowSize } from "./hooks.ts";
@@ -240,7 +241,41 @@ export function useCardMotion(
       return;
     }
 
+    // The end of a game ("gameFinished") arrives just after its last move, and turns the game into
+    // a replay, which shows the turn before the end. While the cards of the last move still move,
+    // it joins that move: the cards start again from where they were before the move, toward their
+    // newest places. It never stops the score's animations, such as the finale.
+    const endsGame = state.finished && !previous.finished;
+    const joined = endsGame && areCardsMoving() ? previous.move : undefined;
+    const startState = joined?.startState ?? previous.shownState;
+    const segmentChange =
+      (shownState.turn.segment ?? 0) - (startState.turn.segment ?? 0);
+    const animated = Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE;
+    if (!endsGame) {
+      finishScoreSignals();
+      // A play or a misplay goes on through the next update of a game in progress, since the server
+      // sends the turn a moment after the play. A step in a replay shows another turn, so it stops
+      // them.
+      if (state.replay.segment !== undefined) {
+        stopPlayEffects();
+        stopFinale();
+      }
+    }
+
+    // Cards that still move from the last turn go on, as on the classic screen, unless this move
+    // jumps over turns.
+    let positions: CardPositions;
     let startPositions = previous.settledPositions;
+    if (joined === undefined && animated) {
+      ({ positions, startPositions } = measureMovingCards(
+        root,
+        previous.settledPositions,
+      ));
+    } else {
+      stopCardMoves();
+      positions = measureCards(root);
+    }
+
     // A card that the player dropped starts its move from where it was dropped. The last card of
     // the deck, which the player can play from the deck, was not on the table before.
     if (dropOrder !== undefined) {
@@ -256,33 +291,11 @@ export function useCardMotion(
       }
       clearDrop();
     }
-    // The end of a game ("gameFinished") arrives just after its last move, and turns the game into
-    // a replay, which shows the turn before the end. While the cards of the last move still move,
-    // it joins that move: the cards start again from where they were before the move, toward their
-    // newest places. It never stops the score's animations, such as the finale.
-    const endsGame = state.finished && !previous.finished;
-    const move =
-      endsGame && previous.move !== undefined && areCardsMoving()
-        ? previous.move
-        : {
-            startPositions,
-            startState: previous.shownState,
-          };
-    stopCardMoves();
-    if (!endsGame) {
-      finishScoreSignals();
-      // A play or a misplay goes on through the next update of a game in progress, since the server
-      // sends the turn a moment after the play. A step in a replay shows another turn, so it stops
-      // them.
-      if (state.replay.segment !== undefined) {
-        stopPlayEffects();
-        stopFinale();
-      }
-    }
-    const positions = measureCards(root);
-    const segmentChange =
-      (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
-    if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
+    const move = joined ?? {
+      startPositions,
+      startState,
+    };
+    if (animated) {
       const effects = getMoveEffects(
         state,
         move.startState,
