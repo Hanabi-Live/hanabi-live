@@ -1086,8 +1086,11 @@ export function GameScreen({
               <ClueLog
                 entries={getClueLogEntries(state)}
                 // A card that left the hands while hovered, such as one just played, no longer
-                // counts.
-                hoveredCard={inHands(hoveredCard)}
+                // counts. Nor does any card while the player holds a card: the held card is under
+                // the pointer, not the card below it.
+                hoveredCard={
+                  held === undefined ? inHands(hoveredCard) : undefined
+                }
                 onShowClue={showClue}
                 shownSegment={shownClue?.segment}
               />
