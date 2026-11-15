@@ -19,6 +19,11 @@ interface ClueMenuProps {
   readonly isAllowed: (clue: Clue) => boolean;
   readonly canGive: boolean;
   readonly onGive: () => void;
+
+  /** Whether the player's hand shows what they would know after the chosen clue. */
+  readonly cluePreview: boolean;
+  readonly onToggleCluePreview: () => void;
+
   readonly onShowActions: () => void;
   readonly onClose: () => void;
 }
@@ -70,6 +75,8 @@ export function ClueMenu({
   isAllowed,
   canGive,
   onGive,
+  cluePreview,
+  onToggleCluePreview,
   onShowActions,
   onClose,
 }: ClueMenuProps): React.JSX.Element {
@@ -168,6 +175,24 @@ export function ClueMenu({
         <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:pl-0.5 tw:text-[14px] tw:font-semibold tw:text-game-muted">
           Clue {name}
         </span>
+        {/* Like the eye beside a name, which shows a hand as its player sees it now. */}
+        <button
+          aria-label={`Show ${name}'s view of their hand after the clue`}
+          aria-pressed={cluePreview}
+          className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+            cluePreview
+              ? "tw:bg-game-text tw:text-card-ink"
+              : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+          }`}
+          data-clue-preview
+          onClick={onToggleCluePreview}
+          ref={tooltipRef(
+            `Show ${name}'s hand as they would see it after the clue that you pick`,
+          )}
+          type="button"
+        >
+          <i aria-hidden="true" className="fas fa-eye" />
+        </button>
         <button
           aria-label={`Show ${name}'s actions`}
           className="tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"

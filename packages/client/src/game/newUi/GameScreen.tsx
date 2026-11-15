@@ -115,7 +115,12 @@ import {
   getStrikeSegments,
   isScoreHidden,
 } from "./screenView.ts";
-import { formatPace, getTouchedCards, isClueAllowed } from "./tableView.ts";
+import {
+  formatPace,
+  getCluePreviewDeck,
+  getTouchedCards,
+  isClueAllowed,
+} from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
@@ -170,6 +175,9 @@ export function GameScreen({
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
+  // Whether the target's hand shows what the chosen clue would tell them. It turns off on each new
+  // turn, as on the classic screen.
+  const [cluePreview, setCluePreview] = useState(false);
   const chooseClueTarget = useCallback(
     (playerIndex: PlayerIndex | undefined) => {
       setClueTarget(playerIndex);
@@ -229,6 +237,7 @@ export function GameScreen({
     setClueTarget(undefined);
     setClue(undefined);
     setMenuCard(undefined);
+    setCluePreview(false);
   }, [turnNum]);
 
   // The arrow goes away when the screen shows another turn, so that it does not come back with the
@@ -319,11 +328,32 @@ export function GameScreen({
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
   }
+  // With the eye in the clue menu on, the target's hand shows what the chosen clue would tell them.
+  const previewTarget = canClue && cluePreview ? clueTarget : undefined;
+  const previewHand =
+    previewTarget === undefined ? undefined : visibleState.hands[previewTarget];
+  const previewTouched =
+    previewHand === undefined || clue === undefined
+      ? []
+      : getTouchedCards(variant, previewHand, getShownIdentities(state), clue);
   const seats = getSeats(
     state,
     empathyPlayers,
     globalEmpathy && globalEmpathyNotes,
     connections,
+    previewTarget === undefined
+      || clue === undefined
+      || actingPlayerIndex === undefined
+      ? undefined
+      : {
+          target: previewTarget,
+          deck: getCluePreviewDeck(visibleState, metadata, variant, {
+            giver: actingPlayerIndex,
+            target: previewTarget,
+            clue,
+            touched: previewTouched,
+          }),
+        },
   );
   /** The card, if it is still in a hand. */
   function inHands(order: CardOrder | undefined): CardOrder | undefined {
@@ -737,6 +767,7 @@ export function GameScreen({
                       <ClueMenu
                         canGive={canGive}
                         clue={clue}
+                        cluePreview={cluePreview}
                         colorblindMode={settings.colorblindMode}
                         isAllowed={(choice) => isAllowed(menuTarget, choice)}
                         name={metadata.playerNames[menuTarget] ?? ""}
@@ -746,6 +777,9 @@ export function GameScreen({
                         onShowActions={() => {
                           closeClueMenu();
                           setLogSeat(menuTarget);
+                        }}
+                        onToggleCluePreview={() => {
+                          setCluePreview(!cluePreview);
                         }}
                         reducedMotion={settings.reducedMotion}
                         variant={variant}

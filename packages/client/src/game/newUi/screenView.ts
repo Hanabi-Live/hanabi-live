@@ -4,6 +4,7 @@
 import type {
   CardIdentity,
   CardOrder,
+  CardState,
   GameState,
   PlayerIndex,
   StateClue,
@@ -71,17 +72,25 @@ export function getShownIdentities(state: State): readonly CardIdentity[] {
   return identities;
 }
 
+/** The cards of a player's hand as they would be after a clue that the viewer is choosing. */
+export interface CluePreview {
+  readonly target: PlayerIndex;
+  readonly deck: readonly CardState[];
+}
+
 /**
  * Returns the seats in the order that the screen shows them. The hands of the players in
  * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
  * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses. The
- * viewer's own hand always applies the viewer's notes.
+ * viewer's own hand always applies the viewer's notes. With `cluePreview`, a hand shows its
+ * player's view of it after a clue that the viewer is choosing.
  */
 export function getSeats(
   state: State,
   empathyPlayers: ReadonlySet<PlayerIndex>,
   empathyIncludesNotes: boolean,
   connections: readonly boolean[],
+  cluePreview?: CluePreview,
 ): readonly Seat[] {
   const visibleState = state.visibleState!;
   const { metadata } = state;
@@ -113,8 +122,11 @@ export function getSeats(
     const you = hasSeat && playerIndex === metadata.ourPlayerIndex;
     // In a hypothetical that hides the drawn cards, the player who started it sees their own hand
     // only as the clues show it, as in the game.
+    const previewDeck =
+      cluePreview?.target === playerIndex ? cluePreview.deck : undefined;
     const empathy =
       you
+      || previewDeck !== undefined
       || empathyPlayers.has(playerIndex)
       || (hypo !== undefined
         && !hypo.showDrawnCards
@@ -122,10 +134,13 @@ export function getSeats(
     const hand = visibleState.hands[playerIndex] ?? [];
     const cards: CardView[] = [];
     for (const order of getHandDisplayOrder(hand, settings.reverseHands)) {
-      const cardState = visibleState.deck[order];
+      const cardState = (previewDeck ?? visibleState.deck)[order];
       if (cardState === undefined) {
         continue;
       }
+      // The preview of a clue shows only what the clues tell the player, as on the classic screen.
+      const includesNotes =
+        previewDeck === undefined && empathy && (empathyIncludesNotes || you);
 
       cards.push(
         getCardView({
@@ -136,14 +151,14 @@ export function getSeats(
             rank: undefined,
           },
           note:
-            empathy && empathyIncludesNotes
+            includesNotes && empathyIncludesNotes
               ? getEmpathyNote(state, variant, order)
               : (state.notes.ourNotes[order] ?? BLANK_NOTE),
           variant,
           empathy,
           // Our own notes always apply to our own hand, as on the classic screen: a note can show a
           // card's identity and remove possibilities.
-          empathyIncludesNotes: empathy && (empathyIncludesNotes || you),
+          empathyIncludesNotes: includesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
           empathyStyle: getEmpathyStyle(),

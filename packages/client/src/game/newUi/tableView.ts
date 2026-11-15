@@ -7,8 +7,12 @@ import type {
   CardOrder,
   CardState,
   Clue,
+  ColorIndex,
+  GameMetadata,
   GameState,
+  MsgClue,
   Options,
+  PlayerIndex,
   Rank,
   StackDirection,
   SuitIndex,
@@ -17,6 +21,7 @@ import type {
 import {
   CardStatus,
   PipState,
+  cardsReducer,
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
@@ -437,6 +442,53 @@ export function getTouchedCards(
       && isCardTouchedByClue(variant, clue, identity.suitIndex, identity.rank)
     );
   });
+}
+
+/**
+ * Returns the cards of the game as they would be after a clue that the viewer is choosing, so that
+ * the target's hand can show what the clue would tell them, as on the classic screen.
+ */
+export function getCluePreviewDeck(
+  gameState: GameState,
+  metadata: GameMetadata,
+  variant: Variant,
+  {
+    giver,
+    target,
+    clue,
+    touched,
+  }: {
+    readonly giver: PlayerIndex;
+    readonly target: PlayerIndex;
+    readonly clue: Clue;
+    readonly touched: readonly CardOrder[];
+  },
+): readonly CardState[] {
+  const msgClue: MsgClue =
+    clue.type === "color"
+      ? {
+          type: "color",
+          color: variant.clueColors.findIndex(
+            (color) => color.name === clue.value.name,
+          ) as ColorIndex,
+        }
+      : {
+          type: "rank",
+          rank: clue.value,
+        };
+  return cardsReducer(
+    gameState.deck,
+    {
+      type: "clue",
+      clue: msgClue,
+      playerIndex: giver,
+      orders: touched,
+      receiverIndex: target,
+      ignoreNegative: false,
+    },
+    gameState,
+    metadata,
+  );
 }
 
 /**

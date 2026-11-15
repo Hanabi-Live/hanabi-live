@@ -198,7 +198,7 @@ async function chooseClueForNextPlayer(page: Page) {
   await page.locator("#game-new-ui [data-name-chip]").nth(1).click();
   await page
     .getByRole("dialog", { name: /^Give .* a clue$/u })
-    .locator("button[aria-pressed]:enabled")
+    .locator("button[aria-pressed]:enabled:not([data-clue-preview])")
     .first()
     .click();
   await settle(page);
