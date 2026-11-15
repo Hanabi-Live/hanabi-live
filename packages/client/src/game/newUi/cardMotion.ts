@@ -55,9 +55,9 @@ const HAND_PLACE_PREFIX = "hand-";
 const DECK_KEY = "deck";
 
 /**
- * How a played card moves to its stack. It grows as it leaves the hand, as if it were picked up. It
- * starts from rest, speeds up, and brakes hard into its slot. Then it lands: it shrinks to its size
- * on the stack.
+ * How a played or discarded card moves from a hand onto the table. It grows as it leaves the hand,
+ * as if it were picked up. It starts from rest, speeds up, and brakes hard into its slot. Then it
+ * lands: it shrinks to its size on the table.
  */
 const PLAY_MOTION = {
   /** How fast the card travels, in pixels of the unscaled screen per second. */
@@ -66,17 +66,42 @@ const PLAY_MOTION = {
   minSeconds: 0.31,
   maxSeconds: 0.69,
   ease: "cubic-bezier(0.45, 0, 0.2, 1)",
-  /** How much the card grows as it leaves the hand, relative to its size there. */
-  growScale: 1.2,
   growSeconds: 0.12,
   /**
    * When the card starts to shrink, as a fraction of its travel time. The card brakes hard, so by
    * then it has covered about 95% of the way. It shrinks as it settles into its slot, and does not
-   * hover over the stack at its large size.
+   * hover over its slot at its large size.
    */
   landStart: 0.73,
   landSeconds: 0.14,
 } as const;
+
+/** How a card looks as it moves from a hand onto the table. */
+interface TossLook {
+  /** How much the card grows as it leaves the hand, relative to its size there. */
+  readonly growScale: number;
+  /** How far the card tilts toward where it goes, in degrees. It straightens as it lands. */
+  readonly tiltDegrees: number;
+  /** The easing of the card's landing. */
+  readonly landEasing: string;
+}
+
+/** A play is the big moment of a turn: the card is held up, and lands with a small bounce. */
+const PLAY_LOOK = {
+  growScale: 1.2,
+  tiltDegrees: 0,
+  landEasing: EASE_OUT_BACK,
+} as const satisfies TossLook;
+
+/** A discard is routine: the card is tossed aside, and settles flat onto the pile. */
+const DISCARD_LOOK = {
+  growScale: 1.08,
+  tiltDegrees: 7,
+  landEasing: "ease-out",
+} as const satisfies TossLook;
+
+/** The prefix of the place of a card in the discard pile (see "data-card-place"). */
+const DISCARD_PLACE_PREFIX = "discard-";
 
 /** When each played card reaches its stack, in milliseconds from the start of its move. */
 const playLandings = new WeakMap<HTMLElement, number>();
@@ -180,7 +205,14 @@ export function animateCardMoves(
     }
 
     if (Object.hasOwn(element.dataset, "playStack")) {
-      animatePlay(element, from, to);
+      animateToss(element, from, to, PLAY_LOOK);
+      continue;
+    }
+    if (
+      was?.place.startsWith(HAND_PLACE_PREFIX) === true
+      && now.place.startsWith(DISCARD_PLACE_PREFIX)
+    ) {
+      animateToss(element, from, to, DISCARD_LOOK);
       continue;
     }
 
@@ -250,8 +282,8 @@ function stepKeyframes(
 }
 
 /**
- * Moves a played card to its stack. The move takes longer the farther the card goes, so that a card
- * dropped near its stack snaps into place.
+ * Moves a played card to its stack, or a discarded card to the discard pile. The move takes longer
+ * the farther the card goes, so that a card dropped near its place snaps into place.
  *
  * A misplayed card that does not show the whole misplay moves the same way, and then bounces off
  * its stack into the discard pile, as on the classic screen. This happens in a replay, and in a
@@ -261,12 +293,14 @@ function stepKeyframes(
  * @param element The card, where it rests.
  * @param from Where the card was.
  * @param to Where the card rests.
+ * @param look How the card looks as it moves.
  * @param bounce How a misplayed card bounces off its stack, if the card was misplayed.
  */
-function animatePlay(
+function animateToss(
   element: HTMLElement,
   from: DOMRect,
   to: DOMRect,
+  look: TossLook,
   bounce?: Bounce,
 ) {
   const rest = rectCenter(to);
@@ -280,7 +314,8 @@ function animatePlay(
       PLAY_MOTION.minSeconds,
       PLAY_MOTION.maxSeconds,
     ) * SECOND_IN_MILLISECONDS;
-  // The growth and the landing only decorate the move, so "Reduced motion" leaves them out.
+  // The growth, the tilt, and the landing only decorate the move, so "Reduced motion" leaves them
+  // out.
   const decorated = !store.getState().session.settings.reducedMotion;
   const landStart = travel * PLAY_MOTION.landStart;
   const landEnd = decorated
@@ -344,9 +379,12 @@ function animatePlay(
   onEnd(path, restorePath);
 
   // The card also changes size between a hand, the smaller cards on the stacks, and the discard
-  // pile. Every card has the same shape, so its width gives its scale.
-  function scale(factor: number, rect: DOMRect): string {
-    return `scale(${(factor * rect.width) / to.width})`;
+  // pile. Every card has the same shape, so its width gives its scale. It tilts toward the side
+  // that it goes to.
+  const tilt =
+    (landCenter.x < start.x ? -1 : 1) * (decorated ? look.tiltDegrees : 0);
+  function scale(factor: number, rect: DOMRect, rotation = 0): string {
+    return `rotate(${rotation}deg) scale(${(factor * rect.width) / to.width})`;
   }
   const sizeSteps: Step[] = decorated
     ? [
@@ -357,12 +395,12 @@ function animatePlay(
         },
         {
           time: PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS,
-          value: scale(PLAY_MOTION.growScale, from),
+          value: scale(look.growScale, from, tilt),
         },
         {
           time: landStart,
-          value: scale(PLAY_MOTION.growScale, from),
-          easing: EASE_OUT_BACK,
+          value: scale(look.growScale, from, tilt),
+          easing: look.landEasing,
         },
       ]
     : [
@@ -385,7 +423,7 @@ function animatePlay(
       },
       {
         time: bounceEnd,
-        value: "none",
+        value: scale(1, to),
       },
     );
   }
@@ -402,7 +440,7 @@ function animatePlay(
   );
   onEnd(size, restoreSize);
 
-  if (bounce === undefined) {
+  if (look === PLAY_LOOK && bounce === undefined) {
     playLandings.set(element, travel);
   }
 }
@@ -503,7 +541,7 @@ function animateSpecialMove(
         misplay.strikeIndex === MAX_STRIKES - 1,
       );
     } else {
-      animatePlay(element, from, to, {
+      animateToss(element, from, to, PLAY_LOOK, {
         stackSlot: measure(stackSlot),
         live: effects.live,
       });
