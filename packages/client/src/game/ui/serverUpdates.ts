@@ -5,6 +5,8 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { connectionsChanged } from "../gameSlice.ts";
 import type { ArrowTarget } from "../highlightArrow.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -12,16 +14,13 @@ import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as notes from "./notes.ts";
 
-/** Whether each player is connected, from the last "connections" message. */
-let connections: readonly boolean[] = [];
-
 function isClassicScreenShown(): boolean {
   return lobbyGlobals.ui !== undefined;
 }
 
 /** Records which players are connected, and shows it on the classic screen. */
-export function setConnections(connectedList: readonly boolean[]): void {
-  connections = connectedList;
+export function setConnections(connections: readonly boolean[]): void {
+  store.dispatch(connectionsChanged(connections));
   drawConnections();
 }
 
@@ -31,7 +30,7 @@ export function drawConnections(): void {
     return;
   }
 
-  for (const [i, connected] of connections.entries()) {
+  for (const [i, connected] of store.getState().game.connections.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
       nameFrame.setConnected(connected);
@@ -93,9 +92,4 @@ export function drawTerminationVotes(): void {
   }
 
   updateTerminationVotes();
-}
-
-/** Forgets the previous game's connections. */
-export function resetConnections(): void {
-  connections = [];
 }

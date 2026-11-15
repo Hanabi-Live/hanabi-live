@@ -1,6 +1,6 @@
 import type { Spectator } from "@hanabi-live/data";
-import { globals as lobbyGlobals } from "../../../../Globals.ts";
 import * as tooltips from "../../../../tooltips.ts";
+import { isZenShown } from "../../../zen.ts";
 import { globals } from "../../UiGlobals.ts";
 import { getSpectatorsTooltip } from "../../spectatorsTooltip.ts";
 
@@ -8,7 +8,7 @@ export function onSpectatorsChanged(data: {
   spectators: Spectator[];
   finished: boolean;
 }): void {
-  if (!data.finished && lobbyGlobals.zenModeEnabled) {
+  if (isZenShown(data.finished)) {
     globals.elements.spectatorsLabel?.visible(false);
     globals.elements.spectatorsNumLabel?.visible(false);
     return;

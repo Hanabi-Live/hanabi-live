@@ -3,6 +3,7 @@ import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
+import { toggleZen } from "../zen.ts";
 import {
   chatWindowClosed,
   dockChat,
@@ -138,10 +139,12 @@ function setUpChatWindow(chatWindow: Window): () => void {
 /**
  * The in-game chat, along the right edge of the screen. It shows the same chat box as the classic
  * screen's chat window, which keeps its emoji, commands, typing indicator, and history. When it is
- * collapsed, a thin rail shows the unread messages and the spectators instead.
+ * collapsed, a thin rail shows the unread messages and the spectators instead. Right-clicking the
+ * chat button turns zen mode on or off.
  */
 export function ChatPanel({
   open,
+  zen,
   poppedOut,
   overlay,
   unread,
@@ -149,6 +152,12 @@ export function ChatPanel({
   spectatorsTooltip,
 }: {
   readonly open: boolean;
+
+  /**
+   * Whether zen mode is on. The chat button then shows a yin-yang, and the screen passes no unread
+   * messages and no spectators.
+   */
+  readonly zen: boolean;
 
   /** Whether the chat is in its own window. The panel then stays collapsed. */
   readonly poppedOut: boolean;
@@ -202,9 +211,19 @@ export function ChatPanel({
   const spectatorsLabel = `${spectators.length} watching`;
 
   if (!open || poppedOut) {
-    let chatButtonLabel = poppedOut ? "Show chat window" : "Open chat";
-    if (!poppedOut && unread > 0) {
+    const action = poppedOut ? "Show chat window" : "Open chat";
+    let chatButtonLabel = action;
+    if (zen) {
+      chatButtonLabel = `${action}, in zen mode`;
+    } else if (!poppedOut && unread > 0) {
       chatButtonLabel = `Open chat, ${unread} unread messages`;
+    }
+    const chatButtonTooltip = zen
+      ? `Zen mode hides the chat and who is watching. Click to ${poppedOut ? "show the chat window" : "open the chat"}. Right-click to leave zen mode.`
+      : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
+    let chatIcon = poppedOut ? "fa-external-link-alt" : "fa-comment";
+    if (zen) {
+      chatIcon = "fa-yin-yang";
     }
     return (
       <aside
@@ -221,13 +240,14 @@ export function ChatPanel({
               gameChat.show();
             }
           }}
-          ref={tooltipRef(poppedOut ? "Show chat window" : "Open chat")}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            toggleZen();
+          }}
+          ref={tooltipRef(chatButtonTooltip)}
           type="button"
         >
-          <i
-            aria-hidden="true"
-            className={`fas ${poppedOut ? "fa-external-link-alt" : "fa-comment"}`}
-          />
+          <i aria-hidden="true" className={`fas ${chatIcon}`} />
           {unread > 0 && (
             <span className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink">
               {unread}
@@ -286,7 +306,15 @@ export function ChatPanel({
           onClick={() => {
             gameChat.hide();
           }}
-          ref={tooltipRef("Collapse chat")}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            toggleZen();
+          }}
+          ref={tooltipRef(
+            zen
+              ? "Collapse chat. Right-click to leave zen mode."
+              : "Collapse chat. Right-click for zen mode, which hides the chat and who is watching.",
+          )}
           type="button"
         >
           <i aria-hidden="true" className="fas fa-angle-double-right" />

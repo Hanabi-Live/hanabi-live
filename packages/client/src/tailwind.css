@@ -64,6 +64,7 @@
   --color-game-line: var(--game-screen-line);
   --color-game-text: var(--game-screen-text);
   --color-game-muted: var(--game-screen-muted);
+  --color-game-error: var(--game-screen-error);
   /*
     The colors of the mode that the screen is in. The game screen sets "--game-screen-mode" and
     "--game-screen-mode-panel" to them.

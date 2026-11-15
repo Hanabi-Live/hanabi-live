@@ -15,7 +15,12 @@ import {
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { store } from "../../store.ts";
-import { getActivePlayerIndex, getPlayerTime, getTurnTime } from "../clock.ts";
+import {
+  getActivePlayerIndex,
+  getPlayerTime,
+  getTurnTime,
+  isLowOnTime,
+} from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { currentVariant } from "../gameSession.ts";
@@ -28,7 +33,12 @@ import type { Seat } from "./Hands.tsx";
 import type { DiscardView, StackView } from "./SharedCards.tsx";
 import { getClueMarker } from "./clueMarkers.ts";
 import type { CardView } from "./tableView.ts";
-import { BLANK_NOTE, getCardView, getHandDisplayOrder } from "./tableView.ts";
+import {
+  BLANK_NOTE,
+  getCardView,
+  getHandDisplayOrder,
+  getTurnWarning,
+} from "./tableView.ts";
 
 /**
  * The identity of each card, as the screen shows it. In a hypothetical, an edited card shows its
@@ -59,6 +69,7 @@ export function getSeats(
   state: State,
   empathyPlayers: ReadonlySet<PlayerIndex>,
   empathyIncludesNotes: boolean,
+  connections: readonly boolean[],
 ): readonly Seat[] {
   const visibleState = state.visibleState!;
   const { metadata } = state;
@@ -77,6 +88,12 @@ export function getSeats(
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
   const identities = getShownIdentities(state);
+  // As on the classic screen, the H-Group warnings show only to players who follow the conventions,
+  // and real-life mode leaves them out, as it leaves out what the clue tokens allow.
+  const turnWarning =
+    settings.hGroupConventions && !settings.realLifeMode
+      ? getTurnWarning(visibleState, variant)
+      : undefined;
 
   const seats: Seat[] = [];
   for (let i = 0; i < numPlayers; i++) {
@@ -149,6 +166,17 @@ export function getSeats(
       cards,
       clock,
       clockTooltip,
+      // A player counts as connected until the server says otherwise, and in a replay, which has no
+      // players to wait for.
+      disconnected: !state.finished && connections[playerIndex] === false,
+      // The clocks do not run while the game is paused.
+      lowTime:
+        timed
+        && playerTime !== undefined
+        && getActivePlayerIndex() === playerIndex
+        && state.pause.pausingPlayerIndex === undefined
+        && isLowOnTime(playerTime),
+      turnWarning: active ? turnWarning : undefined,
     });
   }
 

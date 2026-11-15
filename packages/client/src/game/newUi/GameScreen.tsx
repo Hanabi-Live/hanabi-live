@@ -23,6 +23,7 @@ import {
 } from "../efficiency.ts";
 import { askForEfficiency } from "../efficiencyModifier.ts";
 import { currentVariant } from "../gameSession.ts";
+import { getPauseAction, pause, unpause } from "../pause.ts";
 import type { ClientClue } from "../types/ClientAction.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
@@ -48,6 +49,7 @@ import {
 } from "./Hands.tsx";
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { HighlightArrow } from "./HighlightArrow.tsx";
+import { PausePanel } from "./PausePanel.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
@@ -132,9 +134,11 @@ export function GameScreen({
   useNow(CLOCK_TICK_MILLISECONDS);
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
+  const connections = useAppSelector((root) => root.game.connections);
   const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
   const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
+  const zenOn = useAppSelector((root) => root.gameChat.zen);
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const arrow = useAppSelector((root) => root.newUi.arrow);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
@@ -257,6 +261,8 @@ export function GameScreen({
   const { settings } = store.getState().session;
   const { options } = metadata;
   const inReplay = state.replay.segment !== undefined;
+  // Zen mode is for players in a game. A finished game shows the chat as usual.
+  const zen = zenOn && !state.finished;
   const hypo = state.replay.hypothetical;
   // In a hypothetical that the viewer controls, they make every player's moves in turn.
   const controlsHypo = controlsHypothetical(state);
@@ -299,6 +305,7 @@ export function GameScreen({
     state,
     empathyPlayers,
     globalEmpathy && globalEmpathyNotes,
+    connections,
   );
   /** The card, if it is still in a hand. */
   function inHands(order: CardOrder | undefined): CardOrder | undefined {
@@ -682,6 +689,7 @@ export function GameScreen({
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
                   onHoverCard={setHoveredCard}
+                  onPause={pause}
                   onPlay={(order) => {
                     setMenuCard(undefined);
                     sendAction({
@@ -707,6 +715,8 @@ export function GameScreen({
                   }
                   onViewAs={canChooseSeat() ? viewAs : undefined}
                   outOfClues={outOfCluesOnTurn}
+                  pauseAction={getPauseAction(state)}
+                  reducedMotion={settings.reducedMotion}
                   seats={seats}
                   shownClue={
                     previewing || shownClue === undefined
@@ -725,13 +735,11 @@ export function GameScreen({
                   variant={variant}
                 />
                 {paused && !inReplay && (
-                  // Over the middle of the hands, so that the hands keep their size.
-                  <div
-                    className="tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-game-control tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-lg"
-                    role="status"
-                  >
-                    {pausedBy} paused the game.
-                  </div>
+                  <PausePanel
+                    onUnpause={state.playing ? unpause : undefined}
+                    pausedBy={pausedBy}
+                    reducedMotion={settings.reducedMotion}
+                  />
                 )}
               </div>
             </div>
@@ -764,17 +772,23 @@ export function GameScreen({
           open={chatOpen}
           overlay={chatOverlay}
           poppedOut={chatPoppedOut}
-          spectators={spectators.map((spectator) =>
-            spectator.username === metadata.ourUsername
-              ? YOU
-              : spectator.username,
-          )}
+          // Zen mode hides who is watching and the unread messages, as on the classic screen.
+          spectators={
+            zen
+              ? []
+              : spectators.map((spectator) =>
+                  spectator.username === metadata.ourUsername
+                    ? YOU
+                    : spectator.username,
+                )
+          }
           spectatorsTooltip={getSpectatorsTooltip(
             spectators,
             state.finished,
             YOU,
           )}
-          unread={chatUnread}
+          unread={zen ? 0 : chatUnread}
+          zen={zen}
         />
       </div>
 

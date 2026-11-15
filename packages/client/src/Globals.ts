@@ -31,8 +31,6 @@ class Globals {
   loader: Loader | undefined = undefined;
   ui: HanabiUi | undefined = undefined;
 
-  zenModeEnabled = false;
-
   /** The WebSocket connection, for code that only runs once the client has connected. */
   get connection(): Connection {
     assertDefined(this.conn, "The WebSocket connection is not open yet.");

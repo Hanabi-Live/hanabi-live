@@ -2,6 +2,7 @@ import type {
   CardIdentity,
   CardNote,
   CardOrder,
+  GameState,
   SuitIndex,
 } from "@hanabi-live/game";
 import {
@@ -18,6 +19,7 @@ import {
   getCardView,
   getHandDisplayOrder,
   getTouchedCards,
+  getTurnWarning,
   isClueAllowed,
   shouldFadeTrash,
 } from "./tableView.ts";
@@ -267,5 +269,58 @@ describe("shouldFadeTrash", () => {
         positivelyClued: true,
       }),
     ).toBe(false);
+  });
+});
+
+describe("getTurnWarning", () => {
+  const initial = getInitialGameState(getDefaultMetadata(2));
+  const card = getInitialCardState(0 as CardOrder, VARIANT, 2);
+
+  /** The current player holds two cards, and the team has some clues. */
+  function withHand(
+    numClued: number,
+    changes: Partial<GameState> = {},
+  ): GameState {
+    return {
+      ...initial,
+      clueTokens: 4,
+      hands: [[0, 1], []] as unknown as GameState["hands"],
+      deck: [0, 1].map((order) => ({
+        ...card,
+        order: order as CardOrder,
+        numPositiveClues: order < numClued ? 1 : 0,
+      })),
+      ...changes,
+    };
+  }
+
+  test("warns when every card in the hand is clued", () => {
+    expect(getTurnWarning(withHand(2), VARIANT)).toBe("locked");
+    expect(getTurnWarning(withHand(1), VARIANT)).toBeUndefined();
+  });
+
+  test("warns of a double discard", () => {
+    const state = withHand(1);
+    expect(
+      getTurnWarning(
+        {
+          ...state,
+          stats: {
+            ...state.stats,
+            doubleDiscardCard: 5 as CardOrder,
+          },
+        },
+        VARIANT,
+      ),
+    ).toBe("doubleDiscard");
+  });
+
+  test("leaves the warning to the clue tokens when the team cannot clue or discard", () => {
+    expect(
+      getTurnWarning(withHand(2, { clueTokens: 0 }), VARIANT),
+    ).toBeUndefined();
+    expect(
+      getTurnWarning(withHand(2, { clueTokens: initial.clueTokens }), VARIANT),
+    ).toBeUndefined();
   });
 });

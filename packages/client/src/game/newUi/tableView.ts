@@ -19,9 +19,12 @@ import {
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
+  getClueCost,
+  isAtMaxClueTokens,
   isCardClued,
   isCardIdentityFromNote,
   isCardTouchedByClue,
+  isHandLocked,
 } from "@hanabi-live/game";
 
 /**
@@ -342,3 +345,40 @@ export const BLANK_NOTE = {
   clued: false,
   text: "",
 } as const satisfies CardNote;
+
+/**
+ * A warning for the current player, from the H-Group conventions: their hand is locked, so they may
+ * not be able to discard, or the last player discarded a card that may be the other copy of a card
+ * in their hand. The classic screen shows it under the current player's name.
+ */
+export type TurnWarning = "locked" | "doubleDiscard";
+
+/**
+ * Returns the warning for the current player. There is none when the team cannot clue or cannot
+ * discard, which the clue tokens already show.
+ */
+export function getTurnWarning(
+  gameState: GameState,
+  variant: Variant,
+): TurnWarning | undefined {
+  const { currentPlayerIndex } = gameState.turn;
+  const hand =
+    currentPlayerIndex === undefined
+      ? undefined
+      : gameState.hands[currentPlayerIndex];
+  if (
+    hand === undefined
+    || gameState.clueTokens < getClueCost(variant)
+    || isAtMaxClueTokens(gameState.clueTokens, variant)
+  ) {
+    return undefined;
+  }
+
+  if (isHandLocked(hand, gameState.deck)) {
+    return "locked";
+  }
+
+  return gameState.stats.doubleDiscardCard === undefined
+    ? undefined
+    : "doubleDiscard";
+}

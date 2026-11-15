@@ -1,7 +1,6 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import { globals as lobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
@@ -210,7 +209,7 @@ export class HanabiUi {
     }
 
     let text = "";
-    if (lobbyGlobals.zenModeEnabled) {
+    if (store.getState().gameChat.zen) {
       // eslint-disable-next-line complete/require-ascii
       text += "☯️";
     } else {

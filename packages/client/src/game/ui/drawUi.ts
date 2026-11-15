@@ -35,7 +35,8 @@ import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
 import * as gameMain from "../main.ts";
-import { getViewPlayerIndex, isOurSeat } from "../ourSeat.ts";
+import { getViewPlayerIndex } from "../ourSeat.ts";
+import { pause, unpause } from "../pause.ts";
 import { ActionLog } from "./ActionLog.ts";
 import { ButtonGroup } from "./ButtonGroup.ts";
 import { CardLayout } from "./CardLayout.ts";
@@ -2311,11 +2312,11 @@ function drawTimers() {
       // "event.evt.buttons" is always 0 here.
       if (event.evt.button === RIGHT_MOUSE_BUTTON) {
         // Right-click
-        timerClick();
+        pause();
       }
     },
   );
-  globals.elements.timer1.on("dbltap", timerClick);
+  globals.elements.timer1.on("dbltap", pause);
 
   // The timer for the current player.
   globals.elements.timer2 = new TimerDisplay({
@@ -2340,38 +2341,6 @@ function drawTimers() {
 
   globals.elements.timer2.tooltipName = "time-taken";
   initKonvaTooltips(globals.elements.timer2, true, false);
-}
-
-function timerClick() {
-  if (
-    globals.options.timeControl === undefined // We do not need to pause if this is not a timed game.
-    || globals.state.pause.pausingPlayerIndex !== undefined // We do not need to pause if the game is already paused.
-  ) {
-    return;
-  }
-
-  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-
-  const tableId = lobbyGlobals.joinedTableId;
-  if (isOurSeat(currentPlayerIndex, globals.metadata)) {
-    lobbyGlobals.connection.send("pause", {
-      tableId,
-      paused: true,
-    });
-    return;
-  }
-
-  const queued = !globals.state.pause.queued;
-  store.dispatch(
-    gameUpdated({
-      type: "pauseQueue",
-      queued,
-    }),
-  );
-  lobbyGlobals.connection.send("pauseQueue", {
-    tableId,
-    queued,
-  });
 }
 
 function drawClueArea() {
@@ -3085,12 +3054,7 @@ function drawPauseArea() {
     height: DIALOG.BUTTON_H * winH,
     text: "Unpause",
   });
-  globals.elements.pauseButton.on("click tap", () => {
-    lobbyGlobals.connection.send("pause", {
-      tableId: lobbyGlobals.joinedTableId,
-      paused: false,
-    });
-  });
+  globals.elements.pauseButton.on("click tap", unpause);
   globals.elements.pauseArea.add(globals.elements.pauseButton);
 
   const chatButton = new Button({

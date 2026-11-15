@@ -1,6 +1,7 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import type { PauseAction } from "../pause.ts";
 import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
 import {
   CARD_CORNER_PER_WIDTH,
@@ -19,7 +20,7 @@ import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS } from "./surfaces.ts";
-import type { CardView } from "./tableView.ts";
+import type { CardView, TurnWarning } from "./tableView.ts";
 
 export interface Seat {
   readonly playerIndex: PlayerIndex;
@@ -47,6 +48,15 @@ export interface Seat {
 
   /** The clock's tooltip. */
   readonly clockTooltip: string;
+
+  /** Whether the player left the game, so that the others wait for them to come back. */
+  readonly disconnected: boolean;
+
+  /** Whether the clock runs and is almost out of time, in a timed game. */
+  readonly lowTime: boolean;
+
+  /** A warning for the current player, from the H-Group conventions. */
+  readonly turnWarning: TurnWarning | undefined;
 }
 
 interface HandsProps {
@@ -150,6 +160,11 @@ interface HandsProps {
    * highlights the clues about the card. A touch screen has no hover, so a tap does not count.
    */
   readonly onHoverCard: (order: CardOrder | undefined) => void;
+
+  /** What the pause button beside the viewer's clock does, if it shows (see "../pause.ts"). */
+  readonly pauseAction: PauseAction | undefined;
+  readonly onPause: () => void;
+  readonly reducedMotion: boolean;
 }
 
 /**
@@ -450,24 +465,47 @@ function NameChip({
     <i aria-label="You" className="fas fa-user tw:text-[0.85em]" role="img" />
   ) : undefined;
 
+  // A player who left has a red ring and a broken link on their name, as the classic screen draws
+  // their name in red. The badge sits on the ring, so that it does not change the chip's width.
+  const disconnectedClass = seat.disconnected
+    ? "tw:ring-2 tw:ring-game-error"
+    : "";
+  const disconnectedBadge = seat.disconnected ? (
+    <span
+      aria-label={`${seat.name} is disconnected`}
+      className="tw:absolute tw:-top-2.5 tw:-right-2.5 tw:flex tw:size-6 tw:items-center tw:justify-center tw:rounded-full tw:bg-game-error tw:text-xs tw:text-card-ink tw:shadow-[0_1px_3px_rgb(0_0_0/50%)]"
+      data-disconnected
+      ref={tooltipRef(
+        `${seat.name} is disconnected. The game waits for them to come back.`,
+      )}
+      role="img"
+    >
+      <i aria-hidden="true" className="fas fa-unlink" />
+    </span>
+  ) : undefined;
+
   if (seat.active) {
     return (
-      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:font-bold tw:text-card-ink">
+      <span
+        className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:font-bold tw:text-card-ink ${disconnectedClass}`}
+      >
         {youIcon}
         <FitText text={seat.name} />
+        {disconnectedBadge}
       </span>
     );
   }
 
   return (
     <span
-      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 ${NAME_CHIP_LOOK_CLASS[look]}`}
+      className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 ${NAME_CHIP_LOOK_CLASS[look]} ${disconnectedClass}`}
       ref={tooltipRef(
         look === "noClues" ? "The team has no clues to give." : undefined,
       )}
     >
       {youIcon}
       <FitText text={seat.name} />
+      {disconnectedBadge}
     </span>
   );
 }
@@ -479,26 +517,187 @@ function NameChip({
 function PlayerClock({
   seat,
   underName,
+  pauseAction,
+  onPause,
+  reducedMotion,
 }: {
   readonly seat: Seat;
 
   /** Whether the clock is under the name, where it lines up with the name's text. */
   readonly underName: boolean;
+
+  /** What the pause button beside the clock does. Only the viewer's own clock has one. */
+  readonly pauseAction: PauseAction | undefined;
+  readonly onPause: () => void;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element | undefined {
   if (seat.clock === undefined) {
     return undefined;
   }
 
+  let clockClass = seat.active
+    ? "tw:font-bold tw:text-game-text"
+    : "tw:font-medium tw:text-game-muted";
+  if (seat.lowTime) {
+    clockClass = "tw:font-bold tw:text-card-ink";
+  }
+
   return (
     <span
-      className={`tw:text-sm tw:tabular-nums ${underName ? "tw:pl-3.5" : ""} ${
-        seat.active
-          ? "tw:font-bold tw:text-game-text"
-          : "tw:font-medium tw:text-game-muted"
-      }`}
-      ref={tooltipRef(seat.clockTooltip)}
+      className={`tw:flex tw:items-center tw:gap-2 ${underName ? "tw:pl-3.5" : ""}`}
     >
-      {seat.clock}
+      <span
+        // The player can also right-click their own clock to pause, as on the classic screen.
+        className={`tw:relative tw:text-sm tw:tabular-nums ${clockClass}`}
+        onContextMenu={
+          pauseAction === undefined
+            ? undefined
+            : (event) => {
+                event.preventDefault();
+                onPause();
+              }
+        }
+        ref={tooltipRef(seat.clockTooltip)}
+      >
+        {seat.lowTime && <LowTimeFlash reducedMotion={reducedMotion} />}
+        <span className="tw:relative">{seat.clock}</span>
+      </span>
+      {pauseAction !== undefined && (
+        <PauseButton action={pauseAction} onPause={onPause} />
+      )}
+    </span>
+  );
+}
+
+/** How long one flash of a clock that is almost out of time takes, in milliseconds. */
+const LOW_TIME_FLASH_MILLISECONDS = 1000;
+
+/**
+ * The red behind a clock that is almost out of time. It flashes once a second, with the warning
+ * sound, as the classic screen's timer does. With "Reduced motion", it stays lit, so that the
+ * player still sees the warning.
+ */
+function LowTimeFlash({
+  reducedMotion,
+}: {
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const flash = ref.current;
+    if (flash === null || reducedMotion) {
+      return undefined;
+    }
+
+    const animation = flash.animate([{ opacity: 1 }, { opacity: 0.35 }], {
+      duration: LOW_TIME_FLASH_MILLISECONDS,
+      easing: "ease-in",
+      iterations: Infinity,
+    });
+    return () => {
+      animation.cancel();
+    };
+  }, [reducedMotion]);
+
+  return (
+    <span
+      aria-hidden="true"
+      className="tw:absolute tw:-inset-x-1.5 tw:-inset-y-0.5 tw:rounded-game-control tw:bg-game-error"
+      data-low-time
+      ref={ref}
+    />
+  );
+}
+
+const PAUSE_BUTTON_TOOLTIP = {
+  pause: "Pause the game.",
+  queue:
+    "Queue a pause: the game pauses when your turn starts. You can also right-click your clock.",
+  unqueue:
+    "Your pause is queued: the game pauses when your turn starts. Click to cancel it.",
+} as const satisfies Record<PauseAction, string>;
+
+/**
+ * The button beside the viewer's clock in a timed game. On their turn, it pauses the game. On
+ * another player's turn, it queues a pause, and stays lit in the color of the turn until the pause
+ * happens or the player cancels it.
+ */
+function PauseButton({
+  action,
+  onPause,
+}: {
+  readonly action: PauseAction;
+  readonly onPause: () => void;
+}): React.JSX.Element {
+  const queued = action === "unqueue";
+  return (
+    <button
+      aria-label={queued ? "Cancel the queued pause" : "Pause the game"}
+      aria-pressed={action === "pause" ? undefined : queued}
+      className={`tw:flex tw:size-6 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[10px] ${KEY_CLASS} ${
+        queued
+          ? "tw:bg-game-turn tw:text-card-ink tw:hover:brightness-110"
+          : "tw:bg-white/15 tw:text-game-text tw:hover:bg-white/25"
+      }`}
+      data-pause-button
+      onClick={onPause}
+      ref={tooltipRef(PAUSE_BUTTON_TOOLTIP[action])}
+      type="button"
+    >
+      <i aria-hidden="true" className="fas fa-pause" />
+    </button>
+  );
+}
+
+const TURN_WARNING = {
+  locked: {
+    label: "Locked",
+    icon: "fa-lock",
+    colorClass: "tw:text-game-text",
+    tooltip:
+      "Every card in this hand is clued, so the player may not be able to discard.",
+  },
+  doubleDiscard: {
+    label: "Double Discard",
+    icon: "fa-exclamation-triangle",
+    colorClass: "tw:text-game-turn",
+    tooltip:
+      'The last player discarded a card that may be the other copy of a card in this hand: a "Double Discard" situation.',
+  },
+} as const satisfies Record<
+  TurnWarning,
+  {
+    readonly label: string;
+    readonly icon: string;
+    readonly colorClass: string;
+    readonly tooltip: string;
+  }
+>;
+
+/**
+ * The H-Group warning for the current player, under their clock. The player sets "Use H-Group
+ * conventions" to see it.
+ */
+function TurnWarningTag({
+  warning,
+  underName,
+}: {
+  readonly warning: TurnWarning | undefined;
+  readonly underName: boolean;
+}): React.JSX.Element | undefined {
+  if (warning === undefined) {
+    return undefined;
+  }
+
+  const { label, icon, colorClass, tooltip } = TURN_WARNING[warning];
+  return (
+    <span
+      className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${colorClass} ${underName ? "tw:pl-3.5" : ""}`}
+      data-turn-warning={warning}
+      ref={tooltipRef(tooltip)}
+    >
+      <i aria-hidden="true" className={`fas ${icon}`} />
+      {label}
     </span>
   );
 }
@@ -960,8 +1159,15 @@ function Hand({
           )}
         </div>
         <PlayerClock
+          onPause={props.onPause}
+          pauseAction={seat.you ? props.pauseAction : undefined}
+          reducedMotion={props.reducedMotion}
           seat={seat}
           underName={props.nameColumnWidth !== undefined}
+        />
+        <TurnWarningTag
+          underName={props.nameColumnWidth !== undefined}
+          warning={seat.turnWarning}
         />
       </div>
       <div

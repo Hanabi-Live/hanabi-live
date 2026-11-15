@@ -17,11 +17,15 @@ interface GameSliceState {
    */
   readonly current: State | undefined;
   readonly votes: Votes | undefined;
+
+  /** Whether each player is connected, from the last "connections" message. */
+  readonly connections: readonly boolean[];
 }
 
 const initialState: GameSliceState = {
   current: undefined,
   votes: undefined,
+  connections: [],
 };
 
 /** The server described the game, so its state starts. */
@@ -35,6 +39,10 @@ export const gameUpdated = createAction<Action>("game/updated");
 
 export const votesChanged = createAction<Votes>("game/votesChanged");
 
+export const connectionsChanged = createAction<readonly boolean[]>(
+  "game/connectionsChanged",
+);
+
 /**
  * The game's state is not a slice from `createSlice`: the game's own reducers already use Immer,
  * and they handle the game's actions, whose types come from the server's messages.
@@ -45,10 +53,12 @@ export function gameSliceReducer(
 ): GameSliceState {
   const state = previousState ?? initialState;
 
+  // A reconnection can describe the game again, so the previous connections go too.
   if (gameStarted.match(action)) {
     return {
       ...state,
       current: action.payload,
+      connections: [],
     };
   }
 
@@ -69,6 +79,13 @@ export function gameSliceReducer(
           ...state,
           current,
         };
+  }
+
+  if (connectionsChanged.match(action)) {
+    return {
+      ...state,
+      connections: action.payload,
+    };
   }
 
   if (votesChanged.match(action)) {

@@ -628,7 +628,6 @@ function initStateStore(data: GameInit) {
   };
   // A reconnection can describe the game again, so release the observers of the old state first.
   releaseSubscriptions();
-  serverUpdates.resetConnections();
   store.dispatch(gameStarted(initialState(metadata)));
 
   // The observers that work for both screens start first, then the classic screen's views.

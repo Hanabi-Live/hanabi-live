@@ -18,6 +18,14 @@ const TICK_TOLERANCE_MILLISECONDS = 100;
 /** The time left at which the current player hears the low-time warning on every tick. */
 const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
 
+/**
+ * Whether a clock in a timed game is almost out of time, so that its player hears the low-time
+ * warning while it runs. A clock at 0 has run out.
+ */
+export function isLowOnTime(milliseconds: number): boolean {
+  return milliseconds > 0 && milliseconds <= LOW_TIME_WARNING_MILLISECONDS;
+}
+
 export type ClockChange =
   /** The server sent the clocks, or they stopped because the game ended. */
   | { readonly type: "update" }
@@ -138,8 +146,7 @@ function tick() {
   const warning =
     timed
     && session.settings.soundTimer
-    && milliseconds > 0
-    && milliseconds <= LOW_TIME_WARNING_MILLISECONDS
+    && isLowOnTime(milliseconds)
     && Math.abs(elapsedTime - TICK_MILLISECONDS) < TICK_TOLERANCE_MILLISECONDS
     && state.pause.pausingPlayerIndex === undefined
     && !session.errorOccurred;
