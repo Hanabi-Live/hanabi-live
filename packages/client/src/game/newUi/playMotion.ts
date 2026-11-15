@@ -95,7 +95,7 @@ const SAMPLES_PER_SECOND = 60;
 export const MOVING_CARD_Z_INDEX = "30";
 
 /** A played or misplayed card goes over the cards that move into its old place in the hand. */
-const PLAYED_CARD_Z_INDEX = "40";
+export const PLAYED_CARD_Z_INDEX = "40";
 
 /** The effects go over everything on the screen. */
 export const EFFECT_Z_INDEX = "60";

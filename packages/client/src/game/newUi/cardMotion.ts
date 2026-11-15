@@ -11,6 +11,7 @@ import {
   CARD_MOVE_ANIMATION_ID,
   EASE_OUT_BACK,
   MOVING_CARD_Z_INDEX,
+  PLAYED_CARD_Z_INDEX,
   animateBounceMisplay,
   animateMisplay,
   isShowingPlay,
@@ -250,7 +251,9 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
     transform: "none",
   });
 
-  const restore = raiseMovingCard(element);
+  // The card goes over the hand cards that move into its old place. They move at the same time, and
+  // the hands come after the play stacks in the page, so at the same height they would cover it.
+  const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
   playLandings.set(element, travel);
   const animation = element.animate(keyframes, {
     id: CARD_MOVE_ANIMATION_ID,
