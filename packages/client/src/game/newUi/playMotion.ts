@@ -45,8 +45,6 @@ import {
   RING_RADIUS,
   RING_SECONDS,
   SCORCH_COLOR,
-  SHAKE_AMPLITUDE,
-  SHAKE_SECONDS,
   SMOKE_COLORS,
   SMOKE_SECONDS,
   SMOKE_STAGGER_SECONDS,
@@ -299,7 +297,7 @@ export function onEnd(animation: Animation, end: () => void): void {
 
 /**
  * Adds an effect that sits over the screen, at a point. It is removed when its animation ends.
- * Effects are not inside the game screen, so that they do not shake with it.
+ * Effects sit over the whole window, outside of the game screen.
  */
 function addEffect(
   at: Point,
@@ -793,24 +791,6 @@ export function animateMisplay(
       scorch.remove();
     },
   );
-
-  // Shake the game screen.
-  const main = root.querySelector("main");
-  if (main !== null) {
-    const duration = SHAKE_SECONDS * 1000;
-    animateSampled(
-      main,
-      duration,
-      (ms) => {
-        const t = ms / duration;
-        const amplitude = SHAKE_AMPLITUDE * unit * (1 - t);
-        return {
-          translate: `${amplitude * Math.sin(t * 47)}px ${amplitude * Math.sin(t * 61 + 1)}px`,
-        };
-      },
-      explosion * 1000,
-    );
-  }
 
   if (strikeBox === undefined) {
     return;
