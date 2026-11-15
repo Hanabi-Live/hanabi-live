@@ -389,6 +389,60 @@ function IconToggle({
 }
 
 /**
+ * What to do next in a hypothetical. It takes only the room that is left, so that it never pushes
+ * the other controls onto a row of their own. A hint that does not fit is cut off, and only then
+ * does its tooltip show all of it. On a narrow window, it wraps onto a second line in smaller text
+ * instead. The text is only as wide as it needs, so that its tooltip is centered on it.
+ */
+function HypotheticalHint({
+  hint,
+}: {
+  readonly hint: string;
+}): React.JSX.Element {
+  const textRef = useRef<HTMLParagraphElement | null>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const text = textRef.current;
+    if (text === null) {
+      return undefined;
+    }
+
+    function check() {
+      if (text !== null) {
+        setTruncated(
+          text.scrollWidth > text.clientWidth
+            || text.scrollHeight > text.clientHeight,
+        );
+      }
+    }
+
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(text);
+    return () => {
+      observer.disconnect();
+    };
+  }, [hint]);
+
+  const tooltip = tooltipRef(truncated ? hint : undefined);
+
+  return (
+    <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
+      <p
+        className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal"
+        ref={(element) => {
+          textRef.current = element;
+          return tooltip(element);
+        }}
+      >
+        {hint}
+      </p>
+    </div>
+  );
+}
+
+/**
  * The controls of a hypothetical that we control. Going back a turn and passing are where the steps
  * through the turns are, and what to do next is where the timeline is. The other buttons are on the
  * right. The last one is lit in the color of the mode, and leaves the hypothetical. It is the size
@@ -442,18 +496,7 @@ function OwnHypotheticalControls({
               the replay's turns. */}
           <i aria-hidden="true" className="fas fa-hand-paper" />
         </button>
-        {/* The hint takes only the room that is left, so that it never pushes the other controls
-            onto a row of their own. A hint that does not fit is cut off, and its tooltip has all
-            of it. On a narrow window, it wraps onto a second line in smaller text instead. The
-            text is only as wide as it needs, so that its tooltip is centered on it. */}
-        <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
-          <p
-            className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal"
-            ref={tooltipRef(hint)}
-          >
-            {hint}
-          </p>
-        </div>
+        <HypotheticalHint hint={hint} />
       </div>
       <div className={RIGHT_CLASS}>
         <IconToggle
