@@ -10,16 +10,14 @@ const FADE_IN_MILLISECONDS = 100;
 /** The space between each box and the hands, in CSS pixels. A card dropped there goes back. */
 const HANDS_MARGIN = 16;
 
-/** At max clues, the discard box has the dashed border of the discard pile. */
-const REFUSING_CLASS = `${DROP_ZONE_CLASS} tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed`;
-
 /** The look of each box. The box under the held card has a ring in the color of clues. */
 const zoneClasses: Record<ZoneState, string> = {
   idle: "",
   available: DROP_ZONE_CLASS,
   hovered: `${DROP_ZONE_CLASS} tw:inset-ring-3 tw:inset-ring-clue`,
-  unavailable: REFUSING_CLASS,
-  blocked: REFUSING_CLASS,
+  // At max clues, only the discard pile itself has the dashed border.
+  unavailable: DROP_ZONE_CLASS,
+  blocked: DROP_ZONE_CLASS,
 };
 
 /** Where a box is in the screen's columns, in CSS pixels. */
