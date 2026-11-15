@@ -702,9 +702,17 @@ export function GameScreen({
     nameColumnWidth = undefined;
     handCardWidth = getHandCardWidthFor(undefined);
   }
+  const handsTopPadding = getHandsTopPadding(
+    handCardWidth,
+    nameColumnWidth !== undefined,
+    stacked,
+  );
+  // Beside the hands, the play area and the discard pile start as low as the hands do, so that the
+  // tops of the columns line up.
+  const columnTopPadding = stacked ? 0 : handsTopPadding;
   const tableCardWidth = getTableCardWidth(
     playAreaSize.width,
-    playAreaSize.height,
+    playAreaSize.height - columnTopPadding,
     variant.suits.length,
     stacked,
   );
@@ -871,6 +879,7 @@ export function GameScreen({
             <div
               className="tw:relative tw:flex tw:shrink-0 tw:narrow-980:justify-center"
               ref={setPlayAreaElement}
+              style={{ paddingTop: columnTopPadding }}
             >
               <PlayArea
                 cardWidth={tableCardWidth}
@@ -965,13 +974,7 @@ export function GameScreen({
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
                 ref={setHandsElement}
-                style={{
-                  paddingTop: getHandsTopPadding(
-                    handCardWidth,
-                    nameColumnWidth !== undefined,
-                    stacked,
-                  ),
-                }}
+                style={{ paddingTop: handsTopPadding }}
               >
                 <NameColumnSizer onWidthChange={setNameWidth} seats={seats} />
                 <Hands
@@ -1124,6 +1127,7 @@ export function GameScreen({
 
             <div
               className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full`}
+              style={{ paddingTop: columnTopPadding }}
             >
               <DiscardPile
                 atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
