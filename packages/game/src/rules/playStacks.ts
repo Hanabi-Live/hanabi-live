@@ -50,9 +50,9 @@ export function getNextPlayableRanksAfter(
       if (!variant.sudoku) {
         // In non-Sudoku variants, the next playable card is 1 if the stack is not stared yet or the
         // N+1 rank.
-        return currentlyPlayedRank === undefined
-          ? [1]
-          : [currentlyPlayedRank + 1];
+        return [
+          currentlyPlayedRank === undefined ? 1 : currentlyPlayedRank + 1,
+        ];
       }
 
       // In Sudoku variants, determining the next playable ranks is more complicated. If the stack
@@ -79,9 +79,7 @@ export function getNextPlayableRanksAfter(
     case StackDirection.Down: {
       // In non-Sudoku variants, the next playable card is 5 if the stack is not stared yet or the
       // N-1 rank.
-      return currentlyPlayedRank === undefined
-        ? [5]
-        : [currentlyPlayedRank - 1];
+      return [currentlyPlayedRank === undefined ? 5 : currentlyPlayedRank - 1];
     }
 
     case StackDirection.Finished: {

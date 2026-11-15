@@ -50,9 +50,6 @@ export const hanabiConfigBase = defineConfig(
       // includes Safari 16.4.
       "unicorn/prefer-iterator-to-array": "off",
 
-      // Factoring ternaries can erase the correlation between discriminated union members.
-      "unicorn/prefer-minimal-ternary": "off",
-
       // Preserve compatibility with browsers without the newest Set methods.
       "unicorn/prefer-set-methods": "off",
 

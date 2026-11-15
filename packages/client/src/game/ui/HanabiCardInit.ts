@@ -428,19 +428,12 @@ function makeCachedPips(variant: Variant) {
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
-    const x =
+    const fractionX =
       variant.ranks.length === DEFAULT_CARD_RANKS.length
-        ? Math.floor(
-            CARD_W
-              * (rank * RANK_PIP_X.defaultRanks.spacing
-                + RANK_PIP_X.defaultRanks.start),
-          )
-        : Math.floor(
-            CARD_W
-              * ((rank === START_CARD_RANK ? 0 : rank)
-                * RANK_PIP_X.otherRanks.spacing
-                + RANK_PIP_X.otherRanks.start),
-          );
+        ? rank * RANK_PIP_X.defaultRanks.spacing + RANK_PIP_X.defaultRanks.start
+        : (rank === START_CARD_RANK ? 0 : rank) * RANK_PIP_X.otherRanks.spacing
+          + RANK_PIP_X.otherRanks.start;
+    const x = Math.floor(CARD_W * fractionX);
     const y = 0;
     const rankPip = new RankPip({
       x,

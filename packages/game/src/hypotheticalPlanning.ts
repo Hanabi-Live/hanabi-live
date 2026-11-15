@@ -177,10 +177,10 @@ export function getHypotheticalTouchedCards(
       card.possibilities.every(([possibleSuitIndex, possibleRank]) =>
         isCardTouchedByClue(variant, fullClue, possibleSuitIndex, possibleRank),
       )
-      && card.possibilities.every(() =>
-        clue.type === "rank"
-          ? card.visibleRank !== undefined
-          : card.visibleSuitIndex !== undefined,
+      && card.possibilities.every(
+        () =>
+          (clue.type === "rank" ? card.visibleRank : card.visibleSuitIndex)
+          !== undefined,
       )
     ) {
       touchedCards.push(card.order);
