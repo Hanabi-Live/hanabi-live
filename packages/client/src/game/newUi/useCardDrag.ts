@@ -76,7 +76,7 @@ interface CardDrag {
 
 /**
  * Moves a card with the pointer, and plays or discards it where the player drops it. The drop
- * targets are the boxes that darken while the player drags a card.
+ * targets are the boxes that show while the player drags a card (see "DropZones.tsx").
  */
 export function useCardDrag(): CardDrag {
   const [held, setHeld] = useState<HeldCard>();
@@ -120,12 +120,7 @@ export function useCardDrag(): CardDrag {
     }
 
     function zoneAt(x: number, y: number): DropZone | undefined {
-      // The card plays inside the box that the play stacks draw while the player drags it, which is
-      // bigger than the play stacks.
-      const playZone = playZoneRef.current;
-      const playBox =
-        playZone?.querySelector<HTMLElement>("[data-play-box]") ?? playZone;
-      if (isInside(playBox ?? null, x, y)) {
+      if (isInside(playZoneRef.current, x, y)) {
         return "play";
       }
 

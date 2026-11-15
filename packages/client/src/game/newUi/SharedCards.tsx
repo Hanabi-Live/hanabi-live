@@ -7,8 +7,6 @@ import type {
 } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import type { ForwardedRef } from "react";
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
@@ -21,7 +19,7 @@ import {
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { Pip } from "./Pip.tsx";
-import { DROP_ZONE_CLASS, WELL_CLASS } from "./surfaces.ts";
+import { WELL_CLASS } from "./surfaces.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -203,55 +201,6 @@ export interface DiscardView {
 export type ZoneState =
   "idle" | "available" | "hovered" | "unavailable" | "blocked";
 
-/**
- * Returns a callback ref that gives a drop target to `ref`, with a tooltip that names it. The
- * tooltip does not show while the player drags a card, because the target shows a label then.
- */
-function zoneRef(
-  ref: ForwardedRef<HTMLElement>,
-  state: ZoneState,
-  name: string,
-): (element: HTMLElement | null) => () => void {
-  const tooltip = tooltipRef(state === "idle" ? name : undefined);
-  return (element) => {
-    if (typeof ref === "function") {
-      ref(element);
-    } else if (ref !== null) {
-      ref.current = element;
-    }
-    const removeTooltip = tooltip(element);
-    return () => {
-      removeTooltip?.();
-      if (typeof ref === "function") {
-        ref(null);
-      } else if (ref !== null) {
-        ref.current = null;
-      }
-    };
-  };
-}
-
-/**
- * While the player drags a card, the play stacks and the discard pile both darken, to show where
- * the card can go. The discard pile darkens at max clues too, where it refuses the card.
- */
-const zoneClasses: Record<ZoneState, string> = {
-  idle: WELL_CLASS,
-  available: DROP_ZONE_CLASS,
-  hovered: `${DROP_ZONE_CLASS} tw:inset-ring-3 tw:inset-ring-clue`,
-  // The discard pile dims its cards itself, so that its sign and label stay bright.
-  unavailable: DROP_ZONE_CLASS,
-  blocked: DROP_ZONE_CLASS,
-};
-
-/** The offsets of a box from its parent's edges, in CSS pixels. */
-interface ZoneInset {
-  readonly top: number;
-  readonly right: number;
-  readonly bottom: number;
-  readonly left: number;
-}
-
 function isRefusing(state: ZoneState): boolean {
   return state === "unavailable" || state === "blocked";
 }
@@ -286,217 +235,171 @@ function ZoneLabel({
  * The play stacks, where the player drops a card to play it, with the deck and the table's tokens
  * below them. Players look to the bottom left for the clue count, as on the classic screen.
  */
-export const PlayArea = forwardRef<
-  HTMLElement,
-  {
-    readonly stacks: readonly StackView[];
-    readonly variant: Variant;
-    readonly colorblindMode: boolean;
-    readonly cardWidth: number;
-    readonly cardsInDeck: number;
+export function PlayArea({
+  stacks,
+  variant,
+  colorblindMode,
+  cardWidth,
+  cardsInDeck,
+  turnsLeft,
+  zoneState,
+  notes,
+  tokens,
+}: {
+  readonly stacks: readonly StackView[];
+  readonly variant: Variant;
+  readonly colorblindMode: boolean;
+  readonly cardWidth: number;
+  readonly cardsInDeck: number;
 
-    /** The turns left in the game once the deck is empty (see `Deck`). */
-    readonly turnsLeft: number | undefined;
-    readonly zoneState: ZoneState;
-    readonly notes: CardNotes;
+  /** The turns left in the game once the deck is empty (see `Deck`). */
+  readonly turnsLeft: number | undefined;
+  readonly zoneState: ZoneState;
+  readonly notes: CardNotes;
 
-    /** The clue tokens and the strikes (see `TableTokens`). */
-    readonly tokens: React.ReactNode;
-  }
->(
-  (
-    {
-      stacks,
-      variant,
-      colorblindMode,
-      cardWidth,
-      cardsInDeck,
-      turnsLeft,
-      zoneState,
-      notes,
-      tokens,
-    },
-    ref,
-  ): React.JSX.Element => {
-    const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
-    const suitLabels = hasSuitLabels(variant);
+  /** The clue tokens and the strikes (see `TableTokens`). */
+  readonly tokens: React.ReactNode;
+}): React.JSX.Element {
+  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+  const suitLabels = hasSuitLabels(variant);
+  const dragging = zoneState !== "idle";
 
-    // While the player drags a card, the box of the play stacks is twice as far from the stacks on
-    // each side, so that it is easy to see. It grows behind its neighbors, so that nothing moves.
-    const stacksRef = useRef<HTMLDivElement>(null);
-    const [zoneInset, setZoneInset] = useState<ZoneInset | undefined>();
-    const dragging = zoneState !== "idle";
-    useLayoutEffect(() => {
-      const stacksElement = stacksRef.current;
-      const boxElement = stacksElement?.parentElement ?? null;
-      if (!dragging || stacksElement === null || boxElement === null) {
-        return;
-      }
-      const box = boxElement.getBoundingClientRect();
-      const stacksBox = stacksElement.getBoundingClientRect();
-      setZoneInset({
-        top: box.top - stacksBox.top,
-        right: stacksBox.right - box.right,
-        bottom: stacksBox.bottom - box.bottom,
-        left: box.left - stacksBox.left,
-      });
-    }, [dragging]);
-
-    return (
-      // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
-      // the tokens are at the bottom, level with the bottom of the controls below the hands. When
-      // the columns stack, the stacks and the deck are one row, with the tokens below it.
+  return (
+    // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
+    // the tokens are at the bottom, level with the bottom of the controls below the hands. When the
+    // columns stack, the stacks and the deck are one row, with the tokens below it.
+    <div
+      className="tw:flex tw:shrink-0 tw:flex-col tw:items-center"
+      style={{ gap: PLAY_AREA_GAP }}
+    >
       <div
-        className="tw:flex tw:shrink-0 tw:flex-col tw:items-center"
+        className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start"
         style={{ gap: PLAY_AREA_GAP }}
       >
-        <div
-          className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start"
-          style={{ gap: PLAY_AREA_GAP }}
+        <section
+          aria-label="Play stacks"
+          className="tw:relative tw:flex tw:flex-col tw:items-center tw:self-stretch"
+          // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
+          data-play-stacks
+          ref={tooltipRef(dragging ? undefined : "Play stacks")}
+          style={{ padding: PLAY_STACKS_PADDING }}
         >
-          <section
-            aria-label="Play stacks"
-            className="tw:relative tw:isolate tw:flex tw:flex-col tw:items-center tw:self-stretch"
-            // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
-            data-play-stacks
-            ref={zoneRef(ref, zoneState, "Play stacks")}
-            style={{ padding: PLAY_STACKS_PADDING }}
+          <div
+            className="tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
+            style={{ gap: PLAY_STACK_GAP }}
           >
-            {/* The box shows only while the player drags a card, to show that they can drop it
-                here. A card dropped inside it plays (see "useCardDrag.ts"). It is behind the
-                stacks. */}
-            {dragging && zoneInset !== undefined && (
-              <div
-                aria-hidden="true"
-                className={`tw:pointer-events-none tw:absolute tw:-z-10 tw:rounded-game-panel ${zoneClasses[zoneState]}`}
-                data-play-box
-                style={zoneInset}
-              />
-            )}
-            <div
-              className="tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
-              ref={stacksRef}
-              style={{ gap: PLAY_STACK_GAP }}
-            >
-              {stacks.map((stack) => {
-                const suit = variant.suits[stack.suitIndex];
-                const name = suit?.displayName ?? "";
+            {stacks.map((stack) => {
+              const suit = variant.suits[stack.suitIndex];
+              const name = suit?.displayName ?? "";
 
-                // What lies under the top card: the card below it, or else the empty stack. It
-                // stays in place while a newly played card moves on top of it.
-                const below =
-                  stack.belowRank === undefined ? (
-                    <div
-                      className="tw:box-border tw:flex tw:items-center tw:justify-center tw:border-2 tw:border-solid tw:border-game-line"
-                      style={{
-                        width: cardWidth,
-                        height,
-                        borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
-                        ...(suit !== undefined
-                          && getEmptyStackStyle(suit, colorblindMode)),
-                      }}
-                    >
-                      {suit !== undefined && (
-                        <Pip
-                          shadow
-                          size={cardWidth * 0.6}
-                          suit={suit}
-                          variant={variant}
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <CardFace
-                      colorblindMode={colorblindMode}
-                      rank={stack.belowRank}
-                      suitIndex={stack.suitIndex}
-                      variant={variant}
-                      width={cardWidth}
-                    />
-                  );
-
-                const abbreviation = variant.suitAbbreviations[stack.suitIndex];
-
-                return (
+              // What lies under the top card: the card below it, or else the empty stack. It stays
+              // in place while a newly played card moves on top of it.
+              const below =
+                stack.belowRank === undefined ? (
                   <div
-                    // In a column, the labels have the same space on the right, so that the stacks
-                    // stay in line with the deck below them.
-                    className={
-                      suitLabels
-                        ? "tw:relative tw:px-(--suit-label-space) tw:narrow-980:px-0"
-                        : undefined
-                    }
-                    key={stack.suitIndex}
-                    style={suitLabels ? SUIT_LABEL_VARIABLES : undefined}
+                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:border-2 tw:border-solid tw:border-game-line"
+                    style={{
+                      width: cardWidth,
+                      height,
+                      borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                      ...(suit !== undefined
+                        && getEmptyStackStyle(suit, colorblindMode)),
+                    }}
                   >
-                    <div
-                      aria-label={
-                        stack.topRank === undefined
-                          ? `${name}: nothing played`
-                          : describeCard(
-                              variant,
-                              stack.suitIndex,
-                              stack.topRank,
-                            )
-                      }
-                      className="tw:relative"
-                      // A misplayed card launches over its stack (see "playMotion.ts").
-                      data-stack-slot={stack.suitIndex}
-                      role="img"
-                    >
-                      {below}
-                      {stack.topRank !== undefined && (
-                        <div
-                          className="tw:absolute tw:inset-0"
-                          data-card-order={stack.topOrder}
-                          data-card-place={`stack-${stack.suitIndex}`}
-                          data-play-stack
-                        >
-                          {stack.topOrder === undefined ? undefined : (
-                            <CardNote notes={notes} order={stack.topOrder}>
-                              <CardFace
-                                colorblindMode={colorblindMode}
-                                note={notes.notesHtml.has(stack.topOrder)}
-                                noteUnread={notes.unreadNotes.has(
-                                  stack.topOrder,
-                                )}
-                                rank={stack.topRank}
-                                suitIndex={stack.suitIndex}
-                                variant={variant}
-                                width={cardWidth}
-                              />
-                            </CardNote>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {suitLabels
-                      && suit !== undefined
-                      && abbreviation !== undefined && (
-                        <SuitLabel
-                          abbreviation={abbreviation}
-                          colorblindMode={colorblindMode}
-                          showTooltip={zoneState === "idle"}
-                          suit={suit}
-                        />
-                      )}
+                    {suit !== undefined && (
+                      <Pip
+                        shadow
+                        size={cardWidth * 0.6}
+                        suit={suit}
+                        variant={variant}
+                      />
+                    )}
                   </div>
+                ) : (
+                  <CardFace
+                    colorblindMode={colorblindMode}
+                    rank={stack.belowRank}
+                    suitIndex={stack.suitIndex}
+                    variant={variant}
+                    width={cardWidth}
+                  />
                 );
-              })}
-            </div>
-            <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
-          </section>
-          <Deck
-            cardsInDeck={cardsInDeck}
-            cardWidth={cardWidth}
-            turnsLeft={turnsLeft}
-          />
-        </div>
-        {tokens}
+
+              const abbreviation = variant.suitAbbreviations[stack.suitIndex];
+
+              return (
+                <div
+                  // In a column, the labels have the same space on the right, so that the stacks
+                  // stay in line with the deck below them.
+                  className={
+                    suitLabels
+                      ? "tw:relative tw:px-(--suit-label-space) tw:narrow-980:px-0"
+                      : undefined
+                  }
+                  key={stack.suitIndex}
+                  style={suitLabels ? SUIT_LABEL_VARIABLES : undefined}
+                >
+                  <div
+                    aria-label={
+                      stack.topRank === undefined
+                        ? `${name}: nothing played`
+                        : describeCard(variant, stack.suitIndex, stack.topRank)
+                    }
+                    className="tw:relative"
+                    // A misplayed card launches over its stack (see "playMotion.ts").
+                    data-stack-slot={stack.suitIndex}
+                    role="img"
+                  >
+                    {below}
+                    {stack.topRank !== undefined && (
+                      <div
+                        className="tw:absolute tw:inset-0"
+                        data-card-order={stack.topOrder}
+                        data-card-place={`stack-${stack.suitIndex}`}
+                        data-play-stack
+                      >
+                        {stack.topOrder === undefined ? undefined : (
+                          <CardNote notes={notes} order={stack.topOrder}>
+                            <CardFace
+                              colorblindMode={colorblindMode}
+                              note={notes.notesHtml.has(stack.topOrder)}
+                              noteUnread={notes.unreadNotes.has(stack.topOrder)}
+                              rank={stack.topRank}
+                              suitIndex={stack.suitIndex}
+                              variant={variant}
+                              width={cardWidth}
+                            />
+                          </CardNote>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {suitLabels
+                    && suit !== undefined
+                    && abbreviation !== undefined && (
+                      <SuitLabel
+                        abbreviation={abbreviation}
+                        colorblindMode={colorblindMode}
+                        showTooltip={!dragging}
+                        suit={suit}
+                      />
+                    )}
+                </div>
+              );
+            })}
+          </div>
+          <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
+        </section>
+        <Deck
+          cardsInDeck={cardsInDeck}
+          cardWidth={cardWidth}
+          turnsLeft={turnsLeft}
+        />
       </div>
-    );
-  },
-);
+      {tokens}
+    </div>
+  );
+}
 
 /**
  * How far each card under the top of the deck shows below and to the right of the card above it, in
@@ -675,124 +578,120 @@ function Deck({
  * card is a button that shows the turn on which it was discarded. The pile keeps room for a row of
  * every suit, so that it stays the same size as cards are discarded.
  */
-export const DiscardPile = forwardRef<
-  HTMLElement,
-  {
-    readonly rows: ReadonlyArray<readonly DiscardView[]>;
-    readonly variant: Variant;
-    readonly colorblindMode: boolean;
-    readonly cardWidth: number;
-    readonly zoneState: ZoneState;
+export function DiscardPile({
+  rows,
+  variant,
+  colorblindMode,
+  cardWidth,
+  zoneState,
+  atMaxClues,
+  onShowDiscard,
+  notes,
+}: {
+  readonly rows: ReadonlyArray<readonly DiscardView[]>;
+  readonly variant: Variant;
+  readonly colorblindMode: boolean;
+  readonly cardWidth: number;
+  readonly zoneState: ZoneState;
 
-    /** Whether the team has every clue token, so that no one can discard. */
-    readonly atMaxClues: boolean;
-    readonly onShowDiscard: (order: CardOrder) => void;
-    readonly notes: CardNotes;
-  }
->(
-  (
-    {
-      rows,
-      variant,
-      colorblindMode,
-      cardWidth,
-      zoneState,
-      atMaxClues,
-      onShowDiscard,
-      notes,
-    },
-    ref,
-  ): React.JSX.Element => {
-    const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+  /** Whether the team has every clue token, so that no one can discard. */
+  readonly atMaxClues: boolean;
+  readonly onShowDiscard: (order: CardOrder) => void;
+  readonly notes: CardNotes;
+}): React.JSX.Element {
+  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
 
-    // As on the classic screen, each row covers all of the row above but its ranks.
-    const rowStep =
-      cardWidth * (RANK_BOTTOM_PER_WIDTH + DISCARD_ROW_GAP_PER_WIDTH);
-    const rowsHeight = height + (variant.suits.length - 1) * rowStep;
+  // As on the classic screen, each row covers all of the row above but its ranks.
+  const rowStep =
+    cardWidth * (RANK_BOTTOM_PER_WIDTH + DISCARD_ROW_GAP_PER_WIDTH);
+  const rowsHeight = height + (variant.suits.length - 1) * rowStep;
 
-    return (
-      <section
-        aria-label="Discards"
-        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]} ${
-          // At max clues, a quiet dashed border in the clue color shows that no one can discard,
-          // before anyone picks up a card and while they drag one.
-          atMaxClues
-            ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
-            : ""
+  return (
+    <section
+      aria-label="Discards"
+      className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${
+        // While the player drags a card, the pile is clear, so that it is part of the dark box of
+        // the discard column behind it (see "DropZones.tsx").
+        zoneState === "idle" ? WELL_CLASS : ""
+      } ${
+        // At max clues, a quiet dashed border in the clue color shows that no one can discard,
+        // before anyone picks up a card and while they drag one.
+        atMaxClues
+          ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
+          : ""
+      }`}
+      ref={tooltipRef(zoneState === "idle" ? "Discard pile" : undefined)}
+    >
+      {/* A faint trash can behind the cards names the pile without a heading. */}
+      <i
+        aria-hidden="true"
+        className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
+          isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
         }`}
-        ref={zoneRef(ref, zoneState, "Discard pile")}
+        style={{ fontSize: cardWidth * 1.125 }}
+      />
+      <div
+        className={`tw:relative tw:flex tw:flex-col ${
+          isRefusing(zoneState) ? "tw:opacity-60" : ""
+        }`}
+        style={{ height: rowsHeight }}
       >
-        {/* A faint trash can behind the cards names the pile without a heading. */}
-        <i
-          aria-hidden="true"
-          className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
-            isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
-          }`}
-          style={{ fontSize: cardWidth * 1.125 }}
-        />
-        <div
-          className={`tw:relative tw:flex tw:flex-col ${
-            isRefusing(zoneState) ? "tw:opacity-60" : ""
-          }`}
-          style={{ height: rowsHeight }}
-        >
-          {rows.map((row, rowIndex) => (
-            <div
-              className="tw:flex"
-              key={row[0]?.order}
-              style={{
-                marginTop: rowIndex === 0 ? 0 : rowStep - height,
-              }}
-            >
-              {row.map((card, i) => (
-                <CardNote
-                  className="tw:shrink-0"
-                  key={card.order}
-                  notes={notes}
-                  order={card.order}
-                  style={{
-                    marginLeft:
-                      i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,
+        {rows.map((row, rowIndex) => (
+          <div
+            className="tw:flex"
+            key={row[0]?.order}
+            style={{
+              marginTop: rowIndex === 0 ? 0 : rowStep - height,
+            }}
+          >
+            {row.map((card, i) => (
+              <CardNote
+                className="tw:shrink-0"
+                key={card.order}
+                notes={notes}
+                order={card.order}
+                style={{
+                  marginLeft:
+                    i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,
+                }}
+              >
+                <button
+                  aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                  className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
+                  data-card-order={card.order}
+                  data-card-place={`discard-${rowIndex}-${i}`}
+                  onClick={() => {
+                    onShowDiscard(card.order);
                   }}
+                  style={{
+                    borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                  }}
+                  type="button"
                 >
-                  <button
-                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                    className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
-                    data-card-order={card.order}
-                    data-card-place={`discard-${rowIndex}-${i}`}
-                    onClick={() => {
-                      onShowDiscard(card.order);
-                    }}
-                    style={{
-                      borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
-                    }}
-                    type="button"
-                  >
-                    <CardFace
-                      colorblindMode={colorblindMode}
-                      note={notes.notesHtml.has(card.order)}
-                      noteUnread={notes.unreadNotes.has(card.order)}
-                      rank={card.rank}
-                      suitIndex={card.suitIndex}
-                      variant={variant}
-                      width={cardWidth}
-                    />
-                  </button>
-                </CardNote>
-              ))}
-            </div>
-          ))}
-        </div>
-        {zoneState === "blocked" && <NoEntrySign />}
-        <ZoneLabel
-          state={zoneState}
-          text="Discard"
-          unavailableText="No discarding at max clues"
-        />
-      </section>
-    );
-  },
-);
+                  <CardFace
+                    colorblindMode={colorblindMode}
+                    note={notes.notesHtml.has(card.order)}
+                    noteUnread={notes.unreadNotes.has(card.order)}
+                    rank={card.rank}
+                    suitIndex={card.suitIndex}
+                    variant={variant}
+                    width={cardWidth}
+                  />
+                </button>
+              </CardNote>
+            ))}
+          </div>
+        ))}
+      </div>
+      {zoneState === "blocked" && <NoEntrySign />}
+      <ZoneLabel
+        state={zoneState}
+        text="Discard"
+        unavailableText="No discarding at max clues"
+      />
+    </section>
+  );
+}
 
 /**
  * The sign over the discard pile while the player holds a card over it and the team cannot discard.
