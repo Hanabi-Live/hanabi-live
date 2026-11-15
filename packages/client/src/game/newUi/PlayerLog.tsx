@@ -9,7 +9,7 @@ import type {
 } from "@hanabi-live/game";
 import { getCardName, getGoesFirstText } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueDisc, getClueText } from "./ClueLog.tsx";
@@ -273,13 +273,16 @@ export function PlayerLog({
     return onEscapeKey(onClose);
   }, [onClose]);
 
-  // The newest action is the one that a player most often wants, so the list starts at its end.
-  useEffect(() => {
+  // The newest action is the one that a player most often wants, so the list starts at its end. The
+  // screen makes a new array of entries each time that it draws, such as when a clock ticks, so the
+  // list scrolls only when the number of entries changes. Otherwise, the player could not scroll
+  // up.
+  useLayoutEffect(() => {
     const list = listRef.current;
     if (list !== null) {
       list.scrollTop = list.scrollHeight;
     }
-  }, [entries]);
+  }, [entries.length]);
 
   const tally = getTally(entries);
 
