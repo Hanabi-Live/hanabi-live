@@ -6,7 +6,7 @@ import {
   getSuitAbbreviationForVariant,
   hasReversedSuits,
 } from "@hanabi-live/game";
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useState } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
@@ -1444,10 +1444,19 @@ const DECEPTIVE_RANK_SCALE = 0.5;
 const DECEPTIVE_RANK_GAP = 4;
 
 /**
- * The font size of the suit's letter in the corner of a card in color-blind mode, in the card's
- * units. Its capital letters are as tall as the rank.
+ * The font size of the suit's letter until the browser measures it, in the card's units. Its
+ * capital letters are about as tall as the rank.
  */
-const SUIT_LETTER_FONT_SIZE = 110;
+const SUIT_LETTER_ESTIMATED_FONT_SIZE = 110;
+
+/** The font size at which the browser measures the shape of the suit's letter, in pixels. */
+const SUIT_LETTER_MEASURE_FONT_SIZE = 100;
+
+/**
+ * The font of the suit's letter in color-blind mode. Its brush strokes look like the shapes of the
+ * ranks. "public/css/app/common.css" loads it.
+ */
+const SUIT_LETTER_FONT_FAMILY = "Kalam";
 
 /**
  * The width of the suit's letter until the browser measures it, in the card's units. It is about
@@ -1461,6 +1470,68 @@ const SUIT_LETTER_ESTIMATED_WIDTH = 80;
 const DECEPTIVE_RANK_X =
   RANK_CORNER_OFFSET.x + RANK_SHAPE_RIGHT + DECEPTIVE_RANK_GAP;
 const RANK_BOTTOM_Y = RANK_CORNER_OFFSET.y + RANK_SHAPE_BOX.bottom;
+const RANK_LEFT_X = RANK_CORNER_OFFSET.x + RANK_SHAPE_BOX.left;
+const RANK_HEIGHT = RANK_SHAPE_BOX.bottom - RANK_SHAPE_BOX.top;
+
+/** Where and how large the suit's letter is drawn in the corner, in the card's own units. */
+interface SuitLetterBox {
+  readonly fontSize: number;
+  /** The start of the text, which puts the left of the letter's shape at the corner. */
+  readonly x: number;
+  /** The baseline of the text, which puts the bottom of the letter's shape at the rank's bottom. */
+  readonly y: number;
+  /** The width of the letter's shape. */
+  readonly width: number;
+}
+
+const ESTIMATED_SUIT_LETTER_BOX = {
+  fontSize: SUIT_LETTER_ESTIMATED_FONT_SIZE,
+  x: RANK_LEFT_X,
+  y: RANK_BOTTOM_Y,
+  width: SUIT_LETTER_ESTIMATED_WIDTH,
+} as const satisfies SuitLetterBox;
+
+/** The boxes of the letters that the browser measured in the loaded font. */
+const suitLetterBoxes = new Map<string, SuitLetterBox>();
+
+/**
+ * Measures the shape of a suit's letter, and sizes it to be as tall as a rank. Letters have shapes
+ * of different sizes in the font, so a fixed font size would make some taller than others. Returns
+ * `undefined` when the browser cannot measure text.
+ */
+function measureSuitLetter(letter: string): SuitLetterBox | undefined {
+  const cached = suitLetterBoxes.get(letter);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const context = document.createElement("canvas").getContext("2d");
+  if (context === null) {
+    return undefined;
+  }
+  const font = `bold ${SUIT_LETTER_MEASURE_FONT_SIZE}px ${SUIT_LETTER_FONT_FAMILY}`;
+  context.font = font;
+  const metrics = context.measureText(letter);
+  const shapeHeight =
+    metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+  if (shapeHeight <= 0) {
+    return undefined;
+  }
+
+  const scale = RANK_HEIGHT / shapeHeight;
+  const box = {
+    fontSize: SUIT_LETTER_MEASURE_FONT_SIZE * scale,
+    x: RANK_LEFT_X + metrics.actualBoundingBoxLeft * scale,
+    y: RANK_BOTTOM_Y - metrics.actualBoundingBoxDescent * scale,
+    width:
+      (metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight) * scale,
+  };
+  // Until the font loads, the browser measures another font.
+  if (document.fonts.check(font, letter)) {
+    suitLetterBoxes.set(letter, box);
+  }
+  return box;
+}
 
 /**
  * The colors of the rank in the corner of a card. Most ranks have the ink of the card's face, which
@@ -1519,18 +1590,39 @@ function CardCorner({
   const shadowId = useId();
   const gradientId = useId();
 
-  // The rank moves right to make room for the suit's letter, which has a different width for each
-  // letter.
-  const letterRef = useRef<SVGTextElement>(null);
-  const [letterWidth, setLetterWidth] = useState(SUIT_LETTER_ESTIMATED_WIDTH);
+  // The suit's letter is sized to the height of the rank, and the rank moves right to make room for
+  // it. The browser measures the letter again when its font finishes loading.
+  const [letterBox, setLetterBox] = useState<SuitLetterBox>(
+    ESTIMATED_SUIT_LETTER_BOX,
+  );
   useLayoutEffect(() => {
-    const letter = letterRef.current;
-    if (letter !== null && typeof letter.getComputedTextLength === "function") {
-      setLetterWidth(letter.getComputedTextLength());
+    // The test environment has no fonts, so it cannot measure text.
+    if (suitLetter === undefined || !("fonts" in document)) {
+      return undefined;
     }
+    const letter = suitLetter;
+    let current = true;
+    function measure() {
+      const box = measureSuitLetter(letter);
+      if (current && box !== undefined) {
+        setLetterBox(box);
+      }
+    }
+    measure();
+    // If the font does not load, the letter keeps the measure of the fallback font.
+    document.fonts
+      .load(
+        `bold ${SUIT_LETTER_MEASURE_FONT_SIZE}px ${SUIT_LETTER_FONT_FAMILY}`,
+        letter,
+      )
+      .then(measure)
+      .catch(measure);
+    return () => {
+      current = false;
+    };
   }, [suitLetter]);
   const rankShift =
-    suitLetter === undefined ? 0 : letterWidth + SUIT_LETTER_GAP;
+    suitLetter === undefined ? 0 : letterBox.width + SUIT_LETTER_GAP;
   const corner = `translate(${RANK_CORNER_OFFSET.x} ${RANK_CORNER_OFFSET.y})`;
   const shiftedCorner = `translate(${RANK_CORNER_OFFSET.x + rankShift} ${RANK_CORNER_OFFSET.y})`;
   let fill: string | undefined;
@@ -1597,13 +1689,13 @@ function CardCorner({
       {suitLetter !== undefined && (
         <text
           {...strokeProps}
-          className={`${strokeProps.className} tw:font-black`}
+          className={`${strokeProps.className} tw:font-bold`}
           data-suit-letter
           dominantBaseline="alphabetic"
-          fontSize={SUIT_LETTER_FONT_SIZE}
-          ref={letterRef}
-          x={RANK_CORNER_OFFSET.x + RANK_SHAPE_BOX.left}
-          y={RANK_BOTTOM_Y}
+          fontFamily={SUIT_LETTER_FONT_FAMILY}
+          fontSize={letterBox.fontSize}
+          x={letterBox.x}
+          y={letterBox.y}
         >
           {suitLetter}
         </text>

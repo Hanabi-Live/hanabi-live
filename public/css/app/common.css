@@ -1,3 +1,11 @@
+/* The suit's letter on a card in color-blind mode, in the New UI. */
+@font-face {
+  font-family: "Kalam";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/public/webfonts/kalam-latin-700-normal.woff2") format("woff2");
+}
+
 /* source-sans-pro-300 - latin_greek_cyrillic */
 @font-face {
   font-family: "Source Sans Pro";
