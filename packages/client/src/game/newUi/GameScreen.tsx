@@ -82,7 +82,12 @@ import {
   getClueMarkers,
   getPreviewMarker,
 } from "./clueMarkers.ts";
-import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
+import {
+  useElementSize,
+  useEmpathyStyle,
+  useMediaQuery,
+  useNow,
+} from "./hooks.ts";
 import { newUiArrowChanged } from "./newUiSlice.ts";
 import {
   canDiscardNow,
@@ -141,6 +146,8 @@ export function GameScreen({
   readonly onSwitchToClassic: () => void;
 }): React.JSX.Element {
   useNow(CLOCK_TICK_MILLISECONDS);
+  // The cards draw what their holders know again when the style changes.
+  useEmpathyStyle();
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
   const connections = useAppSelector((root) => root.game.connections);
@@ -396,6 +403,17 @@ export function GameScreen({
   // While the player chooses a clue, its tokens show on the cards that it would touch, as the
   // classic screen shows arrows. They take the place of the last clue's tokens and rail.
   const previewing = clue !== undefined && menuTarget !== undefined;
+  // With the H-Group conventions setting, a token on a card that the viewer's note marks as chop
+  // moved has a gray ring, as on the classic screen.
+  const chopMoved = new Set<CardOrder>(
+    settings.hGroupConventions
+      ? state.notes.ourNotes
+          .map((note, order) =>
+            note.chopMoved ? (order as CardOrder) : undefined,
+          )
+          .filter((order) => order !== undefined)
+      : [],
+  );
   function getPreviewMarkers(): ReadonlyMap<CardOrder, CardClueMarker> {
     if (clue === undefined) {
       return new Map<CardOrder, CardClueMarker>();
@@ -412,6 +430,7 @@ export function GameScreen({
         {
           marker,
           touchedBefore: touchedBefore.has(order),
+          chopMoved: chopMoved.has(order),
         },
       ]),
     );
@@ -710,6 +729,7 @@ export function GameScreen({
                           shownClue,
                           visibleState.clues,
                           settings.colorblindMode,
+                          chopMoved,
                         )
                   }
                   clueMenu={
@@ -1079,15 +1099,17 @@ export function GameScreen({
           width={handCardWidth}
         >
           <CardFace
+            blank={heldView.blank}
             clued={heldView.clued}
             colorblindMode={settings.colorblindMode}
             critical={heldView.critical}
+            doubleDiscard={heldView.doubleDiscard}
             identityFromNote={heldView.identityFromNote}
             noteBorder={heldView.noteBorder}
             noteMark={heldView.noteMark}
-            possibleRanks={heldView.possibleRanks}
-            possibleSuitIndexes={heldView.possibleSuitIndexes}
+            pips={heldView.pips}
             rank={heldView.rank}
+            stackDirection={heldView.stackDirection}
             suitIndex={heldView.suitIndex}
             trash={heldView.trash}
             trashIcon={heldView.trashIcon}

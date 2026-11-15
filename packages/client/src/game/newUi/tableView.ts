@@ -10,6 +10,7 @@ import type {
   GameState,
   Options,
   Rank,
+  StackDirection,
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
@@ -26,6 +27,7 @@ import {
   isCardTouchedByClue,
   isHandLocked,
 } from "@hanabi-live/game";
+import { DEFAULT_EMPATHY_STYLE, EmpathyStyle } from "../empathyStyle.ts";
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
@@ -89,14 +91,63 @@ export interface CardView {
   readonly trashIcon: boolean;
 
   /**
-   * For a card that its holder cannot see: the suits and ranks that it can still be, as the card
-   * shows them. A list is empty when it would tell the holder nothing that the card face does not.
+   * For a card that its holder cannot see: what the clues and the other cards tell them about it.
+   * It is `undefined` when it would tell the holder nothing that the card face does not.
    */
-  readonly possibleSuitIndexes: readonly SuitIndex[];
-  readonly possibleRanks: readonly Rank[];
+  readonly pips: CardPipsView | undefined;
 
   /** Whether the viewer's note changes the suit or rank that the card face shows. */
   readonly identityFromNote: boolean;
+
+  /** Whether a "blank" note makes the card look like the back of a card, as in the deck. */
+  readonly blank: boolean;
+
+  /**
+   * Whether the card shows a question mark, because discarding it now would discard the second copy
+   * of a card that the team still needs (the H-Group's "double discard avoidance").
+   */
+  readonly doubleDiscard: boolean;
+
+  /** The direction of the play stack of the suit that the card face shows. */
+  readonly stackDirection: StackDirection | undefined;
+}
+
+/** A suit or a rank that a card can be, as a pip on the card. */
+interface PipView {
+  /**
+   * Whether the holder ruled it out because they see every copy of the cards that it would make,
+   * though the clues allow it. The card crosses it out.
+   */
+  readonly eliminated: boolean;
+
+  /** Whether a clue of this color or rank touched the card. */
+  readonly positive: boolean;
+}
+
+export interface SuitPipView extends PipView {
+  readonly suitIndex: SuitIndex;
+}
+
+export interface RankPipView extends PipView {
+  readonly rank: Rank;
+}
+
+/** A row of suits that can be the same ranks. */
+export interface PossibilityRowView {
+  readonly suits: readonly SuitPipView[];
+  readonly ranks: readonly RankPipView[];
+}
+
+/**
+ * What a card that its holder cannot see shows about it. The lists of suits and ranks are empty
+ * when the card face already shows that part. When the clues leave a set of cards that separate
+ * suits and ranks cannot show, such as "any red card, or a blue 1", the card shows rows instead:
+ * each row lists suits with the ranks that they can be.
+ */
+export interface CardPipsView {
+  readonly suits: readonly SuitPipView[];
+  readonly ranks: readonly RankPipView[];
+  readonly rows: readonly PossibilityRowView[] | undefined;
 }
 
 /**
@@ -129,6 +180,14 @@ interface CardViewOptions {
 
   /** "Real life mode" hides the hints that a physical game would not have. */
   readonly realLifeMode: boolean;
+
+  /** How the card shows what its holder knows. It is the default when it is left out. */
+  readonly empathyStyle?: EmpathyStyle;
+
+  /**
+   * Whether the viewer turned on the H-Group conventions setting, in a variant that is not hard.
+   */
+  readonly hGroupConventions?: boolean;
 }
 
 export function getCardView({
@@ -141,6 +200,8 @@ export function getCardView({
   empathyIncludesNotes = false,
   finished,
   realLifeMode,
+  empathyStyle = DEFAULT_EMPATHY_STYLE,
+  hGroupConventions = false,
 }: CardViewOptions): CardView {
   const identityOptions = {
     cardIdentity,
@@ -170,17 +231,17 @@ export function getCardView({
       ? CardStatus.NeedsToBePlayed
       : gameState.cardStatus[suitIndex][rank];
 
-  let possibleSuitIndexes: SuitIndex[] = [];
-  let possibleRanks: Rank[] = [];
-  if (empathy) {
-    const pips = getCardPipPresentation(variant, cardState, note, true, {
-      empathyIncludesNotes,
-    });
-    possibleSuitIndexes = getShownPips(pips.suitPips, suitIndex).map(
-      (pip) => pip.suitIndex as SuitIndex,
-    );
-    possibleRanks = getShownPips(pips.rankPips, rank).map((pip) => pip.rank);
-  }
+  // As on the classic screen, a card shows no pips in real life mode, nor when a "blank" note asks
+  // for the card to look like the deck.
+  const pips =
+    empathy && !realLifeMode && !blank
+      ? getPipsView(variant, cardState, note, {
+          empathyIncludesNotes,
+          empathyStyle,
+          suitIndex,
+          rank,
+        })
+      : undefined;
 
   const clued = isCardClued(cardState);
   const border = getCardBorderPresentation(cardState, note, finished);
@@ -190,6 +251,7 @@ export function getCardView({
   const markedTrash = noteMark === "trash";
   const trashIcon =
     !realLifeMode && !markedTrash && cardState.isKnownTrashFromEmpathy;
+  const critical = !realLifeMode && status === CardStatus.Critical;
 
   return {
     order: cardState.order,
@@ -197,7 +259,7 @@ export function getCardView({
     rank,
     clued: border.clued,
     noteBorder: getNoteBorder(border),
-    critical: !realLifeMode && status === CardStatus.Critical,
+    critical,
     trash:
       !realLifeMode
       // As on the classic screen, a card fades only for what it shows or for a note that marks it
@@ -213,30 +275,109 @@ export function getCardView({
       }),
     noteMark,
     trashIcon,
-    possibleSuitIndexes,
-    possibleRanks,
+    pips,
     identityFromNote: !blank && isCardIdentityFromNote(identityOptions),
+    blank,
+    // As on the classic screen, the question mark leaves out the cards that already show a reason
+    // to keep or discard them.
+    doubleDiscard:
+      hGroupConventions
+      && !realLifeMode
+      && cardState.inDoubleDiscard
+      && !critical
+      && !trashIcon
+      && !markedTrash
+      && !border.clued,
+    stackDirection:
+      suitIndex === undefined
+        ? undefined
+        : gameState.playStackDirections[suitIndex],
   };
 }
 
+/** Returns what a card shows about what its holder knows (see `CardPipsView`). */
+function getPipsView(
+  variant: Variant,
+  cardState: CardState,
+  note: CardNote,
+  {
+    empathyIncludesNotes,
+    empathyStyle,
+    suitIndex,
+    rank,
+  }: {
+    readonly empathyIncludesNotes: boolean;
+    readonly empathyStyle: EmpathyStyle;
+    readonly suitIndex: SuitIndex | undefined;
+    readonly rank: Rank | undefined;
+  },
+): CardPipsView | undefined {
+  const presentation = getCardPipPresentation(variant, cardState, note, true, {
+    rowPerSuit: empathyStyle === EmpathyStyle.RowPerSuit,
+    empathyIncludesNotes,
+  });
+  const suits =
+    suitIndex === undefined
+      ? getShownPips(presentation.suitPips).map((pip) => ({
+          ...toPipView(pip),
+          suitIndex: pip.suitIndex as SuitIndex,
+        }))
+      : [];
+  const ranks =
+    rank === undefined
+      ? getShownPips(presentation.rankPips).map((pip) => ({
+          ...toPipView(pip),
+          rank: pip.rank,
+        }))
+      : [];
+
+  // The rows need both the suit and the rank to be unknown, as on the classic screen.
+  const rows =
+    suitIndex === undefined
+    && rank === undefined
+    && empathyStyle !== EmpathyStyle.Pips
+      ? presentation.possibilityRows?.map((row) => ({
+          suits: row.suitPips.map((pip) => ({
+            ...toPipView(pip),
+            suitIndex: pip.suitIndex as SuitIndex,
+          })),
+          ranks: row.rankPips
+            .filter((pip) => pip.state !== PipState.Hidden)
+            .map((pip) => ({
+              ...toPipView(pip),
+              rank: pip.rank,
+            })),
+        }))
+      : undefined;
+
+  return rows === undefined && suits.length === 0 && ranks.length === 0
+    ? undefined
+    : {
+        suits,
+        ranks,
+        rows,
+      };
+}
+
 /**
- * The pips that a card shows: the ones that it can still be. One pip shows only when the holder
- * learned it by elimination, as on the classic screen. When the clues already say it, or when the
- * card face shows it, it tells the holder nothing new.
+ * The pips that a card shows: the ones that the clues allow, with the ones that the holder ruled
+ * out. One pip alone tells the holder nothing that the clues did not, so it does not show.
  */
 function getShownPips<T extends { readonly state: PipState }>(
   pips: readonly T[],
-  faceValue: unknown,
 ): readonly T[] {
-  const visible = pips.filter((pip) => pip.state === PipState.Visible);
-  if (visible.length > 1) {
-    return visible;
-  }
+  const shown = pips.filter((pip) => pip.state !== PipState.Hidden);
+  return shown.length > 1 ? shown : [];
+}
 
-  const fromClues = pips.filter((pip) => pip.state !== PipState.Hidden);
-  return faceValue === undefined && visible.length === 1 && fromClues.length > 1
-    ? visible
-    : [];
+function toPipView(pip: {
+  readonly state: PipState;
+  readonly positive: boolean;
+}): PipView {
+  return {
+    eliminated: pip.state === PipState.Eliminated,
+    positive: pip.positive,
+  };
 }
 
 function getNoteBorder(

@@ -81,6 +81,7 @@
   --color-finesse: var(--finesse-border);
   --color-discard-permission: var(--discard-permission-border);
   --color-critical: var(--critical);
+  --color-double-discard: var(--double-discard);
   --color-card-note: var(--card-note);
   --color-card-note-fold: var(--card-note-fold);
   --color-morph-option-border: var(--morph-option-border);

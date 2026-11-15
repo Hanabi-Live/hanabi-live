@@ -12,6 +12,7 @@ import { escapeHtml } from "../../utils.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
+  CARD_BACK_STYLE,
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
@@ -630,19 +631,6 @@ function getDeckEdges(cardsInDeck: number): number {
   return DECK_EDGES.find((entry) => cardsInDeck >= entry.minCards)?.edges ?? 0;
 }
 
-/**
- * The back of a card: dark ink with a faint diagonal lattice inside a thin frame, so that the deck
- * reads as a pile of face-down cards, not as one more slot on the table. Each card has a light
- * edge, so that the cards under the top one show as a stack.
- */
-const CARD_BACK_STYLE = {
-  backgroundColor: "var(--card-ink)",
-  backgroundImage: [
-    "repeating-linear-gradient(45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
-    "repeating-linear-gradient(-45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
-  ].join(", "),
-} as const;
-
 /** The back of one card, such as the last card of the deck while the player holds it. */
 export function CardBack({
   width,
@@ -816,8 +804,19 @@ function Deck({
     face = (
       <CardFace
         colorblindMode={colorblindMode}
-        possibleRanks={empathy.possibleRanks}
-        possibleSuitIndexes={empathy.possibleSuitIndexes}
+        pips={{
+          suits: empathy.possibleSuitIndexes.map((suitIndex) => ({
+            suitIndex,
+            eliminated: false,
+            positive: false,
+          })),
+          ranks: empathy.possibleRanks.map((rank) => ({
+            rank,
+            eliminated: false,
+            positive: false,
+          })),
+          rows: undefined,
+        }}
         rank={undefined}
         suitIndex={undefined}
         variant={variant}

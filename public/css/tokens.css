@@ -217,6 +217,8 @@
   --finesse-border: #00e5ff;
   --discard-permission-border: #a32626;
   --critical: #d7363c;
+  /* The badge of a card that the next discard could lose, from the H-Group conventions setting. */
+  --double-discard: #4fd8e8;
   /* A sticky note on a card that has a note: pale paper, and the darker back of its folded corner. */
   --card-note: #fff1a6;
   --card-note-fold: #e6cf5c;

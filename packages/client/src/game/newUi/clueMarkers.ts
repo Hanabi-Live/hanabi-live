@@ -160,12 +160,14 @@ export function getCardsTouchedBefore(
 
 /**
  * The markers for the cards that a clue touched. A card that an earlier clue touched too gets a dot
- * without a point, so that the cards that the clue touches for the first time stand out.
+ * without a point, so that the cards that the clue touches for the first time stand out. A card in
+ * `chopMoved` that the clue touches for the first time gets a gray ring (see `CardClueMarker`).
  */
 export function getClueMarkers(
   clue: StateClue | undefined,
   clues: readonly StateClue[],
   colorblindMode: boolean,
+  chopMoved: ReadonlySet<CardOrder> = new Set(),
 ): ReadonlyMap<CardOrder, CardClueMarker> {
   const markers = new Map<CardOrder, CardClueMarker>();
   if (clue === undefined) {
@@ -178,6 +180,7 @@ export function getClueMarkers(
     markers.set(order, {
       marker,
       touchedBefore: touchedBefore.has(order),
+      chopMoved: chopMoved.has(order),
     });
   }
   return markers;

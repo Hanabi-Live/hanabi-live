@@ -14,6 +14,7 @@ import {
   newRankClue,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
+import { EmpathyStyle } from "../empathyStyle.ts";
 import {
   BLANK_NOTE,
   getCardView,
@@ -147,19 +148,16 @@ describe("getCardView", () => {
     expect(view.rank).toBeUndefined();
   });
 
-  test("shows the one suit and rank that the holder learned by elimination", () => {
-    const view = getCardView({
+  /** The view of a card that its holder cannot see. */
+  function getEmpathyView(
+    state: Partial<typeof cardState>,
+    options: Partial<Parameters<typeof getCardView>[0]> = {},
+  ) {
+    return getCardView({
       gameState,
       cardState: {
         ...cardState,
-        // The clues say a red or yellow 3 or 4, but the holder sees all of them except a yellow 4.
-        possibleCardsFromClues: [
-          [0, 3],
-          [0, 4],
-          [1, 3],
-          [1, 4],
-        ],
-        possibleCardsForEmpathy: [[1, 4]],
+        ...state,
       },
       cardIdentity: red1,
       note: BLANK_NOTE,
@@ -167,13 +165,143 @@ describe("getCardView", () => {
       empathy: true,
       finished: false,
       realLifeMode: false,
+      ...options,
     });
+  }
+
+  // The clues say a red or yellow 3 or 4, but the holder sees all of them except a yellow 4.
+  const learnedByElimination = {
+    possibleCardsFromClues: [
+      [0, 3],
+      [0, 4],
+      [1, 3],
+      [1, 4],
+    ],
+    possibleCardsForEmpathy: [[1, 4]],
+  } as const satisfies Partial<typeof cardState>;
+
+  test("crosses out the suits and ranks that the holder ruled out", () => {
+    const view = getEmpathyView(learnedByElimination);
     expect(view).toMatchObject({
       suitIndex: undefined,
       rank: undefined,
-      possibleSuitIndexes: [1],
-      possibleRanks: [4],
+      pips: {
+        suits: [
+          {
+            suitIndex: 0,
+            eliminated: true,
+          },
+          {
+            suitIndex: 1,
+            eliminated: false,
+          },
+        ],
+        ranks: [
+          {
+            rank: 3,
+            eliminated: true,
+          },
+          {
+            rank: 4,
+            eliminated: false,
+          },
+        ],
+        rows: undefined,
+      },
     });
+  });
+
+  test("marks the suits and ranks that a clue touched", () => {
+    const view = getEmpathyView({
+      possibleCardsFromClues: [
+        [0, 3],
+        [1, 3],
+      ],
+      possibleCardsForEmpathy: [
+        [0, 3],
+        [1, 3],
+      ],
+      positiveRankClues: [3],
+    });
+    expect(view.pips).toMatchObject({
+      suits: [
+        {
+          suitIndex: 0,
+          positive: false,
+        },
+        {
+          suitIndex: 1,
+          positive: false,
+        },
+      ],
+      // The clue says the rank, so the face shows it.
+      ranks: [],
+    });
+  });
+
+  test("shows rows for cards that separate suits and ranks cannot show", () => {
+    // Any red card, or a yellow 1.
+    const possibleCards = [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [0, 5],
+      [1, 1],
+    ] as const;
+    const state = {
+      possibleCardsFromClues: possibleCards,
+      possibleCardsForEmpathy: possibleCards,
+    };
+    expect(getEmpathyView(state).pips?.rows).toMatchObject([
+      {
+        suits: [{ suitIndex: 0 }],
+        ranks: [1, 2, 3, 4, 5].map((rank) => ({ rank })),
+      },
+      {
+        suits: [{ suitIndex: 1 }],
+        ranks: [{ rank: 1 }],
+      },
+    ]);
+    expect(
+      getEmpathyView(state, { empathyStyle: EmpathyStyle.Pips }).pips?.rows,
+    ).toBeUndefined();
+  });
+
+  test("hides what the holder knows in real life mode and on a blank card", () => {
+    expect(
+      getEmpathyView(learnedByElimination, { realLifeMode: true }).pips,
+    ).toBeUndefined();
+
+    const blank = getEmpathyView(learnedByElimination, {
+      note: {
+        ...BLANK_NOTE,
+        blank: true,
+      },
+      empathyIncludesNotes: true,
+    });
+    expect(blank).toMatchObject({
+      blank: true,
+      pips: undefined,
+    });
+  });
+
+  test("shows the double discard mark only with the H-Group conventions", () => {
+    const inDoubleDiscard = { inDoubleDiscard: true };
+    expect(getEmpathyView(inDoubleDiscard).doubleDiscard).toBe(false);
+    expect(
+      getEmpathyView(inDoubleDiscard, { hGroupConventions: true })
+        .doubleDiscard,
+    ).toBe(true);
+    expect(
+      getEmpathyView(
+        {
+          ...inDoubleDiscard,
+          numPositiveClues: 1,
+        },
+        { hGroupConventions: true },
+      ).doubleDiscard,
+    ).toBe(false);
   });
 
   test("leaves out the one suit and rank that the clues say", () => {
@@ -191,10 +319,7 @@ describe("getCardView", () => {
       finished: false,
       realLifeMode: false,
     });
-    expect(view).toMatchObject({
-      possibleSuitIndexes: [],
-      possibleRanks: [],
-    });
+    expect(view.pips).toBeUndefined();
   });
 
   test("shows the trash badge outside of the empathy view", () => {
