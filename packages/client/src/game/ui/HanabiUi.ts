@@ -4,13 +4,11 @@
 import { Screen } from "../../lobby/types/Screen.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
-import { subscribeToEmpathyStyle } from "../empathyStyle.ts";
 import * as gameSession from "../gameSession.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
 import { drawUi } from "./drawUi.ts";
-import { redrawCardPips } from "./empathyStyle.ts";
 import * as keyboard from "./keyboard.ts";
 import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
@@ -22,7 +20,6 @@ import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 export class HanabiUi {
   private readonly resizeHandler: () => void;
   private readonly themeChangeHandler: () => void;
-  private readonly unsubscribeFromEmpathyStyle: () => void;
   private resizeRequestAnimationFrame: number | undefined = undefined;
   private resizeFrame = 0;
   private lastResizeEventFrame = 0;
@@ -92,8 +89,6 @@ export class HanabiUi {
       this.rebuildGameUi();
     };
     document.addEventListener("theme_change", this.themeChangeHandler);
-
-    this.unsubscribeFromEmpathyStyle = subscribeToEmpathyStyle(redrawCardPips);
 
     // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the reply to "gameInitLoad" from the server in order to know how many players
@@ -239,7 +234,6 @@ export class HanabiUi {
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
     document.removeEventListener("theme_change", this.themeChangeHandler);
-    this.unsubscribeFromEmpathyStyle();
     if (this.resizeRequestAnimationFrame !== undefined) {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = undefined;

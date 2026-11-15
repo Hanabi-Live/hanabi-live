@@ -36,7 +36,6 @@ import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
-import { EmpathyStyle, getEmpathyStyle } from "../empathyStyle.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import {
   checkNoteImpossibility,
@@ -817,16 +816,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // -----------
 
   updatePips(): void {
-    const empathyStyle = getEmpathyStyle();
     const presentation = getCardPipPresentation(
       this.variant,
       this.state,
       this.shownNote,
       this.showsEmpathy,
-      {
-        rowPerSuit: empathyStyle === EmpathyStyle.RowPerSuit,
-        empathyIncludesNotes: this.empathyIncludesNotes,
-      },
+      { empathyIncludesNotes: this.empathyIncludesNotes },
     );
 
     for (const suitPip of presentation.suitPips) {
@@ -846,10 +841,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    this.possibilityRowsToDraw =
-      empathyStyle === EmpathyStyle.Pips
-        ? undefined
-        : presentation.possibilityRows;
+    this.possibilityRowsToDraw = presentation.possibilityRows;
     this.updatePipVisibility();
   }
 
