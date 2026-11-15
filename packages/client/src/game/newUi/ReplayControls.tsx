@@ -444,13 +444,16 @@ function OwnHypotheticalControls({
         </button>
         {/* The hint takes only the room that is left, so that it never pushes the other controls
             onto a row of their own. A hint that does not fit is cut off, and its tooltip has all
-            of it. On a narrow window, it wraps onto a second line in smaller text instead. */}
-        <p
-          className="tw:m-0 tw:ml-2 tw:w-0 tw:grow tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal"
-          ref={tooltipRef(hint)}
-        >
-          {hint}
-        </p>
+            of it. On a narrow window, it wraps onto a second line in smaller text instead. The
+            text is only as wide as it needs, so that its tooltip is centered on it. */}
+        <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
+          <p
+            className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal"
+            ref={tooltipRef(hint)}
+          >
+            {hint}
+          </p>
+        </div>
       </div>
       <div className={RIGHT_CLASS}>
         <IconToggle
