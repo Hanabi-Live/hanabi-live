@@ -18,19 +18,24 @@ const MENU_CLASS =
   "tw:absolute tw:bottom-full tw:z-30 tw:mb-3 tw:flex tw:flex-col tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
 
 /**
- * The pointer under the menu, which points down at the middle of the button. It is a triangle in
- * the color of the menu's outline, and its top touches the menu.
+ * The pointer under the menu, which points down at the middle of the button. Its top 2px are inside
+ * the menu.
  */
 const POINTER_CLASS =
-  "tw:pointer-events-none tw:absolute tw:bottom-full tw:left-1/2 tw:z-30 tw:mb-0.5 tw:h-2.5 tw:w-5 tw:-translate-x-1/2 tw:bg-game-line tw:[clip-path:polygon(0_0,100%_0,50%_100%)]";
+  "tw:pointer-events-none tw:absolute tw:bottom-full tw:left-1/2 tw:z-30 tw:mb-0.5 tw:h-3 tw:w-5 tw:-translate-x-1/2";
+
+/** The outline of the pointer: a triangle in the color of the menu's outline, under the menu. */
+const POINTER_OUTLINE_CLASS =
+  "tw:absolute tw:inset-x-0 tw:bottom-0 tw:h-2.5 tw:bg-game-line tw:[clip-path:polygon(0_0,100%_0,50%_100%)]";
 
 /**
- * The inside of the pointer, in the color of the menu. It is smaller by the width of the outline,
- * so that the outline goes along the pointer's sides. Its top covers the menu's outline where they
- * meet, so that one outline goes around both shapes.
+ * The inside of the pointer, in the color of the menu. It is smaller than the outline by the width
+ * of the outline, so that the outline goes along the pointer's sides. It covers the menu's outline
+ * where they meet, so that one outline goes around both shapes. It reaches up into the menu,
+ * because the screen's scale can round the menu's outline to a pixel above the pointer's top.
  */
 const POINTER_INSIDE_CLASS =
-  "tw:size-full tw:bg-game-panel tw:[clip-path:polygon(1.4px_0,calc(100%_-_1.4px)_0,50%_calc(100%_-_1.4px))]";
+  "tw:absolute tw:inset-0 tw:bg-game-panel tw:[clip-path:polygon(1.4px_0,calc(100%_-_1.4px)_0,calc(100%_-_1.4px)_2px,50%_calc(100%_-_1.4px),1.4px_2px)]";
 
 export function Menu({
   align,
@@ -52,6 +57,7 @@ export function Menu({
         {children}
       </div>
       <div aria-hidden="true" className={POINTER_CLASS}>
+        <div className={POINTER_OUTLINE_CLASS} />
         <div className={POINTER_INSIDE_CLASS} />
       </div>
     </>
