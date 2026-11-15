@@ -143,6 +143,9 @@ const SCORE_SIGNAL_ANIMATION_ID = "score-signal";
  */
 const signalFireworks = new Set<Fireworks>();
 
+/** The fireworks of the perfect score finale, which a step in a replay ends. */
+const finaleFireworks = new Set<Fireworks>();
+
 /** The center of an element, in the window's pixels. */
 function center(element: Element): Point {
   return rectCenter(element.getBoundingClientRect());
@@ -296,6 +299,17 @@ export function finishScoreSignals(): void {
     }
   }
   for (const fireworks of signalFireworks) {
+    fireworks.stop();
+  }
+}
+
+/**
+ * Ends the rockets and bursts of the perfect score finale. A step in a replay calls this, since the
+ * play is no longer shown. (The glows and the pop of the score are play effects, which the step
+ * also stops.)
+ */
+export function stopFinale(): void {
+  for (const fireworks of finaleFireworks) {
     fireworks.stop();
   }
 }
@@ -461,7 +475,10 @@ export function animateFinale(
   }
   popScore(root, boom, unit);
 
-  fireworks.play(root);
+  finaleFireworks.add(fireworks);
+  fireworks.play(root, () => {
+    finaleFireworks.delete(fireworks);
+  });
 }
 
 /**

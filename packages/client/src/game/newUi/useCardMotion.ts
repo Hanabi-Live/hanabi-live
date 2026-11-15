@@ -25,6 +25,7 @@ import {
   animateMaxScoreDrop,
   animateStackComplete,
   finishScoreSignals,
+  stopFinale,
 } from "./scoreMotion.ts";
 import { getScreenScaleForWindow, setScreenScale } from "./screenScale.ts";
 import { getClueForTurn } from "./screenView.ts";
@@ -262,6 +263,7 @@ export function useCardMotion(
       // them.
       if (state.replay.segment !== undefined) {
         stopPlayEffects();
+        stopFinale();
       }
     }
     const positions = measureCards(root);
