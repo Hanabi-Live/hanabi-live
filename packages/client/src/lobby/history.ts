@@ -81,8 +81,8 @@ export function showOtherScores(seed: string): void {
 export function showMoreOtherScores(): void {
   const shown = store.getState().history.otherScores;
   if (
-    store.getState().session.screen !== Screen.HistoryOtherScores
-    || shown === undefined
+    shown === undefined
+    || store.getState().session.screen !== Screen.HistoryOtherScores
     || shown.loading
   ) {
     return;

@@ -73,10 +73,10 @@ export function getClueText(
     metadata.characterAssignments,
   );
   if (
-    action.clue.type === undefined
+    characterName === "Quacker"
+    || action.clue.type === undefined
     || variant.cowAndPig
     || variant.duck
-    || characterName === "Quacker"
   ) {
     const actionName = getClueActionName(action.clue, variant, characterName);
     const targetSuffix = target.endsWith("s") ? "'" : "'s";
@@ -127,7 +127,7 @@ function getClueActionName(
     }
   }
 
-  if (variant.duck || characterName === "Quacker") {
+  if (characterName === "Quacker" || variant.duck) {
     return "quacks";
   }
 
@@ -231,7 +231,7 @@ export function getPlayText(
   const suffix = touched ? "" : " (blind)";
   const hypoPrefix = perspective === "hypothetical" ? HYPO_PREFIX : "";
   const playText =
-    action.type === "misplay" && !cardIsHidden ? "fails to play" : "plays";
+    !cardIsHidden && action.type === "misplay" ? "fails to play" : "plays";
 
   return `${hypoPrefix}${playerName} ${playText} ${cardName} from ${location}${suffix}`;
 }

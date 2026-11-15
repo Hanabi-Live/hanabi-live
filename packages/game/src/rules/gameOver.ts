@@ -48,14 +48,14 @@ export function isGameOver(
 
   // Everyone gets one more turn after the final card is drawn. The game also ends early when none
   // of the players left to take their final turn can play a card.
-  if (options.allOrNothing || endTurnNum === undefined) {
+  if (endTurnNum === undefined || options.allOrNothing) {
     return false;
   }
 
   let playerIndex: typeof currentPlayerIndex | undefined = currentPlayerIndex;
   for (
     let turn = turnNum;
-    turn < endTurnNum && playerIndex !== undefined;
+    playerIndex !== undefined && turn < endTurnNum;
     turn++
   ) {
     const hand = gameState.hands[playerIndex] ?? [];

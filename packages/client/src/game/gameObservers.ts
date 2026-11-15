@@ -111,7 +111,7 @@ function onSharedSegmentChanged(
     return;
   }
 
-  if (data.amLeader === true && previousData !== undefined) {
+  if (previousData !== undefined && data.amLeader === true) {
     globals.connection.send("replayAction", {
       tableId: globals.joinedTableId,
       action: {

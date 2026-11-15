@@ -233,7 +233,7 @@ function getShownPips<T extends { readonly state: PipState }>(
   }
 
   const fromClues = pips.filter((pip) => pip.state !== PipState.Hidden);
-  return visible.length === 1 && fromClues.length > 1 && faceValue === undefined
+  return faceValue === undefined && visible.length === 1 && fromClues.length > 1
     ? visible
     : [];
 }

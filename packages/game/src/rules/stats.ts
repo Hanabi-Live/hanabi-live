@@ -176,10 +176,10 @@ export function getCardsGotten(
       // A card is considered to be gotten if it is already played (and misplays count as played for
       // the purposes of "Throw It in a Hole" variants).
       cardState.location === "playStack"
-      || (cardState.location === "discard"
+      || (perspective === "seat"
+        && cardState.location === "discard"
         && cardState.isMisplayed
-        && variant.throwItInAHole
-        && perspective === "seat")
+        && variant.throwItInAHole)
       // Clued cards in player's hands are considered to be gotten, since they will eventually be
       // played from Good Touch Principle (unless the card is globally known to be trash).
       || (isCardInPlayerHand(cardState)

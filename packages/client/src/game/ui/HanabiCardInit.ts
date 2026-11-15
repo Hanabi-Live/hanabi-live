@@ -735,7 +735,7 @@ function drawPossibilityRows(
 
     for (const [i, suitPip] of row.suitPips.entries()) {
       const center = suitCenters[i];
-      if (suitPip.state === PipState.Eliminated && center !== undefined) {
+      if (center !== undefined && suitPip.state === PipState.Eliminated) {
         drawCenteredX(
           ctx,
           center,

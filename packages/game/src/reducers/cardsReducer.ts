@@ -185,7 +185,7 @@ export function cardsReducer(
         variant.throwItInAHole
         && (action.type === "play" || action.type === "misplay");
       const revealedToPlayer =
-        action.identity === undefined || goesIntoHole
+        goesIntoHole || action.identity === undefined
           ? card.revealedToPlayer
           : newArray(MAX_PLAYERS, true);
 
@@ -299,7 +299,7 @@ function cardIdentityRevealedToPlayer(
       playerIndex,
       characterAssignments,
     );
-    if (playerIndex !== card.location && characterName === "Slow-Witted") {
+    if (characterName === "Slow-Witted" && playerIndex !== card.location) {
       revealedToPlayer.push(true);
     } else {
       const previouslyRevealed = card.revealedToPlayer[playerIndex] ?? false;

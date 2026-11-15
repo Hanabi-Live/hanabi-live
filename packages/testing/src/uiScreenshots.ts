@@ -316,7 +316,7 @@ async function waitForAnimations({
       );
     const fireworks = document.querySelector("body > canvas") !== null;
     const remaining = deadline - performance.now();
-    if ((running.length === 0 && !fireworks) || remaining <= 0) {
+    if ((!fireworks && running.length === 0) || remaining <= 0) {
       return;
     }
     await Promise.race([

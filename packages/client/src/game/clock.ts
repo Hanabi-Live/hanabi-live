@@ -116,9 +116,9 @@ function tick() {
   lastTickMs = now;
   const state = store.getState().game.current;
   if (
-    elapsedTime < 0
-    || activePlayerIndex === undefined
+    activePlayerIndex === undefined
     || state === undefined
+    || elapsedTime < 0
   ) {
     return;
   }

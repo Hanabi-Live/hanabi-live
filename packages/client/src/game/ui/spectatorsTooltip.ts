@@ -30,7 +30,7 @@ export function getSpectatorsTooltip(
       nameEntry += name;
     }
 
-    if (spectator.shadowingPlayerIndex !== undefined && !finished) {
+    if (!finished && spectator.shadowingPlayerIndex !== undefined) {
       const playerName =
         globals.metadata.playerNames[spectator.shadowingPlayerIndex];
       assertDefined(

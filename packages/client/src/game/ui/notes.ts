@@ -139,7 +139,7 @@ export function set(order: CardOrder, text: string): void {
   gameSession.setLastNote(text);
 
   // Send the note to the server.
-  if (!globals.state.finished && text !== oldNote) {
+  if (text !== oldNote && !globals.state.finished) {
     lobbyGlobals.connection.send("note", {
       tableId: lobbyGlobals.joinedTableId,
       order,

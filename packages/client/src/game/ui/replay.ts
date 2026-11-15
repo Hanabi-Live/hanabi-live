@@ -114,8 +114,8 @@ export function goToSegment(
   // will set "force" equal to true.) Spectators can leave the leader's hypothetical by breaking
   // free from the shared segments.
   if (
-    globals.state.replay.hypothetical !== undefined
-    && !force
+    !force
+    && globals.state.replay.hypothetical !== undefined
     && !(breakFree && isSpectatingHypothetical())
   ) {
     return;

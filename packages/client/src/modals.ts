@@ -55,7 +55,7 @@ export function init(): void {
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || currentModal === undefined) {
+    if (currentModal === undefined || event.key !== "Escape") {
       return;
     }
 
@@ -72,7 +72,7 @@ export function init(): void {
   });
   // The browser can close the dialog without a "cancel" event that we can stop.
   modalDialog.addEventListener("close", () => {
-    if (!modalDialog.open && currentModal !== undefined) {
+    if (currentModal !== undefined && !modalDialog.open) {
       if (allowCloseModal) {
         closeModals();
       } else {

@@ -145,8 +145,8 @@ export function hide(): void {
     ),
   );
   if (
-    store.getState().session.screen !== Screen.Lobby
-    && historyHash !== ""
+    historyHash !== ""
+    && store.getState().session.screen !== Screen.Lobby
     && globalThis.location.pathname === PATH.LOBBY
   ) {
     setBrowserAddressBarPath(PATH.LOBBY, historyHash);

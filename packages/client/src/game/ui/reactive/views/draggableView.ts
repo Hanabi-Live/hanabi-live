@@ -22,15 +22,15 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
   );
 
   return (
-    // Spectators and replays cannot drag cards.
-    state.playing
+    // Speedrunning uses clicks instead of dragging.
+    !speedrunFeatures
+      && !options.speedrun
+      // Spectators and replays cannot drag cards.
+      && state.playing
       // Our cards can only be dragged on our turn, unless pre-playing is enabled.
       && (ourTurn || preplay)
       // A queued move must be canceled before dragging another card.
       && state.premove === undefined
-      // Speedrunning uses clicks instead of dragging.
-      && !options.speedrun
-      && !speedrunFeatures
       ? ourPlayerIndex
       : undefined
   );

@@ -65,9 +65,9 @@ function show() {
   const msgClue = clueToMsgClue(clue);
   if (
     visibleState === undefined
-    || visibleState.turn.currentPlayerIndex === undefined
     || cardLayout === undefined
     || msgClue === undefined
+    || visibleState.turn.currentPlayerIndex === undefined
   ) {
     return;
   }

@@ -76,7 +76,7 @@ function statsReducerFunction(
     case "misplay": {
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (!variant.throwItInAHole || perspective !== "seat") {
+      if (perspective !== "seat" || !variant.throwItInAHole) {
         statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
@@ -135,7 +135,7 @@ function statsReducerFunction(
 
   // Handle pace calculation.
   const score =
-    variant.throwItInAHole && perspective === "seat"
+    perspective === "seat" && variant.throwItInAHole
       ? statsState.numAttemptedCardsPlayed
       : gameState.score;
   statsState.pace = getPace(

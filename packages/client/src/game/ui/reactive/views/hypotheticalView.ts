@@ -130,7 +130,7 @@ export function onStatesLengthChanged(): void {
     button.setEnabled(enabled);
 
     // In 2-player games, default the clue recipient button to the only other player available.
-    if (globals.options.numPlayers === MIN_PLAYERS && enabled) {
+    if (enabled && globals.options.numPlayers === MIN_PLAYERS) {
       button.setPressed(true);
     }
   }

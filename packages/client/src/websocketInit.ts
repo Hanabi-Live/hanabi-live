@@ -109,7 +109,7 @@ function scheduleReconnect(immediate = false) {
 }
 
 async function attemptReconnect() {
-  if (!recovering || stopped || !canRetryNow() || cookieProbeInFlight) {
+  if (!recovering || stopped || cookieProbeInFlight || !canRetryNow()) {
     return;
   }
   cookieProbeInFlight = true;
@@ -444,7 +444,7 @@ function gameCallback<Command extends ServerEvent>(
     ) {
       return;
     }
-    if (gameSession.isLoading() && commandName !== "gameState") {
+    if (commandName !== "gameState" && gameSession.isLoading()) {
       return;
     }
     commandFunction(data);

@@ -495,7 +495,7 @@ export function ReplayBar({
   const { visibleState, replay: replayState, finished } = state;
   if (
     visibleState === undefined
-    || (replayState.segment === undefined && !finished)
+    || (!finished && replayState.segment === undefined)
   ) {
     return undefined;
   }

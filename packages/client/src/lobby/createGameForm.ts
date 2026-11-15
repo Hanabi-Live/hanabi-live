@@ -185,7 +185,7 @@ function getReplayGameIdError(form: CreateGameForm): string | undefined {
 
 function getReplayTurnError(form: CreateGameForm): string | undefined {
   const text = form.replayTurn.trim();
-  return !isReplaying(form) || text === "" || isPositiveInteger(text)
+  return text === "" || !isReplaying(form) || isPositiveInteger(text)
     ? undefined
     : "The turn must be a positive number.";
 }

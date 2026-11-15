@@ -127,7 +127,7 @@ export function hypotheticalStateReducer(
     || action.type === "back";
   if (
     !showsOtherIdentities
-    && !(newState.deducedFromShownIdentities && shownIdentitiesChanged)
+    && !(shownIdentitiesChanged && newState.deducedFromShownIdentities)
   ) {
     return newState;
   }

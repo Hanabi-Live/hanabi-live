@@ -55,7 +55,6 @@ export const hanabiConfigBase = defineConfig(
       "unicorn/prefer-set-methods": "off",
 
       // Keep explicit branches in the game rules and event handlers.
-      "unicorn/prefer-simple-condition-first": "off",
       "unicorn/prefer-ternary": "off",
 
       // Preserve compatibility with browsers without the newest encoding APIs.

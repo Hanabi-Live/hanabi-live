@@ -648,7 +648,7 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   // A private message (PM) or private notice outside of a table has no room, so we display it on
   // the chat window that the user currently has open.
   const isPm = data.tableId === undefined && chatRecipient(data) !== undefined;
-  if (data.tableId === undefined && !isPm) {
+  if (!isPm && data.tableId === undefined) {
     return "lobby";
   }
 

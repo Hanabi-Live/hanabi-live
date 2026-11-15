@@ -43,7 +43,7 @@ function getMoveEffects(
   const earlierStrikes = new Set(before.strikes.map((strike) => strike.order));
   for (const [strikeIndex, strike] of after.strikes.entries()) {
     const suitIndex = after.deck[strike.order]?.suitIndex;
-    if (earlierStrikes.has(strike.order) || suitIndex === undefined) {
+    if (suitIndex === undefined || earlierStrikes.has(strike.order)) {
       continue;
     }
     misplays.set(strike.order.toString(), {
@@ -243,7 +243,7 @@ export function useCardMotion(
     // newest places. It never stops the score's animations, such as the finale.
     const endsGame = state.finished && !previous.finished;
     const move =
-      previous.move !== undefined && endsGame && areCardsMoving()
+      endsGame && previous.move !== undefined && areCardsMoving()
         ? previous.move
         : {
             startPositions,

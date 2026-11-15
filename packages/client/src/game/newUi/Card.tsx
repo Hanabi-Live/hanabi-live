@@ -939,7 +939,7 @@ function getFaceColors(
   // A prism card is tinted with the color that touches it, which depends on its rank. A card of
   // unknown rank uses the suit color.
   const tintSource =
-    suit.prism && rank !== undefined
+    rank !== undefined && suit.prism
       ? getColorForPrismCard(variant, rank)
       : suit;
   const tint = colorblindMode ? tintSource.fillColorblind : tintSource.fill;

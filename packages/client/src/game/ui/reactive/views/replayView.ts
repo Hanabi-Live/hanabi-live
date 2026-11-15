@@ -112,9 +112,9 @@ export function onSharedSegmentChanged(
   // "gameObservers.ts" sends the leader's turn and takes the spectators to it. When the leader
   // moves, the spectators see which way.
   if (
-    data.useSharedSegments
+    previousData !== undefined
+    && data.useSharedSegments
     && data.amLeader !== true
-    && previousData !== undefined
     && previousData.sharedSegment !== undefined
     && data.useSharedSegments === previousData.useSharedSegments
   ) {

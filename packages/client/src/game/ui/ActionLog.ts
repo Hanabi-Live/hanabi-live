@@ -97,7 +97,7 @@ export class ActionLog extends Konva.Group {
       for (const row of [0, this.maxLines + 1]) {
         const oldRow = row + shift;
         const oldText = this.texts[oldRow];
-        if (this.isVisibleRow(oldRow) && oldText !== undefined) {
+        if (oldText !== undefined && this.isVisibleRow(oldRow)) {
           texts[row] = oldText;
         }
       }

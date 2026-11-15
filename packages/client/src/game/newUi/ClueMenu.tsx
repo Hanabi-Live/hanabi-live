@@ -119,8 +119,8 @@ export function ClueMenu({
       const { target } = event;
       const menu = ref.current;
       if (
-        target instanceof Node
-        && menu !== null
+        menu !== null
+        && target instanceof Node
         && !menu.contains(target)
         && !(target instanceof Element && target.closest("[data-name-chip]"))
       ) {

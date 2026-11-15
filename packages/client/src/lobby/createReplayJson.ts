@@ -34,9 +34,9 @@ const CLUE_REGEX =
 export function createJsonFromReplay(room: string): void {
   const { segment } = currentState().replay;
   if (
-    store.getState().game.current === undefined
+    segment === undefined
+    || store.getState().game.current === undefined
     || !currentState().finished
-    || segment === undefined
   ) {
     sendSelfPmFromServer(
       [

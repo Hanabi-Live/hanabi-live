@@ -599,7 +599,7 @@ function throwItInAHolePlayedOrMisplayed(
   variant: Variant,
   perspective: Perspective,
 ) {
-  if (!variant.throwItInAHole || perspective !== "seat") {
+  if (perspective !== "seat" || !variant.throwItInAHole) {
     return false;
   }
 

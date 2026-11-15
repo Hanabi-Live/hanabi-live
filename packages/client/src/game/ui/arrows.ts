@@ -85,7 +85,7 @@ function getClueArrowColor(
   // least one positive clue on it already, it will be retouched by the next clue.
   if (
     element.state.numPositiveClues >= 2
-    || (element.state.numPositiveClues >= 1 && preview)
+    || (preview && element.state.numPositiveClues >= 1)
   ) {
     return ARROW_COLOR.RETOUCHED;
   }
@@ -295,9 +295,9 @@ export function set(
   }
   if (
     immediate
+    || giverPlayerIndex === undefined
     || globals.animateFast
     || globals.isResizing
-    || giverPlayerIndex === undefined
   ) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);

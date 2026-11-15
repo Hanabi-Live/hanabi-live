@@ -90,7 +90,7 @@ async function signIn(
     .getSetCookie()
     .map((header) => header.split(";", 1)[0])
     .join("; ");
-  if (typeof body.userId !== "number" || cookie === "") {
+  if (cookie === "" || typeof body.userId !== "number") {
     fail("Signing in did not return a user ID and a session cookie.");
   }
   return {

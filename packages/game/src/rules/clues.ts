@@ -60,7 +60,7 @@ export function getClueName(
     }
   }
 
-  if (clue.type === undefined || variant.duck || characterName === "Quacker") {
+  if (characterName === "Quacker" || clue.type === undefined || variant.duck) {
     return "Quack";
   }
 

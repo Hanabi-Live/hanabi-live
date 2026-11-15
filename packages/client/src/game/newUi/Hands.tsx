@@ -974,7 +974,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
       className="tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center"
       onPointerDown={(event) => {
         const order = getCardOrderAt(event.target);
-        if (event.button === 0 && order !== undefined) {
+        if (order !== undefined && event.button === 0) {
           props.onPressCard(order);
         }
       }}

@@ -142,9 +142,9 @@ function setCurrentPlayerTooltip() {
   // This tooltip is disabled in non-timed games.
   const turnTime = clock.getTurnTime();
   if (
-    (globals.options.timeControl === undefined
+    turnTime === undefined
+    || (globals.options.timeControl === undefined
       && !store.getState().session.settings.showTimerInUntimed)
-    || turnTime === undefined
   ) {
     return;
   }

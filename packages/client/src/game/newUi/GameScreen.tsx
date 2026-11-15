@@ -474,7 +474,7 @@ export function GameScreen({
   // show the times, so the turns left never go below 0.
   const { endTurnNum } = visibleState.turn;
   const turnsLeft =
-    options.allOrNothing || endTurnNum === undefined
+    endTurnNum === undefined || options.allOrNothing
       ? undefined
       : Math.max(endTurnNum - visibleState.turn.turnNum, 0);
 

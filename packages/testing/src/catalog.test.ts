@@ -25,7 +25,7 @@ function asServer(value: unknown, server: unknown): unknown {
       ]),
     );
   }
-  if (isRecord(value) && typeof server === "string") {
+  if (typeof server === "string" && isRecord(value)) {
     return value["name"];
   }
   // eslint-disable-next-line unicorn/no-null -- The server writes absent values as JSON null.

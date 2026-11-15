@@ -62,9 +62,9 @@ lobbyCommands.set("friends", (data) => {
   // users that happen to be our friend will be shown in the correct color.
   const state = store.getState().game.current;
   if (
-    store.getState().session.screen === Screen.Game
+    state !== undefined
+    && store.getState().session.screen === Screen.Game
     && globals.ui !== undefined
-    && state !== undefined
   ) {
     spectatorsView.onSpectatorsChanged({
       spectators: state.spectators,

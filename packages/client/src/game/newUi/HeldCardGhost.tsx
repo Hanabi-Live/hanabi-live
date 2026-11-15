@@ -324,8 +324,8 @@ export function HeldCardGhost({
       draw(sim);
 
       if (
-        current.phase === "return"
-        && !returned
+        !returned
+        && current.phase === "return"
         && Math.hypot(sim.x.x - targetX, sim.y.x - targetY)
           < RETURN_DISTANCE_PIXELS
         && Math.hypot(sim.x.v, sim.y.v) < RETURN_SPEED_PIXELS

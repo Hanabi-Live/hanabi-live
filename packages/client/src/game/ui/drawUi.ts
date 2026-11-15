@@ -1278,7 +1278,7 @@ function drawBottomLeftButtons() {
     const { shared } = globals.state.replay;
     const everyoneWilling =
       shared !== undefined && restart.declinedPlayers(shared).length === 0;
-    if (globals.options.speedrun && everyoneWilling) {
+    if (everyoneWilling && globals.options.speedrun) {
       restart.request(true);
     } else {
       globals.elements.restartArea?.visible(true);

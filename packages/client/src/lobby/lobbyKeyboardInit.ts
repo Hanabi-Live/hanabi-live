@@ -35,8 +35,8 @@ export function lobbyKeyboardInit(): void {
         '.lobby-page button[type="submit"]',
       );
       if (
-        event.which === KeyCode.KEY_RETURN
-        && submitButton !== null
+        submitButton !== null
+        && event.which === KeyCode.KEY_RETURN
         && !(
           document.activeElement instanceof HTMLButtonElement
           || document.activeElement instanceof HTMLAnchorElement

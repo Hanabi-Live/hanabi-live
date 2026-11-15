@@ -41,7 +41,7 @@ export async function httpError(
   const body = text.trim();
   let detail = body;
   const contentType = response.headers.get("content-type") ?? "";
-  if (contentType.includes("application/json") && body !== "") {
+  if (body !== "" && contentType.includes("application/json")) {
     try {
       const parsed = noticeSchema.safeParse(JSON.parse(body));
       if (parsed.success) {

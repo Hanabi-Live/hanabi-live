@@ -181,8 +181,8 @@ export function onChanged(
   );
 
   if (
-    globals.animateFast
-    || previousData === undefined
+    previousData === undefined
+    || globals.animateFast
     || !previousData.visible
   ) {
     // Immediately snap the arrow in position and do not tween if:

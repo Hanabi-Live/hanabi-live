@@ -49,7 +49,9 @@ export function onNewSoundEffect(
   );
 
   if (
-    (isFirstLoad && !startSound)
+    // Do not play sounds if the user does not have sound effects enabled.
+    soundMove === "none"
+    || (isFirstLoad && !startSound)
     // Only make a sound when the game starts or when it is a new player's turn.
     || data.gameState.turn.currentPlayerIndex
       === previousData?.gameState.turn.currentPlayerIndex
@@ -58,9 +60,7 @@ export function onNewSoundEffect(
     || state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.
-    || (!(state.playing && ourTurn) && soundMove === "onlyOwn")
-    // Do not play sounds if the user does not have sound effects enabled.
-    || soundMove === "none"
+    || (soundMove === "onlyOwn" && !(ourTurn && state.playing))
   ) {
     return;
   }
@@ -108,14 +108,14 @@ function getAdjustedSoundType(
   const standardSoundType = getStandardSoundType(ourTurn);
 
   return (
-    // Only play certain sound effects for people in the H-Group.
-    (soundType === SoundType.OrderChopMove
-      || soundType === SoundType.DiscardClued
-      || soundType === SoundType.DoubleDiscard
-      || soundType === SoundType.DoubleDiscardCause)
+    // Disable special sounds in "Throw It in a Hole" variants because they leak information.
+    !throwItInAHole
+      // Only play certain sound effects for people in the H-Group.
+      && (soundType === SoundType.OrderChopMove
+        || soundType === SoundType.DiscardClued
+        || soundType === SoundType.DoubleDiscard
+        || soundType === SoundType.DoubleDiscardCause)
       && !store.getState().session.settings.hGroupConventions
-      // Disable special sounds in "Throw It in a Hole" variants because they leak information.
-      && !throwItInAHole
       ? standardSoundType
       : soundType
   );

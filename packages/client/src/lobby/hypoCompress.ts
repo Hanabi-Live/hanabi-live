@@ -129,8 +129,8 @@ export function expand(data: string): string | undefined {
   const parts = data.split(",");
   const seed = parts[SEED_PART];
   if (
-    parts.length !== COMPRESSED_PARTS
-    || seed === undefined
+    seed === undefined
+    || parts.length !== COMPRESSED_PARTS
     || !/^[\d\-A-Za-z]*$/u.test(seed)
   ) {
     return undefined;

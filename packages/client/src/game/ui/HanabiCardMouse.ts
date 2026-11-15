@@ -131,9 +131,9 @@ function mouseDown(
     && globals.state.replay.hypothetical !== undefined;
   // Empathy
   if (
-    event.evt.buttons === LEFT_MOUSE_BUTTON_HELD // Only enable Empathy for left-clicks
+    !editMode
+    && event.evt.buttons === LEFT_MOUSE_BUTTON_HELD // Only enable Empathy for left-clicks
     && shouldShowEmpathy(this, event)
-    && !editMode
     && !checkForHypoEmpathy(this)
   ) {
     setEmpathyOnHand(this, true);

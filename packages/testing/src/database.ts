@@ -198,7 +198,7 @@ export async function evaluationDatabase(): Promise<EvaluationDatabase> {
   assertDefined(host, "Missing test database host.");
   assertDefined(username, "Missing test database user.");
   assertDefined(database, "Missing test database name.");
-  if (!host.startsWith("/") && host !== "127.0.0.1" && host !== "localhost") {
+  if (host !== "127.0.0.1" && host !== "localhost" && !host.startsWith("/")) {
     throw new Error("Evaluation requires a local test PostgreSQL service.");
   }
   if (settings.has("sslmode") && settings.get("sslmode") !== "disable") {
