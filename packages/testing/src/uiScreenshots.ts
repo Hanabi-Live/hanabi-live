@@ -252,6 +252,12 @@ const DUAL_COLOR_VARIANT_NAME = "Dual-Color & Rainbow (6 Suits)";
  */
 const BOBS_GAME_SEED_SUFFIX = "1";
 
+/** The clock of a timed game of Bob's. */
+const TIME_CONTROL = {
+  baseSeconds: 300,
+  perTurnSeconds: 20,
+} as const;
+
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
 
@@ -854,6 +860,18 @@ function getStates(): readonly State[] {
           showClocks: true,
         });
         await game.clueAgain();
+      },
+    },
+    // A timed game with five players, which the account paused on its turn.
+    {
+      name: "new-ui-paused",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, undefined, { timed: true });
+        await game.discardUntilAccountsTurn();
+        await game.pause();
       },
     },
     // Bob's game with five players, with the chat in its own window. The account sends a message
@@ -1558,6 +1576,8 @@ interface BobsGame {
   readonly cluedCard: () => CardOrder | undefined;
   /** A note that names a card's identity, such as "r3". */
   readonly identityNote: (order: CardOrder) => Promise<string>;
+  /** In a timed game, the account pauses it on its turn. It can only until the page loads. */
+  readonly pause: () => Promise<void>;
   /** Bob ends the game, which turns it into a shared replay that he leads. */
   readonly end: () => Promise<void>;
   /** Makes the browser's account the leader of the shared replay. */
@@ -1594,7 +1614,7 @@ interface Cast {
   readonly startBobsGame: (
     numPlayers?: number,
     variantName?: string,
-    options?: { readonly showClocks?: boolean },
+    options?: { readonly showClocks?: boolean; readonly timed?: boolean },
   ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
   /** Starts a five-player game that Bob leads, which the browser's account watches. */
@@ -1805,6 +1825,7 @@ async function createBobsTable(
   name: string,
   deal?: { readonly type: "seed"; readonly suffix: string },
   variantName = LONG_VARIANT_NAME,
+  timed = false,
 ): Promise<number> {
   bob.send("settings", {
     settings: {
@@ -1817,9 +1838,11 @@ async function createBobsTable(
       name,
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {
-        speedrun: true,
+        // A speedrun has no clock, so a timed game is not one.
+        speedrun: !timed,
         deckPlays: true,
         variantId: getVariant(variantName).id,
+        ...(timed && { timeControl: TIME_CONTROL }),
       },
       ...(deal !== undefined && { deal }),
     },
@@ -2012,7 +2035,10 @@ async function createCast(
   async function startBobsGame(
     numPlayers = 2,
     variantName = LONG_VARIANT_NAME,
-    { showClocks = false }: { readonly showClocks?: boolean } = {},
+    {
+      showClocks = false,
+      timed = false,
+    }: { readonly showClocks?: boolean; readonly timed?: boolean } = {},
   ): Promise<BobsGame> {
     const you = await connectAccount(true, showClocks);
     const bob = await connectPeer(name(BOB));
@@ -2024,6 +2050,7 @@ async function createCast(
         suffix: BOBS_GAME_SEED_SUFFIX,
       },
       variantName,
+      timed,
     );
     const spectators = await spectate(
       address,
@@ -2512,6 +2539,17 @@ async function createCast(
           `The suit ${card.suitIndex} has no abbreviation.`,
         );
         return `${abbreviation.toLowerCase()}${card.rank}`;
+      },
+      pause: async () => {
+        assertDefined(
+          account,
+          "The account can only pause before the page loads.",
+        );
+        account.send("pause", {
+          tableId,
+          paused: true,
+        });
+        await account.receive("pause", SERVER_EVENT_SCHEMAS.pause);
       },
       end,
       passLeader: () => {
