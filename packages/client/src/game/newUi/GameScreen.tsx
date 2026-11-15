@@ -215,6 +215,9 @@ export function GameScreen({
 
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
+  // In a 2-player game, the other player's clue menu opens by itself on each turn, until the viewer
+  // closes it.
+  const [clueMenuClosed, setClueMenuClosed] = useState(false);
   const [clue, setClue] = useState<Clue>();
   // Whether the target's hand shows what the chosen clue would tell them. It turns off on each new
   // turn, as on the classic screen.
@@ -222,6 +225,7 @@ export function GameScreen({
   const chooseClueTarget = useCallback(
     (playerIndex: PlayerIndex | undefined) => {
       setClueTarget(playerIndex);
+      setClueMenuClosed(playerIndex === undefined);
       if (playerIndex === undefined) {
         setClue(undefined);
       }
@@ -276,6 +280,7 @@ export function GameScreen({
     state === undefined ? undefined : getActionState(state).turn.turnNum;
   useEffect(() => {
     setClueTarget(undefined);
+    setClueMenuClosed(false);
     setClue(undefined);
     setMenuCard(undefined);
     setCluePreview(false);
@@ -384,6 +389,14 @@ export function GameScreen({
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
   const canClue = ourTurn && clueAvailable && !editingCards && !paused;
+  const onlyOtherPlayer =
+    actingPlayerIndex !== undefined && metadata.playerNames.length === 2
+      ? ((1 - actingPlayerIndex) as PlayerIndex)
+      : undefined;
+  // The player whose clue menu is open. It is open only while the viewer can clue.
+  const menuTarget = canClue
+    ? (clueTarget ?? (clueMenuClosed ? undefined : onlyOtherPlayer))
+    : undefined;
   const outOfCluesOnTurn =
     ourTurn && !clueAvailable && !editingCards && !paused;
 
@@ -396,7 +409,7 @@ export function GameScreen({
     empathyPlayers.add(heldEmpathy);
   }
   // With the eye in the clue menu on, the target's hand shows what the chosen clue would tell them.
-  const previewTarget = canClue && cluePreview ? clueTarget : undefined;
+  const previewTarget = cluePreview ? menuTarget : undefined;
   const previewHand =
     previewTarget === undefined ? undefined : visibleState.hands[previewTarget];
   const previewTouched =
@@ -479,8 +492,6 @@ export function GameScreen({
   const otherPlayers = seats.filter(
     (seat) => seat.playerIndex !== actingPlayerIndex,
   );
-  // The clue menu is open only while the viewer can clue.
-  const menuTarget = canClue ? clueTarget : undefined;
   const shownIdentities = getShownIdentities(state);
   function getTouched(
     target: PlayerIndex | undefined,
@@ -965,6 +976,7 @@ export function GameScreen({
                         onToggleCluePreview={() => {
                           setCluePreview(!cluePreview);
                         }}
+                        openedItself={clueTarget === undefined}
                         reducedMotion={settings.reducedMotion}
                         variant={variant}
                       />

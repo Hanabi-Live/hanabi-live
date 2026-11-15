@@ -27,6 +27,12 @@ interface ClueMenuProps {
 
   readonly onShowActions: () => void;
   readonly onClose: () => void;
+
+  /**
+   * Whether the menu opened by itself at the start of the turn, as in a 2-player game. Then it does
+   * not take the focus or scroll the page, so that it does not interrupt the viewer.
+   */
+  readonly openedItself: boolean;
 }
 
 function isSameClue(a: Clue | undefined, b: Clue): boolean {
@@ -80,6 +86,7 @@ export function ClueMenu({
   onToggleCluePreview,
   onShowActions,
   onClose,
+  openedItself,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
@@ -129,11 +136,15 @@ export function ClueMenu({
 
   // On a narrow window, the page scrolls, so it scrolls to show all of the menu.
   useEffect(() => {
-    ref.current?.scrollIntoView({ block: "nearest" });
-  }, [name]);
+    if (!openedItself) {
+      ref.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [name, openedItself]);
 
   useEffect(() => {
-    ref.current?.focus({ preventScroll: true });
+    if (!openedItself) {
+      ref.current?.focus({ preventScroll: true });
+    }
     const stopEscape = onEscapeKey(onClose);
 
     // A click on a name chooses that player instead, so it does not close the menu.
@@ -154,7 +165,7 @@ export function ClueMenu({
       stopEscape();
       document.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [onClose]);
+  }, [onClose, openedItself]);
 
   return (
     <div
