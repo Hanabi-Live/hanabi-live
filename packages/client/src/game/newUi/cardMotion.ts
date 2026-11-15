@@ -362,6 +362,27 @@ export function animateClue(root: HTMLElement): void {
     },
   );
 
+  // The token on the rail pops in as the rail draws through it.
+  root.querySelector("[data-clue-rail-token]")?.animate(
+    [
+      {
+        scale: 0.2,
+        opacity: 0,
+      },
+      {
+        scale: 1,
+        opacity: 1,
+      },
+    ],
+    {
+      id,
+      delay: t.railDelay + t.rail / 2,
+      duration: t.pop,
+      easing: EASE_OUT_BACK,
+      fill: "backwards",
+    },
+  );
+
   const markers = [...root.querySelectorAll<HTMLElement>("[data-clue-marker]")];
 
   // A token falls onto every touched card at once. (A card that the clue newly touches slides up to

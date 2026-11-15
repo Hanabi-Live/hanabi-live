@@ -372,9 +372,8 @@ const PIN_DISC_RADIUS = 40;
 const PIN_OUTLINE_WIDTH = 2;
 
 /**
- * A token that sits on the top edge of a card that a clue touched, with a point toward the card. It
- * shows the clue: a disc of the clue's color, or a white disc with the clue's number. The "data-"
- * attributes let it land on the card when the clue is given (see "cardMotion.ts").
+ * A token that sits on the top edge of a card that a clue touched, with a point toward the card.
+ * The "data-" attributes let it land on the card when the clue is given (see "cardMotion.ts").
  */
 function ClueMarker({
   marker,
@@ -383,8 +382,7 @@ function ClueMarker({
   readonly marker: ClueMarkerView;
   readonly width: number;
 }): React.JSX.Element {
-  const size = Math.round(width * CLUE_TOKEN_SIZE_PER_WIDTH);
-  const label = getClueMarkerLabel(marker);
+  const size = getClueTokenSize(width);
 
   return (
     <span
@@ -398,6 +396,31 @@ function ClueMarker({
         height: size,
       }}
     >
+      <ClueToken marker={marker} size={size} />
+    </span>
+  );
+}
+
+/** The width of a clue token for cards of a width, in CSS pixels. */
+export function getClueTokenSize(cardWidth: number): number {
+  return Math.round(cardWidth * CLUE_TOKEN_SIZE_PER_WIDTH);
+}
+
+/**
+ * The inside of a clue token, which fills a positioned box `size` pixels square: a disc of the
+ * clue's color, or a white disc with the clue's number, with a point under it.
+ */
+export function ClueToken({
+  marker,
+  size,
+}: {
+  readonly marker: ClueMarkerView;
+  readonly size: number;
+}): React.JSX.Element {
+  const label = getClueMarkerLabel(marker);
+
+  return (
+    <>
       {/* One path for the whole outline, so that the disc and the point share it. The stroke is
           drawn first and is twice as wide, so the fill covers its inner half. */}
       <svg
@@ -432,7 +455,7 @@ function ClueMarker({
       {marker.type === "sound" && marker.badge !== undefined && (
         <ClueBadge badge={marker.badge} size={size} />
       )}
-    </span>
+    </>
   );
 }
 

@@ -9,8 +9,10 @@ import {
   CLUE_TOKEN_REACH_PER_WIDTH,
   CLUED_BORDER_WIDTH,
   CLUED_RAISE_PER_WIDTH,
+  ClueToken,
   describeCard,
   getClueMarkerColor,
+  getClueTokenSize,
 } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
@@ -160,6 +162,12 @@ const CLUE_RAIL_OFFSET = 16;
  */
 const CLUE_RAIL_WINDOW_MARGIN = 6;
 
+/**
+ * The most width of the clue token on the rail, in CSS pixels. Large cards on a narrow window have
+ * large tokens, but the rail has little room beside the hands.
+ */
+const CLUE_RAIL_TOKEN_MAX_SIZE = 40;
+
 /** The radius of the rail's corners, in CSS pixels. */
 const CLUE_RAIL_CORNER = 6;
 
@@ -183,19 +191,23 @@ const CLUE_RAIL_HEAD = {
 /**
  * A rail to the left of the hands, from the name of the player who gave the clue on the turn that
  * shows to the name of the player who got it, with an arrowhead at the receiver. At a crowded
- * table, it shows who clued whom at a glance. It draws itself from the giver when the clue is given
- * (see "cardMotion.ts").
+ * table, it shows who clued whom at a glance. A clue token in the middle of the rail shows which
+ * clue it was. It draws itself from the giver when the clue is given (see "cardMotion.ts").
  */
 function ClueRail({
   giver,
   target,
-  color,
+  marker,
+  tokenSize,
 }: {
   readonly giver: PlayerIndex;
   readonly target: PlayerIndex;
-  readonly color: string;
+  readonly marker: ClueMarkerView;
+  readonly tokenSize: number;
 }): React.JSX.Element {
   const ref = useRef<SVGSVGElement>(null);
+  const tokenRef = useRef<HTMLSpanElement>(null);
+  const color = getClueMarkerColor(marker);
   const edgeClass = color === "white" ? "tw:stroke-[black]" : "tw:stroke-white";
 
   // The rail follows the names, which move when the window or the cards change size. The shapes are
@@ -269,6 +281,19 @@ function ClueRail({
             `${backX + notch},${toY}`,
           ].join(" "),
         );
+
+      // The token's disc is centered on the middle of the rail's vertical part. Near the left edge
+      // of the window, it moves right to stay in view.
+      const token = tokenRef.current;
+      if (token === null) {
+        return;
+      }
+      const tokenX = Math.max(
+        railX - tokenSize / 2,
+        CLUE_RAIL_WINDOW_MARGIN - box.left,
+      );
+      token.style.left = `${tokenX}px`;
+      token.style.top = `${(fromY + toY) / 2 - tokenSize / 2}px`;
     }
 
     place();
@@ -279,7 +304,7 @@ function ClueRail({
     };
   });
 
-  return (
+  const rail = (
     <svg
       aria-hidden="true"
       className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:size-full tw:overflow-visible"
@@ -313,6 +338,24 @@ function ClueRail({
         strokeWidth={CLUE_EDGE_WIDTH}
       />
     </svg>
+  );
+
+  return (
+    <>
+      {rail}
+      <span
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:z-10"
+        data-clue-rail-token
+        ref={tokenRef}
+        style={{
+          width: tokenSize,
+          height: tokenSize,
+        }}
+      >
+        <ClueToken marker={marker} size={tokenSize} />
+      </span>
+    </>
   );
 }
 
@@ -942,9 +985,13 @@ export function Hands(props: HandsProps): React.JSX.Element {
       ))}
       {props.shownClue !== undefined && (
         <ClueRail
-          color={getClueMarkerColor(props.shownClue.marker)}
           giver={props.shownClue.giver}
+          marker={props.shownClue.marker}
           target={props.shownClue.target}
+          tokenSize={Math.min(
+            getClueTokenSize(props.cardWidth),
+            CLUE_RAIL_TOKEN_MAX_SIZE,
+          )}
         />
       )}
     </section>
