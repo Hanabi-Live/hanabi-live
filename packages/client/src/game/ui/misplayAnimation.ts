@@ -14,6 +14,7 @@ import {
   interpolate,
   randomBetween,
 } from "../motion.ts";
+import { areReplayAnimationsOn } from "../replayAnimations.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import {
@@ -213,10 +214,10 @@ export function startMisplayAnimation(
     });
   }
 
-  // In a replay, or with reduced motion, the card only bounces off its play stack into the discard
-  // pile.
+  // In a replay (unless the `animations()` console command is on), or with reduced motion, the card
+  // only bounces off its play stack into the discard pile.
   if (
-    globals.state.replay.segment !== undefined
+    (globals.state.replay.segment !== undefined && !areReplayAnimationsOn())
     || store.getState().session.settings.reducedMotion
   ) {
     const stackPose: Pose = {
