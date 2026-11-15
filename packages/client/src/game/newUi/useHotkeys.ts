@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 const COLOR_CLUE_KEYS = ["q", "w", "e", "r", "t", "y"] as const;
 
 /** Whether a key press goes into a text box, such as the chat, rather than to the game. */
-function isTyping(target: EventTarget | null): boolean {
+export function isTyping(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLElement
     && (target.isContentEditable

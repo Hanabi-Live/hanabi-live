@@ -502,6 +502,12 @@ async function clickCanvasElement(
   await settle(page);
 }
 
+/**
+ * The options of Bob's game for a state that presses or right-clicks the cards of a game. In a
+ * speedrun, those clicks make moves instead.
+ */
+const NO_SPEEDRUN = { speedrun: false } as const;
+
 /** How many moves a drag takes, so that the game screen sees the pointer travel. */
 const DRAG_STEPS = 10;
 
@@ -1003,14 +1009,14 @@ function getStates(): readonly State[] {
       },
     },
     // The account drags a card, so that the play stacks and the discard pile show that it can drop
-    // the card on them.
+    // the card on them. A speedrun has no dragging.
     {
       name: "new-ui-drag",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame(5);
+        const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
         await game.discardUntilAccountsTurn();
       },
       hover: async (page) => {
@@ -1068,7 +1074,7 @@ function getStates(): readonly State[] {
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame();
+        const game = await cast.startBobsGame(2, undefined, NO_SPEEDRUN);
         await game.clueTwice();
       },
       hover: async (page, cast) => {
@@ -1103,7 +1109,7 @@ function getStates(): readonly State[] {
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame();
+        await cast.startBobsGame(2, undefined, NO_SPEEDRUN);
       },
       prepare: async (page) => {
         await page
@@ -1125,7 +1131,7 @@ function getStates(): readonly State[] {
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        const game = await cast.startBobsGame(5);
+        const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
         await game.discardTurns(15);
       },
       prepare: async (page, cast) => {
@@ -1614,7 +1620,11 @@ interface Cast {
   readonly startBobsGame: (
     numPlayers?: number,
     variantName?: string,
-    options?: { readonly showClocks?: boolean; readonly timed?: boolean },
+    options?: {
+      readonly showClocks?: boolean;
+      readonly timed?: boolean;
+      readonly speedrun?: boolean;
+    },
   ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
   /** Starts a five-player game that Bob leads, which the browser's account watches. */
@@ -1818,7 +1828,8 @@ async function seed(address: string): Promise<Seed> {
 
 /**
  * Bob creates his table: a speedrun of a variant with a long name and six suits, so that the
- * screens show how they fit both, unless a state asks for another variant. Returns the table.
+ * screens show how they fit both, unless a state asks for another variant or no speedrun. In a
+ * speedrun, a click on a card plays it, so the cards cannot be dragged. Returns the table.
  */
 async function createBobsTable(
   bob: Peer,
@@ -1826,6 +1837,7 @@ async function createBobsTable(
   deal?: { readonly type: "seed"; readonly suffix: string },
   variantName = LONG_VARIANT_NAME,
   timed = false,
+  speedrun = true,
 ): Promise<number> {
   bob.send("settings", {
     settings: {
@@ -1839,7 +1851,7 @@ async function createBobsTable(
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {
         // A speedrun has no clock, so a timed game is not one.
-        speedrun: !timed,
+        speedrun: speedrun && !timed,
         deckPlays: true,
         variantId: getVariant(variantName).id,
         ...(timed && { timeControl: TIME_CONTROL }),
@@ -2038,7 +2050,12 @@ async function createCast(
     {
       showClocks = false,
       timed = false,
-    }: { readonly showClocks?: boolean; readonly timed?: boolean } = {},
+      speedrun = true,
+    }: {
+      readonly showClocks?: boolean;
+      readonly timed?: boolean;
+      readonly speedrun?: boolean;
+    } = {},
   ): Promise<BobsGame> {
     const you = await connectAccount(true, showClocks);
     const bob = await connectPeer(name(BOB));
@@ -2051,6 +2068,7 @@ async function createCast(
       },
       variantName,
       timed,
+      speedrun,
     );
     const spectators = await spectate(
       address,

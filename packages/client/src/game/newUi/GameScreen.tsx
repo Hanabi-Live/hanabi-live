@@ -1,7 +1,7 @@
 // The redesigned game screen. It draws a game, or its replay, from the same store as the classic
 // screen.
 
-import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
+import type { CardOrder, Clue, PlayerIndex, Variant } from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getClueCost,
@@ -10,6 +10,7 @@ import {
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
 import { useCallback, useEffect, useRef, useState } from "react";
+import * as sounds from "../../sounds.ts";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
@@ -26,10 +27,12 @@ import { askForEfficiency } from "../efficiencyModifier.ts";
 import { currentVariant } from "../gameSession.ts";
 import { isClueAllowed } from "../isClueAllowed.ts";
 import { getPauseAction, pause, unpause } from "../pause.ts";
-import type { ClientClue } from "../types/ClientAction.ts";
+import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
+import { SoundType } from "../types/SoundType.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
+import * as notes from "../ui/notes.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
@@ -54,11 +57,13 @@ import { HighlightArrow } from "./HighlightArrow.tsx";
 import { PausePanel } from "./PausePanel.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
+import { QueuedMove } from "./QueuedMove.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import {
   CardBack,
   DiscardPile,
+  getNotedStackBase,
   PlayArea,
   TableTokens,
 } from "./SharedCards.tsx";
@@ -71,6 +76,7 @@ import {
   toggleArrow,
 } from "./arrow.ts";
 import { getArrowTargetAt } from "./arrowAnchor.ts";
+import { usesSpeedrunClicks } from "./cardClicks.ts";
 import {
   DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
@@ -123,9 +129,12 @@ import {
   getTouchedCards,
 } from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
+import type { CardInput } from "./useCardInput.ts";
+import { useCardInput } from "./useCardInput.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
 import { useClueHotkeys, useSpacebarEmpathy } from "./useHotkeys.ts";
+import { useQueuedMove } from "./useQueuedMove.ts";
 
 /**
  * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
@@ -145,6 +154,36 @@ const CLOCK_TICK_MILLISECONDS = 500;
 
 /** How the chat names us among the people watching. */
 const YOU = "You";
+
+/** The move that gives a clue, as the server takes it. */
+function getClueAction(
+  receiverIndex: PlayerIndex,
+  clue: Clue,
+  variant: Variant,
+): ClientAction {
+  if (clue.type === "color") {
+    const colorIndex = variant.clueColors.findIndex(
+      (color) => color.name === clue.value.name,
+    ) as Extract<ClientClue, { type: "color" }>["color"];
+    return {
+      type: "clue",
+      receiverIndex,
+      clue: {
+        type: "color",
+        color: colorIndex,
+      },
+    };
+  }
+
+  return {
+    type: "clue",
+    receiverIndex,
+    clue: {
+      type: "rank",
+      rank: clue.value,
+    },
+  };
+}
 
 export function GameScreen({
   onSwitchToClassic,
@@ -268,6 +307,25 @@ export function GameScreen({
     playZoneRef,
     discardZoneRef,
   } = useCardDrag();
+  const cardInput = useRef<CardInput>(undefined);
+  const cardInputHandlers = useCardInput(cardInput);
+  const queued = useQueuedMove(state);
+
+  // A card that the player dropped while it was another player's turn waits for their turn over the
+  // play stacks or the discard pile (see "QueuedMove.tsx").
+  const premove = state?.premove;
+  const premoveOrder =
+    premove?.type === "play" || premove?.type === "discard"
+      ? premove.order
+      : undefined;
+  const clearDropRef = useRef(clearDrop);
+  clearDropRef.current = clearDrop;
+  useEffect(() => {
+    if (premoveOrder !== undefined) {
+      clearDropRef.current();
+    }
+  }, [premoveOrder]);
+
   const { rootRef, screenScale } = useCardMotion(
     state,
     held?.phase === "drop" ? held.order : undefined,
@@ -305,9 +363,16 @@ export function GameScreen({
         && !inReplay
         && ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex
       : controlsHypo && actingPlayerIndex !== undefined;
+  // Speedruns use clicks instead of dragging.
+  const speedrunClicks = usesSpeedrunClicks(state, settings.speedrunFeatures);
+  // A queued move must be canceled before another card moves.
   const canMoveCards =
     hypo === undefined
-      ? state.playing && !inReplay && (ourTurn || settings.preplay)
+      ? state.playing
+        && !inReplay
+        && !speedrunClicks
+        && state.premove === undefined
+        && (ourTurn || settings.preplay)
       : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
   const clueAvailable = actionState.clueTokens >= getClueCost(variant);
@@ -366,13 +431,17 @@ export function GameScreen({
   const stacks = getStacks(state);
   const discardRows = getDiscardRows(state);
   const cardNotes: CardNotes = {
-    // The cards on the screen: in the hands, on top of the play stacks, and in the discard pile.
+    // The cards on the screen: in the hands, on top of the play stacks, and in the discard pile,
+    // and the stack bases that take notes.
     notesHtml: getNotesHtml([
       ...seats.flatMap((seat) => seat.cards.map((card) => card.order)),
       ...stacks
         .map((stack) => stack.topOrder)
         .filter((order) => order !== undefined),
       ...discardRows.flat().map((card) => card.order),
+      ...stacks
+        .map((stack) => getNotedStackBase(variant, stack.suitIndex))
+        .filter((order) => order !== undefined),
     ]),
     // The game screen marks notes unread only while the game goes on.
     unreadNotes: new Set(state.finished ? [] : unreadNotes),
@@ -484,30 +553,68 @@ export function GameScreen({
     }
     const receiverIndex = menuTarget;
     closeClueMenu();
-
-    if (clue.type === "color") {
-      const colorIndex = variant.clueColors.findIndex(
-        (color) => color.name === clue.value.name,
-      ) as Extract<ClientClue, { type: "color" }>["color"];
-      sendAction({
-        type: "clue",
-        receiverIndex,
-        clue: {
-          type: "color",
-          color: colorIndex,
-        },
-      });
-    } else {
-      sendAction({
-        type: "clue",
-        receiverIndex,
-        clue: {
-          type: "rank",
-          rank: clue.value,
-        },
-      });
-    }
+    sendAction(getClueAction(receiverIndex, clue, variant));
   }
+
+  cardInput.current = {
+    context: {
+      state,
+      variant,
+      identities: shownIdentities,
+      chosenClue: menuTarget === undefined ? undefined : clue,
+    },
+    speedrunClicks,
+    run: (command, order) => {
+      switch (command.type) {
+        case "editNote": {
+          if (cardNotes.onRightClickCard !== undefined) {
+            setMenuCard(undefined);
+            setNoteCard(order);
+          }
+          break;
+        }
+
+        case "morph": {
+          editCard(order);
+          break;
+        }
+
+        case "showSegment": {
+          showReplayTurn(command.segment);
+          break;
+        }
+
+        case "play":
+        case "discard": {
+          sendAction({
+            type: command.type,
+            order,
+          });
+          break;
+        }
+
+        case "clue": {
+          sendAction(
+            getClueAction(command.receiverIndex, command.clue, variant),
+          );
+          break;
+        }
+
+        case "refuse": {
+          sounds.play(SoundType.Error);
+          break;
+        }
+      }
+    },
+    // Notes are only for games that are still going.
+    deleteNote: state.finished
+      ? undefined
+      : (order) => {
+          if (notes.getOurNote(order) !== "") {
+            notes.set(order, "");
+          }
+        },
+  };
 
   clueHotkeys.current = {
     canClue,
@@ -602,6 +709,72 @@ export function GameScreen({
     && !editingCards
     && actionState.cardsRemainingInTheDeck === 1;
   const scoreHidden = isScoreHidden(state);
+  // The move that the viewer queued shows only in the game as it stands, not in a replay of it.
+  const queuedMove = inReplay || hypo !== undefined ? undefined : queued.move;
+  const queuedView =
+    queuedMove?.type === "play" || queuedMove?.type === "discard"
+      ? seats
+          .find((seat) => seat.you)
+          ?.cards.find((card) => card.order === queuedMove.order)
+      : undefined;
+  const queuedCard = queuedView?.order;
+  function getQueuedMoveElement(): React.JSX.Element | undefined {
+    if (queuedMove === undefined) {
+      return undefined;
+    }
+    if (queuedMove.type === "clue") {
+      const name = metadata.playerNames[queuedMove.receiverIndex] ?? "";
+      return (
+        <QueuedMove
+          cancelLabel={`Cancel the clue for ${name}`}
+          onCancel={queued.cancel}
+          reducedMotion={settings.reducedMotion}
+          sent={queued.sent}
+          text={`Clue for ${name} on your turn`}
+        />
+      );
+    }
+    if (queuedView === undefined) {
+      return undefined;
+    }
+    const verb = queuedMove.type === "play" ? "play" : "discard";
+    return (
+      <QueuedMove
+        cancelLabel={`Cancel the queued ${verb}`}
+        onCancel={queued.cancel}
+        reducedMotion={settings.reducedMotion}
+        sent={queued.sent}
+        text={
+          queuedMove.type === "play"
+            ? "Plays on your turn"
+            : "Discards on your turn"
+        }
+      >
+        {/* The card moves from here when its move arrives (see "useCardMotion.ts"). */}
+        <div data-card-order={queuedView.order} data-card-place="queued">
+          <CardFace
+            blank={queuedView.blank}
+            clued={queuedView.clued}
+            colorblindMode={settings.colorblindMode}
+            critical={queuedView.critical}
+            doubleDiscard={queuedView.doubleDiscard}
+            identityFromNote={queuedView.identityFromNote}
+            noteBorder={queuedView.noteBorder}
+            noteMark={queuedView.noteMark}
+            pips={queuedView.pips}
+            rank={queuedView.rank}
+            stackDirection={queuedView.stackDirection}
+            suitIndex={queuedView.suitIndex}
+            trash={queuedView.trash}
+            trashIcon={queuedView.trashIcon}
+            variant={variant}
+            width={tableCardWidth}
+          />
+        </div>
+      </QueuedMove>
+    );
+  }
+  const queuedMoveElement = getQueuedMoveElement();
 
   // A game of "All or Nothing" has no final round. The game sends one more turn after the last, to
   // show the times, so the turns left never go below 0.
@@ -625,6 +798,7 @@ export function GameScreen({
       // on the screen can be selected, so that clicks and drags never highlight it. The text boxes,
       // such as the chat input, still let the player select what they type.
       className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:select-none tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
+      {...cardInputHandlers}
       // A right-click on a card or a number draws an arrow on it, when the viewer can draw one.
       onContextMenu={(event) => {
         const target = getArrowTargetAt(event.target as Element);
@@ -745,6 +919,7 @@ export function GameScreen({
                 variant={variant}
                 zoneState={playZoneState}
               />
+              {queuedMove?.type === "play" && queuedMoveElement}
             </div>
 
             <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
@@ -855,6 +1030,7 @@ export function GameScreen({
                   onViewAs={canChooseSeat() ? viewAs : undefined}
                   outOfClues={outOfCluesOnTurn}
                   pauseAction={getPauseAction(state)}
+                  queuedCard={queuedCard}
                   reducedMotion={settings.reducedMotion}
                   seats={seats}
                   shownClue={
@@ -869,10 +1045,12 @@ export function GameScreen({
                           ),
                         }
                   }
+                  speedrunClicks={speedrunClicks}
                   tapToMove={tapToMove}
                   touchedCards={new Set(touched)}
                   variant={variant}
                 />
+                {queuedMove?.type === "clue" && queuedMoveElement}
                 {paused && !inReplay && (
                   <PausePanel
                     onUnpause={state.playing ? unpause : undefined}
@@ -900,6 +1078,7 @@ export function GameScreen({
                 variant={variant}
                 zoneState={discardZoneState}
               />
+              {queuedMove?.type === "discard" && queuedMoveElement}
               <ClueLog
                 entries={getClueLogEntries(state)}
                 // A card that left the hands while hovered, such as one just played, no longer

@@ -46,8 +46,8 @@ export interface Seat {
    */
   readonly clock: string | undefined;
 
-  /** The clock's tooltip. */
-  readonly clockTooltip: string;
+  /** The clock's tooltip, if it has one. */
+  readonly clockTooltip: string | undefined;
 
   /** Whether the player left the game, so that the others wait for them to come back. */
   readonly disconnected: boolean;
@@ -109,6 +109,18 @@ interface HandsProps {
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
   readonly draggedCard: CardOrder | undefined;
+
+  /**
+   * The card that the viewer queued to play or discard on their turn. It shows over the play stacks
+   * or the discard pile instead (see "QueuedMove.tsx"), so its slot is empty.
+   */
+  readonly queuedCard: CardOrder | undefined;
+
+  /**
+   * Whether clicks on cards make moves at once, as in speedruns (see "cardClicks.ts"). Then holding
+   * the pointer down on a hand does not show its player's view.
+   */
+  readonly speedrunClicks: boolean;
 
   /** Starts to drag one of the viewer's cards, to play or discard it. */
   readonly onCardPointerDown: (
@@ -776,6 +788,24 @@ function OwnCard({
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const dragged = props.draggedCard === card.order;
+  const queued = props.queuedCard === card.order;
+
+  // A queued card moves from where it shows, not from its slot.
+  if (queued) {
+    return (
+      <div
+        aria-label={`Slot ${slot}: queued`}
+        className="tw:box-border tw:shrink-0 tw:border-2 tw:border-dashed tw:border-clue/70"
+        data-card-place={place}
+        role="img"
+        style={{
+          width: cardWidth,
+          height,
+          borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+        }}
+      />
+    );
+  }
 
   if (dragged) {
     return (
@@ -1061,9 +1091,10 @@ function Hand({
   }
   const chip = <NameChip look={look} seat={seat} />;
 
-  // Holding the pointer down on another player's cards shows their view of them until it lifts, as
-  // on the classic screen. While editing cards, a press picks the card to change instead.
-  const empathyHold = !seat.you && !editing;
+  // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
+  // classic screen. On the viewer's own hand, it shows the hand without the viewer's notes. While
+  // editing cards, a press picks the card to change instead.
+  const empathyHold = !editing && !props.speedrunClicks;
   const heldRef = useRef(false);
   function endHold() {
     if (!heldRef.current) {

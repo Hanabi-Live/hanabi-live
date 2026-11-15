@@ -1,0 +1,269 @@
+// What a click on a card does on the redesigned game screen, as on the classic screen (see
+// "ui/HanabiCardClick.ts" and "ui/HanabiCardClickSpeedrun.ts"). These functions only decide; the
+// game screen carries out the result.
+
+import type {
+  CardIdentity,
+  CardOrder,
+  Clue,
+  PlayerIndex,
+  Variant,
+} from "@hanabi-live/game";
+import {
+  START_CARD_RANK,
+  getClueCost,
+  getTotalCardsInDeck,
+  isAtMaxClueTokens,
+  isCardDiscarded,
+  isCardPlayed,
+  newColorClue,
+  newRankClue,
+} from "@hanabi-live/game";
+import { controlsHypothetical } from "../controlsHypothetical.ts";
+import {
+  getColorForSpeedrunClue,
+  getRankForSpeedrunClue,
+} from "../speedrunClue.ts";
+import type { State } from "../types/State.ts";
+import {
+  LEFT_MOUSE_BUTTON,
+  MIDDLE_MOUSE_BUTTON,
+  RIGHT_MOUSE_BUTTON,
+} from "../ui/constants.ts";
+
+/** The button and the keys of a mouse click. */
+export interface CardClick {
+  readonly button: number;
+  readonly ctrlKey: boolean;
+  readonly shiftKey: boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
+}
+
+export type CardCommand =
+  /** Opens the box to type our note on the card in. */
+  | { readonly type: "editNote" }
+  /** Changes the card into another, in a hypothetical. */
+  | { readonly type: "morph" }
+  /** Shows a turn in the replay. */
+  | { readonly type: "showSegment"; readonly segment: number }
+  | { readonly type: "play" | "discard" }
+  | {
+      readonly type: "clue";
+      readonly receiverIndex: PlayerIndex;
+      readonly clue: Clue;
+    }
+  /** The clue tokens do not allow the move. */
+  | { readonly type: "refuse" };
+
+export interface CardClickContext {
+  readonly state: State;
+  readonly variant: Variant;
+
+  /** The identity of each card, as the screen shows it. */
+  readonly identities: readonly CardIdentity[];
+
+  /** The clue that the player chose in the clue menu, if any. */
+  readonly chosenClue: Clue | undefined;
+}
+
+function hasModifier(click: CardClick): boolean {
+  return click.ctrlKey || click.shiftKey || click.altKey || click.metaKey;
+}
+
+function isOnlyCtrl(click: CardClick): boolean {
+  return click.ctrlKey && !click.shiftKey && !click.altKey && !click.metaKey;
+}
+
+function isOnlyAlt(click: CardClick): boolean {
+  return click.altKey && !click.ctrlKey && !click.shiftKey && !click.metaKey;
+}
+
+/**
+ * Whether clicks on cards make moves at once, as in speedruns: a left-click plays our card or gives
+ * a teammate a color clue, and a right-click discards our card or gives a teammate a rank clue. It
+ * applies only to the players of a game.
+ */
+export function usesSpeedrunClicks(
+  state: State,
+  speedrunFeatures: boolean,
+): boolean {
+  return (state.metadata.options.speedrun || speedrunFeatures) && state.playing;
+}
+
+/** Stack bases use the orders after the final card in the deck. */
+function isStackBase(order: CardOrder, variant: Variant): boolean {
+  return order >= getTotalCardsInDeck(variant);
+}
+
+/**
+ * The move that a speedrun click makes when the mouse button goes down, if any (see
+ * `usesSpeedrunClicks`). It applies to the cards in the hands of the game as it stands.
+ */
+export function getSpeedrunCommand(
+  click: CardClick,
+  order: CardOrder,
+  { state, variant, identities, chosenClue }: CardClickContext,
+): CardCommand | undefined {
+  const { ongoingGame, metadata } = state;
+  if (
+    hasModifier(click)
+    || state.replay.segment !== undefined
+    || state.replay.hypothetical !== undefined
+  ) {
+    return undefined;
+  }
+
+  const location = ongoingGame.deck[order]?.location;
+  if (typeof location !== "number") {
+    return undefined;
+  }
+
+  if (location === metadata.ourPlayerIndex) {
+    if (click.button === LEFT_MOUSE_BUTTON) {
+      return { type: "play" };
+    }
+    if (click.button === RIGHT_MOUSE_BUTTON) {
+      return isAtMaxClueTokens(ongoingGame.clueTokens, variant)
+        ? { type: "refuse" }
+        : { type: "discard" };
+    }
+    return undefined;
+  }
+
+  const clueAvailable = ongoingGame.clueTokens >= getClueCost(variant);
+  const identity = identities[order];
+  if (click.button === LEFT_MOUSE_BUTTON) {
+    if (!clueAvailable) {
+      return { type: "refuse" };
+    }
+    const color = getColorForSpeedrunClue(
+      variant,
+      identity?.suitIndex,
+      identity?.rank,
+      chosenClue?.type === "color" ? chosenClue.value : undefined,
+    );
+    return color === undefined
+      ? undefined
+      : {
+          type: "clue",
+          receiverIndex: location,
+          clue: newColorClue(color),
+        };
+  }
+
+  // It is not possible to clue a START card with a rank clue. A card of unknown rank gets no clue,
+  // so that a right-click edits its note instead.
+  if (
+    click.button !== RIGHT_MOUSE_BUTTON
+    || identity?.rank === undefined
+    || identity.rank === START_CARD_RANK
+  ) {
+    return undefined;
+  }
+  if (!clueAvailable) {
+    return { type: "refuse" };
+  }
+  const rank = getRankForSpeedrunClue(
+    variant,
+    identity.suitIndex,
+    identity.rank,
+    chosenClue?.type === "rank" ? chosenClue.value : undefined,
+  );
+  return rank === undefined
+    ? undefined
+    : {
+        type: "clue",
+        receiverIndex: location,
+        clue: newRankClue(rank),
+      };
+}
+
+/**
+ * What a click on a card does, after the mouse button comes up: a left-click (or a tap), a middle
+ * click, or a right-click. A right-click that this does not handle edits the card's note (see
+ * "CardNote.tsx").
+ */
+export function getCardClickCommand(
+  click: CardClick,
+  order: CardOrder,
+  { state, variant }: CardClickContext,
+  speedrunClicks: boolean,
+): CardCommand | undefined {
+  // Ctrl + left-click also edits the note, since some Mac computers have no right-click.
+  if (
+    click.button === LEFT_MOUSE_BUTTON
+    && isOnlyCtrl(click)
+    && !state.finished
+  ) {
+    return { type: "editNote" };
+  }
+
+  // Speedrun clicks replace the other clicks.
+  if (speedrunClicks) {
+    return undefined;
+  }
+
+  const stackBase = isStackBase(order, variant);
+  if (click.button === RIGHT_MOUSE_BUTTON) {
+    return !stackBase && isOnlyAlt(click) && controlsHypothetical(state)
+      ? { type: "morph" }
+      : undefined;
+  }
+
+  // No replay moves happen in a hypothetical.
+  const cardState = state.visibleState?.deck[order];
+  if (
+    stackBase
+    || cardState === undefined
+    || state.replay.hypothetical !== undefined
+  ) {
+    return undefined;
+  }
+
+  // A middle click shows the turn on which the card was first clued. The turn after the clue shows
+  // it.
+  if (click.button === MIDDLE_MOUSE_BUTTON) {
+    return hasModifier(click) || cardState.segmentFirstClued === undefined
+      ? undefined
+      : {
+          type: "showSegment",
+          segment: cardState.segmentFirstClued + 1,
+        };
+  }
+
+  if (
+    click.button !== LEFT_MOUSE_BUTTON
+    || click.ctrlKey
+    || click.shiftKey
+    || click.metaKey
+  ) {
+    return undefined;
+  }
+
+  // Alt + click shows the turn on which the card was drawn, with the card in its hand. A card of
+  // the first deal was drawn before the first turn.
+  if (click.altKey) {
+    return {
+      type: "showSegment",
+      segment:
+        cardState.segmentDrawn === undefined ? 0 : cardState.segmentDrawn + 1,
+    };
+  }
+
+  // A click on a played or discarded card shows the turn on which it left its hand.
+  if (isCardPlayed(cardState) && cardState.segmentPlayed !== undefined) {
+    return {
+      type: "showSegment",
+      segment: cardState.segmentPlayed,
+    };
+  }
+  if (isCardDiscarded(cardState) && cardState.segmentDiscarded !== undefined) {
+    return {
+      type: "showSegment",
+      segment: cardState.segmentDiscarded,
+    };
+  }
+
+  return undefined;
+}

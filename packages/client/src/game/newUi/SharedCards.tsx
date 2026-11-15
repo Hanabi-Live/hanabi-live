@@ -5,7 +5,7 @@ import type {
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
-import { MAX_STRIKES } from "@hanabi-live/game";
+import { getTotalCardsInDeck, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
@@ -500,6 +500,10 @@ export function PlayArea({
                 stack.topOrder === undefined
                   ? undefined
                   : notes.notesHtml.get(stack.topOrder);
+              const stackBaseOrder = getNotedStackBase(
+                variant,
+                stack.suitIndex,
+              );
 
               return (
                 <div
@@ -525,10 +529,18 @@ export function PlayArea({
                     ref={tooltipRefHtml(dragging ? undefined : descriptionHtml)}
                     role="img"
                   >
-                    {below}
+                    {stackBaseOrder === undefined ? (
+                      below
+                    ) : (
+                      <CardNote notes={notes} order={stackBaseOrder}>
+                        <div data-stack-base={stackBaseOrder}>{below}</div>
+                      </CardNote>
+                    )}
                     {stack.topRank !== undefined && (
                       <div
-                        className="tw:absolute tw:inset-0"
+                        // A click on the card shows the turn on which it was played (see
+                        // "cardClicks.ts").
+                        className="tw:absolute tw:inset-0 tw:cursor-pointer"
                         data-card-order={stack.topOrder}
                         data-card-place={`stack-${stack.suitIndex}`}
                         data-play-stack
@@ -597,6 +609,19 @@ export function PlayArea({
       {tokens}
     </div>
   );
+}
+
+/**
+ * The order of the stack base of a suit, when it takes notes: only in "Throw It in a Hole"
+ * variants, as on the classic screen. Stack bases use the orders after the final card in the deck.
+ */
+export function getNotedStackBase(
+  variant: Variant,
+  suitIndex: SuitIndex,
+): CardOrder | undefined {
+  return variant.throwItInAHole
+    ? ((getTotalCardsInDeck(variant) + suitIndex) as CardOrder)
+    : undefined;
 }
 
 /**

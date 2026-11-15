@@ -140,7 +140,9 @@ export function getSeats(
       }
       // The preview of a clue shows only what the clues tell the player, as on the classic screen.
       const includesNotes =
-        previewDeck === undefined && empathy && (empathyIncludesNotes || you);
+        previewDeck === undefined
+        && empathy
+        && (empathyIncludesNotes || (you && !empathyPlayers.has(playerIndex)));
 
       cards.push(
         getCardView({
@@ -156,8 +158,9 @@ export function getSeats(
               : (state.notes.ourNotes[order] ?? BLANK_NOTE),
           variant,
           empathy,
-          // Our own notes always apply to our own hand, as on the classic screen: a note can show a
-          // card's identity and remove possibilities.
+          // Our own notes apply to our own hand, as on the classic screen: a note can show a card's
+          // identity and remove possibilities. Holding the pointer down on the hand shows it
+          // without them.
           empathyIncludesNotes: includesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
@@ -182,9 +185,16 @@ export function getSeats(
       clock !== undefined && getActivePlayerIndex() === playerIndex
         ? getTurnTime()
         : undefined;
-    let clockTooltip = timed ? "Time left" : "Time taken in this game";
+    let clockTooltip: string | undefined = timed
+      ? "Time left"
+      : "Time taken in this game";
     if (turnTime !== undefined) {
       clockTooltip = `Time taken on this turn: ${millisecondsToClockString(turnTime)}`;
+    }
+    // In a speedrun, the players move fast, so the tooltips would only get in their way, as on the
+    // classic screen.
+    if (metadata.options.speedrun || settings.speedrunFeatures) {
+      clockTooltip = undefined;
     }
 
     seats.push({
