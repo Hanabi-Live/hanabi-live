@@ -12,6 +12,7 @@
     // "game" and "data" packages get their built-in types from it, and the client bundles them.
     // When it reaches ES2024, turn on "regexp/require-unicode-sets-regexp" in ESLint. When it
     // reaches ES2025, turn on "unicorn/prefer-iterator-to-array" and "unicorn/prefer-set-methods".
+    // When it reaches ES2026, turn on "unicorn/prefer-uint8array-base64".
     "target": "ES2022",
 
     // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is

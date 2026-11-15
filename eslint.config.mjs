@@ -54,7 +54,8 @@ export const hanabiConfigBase = defineConfig(
       // includes Safari 16.4.
       "unicorn/prefer-set-methods": "off",
 
-      // Preserve compatibility with browsers without the newest encoding APIs.
+      // `Uint8Array.fromBase64` and `toBase64` need Chrome 140 and Safari 18.2, but Vite's default
+      // build target still includes Chrome 111 and Safari 16.4.
       "unicorn/prefer-uint8array-base64": "off",
 
       // Keep explicit branches in the game rules and event handlers.
