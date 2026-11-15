@@ -1,7 +1,7 @@
 // The animation of a misplay in a game in progress. A misplayed card is a "dud rocket", as on the
 // classic screen (see "../ui/misplayAnimation.ts"): it launches onto its stack, sputters, misfires
 // into its strike box, explodes there, and tumbles into the discard pile. (A played card moves to
-// its stack in a straight line, like any other card; see "cardMotion.ts".)
+// its stack in a straight line, and lands with a small bounce; see "cardMotion.ts".)
 
 // These animations last longer than a normal card move, so the next update of the game does not
 // finish them, as it does a card move (see "cardMotion.ts").

@@ -29,7 +29,6 @@ import {
 } from "../motion.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
-  PLAY_ANIMATION_SECONDS,
   WARNING_COLOR,
 } from "../ui/constants.ts";
 import type { BurstConfig } from "../ui/effectConfig.ts";
@@ -107,6 +106,7 @@ import {
   suitColors,
 } from "../ui/effectConfig.ts";
 import { CARD_CORNER_PER_WIDTH } from "./Card.tsx";
+import { getPlayLandingSeconds } from "./cardMotion.ts";
 import { EFFECT_Z_INDEX, animateSampled, onEnd } from "./playMotion.ts";
 import { toScreenPixels } from "./screenScale.ts";
 
@@ -388,7 +388,7 @@ export function animateFinale(
   const unit = stacks[0]!.slot.getBoundingClientRect().height;
   const fireworks = new Fireworks(unit);
   const offset = getFlight(root, middle, unit);
-  const landed = PLAY_ANIMATION_SECONDS;
+  const landed = getPlayLandingSeconds(playedCard);
 
   if (playedCard !== undefined) {
     glowCard(playedCard, landed, GOLD, CARD_GLOW_SECONDS, true);
@@ -489,7 +489,7 @@ export function animateStackComplete(
   const unit = stack.slot.getBoundingClientRect().height;
   const fireworks = new Fireworks(unit);
   const offset = getFlight(root, middle, unit);
-  const landed = PLAY_ANIMATION_SECONDS;
+  const landed = getPlayLandingSeconds(playedCard);
 
   if (playedCard !== undefined) {
     glowCard(playedCard, landed, GOLD, CARD_GLOW_SECONDS, true);

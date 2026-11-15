@@ -2,12 +2,10 @@
 // through a turn, as the classic game screen does.
 
 import { MAX_STRIKES } from "@hanabi-live/game";
-import { SECOND_IN_MILLISECONDS } from "complete-common";
+import { SECOND_IN_MILLISECONDS, clamp } from "complete-common";
 import { store } from "../../store.ts";
-import {
-  CARD_ANIMATION_LENGTH_SECONDS,
-  PLAY_ANIMATION_SECONDS,
-} from "../ui/constants.ts";
+import { rectCenter } from "../motion.ts";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "../ui/constants.ts";
 import type { Misplay } from "./playMotion.ts";
 import {
   CARD_MOVE_ANIMATION_ID,
@@ -25,7 +23,7 @@ import { getScreenScale, measure } from "./screenScale.ts";
  * Where each card is, by card order, and where the deck is. The place names the hand and slot, the
  * stack, or the row of the discard pile (from the "data-card-place" attribute). A card moves only
  * when its place changes, and not when the panels around it change size and push it along. The
- * element is kept so that a played card can show its old face as it turns over.
+ * element is kept so that a card that leaves the page can still move back to the deck.
  */
 export type CardPositions = ReadonlyMap<string, CardPosition>;
 
@@ -53,6 +51,25 @@ const HAND_PLACE_PREFIX = "hand-";
 
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
 const DECK_KEY = "deck";
+
+/**
+ * How a played card moves to its stack. It starts from rest, speeds up, and brakes hard into its
+ * slot. Then it lands: it arrives a little too large and settles to its size.
+ */
+const PLAY_MOTION = {
+  /** How fast the card travels, in pixels of the unscaled screen per second. */
+  speed: 1400,
+  /** The shortest and longest time that the card travels, in seconds. */
+  minSeconds: 0.25,
+  maxSeconds: 0.55,
+  ease: "cubic-bezier(0.45, 0, 0.2, 1)",
+  /** How large the card is when it reaches its slot, relative to its size at rest. */
+  landScale: 1.06,
+  landSeconds: 0.14,
+} as const;
+
+/** When each played card reaches its stack, in milliseconds from the start of its move. */
+const playLandings = new WeakMap<HTMLElement, number>();
 
 /**
  * Moving through more turns than this at once skips the animations, as on the classic screen, so
@@ -152,9 +169,11 @@ export function animateCardMoves(
       continue;
     }
 
-    const seconds = Object.hasOwn(element.dataset, "playStack")
-      ? PLAY_ANIMATION_SECONDS
-      : CARD_ANIMATION_LENGTH_SECONDS;
+    if (Object.hasOwn(element.dataset, "playStack")) {
+      animatePlay(element, from, to);
+      continue;
+    }
+
     const restore = raiseMovingCard(element);
 
     // The card also changes size between a hand and the smaller cards on the table.
@@ -171,7 +190,7 @@ export function animateCardMoves(
       ],
       {
         id: CARD_MOVE_ANIMATION_ID,
-        duration: seconds * SECOND_IN_MILLISECONDS,
+        duration: CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
         easing: "ease-out",
       },
     );
@@ -190,6 +209,63 @@ export function animateCardMoves(
       }
     }
   }
+}
+
+/**
+ * Moves a played card to its stack. The move takes longer the farther the card goes, so that a card
+ * dropped near its stack snaps into place.
+ */
+function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
+  const start = rectCenter(from);
+  const end = rectCenter(to);
+  const distance = Math.hypot(start.x - end.x, start.y - end.y);
+  const travel =
+    clamp(
+      distance / PLAY_MOTION.speed,
+      PLAY_MOTION.minSeconds,
+      PLAY_MOTION.maxSeconds,
+    ) * SECOND_IN_MILLISECONDS;
+  const lands = !store.getState().session.settings.reducedMotion;
+  const duration =
+    travel + (lands ? PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS : 0);
+
+  // The card also changes size between a hand and the smaller cards on the stacks.
+  const keyframes: Keyframe[] = [
+    {
+      transformOrigin: "center",
+      transform: `translate(${start.x - end.x}px, ${start.y - end.y}px) scale(${from.width / to.width}, ${from.height / to.height})`,
+      easing: PLAY_MOTION.ease,
+    },
+  ];
+  if (lands) {
+    keyframes.push({
+      offset: travel / duration,
+      transformOrigin: "center",
+      transform: `translate(0px, 0px) scale(${PLAY_MOTION.landScale})`,
+      easing: EASE_OUT_BACK,
+    });
+  }
+  keyframes.push({
+    transformOrigin: "center",
+    transform: "none",
+  });
+
+  const restore = raiseMovingCard(element);
+  playLandings.set(element, travel);
+  const animation = element.animate(keyframes, {
+    id: CARD_MOVE_ANIMATION_ID,
+    duration,
+  });
+  onEnd(animation, restore);
+}
+
+/**
+ * How long until a card that was just played reaches its stack, in seconds, so that the effects of
+ * the play start when it lands.
+ */
+export function getPlayLandingSeconds(card: HTMLElement | undefined): number {
+  const landing = card === undefined ? undefined : playLandings.get(card);
+  return (landing ?? 0) / SECOND_IN_MILLISECONDS;
 }
 
 /**
