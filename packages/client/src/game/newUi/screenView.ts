@@ -102,11 +102,9 @@ export function getSeats(
   // In the replay of a game that we played, our hand stays first.
   const firstPlayerIndex = getViewPlayerIndex(metadata);
   const timed = metadata.options.timeControl !== undefined;
-  // The clocks belong to the game as it stands, so a replay of a past turn does not show them.
-  const showClock =
-    (timed || settings.showTimerInUntimed)
-    && state.replay.segment === undefined
-    && !state.finished;
+  // The clocks belong to the game as it stands. They keep running during the in-game replay of a
+  // game that goes on, as on the classic screen, so that the players see the time that they have.
+  const showClock = (timed || settings.showTimerInUntimed) && !state.finished;
   const gameEnd = getShownGameEnd(state);
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
