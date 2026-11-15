@@ -191,7 +191,6 @@ export function ClueMenu({
               onClick={() => {
                 onChooseClue(pressed ? undefined : colorClue);
               }}
-              ref={tooltipRef(color.name)}
               style={{
                 background: colorblindMode ? color.fillColorblind : color.fill,
               }}
