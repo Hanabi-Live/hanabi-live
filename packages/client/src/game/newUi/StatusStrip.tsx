@@ -46,7 +46,7 @@ const PACE_HELP_LABEL =
 interface StatusStripProps {
   readonly turn: number;
 
-  /** The HTML of the tooltip on the turn: the most turns and rounds that are left. */
+  /** The HTML of the tooltip of the turn's help icon: the most turns and rounds that are left. */
   readonly turnTooltip: string;
 
   /** Asks which turn to go to. */
@@ -477,14 +477,23 @@ export function StatusStrip({
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
-        <Stat label="Turn">
+        <Stat
+          label={
+            <>
+              Turn
+              <HelpIcon
+                label="About the turns: how many turns and rounds are left at most."
+                tooltip={valueTooltip(turnTooltip)}
+              />
+            </>
+          }
+        >
           {/* An invisible "10 / 10" holds the space (or the real turn, if it is wider). Then the bar
               does not move when a replay adds " / 21" to the turn, or when the turn reaches 10. */}
           <button
             aria-label={`Turn ${turn}. Go to another turn.`}
             className={`${VALUE_BUTTON_CLASS} tw:inline-grid tw:tabular-nums`}
             onClick={onTurnClick}
-            ref={tooltipRefHtml(valueTooltip(turnTooltip))}
             type="button"
           >
             <span
