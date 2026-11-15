@@ -252,6 +252,23 @@ function keydown(event: KeyboardEvent) {
     return;
   }
 
+  // Page Up = Enter a hypothetical from the replay, as the "Enter Hypothetical" button does. (The
+  // browser would otherwise scroll the page.)
+  if (event.which === KeyCode.KEY_PAGE_UP) {
+    event.preventDefault();
+    if (globals.state.finished || globals.state.replay.segment !== undefined) {
+      hypothetical.startHypothetical(); // This function has validation inside of it
+    }
+    return;
+  }
+
+  // Page Down = Leave the hypothetical.
+  if (event.which === KeyCode.KEY_PAGE_DOWN) {
+    event.preventDefault();
+    hypothetical.endHypothetical(); // This function has validation inside of it
+    return;
+  }
+
   // Replay hotkeys
   if (
     globals.state.replay.hypothetical === undefined

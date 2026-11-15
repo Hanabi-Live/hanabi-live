@@ -714,6 +714,7 @@ move for the current situation.
   - Fast-forward one full rotation: `]`
   - Go to the beginning: `Home`
   - Go to the end: `End`
+  - Enter a hypothetical: `Page Up`
   - Copy the game ID: `Ctrl + c`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`
@@ -722,6 +723,7 @@ move for the current situation.
 - In a hypothetical:
   - Undo the last action: `Left`
   - Pass the turn: `Right`
+  - Leave the hypothetical: `Page Down` or `Escape`
 
 ## Similar Deals and Competitive Play
 
