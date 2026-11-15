@@ -438,7 +438,9 @@ function OwnHypotheticalControls({
           )}
           type="button"
         >
-          <i aria-hidden="true" className="fas fa-forward" />
+          {/* A flat hand, as card players wave to pass. An arrow would look like a step through
+              the replay's turns. */}
+          <i aria-hidden="true" className="fas fa-hand-paper" />
         </button>
         {/* The hint takes only the room that is left, so that it never pushes the other controls
             onto a row of their own. A hint that does not fit is cut off, and its tooltip has all
