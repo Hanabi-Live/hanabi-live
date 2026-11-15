@@ -466,9 +466,8 @@ function animateToss(
     const a = rectCenter(legFrom);
     const b = rectCenter(legTo);
     const travel = getTravelSeconds(a, b) * SECOND_IN_MILLISECONDS;
-    const landStart = travel * PLAY_MOTION.landStart;
     const landEnd = decorated
-      ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
+      ? travel + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
       : travel;
 
     pathSteps.push(
@@ -497,7 +496,7 @@ function animateToss(
           value: scale(legLook.growScale, legFrom, tilt),
         },
         {
-          time: start + landStart,
+          time: start + travel,
           value: scale(legLook.growScale, legFrom, tilt),
           easing: legLook.landEasing,
         },
@@ -517,7 +516,7 @@ function animateToss(
     if (legLook === PLAY_LOOK && bounce === undefined) {
       playLandings.set(element, start + travel);
     }
-    return start + Math.max(travel, landEnd);
+    return start + landEnd;
   }
 
   // A misplayed card bounces off its stack once it has reached it and settled to its size there. It

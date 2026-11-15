@@ -94,13 +94,18 @@ export const PLAYED_CARD_Z_INDEX = "40";
 /** The effects go over everything on the screen. */
 export const EFFECT_Z_INDEX = "60";
 
-/** The control points of the easing of a card's travel from a hand onto the table. */
-const PLAY_EASE = [0.45, 0, 0.2, 1] as const;
+/**
+ * The control points of the easing of a card's travel from a hand onto the table. The card does not
+ * come to rest over its slot: it still moves at about a third of its average speed when it gets
+ * there. An easing that ends at rest covers the last few percent of the way slowly, so the card
+ * would hover over its slot at its large size.
+ */
+const PLAY_EASE = [0.5, 0, 0.7, 0.9] as const;
 
 /**
  * How a played or discarded card moves from a hand onto the table. It grows as it leaves the hand,
- * as if it were picked up. It starts from rest, speeds up, and brakes hard into its slot. Then it
- * lands: it shrinks to its size on the table.
+ * as if it were picked up. It starts from rest, speeds up, and brakes into its slot. When it is
+ * centered on its slot, it lands: it shrinks to its size on the table.
  */
 export const PLAY_MOTION = {
   /** How fast the card travels, in pixels of the unscaled screen per second. */
@@ -110,12 +115,6 @@ export const PLAY_MOTION = {
   maxSeconds: 0.69,
   ease: `cubic-bezier(${PLAY_EASE.join(", ")})`,
   growSeconds: 0.12,
-  /**
-   * When the card starts to shrink, as a fraction of its travel time. The card brakes hard, so by
-   * then it has covered about 95% of the way. It shrinks as it settles into its slot, and does not
-   * hover over its slot at its large size.
-   */
-  landStart: 0.73,
   landSeconds: 0.14,
 } as const;
 
@@ -725,17 +724,14 @@ export function animateMisplay(
   // 5. The burnt card goes to the discard pile as a discarded card does (see "cardMotion.ts"): it
   //    grows and tilts toward the pile, and settles flat onto it.
   const travel = getTravelSeconds(recoil, end);
-  const landStart = travel * PLAY_MOTION.landStart;
-  const toss = Math.max(travel, landStart + PLAY_MOTION.landSeconds);
+  const toss = travel + PLAY_MOTION.landSeconds;
   const tilt = (end.x < recoil.x ? -1 : 1) * DISCARD_LOOK.tiltDegrees;
   const held = recoil.scaleX * DISCARD_LOOK.growScale;
   time = addStep(toss, (t) => {
     const seconds = t * toss;
     const along = playEase(progress(seconds, 0, travel));
     const grow = cssEaseOut(progress(seconds, 0, PLAY_MOTION.growSeconds));
-    const land = cssEaseOut(
-      progress(seconds, landStart, PLAY_MOTION.landSeconds),
-    );
+    const land = cssEaseOut(progress(seconds, travel, PLAY_MOTION.landSeconds));
     return {
       pose: {
         x: interpolate(recoil.x, end.x, along),
