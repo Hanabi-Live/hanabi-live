@@ -2,7 +2,10 @@
 
 import { store } from "../../store.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
-import { newUiChatPoppedOutChanged } from "./newUiSlice.ts";
+import {
+  newUiChatOpenChanged,
+  newUiChatPoppedOutChanged,
+} from "./newUiSlice.ts";
 
 /** Each tab opens the chat into the same window, and does not open a second one. */
 const CHAT_WINDOW_NAME = "hanabi-live-chat";
@@ -43,6 +46,15 @@ export function dockChat(): void {
   chatWindow = undefined;
   store.dispatch(newUiChatPoppedOutChanged(false));
   closing?.close();
+}
+
+/**
+ * Puts the chat back after the player closed its window. The panel stays collapsed, because the
+ * player closed the chat and did not ask to see it in the panel.
+ */
+export function chatWindowClosed(): void {
+  store.dispatch(newUiChatOpenChanged(false));
+  dockChat();
 }
 
 /** Brings the chat window to the front, and focuses its input. */

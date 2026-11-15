@@ -4,6 +4,7 @@ import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
 import {
+  chatWindowClosed,
   dockChat,
   focusChatWindow,
   getChatWindow,
@@ -182,7 +183,7 @@ export function ChatPanel({
 
     const giveBack = setUpChatWindow(chatWindow);
     // The player closed the window, or reloaded it.
-    chatWindow.addEventListener("pagehide", dockChat);
+    chatWindow.addEventListener("pagehide", chatWindowClosed);
     // The window would stay open with nothing in it after we leave or reload the page.
     function closeChatWindow() {
       chatWindow!.close();
@@ -190,7 +191,7 @@ export function ChatPanel({
     window.addEventListener("pagehide", closeChatWindow);
 
     return () => {
-      chatWindow.removeEventListener("pagehide", dockChat);
+      chatWindow.removeEventListener("pagehide", chatWindowClosed);
       window.removeEventListener("pagehide", closeChatWindow);
       giveBack();
       // We also get here when we leave the game, and then the chat goes back to the panel too.
