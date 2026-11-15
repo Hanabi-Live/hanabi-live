@@ -77,11 +77,11 @@ interface StatusStripProps {
 
   /**
    * How the game ended, on the turn on which it ended, with a tooltip in HTML. The classic screen
-   * writes it in its action log.
+   * writes it in its action log. Here, an icon beside the score shows it, so that the bar does not
+   * grow on the last turn of a replay.
    */
   readonly result:
-    | { readonly summary: string; readonly tooltipHtml: string | undefined }
-    | undefined;
+    { readonly summary: string; readonly tooltipHtml: string } | undefined;
 
   readonly pace: string;
 
@@ -512,7 +512,22 @@ export function StatusStrip({
             </span>
           </button>
         </Stat>
-        <Stat label={scoreLabel} size="large" truncate={false}>
+        <Stat
+          label={
+            <>
+              {scoreLabel}
+              {result !== undefined && (
+                <HelpIcon
+                  icon="fa-info-circle"
+                  label={`How the game ended: ${result.summary}`}
+                  tooltip={valueTooltip(result.tooltipHtml)}
+                />
+              )}
+            </>
+          }
+          size="large"
+          truncate={false}
+        >
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span
             className="tw:inline-block"
@@ -546,21 +561,6 @@ export function StatusStrip({
             </span>
           </span>
         </Stat>
-        {result !== undefined && (
-          <Stat label="Result" size="small">
-            <span
-              className="tw:inline-block tw:max-w-[16em] tw:truncate tw:align-bottom"
-              data-game-result
-              ref={tooltipRefHtml(
-                result.tooltipHtml === undefined
-                  ? undefined
-                  : valueTooltip(result.tooltipHtml),
-              )}
-            >
-              {result.summary}
-            </span>
-          </Stat>
-        )}
       </div>
       <GroupDivider />
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">

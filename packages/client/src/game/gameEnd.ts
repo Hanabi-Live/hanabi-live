@@ -86,7 +86,7 @@ export function getShownGameEnd(state: State): GameEnd | undefined {
   };
 }
 
-/** A few words about how a game ended, short enough for the bar under the table. */
+/** A few words about how a game ended, for the heading of its tooltip. */
 function getGameOverSummary(
   endCondition: EndCondition,
   playerIndex: PlayerIndex | undefined,
@@ -195,17 +195,18 @@ function getGameOverDescription(
 }
 
 /**
- * The tooltip of the game's result, as HTML: what happened, and how long the game took. It is
- * `undefined` when there is nothing to add to the summary.
+ * The tooltip of the game's result, as HTML: how the game ended, what happened, and how long the
+ * game took.
  */
-export function getGameEndTooltipHtml(gameEnd: GameEnd): string | undefined {
-  // The length of the game alone does not explain the result, so it goes only with a sentence.
-  if (gameEnd.description === undefined) {
-    return undefined;
+export function getGameEndTooltipHtml(gameEnd: GameEnd): string {
+  const lines = [`<strong>${escapeHtml(gameEnd.summary)}</strong>`];
+  if (gameEnd.description !== undefined) {
+    lines.push(escapeHtml(gameEnd.description));
   }
-
-  const description = escapeHtml(gameEnd.description);
-  return gameEnd.durationMs === undefined
-    ? description
-    : `${description}<br />The game took ${millisecondsToClockString(gameEnd.durationMs)}.`;
+  if (gameEnd.durationMs !== undefined) {
+    lines.push(
+      `The game took ${millisecondsToClockString(gameEnd.durationMs)}.`,
+    );
+  }
+  return lines.join("<br />");
 }
