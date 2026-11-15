@@ -980,6 +980,8 @@ export function GameScreen({
                       ? shownClue.target
                       : undefined
                   }
+                  // The panel of a paused game covers the hands.
+                  hidden={paused && !inReplay}
                   menuCard={menuCard}
                   nameColumnWidth={nameColumnWidth}
                   notes={cardNotes}

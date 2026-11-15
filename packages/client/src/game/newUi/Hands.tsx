@@ -61,6 +61,13 @@ export interface Seat {
 
 interface HandsProps {
   readonly seats: readonly Seat[];
+
+  /**
+   * Whether the hands are hidden, such as under the panel of a paused game. They keep their place,
+   * so that nothing else moves.
+   */
+  readonly hidden?: boolean;
+
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly cardWidth: number;
@@ -1265,8 +1272,9 @@ function Hand({
 export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
+      aria-hidden={props.hidden === true ? true : undefined}
       aria-label="Hands"
-      className="tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center"
+      className={`tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center ${props.hidden === true ? "tw:invisible" : ""}`}
       onPointerLeave={() => {
         props.onHoverCard(undefined);
       }}
