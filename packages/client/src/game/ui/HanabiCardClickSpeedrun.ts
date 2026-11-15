@@ -1,17 +1,17 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { CardState, ClueRank, Color, Variant } from "@hanabi-live/game";
+import type { ClueRank, Color } from "@hanabi-live/game";
 import {
   START_CARD_RANK,
   getClueCost,
-  getColorForPrismCard,
   isAtMaxClueTokens,
   isCardInPlayerHand,
-  isCardTouchedByClueColor,
-  isCardTouchedByClueRank,
-  isValidClueRank,
 } from "@hanabi-live/game";
 import * as sounds from "../../sounds.ts";
+import {
+  getColorForSpeedrunClue,
+  getRankForSpeedrunClue,
+} from "../speedrunClue.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { ColorButton } from "./ColorButton.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
@@ -77,7 +77,12 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
+  const clueColor = getColorForSpeedrunClue(
+    globals.variant,
+    card.state.suitIndex,
+    card.state.rank,
+    getPressedColor(),
+  );
   if (clueColor === undefined) {
     return;
   }
@@ -97,52 +102,13 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   });
 }
 
-/** A card may be clueable by more than one color, so we need to figure out which color to use. */
-function getColorForSpeedrunClue(
-  cardState: CardState,
-  variant: Variant,
-): Color | undefined {
-  if (cardState.suitIndex === undefined || cardState.rank === undefined) {
-    return undefined;
-  }
-
-  const suit = globals.variant.suits[cardState.suitIndex];
-  if (suit === undefined) {
-    return undefined;
-  }
-
-  // If they have clicked on a clue color button, and that color touches the card, assume that they
-  // want to use that color.
+/** The color of the clue button that the player pressed, if any. */
+function getPressedColor(): Color | undefined {
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
-  if (
-    clueButton !== undefined
-    && clueButton instanceof ColorButton
+  return clueButton instanceof ColorButton
     && typeof clueButton.clue.value !== "number"
-    && isCardTouchedByClueColor(
-      globals.variant,
-      clueButton.clue.value,
-      suit,
-      cardState.rank,
-    )
-  ) {
-    return clueButton.clue.value;
-  }
-
-  // Otherwise, assume that they want to use the first possible color of the card.
-  const firstClueColor = suit.clueColors[0];
-  if (firstClueColor !== undefined) {
-    return firstClueColor;
-  }
-
-  // Handle the cases where the "suit.clueColors" array is empty.
-  if (suit.allClueColors) {
-    return variant.clueColors[0];
-  }
-  if (suit.prism) {
-    return getColorForPrismCard(globals.variant, cardState.rank);
-  }
-
-  return undefined;
+    ? clueButton.clue.value
+    : undefined;
 }
 
 function clickRight(card: HanabiCard, event: MouseEvent) {
@@ -187,7 +153,12 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
       return;
     }
 
-    const clueRank = getRankForSpeedrunClue(card.state);
+    const clueRank = getRankForSpeedrunClue(
+      globals.variant,
+      card.state.suitIndex,
+      card.state.rank,
+      getPressedRank(),
+    );
     if (clueRank === undefined) {
       return;
     }
@@ -216,39 +187,11 @@ function rejectClueTokenAction() {
   globals.elements.cluesNumberLabelPulse!.play();
 }
 
-/** A card may be clueable by more than one rank, so we need to figure out which rank to use. */
-function getRankForSpeedrunClue(cardState: CardState): ClueRank | undefined {
-  if (cardState.suitIndex === undefined || cardState.rank === undefined) {
-    return undefined;
-  }
-
-  const suit = globals.variant.suits[cardState.suitIndex];
-  if (suit === undefined) {
-    return undefined;
-  }
-
-  // If they have clicked on a clue rank button, and that rank touches the card, assume that they
-  // want to use that rank.
+/** The rank of the clue button that the player pressed, if any. */
+function getPressedRank(): ClueRank | undefined {
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
-  if (
-    clueButton !== undefined
-    && clueButton instanceof RankButton
+  return clueButton instanceof RankButton
     && typeof clueButton.clue.value === "number"
-    && isCardTouchedByClueRank(
-      globals.variant,
-      clueButton.clue.value,
-      cardState.suitIndex,
-      suit,
-      cardState.rank,
-    )
-  ) {
-    return clueButton.clue.value;
-  }
-
-  // Otherwise, assume that they want to use the real rank of the card.
-  if (isValidClueRank(cardState.rank)) {
-    return cardState.rank;
-  }
-
-  return undefined;
+    ? clueButton.clue.value
+    : undefined;
 }
