@@ -46,8 +46,13 @@ const BORROWED_CHAT_BOX_CLASSES = [
   "tw:size-full",
   "tw:px-4",
   "tw:pt-3",
-  // The "is typing" note goes in the space below the chat box, so the box leaves room for it.
-  "tw:pb-[26px]",
+  "tw:pb-0",
+  // The "is typing" note gets its own row below the chat box, centered in it, so that it does not
+  // touch the box and does not resize the chat when it appears.
+  "tw:[&_#game-chat-istyping]:bottom-0",
+  "tw:[&_#game-chat-istyping]:h-[26px]",
+  "tw:[&_#game-chat-istyping]:shrink-0",
+  "tw:[&_#game-chat-istyping]:leading-[26px]",
   // The site's text size changes with the window width, and at its largest it fits only a few words
   // on each line of the narrow panel. The text box sets its own size, so it gets the same size too.
   "tw:text-lg",
