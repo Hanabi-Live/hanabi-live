@@ -204,10 +204,11 @@ export function show(card: HanabiCard): void {
       ? card.suitDescriptionNote()
       : undefined;
   if (suitDescription !== undefined) {
-    if (shownNote !== "") {
-      shownNote += "<br><br>";
-    }
-    shownNote += suitDescription;
+    // A line separates the notes from the description of the suit.
+    shownNote =
+      shownNote === ""
+        ? suitDescription
+        : `${shownNote}<div class="tw:mt-2 tw:border-t tw:border-border tw:pt-2">${suitDescription}</div>`;
   }
   tooltips.setContent(tooltip, shownNote);
   tooltips.open(tooltip);

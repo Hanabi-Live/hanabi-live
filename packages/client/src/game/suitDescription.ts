@@ -30,7 +30,7 @@ function getSuitRuleLines(
 
   if (suit.clueColors.length > 1) {
     const colors = suit.clueColors.map((color) => getColorHtml(color));
-    lines.push(`Touched by ${colors.join(", ")} color clues`);
+    lines.push(`Touched by ${colors.join(", ")} color clues.`);
   }
 
   if (suit.prism) {
@@ -92,7 +92,7 @@ export function getSuitDescriptionHtml(
 
   return `
     <div class="small-tooltip-text">
-      <div class="align-center">
+      <div class="tw:font-semibold tw:text-text-strong">
         ${suit.displayName} (${abbreviation})
       </div>
       ${lines.join("<br>")}

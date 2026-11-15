@@ -470,6 +470,43 @@ function getCanvasElementCenter(elementPath: ReadonlyArray<string | number>): {
   };
 }
 
+/** Runs in the page. The center of the top card of the first play stack that has a played card. */
+function getPlayedCardCenter(): { readonly x: number; readonly y: number } {
+  interface Rect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }
+  interface Stack {
+    children: Array<{
+      card: { isStackBase: boolean };
+      getClientRect: () => Rect;
+    }>;
+  }
+  const { playStacks } = (
+    globalThis as unknown as {
+      globals: { elements: { playStacks: Map<unknown, Stack> } };
+    }
+  ).globals.elements;
+  for (const stack of playStacks.values()) {
+    const top = stack.children.at(-1);
+    if (top !== undefined && !top.card.isStackBase) {
+      const rect = top.getClientRect();
+      const canvas = document.querySelector(".konvajs-content");
+      if (canvas === null) {
+        throw new Error("The game screen is not drawn.");
+      }
+      const origin = canvas.getBoundingClientRect();
+      return {
+        x: origin.x + rect.x + rect.width / 2,
+        y: origin.y + rect.y + rect.height / 2,
+      };
+    }
+  }
+  throw new Error("No play stack has a played card.");
+}
+
 /** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
 function isGameScreenResized(): boolean {
   return (
@@ -1199,6 +1236,28 @@ function getStates(): readonly State[] {
           .click();
       },
     },
+    // The tooltip of a card on a play stack of the classic screen, in a shared replay: the notes of
+    // the players on the card, and then the description of its suit.
+    {
+      name: "classic-stack-tooltip",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, DUAL_COLOR_VARIANT_NAME);
+        await game.playWithNotes(["m", "m"]);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        await showClassic(page);
+      },
+      hover: async (page) => {
+        await settle(page);
+        const point = await page.evaluate(getPlayedCardCenter);
+        await page.mouse.move(point.x, point.y);
+        await page.locator(TOOLTIP_SELECTOR).waitFor();
+      },
+    },
     // After the account switches to the classic screen.
     {
       name: "new-ui-classic",
@@ -1557,6 +1616,11 @@ interface BobsGame {
   ) => Promise<void>;
   /** The account plays a card, Bob plays one, and the account misplays one. */
   readonly playAndMisplay: () => Promise<void>;
+  /**
+   * The account and Bob write a note on a card that the player whose turn it is can play, and then
+   * that player plays it. The account can do this only until the page loads.
+   */
+  readonly playWithNotes: (notes: readonly [string, string]) => Promise<void>;
   /**
    * Each player in turn discards their oldest card that the team can lose, for the given number of
    * turns. When the team has every clue token, the player gives a clue instead: a rank clue, or,
@@ -2547,6 +2611,35 @@ async function createCast(
         await play("account", true);
         await play("bob", true);
         await play("account", false);
+      },
+      playWithNotes: async ([accountNote, bobNote]) => {
+        const MAX_TURNS = 10;
+        let player = 0;
+        let card: Awaited<ReturnType<typeof handAt>>[number] | undefined;
+        for (let i = 0; card === undefined && i < MAX_TURNS; i++) {
+          if (i > 0) {
+            await discardTurns(1);
+          }
+          ({ player } = readTurn(await loadEvents(viewer, tableId)));
+          const cards = await handAt(player);
+          card = cards.find((other) => other.playable);
+        }
+        assertDefined(card, "No player has a playable card on their turn.");
+        const { order } = card;
+        for (const [peer, text] of [
+          [you, accountNote],
+          [bob, bobNote],
+        ] as const) {
+          peer.send("note", {
+            tableId,
+            order,
+            text,
+          });
+        }
+        await moveAt(player, {
+          type: "play",
+          order,
+        });
       },
       discardTurns,
       spendClues,
