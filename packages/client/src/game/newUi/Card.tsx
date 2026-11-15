@@ -948,6 +948,13 @@ const POSSIBILITIES = {
   maxPip: 0.4,
   maxChip: 0.21,
   /**
+   * The space between the edge of the card and the rank chips. It is smaller than `inset`, so that
+   * the chips take more of the card's width.
+   */
+  rankInset: 0.035,
+  /** The gap between rank chips. */
+  chipGap: 0.015,
+  /**
    * The most rows of suits. The top of the card stays free for the sticky note of a note, and the
    * suits sit where they do on a card that shows its rank, so that they stay in place when a rank
    * clue arrives.
@@ -973,7 +980,7 @@ const SUIT_CHIP_RING = "inset 0 0 0 1px rgb(27 36 43 / 45%)";
 const RANK_CHIP_HEIGHT_PER_WIDTH = 1.1;
 
 /** The size of the number on a rank chip, per the chip's width. */
-const RANK_CHIP_FONT_PER_WIDTH = 0.72;
+const RANK_CHIP_FONT_PER_WIDTH = 0.84;
 
 /**
  * How opaque a suit or a rank is when the holder ruled it out. It stays in its place, crossed out,
@@ -1157,6 +1164,8 @@ function Possibilities({
     gap,
     maxPip,
     maxChip,
+    rankInset,
+    chipGap,
     maxSuitRows,
   } = POSSIBILITIES;
   const innerWidth = width * (1 - 2 * inset);
@@ -1174,10 +1183,10 @@ function Possibilities({
   const rankSlots = variant.ranks.map((rank) =>
     ranks.find((pip) => pip.rank === rank),
   );
-  // The rank chips touch, so that they are as large as the card allows.
   const chipSize = Math.min(
     width * maxChip,
-    innerWidth / Math.max(rankSlots.length, 1),
+    (width * (1 - 2 * rankInset) - (rankSlots.length - 1) * width * chipGap)
+      / Math.max(rankSlots.length, 1),
   );
 
   // The suits take the rest of the card's height, in at most two rows. They go in as many columns
@@ -1249,7 +1258,8 @@ function Possibilities({
         </div>
       )}
       {ranks.length > 0 && (
-        <div className="tw:flex">
+        // The row is centered, so that it reaches past the suits' inset on both sides.
+        <div className="tw:flex" style={{ gap: width * chipGap }}>
           {rankSlots.map((pip, i) =>
             pip === undefined ? (
               <span
