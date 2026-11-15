@@ -58,7 +58,8 @@ export const hanabiConfigBase = defineConfig(
       // build target still includes Chrome 111 and Safari 16.4.
       "unicorn/prefer-uint8array-base64": "off",
 
-      // Keep explicit branches in the game rules and event handlers.
+      // This flags any branch in a `try` block, even a ternary for the value that it returns, and
+      // the `try`/`finally` blocks that make sure that cleanup happens after a whole test.
       "unicorn/try-complexity": "off",
     },
   },
