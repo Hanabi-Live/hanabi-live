@@ -28,6 +28,7 @@ import { ReconnectBackoff } from "./reconnect.ts";
 import {
   blockedChanged,
   friendsChanged,
+  reconnectingChanged,
   settingsChanged,
 } from "./sessionSlice.ts";
 import * as sounds from "./sounds.ts";
@@ -68,6 +69,24 @@ function clearConnectTimer() {
 
   clearTimeout(connectTimer);
   connectTimer = undefined;
+}
+
+/**
+ * The connection dropped, and the client is getting it back. The game screen shows this until the
+ * new connection is ready (see `finishReconnecting`), because the server receives nothing that the
+ * player sends until then.
+ */
+function setRecovering(value: boolean) {
+  recovering = value;
+  if (value) {
+    store.dispatch(reconnectingChanged(true));
+  }
+}
+
+/** The new connection is ready, so what the player sends reaches the server again. */
+function finishReconnecting(conn: Connection) {
+  conn.setReady(true);
+  store.dispatch(reconnectingChanged(false));
 }
 
 function stopRecovery() {
@@ -190,7 +209,7 @@ function reconnectAfterTimeout(conn: Connection, timeoutMs: number) {
   );
   // Do not depend on a browser emitting close for a stalled CONNECTING socket.
   activeConnection = undefined;
-  recovering = true;
+  setRecovering(true);
   conn.close();
   scheduleReconnect();
 }
@@ -233,7 +252,7 @@ function openConnection(isReconnect: boolean) {
     clearWelcomeTimer();
     console.log("WebSocket closed unexpectedly; attempting to reconnect.");
     conn.setReady(false);
-    recovering = true;
+    setRecovering(true);
     scheduleReconnect();
   });
   conn.on("socketError", (error: unknown) => {
@@ -271,7 +290,7 @@ function openConnection(isReconnect: boolean) {
       }
       clearWelcomeTimer();
       reconnectBackoff.reset();
-      recovering = false;
+      setRecovering(false);
       globals.conn = conn;
       store.dispatch(usersCleared());
       store.dispatch(tablesCleared());
@@ -310,7 +329,7 @@ function openConnection(isReconnect: boolean) {
           }
           const rebuilding = gameSession.isLoading();
           gameCommands.get("gameState")?.(state);
-          conn.setReady(true);
+          finishReconnecting(conn);
           if (!rebuilding) {
             conn.send("gameLoaded", { tableId: globals.joinedTableId });
           }
@@ -332,7 +351,7 @@ function openConnection(isReconnect: boolean) {
         );
       } else {
         gameMain.closeGame();
-        conn.setReady(true);
+        finishReconnecting(conn);
         lobbyCommands.get("welcome")?.(data);
       }
     });

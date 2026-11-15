@@ -59,6 +59,7 @@ import { PausePanel } from "./PausePanel.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { QueuedMove } from "./QueuedMove.tsx";
+import { ReconnectingPanel } from "./ReconnectingPanel.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
 import { SendingMark } from "./SendingMark.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
@@ -203,6 +204,7 @@ export function GameScreen({
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
   const connections = useAppSelector((root) => root.game.connections);
+  const reconnecting = useAppSelector((root) => root.session.reconnecting);
   const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
   const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
@@ -394,6 +396,7 @@ export function GameScreen({
         && !speedrunClicks
         && state.premove === undefined
         && sendingMove === undefined
+        && !reconnecting
         && (ourTurn || settings.preplay)
       : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
@@ -411,7 +414,8 @@ export function GameScreen({
     && !editingCards
     && !paused
     && !speedrunClicks
-    && sendingMove === undefined;
+    && sendingMove === undefined
+    && !reconnecting;
   const onlyOtherPlayer =
     actingPlayerIndex !== undefined && metadata.playerNames.length === 2
       ? ((1 - actingPlayerIndex) as PlayerIndex)
@@ -1148,6 +1152,9 @@ export function GameScreen({
                     pausedBy={pausedBy}
                     reducedMotion={settings.reducedMotion}
                   />
+                )}
+                {reconnecting && (
+                  <ReconnectingPanel reducedMotion={settings.reducedMotion} />
                 )}
               </div>
             </div>

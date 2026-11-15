@@ -26,6 +26,11 @@ interface SessionState {
   readonly creatingTable: boolean;
   /** Whether the error modal is showing, which the page cannot recover from. */
   readonly errorOccurred: boolean;
+  /**
+   * Whether the connection to the server dropped and the client is getting it back. Until it does,
+   * the server receives nothing that the player sends.
+   */
+  readonly reconnecting: boolean;
 }
 
 const initialState: SessionState = {
@@ -39,6 +44,7 @@ const initialState: SessionState = {
   lobbyPanel: "tables",
   creatingTable: false,
   errorOccurred: false,
+  reconnecting: false,
 };
 
 const sessionSlice = createSlice({
@@ -75,6 +81,9 @@ const sessionSlice = createSlice({
     errorOccurredChanged(state, action: PayloadAction<boolean>) {
       state.errorOccurred = action.payload;
     },
+    reconnectingChanged(state, action: PayloadAction<boolean>) {
+      state.reconnecting = action.payload;
+    },
   },
 });
 
@@ -89,5 +98,6 @@ export const {
   lobbyPanelChanged,
   creatingTableChanged,
   errorOccurredChanged,
+  reconnectingChanged,
 } = sessionSlice.actions;
 export const sessionReducer = sessionSlice.reducer;
