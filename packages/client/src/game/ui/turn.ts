@@ -3,7 +3,7 @@ import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
-import { newUiMoveSent } from "../newUi/newUiSlice.ts";
+import { newUiMoveSent, newUiSentMoveCleared } from "../newUi/newUiSlice.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
@@ -39,6 +39,13 @@ export function end(clientAction: ClientAction): void {
     lobbyGlobals.connection.send(
       "playerAction",
       toWireAction(lobbyGlobals.joinedTableId, clientAction),
+      (reply) => {
+        // The server refused the move, or it never reached the server (such as when the connection
+        // is down), so the move no longer waits. A move that succeeds ends the turn instead.
+        if (!reply.ok && store.getState().newUi.sentMove?.turnNum === turnNum) {
+          store.dispatch(newUiSentMoveCleared());
+        }
+      },
     );
     return;
   }
