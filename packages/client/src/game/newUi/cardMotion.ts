@@ -4,6 +4,7 @@
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, clamp } from "complete-common";
 import { store } from "../../store.ts";
+import type { Point } from "../motion.ts";
 import { rectCenter } from "../motion.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../ui/constants.ts";
 import type { Misplay } from "./playMotion.ts";
@@ -12,7 +13,7 @@ import {
   EASE_OUT_BACK,
   MOVING_CARD_Z_INDEX,
   PLAYED_CARD_Z_INDEX,
-  animateBounceMisplay,
+  PLAY_EFFECT_ANIMATION_ID,
   animateMisplay,
   isShowingPlay,
   onEnd,
@@ -220,14 +221,59 @@ export function animateCardMoves(
   }
 }
 
+/** How a misplayed card bounces off its stack into the discard pile. */
+interface Bounce {
+  /** The stack slot that the card bounces off. */
+  readonly stackSlot: DOMRect;
+  /** Whether the game is in progress. */
+  readonly live: boolean;
+}
+
+/** A step of a play's animation: a value at a time, and the easing toward the next step. */
+interface Step {
+  readonly time: number;
+  readonly value: string;
+  readonly easing?: string;
+}
+
+/** Turns the steps of an animation into its keyframes, with offsets from their times. */
+function stepKeyframes(
+  property: "translate" | "transform",
+  steps: readonly Step[],
+  duration: number,
+): readonly Keyframe[] {
+  return steps.map(({ time, value, easing }) => ({
+    offset: time / duration,
+    [property]: value,
+    ...(easing !== undefined && { easing }),
+  }));
+}
+
 /**
  * Moves a played card to its stack. The move takes longer the farther the card goes, so that a card
  * dropped near its stack snaps into place.
+ *
+ * A misplayed card that does not show the whole misplay moves the same way, and then bounces off
+ * its stack into the discard pile, as on the classic screen. This happens in a replay, and in a
+ * game in progress with the "Reduced motion" setting. In a game in progress, the next update of the
+ * game does not finish the move, as it does not finish a normal misplay.
+ *
+ * @param element The card, where it rests.
+ * @param from Where the card was.
+ * @param to Where the card rests.
+ * @param bounce How a misplayed card bounces off its stack, if the card was misplayed.
  */
-function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
+function animatePlay(
+  element: HTMLElement,
+  from: DOMRect,
+  to: DOMRect,
+  bounce?: Bounce,
+) {
+  const rest = rectCenter(to);
   const start = rectCenter(from);
-  const end = rectCenter(to);
-  const distance = Math.hypot(start.x - end.x, start.y - end.y);
+  const land = bounce === undefined ? to : bounce.stackSlot;
+  const landCenter = rectCenter(land);
+  const distance = Math.hypot(start.x - landCenter.x, start.y - landCenter.y);
   const travel =
     clamp(
       distance / PLAY_MOTION.speed,
@@ -237,9 +283,15 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
   // The growth and the landing only decorate the move, so "Reduced motion" leaves them out.
   const decorated = !store.getState().session.settings.reducedMotion;
   const landStart = travel * PLAY_MOTION.landStart;
-  const duration = decorated
+  const landEnd = decorated
     ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS
     : travel;
+  // A misplayed card bounces off its stack once it has reached it and settled to its size there.
+  const bounceStart = Math.max(travel, landEnd);
+  const bounceEnd =
+    bounceStart + CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS;
+  const id =
+    bounce?.live === true ? PLAY_EFFECT_ANIMATION_ID : CARD_MOVE_ANIMATION_ID;
 
   // The card goes over the hand cards that move into its old place. They move at the same time, and
   // the hands come after the play stacks in the page, so at the same height they would cover it. It
@@ -248,60 +300,111 @@ function animatePlay(element: HTMLElement, from: DOMRect, to: DOMRect) {
   const restoreSize = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
 
   // The card moves on its "translate" property, so that its changes of size do not scale its path.
-  const path = element.animate(
-    [
-      { translate: `${start.x - end.x}px ${start.y - end.y}px` },
-      { translate: "0px 0px" },
-    ],
+  function offset(point: Point): string {
+    return `${point.x - rest.x}px ${point.y - rest.y}px`;
+  }
+  const pathSteps: Step[] = [
     {
-      id: CARD_MOVE_ANIMATION_ID,
-      duration: travel,
+      time: 0,
+      value: offset(start),
       easing: PLAY_MOTION.ease,
+    },
+  ];
+  if (bounce === undefined) {
+    pathSteps.push({
+      time: travel,
+      value: "0px 0px",
+    });
+  } else {
+    pathSteps.push(
+      {
+        time: travel,
+        value: offset(landCenter),
+      },
+      {
+        time: bounceStart,
+        value: offset(landCenter),
+        easing: "ease-out",
+      },
+      {
+        time: bounceEnd,
+        value: "0px 0px",
+      },
+    );
+  }
+  const pathDuration = pathSteps.at(-1)!.time;
+  const path = element.animate(
+    [...stepKeyframes("translate", pathSteps, pathDuration)],
+    {
+      id,
+      duration: pathDuration,
       composite: "add",
     },
   );
   onEnd(path, restorePath);
 
-  // The card also changes size between a hand and the smaller cards on the stacks.
-  const scaleX = from.width / to.width;
-  const scaleY = from.height / to.height;
-  const keyframes: Keyframe[] = decorated
+  // The card also changes size between a hand, the smaller cards on the stacks, and the discard
+  // pile. Every card has the same shape, so its width gives its scale.
+  function scale(factor: number, rect: DOMRect): string {
+    return `scale(${(factor * rect.width) / to.width})`;
+  }
+  const sizeSteps: Step[] = decorated
     ? [
         {
-          transform: `scale(${scaleX}, ${scaleY})`,
+          time: 0,
+          value: scale(1, from),
           easing: "ease-out",
         },
         {
-          offset: (PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS) / duration,
-          transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
+          time: PLAY_MOTION.growSeconds * SECOND_IN_MILLISECONDS,
+          value: scale(PLAY_MOTION.growScale, from),
         },
         {
-          offset: landStart / duration,
-          transform: `scale(${scaleX * PLAY_MOTION.growScale}, ${scaleY * PLAY_MOTION.growScale})`,
+          time: landStart,
+          value: scale(PLAY_MOTION.growScale, from),
           easing: EASE_OUT_BACK,
         },
-        { transform: "none" },
       ]
     : [
         {
-          transform: `scale(${scaleX}, ${scaleY})`,
+          time: 0,
+          value: scale(1, from),
           easing: PLAY_MOTION.ease,
         },
-        { transform: "none" },
       ];
-
-  playLandings.set(element, travel);
+  sizeSteps.push({
+    time: landEnd,
+    value: scale(1, land),
+  });
+  if (bounce !== undefined) {
+    sizeSteps.push(
+      {
+        time: bounceStart,
+        value: scale(1, land),
+        easing: "ease-out",
+      },
+      {
+        time: bounceEnd,
+        value: "none",
+      },
+    );
+  }
+  const sizeDuration = sizeSteps.at(-1)!.time;
   const size = element.animate(
-    keyframes.map((keyframe) => ({
+    stepKeyframes("transform", sizeSteps, sizeDuration).map((keyframe) => ({
       ...keyframe,
       transformOrigin: "center",
     })),
     {
-      id: CARD_MOVE_ANIMATION_ID,
-      duration,
+      id,
+      duration: sizeDuration,
     },
   );
   onEnd(size, restoreSize);
+
+  if (bounce === undefined) {
+    playLandings.set(element, travel);
+  }
 }
 
 /**
@@ -400,14 +503,10 @@ function animateSpecialMove(
         misplay.strikeIndex === MAX_STRIKES - 1,
       );
     } else {
-      animateBounceMisplay(
-        element,
-        from,
-        to,
-        stackSlot,
-        CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
-        effects.live,
-      );
+      animatePlay(element, from, to, {
+        stackSlot: measure(stackSlot),
+        live: effects.live,
+      });
     }
     return true;
   }

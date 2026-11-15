@@ -83,7 +83,7 @@ export const CARD_MOVE_ANIMATION_ID = "card-move";
  * The ID of every part of a play or a misplay. The next update of the game does not finish these,
  * since the server sends the turn a moment after the play, and a misplay takes over a second.
  */
-const PLAY_EFFECT_ANIMATION_ID = "play-effect";
+export const PLAY_EFFECT_ANIMATION_ID = "play-effect";
 
 /** An ease that overshoots its end and settles back, for things that pop. */
 export const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
@@ -844,69 +844,4 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
       delay,
     );
   }
-}
-
-/**
- * In a replay, a misplayed card only bounces off its play stack into the discard pile, as on the
- * classic screen. A game in progress does this too with the "Reduced motion" setting. Then the next
- * update of the game does not finish the move, as it does not finish a normal misplay.
- */
-export function animateBounceMisplay(
-  element: HTMLElement,
-  from: DOMRect,
-  to: DOMRect,
-  stackSlot: HTMLElement,
-  stepMilliseconds: number,
-  live = false,
-): void {
-  const stackRect = measure(stackSlot);
-  const stack: Pose = {
-    ...rectCenter(stackRect),
-    scaleX: stackRect.width / to.width,
-    scaleY: stackRect.width / to.width,
-    rotation: 0,
-  };
-  const startScale = from.width / to.width;
-  const start: Pose = {
-    ...rectCenter(from),
-    scaleX: startScale,
-    scaleY: startScale,
-    rotation: 0,
-  };
-  const end: Pose = {
-    ...rectCenter(to),
-    scaleX: 1,
-    scaleY: 1,
-    rotation: 0,
-  };
-  function between(a: Pose, b: Pose, t: number): Pose {
-    const out = easeOut(t);
-    return {
-      x: interpolate(a.x, b.x, out),
-      y: interpolate(a.y, b.y, out),
-      scaleX: interpolate(a.scaleX, b.scaleX, out),
-      scaleY: interpolate(a.scaleY, b.scaleY, out),
-      rotation: 0,
-    };
-  }
-
-  const restore = raiseMovingCard(element);
-  // In a replay, this is a normal card move, which the next move finishes.
-  const animation = animateSampled(
-    element,
-    2 * stepMilliseconds,
-    (ms) => {
-      const pose =
-        ms < stepMilliseconds
-          ? between(start, stack, ms / stepMilliseconds)
-          : between(stack, end, (ms - stepMilliseconds) / stepMilliseconds);
-      return {
-        transform: poseTransform(to, pose),
-        transformOrigin: "center",
-      };
-    },
-    0,
-    live ? PLAY_EFFECT_ANIMATION_ID : CARD_MOVE_ANIMATION_ID,
-  );
-  onEnd(animation, restore);
 }
