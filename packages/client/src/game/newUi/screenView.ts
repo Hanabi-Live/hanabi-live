@@ -220,11 +220,9 @@ export function getNotesHtml(
 /** The clue that led to the turn that shows, if the last move was a clue. */
 export function getClueForTurn(gameState: GameState): StateClue | undefined {
   const { segment } = gameState.turn;
-  if (segment === undefined) {
-    return undefined;
-  }
-
-  return gameState.clues.findLast((clue) => clue.segment === segment - 1);
+  return segment === undefined
+    ? undefined
+    : gameState.clues.findLast((clue) => clue.segment === segment - 1);
 }
 
 /** The clues of the game so far, for the clue log. */

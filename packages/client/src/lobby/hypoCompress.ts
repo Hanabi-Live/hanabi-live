@@ -105,14 +105,10 @@ export function shrink(jsonString: string): string | undefined {
 
   // Check if compression succeeded.
   const decompressed = expand(compressed);
-  if (
-    decompressed === undefined
+  return decompressed === undefined
     || !equal(gameDataJson, parseGameJson(decompressed))
-  ) {
-    return undefined;
-  }
-
-  return compressed;
+    ? undefined
+    : compressed;
 }
 
 function parseGameJson(jsonString: string) {
@@ -538,10 +534,9 @@ function fromCompactAction(action: CompactAction): Action | undefined {
 
 /** Returns a string array of hypothetical players (Alice, Bob, etc). */
 function getPlayers(size: number): readonly string[] {
-  if (size < MIN_PLAYERS || size > MAX_PLAYERS) {
-    return [];
-  }
-  return DEFAULT_PLAYER_NAMES.slice(0, size);
+  return size < MIN_PLAYERS || size > MAX_PLAYERS
+    ? []
+    : DEFAULT_PLAYER_NAMES.slice(0, size);
 }
 
 /** Returns the minimum and maximum of the values, or undefined if there are none. */

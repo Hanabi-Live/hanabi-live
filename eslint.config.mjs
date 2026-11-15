@@ -54,9 +54,6 @@ export const hanabiConfigBase = defineConfig(
       // includes Safari 16.4.
       "unicorn/prefer-set-methods": "off",
 
-      // Keep explicit branches in the game rules and event handlers.
-      "unicorn/prefer-ternary": "off",
-
       // Preserve compatibility with browsers without the newest encoding APIs.
       "unicorn/prefer-uint8array-base64": "off",
 

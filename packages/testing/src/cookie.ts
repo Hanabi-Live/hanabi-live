@@ -42,12 +42,9 @@ export function decodeSessionCookie(
   }
   const id = Number(idText);
   const timestamp = Number(timestampText);
-  if (
-    id < 1
+  return id < 1
     || id > 2_147_483_647
     || timestamp < now - SESSION_MAX_AGE_SECONDS
-  ) {
-    return undefined;
-  }
-  return id as UserId;
+    ? undefined
+    : (id as UserId);
 }

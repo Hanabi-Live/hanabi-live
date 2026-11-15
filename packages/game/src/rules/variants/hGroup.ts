@@ -10,16 +10,13 @@ export function isHardVariant(
   minEfficiency: number,
 ): boolean {
   // Some variants are defined as always being hard, regardless of what the efficiency is.
-  if (
+  return (
     isColorMute(variant)
     || isNumberMute(variant)
     || variant.throwItInAHole
     || variant.cowAndPig
     || variant.duck
     || variant.upOrDown
-  ) {
-    return true;
-  }
-
-  return minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD;
+    || minEfficiency >= HARD_VARIANT_EFFICIENCY_THRESHOLD
+  );
 }

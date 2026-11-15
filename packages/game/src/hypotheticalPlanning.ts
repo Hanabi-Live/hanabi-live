@@ -226,16 +226,12 @@ function getMorphedStackBaseRank(
   const stackBaseOrder = (getTotalCardsInDeck(context.variant)
     + suitIndex) as CardOrder;
   const morphedIdentity = context.morphedIdentities[stackBaseOrder];
-  if (
-    morphedIdentity?.suitIndex !== suitIndex
+  return morphedIdentity?.suitIndex !== suitIndex
     || morphedIdentity.rank === undefined
     || (playStackDirection === StackDirection.Undecided
       && morphedIdentity.rank !== START_CARD_RANK)
-  ) {
-    return undefined;
-  }
-
-  return morphedIdentity.rank;
+    ? undefined
+    : morphedIdentity.rank;
 }
 
 export function planHypotheticalAction(

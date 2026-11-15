@@ -127,11 +127,7 @@ function getClueActionName(
     }
   }
 
-  if (characterName === "Quacker" || variant.duck) {
-    return "quacks";
-  }
-
-  return "clues";
+  return characterName === "Quacker" || variant.duck ? "quacks" : "clues";
 }
 
 export function getGameOverText(

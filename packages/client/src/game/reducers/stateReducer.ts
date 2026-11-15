@@ -482,13 +482,11 @@ function visualStateToShow(
   }
 
   // After an ongoing game ends, do not automatically show the final segment with the player's times
-  // by default in order to avoid drowning out the reason why the game ended.
-  if (action.type === "playerTimes") {
-    return state.replay.states.at(-2) ?? undefined; // The penultimate segment
-  }
-
-  // Show the final segment of the current game.
-  return state.ongoingGame;
+  // by default in order to avoid drowning out the reason why the game ended. Show the penultimate
+  // segment instead. Otherwise, show the final segment of the current game.
+  return action.type === "playerTimes"
+    ? (state.replay.states.at(-2) ?? undefined)
+    : state.ongoingGame;
 }
 
 /**

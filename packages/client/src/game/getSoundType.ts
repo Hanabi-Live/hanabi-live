@@ -113,11 +113,7 @@ export function getSoundType(
         }
       }
 
-      if (variant.duck) {
-        return SoundType.Quack;
-      }
-
-      return standardSoundType;
+      return variant.duck ? SoundType.Quack : standardSoundType;
     }
 
     case "misplay": {
@@ -166,15 +162,11 @@ export function getSoundType(
         }
       }
 
-      if (
-        gameState.stats.doubleDiscardCard !== undefined
-        && !metadata.hardVariant
-      ) {
-        // A player has discarded to *cause* a double discard situation.
-        return SoundType.DoubleDiscardCause;
-      }
-
-      return standardSoundType;
+      // A player has discarded to *cause* a double discard situation.
+      return gameState.stats.doubleDiscardCard === undefined
+        || metadata.hardVariant
+        ? standardSoundType
+        : SoundType.DoubleDiscardCause;
     }
 
     case "gameOver": {
@@ -316,12 +308,8 @@ function isOrderChopMove(
         && card.segmentFirstClued !== undefined
         && card.segmentFirstClued === newestOne.segmentFirstClued,
     );
-    if (chopFocusedCard !== undefined) {
-      return chopFocusedCard.order !== action.order;
-    }
-
-    // The Fresh 1's Rule applies.
-    return newestOneOrder !== action.order;
+    // Otherwise, the Fresh 1's Rule applies.
+    return (chopFocusedCard?.order ?? newestOneOrder) !== action.order;
   }
 
   // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence.

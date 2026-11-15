@@ -64,13 +64,12 @@ export function onEfficiencyChanged(data: {
       ? undefined
       : getEfficiency(cardsNotGotten, cluesStillUsable);
 
-  if (futureEfficiency === undefined) {
-    // Handle the case in which there are 0 possible clues remaining or the game has ended.
-    effLabel.text("-");
-  } else {
-    // Show the efficiency and round it to 2 decimal places.
-    effLabel.text(futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES));
-  }
+  // There is no efficiency when there are 0 possible clues remaining or the game has ended.
+  effLabel.text(
+    futureEfficiency === undefined
+      ? "-"
+      : futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
+  );
 
   const text = effLabel.text();
   const { width } = effLabel.measureSize(text);

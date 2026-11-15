@@ -7,18 +7,12 @@ import { globals } from "./UiGlobals.ts";
  * present while we are looking through past actions in an in-game replay.)
  */
 export function isOurTurn(): boolean {
-  // First, handle the special case of a hypothetical.
-  if (globals.state.replay.hypothetical !== undefined) {
-    // It is always the turn of whoever controls the hypothetical.
-    return controlsHypothetical(globals.state);
-  }
-
-  // Handle the case of an ongoing game.
-  return (
-    globals.state.playing
-    && isOurSeat(
-      globals.state.ongoingGame.turn.currentPlayerIndex,
-      globals.metadata,
-    )
-  );
+  // In a hypothetical, it is always the turn of whoever controls the hypothetical.
+  return globals.state.replay.hypothetical === undefined
+    ? globals.state.playing
+        && isOurSeat(
+          globals.state.ongoingGame.turn.currentPlayerIndex,
+          globals.metadata,
+        )
+    : controlsHypothetical(globals.state);
 }

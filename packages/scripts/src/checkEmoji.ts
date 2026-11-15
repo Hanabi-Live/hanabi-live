@@ -403,11 +403,9 @@ async function checkImage(
       return await response.bytes();
     }),
   );
-  if (remotes.every((remote) => !samePixels(local, remote))) {
-    return `"${relativePath}" differs from the image of "${code}" at ${urls.join(" or ")}.`;
-  }
-
-  return undefined;
+  return remotes.every((remote) => !samePixels(local, remote))
+    ? `"${relativePath}" differs from the image of "${code}" at ${urls.join(" or ")}.`
+    : undefined;
 }
 
 /**

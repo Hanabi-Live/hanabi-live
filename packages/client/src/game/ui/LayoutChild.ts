@@ -103,15 +103,12 @@ export class LayoutChild extends Konva.Group {
   }
 
   shouldBeDraggable(draggableIndex: PlayerIndex | undefined): boolean {
-    // Rarely, if the game is restarted when a tween is happening, we can get here without the card
-    // being defined.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.card === undefined) {
-      return false;
-    }
-
     return (
       draggableIndex !== undefined
+      // Rarely, if the game is restarted when a tween is happening, we can get here without the
+      // card being defined.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      && this.card !== undefined
       && this.card.state.location === draggableIndex
       // A morphed card with an unknown identity cannot be played or discarded.
       && !this.blank

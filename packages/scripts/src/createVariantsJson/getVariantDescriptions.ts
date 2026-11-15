@@ -1356,16 +1356,12 @@ function isVariantAllowed(
     "",
   );
 
-  // The requested double-dark combination can exceed the normal efficiency limit.
-  if (
-    getTotalCardsInDeck(variant) < MINIMUM_CARD_COUNT
-    || minVariantPace(variant) < 0
-  ) {
-    return false;
-  }
-
   return (
-    variantDescription.name === "Scarce Ones & Critical Fours (6 Suits)"
-    || maxRequiredVariantEfficiency(variant) <= MAX_ALLOWED_EFFICIENCY_THRESHOLD
+    getTotalCardsInDeck(variant) >= MINIMUM_CARD_COUNT
+    && minVariantPace(variant) >= 0
+    // The requested double-dark combination can exceed the normal efficiency limit.
+    && (variantDescription.name === "Scarce Ones & Critical Fours (6 Suits)"
+      || maxRequiredVariantEfficiency(variant)
+        <= MAX_ALLOWED_EFFICIENCY_THRESHOLD)
   );
 }

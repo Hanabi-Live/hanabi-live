@@ -46,11 +46,7 @@ function parseSuit(variant: Variant, suitText: string): SuitIndex | undefined {
   const suitNameIndex = variant.suits.findIndex(
     (suit) => suit.displayName.toLowerCase() === suitText,
   );
-  if (suitNameIndex !== -1) {
-    return suitNameIndex as SuitIndex;
-  }
-
-  return undefined;
+  return suitNameIndex === -1 ? undefined : (suitNameIndex as SuitIndex);
 }
 
 function parseRank(rankText: string): Rank | undefined {
@@ -336,9 +332,7 @@ function firstGroup(
 function extractSquishText(match: RegExpMatchArray): string | undefined {
   const text = match.groups?.[SQUISH_GROUP_NAME]?.trim();
 
-  if (text !== undefined && !ALL_RESERVED_NOTES.has(text.toLowerCase())) {
-    return text;
-  }
-
-  return undefined;
+  return text === undefined || ALL_RESERVED_NOTES.has(text.toLowerCase())
+    ? undefined
+    : text;
 }

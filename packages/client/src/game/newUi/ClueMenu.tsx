@@ -24,11 +24,9 @@ interface ClueMenuProps {
 }
 
 function isSameClue(a: Clue | undefined, b: Clue): boolean {
-  if (a?.type === "color" && b.type === "color") {
-    return a.value.name === b.value.name;
-  }
-
-  return a?.type === "rank" && b.type === "rank" && a.value === b.value;
+  return a?.type === "color" && b.type === "color"
+    ? a.value.name === b.value.name
+    : a?.type === "rank" && b.type === "rank" && a.value === b.value;
 }
 
 /** The space between the menu and the hand, in CSS pixels. */

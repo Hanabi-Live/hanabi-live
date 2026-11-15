@@ -242,15 +242,9 @@ function getRankMap(
   ranks: ReadonlySet<number>,
   numSuits: number,
 ): ReadonlyArray<readonly number[]> {
-  const cardMap: number[][] = [];
-
-  for (const rank of [1, 2, 3, 4, 5, 6, 7]) {
-    if (ranks.has(rank)) {
-      cardMap.push(ONES.slice(0, numSuits));
-    } else {
-      cardMap.push(ZEROES.slice(0, numSuits));
-    }
-  }
+  const cardMap: number[][] = Array.from([1, 2, 3, 4, 5, 6, 7], (rank) =>
+    (ranks.has(rank) ? ONES : ZEROES).slice(0, numSuits),
+  );
 
   return cardMap;
 }

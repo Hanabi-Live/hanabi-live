@@ -964,11 +964,9 @@ export function describeCard(
   const suitName =
     suitIndex === undefined ? undefined : variant.suits[suitIndex]?.displayName;
   const rankLabel = rank === undefined ? undefined : getRankLabel(rank);
-  if (suitName === undefined && rankLabel === undefined) {
-    return "Unknown card";
-  }
-
-  return [suitName ?? "Unknown suit", rankLabel ?? "of unknown rank"].join(" ");
+  return suitName === undefined && rankLabel === undefined
+    ? "Unknown card"
+    : [suitName ?? "Unknown suit", rankLabel ?? "of unknown rank"].join(" ");
 }
 
 /**

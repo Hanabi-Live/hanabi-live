@@ -71,11 +71,7 @@ export function getNumCopiesOfCard(
     }
 
     case 5: {
-      if (suit.reversed) {
-        return 3;
-      }
-
-      return 1;
+      return suit.reversed ? 3 : 1;
     }
 
     case START_CARD_RANK: {
@@ -134,11 +130,7 @@ export function getDiscardHelpers(
   // eslint-disable-next-line func-style
   const total = (suitIndex: SuitIndex, rank: Rank) => {
     const suit = variant.suits[suitIndex];
-    if (suit === undefined) {
-      return 0;
-    }
-
-    return getNumCopiesOfCard(suit, rank, variant);
+    return suit === undefined ? 0 : getNumCopiesOfCard(suit, rank, variant);
   };
 
   // eslint-disable-next-line func-style

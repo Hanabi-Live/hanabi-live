@@ -59,14 +59,11 @@ function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
     && "stack" in error
     && typeof error.stack === "string"
   ) {
-    if (
-      "message" in error
+    return "message" in error
       && typeof error.message === "string"
       && !error.stack.includes(error.message)
-    ) {
-      return `${errorEvent.message}\n${error.stack}`;
-    }
-    return error.stack;
+      ? `${errorEvent.message}\n${error.stack}`
+      : error.stack;
   }
   return undefined;
 }

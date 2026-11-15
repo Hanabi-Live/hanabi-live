@@ -51,11 +51,9 @@ export function checkNoteImpossibility(
 
     return `${impossibleSuit} ${impossibleRank}`;
   });
-  if (impossibilities.length === 1) {
-    modals.showWarning(`That card cannot possibly be ${impossibilities[0]}`);
-  } else {
-    modals.showWarning(
-      `That card cannot possibly be any of ${impossibilities.join(", ")}`,
-    );
-  }
+  modals.showWarning(
+    impossibilities.length === 1
+      ? `That card cannot possibly be ${impossibilities[0]}`
+      : `That card cannot possibly be any of ${impossibilities.join(", ")}`,
+  );
 }

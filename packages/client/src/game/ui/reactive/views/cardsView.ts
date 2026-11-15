@@ -117,14 +117,9 @@ function subscribeToCardChanges(order: CardOrder) {
 
   // Validates that a card exists in the visible state before firing a listener.
   function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
-    return (state) => {
-      if (order >= state.visibleState!.deck.length) {
-        // This card was removed from visible state, so skip the listener.
-        return SKIP;
-      }
-
-      return s(state);
-    };
+    return (state) =>
+      // Skip the listener if this card was removed from the visible state.
+      order >= state.visibleState!.deck.length ? SKIP : s(state);
   }
 
   // Subscribes to a set of property changes from cards.

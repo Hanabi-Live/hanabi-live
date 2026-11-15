@@ -274,11 +274,10 @@ export function shouldFadeTrash({
   readonly note: Pick<CardNote, "blank" | "chopMoved">;
   readonly throwItInAHole: boolean;
 }): boolean {
-  if (markedTrash && !positivelyClued) {
-    return true;
-  }
-
-  return trash && !clued && !note.blank && !note.chopMoved && !throwItInAHole;
+  return (
+    (markedTrash && !positivelyClued)
+    || (trash && !clued && !note.blank && !note.chopMoved && !throwItInAHole)
+  );
 }
 
 /** Returns the cards in a hand that a clue would touch, from the identities that we can see. */

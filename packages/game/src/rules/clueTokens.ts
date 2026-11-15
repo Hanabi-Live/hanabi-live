@@ -15,18 +15,14 @@ export function getNewClueTokensAfterAction(
   variant: Variant,
   playStackComplete = false,
 ): number {
-  if (
-    shouldActionGenerateClueToken(
-      action,
-      clueTokens,
-      variant,
-      playStackComplete,
-    )
-  ) {
-    return clueTokens + 1;
-  }
-
-  return clueTokens;
+  return shouldActionGenerateClueToken(
+    action,
+    clueTokens,
+    variant,
+    playStackComplete,
+  )
+    ? clueTokens + 1
+    : clueTokens;
 }
 
 function shouldActionGenerateClueToken(

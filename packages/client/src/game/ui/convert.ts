@@ -13,11 +13,7 @@ export function suitIndexToSuit(
   suitIndex: SuitIndex | undefined,
   variant: Variant,
 ): Suit | undefined {
-  if (suitIndex === undefined) {
-    return undefined;
-  }
-
-  return variant.suits[suitIndex];
+  return suitIndex === undefined ? undefined : variant.suits[suitIndex];
 }
 
 export function suitToSuitIndex(

@@ -330,20 +330,19 @@ function shouldUpdateCardPossibilities(
 
   const oldCard = oldDeck[card.order];
 
-  if (oldCard === undefined || oldCard.location === "deck") {
-    // This is a newly drawn card and hasn't had any calculations yet.
-    return true;
-  }
-
-  // If the possibilities on the other cards in the deck do not change, then the result of our
-  // calculation won't change. We only need to recalculate the card if the input (possibilities)
-  // changed.
-  return deckPossibilitiesDifferent(
-    card.order,
-    deck,
-    oldDeck,
-    playerIndex,
-    ourPlayerIndex,
+  // A newly drawn card has not had any calculations yet. Otherwise, if the possibilities on the
+  // other cards in the deck do not change, then the result of our calculation won't change. We only
+  // need to recalculate the card if the input (possibilities) changed.
+  return (
+    oldCard === undefined
+    || oldCard.location === "deck"
+    || deckPossibilitiesDifferent(
+      card.order,
+      deck,
+      oldDeck,
+      playerIndex,
+      ourPlayerIndex,
+    )
   );
 }
 

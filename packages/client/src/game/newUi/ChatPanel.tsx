@@ -168,10 +168,9 @@ export function ChatPanel({
   // the panel closes, so that the classic screen can show it again.
   useLayoutEffect(() => {
     const container = boxRef.current;
-    if (!open || poppedOut || container === null) {
-      return undefined;
-    }
-    return borrowChatBox(container);
+    return !open || poppedOut || container === null
+      ? undefined
+      : borrowChatBox(container);
   }, [open, poppedOut]);
 
   // While the chat is popped out, its window borrows the chat box instead.

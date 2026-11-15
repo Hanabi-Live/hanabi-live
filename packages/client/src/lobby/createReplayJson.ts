@@ -401,11 +401,7 @@ function getCardOrderFromHypoState(
   }
 
   const playerHand = stateOnHypoTurn.hands[playerIndex];
-  if (playerHand === undefined) {
-    return undefined;
-  }
-
-  return playerHand[slotIndex];
+  return playerHand === undefined ? undefined : playerHand[slotIndex];
 }
 
 function getColorIndexFromColorName(

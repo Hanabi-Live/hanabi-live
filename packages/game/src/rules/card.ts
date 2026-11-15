@@ -119,11 +119,9 @@ export function getCardStatus(
   );
 
   if (cardNeedsToBePlayed) {
-    if (isCardCritical(suitIndex, rank, deck, playStackDirections, variant)) {
-      return CardStatus.Critical;
-    }
-
-    return CardStatus.NeedsToBePlayed;
+    return isCardCritical(suitIndex, rank, deck, playStackDirections, variant)
+      ? CardStatus.Critical
+      : CardStatus.NeedsToBePlayed;
   }
 
   return CardStatus.Trash;
@@ -207,14 +205,14 @@ export function canCardPossiblyBeFromCluesOnly(
   suitIndex: SuitIndex | undefined,
   rank: Rank | undefined,
 ): boolean {
-  if (suitIndex === undefined && rank === undefined) {
+  return (
     // We have nothing to check.
-    return true;
-  }
-  return card.possibleCardsFromClues.some(
-    ([s, r]) =>
-      (suitIndex === undefined || suitIndex === s)
-      && (rank === undefined || rank === r),
+    (suitIndex === undefined && rank === undefined)
+    || card.possibleCardsFromClues.some(
+      ([s, r]) =>
+        (suitIndex === undefined || suitIndex === s)
+        && (rank === undefined || rank === r),
+    )
   );
 }
 
@@ -223,14 +221,14 @@ export function canCardPossiblyBeFromEmpathy(
   suitIndex: SuitIndex | undefined,
   rank: Rank | undefined,
 ): boolean {
-  if (suitIndex === undefined && rank === undefined) {
+  return (
     // We have nothing to check.
-    return true;
-  }
-  return card.possibleCardsForEmpathy.some(
-    ([s, r]) =>
-      (suitIndex === undefined || suitIndex === s)
-      && (rank === undefined || rank === r),
+    (suitIndex === undefined && rank === undefined)
+    || card.possibleCardsForEmpathy.some(
+      ([s, r]) =>
+        (suitIndex === undefined || suitIndex === s)
+        && (rank === undefined || rank === r),
+    )
   );
 }
 

@@ -67,13 +67,10 @@ export function getNextPlayableRanksAfter(
       // play stack, even when no cards have been played when this is the last suit. In that case,
       // only the (known) stack start can be played.
       const playStackStart = playStackStarts[suitIndex];
-      if (playStackStart !== undefined) {
-        return [playStackStart];
-      }
-
-      // If the stack is not started, it can be started with any rank that is not the starting rank
-      // of another stack.
-      return variant.ranks.filter((rank) => !playStackStarts.includes(rank));
+      // Otherwise, it can be started with any rank that is not the starting rank of another stack.
+      return playStackStart === undefined
+        ? variant.ranks.filter((rank) => !playStackStarts.includes(rank))
+        : [playStackStart];
     }
 
     case StackDirection.Down: {
@@ -99,11 +96,7 @@ export function getLastPlayedRank(
   }
 
   const card = deck[orderOfTopCard];
-  if (card === undefined) {
-    return undefined;
-  }
-
-  return card.rank;
+  return card === undefined ? undefined : card.rank;
 }
 
 export function getStackDirection(
@@ -168,9 +161,5 @@ export function getStackStartRank(
   }
 
   const bottomCard = deck[bottomCardOrder];
-  if (bottomCard === undefined) {
-    return undefined;
-  }
-
-  return bottomCard.rank;
+  return bottomCard === undefined ? undefined : bottomCard.rank;
 }

@@ -21,12 +21,10 @@ function getCharacterIdForPlayer(
   playerIndex: PlayerIndex | undefined,
   characterAssignments: Readonly<Array<number | undefined>>,
 ): number | undefined {
-  if (playerIndex === undefined) {
-    return undefined;
-  }
-
   // Undefined when the player has no character.
-  return characterAssignments[playerIndex];
+  return playerIndex === undefined
+    ? undefined
+    : characterAssignments[playerIndex];
 }
 
 export function getEfficiencyFromGameState(

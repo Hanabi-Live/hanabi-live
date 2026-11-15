@@ -37,12 +37,10 @@ export function getMaxScorePerStack(
   variant: Variant,
 ): Tuple<number, NumSuits> {
   // Sudoku-variants are quite complicated, since we need to solve an assignment problem for these.
-  if (variant.sudoku) {
-    return sudokuGetMaxScorePerStack(deck, playStackStarts, variant);
-  }
-
-  // This handles the maximum scores in Reversed or "Up Or Down" variants.
-  return reversibleGetMaxScorePerStack(deck, playStackDirections, variant);
+  // The other function handles the maximum scores in Reversed or "Up Or Down" variants.
+  return variant.sudoku
+    ? sudokuGetMaxScorePerStack(deck, playStackStarts, variant)
+    : reversibleGetMaxScorePerStack(deck, playStackDirections, variant);
 }
 
 function getMaxDiscardsBeforeFinalRound(
@@ -65,11 +63,7 @@ function getMaxPlaysDuringFinalRound(
   cardsToPlay: number,
   endGameLength: number,
 ): number {
-  if (cardsToPlay < endGameLength + 1) {
-    return cardsToPlay;
-  }
-
-  return endGameLength + 1;
+  return Math.min(cardsToPlay, endGameLength + 1);
 }
 
 function getMaxPlays(
@@ -77,11 +71,7 @@ function getMaxPlays(
   deckSize: number,
   endGameLength: number,
 ): number {
-  if (cardsToPlay <= endGameLength + deckSize) {
-    return cardsToPlay;
-  }
-
-  return endGameLength + deckSize;
+  return Math.min(cardsToPlay, endGameLength + deckSize);
 }
 
 /** @returns The number of discards that can happen while still getting the maximum score. */
@@ -265,11 +255,7 @@ function getCardsGottenByNotesAdjustment(
 
   const isCluedByNotes =
     (note.clued || note.finessed) && !note.unclued && !note.knownTrash;
-  if (isCluedByNotes) {
-    return 1;
-  }
-
-  return 0;
+  return isCluedByNotes ? 1 : 0;
 }
 
 /** @returns The minimum amount of efficiency needed in order to win this variant. */

@@ -385,11 +385,9 @@ export function possibleCardsFromNoteAndClues(
       ),
   );
 
-  if (possibilitiesWithNotes.length === 0) {
-    return state.possibleCardsFromClues;
-  }
-
-  return possibilitiesWithNotes;
+  return possibilitiesWithNotes.length === 0
+    ? state.possibleCardsFromClues
+    : possibilitiesWithNotes;
 }
 
 function getSuitIndexFromNote(
