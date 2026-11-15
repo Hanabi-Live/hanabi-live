@@ -37,7 +37,7 @@ import {
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
-import { ReplayBar } from "./ReplayBar.tsx";
+import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
 import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
@@ -734,24 +734,14 @@ export function GameScreen({
         />
       </div>
 
-      {/* In a replay, its controls are at the top of the bar along the bottom, so that the hands keep
-          most of the height of the screen. */}
-      <ReplayBar
-        editingCards={editingCards}
-        hypotheticalHint={hypotheticalHint}
-        onToggleEditCards={() => {
-          setEditingCards(!editingCards);
-        }}
-        state={state}
-      />
       <StatusStrip
         futureEfficiency={formatFutureEfficiency(
           visibleState.stats,
           efficiencyModifier,
         )}
         gameInfoTooltip={getGameInfoTooltip(false)}
-        // The replay bar has no turn of its own, so the turn here says how far into the game it is.
-        // A spoiler-free replay hides how long the game lasts.
+        // The replay controls have no turn, so the turn here says how far into the game it is. A
+        // spoiler-free replay hides how long the game lasts.
         lastTurn={
           (state.replay.segment !== undefined || state.finished)
           && state.replay.hypothetical === undefined
@@ -778,6 +768,20 @@ export function GameScreen({
           || options.allOrNothing
             ? undefined
             : getPaceRiskColor(visibleState.stats.paceRisk)
+        }
+        // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
+        // the height of the screen.
+        replayControls={
+          hasReplayControls(state) ? (
+            <ReplayControls
+              editingCards={editingCards}
+              hypotheticalHint={hypotheticalHint}
+              onToggleEditCards={() => {
+                setEditingCards(!editingCards);
+              }}
+              state={state}
+            />
+          ) : undefined
         }
         replayToggle={
           state.finished

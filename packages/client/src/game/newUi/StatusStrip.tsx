@@ -1,5 +1,7 @@
-import { useLayoutEffect, useRef } from "react";
+import type { RefObject } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { useElementSize } from "./hooks.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /**
@@ -62,6 +64,9 @@ interface StatusStripProps {
    */
   readonly replayToggle: ReplayToggleProps | undefined;
 
+  /** The controls of the replay that the screen shows, or `undefined` in the game as it stands. */
+  readonly replayControls: React.ReactNode;
+
   /** The menu to view the game from a seat, for anyone who does not play in it. */
   readonly viewAsMenu: React.ReactNode;
 
@@ -121,11 +126,15 @@ function Stat({
 }
 
 /** A thin line between two groups of the bar. On a narrow screen, the groups wrap instead. */
-function GroupDivider(): React.JSX.Element {
+function GroupDivider({
+  className = "",
+}: {
+  readonly className?: string;
+}): React.JSX.Element {
   return (
     <span
       aria-hidden="true"
-      className="tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:narrow-980:hidden"
+      className={`tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:narrow-980:hidden ${className}`}
     />
   );
 }
@@ -290,8 +299,49 @@ function ReplayToggle({
 }
 
 /**
+ * The attribute that gives the replay controls a row of their own. The bar's styles for that layout
+ * depend on it (as "data-own-row"), so that the bar can try the one-row layout without drawing it.
+ */
+const OWN_ROW_ATTRIBUTE = "data-own-row";
+
+/**
+ * Whether the replay controls need a row of their own, because the bar has no room for them in one
+ * row with the numbers and the buttons. In one row, nothing in the bar wraps, so the bar or the
+ * controls overflow when they have no room. After each render and resize, the bar takes away the
+ * attribute of the two-row layout, checks whether anything overflows, and puts the attribute back.
+ * All of it happens before the browser draws the bar.
+ */
+function useOwnRow(
+  footer: HTMLElement | null,
+  controls: RefObject<HTMLDivElement | null>,
+): boolean {
+  // Measures again when the bar's width changes.
+  useElementSize(footer);
+  const [ownRow, setOwnRow] = useState(false);
+  useLayoutEffect(() => {
+    const group = controls.current;
+    if (footer === null || group === null) {
+      setOwnRow(false);
+      return;
+    }
+    const hadOwnRow = footer.hasAttribute(OWN_ROW_ATTRIBUTE);
+    footer.removeAttribute(OWN_ROW_ATTRIBUTE);
+    const overflows =
+      footer.scrollWidth > footer.clientWidth
+      || group.scrollWidth > group.clientWidth;
+    if (hadOwnRow) {
+      footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
+    }
+    setOwnRow(overflows);
+  });
+  return ownRow;
+}
+
+/**
  * The numbers about the whole game, along the bottom of the screen, most important first. (The clue
- * tokens and strikes sit with the deck instead, since they are tokens on the table.)
+ * tokens and strikes sit with the deck instead, since they are tokens on the table.) In a replay,
+ * the bar takes the colors of the screen's mode, and its controls are in the middle. So the numbers
+ * and the buttons do not move when a replay starts or ends.
  */
 export function StatusStrip({
   turn,
@@ -305,15 +355,30 @@ export function StatusStrip({
   variantName,
   gameInfoTooltip,
   replayToggle,
+  replayControls,
   viewAsMenu,
   tableMenu,
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_TURN);
+  const [footer, setFooter] = useState<HTMLElement | null>(null);
+  const inReplay = replayControls !== undefined;
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const ownRow = useOwnRow(footer, controlsRef);
+
+  let colorClass = "tw:border-t tw:border-game-raised tw:bg-game-panel";
+  if (inReplay) {
+    colorClass =
+      "tw:border-0 tw:border-t-2 tw:border-solid tw:border-game-mode tw:bg-game-mode-panel";
+  }
 
   return (
-    <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-game-raised tw:bg-game-panel tw:px-7 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3">
+    <footer
+      className={`tw:group/strip tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 ${colorClass} tw:data-own-row:h-auto tw:data-own-row:flex-wrap tw:data-own-row:gap-y-2.5 tw:data-own-row:py-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3`}
+      data-own-row={ownRow ? "" : undefined}
+      ref={setFooter}
+    >
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
@@ -372,8 +437,11 @@ export function StatusStrip({
         </Stat>
       </div>
       <GroupDivider />
-      {/* The variant opens the game's information: its seed, options, and table. */}
-      <div className="tw:flex tw:min-w-0 tw:flex-auto tw:flex-col tw:gap-0.5">
+      {/* The variant opens the game's information: its seed, options, and table. Its name gives up
+          its room first, so that the replay controls keep theirs. */}
+      <div
+        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"}`}
+      >
         <span className={STAT_LABEL_CLASS}>
           Variant
           <HelpIcon
@@ -386,6 +454,18 @@ export function StatusStrip({
           {variantName}
         </span>
       </div>
+      {inReplay && (
+        <GroupDivider className="tw:group-data-own-row/strip:hidden" />
+      )}
+      {inReplay && (
+        <div
+          // When the controls have a row of their own, and on a narrow window, they are on top.
+          className="tw:flex tw:shrink-0 tw:grow tw:basis-0 tw:group-data-own-row/strip:order-first tw:group-data-own-row/strip:basis-full tw:narrow-980:order-first tw:narrow-980:basis-full"
+          ref={controlsRef}
+        >
+          {replayControls}
+        </div>
+      )}
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic UI

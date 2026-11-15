@@ -4,7 +4,7 @@ import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import * as restart from "../ui/restart.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
-import { Checkbox } from "./ReplayBar.tsx";
+import { Checkbox } from "./ReplayControls.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
   BOTTOM_BAR_BUTTON_COLOR_CLASS,
