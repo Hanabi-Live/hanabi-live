@@ -28,15 +28,13 @@ function entry(
 
 function renderLog(
   entries: readonly ClueLogEntry[],
-  pressedCard: number | undefined,
-  hoveredCard?: number,
+  hoveredCard: number | undefined,
 ) {
   render(
     <ClueLog
       entries={entries}
       hoveredCard={hoveredCard as CardOrder | undefined}
       onShowClue={onShowClue}
-      pressedCard={pressedCard as CardOrder | undefined}
       shownSegment={undefined}
     />,
   );
@@ -71,24 +69,8 @@ afterEach(() => {
 describe("ClueLog", () => {
   const entries = [entry(0, [1], [2]), entry(1, [3], [4]), entry(2, [2], [1])];
 
-  test("shows every clue when no card is pressed", () => {
-    renderLog(entries, undefined);
-    expect(getTurns()).toEqual(["#1", "#2", "#3"]);
-  });
-
-  test("shows only the clues about the pressed card", () => {
-    renderLog(entries, 2);
-    expect(getTurns()).toEqual(["#1", "#3"]);
-    const missed = screen
-      .getAllByRole("listitem")
-      .map(
-        (item) => within(item).queryByLabelText(/did not touch it$/u) !== null,
-      );
-    expect(missed).toEqual([true, false]);
-  });
-
   test("marks the clues about the hovered card and keeps the others", () => {
-    renderLog(entries, undefined, 2);
+    renderLog(entries, 2);
     expect(getTurns()).toEqual(["#1", "#2", "#3"]);
     const labels = screen.getAllByRole("listitem").map((item) => {
       if (within(item).queryByLabelText(/did not touch it$/u) !== null) {
@@ -99,11 +81,5 @@ describe("ClueLog", () => {
         : "touched";
     });
     expect(labels).toEqual(["missed", "none", "touched"]);
-  });
-
-  test("says when no clue is about the pressed card", () => {
-    renderLog(entries, 5);
-    expect(screen.queryAllByRole("button")).toEqual([]);
-    expect(screen.getByText("No clues about this card yet.")).not.toBe(null);
   });
 });

@@ -30,17 +30,17 @@ const ROW_LINE_HEIGHT = CLUE_DISC_SIZE + 1;
 /** The size of a name in the log, in CSS pixels, if it fits in its column. */
 const NAME_FONT_SIZE = 14;
 
-/** How a clue relates to the card that the mouse button is held on. */
+/** How a clue relates to the card that the mouse is over. */
 type Match = "none" | "positive" | "negative";
 
-/** The background of a row about a hovered or pressed card, for each match. */
+/** The background of a row about a hovered card, for each match. */
 const MATCH_BACKGROUND = {
   none: "",
   positive: "tw:bg-[rgb(74_222_128/40%)] tw:hover:bg-[rgb(74_222_128/52%)]",
   negative: "tw:bg-[rgb(248_113_113/40%)] tw:hover:bg-[rgb(248_113_113/52%)]",
 } as const satisfies Record<Match, string>;
 
-/** What the label of a clue about a hovered or pressed card adds, for each match. */
+/** What the label of a clue about a hovered card adds, for each match. */
 const MATCH_LABEL_SUFFIX = {
   none: "",
   positive: ", touched it",
@@ -94,56 +94,41 @@ export function getClueText(entry: ClueLogEntry): string {
  *
  * While the mouse is over a card in a hand, the clues about that card stand out, as on the classic
  * screen: the ones that touched it (on green), and the ones to its hand that did not (on red). The
- * other clues stay, so that the log does not jump as the mouse passes over the hands. While the
- * mouse button is held down on a card, the log shows only the clues about it, so that all of them
- * fit, however old the card is.
+ * other clues stay, so that the log does not jump as the mouse passes over the hands.
  */
 export function ClueLog({
   entries,
   shownSegment,
-  pressedCard,
   hoveredCard,
   onShowClue,
 }: {
   readonly entries: readonly ClueLogEntry[];
   /** The segment of the clue that the turn on screen shows, if any. */
   readonly shownSegment: number | undefined;
-  /** The card in a hand that the mouse button is held down on, if any. */
-  readonly pressedCard: CardOrder | undefined;
   /** The card in a hand that the mouse is over, if any. */
   readonly hoveredCard: CardOrder | undefined;
   readonly onShowClue: (segment: number) => void;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
 
-  // Where the viewer left the full log, to go back there when the mouse button is released.
-  const savedScroll = useRef<{ top: number; atBottom: boolean }>({
-    top: 0,
-    atBottom: true,
-  });
+  // Whether the viewer is at the newest clue, so that the log stays there when a clue comes in.
+  const atBottom = useRef(true);
 
   // Whether older clues are scrolled out of view above, which the top edge of the list fades to
   // show.
   const [scrolledDown, setScrolledDown] = useState(false);
 
-  const filtered = pressedCard !== undefined;
-  const rows = entries
-    .map((entry) => ({
-      entry,
-      match: getMatch(entry, pressedCard ?? hoveredCard),
-    }))
-    .filter(({ match }) => !filtered || match !== "none");
-
-  // Keep the newest clue in view, unless the viewer scrolled back in the full log.
+  // Keep the newest clue in view, unless the viewer scrolled back.
   useLayoutEffect(() => {
     const list = listRef.current;
     if (list === null) {
       return;
     }
-    const saved = savedScroll.current;
-    list.scrollTop = filtered || saved.atBottom ? list.scrollHeight : saved.top;
+    if (atBottom.current) {
+      list.scrollTop = list.scrollHeight;
+    }
     setScrolledDown(list.scrollTop > 0);
-  }, [entries.length, filtered, pressedCard]);
+  }, [entries.length]);
 
   return (
     // The log is a record to consult, so it sits sunken into the felt, like the other readouts.
@@ -152,18 +137,11 @@ export function ClueLog({
       className={`tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-game-panel tw:narrow-980:h-[320px] tw:narrow-980:flex-none ${WELL_CLASS}`}
       ref={tooltipRef("Clue log")}
     >
-      {/* The whole log needs no heading: its rows are clearly clues. A heading shows only when the
-          log is narrowed to one card, so that the missing rows do not look lost. */}
-      {filtered ? (
-        <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-game-muted">
-          Clues about this card
-        </h2>
-      ) : (
-        <div className="tw:pt-3" />
-      )}
-      {rows.length === 0 ? (
+      {/* The log needs no heading: its rows are clearly clues. */}
+      <div className="tw:pt-3" />
+      {entries.length === 0 ? (
         <p className="tw:m-0 tw:px-4.5 tw:py-2 tw:text-[14px] tw:text-game-muted">
-          {filtered ? "No clues about this card yet." : "No clues yet."}
+          No clues yet.
         </p>
       ) : (
         <ol
@@ -175,22 +153,16 @@ export function ClueLog({
               : ""
           }`}
           onScroll={(event) => {
-            setScrolledDown(event.currentTarget.scrollTop > 0);
-            if (filtered) {
-              return;
-            }
-
             const list = event.currentTarget;
-            savedScroll.current = {
-              top: list.scrollTop,
-              atBottom:
-                list.scrollHeight - list.scrollTop - list.clientHeight
-                <= BOTTOM_SLOP,
-            };
+            setScrolledDown(list.scrollTop > 0);
+            atBottom.current =
+              list.scrollHeight - list.scrollTop - list.clientHeight
+              <= BOTTOM_SLOP;
           }}
           ref={listRef}
         >
-          {rows.map(({ entry, match }) => {
+          {entries.map((entry) => {
+            const match = getMatch(entry, hoveredCard);
             const shown = entry.segment === shownSegment;
             const background =
               match === "none"

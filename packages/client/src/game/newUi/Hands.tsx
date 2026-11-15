@@ -138,9 +138,6 @@ interface HandsProps {
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
   readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
 
-  /** The mouse button went down on a card in a hand (the clue log then shows its clues). */
-  readonly onPressCard: (order: CardOrder) => void;
-
   /**
    * The mouse moved onto a card in a hand, or off the cards (`undefined`). The clue log then
    * highlights the clues about the card. A touch screen has no hover, so a tap does not count.
@@ -972,12 +969,6 @@ export function Hands(props: HandsProps): React.JSX.Element {
     <section
       aria-label="Hands"
       className="tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center"
-      onPointerDown={(event) => {
-        const order = getCardOrderAt(event.target);
-        if (order !== undefined && event.button === 0) {
-          props.onPressCard(order);
-        }
-      }}
       onPointerLeave={() => {
         props.onHoverCard(undefined);
       }}
