@@ -74,6 +74,7 @@ import {
   canDrawArrowNow,
   getArrowView,
   getShownArrowTarget,
+  showArrow,
   toggleArrow,
 } from "./arrow.ts";
 import { getArrowTargetAt } from "./arrowAnchor.ts";
@@ -1027,14 +1028,26 @@ export function GameScreen({
                   nameColumnWidth={nameColumnWidth}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
-                    if (canMoveCards && !tapToMove && event.button === 0) {
-                      pressCard(
-                        order,
-                        event.clientX,
-                        event.clientY,
-                        event.currentTarget,
-                      );
+                    if (!canMoveCards || tapToMove || event.button !== 0) {
+                      return;
                     }
+                    // The arrow would get in the way of the card, so it goes away when it points at
+                    // a card in the same hand, as on the classic screen.
+                    const hand = seats.find((seat) =>
+                      seat.cards.some((card) => card.order === order),
+                    );
+                    if (
+                      hand !== undefined
+                      && hand.cards.some((card) => card.order === shownArrow)
+                    ) {
+                      showArrow(undefined);
+                    }
+                    pressCard(
+                      order,
+                      event.clientX,
+                      event.clientY,
+                      event.currentTarget,
+                    );
                   }}
                   onCardTap={(order) => {
                     setMenuCard((current) =>
