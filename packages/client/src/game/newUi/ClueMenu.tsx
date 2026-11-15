@@ -178,60 +178,68 @@ export function ClueMenu({
           <i aria-hidden="true" className="fas fa-history" />
         </button>
       </div>
-      <ClueRow>
-        {colorClues.map((colorClue) => {
-          const color = colorClue.value;
-          if (!isAllowed(colorClue)) {
-            return <EmptySlot key={color.name} />;
-          }
-          const pressed = isSameClue(clue, colorClue);
-          return (
-            <button
-              aria-label={color.name}
-              aria-pressed={pressed}
-              className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
-              key={color.name}
-              onClick={() => {
-                onChooseClue(pressed ? undefined : colorClue);
-              }}
-              style={{
-                background: colorblindMode ? color.fillColorblind : color.fill,
-              }}
-              type="button"
-            />
-          );
-        })}
-      </ClueRow>
-      <ClueRow>
-        {rankClues.map((rankClue) => {
-          const rank = rankClue.value;
-          if (!isAllowed(rankClue)) {
-            return <EmptySlot key={rank} />;
-          }
-          const pressed = isSameClue(clue, rankClue);
-          return (
-            <button
-              aria-pressed={pressed}
-              className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
-              key={rank}
-              onClick={() => {
-                onChooseClue(pressed ? undefined : rankClue);
-              }}
-              type="button"
-            >
-              {getRankLabel(rank)}
-            </button>
-          );
-        })}
-      </ClueRow>
-      <button
-        className={`tw:mt-1 tw:min-h-11 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-6 tw:text-[17px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
-        disabled={!canGive}
-        onClick={onGive}
-        type="button"
-      >
-        {clue === undefined ? "Pick a color or number" : "Give clue"}
-      </button>
+      {/* The button to give the clue sits to the right of the clues, in the room that they leave.
+          When there is not enough room, it goes below them. */}
+      <div className="tw:flex tw:flex-wrap tw:gap-3">
+        <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
+          <ClueRow>
+            {colorClues.map((colorClue) => {
+              const color = colorClue.value;
+              if (!isAllowed(colorClue)) {
+                return <EmptySlot key={color.name} />;
+              }
+              const pressed = isSameClue(clue, colorClue);
+              return (
+                <button
+                  aria-label={color.name}
+                  aria-pressed={pressed}
+                  className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
+                  key={color.name}
+                  onClick={() => {
+                    onChooseClue(pressed ? undefined : colorClue);
+                  }}
+                  style={{
+                    background: colorblindMode
+                      ? color.fillColorblind
+                      : color.fill,
+                  }}
+                  type="button"
+                />
+              );
+            })}
+          </ClueRow>
+          <ClueRow>
+            {rankClues.map((rankClue) => {
+              const rank = rankClue.value;
+              if (!isAllowed(rankClue)) {
+                return <EmptySlot key={rank} />;
+              }
+              const pressed = isSameClue(clue, rankClue);
+              return (
+                <button
+                  aria-pressed={pressed}
+                  className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+                  key={rank}
+                  onClick={() => {
+                    onChooseClue(pressed ? undefined : rankClue);
+                  }}
+                  type="button"
+                >
+                  {getRankLabel(rank)}
+                </button>
+              );
+            })}
+          </ClueRow>
+        </div>
+        <button
+          className={`tw:min-h-11 tw:min-w-[140px] tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+          disabled={!canGive}
+          onClick={onGive}
+          type="button"
+        >
+          {clue === undefined ? "Pick a color or number" : "Give clue"}
+        </button>
+      </div>
     </div>
   );
 }
