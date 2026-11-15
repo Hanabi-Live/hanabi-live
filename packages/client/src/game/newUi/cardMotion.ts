@@ -179,7 +179,12 @@ export function animateCardMoves(
       continue;
     }
 
-    const restore = raiseMovingCard(element);
+    // A card that slides to another slot of its hand crosses no panel, so it is not raised. It
+    // stays under the clue markers of the other cards.
+    const slides =
+      was?.place.startsWith(HAND_PLACE_PREFIX) === true
+      && now.place.startsWith(HAND_PLACE_PREFIX);
+    const restore = slides ? undefined : raiseMovingCard(element);
 
     // The card also changes size between a hand and the smaller cards on the table.
     const animation = element.animate(
@@ -199,7 +204,9 @@ export function animateCardMoves(
         easing: "ease-out",
       },
     );
-    onEnd(animation, restore);
+    if (restore !== undefined) {
+      onEnd(animation, restore);
+    }
   }
 
   if (!forward && deck !== undefined) {
