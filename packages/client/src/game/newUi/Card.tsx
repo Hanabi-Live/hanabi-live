@@ -6,7 +6,7 @@ import {
   getSuitAbbreviationForVariant,
   hasReversedSuits,
 } from "@hanabi-live/game";
-import { useId } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
@@ -1428,30 +1428,36 @@ const NOTE_BORDER_CLASSES = {
  */
 const RANK_SHAPE_RIGHT = 28;
 
-/** The space between the rank and the marks beside it, in the card's own units. */
-const RANK_SIDE_GAP = 14;
+/**
+ * The space between the suit's letter and the rank in color-blind mode, in the card's own units.
+ */
+const SUIT_LETTER_GAP = 14;
 
 /** How large the rank that a deceptive card pretends to be is, beside its real rank. */
 const DECEPTIVE_RANK_SCALE = 0.5;
 
 /**
  * The space between the rank and the deceptive rank, in the card's own units. It is smaller than
- * the space before the suit's letter, because the deceptive rank sits at the top, where the rank's
+ * the space after the suit's letter, because the deceptive rank sits at the top, where the rank's
  * shape is narrower.
  */
 const DECEPTIVE_RANK_GAP = 4;
 
-/** The font size of the suit's letter beside the rank in color-blind mode, in the card's units. */
-const SUIT_LETTER_FONT_SIZE = 62;
-
-/** The font size of the suit's letter in the corner of a card of unknown rank. */
-const SUIT_LETTER_ALONE_FONT_SIZE = 110;
+/**
+ * The font size of the suit's letter in the corner of a card in color-blind mode, in the card's
+ * units. Its capital letters are as tall as the rank.
+ */
+const SUIT_LETTER_FONT_SIZE = 110;
 
 /**
- * Where the rank's path, the deceptive rank, and the suit's letter go in the corner, in the card's
- * own units.
+ * The width of the suit's letter until the browser measures it, in the card's units. It is about
+ * the width of most capital letters.
  */
-const RANK_SIDE_X = RANK_CORNER_OFFSET.x + RANK_SHAPE_RIGHT + RANK_SIDE_GAP;
+const SUIT_LETTER_ESTIMATED_WIDTH = 80;
+
+/**
+ * Where the deceptive rank and the bottom of the rank go in the corner, in the card's own units.
+ */
 const DECEPTIVE_RANK_X =
   RANK_CORNER_OFFSET.x + RANK_SHAPE_RIGHT + DECEPTIVE_RANK_GAP;
 const RANK_BOTTOM_Y = RANK_CORNER_OFFSET.y + RANK_SHAPE_BOX.bottom;
@@ -1490,8 +1496,8 @@ function darkenInk(color: string): string {
  * turned over in the opposite corner as on a playing card, shows only when they do not.
  *
  * Beside the rank, a deceptive card shows the rank that it pretends to be, at half the size and at
- * the top. In color-blind mode, the suit's letter follows the rank at the bottom, as on the classic
- * screen. A card of unknown rank shows only the letter, in the rank's place.
+ * the top. In color-blind mode, the suit's letter comes before the rank, at the same size, such as
+ * "B1". A card of unknown rank shows only the letter.
  */
 function CardCorner({
   rank,
@@ -1510,9 +1516,23 @@ function CardCorner({
   const path = rank === undefined ? undefined : RANK_PATHS.get(rank);
   const deceptivePath =
     deceptiveRank === undefined ? undefined : RANK_PATHS.get(deceptiveRank);
-  const corner = `translate(${RANK_CORNER_OFFSET.x} ${RANK_CORNER_OFFSET.y})`;
   const shadowId = useId();
   const gradientId = useId();
+
+  // The rank moves right to make room for the suit's letter, which has a different width for each
+  // letter.
+  const letterRef = useRef<SVGTextElement>(null);
+  const [letterWidth, setLetterWidth] = useState(SUIT_LETTER_ESTIMATED_WIDTH);
+  useLayoutEffect(() => {
+    const letter = letterRef.current;
+    if (letter !== null && typeof letter.getComputedTextLength === "function") {
+      setLetterWidth(letter.getComputedTextLength());
+    }
+  }, [suitLetter]);
+  const rankShift =
+    suitLetter === undefined ? 0 : letterWidth + SUIT_LETTER_GAP;
+  const corner = `translate(${RANK_CORNER_OFFSET.x} ${RANK_CORNER_OFFSET.y})`;
+  const shiftedCorner = `translate(${RANK_CORNER_OFFSET.x + rankShift} ${RANK_CORNER_OFFSET.y})`;
   let fill: string | undefined;
   if (ink !== undefined) {
     fill = ink.length === 1 ? ink[0] : `url(#${gradientId})`;
@@ -1553,7 +1573,7 @@ function CardCorner({
         </linearGradient>
       )}
       {path !== undefined && (
-        <path {...strokeProps} d={path} transform={corner} />
+        <path {...strokeProps} d={path} transform={shiftedCorner} />
       )}
       {path !== undefined && showTurnedOver && (
         <path
@@ -1568,7 +1588,7 @@ function CardCorner({
           d={deceptivePath}
           data-deceptive-rank
           // Its box starts beside the rank, level with its top.
-          transform={`translate(${DECEPTIVE_RANK_X - RANK_SHAPE_BOX.left * DECEPTIVE_RANK_SCALE} ${
+          transform={`translate(${DECEPTIVE_RANK_X + rankShift - RANK_SHAPE_BOX.left * DECEPTIVE_RANK_SCALE} ${
             RANK_CORNER_OFFSET.y
             + RANK_SHAPE_BOX.top * (1 - DECEPTIVE_RANK_SCALE)
           }) scale(${DECEPTIVE_RANK_SCALE})`}
@@ -1580,16 +1600,9 @@ function CardCorner({
           className={`${strokeProps.className} tw:font-black`}
           data-suit-letter
           dominantBaseline="alphabetic"
-          fontSize={
-            path === undefined
-              ? SUIT_LETTER_ALONE_FONT_SIZE
-              : SUIT_LETTER_FONT_SIZE
-          }
-          x={
-            path === undefined
-              ? RANK_CORNER_OFFSET.x + RANK_SHAPE_BOX.left
-              : RANK_SIDE_X
-          }
+          fontSize={SUIT_LETTER_FONT_SIZE}
+          ref={letterRef}
+          x={RANK_CORNER_OFFSET.x + RANK_SHAPE_BOX.left}
           y={RANK_BOTTOM_Y}
         >
           {suitLetter}

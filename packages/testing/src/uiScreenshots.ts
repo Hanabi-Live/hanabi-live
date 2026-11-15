@@ -868,6 +868,20 @@ function getStates(): readonly State[] {
         await game.clueAgain();
       },
     },
+    // Bob's game with five players in color-blind mode, so that the corner of each card shows the
+    // suit's letter before the rank. The last clue touches cards that no other clue touched.
+    {
+      name: "new-ui-colorblind",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, undefined, {
+          colorblindMode: true,
+        });
+        await game.clueAgain();
+      },
+    },
     // A timed game with five players, which the account paused on its turn.
     {
       name: "new-ui-paused",
@@ -1622,6 +1636,7 @@ interface Cast {
     variantName?: string,
     options?: {
       readonly showClocks?: boolean;
+      readonly colorblindMode?: boolean;
       readonly timed?: boolean;
       readonly speedrun?: boolean;
     },
@@ -1977,12 +1992,17 @@ async function createCast(
     return peer;
   }
 
-  async function connectAccount(newUi: boolean, showClocks = false) {
+  async function connectAccount(
+    newUi: boolean,
+    showClocks = false,
+    colorblindMode = false,
+  ) {
     account ??= await connect(address, accountName);
     account.send("settings", {
       settings: {
         newUi,
         showTimerInUntimed: showClocks,
+        colorblindMode,
       },
     });
     // The server does not answer a change of settings. It runs the requests of the lobby in order,
@@ -2049,15 +2069,17 @@ async function createCast(
     variantName = LONG_VARIANT_NAME,
     {
       showClocks = false,
+      colorblindMode = false,
       timed = false,
       speedrun = true,
     }: {
       readonly showClocks?: boolean;
+      readonly colorblindMode?: boolean;
       readonly timed?: boolean;
       readonly speedrun?: boolean;
     } = {},
   ): Promise<BobsGame> {
-    const you = await connectAccount(true, showClocks);
+    const you = await connectAccount(true, showClocks, colorblindMode);
     const bob = await connectPeer(name(BOB));
     const tableId = await createBobsTable(
       bob,
