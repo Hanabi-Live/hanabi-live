@@ -1,7 +1,5 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import type { EmpathyStyle } from "../empathyStyle.ts";
-import { getEmpathyStyle, subscribeToEmpathyStyle } from "../empathyStyle.ts";
 import { onEscapeKey } from "./escapeKey.ts";
 
 /** The current time, updated at the given interval, for clocks that count down. */
@@ -118,9 +116,4 @@ export function useCloseOnOutsideClick(
       stopEscape();
     };
   }, [open, containerRef, setOpen]);
-}
-
-/** The empathy style, which players change with the `empathy()` command in the browser console. */
-export function useEmpathyStyle(): EmpathyStyle {
-  return useSyncExternalStore(subscribeToEmpathyStyle, getEmpathyStyle);
 }

@@ -1218,6 +1218,25 @@ function getStates(): readonly State[] {
         await hoverForTooltip(page, ownCard(page, 0));
       },
     },
+    // The bubble of every card that a card can be, which opens over a card in the account's hand.
+    // The table has five players, and every player has discarded cards, so that the account rules
+    // out some of the cards. The variant's color clues touch every 1, so that some cards can be
+    // cards that the separate suits and ranks cannot show, and have a mark.
+    {
+      name: "new-ui-possible-cards",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
+        await game.discardTurns(15, { mixClueTypes: true });
+      },
+      hover: async (page) => {
+        // The third card, since the others show their rank.
+        await ownCard(page, 2).hover();
+        await page.locator("[data-possible-cards]").waitFor();
+      },
+    },
     // The menu of the "End game" button.
     {
       name: "new-ui-end-game-menu",

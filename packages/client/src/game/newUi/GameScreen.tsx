@@ -95,12 +95,7 @@ import {
   getClueMarkers,
   getPreviewMarker,
 } from "./clueMarkers.ts";
-import {
-  useElementSize,
-  useEmpathyStyle,
-  useMediaQuery,
-  useNow,
-} from "./hooks.ts";
+import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
 import { newUiArrowChanged } from "./newUiSlice.ts";
 import {
   canDiscardNow,
@@ -199,8 +194,6 @@ export function GameScreen({
   readonly onSwitchToClassic: () => void;
 }): React.JSX.Element {
   useNow(CLOCK_TICK_MILLISECONDS);
-  // The cards draw what their holders know again when the style changes.
-  useEmpathyStyle();
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
   const connections = useAppSelector((root) => root.game.connections);

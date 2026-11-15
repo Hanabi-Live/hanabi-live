@@ -853,7 +853,7 @@ function Deck({
             eliminated: false,
             positive: false,
           })),
-          rows: undefined,
+          bubble: undefined,
         }}
         rank={undefined}
         suitIndex={undefined}

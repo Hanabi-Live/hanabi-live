@@ -6,7 +6,8 @@ import {
   getSuitAbbreviationForVariant,
   hasReversedSuits,
 } from "@hanabi-live/game";
-import { useId, useLayoutEffect, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
@@ -19,11 +20,12 @@ import {
 } from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
 import { Pip } from "./Pip.tsx";
+import { getScreenScale } from "./screenScale.ts";
 import type {
   CardPipsView,
   NoteBorder,
   NoteMark,
-  PossibilityRowView,
+  PossibleCardsView,
   RankPipView,
   SuitPipView,
 } from "./tableView.ts";
@@ -569,19 +571,24 @@ const BADGE_FONT_PER_SIZE = 0.73;
 /** The style of a round badge in a corner of a card. */
 function getBadgeStyle(
   width: number,
-  corner: "topRight" | "bottomLeft",
+  corner: "topRight" | "topLeft" | "bottomLeft",
 ): React.CSSProperties {
   const inset = width * CORNER_INSET_PER_WIDTH;
   return {
-    ...(corner === "topRight"
-      ? {
-          right: inset,
-          top: inset,
-        }
-      : {
-          left: inset,
-          bottom: inset,
-        }),
+    ...{
+      topRight: {
+        right: inset,
+        top: inset,
+      },
+      topLeft: {
+        left: inset,
+        top: inset,
+      },
+      bottomLeft: {
+        left: inset,
+        bottom: inset,
+      },
+    }[corner],
     width: width * BADGE_SIZE_PER_WIDTH,
     height: width * BADGE_SIZE_PER_WIDTH,
     fontSize: width * BADGE_SIZE_PER_WIDTH * BADGE_FONT_PER_SIZE,
@@ -1054,9 +1061,8 @@ function RankChip({
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
  * card, so that they are easy to read at a glance. Each suit is a pip on a gray chip with a dark
  * ring, and each rank is a dark chip with a white number. A suit or a rank that the holder ruled
- * out is crossed out, and one that a clue touched has a ring in the clue color. When the clues
- * allow a set of cards that separate suits and ranks cannot show, the card shows rows of suits and
- * the ranks that they can be (see `PossibilityRows`).
+ * out is crossed out, and one that a clue touched has a ring in the clue color. The card shows the
+ * exact cards that it can be in a bubble on hover (see `PossibleCardsBubble`).
  */
 function Possibilities({
   variant,
@@ -1090,18 +1096,6 @@ function Possibilities({
     * (badgeShown
       ? CORNER_INSET_PER_WIDTH + BADGE_SIZE_PER_WIDTH + gap
       : inset);
-
-  if (pips.rows !== undefined) {
-    return (
-      <PossibilityRows
-        bottom={bottom}
-        rows={pips.rows}
-        top={top}
-        variant={variant}
-        width={width}
-      />
-    );
-  }
 
   const { suits, ranks } = pips;
   const chipSize = Math.min(
@@ -1183,167 +1177,322 @@ function Possibilities({
   );
 }
 
-/** The layout of possibility rows. */
-const POSSIBILITY_ROWS = {
-  /** The most lines of suits in a row, when a row has too many suits for one line. */
-  maxSuitLines: 2,
-  /** The space between a row's suits and its ranks, per the size of a pip. */
-  ranksGapPerPip: 0.3,
-  /** The space between rows, as a fraction of the card's width. Each has a line in the middle. */
-  rowGap: 0.06,
+/**
+ * The sizes in the bubble of possible cards, as fractions of the width of the card that it is for.
+ */
+const POSSIBLE_CARDS = {
+  /** A small card in the bubble. */
+  cardWidth: 0.3,
+  cardHeight: 0.4,
+  /** The rank on a small card. */
+  font: 0.27,
+  /** The cell of a suit's pip at the start of a row. */
+  pip: 0.36,
+  /** The space between small cards. */
+  gap: 0.05,
+  padding: 0.12,
+  /** The pointer that points from the bubble at the card. */
+  pointerWidth: 0.26,
+  pointerHeight: 0.13,
   /**
-   * The room that a rank chip in a row takes, with the gap after it, and the size of the chip, per
-   * the size of a pip.
+   * The space between the card and the tip of the pointer. It leaves room for the border of a clued
+   * card, which is outside of the card.
    */
-  chipSlotPerPip: 0.78,
-  chipWidthPerPip: 0.7,
-  chipHeightPerPip: 0.86,
+  pointerGap: 0.08,
 } as const;
 
+/** The outline of the bubble of possible cards and of its pointer, in pixels. */
+const POSSIBLE_CARDS_OUTLINE = 1;
+
+/** The color of the outline of the bubble of possible cards and of its pointer. */
+const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
+
 /**
- * Returns the size of the suit pips in possibility rows, and the number of lines of suits in each
- * row. The pips are as large as fit: a row with many suits wraps them onto a second line when that
- * makes every pip larger.
+ * How far the pointer reaches into the bubble, past the bubble's outline, in pixels. It covers the
+ * outline where the two shapes meet, so that one outline goes around both. It reaches further than
+ * the outline, since the scale of the screen can round the outline to the next pixel.
  */
-function getPossibilityRowsLayout(
-  rows: ReadonlyArray<{ readonly suits: number; readonly ranks: number }>,
-  width: number,
-  height: number,
-  maxPip: number,
-): { readonly pip: number; readonly suitLines: readonly number[] } {
-  const { maxSuitLines, ranksGapPerPip, chipSlotPerPip } = POSSIBILITY_ROWS;
-  const gaps = (rows.length - 1) * POSSIBILITY_ROWS.rowGap * width;
+const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
 
-  function getPip(suitLines: readonly number[]): number {
-    const byWidth = rows.map((row, i) => {
-      const suitColumns = Math.ceil(row.suits / (suitLines[i] ?? 1));
-      return (
-        width / (suitColumns + row.ranks * chipSlotPerPip + ranksGapPerPip)
-      );
-    });
-    const lines = suitLines.reduce((sum, line) => sum + line, 0);
-    return Math.min(...byWidth, (height - gaps) / lines, maxPip);
-  }
+/** The least space between the bubble of possible cards and the edge of the window, in pixels. */
+const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
 
-  const suitLines = rows.map(() => 1);
-  let pip = getPip(suitLines);
-  for (let i = 0; i < rows.length; i++) {
-    for (let lines = 2; lines <= maxSuitLines; lines++) {
-      const tried = suitLines.with(i, lines);
-      const triedPip = getPip(tried);
-      if (!(triedPip > pip)) {
-        continue;
-      }
+/** How opaque the pip of a suit that the card cannot be is, in the bubble of possible cards. */
+const IMPOSSIBLE_SUIT_OPACITY = 0.3;
 
-      suitLines[i] = lines;
-      pip = triedPip;
-    }
-  }
+/** A small card in the bubble of possible cards: a card face of the suit's color with the rank. */
+function PossibleCard({
+  variant,
+  colorblindMode,
+  suitIndex,
+  rank,
+  unit,
+}: {
+  readonly variant: Variant;
+  readonly colorblindMode: boolean;
+  readonly suitIndex: SuitIndex;
+  readonly rank: Rank;
+  /** The width of the card that the bubble is for, in the window's pixels. */
+  readonly unit: number;
+}): React.JSX.Element {
+  const suit = variant.suits[suitIndex];
+  const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
+  const width = unit * POSSIBLE_CARDS.cardWidth;
+  return (
+    <span
+      className={`tw:flex tw:items-center tw:justify-center tw:font-extrabold tw:leading-none tw:ring-1 tw:ring-black/45 ${faceColors.className}`}
+      data-possible-card
+      style={{
+        width,
+        height: unit * POSSIBLE_CARDS.cardHeight,
+        background: faceColors.background,
+        color: faceColors.ink,
+        fontSize: unit * POSSIBLE_CARDS.font,
+        borderRadius: width * CARD_CORNER_PER_WIDTH * 2,
+      }}
+    >
+      {getRankLabel(rank)}
+    </span>
+  );
+}
 
-  return {
-    pip,
-    suitLines,
-  };
+/** An empty place in the bubble of possible cards, for a card that this card cannot be. */
+function ImpossibleCard({
+  unit,
+}: {
+  readonly unit: number;
+}): React.JSX.Element {
+  const width = unit * POSSIBLE_CARDS.cardWidth;
+  return (
+    <span
+      className="tw:box-border tw:border tw:border-dashed tw:border-card-ink/25"
+      style={{
+        width,
+        height: unit * POSSIBLE_CARDS.cardHeight,
+        borderRadius: width * CARD_CORNER_PER_WIDTH * 2,
+      }}
+    />
+  );
 }
 
 /**
- * Rows of suits with the ranks that they can be, for a card whose possible cards the separate suits
- * and ranks cannot show, such as "any red card, or a blue 1". Each row has its suits on the left
- * and its ranks on the right, and a line between rows. The pips are as large as the card allows.
+ * Every card that a card can be, in a bubble beside it while the pointer is over it. It is a grid
+ * with a row for every suit of the variant and a column for every rank, so that each card is always
+ * in the same place. A card that this card cannot be leaves an empty place.
  */
-function PossibilityRows({
+function PossibleCardsBubble({
   variant,
-  width,
-  rows,
-  top,
-  bottom,
+  colorblindMode,
+  bubble,
+  anchor,
 }: {
   readonly variant: Variant;
-  readonly width: number;
-  readonly rows: readonly PossibilityRowView[];
-  readonly top: number;
-  readonly bottom: number;
+  readonly colorblindMode: boolean;
+  readonly bubble: PossibleCardsView;
+  readonly anchor: HTMLElement;
 }): React.JSX.Element {
-  const { inset } = POSSIBILITIES;
-  const { rowGap, chipSlotPerPip, chipWidthPerPip, chipHeightPerPip } =
-    POSSIBILITY_ROWS;
-  const innerWidth = width * (1 - 2 * inset);
-  const height = width * CARD_HEIGHT_PER_WIDTH - top - bottom;
-  const { pip, suitLines } = getPossibilityRowsLayout(
-    rows.map((row) => ({
-      suits: row.suits.length,
-      ranks: row.ranks.length,
-    })),
-    innerWidth,
-    height,
-    width * POSSIBILITIES.maxPip,
+  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{
+    readonly left: number;
+    readonly top: number;
+    /** The side of the card that the bubble is on. */
+    readonly side: "below" | "above";
+    /** Where the tip of the pointer is, from the left edge of the bubble. */
+    readonly pointerX: number;
+  }>();
+
+  // The bubble is outside of the zoomed game screen, so it is measured in the window's pixels.
+  const anchorRect = anchor.getBoundingClientRect();
+  const unit = anchorRect.width;
+  const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
+  const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
+
+  // The bubble goes below the card, since the note of the card opens above it. It goes above the
+  // card when only that side has room. The pointer points at the middle of the card, even when the
+  // edge of the window moves the bubble to one side.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (element === null) {
+      return;
+    }
+
+    const { height, width } = element.getBoundingClientRect();
+    const offset =
+      unit * POSSIBLE_CARDS.pointerGap + pointerHeight + POSSIBLE_CARDS_OUTLINE;
+    const below = anchorRect.bottom + offset;
+    const side =
+      below + height + POSSIBLE_CARDS_WINDOW_MARGIN > window.innerHeight
+        ? "above"
+        : "below";
+    const middle = anchorRect.left + anchorRect.width / 2;
+    const left = Math.min(
+      Math.max(middle - width / 2, POSSIBLE_CARDS_WINDOW_MARGIN),
+      window.innerWidth - width - POSSIBLE_CARDS_WINDOW_MARGIN,
+    );
+    const radius = unit * CARD_CORNER_PER_WIDTH * 2;
+    setPosition({
+      left,
+      top: side === "below" ? below : anchorRect.top - offset - height,
+      side,
+      pointerX: Math.min(
+        Math.max(middle - left, radius + pointerWidth / 2),
+        width - radius - pointerWidth / 2,
+      ),
+    });
+  }, [
+    anchorRect.bottom,
+    anchorRect.left,
+    anchorRect.top,
+    anchorRect.width,
+    pointerHeight,
+    pointerWidth,
+    unit,
+  ]);
+
+  const ranks = variant.ranks.toSorted(
+    (a, b) => rankColumnOrder(a) - rankColumnOrder(b),
   );
 
+  // The pointer's shape, pointing up from the top edge of the bubble. It starts above the bubble's
+  // outline, and reaches into the bubble to cover the outline.
+  const pointerBase = pointerHeight;
+  const pointerBottom =
+    pointerBase + POSSIBLE_CARDS_OUTLINE + POSSIBLE_CARDS_POINTER_OVERLAP;
+  const pointerTip = POSSIBLE_CARDS_OUTLINE / 2;
+
   return (
+    // The shadow is on the wrapper, so that it follows the outline of the bubble and its pointer.
     <div
-      className="tw:absolute tw:flex tw:flex-col tw:justify-center"
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:fixed tw:z-50 tw:drop-shadow-[0_4px_7px_rgb(0_0_0/45%)]"
+      ref={ref}
       style={{
-        left: width * inset,
-        right: width * inset,
-        top,
-        bottom,
+        left: position?.left ?? 0,
+        top: position?.top ?? 0,
+        visibility: position === undefined ? "hidden" : undefined,
       }}
     >
-      {rows.map((row, rowIndex) => {
-        const columns = Math.ceil(
-          row.suits.length / (suitLines[rowIndex] ?? 1),
-        );
-        // The start card's rank comes first, as on the classic screen.
-        const ranks = row.ranks.toSorted(
-          (a, b) => rankColumnOrder(a.rank) - rankColumnOrder(b.rank),
-        );
-        return (
-          <div
-            className={`tw:flex tw:items-center tw:justify-between ${
-              rowIndex > 0
-                ? "tw:border-t tw:border-solid tw:border-card-ink/30"
-                : ""
-            }`}
-            data-possibility-row
-            // A row is keyed by its suits, which no other row has.
-            key={row.suits.map((suitPip) => suitPip.suitIndex).join(",")}
-            style={{
-              marginTop: rowIndex > 0 ? (width * rowGap) / 2 : 0,
-              paddingTop: rowIndex > 0 ? (width * rowGap) / 2 : 0,
-            }}
-          >
+      <div
+        className="tw:grid tw:items-center tw:justify-items-center tw:bg-card-unknown"
+        data-possible-cards
+        style={{
+          gridTemplateColumns: `repeat(${ranks.length + 1}, auto)`,
+          gap: unit * POSSIBLE_CARDS.gap,
+          padding: unit * POSSIBLE_CARDS.padding,
+          borderRadius: unit * CARD_CORNER_PER_WIDTH * 2,
+          boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
+        }}
+      >
+        {variant.suits.map((_suit, i) => {
+          const suitIndex = i as SuitIndex;
+          const suit = bubble.suits.find(
+            (possibleSuit) => possibleSuit.suitIndex === suitIndex,
+          );
+          return [
             <div
-              className="tw:flex tw:flex-wrap"
-              style={{ width: columns * pip }}
+              key={`${suitIndex}-pip`}
+              style={{
+                opacity: suit === undefined ? IMPOSSIBLE_SUIT_OPACITY : 1,
+              }}
             >
-              {row.suits.map((suitPip) => (
-                <SuitChip
-                  cell={pip}
-                  key={suitPip.suitIndex}
-                  pip={suitPip}
+              <SuitChip
+                cell={unit * POSSIBLE_CARDS.pip}
+                pip={
+                  suit ?? {
+                    suitIndex,
+                    eliminated: false,
+                    positive: false,
+                  }
+                }
+                variant={variant}
+                width={unit / getScreenScale()}
+              />
+            </div>,
+            ...ranks.map((rank) =>
+              suit?.ranks.includes(rank) === true ? (
+                <PossibleCard
+                  colorblindMode={colorblindMode}
+                  key={`${suitIndex}-${rank}`}
+                  rank={rank}
+                  suitIndex={suitIndex}
+                  unit={unit}
                   variant={variant}
-                  width={width}
                 />
-              ))}
-            </div>
-            <div
-              className="tw:flex"
-              style={{ gap: pip * (chipSlotPerPip - chipWidthPerPip) }}
-            >
-              {ranks.map((rankPip) => (
-                <RankChip
-                  chipHeight={pip * chipHeightPerPip}
-                  chipWidth={pip * chipWidthPerPip}
-                  key={rankPip.rank}
-                  pip={rankPip}
-                  width={width}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+              ) : (
+                <ImpossibleCard key={`${suitIndex}-${rank}`} unit={unit} />
+              ),
+            ),
+          ];
+        })}
+      </div>
+      {position !== undefined && (
+        <svg
+          className="tw:absolute tw:overflow-visible"
+          height={pointerBottom}
+          style={{
+            left: position.pointerX - pointerWidth / 2,
+            ...(position.side === "below"
+              ? {
+                  top: -pointerBase - POSSIBLE_CARDS_OUTLINE,
+                }
+              : {
+                  bottom: -pointerBase - POSSIBLE_CARDS_OUTLINE,
+                  transform: "scaleY(-1)",
+                }),
+          }}
+          width={pointerWidth}
+        >
+          <path
+            className="tw:fill-card-unknown"
+            d={`M 0 ${pointerBase} L ${pointerWidth / 2} ${pointerTip} L ${pointerWidth} ${pointerBase} V ${pointerBottom} H 0 Z`}
+          />
+          <path
+            d={`M 0 ${pointerBase + POSSIBLE_CARDS_OUTLINE / 2} L ${pointerWidth / 2} ${pointerTip} L ${pointerWidth} ${pointerBase + POSSIBLE_CARDS_OUTLINE / 2}`}
+            fill="none"
+            stroke={POSSIBLE_CARDS_OUTLINE_COLOR}
+            strokeLinejoin="round"
+            strokeWidth={POSSIBLE_CARDS_OUTLINE}
+          />
+        </svg>
+      )}
     </div>
+  );
+}
+
+/**
+ * The mark on a card whose separate suit and rank pips cannot show the cards that it can be. It
+ * shows that the bubble on hover has more to tell: a small speech bubble with three dots.
+ */
+function PossibleCardsMark({
+  width,
+}: {
+  readonly width: number;
+}): React.JSX.Element {
+  const size = width * BADGE_SIZE_PER_WIDTH;
+  return (
+    <svg
+      aria-label="Not every combination of these suits and ranks is possible"
+      className="tw:pointer-events-none tw:absolute tw:overflow-visible tw:drop-shadow-[0_1px_2px_rgb(0_0_0/45%)]"
+      data-possible-cards-mark
+      height={size}
+      role="img"
+      style={getBadgeStyle(width, "topLeft")}
+      viewBox="0 0 100 100"
+      width={size}
+    >
+      <path
+        className="tw:fill-white tw:stroke-card-ink"
+        d="M 18 8 H 82 Q 96 8 96 22 V 62 Q 96 76 82 76 H 40 L 18 96 V 76 Q 4 76 4 62 V 22 Q 4 8 18 8 Z"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
+      <g className="tw:fill-card-ink">
+        <circle cx={30} cy={42} r={8} />
+        <circle cx={50} cy={42} r={8} />
+        <circle cx={70} cy={42} r={8} />
+      </g>
+    </svg>
   );
 }
 
@@ -1994,6 +2143,8 @@ export function CardFace({
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
   const height = width * CARD_HEIGHT_PER_WIDTH;
+  const bubble = pips?.bubble;
+  const [hovered, setHovered] = useState<HTMLElement>();
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
   // The pips go in the middle of the card, or, under a rank, in the middle of the space between the
@@ -2041,6 +2192,20 @@ export function CardFace({
       data-card-face
       data-card-unknown={
         suitIndex === undefined || rank === undefined ? true : undefined
+      }
+      onPointerEnter={
+        bubble === undefined
+          ? undefined
+          : (event) => {
+              setHovered(event.currentTarget);
+            }
+      }
+      onPointerLeave={
+        bubble === undefined
+          ? undefined
+          : () => {
+              setHovered(undefined);
+            }
       }
       style={{
         width,
@@ -2132,6 +2297,20 @@ export function CardFace({
       )}
 
       {noteMark !== undefined && <NoteMarkIcon mark={noteMark} width={width} />}
+
+      {bubble?.inexact === true && <PossibleCardsMark width={width} />}
+
+      {bubble !== undefined
+        && hovered !== undefined
+        && createPortal(
+          <PossibleCardsBubble
+            anchor={hovered}
+            bubble={bubble}
+            colorblindMode={colorblindMode}
+            variant={variant}
+          />,
+          document.body,
+        )}
     </div>
   );
 

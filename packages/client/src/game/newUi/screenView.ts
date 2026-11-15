@@ -26,7 +26,6 @@ import {
 } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
-import { getEmpathyStyle } from "../empathyStyle.ts";
 import { getShownGameEnd } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -164,7 +163,6 @@ export function getSeats(
           empathyIncludesNotes: includesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
-          empathyStyle: getEmpathyStyle(),
           hGroupConventions:
             settings.hGroupConventions && !metadata.hardVariant,
         }),

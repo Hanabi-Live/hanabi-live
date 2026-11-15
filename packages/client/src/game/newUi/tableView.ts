@@ -31,7 +31,6 @@ import {
   isCardTouchedByClue,
   isHandLocked,
 } from "@hanabi-live/game";
-import { DEFAULT_EMPATHY_STYLE, EmpathyStyle } from "../empathyStyle.ts";
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
@@ -136,12 +135,6 @@ export interface RankPipView extends PipView {
   readonly rank: Rank;
 }
 
-/** A row of suits that can be the same ranks. */
-export interface PossibilityRowView {
-  readonly suits: readonly SuitPipView[];
-  readonly ranks: readonly RankPipView[];
-}
-
 /**
  * What a card that its holder cannot see shows about it. The lists of suits and ranks are empty
  * when the card face already shows that part. When the clues leave a set of cards that separate
@@ -151,7 +144,27 @@ export interface PossibilityRowView {
 export interface CardPipsView {
   readonly suits: readonly SuitPipView[];
   readonly ranks: readonly RankPipView[];
-  readonly rows: readonly PossibilityRowView[] | undefined;
+  /**
+   * The bubble that shows every card that this card can be, on hover. It is `undefined` unless both
+   * the suit and the rank are unknown.
+   */
+  readonly bubble: PossibleCardsView | undefined;
+}
+
+/** A suit that a card can be, with the ranks that it can be in that suit. */
+interface PossibleSuitView extends SuitPipView {
+  readonly ranks: readonly Rank[];
+}
+
+export interface PossibleCardsView {
+  /** The suits that the card can be, in the variant's order, with the ranks that it can be. */
+  readonly suits: readonly PossibleSuitView[];
+
+  /**
+   * Whether the separate suit and rank pips on the card cannot show the possible cards, so that the
+   * card has a mark that points to the bubble.
+   */
+  readonly inexact: boolean;
 }
 
 /**
@@ -185,9 +198,6 @@ interface CardViewOptions {
   /** "Real life mode" hides the hints that a physical game would not have. */
   readonly realLifeMode: boolean;
 
-  /** How the card shows what its holder knows. It is the default when it is left out. */
-  readonly empathyStyle?: EmpathyStyle;
-
   /**
    * Whether the viewer turned on the H-Group conventions setting, in a variant that is not hard.
    */
@@ -204,7 +214,6 @@ export function getCardView({
   empathyIncludesNotes = false,
   finished,
   realLifeMode,
-  empathyStyle = DEFAULT_EMPATHY_STYLE,
   hGroupConventions = false,
 }: CardViewOptions): CardView {
   const identityOptions = {
@@ -251,7 +260,6 @@ export function getCardView({
     empathy && !realLifeMode && !blank
       ? getPipsView(variant, cardState, note, {
           empathyIncludesNotes,
-          empathyStyle,
           suitIndex,
           rank,
         })
@@ -317,18 +325,15 @@ function getPipsView(
   note: CardNote,
   {
     empathyIncludesNotes,
-    empathyStyle,
     suitIndex,
     rank,
   }: {
     readonly empathyIncludesNotes: boolean;
-    readonly empathyStyle: EmpathyStyle;
     readonly suitIndex: SuitIndex | undefined;
     readonly rank: Rank | undefined;
   },
 ): CardPipsView | undefined {
   const presentation = getCardPipPresentation(variant, cardState, note, true, {
-    rowPerSuit: empathyStyle === EmpathyStyle.RowPerSuit,
     empathyIncludesNotes,
   });
   const suits =
@@ -346,31 +351,40 @@ function getPipsView(
         }))
       : [];
 
-  // The rows need both the suit and the rank to be unknown, as on the classic screen.
-  const rows =
+  // The bubble needs both the suit and the rank to be unknown, as the possibility rows of the
+  // classic screen do.
+  const bubble =
     suitIndex === undefined
     && rank === undefined
-    && empathyStyle !== EmpathyStyle.Pips
-      ? presentation.possibilityRows?.map((row) => ({
-          suits: row.suitPips.map((pip) => ({
-            ...toPipView(pip),
-            suitIndex: pip.suitIndex as SuitIndex,
-          })),
-          ranks: row.rankPips
-            .filter((pip) => pip.state !== PipState.Hidden)
-            .map((pip) => ({
-              ...toPipView(pip),
-              rank: pip.rank,
-            })),
-        }))
+    && (suits.length > 0 || ranks.length > 0)
+      ? {
+          suits: (
+            getCardPipPresentation(variant, cardState, note, true, {
+              rowPerSuit: true,
+              empathyIncludesNotes,
+            }).possibilityRows ?? []
+          )
+            .flatMap((row) =>
+              row.suitPips.map((pip) => ({
+                ...toPipView(pip),
+                suitIndex: pip.suitIndex as SuitIndex,
+                // Only the cards that the holder has not ruled out.
+                ranks: row.rankPips
+                  .filter((rankPip) => rankPip.state === PipState.Visible)
+                  .map((rankPip) => rankPip.rank),
+              })),
+            )
+            .filter((suit) => suit.ranks.length > 0),
+          inexact: presentation.possibilityRows !== undefined,
+        }
       : undefined;
 
-  return rows === undefined && suits.length === 0 && ranks.length === 0
+  return suits.length === 0 && ranks.length === 0
     ? undefined
     : {
         suits,
         ranks,
-        rows,
+        bubble,
       };
 }
 

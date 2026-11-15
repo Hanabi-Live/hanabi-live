@@ -14,7 +14,6 @@ import {
   newRankClue,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { EmpathyStyle } from "../empathyStyle.ts";
 import {
   BLANK_NOTE,
   getCardView,
@@ -187,7 +186,6 @@ describe("getCardView", () => {
             eliminated: false,
           },
         ],
-        rows: undefined,
       },
     });
   });
@@ -220,9 +218,9 @@ describe("getCardView", () => {
     });
   });
 
-  test("shows rows for cards that separate suits and ranks cannot show", () => {
-    // Any red card, or a yellow 1.
-    const possibleCards = [
+  test("shows the cards that separate suits and ranks cannot show in a bubble", () => {
+    // Any red card, or a yellow 1. The holder sees every red 2.
+    const possibleCardsFromClues = [
       [0, 1],
       [0, 2],
       [0, 3],
@@ -230,23 +228,29 @@ describe("getCardView", () => {
       [0, 5],
       [1, 1],
     ] as const;
-    const state = {
-      possibleCardsFromClues: possibleCards,
-      possibleCardsForEmpathy: possibleCards,
-    };
-    expect(getEmpathyView(state).pips?.rows).toMatchObject([
-      {
-        suits: [{ suitIndex: 0 }],
-        ranks: [1, 2, 3, 4, 5].map((rank) => ({ rank })),
-      },
-      {
-        suits: [{ suitIndex: 1 }],
-        ranks: [{ rank: 1 }],
-      },
-    ]);
-    expect(
-      getEmpathyView(state, { empathyStyle: EmpathyStyle.Pips }).pips?.rows,
-    ).toBeUndefined();
+    const bubble = getEmpathyView({
+      possibleCardsFromClues,
+      possibleCardsForEmpathy: possibleCardsFromClues.filter(
+        ([suitIndex, rank]) => !(suitIndex === 0 && rank === 2),
+      ),
+    }).pips?.bubble;
+    expect(bubble).toStrictEqual({
+      suits: [
+        {
+          suitIndex: 0,
+          eliminated: false,
+          positive: false,
+          ranks: [1, 3, 4, 5],
+        },
+        {
+          suitIndex: 1,
+          eliminated: false,
+          positive: false,
+          ranks: [1],
+        },
+      ],
+      inexact: true,
+    });
   });
 
   test("hides what the holder knows in real life mode and on a blank card", () => {

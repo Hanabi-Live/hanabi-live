@@ -15,7 +15,7 @@ export enum EmpathyStyle {
   RowPerSuit = "RowPerSuit",
 }
 
-export const DEFAULT_EMPATHY_STYLE = EmpathyStyle.RowsWhenNeeded;
+const DEFAULT_EMPATHY_STYLE = EmpathyStyle.RowsWhenNeeded;
 
 const EMPATHY_STYLE_NAMES = {
   [EmpathyStyle.Pips]: "Old Empathy",
