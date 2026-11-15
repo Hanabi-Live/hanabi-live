@@ -423,9 +423,9 @@ export const NAME_COLUMN_MAX_WIDTH = {
 
 /**
  * How a name that is not the current player's looks. Off the viewer's turn, it is a label: a small
- * well, like the other readouts on the table. On the viewer's turn, it is a key that stands up to
- * be pressed and opens the player's clues. With no clue tokens, it lies flat and empty, like the
- * clue menu's "Give" button when it is turned off.
+ * well, like the other readouts on the table. On the viewer's turn, it is a key in the color of
+ * clues, which opens the player's clues. With no clue tokens, it is empty with a dashed border,
+ * like the clue tokens.
  */
 type NameChipLook = "label" | "key" | "chosen" | "noClues";
 
@@ -433,10 +433,10 @@ const NAME_CHIP_LOOK_CLASS = {
   label:
     "tw:bg-game-well tw:font-medium tw:text-game-text tw:inset-shadow-[0_2px_4px_rgb(0_0_0/45%)]",
   // The key's light top edge is on the name, not on the button under it, which the name covers.
-  key: "tw:bg-game-raised tw:font-semibold tw:text-game-text tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:inset-ring-1 tw:inset-ring-game-line/70 tw:group-hover:bg-game-line",
+  key: "tw:bg-clue tw:font-semibold tw:text-card-ink tw:inset-shadow-[0_1px_0_rgb(255_255_255/35%)] tw:group-hover:brightness-110",
   chosen: "tw:bg-game-text tw:font-semibold tw:text-card-ink",
   noClues:
-    "tw:bg-transparent tw:font-medium tw:text-game-muted tw:inset-ring-1 tw:inset-ring-game-line/50",
+    "tw:bg-transparent tw:font-medium tw:text-game-muted tw:outline-2 tw:-outline-offset-2 tw:outline-game-muted tw:outline-dashed",
 } as const satisfies Record<NameChipLook, string>;
 
 function NameChip({
