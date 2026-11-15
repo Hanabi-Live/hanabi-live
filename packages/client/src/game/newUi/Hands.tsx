@@ -421,18 +421,30 @@ export const NAME_COLUMN_MAX_WIDTH = {
   MEDIUM: 110,
 } as const;
 
+/**
+ * How a name that is not the current player's looks. Off the viewer's turn, it is a label: a small
+ * well, like the other readouts on the table. On the viewer's turn, it is a key that stands up to
+ * be pressed and opens the player's clues. With no clue tokens, it lies flat and empty, like the
+ * clue menu's "Give" button when it is turned off.
+ */
+type NameChipLook = "label" | "key" | "chosen" | "noClues";
+
+const NAME_CHIP_LOOK_CLASS = {
+  label:
+    "tw:bg-game-well tw:font-medium tw:text-game-text tw:inset-shadow-[0_2px_4px_rgb(0_0_0/45%)]",
+  // The key's light top edge is on the name, not on the button under it, which the name covers.
+  key: "tw:bg-game-raised tw:font-semibold tw:text-game-text tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:inset-ring-1 tw:inset-ring-game-line/70 tw:group-hover:bg-game-line",
+  chosen: "tw:bg-game-text tw:font-semibold tw:text-card-ink",
+  noClues:
+    "tw:bg-transparent tw:font-medium tw:text-game-muted tw:inset-ring-1 tw:inset-ring-game-line/50",
+} as const satisfies Record<NameChipLook, string>;
+
 function NameChip({
   seat,
-  chosen = false,
-  noClues = false,
+  look,
 }: {
   readonly seat: Seat;
-
-  /** Whether the player's clue menu is open. */
-  readonly chosen?: boolean;
-
-  /** Whether the viewer could clue the player but the team has no clue tokens. */
-  readonly noClues?: boolean;
+  readonly look: NameChipLook;
 }): React.JSX.Element {
   const youIcon = seat.you ? (
     <i aria-label="You" className="fas fa-user tw:text-[0.85em]" role="img" />
@@ -447,17 +459,12 @@ function NameChip({
     );
   }
 
-  let colorClass = "tw:bg-game-raised tw:text-game-text";
-  if (chosen) {
-    colorClass = "tw:bg-game-text tw:text-card-ink";
-  } else if (noClues) {
-    colorClass = "tw:bg-game-raised/40 tw:text-game-muted";
-  }
-
   return (
     <span
-      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:font-medium ${colorClass}`}
-      ref={tooltipRef(noClues ? "The team has no clues to give." : undefined)}
+      className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 ${NAME_CHIP_LOOK_CLASS[look]}`}
+      ref={tooltipRef(
+        look === "noClues" ? "The team has no clues to give." : undefined,
+      )}
     >
       {youIcon}
       <FitText text={seat.name} />
@@ -530,13 +537,16 @@ export function NameColumnSizer({
       {seats.flatMap((seat) => [
         <NameChip
           key={`${seat.playerIndex}-active`}
+          look="label"
           seat={{
             ...seat,
             active: true,
           }}
         />,
+        // A key's name is semibold, which is wider than a label's.
         <NameChip
           key={`${seat.playerIndex}-waiting`}
+          look="key"
           seat={{
             ...seat,
             active: false,
@@ -836,7 +846,15 @@ function Hand({
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
 
-  const chip = <NameChip chosen={chosen} noClues={noClueSeat} seat={seat} />;
+  let look: NameChipLook = "label";
+  if (chosen) {
+    look = "chosen";
+  } else if (canClueSeat) {
+    look = "key";
+  } else if (noClueSeat) {
+    look = "noClues";
+  }
+  const chip = <NameChip look={look} seat={seat} />;
 
   // Holding the pointer down on another player's cards shows their view of them until it lifts, as
   // on the classic screen. While editing cards, a press picks the card to change instead.
@@ -891,8 +909,8 @@ function Hand({
           <button
             aria-expanded={canClueSeat ? chosen : undefined}
             aria-haspopup="dialog"
-            className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${
-              canClueSeat ? KEY_CLASS : ""
+            className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit ${
+              canClueSeat ? `tw:group ${KEY_CLASS}` : "tw:hover:brightness-110"
             }`}
             data-name-chip={seat.playerIndex}
             onClick={() => {
