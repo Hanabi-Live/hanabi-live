@@ -53,7 +53,7 @@ describe("how the game ended", () => {
     expect(gameEnd?.description).toBe("Players had three misplayed cards.");
     expect(gameEnd?.playerTimesMs).toStrictEqual([61_000, 125_000]);
     expect(getGameEndTooltipHtml(gameEnd!)).toBe(
-      "<strong>Strikeout</strong><br />Players had three misplayed cards.<br />The game took 3:06.",
+      "<strong>Strikeout</strong><br />Players had three misplayed cards.<br />The game took: 3:06",
     );
   });
 
@@ -89,7 +89,7 @@ describe("how the game ended", () => {
     );
     expect(gameEnd?.summary).toBe("Alice ran out of time");
     expect(getGameEndTooltipHtml(gameEnd!)).toBe(
-      "<strong>Alice ran out of time</strong><br />The game took 3:06.",
+      "<strong>Alice ran out of time</strong><br />The game took: 3:06",
     );
   });
 });

@@ -205,7 +205,7 @@ export function getGameEndTooltipHtml(gameEnd: GameEnd): string {
   }
   if (gameEnd.durationMs !== undefined) {
     lines.push(
-      `The game took ${millisecondsToClockString(gameEnd.durationMs)}.`,
+      `The game took: ${millisecondsToClockString(gameEnd.durationMs)}`,
     );
   }
   return lines.join("<br />");
