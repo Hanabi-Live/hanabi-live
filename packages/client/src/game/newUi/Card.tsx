@@ -947,8 +947,6 @@ const POSSIBILITIES = {
   /** The most that a suit pip or a rank chip takes, so that two or three are not huge. */
   maxPip: 0.4,
   maxChip: 0.21,
-  /** The gap between rank chips, as a fraction of the card's width. */
-  chipGap: 0.03,
   /**
    * The most rows of suits. The top of the card stays free for the sticky note of a note, and the
    * suits sit where they do on a card that shows its rank, so that they stay in place when a rank
@@ -1133,6 +1131,9 @@ function RankChip({
  * ring, and each rank is a dark chip with a white number. A suit or a rank that the holder ruled
  * out is crossed out, and one that a clue touched has a ring in the clue color. The card shows the
  * exact cards that it can be in a bubble on hover (see `PossibleCardsBubble`).
+ *
+ * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
+ * holder learns that the card is not one of them. Its place stays empty.
  */
 function Possibilities({
   variant,
@@ -1156,7 +1157,6 @@ function Possibilities({
     gap,
     maxPip,
     maxChip,
-    chipGap,
     maxSuitRows,
   } = POSSIBILITIES;
   const innerWidth = width * (1 - 2 * inset);
@@ -1168,10 +1168,16 @@ function Possibilities({
       : inset);
 
   const { suits, ranks } = pips;
+  const suitSlots = variant.suits.map((_suit, i) =>
+    suits.find((pip) => pip.suitIndex === i),
+  );
+  const rankSlots = variant.ranks.map((rank) =>
+    ranks.find((pip) => pip.rank === rank),
+  );
+  // The rank chips touch, so that they are as large as the card allows.
   const chipSize = Math.min(
     width * maxChip,
-    (innerWidth - (ranks.length - 1) * width * chipGap)
-      / Math.max(ranks.length, 1),
+    innerWidth / Math.max(rankSlots.length, 1),
   );
 
   // The suits take the rest of the card's height, in at most two rows. They go in as many columns
@@ -1180,7 +1186,7 @@ function Possibilities({
     ranks.length > 0 ? chipSize * RANK_CHIP_HEIGHT_PER_WIDTH + width * gap : 0;
   const suitsHeight =
     width * CARD_HEIGHT_PER_WIDTH - top - bottom - rankRowHeight;
-  const suitCount = Math.max(suits.length, 1);
+  const suitCount = Math.max(suitSlots.length, 1);
   let suitColumns = 1;
   let pipCell = 0;
   for (let columns = 1; columns <= suitCount; columns++) {
@@ -1220,27 +1226,49 @@ function Possibilities({
           className="tw:flex tw:flex-wrap tw:justify-center"
           style={{ width: suitColumns * pipCell }}
         >
-          {suits.map((pip) => (
-            <SuitChip
-              cell={pipCell}
-              key={pip.suitIndex}
-              pip={pip}
-              variant={variant}
-              width={width}
-            />
-          ))}
+          {suitSlots.map((pip, i) =>
+            pip === undefined ? (
+              <span
+                className="tw:shrink-0"
+                key={i}
+                style={{
+                  width: pipCell,
+                  height: pipCell,
+                }}
+              />
+            ) : (
+              <SuitChip
+                cell={pipCell}
+                key={pip.suitIndex}
+                pip={pip}
+                variant={variant}
+                width={width}
+              />
+            ),
+          )}
         </div>
       )}
       {ranks.length > 0 && (
-        <div className="tw:flex" style={{ gap: width * chipGap }}>
-          {ranks.map((pip) => (
-            <RankChip
-              chipWidth={chipSize}
-              key={pip.rank}
-              pip={pip}
-              width={width}
-            />
-          ))}
+        <div className="tw:flex">
+          {rankSlots.map((pip, i) =>
+            pip === undefined ? (
+              <span
+                className="tw:shrink-0"
+                key={variant.ranks[i]}
+                style={{
+                  width: chipSize,
+                  height: chipSize * RANK_CHIP_HEIGHT_PER_WIDTH,
+                }}
+              />
+            ) : (
+              <RankChip
+                chipWidth={chipSize}
+                key={pip.rank}
+                pip={pip}
+                width={width}
+              />
+            ),
+          )}
         </div>
       )}
     </div>
