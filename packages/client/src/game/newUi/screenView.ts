@@ -27,6 +27,7 @@ import {
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { getEmpathyStyle } from "../empathyStyle.ts";
+import { getShownGameEnd } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import {
@@ -106,6 +107,7 @@ export function getSeats(
     (timed || settings.showTimerInUntimed)
     && state.replay.segment === undefined
     && !state.finished;
+  const gameEnd = getShownGameEnd(state);
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
   const identities = getShownIdentities(state);
@@ -173,8 +175,11 @@ export function getSeats(
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
     // Every player's name has their clock: the time left in a timed game, or the time taken in an
-    // untimed one.
-    const playerTime = showClock ? getPlayerTime(playerIndex) : undefined;
+    // untimed one. On the turn on which the game ended, each clock shows the player's time at the
+    // end, which the classic screen writes in its action log.
+    const endTime = gameEnd?.playerTimesMs?.[playerIndex];
+    const playerTime =
+      endTime ?? (showClock ? getPlayerTime(playerIndex) : undefined);
     const clock =
       playerTime === undefined
         ? undefined
@@ -182,12 +187,19 @@ export function getSeats(
     // The clock shows its time, so its tooltip says what the time is. The tooltip of the clock that
     // runs gives the time taken on this turn instead.
     const turnTime =
-      clock !== undefined && getActivePlayerIndex() === playerIndex
+      clock !== undefined
+      && endTime === undefined
+      && getActivePlayerIndex() === playerIndex
         ? getTurnTime()
         : undefined;
-    let clockTooltip: string | undefined = timed
-      ? "Time left"
-      : "Time taken in this game";
+    let clockTooltip: string | undefined;
+    if (endTime === undefined) {
+      clockTooltip = timed ? "Time left" : "Time taken in this game";
+    } else {
+      clockTooltip = timed
+        ? "Time left when the game ended"
+        : "Time taken in the whole game";
+    }
     if (turnTime !== undefined) {
       clockTooltip = `Time taken on this turn: ${millisecondsToClockString(turnTime)}`;
     }
