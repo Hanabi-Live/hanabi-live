@@ -162,6 +162,30 @@ impl TableActor {
         );
         Ok(())
     }
+    /// The reply to `/seed` or `/id`.
+    fn game_detail(&self, command: TableChatCommand) -> String {
+        let Some(game) = self.table.game() else {
+            return "The game has not started yet.".into();
+        };
+        let live = matches!(self.table.phase, Phase::Live { .. });
+        if command == TableChatCommand::Seed {
+            // The seed finds other games on the same deck, so a live game keeps it hidden.
+            if live {
+                return "This game shows its seed when it ends.".into();
+            }
+            return game.seed.as_ref().map_or_else(
+                || "This game has no seed, because it has a custom deck.".into(),
+                |seed| format!("Seed: {seed}"),
+            );
+        }
+        if live {
+            return "This game gets an ID when it ends.".into();
+        }
+        game.game_id.map_or_else(
+            || "This game has no ID, because it is not in the database.".into(),
+            |id| format!("Game ID: {id}"),
+        )
+    }
     /// The users whose scores the score commands compare: everyone watching a replay, or the
     /// table's players.
     fn score_participants(&self) -> CommandResult<Vec<(UserId, String)>> {
@@ -384,6 +408,14 @@ impl TableActor {
         command: TableChatCommand,
         args: &[&str],
     ) -> CommandResult<()> {
+        if matches!(command, TableChatCommand::Seed | TableChatCommand::Id) {
+            let reply = self.game_detail(command);
+            let message = private_server_chat(self.table.id, &session.name, &reply);
+            let mut e = self.effects();
+            e.messages
+                .push((session, frame(hanabi_protocol::event::CHAT, message)));
+            return self.publish(e).await;
+        }
         let mut next = self.candidate();
         if command == TableChatCommand::MissingScores {
             let participants = self.score_participants()?;

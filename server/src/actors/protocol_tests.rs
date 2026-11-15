@@ -2904,6 +2904,69 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
 }
 
 #[tokio::test]
+async fn seed_and_id_commands_reply_only_to_the_sender() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Seed", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        h.barrier(0).await?;
+        h.frames(0);
+        h.frames(1);
+        let ask = async |h: &mut Harness, text: &str| -> Result<String> {
+            h.send(0, "chat", json!({"tableId":id,"text":text})).await?;
+            h.barrier(0).await?;
+            let chats = chat_messages(&h.frames(0));
+            ensure!(
+                chats.len() == 1 && chats[0]["kind"]["recipient"] == "Alice",
+                "{text} did not reply privately"
+            );
+            ensure!(
+                chat_messages(&h.frames(1)).is_empty(),
+                "{text} leaked to another player"
+            );
+            Ok(chats[0]["text"].as_str().unwrap_or("").to_owned())
+        };
+        ensure!(
+            ask(&mut h, "/seed").await? == "This game shows its seed when it ends.",
+            "A live game showed its seed"
+        );
+        ensure!(
+            ask(&mut h, "/id").await? == "This game gets an ID when it ends.",
+            "A live game showed an ID"
+        );
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        h.barrier(0).await?;
+        h.frames(0);
+        h.frames(1);
+        let table = h.snapshot(id).await?.0;
+        let game = table.game().unwrap();
+        let (seed, game_id) = (game.seed.clone().unwrap(), game.game_id.unwrap());
+        ensure!(
+            ask(&mut h, "/seed").await? == format!("Seed: {seed}"),
+            "Wrong seed"
+        );
+        ensure!(
+            ask(&mut h, "/ID").await? == format!("Game ID: {game_id}"),
+            "Wrong game ID"
+        );
+        ensure!(
+            h.snapshot(id).await?.0.chat.iter().all(|c| {
+                let text = &c.message.message.text;
+                !text.starts_with("Seed: ") && !text.starts_with("Game ID: ")
+            }),
+            "A private reply entered the table chat"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play_multiple_tables()
 -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy", "Bot-Worker"]).await? else {

@@ -79,6 +79,8 @@ If you need general help with the website, then read the
 | Command      | Description                                                       |
 | ------------ | ----------------------------------------------------------------- |
 | `/tag [tag]` | Tag this game with a word or phrase so that you can find it later |
+| `/seed`      | Show the seed of this game (after it ends)                        |
+| `/id`        | Show the database ID of this game (after it ends)                 |
 
 ## Replay Commands
 

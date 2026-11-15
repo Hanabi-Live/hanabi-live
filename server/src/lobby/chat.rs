@@ -44,9 +44,15 @@ pub enum TableChatCommand {
     FindVariant,
     Suggest,
     Tags,
-    Split { automatic: bool },
+    Split {
+        automatic: bool,
+    },
     Kick,
     Impostor,
+    /// Shows the seed of the table's game. Only the sender sees it.
+    Seed,
+    /// Shows the database ID of the table's game. Only the sender sees it.
+    Id,
 }
 
 /// The names of the table chat commands.
@@ -70,6 +76,8 @@ const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
     ("splitauto", TableChatCommand::Split { automatic: true }),
     ("kick", TableChatCommand::Kick),
     ("impostor", TableChatCommand::Impostor),
+    ("seed", TableChatCommand::Seed),
+    ("id", TableChatCommand::Id),
 ];
 
 /// A chat command whose reply needs the server's runtime information.
@@ -164,7 +172,9 @@ impl<'a> ChatCommand<'a> {
 
     pub fn classification(&self) -> Classification {
         match self.kind {
-            CommandKind::Token | CommandKind::Runtime(RuntimeCommand::Uptime) => {
+            CommandKind::Token
+            | CommandKind::Runtime(RuntimeCommand::Uptime)
+            | CommandKind::Table(TableChatCommand::Seed | TableChatCommand::Id) => {
                 Classification::Private
             }
             CommandKind::Reply(response) if response.private => Classification::Private,
@@ -464,6 +474,9 @@ pub async fn lobby_chat(
                 runtime = Some(Effect::RuntimeChat { command, args });
             }
             None if matches!(command.kind, CommandKind::Table(_)) => {
+                if command.classification() == Classification::Private {
+                    return Ok(Some(vec![notice(&caller.name, TABLE_ONLY_RESPONSE)]));
+                }
                 public_response = Some(TABLE_ONLY_RESPONSE.into());
             }
             None => {

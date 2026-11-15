@@ -453,7 +453,13 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     )
     .await;
     assert_eq!(self_data(&result, "chatPmHistory")["messages"], json!([]));
-    for text in ["/not-a-command private", "/token extra", "/help"] {
+    for text in [
+        "/not-a-command private",
+        "/token extra",
+        "/help",
+        "/seed",
+        "/id",
+    ] {
         let result = run(&db.pool, &who, &[], "chat", json!({"text":text})).await;
         assert!(
             result

@@ -10,6 +10,8 @@ of the repository.
 ## November 15th, 2026
 
 - In a replay, Page Up enters a hypothetical, and Page Down leaves it.
+- Ctrl + C no longer copies the game ID in a replay. Use the new `/seed` and
+  `/id` chat commands to see the seed and the database ID of the game.
 
 ## November 13th, 2026
 
