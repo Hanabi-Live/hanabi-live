@@ -2,20 +2,15 @@
 // The game's message handlers ("../gameCommands.ts") call these for both screens, so each one does
 // nothing while the classic screen is not shown.
 
-import type { ServerEventData } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import type { ArrowTarget } from "../highlightArrow.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as notes from "./notes.ts";
-
-type LeaderArrowTarget = Extract<
-  ServerEventData["replayAction"]["action"],
-  { type: "arrow" }
->["target"];
 
 /** Whether each player is connected, from the last "connections" message. */
 let connections: readonly boolean[] = [];
@@ -47,14 +42,14 @@ export function drawConnections(): void {
 }
 
 /** Shows the arrow that the shared replay's leader points with, or hides it. */
-export function drawLeaderArrow(target: LeaderArrowTarget): void {
+export function drawLeaderArrow(target: ArrowTarget | undefined): void {
   if (!isClassicScreenShown()) {
     return;
   }
 
   arrows.hideAll();
   if (target !== undefined) {
-    arrows.toggle(target.type === "card" ? target.order : target.element);
+    arrows.toggle(target);
   }
 }
 

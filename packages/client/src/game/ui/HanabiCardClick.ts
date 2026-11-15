@@ -5,6 +5,7 @@ import type Konva from "konva";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
+import { canDrawArrow } from "../highlightArrow.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -167,37 +168,10 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Right-click for a leader in a shared replay is to draw an arrow next to the card. The arrow is
-  // shown to all the members of the reply in order to draw attention to the card. (We want it to
-  // work no matter what modifiers are being pressed, in case someone is pushing their push-to-talk
-  // hotkey while highlighting cards.)
-  if (
-    globals.state.finished
-    && (globals.state.replay.shared === undefined
-      || (globals.state.replay.shared.amLeader
-        && globals.state.replay.shared.useSharedSegments))
-  ) {
-    arrows.toggle(card.order);
-    return;
-  }
-
-  // Right-click in a solo replay just prints out the order of the card.
-  if (globals.state.finished && globals.state.replay.shared === undefined) {
-    console.log(`This card's order is: ${card.order}`);
-    return;
-  }
-
-  // Ctrl + right-click is a local arrow. Even if they are not a leader in a shared replay, a user
-  // might still want to draw an arrow on a card for demonstration purposes. However, we do not want
-  // to enable this functionality in shared replays because it could be misleading as to who the
-  // real replay leader is.
-  if (
-    event.ctrlKey
-    && !event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && globals.state.replay.shared === undefined
-  ) {
+  // In a replay, a right-click draws an arrow next to the card. A shared replay's leader shows it
+  // to everyone who follows, in order to draw attention to the card. During a game, Ctrl +
+  // right-click draws an arrow that only we see (see "canDrawArrow").
+  if (canDrawArrow(globals.state, event)) {
     arrows.toggle(card.order);
     return;
   }

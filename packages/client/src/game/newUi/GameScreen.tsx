@@ -47,6 +47,7 @@ import {
   NameColumnSizer,
 } from "./Hands.tsx";
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
+import { HighlightArrow } from "./HighlightArrow.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
@@ -54,6 +55,13 @@ import type { ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
+import {
+  canDrawArrowNow,
+  getArrowView,
+  getShownArrowTarget,
+  toggleArrow,
+} from "./arrow.ts";
+import { getArrowTargetAt } from "./arrowAnchor.ts";
 import {
   DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
@@ -67,6 +75,7 @@ import {
   getPreviewMarker,
 } from "./clueMarkers.ts";
 import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
+import { newUiArrowChanged } from "./newUiSlice.ts";
 import {
   canDiscardNow,
   editCard,
@@ -75,6 +84,7 @@ import {
   showClue,
   showDiscard,
   showReplayTurn,
+  showStrike,
   toggleReplay,
 } from "./screenActions.ts";
 import { getScreenModeStyle } from "./screenMode.ts";
@@ -126,6 +136,7 @@ export function GameScreen({
   const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
+  const arrow = useAppSelector((root) => root.newUi.arrow);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
@@ -198,6 +209,15 @@ export function GameScreen({
     setMenuCard(undefined);
   }, [turnNum]);
 
+  // The arrow goes away when the screen shows another turn, so that it does not come back with the
+  // turn.
+  const arrowView = state === undefined ? undefined : getArrowView(state);
+  useEffect(() => {
+    if (arrow !== undefined && arrow.view !== arrowView) {
+      store.dispatch(newUiArrowChanged(undefined));
+    }
+  }, [arrow, arrowView]);
+
   // Editing cards ends with the hypothetical.
   const inHypothetical = state?.replay.hypothetical !== undefined;
   useEffect(() => {
@@ -232,6 +252,7 @@ export function GameScreen({
   }
 
   const { visibleState, ongoingGame, metadata } = state;
+  const shownArrow = getShownArrowTarget(arrow, state);
   const variant = currentVariant();
   const { settings } = store.getState().session;
   const { options } = metadata;
@@ -304,6 +325,10 @@ export function GameScreen({
     onRightClickCard: state.finished
       ? undefined
       : (event, order) => {
+          // The screen draws an arrow on the card instead (see below).
+          if (canDrawArrowNow(event)) {
+            return;
+          }
           if (rightClickNote(event, order)) {
             setNoteCard(order);
           }
@@ -513,6 +538,16 @@ export function GameScreen({
       // on the screen can be selected, so that clicks and drags never highlight it. The text boxes,
       // such as the chat input, still let the player select what they type.
       className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:select-none tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
+      // A right-click on a card or a number draws an arrow on it, when the viewer can draw one.
+      onContextMenu={(event) => {
+        const target = getArrowTargetAt(event.target as Element);
+        if (target === undefined || !canDrawArrowNow(event)) {
+          return;
+        }
+
+        event.preventDefault();
+        toggleArrow(target);
+      }}
       ref={rootRef}
       style={{
         zoom: screenScale,
@@ -553,7 +588,7 @@ export function GameScreen({
                       visibleState.clueTokens,
                       variant,
                     )}
-                    onShowStrike={showReplayTurn}
+                    onShowStrike={showStrike}
                     outOfClues={visibleState.clueTokens < getClueCost(variant)}
                     strikes={visibleState.strikes.length}
                     strikeSegments={getStrikeSegments(state)}
@@ -861,6 +896,17 @@ export function GameScreen({
           )
         }
       />
+
+      {shownArrow !== undefined && (
+        <HighlightArrow
+          deck={visibleState.deck}
+          // A new arrow drops in, even on a card that had one before.
+          key={shownArrow}
+          reducedMotion={settings.reducedMotion}
+          root={rootRef}
+          target={shownArrow}
+        />
+      )}
 
       {logSeat !== undefined && (
         <PlayerLog

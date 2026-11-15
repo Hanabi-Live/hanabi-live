@@ -517,7 +517,9 @@ export function StatusStrip({
           }
           size="small"
         >
-          <span style={{ color: paceColor }}>{pace}</span>
+          <span data-pace style={{ color: paceColor }}>
+            {pace}
+          </span>
         </Stat>
         <Stat
           label={
@@ -531,30 +533,32 @@ export function StatusStrip({
           }
           size="small"
         >
-          <OutOf
-            max={minEfficiency}
-            maxStyle={markedStyle(
-              HARD_VARIANT_EFFICIENCY_COLOR,
-              hardVariant,
-              colorblindMode,
-            )}
-            value={
-              <button
-                aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
-                className={VALUE_BUTTON_CLASS}
-                onClick={onEfficiencyClick}
-                ref={tooltipRefHtml(valueTooltip(efficiencyTooltip))}
-                style={markedStyle(
-                  MODIFIED_EFFICIENCY_COLOR,
-                  efficiencyModified,
-                  colorblindMode,
-                )}
-                type="button"
-              >
-                {futureEfficiency}
-              </button>
-            }
-          />
+          <span data-efficiency>
+            <OutOf
+              max={minEfficiency}
+              maxStyle={markedStyle(
+                HARD_VARIANT_EFFICIENCY_COLOR,
+                hardVariant,
+                colorblindMode,
+              )}
+              value={
+                <button
+                  aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
+                  className={VALUE_BUTTON_CLASS}
+                  onClick={onEfficiencyClick}
+                  ref={tooltipRefHtml(valueTooltip(efficiencyTooltip))}
+                  style={markedStyle(
+                    MODIFIED_EFFICIENCY_COLOR,
+                    efficiencyModified,
+                    colorblindMode,
+                  )}
+                  type="button"
+                >
+                  {futureEfficiency}
+                </button>
+              }
+            />
+          </span>
         </Stat>
       </div>
       <GroupDivider />

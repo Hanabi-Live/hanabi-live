@@ -32,7 +32,9 @@ import { registerGameObservers } from "./gameObservers.ts";
 import * as gameSession from "./gameSession.ts";
 import type { Votes } from "./gameSlice.ts";
 import { gameStarted, gameUpdated, votesChanged } from "./gameSlice.ts";
+import { fromWireArrowTarget } from "./highlightArrow.ts";
 import * as hypothetical from "./hypothetical.ts";
+import { showArrow } from "./newUi/arrow.ts";
 import { newUiNoteUnread } from "./newUi/newUiSlice.ts";
 import { initialState } from "./reducers/initialStates/initialState.ts";
 import { getNotesAction } from "./reducers/stateReducer.ts";
@@ -151,7 +153,9 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
         return;
       }
 
-      serverUpdates.drawLeaderArrow(leaderAction.target);
+      const target = fromWireArrowTarget(leaderAction.target);
+      serverUpdates.drawLeaderArrow(target);
+      showArrow(target);
       break;
     }
 

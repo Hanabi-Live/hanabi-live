@@ -19,7 +19,7 @@ export type RightClickNoteAction =
   /** Opens the note to type in it. */
   | { readonly type: "edit" };
 
-interface ModifierKeys {
+export interface ModifierKeys {
   readonly ctrlKey: boolean;
   readonly shiftKey: boolean;
   readonly altKey: boolean;

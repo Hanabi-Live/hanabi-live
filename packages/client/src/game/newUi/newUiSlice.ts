@@ -4,6 +4,13 @@ import type { CardOrder } from "@hanabi-live/game";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import { gameCleared, gameStarted } from "../gameSlice.ts";
+import type { ArrowTarget } from "../highlightArrow.ts";
+
+/** The highlight arrow, and the view of the game that it was drawn on (see "arrow.ts"). */
+export interface ShownArrow {
+  readonly target: ArrowTarget;
+  readonly view: string;
+}
 
 interface NewUiState {
   /** Whether the redesigned game screen is showing the current game. */
@@ -17,6 +24,8 @@ interface NewUiState {
    * since.
    */
   readonly unreadNotes: readonly CardOrder[];
+  /** The highlight arrow, if one is drawn. */
+  readonly arrow: ShownArrow | undefined;
 }
 
 const initialState: NewUiState = {
@@ -24,6 +33,7 @@ const initialState: NewUiState = {
   chatOpen: true,
   chatPoppedOut: false,
   unreadNotes: [],
+  arrow: undefined,
 };
 
 const newUiSlice = createSlice({
@@ -49,15 +59,20 @@ const newUiSlice = createSlice({
         (order) => order !== action.payload,
       );
     },
+    newUiArrowChanged(state, action: PayloadAction<ShownArrow | undefined>) {
+      state.arrow = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    // The notes of another game are not unread in this one.
+    // The notes and the arrow of another game do not belong in this one.
     builder
       .addCase(gameStarted, (state) => {
         state.unreadNotes = [];
+        state.arrow = undefined;
       })
       .addCase(gameCleared, (state) => {
         state.unreadNotes = [];
+        state.arrow = undefined;
       });
   },
 });
@@ -68,5 +83,6 @@ export const {
   newUiChatPoppedOutChanged,
   newUiNoteUnread,
   newUiNoteRead,
+  newUiArrowChanged,
 } = newUiSlice.actions;
 export const newUiReducer = newUiSlice.reducer;

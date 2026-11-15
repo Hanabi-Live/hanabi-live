@@ -1,14 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { replayBoardElementSchema } from "@hanabi-live/data";
-import type {
-  CardOrder,
-  Clue,
-  HiddenClue,
-  PlayerIndex,
-  Suit,
-} from "@hanabi-live/game";
+import type { Clue, HiddenClue, PlayerIndex, Suit } from "@hanabi-live/game";
 import {
   EVEN_RANK_CLUE,
   getCharacterNameForPlayer,
@@ -19,10 +12,10 @@ import {
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { z } from "zod";
-import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
+import type { ArrowTarget } from "../highlightArrow.ts";
+import { canDrawArrow, getToggledArrow, sendArrow } from "../highlightArrow.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { CardLayout } from "./CardLayout.ts";
 import { HanabiCard } from "./HanabiCard.ts";
@@ -414,41 +407,14 @@ function animate(arrow: Arrow, card: HanabiCard, rot: number, giver: number) {
   arrow.hide();
 }
 
-/** A part of the board that a shared-replay arrow can point at, besides cards. */
-export type ReplayBoardElement = z.infer<typeof replayBoardElementSchema>;
-
-/** What a highlight arrow points at: a card, or a part of the board. */
-type ArrowTarget = CardOrder | ReplayBoardElement;
-
 export function click(
   event: KonvaEventObject<MouseEvent>,
   target: ArrowTarget,
 ): void {
-  // "event.evt.buttons" is always 0 here.
-  if (event.evt.button !== RIGHT_MOUSE_BUTTON) {
-    // We only care about right-clicks.
-    return;
-  }
-
-  // During a game, an arrow needs Ctrl + right-click, the same as on a card.
-  if (!globals.state.finished && !event.evt.ctrlKey) {
-    return;
-  }
-
-  // Do not allow followers in a shared replay to summon arrows because it could be misleading as to
-  // who the real replay leader is.
+  // We only care about right-clicks. ("event.evt.buttons" is always 0 here.)
   if (
-    globals.state.replay.shared !== undefined
-    && !globals.state.replay.shared.amLeader
-  ) {
-    return;
-  }
-
-  // Do not allow shared replay leaders to summon arrows when they are not in shared turns because
-  // it could be misleading as to whether or not the arrows are being shown to the other players.
-  if (
-    globals.state.replay.shared !== undefined
-    && !globals.state.replay.shared.useSharedSegments
+    event.evt.button !== RIGHT_MOUSE_BUTTON
+    || !canDrawArrow(globals.state, event.evt)
   ) {
     return;
   }
@@ -465,10 +431,11 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
 
   // Use the first arrow for highlighting a specific thing.
   const arrow = globals.elements.arrows[0]!;
-  const show =
-    alwaysShow
-    || arrow.pointingTo !== element
-    || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
+  const shown =
+    arrow.pointingTo === element && arrow.base.fill() === ARROW_COLOR.HIGHLIGHT
+      ? target
+      : undefined;
+  const show = getToggledArrow(shown, target, alwaysShow) !== undefined;
 
   hideAll();
   if (show) {
@@ -480,30 +447,7 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
     }
   }
 
-  if (
-    globals.state.replay.shared !== undefined
-    && globals.state.replay.shared.amLeader
-    && globals.state.replay.shared.useSharedSegments
-  ) {
-    lobbyGlobals.connection.send("replayAction", {
-      tableId: lobbyGlobals.joinedTableId,
-      action: show
-        ? {
-            type: "arrow",
-            target:
-              typeof target === "number"
-                ? {
-                    type: "card",
-                    order: target,
-                  }
-                : {
-                    type: "board",
-                    element: target,
-                  },
-          }
-        : { type: "arrow" },
-    });
-  }
+  sendArrow(globals.state, show ? target : undefined);
 }
 
 function getElementFromTarget(
