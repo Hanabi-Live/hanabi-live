@@ -698,6 +698,7 @@ export function GameScreen({
                 colorblindMode={settings.colorblindMode}
                 notes={cardNotes}
                 onShowDiscard={showDiscard}
+                reducedMotion={settings.reducedMotion}
                 rows={discardRows}
                 variant={variant}
                 zoneState={discardZoneState}

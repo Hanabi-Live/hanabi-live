@@ -18,6 +18,7 @@ import {
 } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
+import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { Pip } from "./Pip.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
 
@@ -587,6 +588,7 @@ export function DiscardPile({
   atMaxClues,
   onShowDiscard,
   notes,
+  reducedMotion,
 }: {
   readonly rows: ReadonlyArray<readonly DiscardView[]>;
   readonly variant: Variant;
@@ -598,6 +600,7 @@ export function DiscardPile({
   readonly atMaxClues: boolean;
   readonly onShowDiscard: (order: CardOrder) => void;
   readonly notes: CardNotes;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
 
@@ -610,10 +613,6 @@ export function DiscardPile({
     <section
       aria-label="Discards"
       className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${
-        // While the player drags a card, the pile is clear, so that it is part of the dark box of
-        // the discard column behind it (see "DropZones.tsx").
-        zoneState === "idle" ? WELL_CLASS : ""
-      } ${
         // At max clues, a quiet dashed border in the clue color shows that no one can discard,
         // before anyone picks up a card and while they drag one.
         atMaxClues
@@ -622,6 +621,15 @@ export function DiscardPile({
       }`}
       ref={tooltipRef(zoneState === "idle" ? "Discard pile" : undefined)}
     >
+      {/* While the player drags a card, the well of the pile fades out, so that the pile is part of
+          the dark box of the discard column behind it (see "DropZones.tsx"). */}
+      <div
+        aria-hidden="true"
+        className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] ${WELL_CLASS} ${
+          reducedMotion ? "" : "tw:transition-opacity tw:ease-out"
+        } ${zoneState === "idle" ? "" : "tw:opacity-0"}`}
+        style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
+      />
       {/* A faint trash can behind the cards names the pile without a heading. */}
       <i
         aria-hidden="true"

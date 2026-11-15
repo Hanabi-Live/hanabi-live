@@ -1,11 +1,16 @@
 import type { RefObject } from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import type { ZoneState } from "./SharedCards.tsx";
 import { measure } from "./screenScale.ts";
 import { DROP_ZONE_CLASS } from "./surfaces.ts";
 
-/** How long the boxes take to fade in when the player picks up a card. */
-const FADE_IN_MILLISECONDS = 100;
+/**
+ * How long the boxes take to fade in when the player picks up a card, and to fade out when the drag
+ * ends.
+ */
+export const DROP_ZONE_FADE_MILLISECONDS = 200;
+
+const ZONE_BOX_CLASS = "tw:pointer-events-none tw:absolute tw:inset-y-0";
 
 /** The space between each box and the hands, in CSS pixels. A card dropped there goes back. */
 const HANDS_MARGIN = 16;
@@ -36,7 +41,8 @@ interface ZoneBoxes {
  * plays the card, and everything to the right discards it. A player who aims for the play stacks or
  * the discard pile and misses still gets the move that they meant. Each box is the area where a
  * drop counts (see "useCardDrag.ts"), so the player sees exactly where the card can go. The space
- * between a box and the hands, and the hands, put the card back.
+ * between a box and the hands, and the hands, put the card back. The boxes fade in and out, except
+ * with "Reduced motion".
  *
  * The boxes are behind the columns, from the top of the screen to the bar at the bottom. They need
  * a positioned parent that holds the hands, and they come before the columns, which are positioned
@@ -58,35 +64,68 @@ export function DropZones({
   readonly discardZoneRef: RefObject<HTMLElement | null>;
 }): React.JSX.Element | undefined {
   const dragging = playState !== "idle";
+
+  // The boxes stay while they fade out after the drag ends.
   const [boxes, setBoxes] = useState<ZoneBoxes>();
   useLayoutEffect(() => {
-    if (!dragging) {
+    if (dragging) {
+      setBoxes(measureBoxes(handsElement));
+    } else if (reducedMotion) {
       setBoxes(undefined);
-      return;
     }
-    setBoxes(measureBoxes(handsElement));
-  }, [dragging, handsElement]);
+  }, [dragging, handsElement, reducedMotion]);
 
-  if (!dragging || boxes === undefined) {
+  if (boxes === undefined) {
     return undefined;
   }
 
+  // While the boxes fade out, neither has a ring.
+  const fadeClass = reducedMotion
+    ? ""
+    : `tw:transition-opacity tw:ease-out tw:starting:opacity-0 ${dragging ? "" : "tw:opacity-0"}`;
+  const fadeStyle = {
+    transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
+  };
+
   return (
     <>
-      <ZoneBoxElement
-        box={boxes.play}
-        className={`tw:rounded-r-game-panel ${zoneClasses[playState]}`}
-        reducedMotion={reducedMotion}
-        zoneRef={playZoneRef}
+      <div
+        aria-hidden="true"
+        className={`${ZONE_BOX_CLASS} tw:rounded-r-game-panel ${dragging ? zoneClasses[playState] : DROP_ZONE_CLASS} ${fadeClass}`}
+        onTransitionEnd={() => {
+          if (!dragging) {
+            setBoxes(undefined);
+          }
+        }}
+        ref={zoneRef(playZoneRef)}
+        style={{
+          ...boxes.play,
+          ...fadeStyle,
+        }}
       />
-      <ZoneBoxElement
-        box={boxes.discard}
-        className={`tw:rounded-l-game-panel ${zoneClasses[discardState]}`}
-        reducedMotion={reducedMotion}
-        zoneRef={discardZoneRef}
+      <div
+        aria-hidden="true"
+        className={`${ZONE_BOX_CLASS} tw:rounded-l-game-panel ${dragging ? zoneClasses[discardState] : DROP_ZONE_CLASS} ${fadeClass}`}
+        ref={zoneRef(discardZoneRef)}
+        style={{
+          ...boxes.discard,
+          ...fadeStyle,
+        }}
       />
     </>
   );
+}
+
+/** Returns a callback ref that gives a box to the drag, which drops the card where it is. */
+function zoneRef(
+  ref: RefObject<HTMLElement | null>,
+): (element: HTMLElement | null) => () => void {
+  return (element) => {
+    ref.current = element;
+    return () => {
+      ref.current = null;
+    };
+  };
 }
 
 /**
@@ -124,39 +163,4 @@ function measureBoxes(handsElement: HTMLElement | null): ZoneBoxes | undefined {
       width: Math.max(parent.clientWidth - discardLeft, 0),
     },
   };
-}
-
-function ZoneBoxElement({
-  box,
-  className,
-  reducedMotion,
-  zoneRef,
-}: {
-  readonly box: ZoneBox;
-  readonly className: string;
-  readonly reducedMotion: boolean;
-  readonly zoneRef: RefObject<HTMLElement | null>;
-}): React.JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    zoneRef.current = ref.current;
-    if (!reducedMotion) {
-      ref.current?.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: FADE_IN_MILLISECONDS,
-        easing: "ease-out",
-      });
-    }
-    return () => {
-      zoneRef.current = null;
-    };
-  }, []);
-
-  return (
-    <div
-      aria-hidden="true"
-      className={`tw:pointer-events-none tw:absolute tw:inset-y-0 ${className}`}
-      ref={ref}
-      style={box}
-    />
-  );
 }
