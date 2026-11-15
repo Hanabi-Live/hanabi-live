@@ -19,12 +19,10 @@ import {
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
-  getEfficiency,
   isCardClued,
   isCardIdentityFromNote,
   isCardTouchedByClue,
 } from "@hanabi-live/game";
-import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
@@ -326,30 +324,6 @@ export function formatPace(
   }
 
   return pace > 0 ? `+${pace}` : pace.toString();
-}
-
-/**
- * Returns the efficiency that the rest of the game needs, as the classic screen shows it. It counts
- * the cards that notes or the player's own modifier mark as gotten.
- */
-export function formatFutureEfficiency(
-  stats: GameState["stats"],
-  efficiencyModifier: number,
-): string {
-  if (stats.cluesStillUsableNotRounded === undefined) {
-    return "-";
-  }
-
-  const cardsGotten =
-    stats.cardsGotten + efficiencyModifier + (stats.cardsGottenByNotes ?? 0);
-  const cardsNotGotten = Math.max(stats.maxScore - cardsGotten, 0);
-  const futureEfficiency = getEfficiency(
-    cardsNotGotten,
-    Math.floor(stats.cluesStillUsableNotRounded),
-  );
-  return futureEfficiency === undefined
-    ? "-"
-    : futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES);
 }
 
 /** The note on a card that has none. */

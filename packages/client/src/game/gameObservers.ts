@@ -4,6 +4,7 @@
 
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../Globals.ts";
+import { setBrowserAddressBarPath } from "../utils.ts";
 import * as gameSession from "./gameSession.ts";
 import { gameStateSource } from "./gameStateSource.ts";
 import { onOurTurn } from "./ourTurn.ts";
@@ -127,6 +128,15 @@ function onSharedSegmentChanged(
   replay.goToSegment(data.sharedSegment, false, true);
 }
 
+/**
+ * Puts the turn on screen in the address bar, so that a refresh or a shared link opens that turn.
+ * The turns of a hypothetical do not map onto the game's turns, so they stay out of it.
+ */
+function onShownTurnChanged(turnNum: number) {
+  // The first turn is 0 in the state, and the players see it as turn 1.
+  setBrowserAddressBarPath(globalThis.location.pathname, `#${turnNum + 1}`);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const subscriptions: Array<Subscription<State, any>> = [
   subAfterInit(
@@ -154,6 +164,14 @@ const subscriptions: Array<Subscription<State, any>> = [
     }),
     onOngoingTurnChanged,
   ),
+
+  {
+    select: (s: State) =>
+      s.visibleState === undefined || s.replay.hypothetical !== undefined
+        ? SKIP
+        : s.visibleState.turn.turnNum,
+    onChange: onShownTurnChanged,
+  },
 
   {
     select: (s: State) => s.visibleState !== undefined,

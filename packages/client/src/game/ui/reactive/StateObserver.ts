@@ -153,36 +153,23 @@ const visibleStateObservers: Subscriptions = [
   ),
   subAfterInit(
     (s) => ({
-      cardsGotten: s.visibleState!.stats.cardsGotten,
-      cardsGottenByNotes: s.visibleState!.stats.cardsGottenByNotes,
+      stats: s.visibleState!.stats,
       efficiencyModifier: s.notes.efficiencyModifier,
-      potentialCluesLost: s.visibleState!.stats.potentialCluesLost,
-      maxScore: s.visibleState!.stats.maxScore,
-      cluesStillUsableNotRounded:
-        s.visibleState!.stats.cluesStillUsableNotRounded,
-      finalRoundEffectivelyStarted:
-        s.visibleState!.stats.finalRoundEffectivelyStarted,
     }),
     statsView.onEfficiencyChanged,
   ),
-  sub(
-    (s) => {
-      if (s.visibleState !== undefined) {
-        return {
-          pace: s.visibleState.stats.pace,
-          cluesStillUsable: s.visibleState.stats.cluesStillUsable,
-          score: s.visibleState.score,
-          maxScore: s.visibleState.stats.maxScore,
-          turnNum: s.visibleState.turn.turnNum,
-          endTurnNum: s.visibleState.turn.endTurnNum,
-          numPlayers: s.metadata.options.numPlayers,
-        };
-      }
-      return SKIP;
-    },
-
-    statsView.onMaxTurnsChanged,
-  ),
+  sub((s) => {
+    if (s.visibleState !== undefined) {
+      return {
+        stats: s.visibleState.stats,
+        score: s.visibleState.score,
+        turnNum: s.visibleState.turn.turnNum,
+        endTurnNum: s.visibleState.turn.endTurnNum,
+        numPlayers: s.metadata.options.numPlayers,
+      };
+    }
+    return SKIP;
+  }, statsView.onMaxTurnsChanged),
 
   // Logs
   subVs((s) => s.log, logView.onLogChanged),

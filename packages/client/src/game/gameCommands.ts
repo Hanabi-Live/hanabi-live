@@ -27,6 +27,7 @@ import { store } from "../store.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import { toCardIdentity, toPlayerTuple, toSoundType } from "../wire.ts";
 import * as clock from "./clock.ts";
+import { setEfficiencyModifier } from "./efficiencyModifier.ts";
 import { registerGameObservers } from "./gameObservers.ts";
 import * as gameSession from "./gameSession.ts";
 import type { Votes } from "./gameSlice.ts";
@@ -43,7 +44,6 @@ import * as keyboard from "./ui/keyboard.ts";
 import { StateObserver } from "./ui/reactive/StateObserver.ts";
 import * as replay from "./ui/replay.ts";
 import * as serverUpdates from "./ui/serverUpdates.ts";
-import * as stats from "./ui/stats.ts";
 import { uiInit } from "./ui/uiInit.ts";
 
 // Define a command handler map.
@@ -171,7 +171,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
         return;
       }
 
-      stats.setEfficiencyModifier(leaderAction.modifier);
+      setEfficiencyModifier(leaderAction.modifier);
       break;
     }
   }

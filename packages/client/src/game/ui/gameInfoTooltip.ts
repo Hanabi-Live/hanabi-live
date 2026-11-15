@@ -13,11 +13,10 @@ import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
 
 /**
- * The HTML of a tooltip about the game: its table, seed, variant, and options. A tooltip that stays
- * the same while it shows leaves out the lengths of the game and of the shared replay, which change
- * every second.
+ * The HTML of a tooltip about the game: its table, seed, variant, options, and how long the game
+ * and the shared replay have lasted.
  */
-export function getGameInfoTooltip(showLengths = true): string {
+export function getGameInfoTooltip(): string {
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
@@ -67,17 +66,12 @@ export function getGameInfoTooltip(showLengths = true): string {
     );
   }
 
-  // "startedAt" and "finishedAt" are initialized to strings from the reply to "gameInitLoad", so
-  // they should never be undefined.
-  if (
-    showLengths
-    && globals.state.startedAt !== undefined
-    && globals.state.finishedAt !== undefined
-  ) {
-    const startedDate = new Date(globals.state.startedAt);
-    const finishedDate = globals.state.finished
-      ? new Date(globals.state.finishedAt)
-      : new Date();
+  // An ongoing game has no "finishedAt", so its length runs until now.
+  const { startedAt, finishedAt } = globals.state;
+  if (startedAt !== undefined) {
+    const startedDate = new Date(startedAt);
+    const finishedDate =
+      finishedAt === undefined ? new Date() : new Date(finishedAt);
     const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
     content += tooltipField(
@@ -88,7 +82,7 @@ export function getGameInfoTooltip(showLengths = true): string {
   }
 
   const sharedReplay = globals.state.replay.shared;
-  if (showLengths && sharedReplay !== undefined) {
+  if (sharedReplay !== undefined) {
     const startedDate = new Date(sharedReplay.replayStartedAt);
     const elapsedMilliseconds = Date.now() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);

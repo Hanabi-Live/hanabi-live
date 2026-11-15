@@ -105,6 +105,15 @@ export const NO_SHADOW_COLOR = "rgba(0, 0, 0, 0)";
 /** Off-white */
 export const LABEL_COLOR = "#d8d5ef";
 
+/** Cyan, for an efficiency that has a manual modifier. */
+export const MODIFIED_EFFICIENCY_COLOR = "#00ffff";
+
+/** Cyan, for the score in the H-Group's "Low Score Phase", when H-Group conventions are on. */
+export const LOW_SCORE_PHASE_COLOR = "#00ffff";
+
+/** Pink, for the minimum efficiency of a "Hard" variant when H-Group conventions are on. */
+export const HARD_VARIANT_EFFICIENCY_COLOR = "#ffb2b2";
+
 export const ARROW_COLOR = {
   /** White */
   DEFAULT: "#ffffff",

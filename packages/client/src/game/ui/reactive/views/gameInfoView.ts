@@ -7,12 +7,13 @@ import {
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { store } from "../../../../store.ts";
-import { setBrowserAddressBarPath } from "../../../../utils.ts";
+import { isLowScorePhase } from "../../../efficiency.ts";
 import { globals } from "../../UiGlobals.ts";
 import * as arrows from "../../arrows.ts";
 import {
   CURRENT_TURN_COLOR,
   LABEL_COLOR,
+  LOW_SCORE_PHASE_COLOR,
   MAX_CLUES_COLOR,
   NO_CLUES_COLOR,
   OFF_BLACK,
@@ -21,9 +22,6 @@ import {
 } from "../../constants.ts";
 import { animate } from "../../konvaHelpers.ts";
 import * as replay from "../../replay.ts";
-
-/** The H-Group's "Low Score Phase" lasts until the score reaches this many cards for each suit. */
-const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;
 
 /** How long a strike takes to fade in or out. */
 const STRIKE_ANIMATION_SECONDS = 0.5;
@@ -38,13 +36,6 @@ export function onTurnChanged(data: {
 
   // Update the "Turn" label.
   globals.elements.turnNumberLabel?.text(friendlyTurn);
-
-  // Update the address bar if we are not in a hypothetical. (The turn number in the hypothetical
-  // will cause bugs if the user refreshes, since the hypothetical turn will not map on to the real
-  // game state.)
-  if (globals.state.replay.hypothetical === undefined) {
-    setBrowserAddressBarPath(globalThis.location.pathname, `#${friendlyTurn}`);
-  }
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== undefined) {
@@ -115,12 +106,13 @@ export function onScoreOrMaxScoreChanged(data: {
 
   // Make the score label a separate color if it is the "Low Score Phase" (but only for members of
   // the H-Group).
-  const lowScorePhaseThreshold =
-    globals.variant.suits.length * LOW_SCORE_PHASE_CARDS_PER_SUIT;
-  const lowScorePhase = data.score < lowScorePhaseThreshold;
+  const lowScorePhase = isLowScorePhase(
+    data.score,
+    globals.variant.suits.length,
+  );
   const scoreLabelColor =
     lowScorePhase && store.getState().session.settings.hGroupConventions
-      ? "cyan"
+      ? LOW_SCORE_PHASE_COLOR
       : LABEL_COLOR;
   const scoreLabelStyle =
     lowScorePhase

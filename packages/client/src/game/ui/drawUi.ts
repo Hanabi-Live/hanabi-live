@@ -30,6 +30,7 @@ import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { getCanvasColors } from "../../theme.ts";
 import * as gameChat from "../chat.ts";
+import { askForEfficiency } from "../efficiencyModifier.ts";
 import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
@@ -65,6 +66,7 @@ import {
   EFFICIENCY_DECIMAL_PLACES,
   FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
+  HARD_VARIANT_EFFICIENCY_COLOR,
   INDICATOR_ELLIPSE_STROKE_WIDTH,
   INDICATOR_ELLIPSE_STYLE,
   LABEL_COLOR,
@@ -188,9 +190,6 @@ const ACTION_LOG_LINES = 8;
 
 /** The number of recent actions shown in the smaller action log of the Keldon layout. */
 const KELDON_ACTION_LOG_LINES = 3;
-
-/** Pink, for the minimum efficiency of a "Hard" variant when H-Group conventions are enabled. */
-const HARD_VARIANT_EFFICIENCY_COLOR = "#ffb2b2";
 
 /** The rings of the waiting-on-server animation at full size, in fractions of the stage height. */
 const WAITING_ON_SERVER_RING = {
@@ -2123,7 +2122,7 @@ function drawStatistics() {
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
   efficiencyNumberLabel.on("click", stats.efficiencyLabelClick);
-  efficiencyNumberLabel.on("dbltap", stats.askForEfficiency);
+  efficiencyNumberLabel.on("dbltap", askForEfficiency);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
   // "statsView.ts" fills in the tooltip.
   efficiencyNumberLabel.tooltipContent = "";

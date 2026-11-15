@@ -1,6 +1,11 @@
 import type { RefObject } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
+import {
+  HARD_VARIANT_EFFICIENCY_COLOR,
+  LOW_SCORE_PHASE_COLOR,
+  MODIFIED_EFFICIENCY_COLOR,
+} from "../ui/constants.ts";
 import { useElementSize } from "./hooks.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
@@ -41,6 +46,12 @@ const PACE_HELP_LABEL =
 interface StatusStripProps {
   readonly turn: number;
 
+  /** The HTML of the tooltip on the turn: the most turns and rounds that are left. */
+  readonly turnTooltip: string;
+
+  /** Asks which turn to go to. */
+  readonly onTurnClick: () => void;
+
   /**
    * The last turn of the game, while the screen shows a replay, so that the turn reads as "5 / 21".
    * It is `undefined` in the game as it stands, in a hypothetical, and in a spoiler-free replay.
@@ -48,12 +59,36 @@ interface StatusStripProps {
   readonly lastTurn: number | undefined;
   readonly score: number;
   readonly maxScore: number;
+
+  /**
+   * Whether the score is in the H-Group's "Low Score Phase" and the player follows the H-Group's
+   * conventions, so that it is in another color, as on the classic screen.
+   */
+  readonly lowScorePhase: boolean;
   readonly pace: string;
 
   /** The color of the pace, by how risky it would be to discard, as on the classic screen. */
   readonly paceColor: string | undefined;
   readonly futureEfficiency: string;
+
+  /** Whether the player's own modifier changes the future efficiency, so it is in another color. */
+  readonly efficiencyModified: boolean;
+
+  /** The HTML of the tooltip on the future efficiency, which breaks it down. */
+  readonly efficiencyTooltip: string;
+
+  /** Asks for a modifier of the cards gotten. */
+  readonly onEfficiencyClick: () => void;
   readonly minEfficiency: string;
+
+  /**
+   * Whether the variant is "Hard" and the player follows the H-Group's conventions, so that the
+   * minimum efficiency is in another color, as on the classic screen.
+   */
+  readonly hardVariant: boolean;
+
+  /** Whether the colored numbers are also bold, for players who cannot tell the colors apart. */
+  readonly colorblindMode: boolean;
   readonly variantName: string;
 
   /** The HTML of the tooltip on the variant: the game's seed, options, and table. */
@@ -165,9 +200,11 @@ function HelpIcon({
 function OutOf({
   value,
   max,
+  maxStyle,
 }: {
   readonly value: React.ReactNode;
   readonly max: number | string;
+  readonly maxStyle?: React.CSSProperties;
 }): React.JSX.Element {
   return (
     <>
@@ -176,11 +213,41 @@ function OutOf({
       <span
         className="tw:inline-block tw:font-medium tw:text-game-muted"
         data-out-of-max
+        style={maxStyle}
       >
         / {max}
       </span>
     </>
   );
+}
+
+/**
+ * A value that opens a prompt when clicked. It looks like the other values, and a dotted line under
+ * it on hover shows that it does something.
+ */
+const VALUE_BUTTON_CLASS =
+  "tw:cursor-pointer tw:rounded-sm tw:border-0 tw:bg-transparent tw:p-0 tw:text-inherit tw:[font:inherit] tw:decoration-dotted tw:decoration-2 tw:underline-offset-4 tw:outline-none tw:hover:underline tw:focus-visible:underline";
+
+/**
+ * Puts the tooltip of a value in the smaller text of the screen's other tooltips. Its labels are
+ * wide enough for "Current cards noted as gotten" to fit on one line.
+ */
+function valueTooltip(html: string): string {
+  return `<div class="small-tooltip-text tw:[&_.efficiency-description]:w-[14em]">${html}</div>`;
+}
+
+/** The color of a number that a setting or the player's own modifier marks, and its weight. */
+function markedStyle(
+  color: string,
+  marked: boolean,
+  colorblindMode: boolean,
+): React.CSSProperties | undefined {
+  return marked
+    ? {
+        color,
+        fontWeight: colorblindMode ? "bold" : undefined,
+      }
+    : undefined;
 }
 
 /**
@@ -345,13 +412,21 @@ function useOwnRow(
  */
 export function StatusStrip({
   turn,
+  turnTooltip,
+  onTurnClick,
   lastTurn,
   score,
   maxScore,
+  lowScorePhase,
   pace,
   paceColor,
   futureEfficiency,
+  efficiencyModified,
+  efficiencyTooltip,
+  onEfficiencyClick,
   minEfficiency,
+  hardVariant,
+  colorblindMode,
   variantName,
   gameInfoTooltip,
   replayToggle,
@@ -385,7 +460,13 @@ export function StatusStrip({
         <Stat label="Turn">
           {/* An invisible "10 / 10" holds the space (or the real turn, if it is wider). Then the bar
               does not move when a replay adds " / 21" to the turn, or when the turn reaches 10. */}
-          <span className="tw:inline-grid tw:tabular-nums">
+          <button
+            aria-label={`Turn ${turn}. Go to another turn.`}
+            className={`${VALUE_BUTTON_CLASS} tw:inline-grid tw:tabular-nums`}
+            onClick={onTurnClick}
+            ref={tooltipRefHtml(valueTooltip(turnTooltip))}
+            type="button"
+          >
             <span
               aria-hidden="true"
               className="tw:invisible tw:col-start-1 tw:row-start-1"
@@ -399,11 +480,19 @@ export function StatusStrip({
                 <OutOf max={lastTurn} value={turn} />
               )}
             </span>
-          </span>
+          </button>
         </Stat>
         <Stat label="Score" size="large" truncate={false}>
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
-          <span className="tw:inline-block" data-score>
+          <span
+            className="tw:inline-block"
+            data-score
+            style={markedStyle(
+              LOW_SCORE_PHASE_COLOR,
+              lowScorePhase,
+              colorblindMode,
+            )}
+          >
             {/* The score holds the space of two digits, so that the bar does not move when the
                 score reaches 10. */}
             <OutOf
@@ -442,7 +531,30 @@ export function StatusStrip({
           }
           size="small"
         >
-          <OutOf max={minEfficiency} value={futureEfficiency} />
+          <OutOf
+            max={minEfficiency}
+            maxStyle={markedStyle(
+              HARD_VARIANT_EFFICIENCY_COLOR,
+              hardVariant,
+              colorblindMode,
+            )}
+            value={
+              <button
+                aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
+                className={VALUE_BUTTON_CLASS}
+                onClick={onEfficiencyClick}
+                ref={tooltipRefHtml(valueTooltip(efficiencyTooltip))}
+                style={markedStyle(
+                  MODIFIED_EFFICIENCY_COLOR,
+                  efficiencyModified,
+                  colorblindMode,
+                )}
+                type="button"
+              >
+                {futureEfficiency}
+              </button>
+            }
+          />
         </Stat>
       </div>
       <GroupDivider />

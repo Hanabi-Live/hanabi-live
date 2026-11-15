@@ -12,12 +12,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
+import {
+  formatEfficiency,
+  getEfficiencyStats,
+  getEfficiencyTooltip,
+  getMaxTurns,
+  getMaxTurnsTooltip,
+  isLowScorePhase,
+  shouldModifyEfficiency,
+} from "../efficiency.ts";
+import { askForEfficiency } from "../efficiencyModifier.ts";
 import { currentVariant } from "../gameSession.ts";
 import type { ClientClue } from "../types/ClientAction.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
+import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { CardClueMarker } from "./Card.tsx";
@@ -78,12 +89,7 @@ import {
   getStacks,
   getStrikeSegments,
 } from "./screenView.ts";
-import {
-  formatFutureEfficiency,
-  formatPace,
-  getTouchedCards,
-  isClueAllowed,
-} from "./tableView.ts";
+import { formatPace, getTouchedCards, isClueAllowed } from "./tableView.ts";
 import { useCardDrag } from "./useCardDrag.ts";
 import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
@@ -493,9 +499,11 @@ export function GameScreen({
       ? undefined
       : Math.max(endTurnNum - visibleState.turn.turnNum, 0);
 
-  // Only the efficiency of the game as it stands includes the player's own modifier.
-  const efficiencyModifier =
-    visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
+  const efficiencyStats = getEfficiencyStats(
+    visibleState.stats,
+    state.notes.efficiencyModifier,
+    shouldModifyEfficiency(state),
+  );
 
   return (
     <div
@@ -736,11 +744,16 @@ export function GameScreen({
       </div>
 
       <StatusStrip
-        futureEfficiency={formatFutureEfficiency(
-          visibleState.stats,
-          efficiencyModifier,
+        colorblindMode={settings.colorblindMode}
+        efficiencyModified={efficiencyStats.modified}
+        efficiencyTooltip={getEfficiencyTooltip(
+          efficiencyStats,
+          "Click the number to add a modifier.",
         )}
-        gameInfoTooltip={getGameInfoTooltip(false)}
+        futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
+        // The game's length changes as the clock ticks, and the screen draws again with it.
+        gameInfoTooltip={getGameInfoTooltip()}
+        hardVariant={metadata.hardVariant && settings.hGroupConventions}
         // The replay controls have no turn, so the turn here says how far into the game it is. A
         // spoiler-free replay hides how long the game lasts.
         lastTurn={
@@ -750,12 +763,18 @@ export function GameScreen({
             ? state.ongoingGame.turn.turnNum + 1
             : undefined
         }
+        lowScorePhase={
+          settings.hGroupConventions
+          && isLowScorePhase(visibleState.score, variant.suits.length)
+        }
         maxScore={visibleState.stats.maxScore}
         minEfficiency={metadata.minEfficiency.toFixed(
           EFFICIENCY_DECIMAL_PLACES,
         )}
         onClassicView={onSwitchToClassic}
+        onEfficiencyClick={askForEfficiency}
         onLobby={backToLobby}
+        onTurnClick={replay.promptTurn}
         pace={formatPace(
           visibleState.stats.pace,
           visibleState.stats.finalRoundEffectivelyStarted,
@@ -820,6 +839,16 @@ export function GameScreen({
           )
         }
         turn={visibleState.turn.turnNum + 1}
+        turnTooltip={getMaxTurnsTooltip(
+          getMaxTurns(
+            visibleState.stats,
+            visibleState.score,
+            visibleState.turn.turnNum,
+            visibleState.turn.endTurnNum,
+            options.numPlayers,
+          ),
+          visibleState.turn.turnNum,
+        )}
         variantName={currentVariant().name}
         viewAsMenu={
           canChooseSeat() && (
