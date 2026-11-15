@@ -182,14 +182,15 @@ export function getSeats(
       playerTime === undefined
         ? undefined
         : millisecondsToClockString(playerTime);
-    // The clock shows its time, so its tooltip says what the time is. The tooltip of the clock that
-    // runs gives the time taken on this turn instead.
-    const turnTime =
+    // The clock of the player whose time goes now. In the in-game replay, this is not the player of
+    // the turn on screen.
+    const clockRunning =
       clock !== undefined
       && endTime === undefined
-      && getActivePlayerIndex() === playerIndex
-        ? getTurnTime()
-        : undefined;
+      && getActivePlayerIndex() === playerIndex;
+    // The clock shows its time, so its tooltip says what the time is. The tooltip of the clock that
+    // runs gives the time taken on this turn instead.
+    const turnTime = clockRunning ? getTurnTime() : undefined;
     let clockTooltip: string | undefined;
     if (endTime === undefined) {
       clockTooltip = timed ? "Time left" : "Time taken in this game";
@@ -215,6 +216,7 @@ export function getSeats(
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       clock,
+      clockRunning,
       clockTooltip,
       // A player counts as connected until the server says otherwise, and in a replay, which has no
       // players to wait for.
@@ -222,8 +224,8 @@ export function getSeats(
       // The clocks do not run while the game is paused.
       lowTime:
         timed
+        && clockRunning
         && playerTime !== undefined
-        && getActivePlayerIndex() === playerIndex
         && state.pause.pausingPlayerIndex === undefined
         && isLowOnTime(playerTime),
       turnWarning: active ? turnWarning : undefined,

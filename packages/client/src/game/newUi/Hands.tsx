@@ -47,6 +47,12 @@ export interface Seat {
    */
   readonly clock: string | undefined;
 
+  /**
+   * Whether the player's time goes now. The clock stands out by this, not by the turn on screen,
+   * since the clocks show the game as it stands, even during the in-game replay.
+   */
+  readonly clockRunning: boolean;
+
   /** The clock's tooltip, if it has one. */
   readonly clockTooltip: string | undefined;
 
@@ -558,7 +564,7 @@ function PlayerClock({
     return undefined;
   }
 
-  let clockClass = seat.active
+  let clockClass = seat.clockRunning
     ? "tw:font-bold tw:text-game-text"
     : "tw:font-medium tw:text-game-muted";
   if (seat.lowTime) {
