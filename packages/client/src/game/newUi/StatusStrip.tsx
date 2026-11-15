@@ -12,10 +12,10 @@ import { KEY_CLASS } from "./surfaces.ts";
 /**
  * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
  * in a narrow box: the icon is near the left edge of the window, and a wide tooltip would not fit
- * centered over it.
+ * centered over it. In the tooltip, the breakdown of the first number follows it.
  */
 const EFFICIENCY_HELP = `
-  <ul class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:list-disc tw:space-y-2 tw:pl-[1.2em] tw:narrow-980:max-w-[15em]">
+  <ul class="tw:m-0 tw:max-w-[19em] tw:list-disc tw:space-y-2 tw:pl-[1.2em] tw:narrow-980:max-w-[15em]">
     <li>
       <strong>First number:</strong> the efficiency that the team needs from
       now on in order to win.
@@ -95,7 +95,10 @@ interface StatusStripProps {
   /** Whether the player's own modifier changes the future efficiency, so it is in another color. */
   readonly efficiencyModified: boolean;
 
-  /** The HTML of the tooltip on the future efficiency, which breaks it down. */
+  /**
+   * The HTML that breaks down the future efficiency. It goes under the explanation in the tooltip
+   * of the efficiency's information icon.
+   */
   readonly efficiencyTooltip: string;
 
   /** Asks for a modifier of the cards gotten. */
@@ -596,8 +599,11 @@ export function StatusStrip({
             <>
               Efficiency
               <HelpIcon
+                icon="fa-info-circle"
                 label={EFFICIENCY_HELP_LABEL}
-                tooltip={EFFICIENCY_HELP}
+                tooltip={valueTooltip(
+                  `${EFFICIENCY_HELP}<div class="tw:mt-3">${efficiencyTooltip}</div>`,
+                )}
               />
             </>
           }
@@ -616,7 +622,6 @@ export function StatusStrip({
                   aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
                   className={VALUE_BUTTON_CLASS}
                   onClick={onEfficiencyClick}
-                  ref={tooltipRefHtml(valueTooltip(efficiencyTooltip))}
                   style={markedStyle(
                     MODIFIED_EFFICIENCY_COLOR,
                     efficiencyModified,

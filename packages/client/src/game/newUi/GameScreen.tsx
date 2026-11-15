@@ -1224,7 +1224,7 @@ export function GameScreen({
         efficiencyModified={efficiencyStats.modified}
         efficiencyTooltip={getEfficiencyTooltip(
           efficiencyStats,
-          "Click the number to add a modifier.",
+          "Click the first number to add a modifier.",
         )}
         futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
         // The game's length changes as the clock ticks, and the screen draws again with it.

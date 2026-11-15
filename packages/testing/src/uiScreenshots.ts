@@ -1144,7 +1144,7 @@ function getStates(): readonly State[] {
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame();
+        await cast.startBobsGame(5);
       },
       hover: async (page) => {
         await hoverForTooltip(
