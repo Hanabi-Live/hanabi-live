@@ -315,13 +315,6 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
       set(card.order, newNote);
     }
 
-    // Check to see if an event happened while we were editing this note.
-    if (globals.actionOccurred) {
-      globals.actionOccurred = false;
-      tooltips.close(tooltip);
-      return;
-    }
-
     update(card, newNote);
   });
 

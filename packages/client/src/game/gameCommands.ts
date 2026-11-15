@@ -270,13 +270,8 @@ function requestGameState() {
   });
 }
 
-// Received when spectating a game, when someone else changes a note that we may see.
+// Received when spectating a game in progress, when someone else changes a note that we may see.
 gameCommands.set("note", (data) => {
-  // If we are an active player and we got this message, something has gone wrong.
-  if (gameSession.currentState().playing) {
-    return;
-  }
-
   store.dispatch(
     gameUpdated({
       type: "receiveNote",
@@ -287,8 +282,8 @@ gameCommands.set("note", (data) => {
 
   serverUpdates.drawNoteIndicator(data.order);
 
-  // The New UI marks the note as unread until we look at it, while the game goes on.
-  if (!gameSession.currentState().finished && data.note.text !== "") {
+  // The New UI marks the note as unread until we look at it.
+  if (data.note.text !== "") {
     store.dispatch(newUiNoteUnread(data.order));
   }
 });

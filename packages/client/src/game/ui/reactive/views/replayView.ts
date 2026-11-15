@@ -21,9 +21,6 @@ export function onActiveChanged(active: boolean): void {
   if (active) {
     // Visibility is handled by hypotheticalView.shouldShowReplayAreaChanged.
     replay.adjustShuttles(true); // We want it to immediately snap to the end
-  } else if (globals.state.premove !== undefined) {
-    // We are exiting a replay.
-    globals.elements.premoveCancelButton?.show();
   }
 
   cluesView.refreshArrows(active);
@@ -205,11 +202,7 @@ export function getGameIdLabel(state: State): string | undefined {
     : `ID: ${state.replay.gameId}`;
 }
 
-export function onGameIdLabelChanged(text: string | undefined): void {
-  if (text === undefined) {
-    return;
-  }
-
+export function onGameIdLabelChanged(text: string): void {
   globals.elements.gameIdLabel?.text(text);
   globals.elements.gameIdLabel?.show();
 

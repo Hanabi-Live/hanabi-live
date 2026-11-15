@@ -34,20 +34,6 @@ export class CardLayout extends Konva.Group {
 
     assertDefined(config.width, "A width was not defined for a CardLayout.");
     assertDefined(config.height, "A height was not defined for a CardLayout.");
-
-    // Debug rectangle (uncomment to show the size of the hand).
-    /*
-    const debugRect = new Konva.Rect({
-      x: config.x,
-      y: config.y,
-      width: config.width,
-      height: config.height,
-      fill: 'black',
-      rotation: config.rotation,
-      listening: false,
-    });
-    globals.layers.UI.add(debugRect);
-    */
   }
 
   // The card has a relative position relating to its location

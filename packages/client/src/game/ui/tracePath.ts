@@ -2,7 +2,6 @@
 const COMMAND_COORDINATES = {
   M: 2,
   L: 2,
-  Q: 4,
   C: 6,
   Z: 0,
 } as const;
@@ -15,7 +14,7 @@ function isCommand(token: string): token is Command {
 
 /**
  * Adds SVG path data to the context's current path. It reads only absolute commands that each
- * repeat their letter: `M`, `L`, `Q`, `C`, and `Z`.
+ * repeat their letter: `M`, `L`, `C`, and `Z`.
  *
  * The points are added to the current path instead of to a `Path2D`, so the caller can fill and
  * stroke them, as with any other path.
@@ -42,11 +41,6 @@ export function tracePath(ctx: CanvasRenderingContext2D, path: string): void {
 
       case "L": {
         ctx.lineTo(a, b);
-        break;
-      }
-
-      case "Q": {
-        ctx.quadraticCurveTo(a, b, c, d);
         break;
       }
 

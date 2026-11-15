@@ -39,14 +39,7 @@ export function onTurnChanged(data: {
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== undefined) {
-    let numTurnsLeft = data.endTurn - data.turn;
-
-    // Also account for the fact that in non-replays, an extra turn is sent to show the times
-    // separately from the final action.
-    if (numTurnsLeft < 0) {
-      numTurnsLeft = 0;
-    }
-
+    const numTurnsLeft = data.endTurn - data.turn;
     globals.elements.deckTurnsRemainingLabel2?.text(`left: ${numTurnsLeft}`);
   }
 
@@ -129,18 +122,11 @@ export function onScoreOrMaxScoreChanged(data: {
     return;
   }
   maxScoreLabel.text(` / ${data.maxScore}`);
-  // The type of Konva.Text.width is "any" for some reason.
   const maxScoreLabelWidth = maxScoreLabel.measureSize(
     maxScoreLabel.text(),
   ).width;
-  if (typeof maxScoreLabelWidth !== "number") {
-    throw new TypeError("The width of maxScoreLabel was not a number.");
-  }
   maxScoreLabel.width(maxScoreLabelWidth);
   const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text()).width;
-  if (typeof scoreLabelWidth !== "number") {
-    throw new TypeError("The width of scoreLabel was not a number.");
-  }
   const x = scoreLabel.x() + scoreLabelWidth;
   maxScoreLabel.x(x);
 

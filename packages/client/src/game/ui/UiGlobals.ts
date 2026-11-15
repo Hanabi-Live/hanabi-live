@@ -19,7 +19,7 @@ Konva.legacyTextRendering = true;
  * This object contains global variables for the game UI. Each game gets a new instance from
  * "resetGlobals()".
  */
-export class UiGlobals {
+class UiGlobals {
   private stageInstance: Konva.Stage | undefined = undefined;
 
   // Game constants (set upon first initialization).
@@ -41,9 +41,6 @@ export class UiGlobals {
    * to prevent bugs. Equal to the name of the card's tooltip or undefined.
    */
   editingNote: GameTooltipName | undefined = undefined;
-
-  /** Equal to true if something happened when the note box happens to be open. */
-  actionOccurred = false;
 
   // Miscellaneous
   animateFast = true;

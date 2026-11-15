@@ -161,20 +161,7 @@ export function drawPip(
       ctx.fillStyle = grad;
     }
 
-    // Workaround for Konva.Shape's Context not supporting `evenodd`. This is used in e.g. Empathy
-    // view.
-    interface KonvaCanvas {
-      _context: CanvasRenderingContext2D | undefined;
-    }
-    const konvaCanvas = ctx as unknown as KonvaCanvas;
-
-    const canvasFillRule = "evenodd";
-    const context = konvaCanvas._context;
-    if (context === undefined) {
-      ctx.fill(canvasFillRule);
-    } else {
-      context.fill(canvasFillRule);
-    }
+    ctx.fill("evenodd");
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = "black";

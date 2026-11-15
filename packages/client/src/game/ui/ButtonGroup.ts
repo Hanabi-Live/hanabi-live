@@ -8,13 +8,6 @@ type ClueButton = PlayerButton | ColorButton | RankButton;
 export class ButtonGroup extends Konva.Group {
   list: ClueButton[] = [];
 
-  constructor(config: Konva.ContainerConfig) {
-    super(config);
-
-    // Class variables
-    this.list = [];
-  }
-
   addList(button: ClueButton): void {
     const that = this; // eslint-disable-line @typescript-eslint/no-this-alias
 

@@ -58,7 +58,7 @@ export function drawNoteIndicator(order: CardOrder): void {
     return;
   }
 
-  getCardOrStackBase(order)?.setNoteIndicator(true);
+  getCardOrStackBase(order)?.setNoteIndicator();
 }
 
 /** Shows the note indicators and the special notes of every card, after the notes arrive. */

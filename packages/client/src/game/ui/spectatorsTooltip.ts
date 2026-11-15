@@ -38,10 +38,8 @@ export function getSpectatorsTooltip(
         `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
       );
 
-      if (playerName !== spectator.username) {
-        // eslint-disable-next-line complete/require-ascii
-        nameEntry += ` (🕵️ <em>${escapeHtml(playerName)}</em>)`;
-      }
+      // eslint-disable-next-line complete/require-ascii
+      nameEntry += ` (🕵️ <em>${escapeHtml(playerName)}</em>)`;
     }
     nameEntry += "</li>";
     nameEntries += nameEntry;

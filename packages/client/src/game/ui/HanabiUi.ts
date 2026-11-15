@@ -14,7 +14,6 @@ import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
-import type { UiGlobals } from "./UiGlobals.ts";
 import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 
 export class HanabiUi {
@@ -31,12 +30,7 @@ export class HanabiUi {
   /** Stops drawing the clocks. */
   private readonly stopDrawingTimers: () => void;
 
-  globals: UiGlobals;
-
   constructor() {
-    // Expose the globals to functions in the "game" directory.
-    this.globals = globals;
-
     initStageSize();
     cursor.set("default");
     this.stopDrawingTimers = timer.init();
@@ -53,11 +47,11 @@ export class HanabiUi {
       if (!this.liveResizeActive) {
         console.log("[resize-v4] css-scale during drag, rebuild on settle");
         tooltips.closeAllTooltips();
-        this.globals.isResizing = true;
-        this.globals.animateFast = true;
+        globals.isResizing = true;
+        globals.animateFast = true;
         this.liveResizeActive = true;
-        this.liveResizeBaseWidth = this.globals.stage.width();
-        this.liveResizeBaseHeight = this.globals.stage.height();
+        this.liveResizeBaseWidth = globals.stage.width();
+        this.liveResizeBaseHeight = globals.stage.height();
         this.liveResizeScale = 1;
         this.resizeFrame = 0;
         this.lastResizeEventFrame = 0;
@@ -132,7 +126,7 @@ export class HanabiUi {
     this.liveResizeScale = stageScale;
 
     // Use compositor scaling during drag for smoother resize; rebuild at settle for crisp layout.
-    const stageContainer = this.globals.stage.container();
+    const stageContainer = globals.stage.container();
     stageContainer.style.transformOrigin = "top left";
     stageContainer.style.willChange = "transform";
     stageContainer.style.transform = `scale(${stageScale})`;
@@ -142,30 +136,31 @@ export class HanabiUi {
    * Rebuilds the entire game UI from scratch, redrawing every element (e.g. so that canvas elements
    * pick up new theme colors or the new stage size).
    */
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private rebuildGameUi(): void {
-    const stageContainer = this.globals.stage.container();
+    const stageContainer = globals.stage.container();
     stageContainer.style.transform = "";
     stageContainer.style.transformOrigin = "";
     stageContainer.style.willChange = "";
 
     // Snap back before rebuilding at the new native size.
-    this.globals.stage.scale({
+    globals.stage.scale({
       x: 1,
       y: 1,
     });
-    this.globals.stage.position({
+    globals.stage.position({
       x: 0,
       y: 0,
     });
     initStageSize();
 
     // We must also clear the card-related globals or else we will have duplicates.
-    const { visibleState } = this.globals.state;
-    this.globals.deck = [];
-    for (const unsubscribe of this.globals.cardSubscriptions) {
+    const { visibleState } = globals.state;
+    globals.deck = [];
+    for (const unsubscribe of globals.cardSubscriptions) {
       unsubscribe();
     }
-    this.globals.cardSubscriptions = [];
+    globals.cardSubscriptions = [];
 
     drawUi();
 
@@ -176,18 +171,18 @@ export class HanabiUi {
 
     // Re-register the state observers to bind them to the new UI elements.
     if (
-      this.globals.stateObserver !== undefined
+      globals.stateObserver !== undefined
       && store.getState().game.current !== undefined
     ) {
-      this.globals.stateObserver.registerObservers();
+      globals.stateObserver.registerObservers();
     }
     cluesView.refreshArrows(false);
 
-    this.globals.layers.UI.draw();
-    this.globals.layers.timer.draw();
-    this.globals.layers.card.draw();
-    this.globals.layers.UI2.draw();
-    this.globals.layers.arrow.draw();
+    globals.layers.UI.draw();
+    globals.layers.timer.draw();
+    globals.layers.card.draw();
+    globals.layers.UI2.draw();
+    globals.layers.arrow.draw();
     // The timers were drawn again, so show the clocks on them.
     timer.draw();
   }
@@ -196,8 +191,8 @@ export class HanabiUi {
     this.rebuildGameUi();
 
     this.liveResizeActive = false;
-    this.globals.isResizing = false;
-    this.globals.animateFast = false;
+    globals.isResizing = false;
+    globals.animateFast = false;
   }
 
   // The following methods are called from various parent functions.

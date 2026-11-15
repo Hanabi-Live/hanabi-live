@@ -11,10 +11,9 @@ import {
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
-import { assertDefined } from "complete-common";
+import { assertDefined, assertNotNull } from "complete-common";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
-import type { CardRendererBackend } from "./cardRendererBackend.ts";
 import {
   CARD_CENTER,
   CARD_FACE_SHADOW_BLUR,
@@ -169,11 +168,8 @@ const RANK_LABEL_GRADIENT = [
 /** The distance of the rank label from the left edge of a card. */
 const RANK_LABEL_X = 19;
 
-/** The black outline of the rank labels, which is thicker without shadows to keep them readable. */
-const RANK_LABEL_OUTLINE_WIDTH = {
-  withShadows: 2,
-  withoutShadows: 8,
-} as const;
+/** The width of the black outline of the rank labels. */
+const RANK_LABEL_OUTLINE_WIDTH = 2;
 
 /**
  * How far an Omni card's background gradient extends past the top and bottom of the card, so that
@@ -197,16 +193,36 @@ const HALF_TURN_RADIANS = FULL_CIRCLE_RADIANS / 2;
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
 
+function initCanvas(): {
+  cvs: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+} {
+  const cvs = document.createElement("canvas");
+  cvs.width = CARD_W;
+  cvs.height = CARD_H;
+
+  const ctx = cvs.getContext("2d");
+  assertNotNull(ctx, "Failed to get the context for a new canvas element.");
+
+  return {
+    cvs,
+    ctx,
+  };
+}
+
+function cloneCanvas(oldCvs: HTMLCanvasElement): HTMLCanvasElement {
+  const { cvs, ctx } = initCanvas();
+  ctx.drawImage(oldCvs, 0, 0);
+  return cvs;
+}
+
 /** Returns an object containing all of the drawn cards images (on individual canvases). */
-export function drawCards<Canvas, Image>(
+export function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,
-  enableShadows: boolean,
-  backend: CardRendererBackend<Canvas, Image>,
-): ReadonlyMap<string, Image> {
-  const { createCanvas: initCanvas, cloneCanvas, saveCanvas } = backend;
-  const cardImages = new Map<string, Image>();
+): ReadonlyMap<string, HTMLCanvasElement> {
+  const cardImages = new Map<string, HTMLCanvasElement>();
 
   // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
   // cards, representing cards of known rank but unknown suit.
@@ -233,14 +249,14 @@ export function drawCards<Canvas, Image>(
 
       // We do not need the background on the stack base.
       if (rank !== CARD_IMAGE_STACK_BASE_RANK_NAME) {
-        drawCardBackground(ctx, enableShadows);
+        drawCardBackground(ctx);
       }
 
       // Make the special corners on the cards for dual-color suits.
-      drawDualColorTriangles(ctx, suit.clueColors, enableShadows);
+      drawDualColorTriangles(ctx, suit.clueColors);
 
       // Draw the background and the borders around the card.
-      drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
+      drawCardBase(ctx, suit, rank, variant, colorblindMode);
 
       ctx.shadowBlur = CARD_FACE_SHADOW_BLUR;
       ctx.fillStyle = getSuitStyle(
@@ -252,9 +268,7 @@ export function drawCards<Canvas, Image>(
         colorblindMode,
       );
       ctx.strokeStyle = "black";
-      ctx.lineWidth = enableShadows
-        ? RANK_LABEL_OUTLINE_WIDTH.withShadows
-        : RANK_LABEL_OUTLINE_WIDTH.withoutShadows;
+      ctx.lineWidth = RANK_LABEL_OUTLINE_WIDTH;
       ctx.lineJoin = "round";
 
       if (
@@ -281,7 +295,7 @@ export function drawCards<Canvas, Image>(
           ctx.fill();
           ctx.stroke();
         } else {
-          drawText(ctx, textYPos, rankLabel, enableShadows);
+          drawText(ctx, textYPos, rankLabel);
         }
         const deceptiveRank = getDeceptiveRank(variant, suitIndex, rank);
         if (deceptiveRank !== undefined) {
@@ -295,7 +309,7 @@ export function drawCards<Canvas, Image>(
             ctx.fill();
             ctx.stroke();
           } else {
-            drawText(ctx, textYPos, deceptiveRank.toString(), enableShadows);
+            drawText(ctx, textYPos, deceptiveRank.toString());
           }
         }
         ctx.restore();
@@ -303,7 +317,7 @@ export function drawCards<Canvas, Image>(
         // "Index" cards are used to draw cards of learned but not yet known rank
         // (e.g. for in-game replays)
         const cardImagesIndex = `Index-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cloneCanvas(cvs, ctx));
+        cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
         // Draw the rank on the bottom right.
         if (!variant.upOrDown && !suit.reversed) {
@@ -315,7 +329,7 @@ export function drawCards<Canvas, Image>(
             ctx.fill();
             ctx.stroke();
           } else {
-            drawText(ctx, textYPos, rankLabel, enableShadows);
+            drawText(ctx, textYPos, rankLabel);
           }
           ctx.restore();
         }
@@ -324,33 +338,23 @@ export function drawCards<Canvas, Image>(
       // The "Unknown" suit does not have pips. (It is a white suit that is used for cards that are
       // clued with rank.)
       if (suit.name !== UNKNOWN_SUIT_NAME) {
-        drawSuitPips(ctx, rank, suit, variant, colorblindMode, enableShadows);
+        drawSuitPips(ctx, rank, suit, variant, colorblindMode);
       }
 
-      const cardImagesIndex = `card-${suit.name}-${rank}`;
-      const cardImage = saveCanvas(cvs, ctx);
-      cardImages.set(cardImagesIndex, cardImage);
+      cardImages.set(`card-${suit.name}-${rank}`, cvs);
     }
   }
 
   // Unknown 6 is a card that is completely unknown. This is a special case; we want to render
   // completely unknown cards as a blank gray card (instead of a blank white card).
-  {
-    const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
-    const cardUnknown = saveCanvas(cvs, ctx);
-    cardImages.set(
-      `card-Unknown-${CARD_IMAGE_UNKNOWN_CARD_RANK_NAME}`,
-      cardUnknown,
-    );
-  }
+  cardImages.set(
+    `card-Unknown-${CARD_IMAGE_UNKNOWN_CARD_RANK_NAME}`,
+    makeUnknownCard().cvs,
+  );
 
   // Additionally, create an image for the deck back. This is similar to the Unknown 6 card, except
   // it has pips for each suit.
-  {
-    const { cvs, ctx } = makeDeckBack(variant, initCanvas, enableShadows);
-    const deckBack = saveCanvas(cvs, ctx);
-    cardImages.set("deck-back", deckBack);
-  }
+  cardImages.set("deck-back", makeDeckBack(variant));
 
   return cardImages;
 }
@@ -361,7 +365,6 @@ function drawSuitPips(
   suit: Suit,
   variant: Variant,
   colorblindMode: boolean,
-  enableShadows: boolean,
 ) {
   const scale = FACE_PIP_SCALE;
   const pipOffsetY = colorblindMode
@@ -376,7 +379,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
       scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
     );
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   } else if (rank === 2) {
     // Top and bottom for card 2.
@@ -388,7 +391,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
     );
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
 
     ctx.save();
@@ -399,7 +402,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
     );
     ctx.rotate(HALF_TURN_RADIANS);
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   }
 
@@ -410,7 +413,7 @@ function drawSuitPips(
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
 
     ctx.save();
@@ -418,7 +421,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(HALF_TURN_RADIANS);
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   }
 
@@ -428,7 +431,7 @@ function drawSuitPips(
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(-FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
 
     ctx.save();
@@ -436,7 +439,7 @@ function drawSuitPips(
     ctx.translate(FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
     ctx.rotate(HALF_TURN_RADIANS);
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   }
 
@@ -449,7 +452,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.center,
       scale * FACE_PIP_SCALE_MULTIPLIER.center,
     );
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   }
 
@@ -462,7 +465,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
       scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
     );
-    drawPip(ctx, suit, variant, enableShadows);
+    drawPip(ctx, suit, variant, true);
     ctx.restore();
   }
 
@@ -486,22 +489,19 @@ function drawSuitPips(
     scale * FACE_PIP_SCALE_MULTIPLIER.large,
     scale * FACE_PIP_SCALE_MULTIPLIER.large,
   );
-  drawPip(ctx, suit, variant, enableShadows, undefined, lineWidth);
+  drawPip(ctx, suit, variant, true, undefined, lineWidth);
   ctx.restore();
 }
 
-function makeUnknownCard<Canvas>(
-  initCanvas: () => { cvs: Canvas; ctx: CanvasRenderingContext2D },
-  enableShadows: boolean,
-): {
-  cvs: Canvas;
+function makeUnknownCard(): {
+  cvs: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 } {
   const { cvs, ctx } = initCanvas();
 
-  drawCardBackground(ctx, enableShadows);
+  drawCardBackground(ctx);
   ctx.fillStyle = "black";
-  cardBorderPath(ctx, enableShadows);
+  cardBorderPath(ctx);
 
   ctx.save();
   ctx.globalAlpha = UNKNOWN_CARD_FILL_ALPHA;
@@ -523,15 +523,8 @@ function makeUnknownCard<Canvas>(
   };
 }
 
-function makeDeckBack<Canvas>(
-  variant: Variant,
-  initCanvas: () => { cvs: Canvas; ctx: CanvasRenderingContext2D },
-  enableShadows: boolean,
-): {
-  cvs: Canvas;
-  ctx: CanvasRenderingContext2D;
-} {
-  const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
+function makeDeckBack(variant: Variant): HTMLCanvasElement {
+  const { cvs, ctx } = makeUnknownCard();
 
   ctx.scale(SUIT_PIP_SCALE, SUIT_PIP_SCALE);
 
@@ -547,12 +540,7 @@ function makeDeckBack<Canvas>(
     ctx.restore();
   }
 
-  ctx.scale(1 / SUIT_PIP_SCALE, 1 / SUIT_PIP_SCALE);
-
-  return {
-    cvs,
-    ctx,
-  };
+  return cvs;
 }
 
 function drawCardBase(
@@ -561,7 +549,6 @@ function drawCardBase(
   rank: CardFace,
   variant: Variant,
   colorblindMode: boolean,
-  enableShadows: boolean,
 ) {
   // Draw the background.
   ctx.save();
@@ -581,7 +568,7 @@ function drawCardBase(
     variant,
     colorblindMode,
   );
-  cardBorderPath(ctx, enableShadows);
+  cardBorderPath(ctx);
 
   // Draw the borders (on visible cards) and the color fill.
   ctx.globalAlpha = CARD_FILL_ALPHA;
@@ -596,11 +583,9 @@ function drawCardBase(
   ctx.restore();
 }
 
-function cardBorderPath(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
+function cardBorderPath(ctx: CanvasRenderingContext2D) {
   const padding = CARD_BORDER_PADDING;
-  const roundedCornerSeverity = enableShadows
-    ? CARD_CORNER_ROUNDNESS.withShadow
-    : CARD_CORNER_ROUNDNESS.withoutShadow;
+  const roundedCornerSeverity = CARD_CORNER_ROUNDNESS.withShadow;
   const xRadians = CARD_W * roundedCornerSeverity;
   const yRadians = CARD_W * roundedCornerSeverity;
   // (We want them to both have the same value so that the curve has a 45 degree angle.)
@@ -621,14 +606,10 @@ function cardBorderPath(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
   ctx.quadraticCurveTo(0, 0, padding, yRadians + padding);
 }
 
-function drawShape(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
-  if (enableShadows) {
-    ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
-  }
+function drawShape(ctx: CanvasRenderingContext2D) {
+  ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
   ctx.fill();
-  if (enableShadows) {
-    ctx.shadowColor = NO_SHADOW_COLOR;
-  }
+  ctx.shadowColor = NO_SHADOW_COLOR;
   ctx.stroke();
 }
 
@@ -636,25 +617,18 @@ function drawText(
   ctx: CanvasRenderingContext2D,
   textYPos: number,
   indexLabel: string,
-  enableShadows: boolean,
 ) {
   ctx.save();
-  if (enableShadows) {
-    ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
-    ctx.fillText(indexLabel, RANK_LABEL_X, textYPos);
-    ctx.shadowColor = NO_SHADOW_COLOR;
-    ctx.strokeText(indexLabel, RANK_LABEL_X, textYPos);
-  } else {
-    ctx.strokeText(indexLabel, RANK_LABEL_X, textYPos);
-    ctx.fillText(indexLabel, RANK_LABEL_X, textYPos);
-  }
+  ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
+  ctx.fillText(indexLabel, RANK_LABEL_X, textYPos);
+  ctx.shadowColor = NO_SHADOW_COLOR;
+  ctx.strokeText(indexLabel, RANK_LABEL_X, textYPos);
   ctx.restore();
 }
 
 function drawDualColorTriangles(
   ctx: CanvasRenderingContext2D,
   clueColors: readonly Color[],
-  enableShadows: boolean,
 ) {
   const count = clueColors.length;
   if (count < 2) {
@@ -676,7 +650,6 @@ function drawDualColorTriangles(
     2 * QUARTER_TURN_RADIANS, // Pointing left, then turning down.
     -1,
     sliceAngle,
-    enableShadows,
   );
 
   // Bottom-left
@@ -688,7 +661,6 @@ function drawDualColorTriangles(
     3 * QUARTER_TURN_RADIANS, // Pointing up, then turning right.
     1,
     sliceAngle,
-    enableShadows,
   );
 
   ctx.restore();
@@ -702,7 +674,6 @@ function drawColorTriangle(
   startTheta: number,
   direction: number,
   sliceAngle: number,
-  enableShadows: boolean,
 ) {
   for (const [index, color] of clueColors.entries()) {
     const theta1 = startTheta + index * sliceAngle * direction;
@@ -730,16 +701,13 @@ function drawColorTriangle(
     ctx.moveTo(cx, cy); // Return to corner to close path for filling.
     ctx.fillStyle = color.fill;
 
-    drawShape(ctx, enableShadows);
+    drawShape(ctx);
   }
 }
 
-function drawCardBackground(
-  ctx: CanvasRenderingContext2D,
-  enableShadows: boolean,
-) {
+function drawCardBackground(ctx: CanvasRenderingContext2D) {
   ctx.save();
-  cardBorderPath(ctx, enableShadows);
+  cardBorderPath(ctx);
 
   ctx.fillStyle = "white";
   ctx.fill();

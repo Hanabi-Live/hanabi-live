@@ -220,12 +220,7 @@ export function onChanged(
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        if (
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          currentPlayerArea.arrow !== undefined
-        ) {
-          currentPlayerArea.arrow.rotation(unmodifiedRotation);
-        }
+        currentPlayerArea.arrow.rotation(unmodifiedRotation);
       },
     }).play();
   }

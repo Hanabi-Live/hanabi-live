@@ -205,7 +205,7 @@ export const STROKE_WIDTH_UNIT = 0.001056;
  */
 export const THIN_STROKE_WIDTH = 2 * STROKE_WIDTH_UNIT;
 
-/** The shadow under a player's name and the lines beside it, and under the variant label. */
+/** The shadow under a player's name and the lines beside it. */
 export const LINE_SHADOW = {
   shadowColor: "black",
   shadowBlur: 5,

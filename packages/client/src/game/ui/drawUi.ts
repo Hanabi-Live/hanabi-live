@@ -72,7 +72,6 @@ import {
   INDICATOR_ELLIPSE_STYLE,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
-  LINE_SHADOW,
   PANEL_CORNER_RADIUS,
   PANEL_OPACITY,
   RIGHT_MOUSE_BUTTON,
@@ -739,7 +738,6 @@ export function drawUi(): void {
 
   // Reset UI elements.
   globals.elements = new Elements();
-  globals.elements.arrows = [];
 
   // Create the various Konva layers upon which all graphic elements reside.
   drawBackground();
@@ -1265,7 +1263,6 @@ function drawBottomLeftButtons() {
   newUiButton.tooltipName = "new-ui";
   newUiButton.tooltipContent = "Switch to the redesigned game screen.";
   initKonvaTooltips(newUiButton, true, false);
-  globals.elements.newUiButton = newUiButton;
 
   // The restart button (to bring up the restart menu).
   const restartButton = new Button({
@@ -1341,7 +1338,6 @@ function drawBottomLeftButtons() {
   lobbyButton.tooltipName = "lobby";
   lobbyButton.tooltipContent = "Return to the lobby.";
   initKonvaTooltips(lobbyButton, true, false);
-  globals.elements.lobbyButton = lobbyButton;
 }
 
 function drawDeck() {
@@ -1410,9 +1406,6 @@ function drawDeck() {
     y: deckValues.y * winH,
     width: deckValues.w! * winW,
     height: deckValues.h! * winH,
-    cardBack: "deck-back",
-    suits: globals.variant.suits,
-    listening: false,
   });
   globals.layers.card.add(globals.elements.deck);
 
@@ -1822,7 +1815,6 @@ function drawScoreArea() {
       y: STRIKE_SQUARE.y * winH,
       width: STRIKE_SQUARE.w * winW,
       height: STRIKE_SQUARE.h * winH,
-      visible: globals.state.playing,
     },
     [lobbyGlobals.imageLoader.get("skull")],
   );
@@ -2025,7 +2017,6 @@ function drawStatistics() {
     listening: false,
   });
   globals.layers.UI.add(variantLabel);
-  globals.elements.variantLabel = variantLabel;
 
   const underlineY = (STATISTICS_PANEL.y + STATISTICS_TEXT.underlineY) * winH;
   const variantUnderline = new Konva.Line({
@@ -2039,12 +2030,9 @@ function drawStatistics() {
     stroke: LABEL_COLOR,
     strokeWidth: VARIANT_UNDERLINE_WIDTH_PIXELS,
     lineJoin: "round",
-    ...LINE_SHADOW,
-    shadowOpacity: 0,
     listening: false,
   });
   globals.layers.UI.add(variantUnderline);
-  globals.elements.variantUnderline = variantUnderline;
 
   const paceTextLabel = basicTextLabel.clone({
     text: "Pace",
@@ -2332,12 +2320,6 @@ function drawTimers() {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2);
-  if (
-    globals.options.timeControl === undefined
-    && !store.getState().session.settings.showTimerInUntimed
-  ) {
-    return;
-  }
 
   globals.elements.timer2.tooltipName = "time-taken";
   initKonvaTooltips(globals.elements.timer2, true, false);
@@ -2482,7 +2464,6 @@ function drawClueArea() {
   globals.elements.clueArea.add(globals.elements.lowerClueArea);
 
   // Color buttons
-  globals.elements.colorClueButtons = [];
   let totalColorWidth = buttonW * globals.variant.clueColors.length;
   totalColorWidth += buttonXSpacing * (globals.variant.clueColors.length - 1);
   const colorX = (clueAreaValues.w! - totalColorWidth) / 2;
@@ -2521,7 +2502,6 @@ function drawClueArea() {
   }
 
   // Rank buttons / number buttons.
-  globals.elements.rankClueButtons = [];
   const numRanks = globals.variant.clueRanks.length;
   let totalRankWidth = buttonW * numRanks;
   totalRankWidth += buttonXSpacing * (numRanks - 1);
@@ -2935,7 +2915,6 @@ function drawHypotheticalArea() {
   endHypotheticalButton.on("click tap", () => {
     hypothetical.endHypothetical();
   });
-  globals.elements.endHypotheticalButton = endHypotheticalButton;
 
   // The "Edit cards" checkbox (above the exit hypo button).
   const editCardsValues = {

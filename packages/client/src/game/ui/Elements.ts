@@ -49,9 +49,7 @@ export class Elements {
   nameFrames: NameFrame[] = [];
   actionLog: ActionLog | undefined = undefined;
   replayButton: Button | undefined = undefined;
-  newUiButton: Button | undefined = undefined;
   chatButton: Button | undefined = undefined;
-  lobbyButton: Button | undefined = undefined;
   restartButton: Button | undefined = undefined;
   readyCheckbox: Checkbox | undefined = undefined;
   deck: Deck | undefined = undefined;
@@ -60,8 +58,6 @@ export class Elements {
   deckTurnsRemainingLabel1: Konva.Text | undefined = undefined;
   deckTurnsRemainingLabel2: Konva.Text | undefined = undefined;
   deckPlayAvailableLabel: Konva.Rect | undefined = undefined;
-  variantLabel: FitText | undefined = undefined;
-  variantUnderline: Konva.Line | undefined = undefined;
 
   // Extra elements on the right-hand side + the bottom.
   paceNumberLabel: Konva.Text | undefined = undefined;
@@ -133,7 +129,6 @@ export class Elements {
   hypoBackButton: Button | undefined = undefined;
   hypoPassTurnButton: Button | undefined = undefined;
   showDrawnCardsCheckbox: Checkbox | undefined = undefined;
-  endHypotheticalButton: Button | undefined = undefined;
 
   // The pause screen
   pauseArea: Konva.Group | undefined = undefined;

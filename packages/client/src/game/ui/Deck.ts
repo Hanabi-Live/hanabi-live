@@ -158,11 +158,7 @@ export class Deck extends Konva.Group {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          const layer = globals.layers.UI;
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (layer !== undefined) {
-            layer.batchDraw();
-          }
+          globals.layers.UI.batchDraw();
         },
       });
     }

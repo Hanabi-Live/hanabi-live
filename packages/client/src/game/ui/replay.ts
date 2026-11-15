@@ -180,8 +180,8 @@ export function goToSegmentAndIndicateCard(
 // Replay navigation functions
 // ---------------------------
 
-export function back(breakFree = true): void {
-  goToSegment(getCurrentReplaySegment() - 1, breakFree);
+export function back(): void {
+  goToSegment(getCurrentReplaySegment() - 1, true);
 }
 
 export function forward(): void {

@@ -7,9 +7,7 @@ import { onSpectatorsChanged } from "./reactive/views/spectatorsView.ts";
 export function toggleZen(): void {
   zen.toggleZen();
 
-  if (lobbyGlobals.ui !== undefined) {
-    lobbyGlobals.ui.updateChatLabel();
-  }
+  lobbyGlobals.ui?.updateChatLabel();
 
   onSpectatorsChanged({
     spectators: globals.state.spectators,

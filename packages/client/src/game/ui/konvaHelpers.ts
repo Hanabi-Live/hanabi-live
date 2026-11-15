@@ -80,13 +80,8 @@ export function animate(
     const config: Konva.TweenConfig = {
       node,
       onFinish: () => {
-        // If the game is restarted in the middle of an animation, it is possible to get here with
-        // something important being undefined.
-        if (
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          node === undefined
-          || store.getState().game.current === undefined
-        ) {
+        // If the game is closed in the middle of an animation, there is no state to draw.
+        if (store.getState().game.current === undefined) {
           return;
         }
 

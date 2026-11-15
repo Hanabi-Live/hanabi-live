@@ -4,7 +4,6 @@
 import type { Variant } from "@hanabi-live/game";
 import { store } from "../store.ts";
 import { drawCards } from "./ui/drawCards.ts";
-import { cardRendererBackend } from "./ui/drawCardsBrowser.ts";
 
 let cached:
   | {
@@ -22,13 +21,7 @@ export function getCardImages(
   if (cached?.key !== key) {
     cached = {
       key,
-      images: drawCards(
-        variant,
-        colorblindMode,
-        styleNumbers,
-        true,
-        cardRendererBackend,
-      ),
+      images: drawCards(variant, colorblindMode, styleNumbers),
     };
   }
 

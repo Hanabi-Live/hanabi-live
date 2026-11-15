@@ -247,8 +247,6 @@ export function set(
                   );
                 });
                 arrow.suitPip!.show();
-              } else {
-                arrow.suitPip!.hide();
               }
             }
           }
@@ -271,10 +269,6 @@ export function set(
           // The circle for number clues should have a white border and a black fill.
           arrow.circle.stroke("white");
           arrow.circle.fill("black");
-
-          if (store.getState().session.settings.colorblindMode) {
-            arrow.suitPip!.hide();
-          }
 
           break;
         }
@@ -357,12 +351,8 @@ function getPos(element: Konva.Node, rot: number) {
       }
 
       default: {
-        // The type of Konva.Text.width is "any" for some reason.
         const textElement = element as Konva.Text;
         const { width } = textElement.measureSize(textElement.text());
-        if (typeof width !== "number") {
-          throw new TypeError("The width of the element was not a number.");
-        }
         pos.x += width / 2;
 
         break;

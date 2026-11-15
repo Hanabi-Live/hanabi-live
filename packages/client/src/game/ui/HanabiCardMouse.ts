@@ -305,11 +305,7 @@ export function setEmpathyOnHand(card: HanabiCard, enabled: boolean): void {
 
   // Only enable empathy when the card's UI parent is its actual hand.
   const hand = globals.elements.playerHands[card.state.location];
-  if (
-    hand === undefined
-    || (card.layout.parent as unknown) !== hand
-    || hand.children.length === 0
-  ) {
+  if (hand === undefined || (card.layout.parent as unknown) !== hand) {
     return;
   }
 

@@ -63,7 +63,6 @@ import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
 import type { NoteIndicator } from "./controls/NoteIndicator.ts";
 import { RankPip } from "./controls/RankPip.ts";
 import { suitIndexToSuit, suitToSuitIndex } from "./convert.ts";
-import type { CursorType } from "./cursor.ts";
 import {
   CARD_IMAGE_STACK_BASE_RANK_NAME,
   CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
@@ -178,7 +177,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   tween: Konva.Tween | undefined = undefined; // Required in order to be able to cancel animations
   tweenFinalPosition: { x: number; y: number } | undefined = undefined;
   tweenFinalScale: { x: number; y: number } | undefined = undefined;
-  cursor: CursorType = "default";
   dragging = false;
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
@@ -1015,7 +1013,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
   }
 
-  setShadowOffset(duration = RAISE_DURATION_SECONDS): void {
+  setShadowOffset(): void {
     // Shadow special effects
     const shadowOffset = this.dragging
       ? DRAGGED_CARD_SHADOW_OFFSET
@@ -1028,7 +1026,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
         // Tween
         shadowOffsetX: shadowOffset,
         shadowOffsetY: shadowOffset,
-        duration,
+        duration: RAISE_DURATION_SECONDS,
       });
     }
   }
@@ -1060,18 +1058,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  /** @param unread Whether to tilt the indicator to show spectators that the notes changed. */
-  setNoteIndicator(unread = true): void {
+  /** Shows the note indicator. For spectators, it also tilts to show that the notes changed. */
+  setNoteIndicator(): void {
     const visible = this.shouldShowNoteIndicator();
     this.noteIndicator.visible(visible);
 
     // Spectators
-    if (
-      unread
-      && visible
-      && !globals.state.playing
-      && !globals.state.finished
-    ) {
+    if (visible && !globals.state.playing && !globals.state.finished) {
       this.noteIndicator.setTilted(true);
     }
 
@@ -1133,14 +1126,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   animateToDeck(): void {
     const layoutChild = this.layout;
-    if (
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      layoutChild === undefined
-      || layoutChild.parent === null
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      || layoutChild.parent === undefined
-      || globals.elements.deck === undefined
-    ) {
+    if (layoutChild.parent === null || globals.elements.deck === undefined) {
       // Do not do anything on first initialization.
       return;
     }
@@ -1392,10 +1378,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return index === undefined
       ? undefined
       : getSuitDescriptionHtml(this.variant, index);
-  }
-
-  getLayoutParent(): LayoutChild {
-    return this._layout;
   }
 }
 

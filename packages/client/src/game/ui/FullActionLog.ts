@@ -244,10 +244,6 @@ export class FullActionLog extends Konva.Group {
       this.playerLogs[playerIndex]?.hide();
       this.playerLogNumbers[playerIndex]?.hide();
 
-      if (this.logText === undefined || this.logNumbers === undefined) {
-        this.makeLog();
-      }
-
       this.logText!.show();
       this.logNumbers!.show();
       this.hide();
