@@ -2,10 +2,10 @@ import type { ServerEventData } from "@hanabi-live/data";
 import { useRef, useState } from "react";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
+import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
   BOTTOM_BAR_BUTTON_COLOR_CLASS,
-  MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
 } from "./surfaces.ts";
@@ -41,7 +41,7 @@ export function EndGameMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} ${
           voted
             ? "tw:bg-critical/20 tw:ring-2 tw:ring-critical tw:hover:bg-critical/30"
             : BOTTOM_BAR_BUTTON_COLOR_CLASS
@@ -53,10 +53,10 @@ export function EndGameMenu({
       >
         <i aria-hidden="true" className="fas fa-skull" />
         {voted ? "Voted to end" : "End game"}
-        <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
+        <MenuCaret open={open} />
       </button>
       {open && (
-        <div className={`${MENU_CLASS} tw:right-0 tw:w-64`} role="menu">
+        <Menu align="right" className="tw:w-64">
           <div className="tw:flex tw:flex-col tw:gap-0.5 tw:px-1 tw:pt-1">
             <span className="tw:text-[15px] tw:font-bold tw:text-game-text">
               End the game?
@@ -97,7 +97,7 @@ export function EndGameMenu({
               Ends it for everyone right away
             </span>
           </button>
-        </div>
+        </Menu>
       )}
     </div>
   );

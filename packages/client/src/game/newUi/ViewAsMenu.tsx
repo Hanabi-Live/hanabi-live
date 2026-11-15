@@ -2,10 +2,10 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
+import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
   BOTTOM_BAR_BUTTON_COLOR_CLASS,
-  MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
   MENU_LABEL_CLASS,
@@ -54,7 +54,7 @@ export function ViewAsMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} ${
           shadowing
             ? "tw:bg-white/20 tw:ring-2 tw:ring-game-text tw:hover:bg-white/30"
             : BOTTOM_BAR_BUTTON_COLOR_CLASS
@@ -68,10 +68,10 @@ export function ViewAsMenu({
       >
         <i aria-hidden="true" className="fas fa-eye" />
         {viewedName === undefined ? "View as" : `Viewing as ${viewedName}`}
-        <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
+        <MenuCaret open={open} />
       </button>
       {open && (
-        <div className={`${MENU_CLASS} tw:right-0 tw:min-w-52`} role="menu">
+        <Menu align="right" className="tw:min-w-52">
           <span className={MENU_LABEL_CLASS}>View the game as</span>
           {playerNames.map((name, i) => {
             const playerIndex = i as PlayerIndex;
@@ -118,7 +118,7 @@ export function ViewAsMenu({
               </button>
             </>
           )}
-        </div>
+        </Menu>
       )}
     </div>
   );

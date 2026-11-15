@@ -2,17 +2,17 @@ import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import * as restart from "../ui/restart.ts";
-import { Checkbox } from "./ReplayBar.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
+import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
+import { Checkbox } from "./ReplayBar.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
   BOTTOM_BAR_BUTTON_COLOR_CLASS,
-  MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
 } from "./surfaces.ts";
 
-const BUTTON_CLASS = `${BOTTOM_BAR_BUTTON_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS}`;
+const BUTTON_CLASS = `${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS}`;
 
 const ITEM_CLASS = `tw:flex tw:flex-col tw:items-start tw:gap-0.5 tw:disabled:opacity-40 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 
@@ -110,10 +110,10 @@ function PlayAgainMenu({
       >
         <i aria-hidden="true" className="fas fa-redo" />
         Play again
-        <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
+        <MenuCaret open={open} />
       </button>
       {open && (
-        <div className={`${MENU_CLASS} tw:right-0 tw:w-64`} role="menu">
+        <Menu align="right" className="tw:w-64">
           <div className="tw:flex tw:flex-col tw:gap-0.5 tw:px-1 tw:pt-1">
             <span className="tw:text-[15px] tw:font-bold tw:text-game-text">
               Play again?
@@ -154,7 +154,7 @@ function PlayAgainMenu({
               So that people can join or leave first
             </span>
           </button>
-        </div>
+        </Menu>
       )}
     </div>
   );

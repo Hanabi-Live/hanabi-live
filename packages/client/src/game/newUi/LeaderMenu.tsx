@@ -4,15 +4,15 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import { setLeader } from "../ui/leader.ts";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
+import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
-  MENU_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
   MENU_LABEL_CLASS,
   REPLAY_BAR_BUTTON_CLASS,
 } from "./surfaces.ts";
 
-const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} tw:w-full tw:min-w-0`;
+const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:w-full tw:min-w-0`;
 
 /** A person to set as the new leader. */
 const ITEM_CLASS = `tw:group tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
@@ -62,10 +62,10 @@ export function LeaderMenu({
             middle of the bar to the side. */}
         <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
         {/* The caret points the way that the menu opens. */}
-        <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
+        <MenuCaret open={open} />
       </button>
       {open && (
-        <div className={`${MENU_CLASS} tw:left-0 tw:min-w-52`} role="menu">
+        <Menu align="left" className="tw:min-w-52">
           <span className={MENU_LABEL_CLASS}>
             {others.length === 0 ? "No one else is here" : "Set new leader to"}
           </span>
@@ -88,7 +88,7 @@ export function LeaderMenu({
               {spectator.username}
             </button>
           ))}
-        </div>
+        </Menu>
       )}
     </div>
   );

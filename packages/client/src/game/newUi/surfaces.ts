@@ -43,13 +43,6 @@ export const BOTTOM_BAR_BUTTON_COLOR_CLASS =
 /** A button on the replay bar that is not its main action. */
 export const REPLAY_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:justify-center tw:bg-white/8 tw:font-semibold tw:hover:bg-white/15`;
 
-/**
- * A menu that opens above its button. Its bottom has more room, so that the lip of the last key in
- * it does not touch the edge.
- */
-export const MENU_CLASS =
-  "tw:absolute tw:bottom-full tw:z-30 tw:mb-2 tw:flex tw:flex-col tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
-
 /** The short text at the top of a menu that says what its choices do. */
 export const MENU_LABEL_CLASS =
   "tw:px-1 tw:pt-1 tw:text-[13px] tw:text-game-muted";
