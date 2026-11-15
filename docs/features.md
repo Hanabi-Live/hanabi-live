@@ -93,9 +93,6 @@ before asking any questions in the chat.
   negative clues "touch" the card.
 - The pips and numbers will automatically be crossed out if all the particular
   cards for that suit/rank are visible.
-- Sometimes the clues leave possibilities that the separate suit and rank pips
-  cannot show, such as "any pink card, or a red 3". Then the card lists each
-  suit with the ranks that it can be.
 - A trash can icon appears on a card when its holder can work out that it is
   trash.
 - Hold the left mouse button on the deck (or hold Space) to see which suits and

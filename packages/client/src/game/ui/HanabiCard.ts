@@ -4,7 +4,6 @@ import type {
   CardOrder,
   CardState,
   NumPlayers,
-  PossibilityRowPresentation,
   Rank,
   Suit,
   SuitIndex,
@@ -128,9 +127,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private readonly suitPipsXMap: Map<number, Konva.Shape>;
   private readonly rankPipsMap: Map<number, RankPip>;
   private readonly rankPipsXMap: Map<number, Konva.Shape>;
-  private readonly possibilityRows: Konva.Shape;
-  private possibilityRowsToDraw:
-    readonly PossibilityRowPresentation[] | undefined;
 
   /** Whether the suit and rank are unknown, so that a kind of pip may show. */
   private pipsAllowed = {
@@ -247,11 +243,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.rankPips = pips.rankPips;
     this.add(this.suitPips);
     this.add(this.rankPips);
-    this.possibilityRows = HanabiCardInit.possibilityRows(
-      this.variant,
-      () => this.possibilityRowsToDraw,
-    );
-    this.add(this.possibilityRows);
 
     this.criticalIndicator = HanabiCardInit.criticalIndicator(
       this.variant.offsetCornerElements,
@@ -373,19 +364,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this.getBorderPresentation().clued;
   }
 
-  /**
-   * Shows the possibility rows instead of the suit and rank pips when the card has them. The rows
-   * need both the suit and the rank pips, so a card that shows its suit or its rank (such as a card
-   * in our hand whose identity we learn later in the game) keeps the other pips.
-   */
   private updatePipVisibility() {
-    const showRows =
-      this.possibilityRowsToDraw !== undefined
-      && this.pipsAllowed.suit
-      && this.pipsAllowed.rank;
-    this.suitPips.visible(this.pipsAllowed.suit && !showRows);
-    this.rankPips.visible(this.pipsAllowed.rank && !showRows);
-    this.possibilityRows.visible(showRows);
+    this.suitPips.visible(this.pipsAllowed.suit);
+    this.rankPips.visible(this.pipsAllowed.rank);
   }
 
   private setTrashMiniIndicator(isTrash: boolean) {
@@ -837,7 +818,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    this.possibilityRowsToDraw = presentation.possibilityRows;
     this.updatePipVisibility();
   }
 
