@@ -38,6 +38,10 @@ import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { EmpathyStyle, getEmpathyStyle } from "../empathyStyle.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
+import {
+  checkNoteImpossibility,
+  possibleCardsFromNoteAndClues,
+} from "../noteCheckImpossibility.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
@@ -65,10 +69,6 @@ import {
   CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
 } from "./drawCards.ts";
 import { animate } from "./konvaHelpers.ts";
-import {
-  checkNoteImpossibility,
-  possibleCardsFromNoteAndClues,
-} from "./noteCheckImpossibility.ts";
 import * as notes from "./notes.ts";
 
 const DECK_BACK_IMAGE = "deck-back";
@@ -1334,7 +1334,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   checkSpecialNote(): void {
     const note = globals.state.notes.ourNotes[this.order]!;
-    checkNoteImpossibility(this.variant, this.state, note, this.isStackBase);
+    checkNoteImpossibility(
+      this.variant,
+      this.state,
+      note,
+      this.isStackBase,
+      globals.metadata.ourPlayerIndex,
+    );
 
     // Morph the card if it has an "exact" card note. (Or clear the bare image if the note was
     // deleted/changed.)

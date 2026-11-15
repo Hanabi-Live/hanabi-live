@@ -23,6 +23,7 @@ import {
 } from "../../utils.ts";
 import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
+import { checkOurNote } from "../noteCheckImpossibility.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
@@ -157,6 +158,8 @@ export function set(order: CardOrder, text: string): void {
 
   const card = getCardOrStackBase(order);
   if (!card) {
+    // The New UI draws no cards of its own here.
+    checkOurNote(order);
     return;
   }
 

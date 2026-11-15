@@ -9,7 +9,7 @@ vi.mock("../../tooltips.ts", () => ({}));
 vi.mock("../../Globals.ts", () => ({
   globals: {},
 }));
-vi.mock("./noteCheckImpossibility.ts", () => ({
+vi.mock("../noteCheckImpossibility.ts", () => ({
   checkNoteImpossibility: vi.fn(),
   possibleCardsFromNoteAndClues: vi.fn(),
 }));
