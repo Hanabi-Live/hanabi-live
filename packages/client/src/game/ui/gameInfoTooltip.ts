@@ -73,11 +73,15 @@ export function getGameInfoTooltip(): string {
     const finishedDate =
       finishedAt === undefined ? new Date() : new Date(finishedAt);
     const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
-    const clockString = millisecondsToClockString(elapsedMilliseconds);
+    // Some games, such as JSON games, have no real start time, so they have no length.
+    const gameLength =
+      elapsedMilliseconds > 0
+        ? millisecondsToClockString(elapsedMilliseconds)
+        : "Unknown";
     content += tooltipField(
       "fas fa-stopwatch",
       "Game Length",
-      `<strong>${clockString}</strong>`,
+      `<strong>${gameLength}</strong>`,
     );
   }
 
