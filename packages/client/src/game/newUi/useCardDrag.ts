@@ -144,9 +144,14 @@ export function useCardDrag(): CardDrag {
 
     function zoneAt(
       current: HeldCard,
-      x: number,
-      y: number,
+      pointerX: number,
+      pointerY: number,
     ): DropZone | undefined {
+      // A pointer that leaves the window counts as at the nearest edge of the window, so that a
+      // card flung past the edge of a box still goes there.
+      const x = Math.min(Math.max(pointerX, 0), globalThis.innerWidth - 1);
+      const y = Math.min(Math.max(pointerY, 0), globalThis.innerHeight - 1);
+
       if (isInside(playZoneRef.current, x, y)) {
         return "play";
       }

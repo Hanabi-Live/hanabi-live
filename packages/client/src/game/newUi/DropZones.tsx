@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { ZoneState } from "./SharedCards.tsx";
 import { measure } from "./screenScale.ts";
 import { DROP_ZONE_CLASS } from "./surfaces.ts";
@@ -10,7 +10,16 @@ import { DROP_ZONE_CLASS } from "./surfaces.ts";
  */
 export const DROP_ZONE_FADE_MILLISECONDS = 200;
 
+/**
+ * The area that the boxes split. It is not a stacking context, so that each box is in front of or
+ * behind the other parts of the screen on its own.
+ */
+const ZONE_AREA_CLASS = "tw:pointer-events-none tw:absolute tw:inset-0";
+
 const ZONE_BOX_CLASS = "tw:pointer-events-none tw:absolute tw:inset-y-0";
+
+/** The column beside the discard box, which must be in front of it. */
+export const DISCARD_COLUMN_CLASS = "tw:z-2";
 
 /** The space between each box and the hands, in CSS pixels. A card dropped there goes back. */
 const HANDS_MARGIN = 16;
@@ -38,15 +47,17 @@ interface ZoneBoxes {
 
 /**
  * The two dark boxes that show while the player drags a card: everything to the left of the hands
- * plays the card, and everything to the right discards it. A player who aims for the play stacks or
- * the discard pile and misses still gets the move that they meant. Each box is the area where a
- * drop counts (see "useCardDrag.ts"), so the player sees exactly where the card can go. The space
- * between a box and the hands, and the hands, put the card back. The boxes fade in and out, except
- * with "Reduced motion".
+ * plays the card, and everything to the right discards it, including the chat. A player who aims
+ * for the play stacks or the discard pile and misses still gets the move that they meant. Each box
+ * is the area where a drop counts (see "useCardDrag.ts"), so the player sees exactly where the card
+ * can go. The space between a box and the hands, and the hands, put the card back. The boxes fade
+ * in and out, except with "Reduced motion".
  *
  * The boxes are behind the columns, from the top of the screen to the bar at the bottom. They need
- * a positioned parent that holds the hands, and they come before the columns, which are positioned
- * too.
+ * a positioned parent that holds the columns and the chat, and they come before the columns, which
+ * are positioned too. The discard box is in front of the chat, and the column beside it must be in
+ * front of the discard box (see "DISCARD_COLUMN_CLASS"). When the chat covers the table, the
+ * discard box is in front of it too.
  */
 export function DropZones({
   handsElement,
@@ -55,6 +66,7 @@ export function DropZones({
   reducedMotion,
   playZoneRef,
   discardZoneRef,
+  chatCoversTable,
 }: {
   readonly handsElement: HTMLElement | null;
   readonly playState: ZoneState;
@@ -62,21 +74,24 @@ export function DropZones({
   readonly reducedMotion: boolean;
   readonly playZoneRef: RefObject<HTMLElement | null>;
   readonly discardZoneRef: RefObject<HTMLElement | null>;
-}): React.JSX.Element | undefined {
+  /** Whether the open chat covers the table. */
+  readonly chatCoversTable: boolean;
+}): React.JSX.Element {
   const dragging = playState !== "idle";
 
   // The boxes stay while they fade out after the drag ends.
   const [boxes, setBoxes] = useState<ZoneBoxes>();
+  const areaRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (dragging) {
-      setBoxes(measureBoxes(handsElement));
+      setBoxes(measureBoxes(areaRef.current, handsElement));
     } else if (reducedMotion) {
       setBoxes(undefined);
     }
   }, [dragging, handsElement, reducedMotion]);
 
   if (boxes === undefined) {
-    return undefined;
+    return <div className={ZONE_AREA_CLASS} ref={areaRef} />;
   }
 
   // While the boxes fade out, neither has a ring.
@@ -88,7 +103,7 @@ export function DropZones({
   };
 
   return (
-    <>
+    <div className={ZONE_AREA_CLASS} ref={areaRef}>
       <div
         aria-hidden="true"
         className={`${ZONE_BOX_CLASS} tw:rounded-r-game-panel ${dragging ? zoneClasses[playState] : DROP_ZONE_CLASS} ${fadeClass}`}
@@ -105,14 +120,14 @@ export function DropZones({
       />
       <div
         aria-hidden="true"
-        className={`${ZONE_BOX_CLASS} tw:rounded-l-game-panel ${dragging ? zoneClasses[discardState] : DROP_ZONE_CLASS} ${fadeClass}`}
+        className={`${ZONE_BOX_CLASS} ${chatCoversTable ? "tw:z-30" : "tw:z-1"} tw:rounded-l-game-panel ${dragging ? zoneClasses[discardState] : DROP_ZONE_CLASS} ${fadeClass}`}
         ref={zoneRef(discardZoneRef)}
         style={{
           ...boxes.discard,
           ...fadeStyle,
         }}
       />
-    </>
+    </div>
   );
 }
 
@@ -128,18 +143,12 @@ function zoneRef(
   };
 }
 
-/**
- * Splits the parent of the hands at the boxes of the hands, not at the space for the clue rail
- * beside them.
- */
-function measureBoxes(handsElement: HTMLElement | null): ZoneBoxes | undefined {
-  const parent = handsElement?.offsetParent;
-  if (
-    handsElement === null
-    || parent === null
-    || parent === undefined
-    || !(parent instanceof HTMLElement)
-  ) {
+/** Splits the area at the boxes of the hands, not at the space for the clue rail beside them. */
+function measureBoxes(
+  area: HTMLElement | null,
+  handsElement: HTMLElement | null,
+): ZoneBoxes | undefined {
+  if (area === null || handsElement === null) {
     return undefined;
   }
 
@@ -149,9 +158,9 @@ function measureBoxes(handsElement: HTMLElement | null): ZoneBoxes | undefined {
   if (hands.length === 0) {
     return undefined;
   }
-  const parentLeft = measure(parent).left;
-  const handsLeft = Math.min(...hands.map((hand) => hand.left)) - parentLeft;
-  const handsRight = Math.max(...hands.map((hand) => hand.right)) - parentLeft;
+  const areaLeft = measure(area).left;
+  const handsLeft = Math.min(...hands.map((hand) => hand.left)) - areaLeft;
+  const handsRight = Math.max(...hands.map((hand) => hand.right)) - areaLeft;
   const discardLeft = handsRight + HANDS_MARGIN;
   return {
     play: {
@@ -160,7 +169,7 @@ function measureBoxes(handsElement: HTMLElement | null): ZoneBoxes | undefined {
     },
     discard: {
       left: discardLeft,
-      width: Math.max(parent.clientWidth - discardLeft, 0),
+      width: Math.max(area.clientWidth - discardLeft, 0),
     },
   };
 }

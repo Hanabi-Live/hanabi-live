@@ -45,7 +45,7 @@ import { rightClickNote } from "./CardNote.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 import { ClueMenu } from "./ClueMenu.tsx";
-import { DropZones } from "./DropZones.tsx";
+import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import {
   EMPATHY_TOGGLE_SPACE,
@@ -820,17 +820,18 @@ export function GameScreen({
       {/* The chat sits above the bar along the bottom, so that the bar's buttons stay in place
           whether the chat is open or not, with "Lobby" in the bottom-right corner. */}
       <div className="tw:relative tw:flex tw:min-h-0 tw:flex-1">
+        {/* The columns are positioned, so that they are in front of these boxes. */}
+        <DropZones
+          chatCoversTable={chatOverlay && chatOpen && !chatPoppedOut}
+          discardState={discardZoneState}
+          discardZoneRef={discardZoneRef}
+          handsElement={handsElement}
+          playState={playZoneState}
+          playZoneRef={playZoneRef}
+          reducedMotion={settings.reducedMotion}
+        />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
-            {/* The columns are positioned, so that they are in front of these boxes. */}
-            <DropZones
-              discardState={discardZoneState}
-              discardZoneRef={discardZoneRef}
-              handsElement={handsElement}
-              playState={playZoneState}
-              playZoneRef={playZoneRef}
-              reducedMotion={settings.reducedMotion}
-            />
             <div
               className="tw:relative tw:flex tw:shrink-0 tw:narrow-980:justify-center"
               ref={setPlayAreaElement}
@@ -1065,7 +1066,9 @@ export function GameScreen({
               </div>
             </div>
 
-            <div className="tw:relative tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
+            <div
+              className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full`}
+            >
               <DiscardPile
                 atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
                 cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
