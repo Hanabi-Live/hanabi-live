@@ -1325,9 +1325,6 @@ const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
 
-/** How opaque the pip of a suit that the card cannot be is, in the bubble of possible cards. */
-const IMPOSSIBLE_SUIT_OPACITY = 0.3;
-
 /** A small card in the bubble of possible cards: a card face of the suit's color with the rank. */
 function PossibleCard({
   variant,
@@ -1385,8 +1382,8 @@ function ImpossibleCard({
 
 /**
  * Every card that a card can be, in a bubble beside it while the pointer is over it. It is a grid
- * with a row for every suit of the variant and a column for every rank, so that each card is always
- * in the same place. A card that this card cannot be leaves an empty place.
+ * with a row for each suit that the card can be and a column for every rank of the variant, so that
+ * each rank is always in the same column. A card that this card cannot be leaves an empty place.
  */
 function PossibleCardsBubble({
   variant,
@@ -1491,47 +1488,29 @@ function PossibleCardsBubble({
           boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
         }}
       >
-        {variant.suits.map((_suit, i) => {
-          const suitIndex = i as SuitIndex;
-          const suit = bubble.suits.find(
-            (possibleSuit) => possibleSuit.suitIndex === suitIndex,
-          );
-          return [
-            <div
-              key={`${suitIndex}-pip`}
-              style={{
-                opacity: suit === undefined ? IMPOSSIBLE_SUIT_OPACITY : 1,
-              }}
-            >
-              <SuitChip
-                cell={unit * POSSIBLE_CARDS.pip}
-                pip={
-                  suit ?? {
-                    suitIndex,
-                    eliminated: false,
-                    positive: false,
-                  }
-                }
+        {bubble.suits.map((suit) => [
+          <SuitChip
+            cell={unit * POSSIBLE_CARDS.pip}
+            key={`${suit.suitIndex}-pip`}
+            pip={suit}
+            variant={variant}
+            width={unit / getScreenScale()}
+          />,
+          ...ranks.map((rank) =>
+            suit.ranks.includes(rank) ? (
+              <PossibleCard
+                colorblindMode={colorblindMode}
+                key={`${suit.suitIndex}-${rank}`}
+                rank={rank}
+                suitIndex={suit.suitIndex}
+                unit={unit}
                 variant={variant}
-                width={unit / getScreenScale()}
               />
-            </div>,
-            ...ranks.map((rank) =>
-              suit?.ranks.includes(rank) === true ? (
-                <PossibleCard
-                  colorblindMode={colorblindMode}
-                  key={`${suitIndex}-${rank}`}
-                  rank={rank}
-                  suitIndex={suitIndex}
-                  unit={unit}
-                  variant={variant}
-                />
-              ) : (
-                <ImpossibleCard key={`${suitIndex}-${rank}`} unit={unit} />
-              ),
+            ) : (
+              <ImpossibleCard key={`${suit.suitIndex}-${rank}`} unit={unit} />
             ),
-          ];
-        })}
+          ),
+        ])}
       </div>
       {position !== undefined && (
         <svg
