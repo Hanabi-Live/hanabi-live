@@ -1,6 +1,6 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { tooltipRef } from "../../tooltipRef.ts";
+import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CARD_CORNER_PER_WIDTH,
@@ -45,7 +45,7 @@ export interface Seat {
    */
   readonly clock: string | undefined;
 
-  /** What the clock shows, for its tooltip. */
+  /** The HTML of the clock's tooltip, which says what it shows. */
   readonly clockTooltip: string;
 }
 
@@ -489,7 +489,7 @@ function PlayerClock({
           ? "tw:font-bold tw:text-game-text"
           : "tw:font-medium tw:text-game-muted"
       }`}
-      ref={tooltipRef(seat.clockTooltip)}
+      ref={tooltipRefHtml(seat.clockTooltip)}
     >
       {seat.clock}
     </span>
