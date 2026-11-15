@@ -880,11 +880,19 @@ const POSSIBILITIES = {
   maxSuitRows: 2,
 } as const;
 
-/** The size of the white chip behind a suit's pip, per the pip's cell. */
+/** The size of the chip behind a suit's pip, per the pip's cell. */
 const SUIT_CHIP_PER_CELL = 0.92;
 
-/** The size of a suit's pip, per its cell. */
-const SUIT_PIP_PER_CELL = 0.74;
+/** The size of a suit's pip, per its cell. The pip fills most of its chip. */
+const SUIT_PIP_PER_CELL = 0.9;
+
+/**
+ * The chip behind a suit's pip: a little darker than the face of an unknown card, with a thin dark
+ * ring. Light suits, such as yellow and white, stand out on it better than on a white chip.
+ */
+const SUIT_CHIP_BACKGROUND =
+  "color-mix(in srgb, var(--card-face-unknown) 85%, var(--card-ink))";
+const SUIT_CHIP_RING = "inset 0 0 0 1px rgb(27 36 43 / 45%)";
 
 /** The height of a rank chip, per its width. */
 const RANK_CHIP_HEIGHT_PER_WIDTH = 1.1;
@@ -914,7 +922,7 @@ function getPositiveRing(width: number): string {
 
 /**
  * A cross over a suit or a rank that the holder ruled out: a dark X with a light edge, so that it
- * shows on the white chip of a suit and on the dark chip of a rank.
+ * shows on the gray chip of a suit and on the dark chip of a rank.
  */
 function EliminatedCross(): React.JSX.Element {
   return (
@@ -940,7 +948,7 @@ function EliminatedCross(): React.JSX.Element {
   );
 }
 
-/** A suit that a card can be: its pip on a white chip, in a square cell. */
+/** A suit that a card can be: its pip on a gray chip, in a square cell. */
 function SuitChip({
   variant,
   pip,
@@ -969,17 +977,25 @@ function SuitChip({
       }}
     >
       <span
-        className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white"
+        className="tw:flex tw:items-center tw:justify-center tw:rounded-full"
         style={{
           width: chip,
           height: chip,
+          background: SUIT_CHIP_BACKGROUND,
           opacity: pip.eliminated ? ELIMINATED_PIP_OPACITY : 1,
           boxShadow: pip.positive
-            ? getPositiveRing(width)
-            : "0 1px 2px rgb(0 0 0 / 30%)",
+            ? `${SUIT_CHIP_RING}, ${getPositiveRing(width)}`
+            : SUIT_CHIP_RING,
         }}
       >
-        <Pip size={cell * SUIT_PIP_PER_CELL} suit={suit} variant={variant} />
+        {/* With the border and the shadow of the pips on a card's face, so that light suits, such
+            as yellow and white, stand out on the chip. */}
+        <Pip
+          shadow
+          size={cell * SUIT_PIP_PER_CELL}
+          suit={suit}
+          variant={variant}
+        />
       </span>
       {pip.eliminated && (
         <span
@@ -1036,11 +1052,11 @@ function RankChip({
 
 /**
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
- * card, so that they are easy to read at a glance. Each suit is a pip on a white chip, which stands
- * out on the gray face of an unknown card, and each rank is a dark chip with a white number. A suit
- * or a rank that the holder ruled out is crossed out, and one that a clue touched has a ring in the
- * clue color. When the clues allow a set of cards that separate suits and ranks cannot show, the
- * card shows rows of suits and the ranks that they can be (see `PossibilityRows`).
+ * card, so that they are easy to read at a glance. Each suit is a pip on a gray chip with a dark
+ * ring, and each rank is a dark chip with a white number. A suit or a rank that the holder ruled
+ * out is crossed out, and one that a clue touched has a ring in the clue color. When the clues
+ * allow a set of cards that separate suits and ranks cannot show, the card shows rows of suits and
+ * the ranks that they can be (see `PossibilityRows`).
  */
 function Possibilities({
   variant,
