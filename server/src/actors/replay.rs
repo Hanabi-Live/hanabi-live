@@ -115,6 +115,14 @@ impl TableActor {
                 if !replay {
                     s.tags.retain(|t| t.tag != *tag);
                 }
+                // Spectators can tag a live game too, so a cap keeps tags from filling its
+                // checkpoint.
+                ensure_or_reject!(
+                    s.tags.iter().filter(|t| t.user == session.user).count()
+                        < hanabi_protocol::MAX_TAGS_PER_PLAYER,
+                    "You cannot add more than {} tags to a game.",
+                    hanabi_protocol::MAX_TAGS_PER_PLAYER
+                );
                 s.tags.push(Tag {
                     user: session.user,
                     tag: tag.clone(),

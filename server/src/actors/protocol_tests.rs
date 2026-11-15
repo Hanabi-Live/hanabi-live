@@ -2780,6 +2780,42 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
 }
 
 #[tokio::test]
+async fn a_player_cannot_add_more_than_the_tag_limit_to_a_live_game() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Tag limit", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        for index in 0..hanabi_protocol::MAX_TAGS_PER_PLAYER {
+            h.send(
+                0,
+                "tagAdd",
+                json!({"tableId":id,"tag":format!("tag {index}")}),
+            )
+            .await?;
+        }
+        ensure!(
+            h.send(0, "tagAdd", json!({"tableId":id,"tag":"one too many"}))
+                .await
+                .is_err(),
+            "A player added more tags than the limit"
+        );
+        h.send(0, "tagAdd", json!({"tableId":id,"tag":"tag 0"}))
+            .await
+            .context("Adding an existing tag again was refused")?;
+        h.send(1, "tagAdd", json!({"tableId":id,"tag":"bob"}))
+            .await
+            .context("One player's tags limited another player")?;
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

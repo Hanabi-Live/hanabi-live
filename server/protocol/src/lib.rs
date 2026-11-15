@@ -203,6 +203,8 @@ constants! {
     ];
     /// The longest game tag, in characters.
     pub const MAX_TAG_LENGTH: usize = 100;
+    /// The most tags that one player can add to one game.
+    pub const MAX_TAGS_PER_PLAYER: usize = 10;
     /// The longest table name that a player chooses, in characters. The server cuts a longer name to
     /// this length.
     @data pub const MAX_TABLE_NAME_LENGTH: usize = 45;
