@@ -612,13 +612,7 @@ export function DiscardPile({
   return (
     <section
       aria-label="Discards"
-      className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4 ${
-        // At max clues, a white dashed border shows that no one can discard, before anyone picks up
-        // a card and while they drag one. The clue tokens have the same border with no clues.
-        atMaxClues
-          ? "tw:outline-2 tw:-outline-offset-2 tw:outline-game-text tw:outline-dashed"
-          : ""
-      }`}
+      className="tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4"
       ref={tooltipRef(zoneState === "idle" ? "Discard pile" : undefined)}
     >
       {/* While the player drags a card, the well of the pile fades out, so that the pile is part of
@@ -697,6 +691,15 @@ export function DiscardPile({
         text="Discard"
         unavailableText="No discarding at max clues"
       />
+      {/* At max clues, a white dashed border shows that no one can discard, before anyone picks up
+          a card and while they drag one. The clue tokens have the same border with no clues. It is
+          last, so that the well does not darken it. */}
+      {atMaxClues && (
+        <div
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:outline-2 tw:-outline-offset-2 tw:outline-game-text tw:outline-dashed"
+        />
+      )}
     </section>
   );
 }
