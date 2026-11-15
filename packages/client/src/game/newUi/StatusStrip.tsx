@@ -244,7 +244,7 @@ function OutOf({
  * it on hover shows that it does something.
  */
 const VALUE_BUTTON_CLASS =
-  "tw:cursor-pointer tw:rounded-sm tw:border-0 tw:bg-transparent tw:p-0 tw:text-inherit tw:[font:inherit] tw:decoration-dotted tw:decoration-2 tw:underline-offset-4 tw:outline-none tw:hover:underline tw:focus-visible:underline";
+  "tw:cursor-pointer tw:rounded-sm tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:text-inherit tw:[font:inherit] tw:decoration-dotted tw:decoration-2 tw:underline-offset-4 tw:outline-none tw:hover:underline tw:focus-visible:underline";
 
 /**
  * Puts the tooltip of a value in the smaller text of the screen's other tooltips. Its labels are
