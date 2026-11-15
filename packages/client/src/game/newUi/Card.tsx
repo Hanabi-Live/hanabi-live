@@ -376,6 +376,12 @@ interface CardFaceProps {
   /** Whether the card has a note that the viewer can read. */
   readonly note?: boolean;
 
+  /**
+   * The card's notes, as HTML, which its bubble of possible cards shows above the grid. A card with
+   * a bubble shows its notes there, instead of in a tooltip.
+   */
+  readonly noteHtml?: string;
+
   /** Whether someone else changed the note while we spectate, and we have not read it since. */
   readonly noteUnread?: boolean;
 
@@ -1322,6 +1328,12 @@ const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
  */
 const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
 
+/**
+ * The widest that the notes in the bubble of possible cards are, in the notes' own font size. A
+ * longer note wraps onto more lines.
+ */
+const POSSIBLE_CARDS_NOTE_MAX_WIDTH = "16em";
+
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
 
@@ -1389,11 +1401,14 @@ function PossibleCardsBubble({
   variant,
   colorblindMode,
   bubble,
+  noteHtml,
   anchor,
 }: {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly bubble: PossibleCardsView;
+  /** The card's notes, as HTML. They go above the grid, instead of in a tooltip of their own. */
+  readonly noteHtml: string | undefined;
   readonly anchor: HTMLElement;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
@@ -1478,39 +1493,64 @@ function PossibleCardsBubble({
       }}
     >
       <div
-        className="tw:grid tw:items-center tw:justify-items-center tw:bg-card-unknown"
+        className="tw:flex tw:flex-col tw:items-center tw:bg-card-unknown"
         data-possible-cards
         style={{
-          gridTemplateColumns: `repeat(${ranks.length + 1}, auto)`,
-          gap: unit * POSSIBLE_CARDS.gap,
+          gap: unit * POSSIBLE_CARDS.padding,
           padding: unit * POSSIBLE_CARDS.padding,
           borderRadius: unit * CARD_CORNER_PER_WIDTH * 2,
           boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
         }}
       >
-        {bubble.suits.map((suit) => [
-          <SuitChip
-            cell={unit * POSSIBLE_CARDS.pip}
-            key={`${suit.suitIndex}-pip`}
-            pip={suit}
-            variant={variant}
-            width={unit / getScreenScale()}
-          />,
-          ...ranks.map((rank) =>
-            suit.ranks.includes(rank) ? (
-              <PossibleCard
-                colorblindMode={colorblindMode}
-                key={`${suit.suitIndex}-${rank}`}
-                rank={rank}
-                suitIndex={suit.suitIndex}
-                unit={unit}
-                variant={variant}
-              />
-            ) : (
-              <ImpossibleCard key={`${suit.suitIndex}-${rank}`} unit={unit} />
+        {noteHtml !== undefined && (
+          // The notes look like a note tooltip: dark text on white, like a sheet of paper. The HTML
+          // escapes what players wrote.
+          <div
+            className="tw:self-stretch tw:bg-white tw:text-[1.5em] tw:text-card-ink tw:ring-1 tw:ring-black/25"
+            dangerouslySetInnerHTML={{ __html: noteHtml }}
+            data-possible-cards-note
+            style={
+              {
+                maxWidth: POSSIBLE_CARDS_NOTE_MAX_WIDTH,
+                padding: "0.65em 0.85em",
+                borderRadius: unit * CARD_CORNER_PER_WIDTH,
+                "--surface": "white",
+                "--note-title-line": "rgb(0 0 0 / 35%)",
+              } as React.CSSProperties
+            }
+          />
+        )}
+        <div
+          className="tw:grid tw:items-center tw:justify-items-center"
+          style={{
+            gridTemplateColumns: `repeat(${ranks.length + 1}, auto)`,
+            gap: unit * POSSIBLE_CARDS.gap,
+          }}
+        >
+          {bubble.suits.map((suit) => [
+            <SuitChip
+              cell={unit * POSSIBLE_CARDS.pip}
+              key={`${suit.suitIndex}-pip`}
+              pip={suit}
+              variant={variant}
+              width={unit / getScreenScale()}
+            />,
+            ...ranks.map((rank) =>
+              suit.ranks.includes(rank) ? (
+                <PossibleCard
+                  colorblindMode={colorblindMode}
+                  key={`${suit.suitIndex}-${rank}`}
+                  rank={rank}
+                  suitIndex={suit.suitIndex}
+                  unit={unit}
+                  variant={variant}
+                />
+              ) : (
+                <ImpossibleCard key={`${suit.suitIndex}-${rank}`} unit={unit} />
+              ),
             ),
-          ),
-        ])}
+          ])}
+        </div>
       </div>
       {position !== undefined && (
         <svg
@@ -2225,6 +2265,7 @@ export function CardFace({
   noteMark,
   trashIcon = false,
   note = false,
+  noteHtml,
   noteUnread = false,
   identityFromNote = false,
   raiseClued = false,
@@ -2402,6 +2443,7 @@ export function CardFace({
             anchor={hovered}
             bubble={bubble}
             colorblindMode={colorblindMode}
+            noteHtml={noteHtml}
             variant={variant}
           />,
           document.body,
