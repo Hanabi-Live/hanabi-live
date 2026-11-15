@@ -50,7 +50,8 @@ export const hanabiConfigBase = defineConfig(
       // includes Safari 16.4.
       "unicorn/prefer-iterator-to-array": "off",
 
-      // Preserve compatibility with browsers without the newest Set methods.
+      // The `Set` methods, such as `union`, need Safari 17, but Vite's default build target still
+      // includes Safari 16.4.
       "unicorn/prefer-set-methods": "off",
 
       // Keep explicit branches in the game rules and event handlers.
