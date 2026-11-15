@@ -8,12 +8,12 @@ import {
   START_CARD_RANK,
   UNKNOWN_SUIT_NAME,
   getColorForPrismCard,
-  getColorForRank,
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
 import type { CardRendererBackend } from "./cardRendererBackend.ts";
 import {
   CARD_CENTER,
@@ -283,14 +283,8 @@ export function drawCards<Canvas, Image>(
         } else {
           drawText(ctx, textYPos, rankLabel, enableShadows);
         }
-        if (
-          variant.specialRankDeceptive
-          && rank === variant.specialRank
-          && suit.name !== UNKNOWN_SUIT_NAME
-          && !suit.noClueRanks
-        ) {
-          const deceptiveRank =
-            variant.clueRanks[suitIndex % variant.clueRanks.length]!;
+        const deceptiveRank = getDeceptiveRank(variant, suitIndex, rank);
+        if (deceptiveRank !== undefined) {
           const deceptiveLabel = colorblindMode
             ? DECEPTIVE_RANK_LABEL.colorblind
             : DECEPTIVE_RANK_LABEL.normal;
@@ -762,80 +756,19 @@ function getSuitStyle(
   colorblindMode: boolean,
 ) {
   if (cardArea === CardArea.Number) {
-    // In Synesthesia variants, color the number itself with the color that it contributes to the
-    // card.
-    if (variant.synesthesia) {
-      // Stack bases and cards of unknown rank have no rank color. If the suit does not get clued by
-      // its rank, then coloring the rank is misleading, so use the suit color.
-      if (typeof rank !== "number" || suit.noClueRanks) {
-        return suit.fillColors === undefined
-          ? suit.fill
-          : evenLinearGradient(ctx, suit.fillColors, RANK_LABEL_GRADIENT);
-      }
-      return getColorForRank(variant, rank)!.fill;
-    }
-
-    if (rank === variant.specialRank) {
-      const allClueColors =
-        suit.allClueColors
-        || (variant.specialRankAllClueColors && !suit.noClueColors);
-      const noClueColors =
-        suit.noClueColors
-        || (variant.specialRankNoClueColors && !suit.allClueColors);
-      const allClueRanks =
-        suit.allClueRanks
-        || (variant.specialRankAllClueRanks && !suit.noClueRanks);
-      const noClueRanks =
-        suit.noClueRanks
-        || (variant.specialRankNoClueRanks && !suit.allClueRanks);
-      const dark = suit.oneOfEach;
-
-      if (allClueColors) {
-        if (allClueRanks) {
-          const rainbow = getSuit(dark ? DARK_OMNI_SUIT_NAME : OMNI_SUIT_NAME);
-          return evenLinearGradient(
+    const rankLabelFill = getRankLabelFill(
+      variant,
+      suit,
+      typeof rank === "number" ? rank : undefined,
+    );
+    if (rankLabelFill !== undefined) {
+      return "fill" in rankLabelFill
+        ? rankLabelFill.fill
+        : evenLinearGradient(
             ctx,
-            gradientColors(rainbow),
+            rankLabelFill.fillColors,
             RANK_LABEL_GRADIENT,
           );
-        }
-
-        if (noClueRanks) {
-          const rainbow = getSuit(dark ? "Cocoa Rainbow" : "Muddy Rainbow");
-          return evenLinearGradient(
-            ctx,
-            gradientColors(rainbow),
-            RANK_LABEL_GRADIENT,
-          );
-        }
-
-        const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");
-        return evenLinearGradient(
-          ctx,
-          gradientColors(rainbow),
-          RANK_LABEL_GRADIENT,
-        );
-      }
-
-      if (noClueColors) {
-        if (allClueRanks) {
-          return solidFill(getSuit(dark ? "Gray Pink" : "Light Pink"));
-        }
-
-        if (noClueRanks) {
-          return solidFill(getSuit(dark ? "Dark Null" : "Null"));
-        }
-
-        return solidFill(getSuit(dark ? "Gray" : "White"));
-      }
-
-      if (allClueRanks) {
-        return solidFill(getSuit(dark ? "Dark Pink" : "Pink"));
-      }
-
-      if (noClueRanks) {
-        return solidFill(getSuit(dark ? "Dark Brown" : "Brown"));
-      }
     }
   }
 
@@ -891,14 +824,6 @@ function solidFill(suit: Suit): string {
     `The "${suit.name}" suit has a gradient, not one color.`,
   );
   return suit.fill;
-}
-
-function gradientColors(suit: Suit): readonly string[] {
-  assertDefined(
-    suit.fillColors,
-    `The "${suit.name}" suit has one color, not a gradient.`,
-  );
-  return suit.fillColors;
 }
 
 /** Generates a vertical gradient that is evenly distributed between its component colors. */

@@ -36,6 +36,7 @@ import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
+import { EmpathyStyle, getEmpathyStyle } from "../empathyStyle.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
@@ -63,7 +64,6 @@ import {
   CARD_IMAGE_STACK_BASE_RANK_NAME,
   CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
 } from "./drawCards.ts";
-import { EmpathyStyle, getEmpathyStyle } from "./empathyStyle.ts";
 import { animate } from "./konvaHelpers.ts";
 import {
   checkNoteImpossibility,
