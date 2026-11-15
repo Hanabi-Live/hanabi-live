@@ -1,8 +1,11 @@
 import type { CardState } from "@hanabi-live/game";
 import { getDefaultVariant } from "@hanabi-live/game";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import type { ClueLogEntry } from "./ClueLog.tsx";
-import { getPlayerActions, getPlayerLog } from "./PlayerLog.tsx";
+
+// The modals need a page.
+vi.mock("../../modals.ts", () => ({}));
+const { getPlayerLog, getPlayerActions } = await import("./PlayerLog.tsx");
 
 describe("getPlayerLog", () => {
   const log = [

@@ -3,6 +3,7 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
+import { onEscapeKey } from "./escapeKey.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 interface ClueMenuProps {
@@ -133,11 +134,7 @@ export function ClueMenu({
 
   useEffect(() => {
     ref.current?.focus({ preventScroll: true });
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
+    const stopEscape = onEscapeKey(onClose);
 
     // A click on a name chooses that player instead, so it does not close the menu.
     function onPointerDown(event: PointerEvent) {
@@ -152,10 +149,9 @@ export function ClueMenu({
         onClose();
       }
     }
-    document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
+      stopEscape();
       document.removeEventListener("pointerdown", onPointerDown);
     };
   }, [onClose]);

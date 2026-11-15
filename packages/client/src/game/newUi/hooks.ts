@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { EmpathyStyle } from "../empathyStyle.ts";
 import { getEmpathyStyle, subscribeToEmpathyStyle } from "../empathyStyle.ts";
+import { onEscapeKey } from "./escapeKey.ts";
 
 /** The current time, updated at the given interval, for clocks that count down. */
 export function useNow(intervalMilliseconds: number): number {
@@ -108,17 +109,13 @@ export function useCloseOnOutsideClick(
       }
     }
 
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
+    const stopEscape = onEscapeKey(() => {
+      setOpen(false);
+    });
     document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      stopEscape();
     };
   }, [open, containerRef, setOpen]);
 }

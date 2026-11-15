@@ -13,6 +13,7 @@ import { useEffect, useRef } from "react";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueDisc, getClueText } from "./ClueLog.tsx";
+import { onEscapeKey } from "./escapeKey.ts";
 
 /** The width of the card at the start of a row, in CSS pixels. */
 const ROW_CARD_WIDTH = 30;
@@ -269,15 +270,7 @@ export function PlayerLog({
 
   useEffect(() => {
     panelRef.current?.focus();
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return onEscapeKey(onClose);
   }, [onClose]);
 
   // The newest action is the one that a player most often wants, so the list starts at its end.
