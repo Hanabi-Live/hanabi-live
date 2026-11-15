@@ -2329,20 +2329,15 @@ export function CardFace({
       data-card-unknown={
         suitIndex === undefined || rank === undefined ? true : undefined
       }
-      onPointerEnter={
-        bubble === undefined
-          ? undefined
-          : (event) => {
-              setHovered(event.currentTarget);
-            }
-      }
-      onPointerLeave={
-        bubble === undefined
-          ? undefined
-          : () => {
-              setHovered(undefined);
-            }
-      }
+      // The card tracks the pointer even without a bubble, so that the bubble opens when the card
+      // gets one under the pointer, such as when the viewer holds the pointer down on a hand to see
+      // its holder's view.
+      onPointerEnter={(event) => {
+        setHovered(event.currentTarget);
+      }}
+      onPointerLeave={() => {
+        setHovered(undefined);
+      }}
       style={{
         width,
         height,
