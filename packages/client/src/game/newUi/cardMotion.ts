@@ -2,18 +2,21 @@
 // through a turn, as the classic game screen does.
 
 import { MAX_STRIKES } from "@hanabi-live/game";
-import { SECOND_IN_MILLISECONDS, clamp } from "complete-common";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { store } from "../../store.ts";
 import { rectCenter } from "../motion.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../ui/constants.ts";
-import type { Misplay } from "./playMotion.ts";
+import type { Misplay, TossLook } from "./playMotion.ts";
 import {
   CARD_MOVE_ANIMATION_ID,
+  DISCARD_LOOK,
   EASE_OUT_BACK,
   MOVING_CARD_Z_INDEX,
   PLAYED_CARD_Z_INDEX,
   PLAY_EFFECT_ANIMATION_ID,
+  PLAY_MOTION,
   animateMisplay,
+  getTravelSeconds,
   isShowingPlay,
   onEnd,
   raiseMovingCard,
@@ -53,50 +56,11 @@ const HAND_PLACE_PREFIX = "hand-";
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
 const DECK_KEY = "deck";
 
-/**
- * How a played or discarded card moves from a hand onto the table. It grows as it leaves the hand,
- * as if it were picked up. It starts from rest, speeds up, and brakes hard into its slot. Then it
- * lands: it shrinks to its size on the table.
- */
-const PLAY_MOTION = {
-  /** How fast the card travels, in pixels of the unscaled screen per second. */
-  speed: 1120,
-  /** The shortest and longest time that the card travels, in seconds. */
-  minSeconds: 0.31,
-  maxSeconds: 0.69,
-  ease: "cubic-bezier(0.45, 0, 0.2, 1)",
-  growSeconds: 0.12,
-  /**
-   * When the card starts to shrink, as a fraction of its travel time. The card brakes hard, so by
-   * then it has covered about 95% of the way. It shrinks as it settles into its slot, and does not
-   * hover over its slot at its large size.
-   */
-  landStart: 0.73,
-  landSeconds: 0.14,
-} as const;
-
-/** How a card looks as it moves from a hand onto the table. */
-interface TossLook {
-  /** How much the card grows as it leaves the hand, relative to its size there. */
-  readonly growScale: number;
-  /** How far the card tilts toward where it goes, in degrees. It straightens as it lands. */
-  readonly tiltDegrees: number;
-  /** The easing of the card's landing. */
-  readonly landEasing: string;
-}
-
 /** A play is the big moment of a turn: the card is held up, and lands with a small bounce. */
 const PLAY_LOOK = {
   growScale: 1.2,
   tiltDegrees: 0,
   landEasing: EASE_OUT_BACK,
-} as const satisfies TossLook;
-
-/** A discard is routine: the card is tossed aside, and settles flat onto the pile. */
-const DISCARD_LOOK = {
-  growScale: 1.08,
-  tiltDegrees: 7,
-  landEasing: "ease-out",
 } as const satisfies TossLook;
 
 /** The prefix of the place of a card in the discard pile (see "data-card-place"). */
@@ -337,12 +301,7 @@ function animateToss(
   ): number {
     const a = rectCenter(legFrom);
     const b = rectCenter(legTo);
-    const travel =
-      clamp(
-        Math.hypot(a.x - b.x, a.y - b.y) / PLAY_MOTION.speed,
-        PLAY_MOTION.minSeconds,
-        PLAY_MOTION.maxSeconds,
-      ) * SECOND_IN_MILLISECONDS;
+    const travel = getTravelSeconds(a, b) * SECOND_IN_MILLISECONDS;
     const landStart = travel * PLAY_MOTION.landStart;
     const landEnd = decorated
       ? landStart + PLAY_MOTION.landSeconds * SECOND_IN_MILLISECONDS

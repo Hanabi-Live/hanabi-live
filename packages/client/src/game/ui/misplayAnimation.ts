@@ -1,7 +1,8 @@
 // The "dud rocket" misplay animation: the card launches over its play stack like a firework, its
 // fuse sputters, and then it misfires into the strike tracker, where it explodes and leaves the
-// strike X behind. The scorched card then tumbles into the discard pile. In a replay, or with the
-// "Reduced motion" setting, the card only bounces off its play stack into the discard pile.
+// strike X behind. The scorched card then goes to the discard pile as a discarded card does. In a
+// replay, or with the "Reduced motion" setting, the card only bounces off its play stack into the
+// discard pile.
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
@@ -19,7 +20,6 @@ import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
-  FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   QUARTER_TURN_DEGREES,
 } from "./constants.ts";
@@ -29,8 +29,6 @@ import { degreesToRadians } from "./konvaHelpers.ts";
 import {
   EMBER_COLORS,
   EXPLODED_SCORCH_OPACITY,
-  FALL_LIFT,
-  FALL_SECONDS,
   FLASH_COLOR,
   FLASH_RADIUS,
   FLASH_SECONDS,
@@ -44,7 +42,6 @@ import {
   RAY_COLORS,
   RECOIL_SCALE,
   RECOIL_SECONDS,
-  RECOIL_SPIN_DEGREES,
   RING_COLOR,
   RING_RADIUS,
   RING_SECONDS,
@@ -79,7 +76,7 @@ const MISPLAY_ANIMATION_SECONDS =
   + SPUTTER_SECONDS
   + FLIGHT_SECONDS
   + RECOIL_SECONDS
-  + FALL_SECONDS;
+  + CARD_ANIMATION_LENGTH_SECONDS;
 
 /** In a replay, the card moves to its play stack at the speed of a normal card move. */
 const REPLAY_TO_STACK_SECONDS = CARD_ANIMATION_LENGTH_SECONDS;
@@ -516,31 +513,30 @@ export function startMisplayAnimation(
 
   // 4. Boom.
   explosion(time, blast);
+  // The blast knocks the card back. It is upright again under the flash, so that it can go to the
+  // discard pile as a discarded card does.
   const recoil = {
     ...blastPose,
     scale: blastPose.scale * (RECOIL_SCALE / FLIGHT_END_SCALE),
-    rotation: blastPose.rotation + RECOIL_SPIN_DEGREES,
+    rotation: 0,
   };
   timeline.add(time, RECOIL_SECONDS, (t) => {
-    const out = easeOut(t);
     setPose({
-      ...blastPose,
-      scale: interpolate(blastPose.scale, recoil.scale, out),
-      rotation: interpolate(blastPose.rotation, recoil.rotation, out),
+      ...recoil,
+      scale: interpolate(blastPose.scale, recoil.scale, easeOut(t)),
     });
     scorch.opacity(EXPLODED_SCORCH_OPACITY);
   });
   time += RECOIL_SECONDS;
 
-  // 5. The burnt card tumbles into the discard pile.
-  timeline.add(time, FALL_SECONDS, (t) => {
+  // 5. The burnt card moves to the discard pile as a discarded card does.
+  timeline.add(time, CARD_ANIMATION_LENGTH_SECONDS, (t) => {
+    const out = easeOut(t);
     setPose({
-      x: interpolate(recoil.x, end.x, easeOut(t)),
-      y:
-        interpolate(recoil.y, end.y, easeIn(t))
-        - FALL_LIFT * unit * Math.sin(Math.PI * t) * (1 - t),
-      scale: interpolate(recoil.scale, targetScale, t),
-      rotation: interpolate(recoil.rotation, FULL_TURN_DEGREES, easeOut(t)),
+      x: interpolate(recoil.x, end.x, out),
+      y: interpolate(recoil.y, end.y, out),
+      scale: interpolate(recoil.scale, targetScale, out),
+      rotation: 0,
     });
     scorch.opacity(EXPLODED_SCORCH_OPACITY * (1 - t));
   });

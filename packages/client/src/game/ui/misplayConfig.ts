@@ -10,15 +10,12 @@ export const SPUTTER_SECONDS = 0.35;
 export const FLIGHT_SECONDS = 0.38;
 /** The card is knocked back by its own explosion. */
 export const RECOIL_SECONDS = 0.12;
-/** The card tumbles into the discard pile. */
-export const FALL_SECONDS = 0.5;
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
 export const FLIGHT_CONTROL_POINT = {
   x: 0.5,
   y: -1.125,
 } as const;
-export const FALL_LIFT = 0.325;
 export const SPUTTER_JITTER = 0.019;
 export const SHAKE_AMPLITUDE = 0.06;
 
@@ -29,7 +26,6 @@ export const RECOIL_SCALE = 0.62;
 export const SPUTTER_WOBBLE_DEGREES = 6;
 export const SPUTTER_WOBBLE_HALF_TURNS = 7;
 export const SPUTTER_JITTER_HALF_TURNS = 11;
-export const RECOIL_SPIN_DEGREES = 25;
 
 export const SPUTTER_SCORCH_OPACITY = 0.3;
 export const FLIGHT_SCORCH_OPACITY = 0.5;

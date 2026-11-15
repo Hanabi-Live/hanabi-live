@@ -1,26 +1,25 @@
 // The animation of a misplay in a game in progress. A misplayed card is a "dud rocket", as on the
 // classic screen (see "../ui/misplayAnimation.ts"): it launches onto its stack, sputters, misfires
-// into its strike box, explodes there, and tumbles into the discard pile. (A played card moves to
-// its stack in a straight line, and lands with a small bounce; see "cardMotion.ts".)
+// into its strike box, explodes there, and goes to the discard pile as a discarded card does. (A
+// played card moves to its stack in a straight line, and lands with a small bounce; see
+// "cardMotion.ts".)
 
 // These animations last longer than a normal card move, so the next update of the game does not
 // finish them, as it does a card move (see "cardMotion.ts").
 
 import { MAX_STRIKES } from "@hanabi-live/game";
+import { clamp } from "complete-common";
 import type { Point } from "../motion.ts";
 import {
   bezier,
+  cubicBezier,
   easeIn,
   easeOut,
   interpolate,
   randomBetween,
   rectCenter,
 } from "../motion.ts";
-import {
-  FULL_TURN_DEGREES,
-  QUARTER_TURN_DEGREES,
-  WARNING_COLOR,
-} from "../ui/constants.ts";
+import { QUARTER_TURN_DEGREES, WARNING_COLOR } from "../ui/constants.ts";
 import {
   FLASH_START_RADIUS,
   RING_START_RADIUS,
@@ -29,8 +28,6 @@ import {
 import {
   EMBER_COLORS,
   EXPLODED_SCORCH_OPACITY,
-  FALL_LIFT,
-  FALL_SECONDS,
   FLASH_COLOR,
   FLASH_RADIUS,
   FLASH_SECONDS,
@@ -44,7 +41,6 @@ import {
   RAY_COLORS,
   RECOIL_SCALE,
   RECOIL_SECONDS,
-  RECOIL_SPIN_DEGREES,
   RING_COLOR,
   RING_RADIUS,
   RING_SECONDS,
@@ -99,6 +95,63 @@ export const PLAYED_CARD_Z_INDEX = "40";
 
 /** The effects go over everything on the screen. */
 export const EFFECT_Z_INDEX = "60";
+
+/** The control points of the easing of a card's travel from a hand onto the table. */
+const PLAY_EASE = [0.45, 0, 0.2, 1] as const;
+
+/**
+ * How a played or discarded card moves from a hand onto the table. It grows as it leaves the hand,
+ * as if it were picked up. It starts from rest, speeds up, and brakes hard into its slot. Then it
+ * lands: it shrinks to its size on the table.
+ */
+export const PLAY_MOTION = {
+  /** How fast the card travels, in pixels of the unscaled screen per second. */
+  speed: 1120,
+  /** The shortest and longest time that the card travels, in seconds. */
+  minSeconds: 0.31,
+  maxSeconds: 0.69,
+  ease: `cubic-bezier(${PLAY_EASE.join(", ")})`,
+  growSeconds: 0.12,
+  /**
+   * When the card starts to shrink, as a fraction of its travel time. The card brakes hard, so by
+   * then it has covered about 95% of the way. It shrinks as it settles into its slot, and does not
+   * hover over its slot at its large size.
+   */
+  landStart: 0.73,
+  landSeconds: 0.14,
+} as const;
+
+/** How a card looks as it moves from a hand onto the table. */
+export interface TossLook {
+  /** How much the card grows as it leaves the hand, relative to its size there. */
+  readonly growScale: number;
+  /** How far the card tilts toward where it goes, in degrees. It straightens as it lands. */
+  readonly tiltDegrees: number;
+  /** The easing of the card's landing. */
+  readonly landEasing: string;
+}
+
+/** A discard is routine: the card is tossed aside, and settles flat onto the pile. */
+export const DISCARD_LOOK = {
+  growScale: 1.08,
+  tiltDegrees: 7,
+  landEasing: "ease-out",
+} as const satisfies TossLook;
+
+/** The easing of the travel of a played or discarded card. */
+const playEase = cubicBezier(...PLAY_EASE);
+
+/** The CSS "ease-out", with which a discarded card grows, tilts, and lands. */
+const cssEaseOut = cubicBezier(0, 0, 0.58, 1);
+
+/** How long a played or discarded card travels from one point to another, in seconds. */
+export function getTravelSeconds(from: Point, to: Point): number {
+  return clamp(
+    Math.hypot(from.x - to.x, from.y - to.y) / PLAY_MOTION.speed,
+    PLAY_MOTION.minSeconds,
+    PLAY_MOTION.maxSeconds,
+  );
+}
 
 /**
  * Where a moving card is: its center, its size relative to its size where it rests, and its turn in
@@ -656,35 +709,47 @@ export function animateMisplay(
   rays(explosion, blast);
   smoke(explosion, blast, 4);
 
+  // The blast knocks the card back. It is upright again under the flash, so that it can go to the
+  // discard pile as a discarded card does.
   const recoil: Pose = {
     ...blastPose,
     ...uniform(blastPose.scaleX * (RECOIL_SCALE / FLIGHT_END_SCALE)),
-    rotation: blastPose.rotation + RECOIL_SPIN_DEGREES,
+    rotation: 0,
   };
-  addStep(RECOIL_SECONDS, (t) => {
-    const out = easeOut(t);
+  addStep(RECOIL_SECONDS, (t) => ({
+    pose: {
+      ...recoil,
+      ...uniform(interpolate(blastPose.scaleX, recoil.scaleX, easeOut(t))),
+    },
+    scorch: EXPLODED_SCORCH_OPACITY,
+  }));
+
+  // 5. The burnt card goes to the discard pile as a discarded card does (see "cardMotion.ts"): it
+  //    grows and tilts toward the pile, and settles flat onto it.
+  const travel = getTravelSeconds(recoil, end);
+  const landStart = travel * PLAY_MOTION.landStart;
+  const toss = Math.max(travel, landStart + PLAY_MOTION.landSeconds);
+  const tilt = (end.x < recoil.x ? -1 : 1) * DISCARD_LOOK.tiltDegrees;
+  const held = recoil.scaleX * DISCARD_LOOK.growScale;
+  time = addStep(toss, (t) => {
+    const seconds = t * toss;
+    const along = playEase(progress(seconds, 0, travel));
+    const grow = cssEaseOut(progress(seconds, 0, PLAY_MOTION.growSeconds));
+    const land = cssEaseOut(
+      progress(seconds, landStart, PLAY_MOTION.landSeconds),
+    );
     return {
       pose: {
-        ...blastPose,
-        ...uniform(interpolate(blastPose.scaleX, recoil.scaleX, out)),
-        rotation: interpolate(blastPose.rotation, recoil.rotation, out),
+        x: interpolate(recoil.x, end.x, along),
+        y: interpolate(recoil.y, end.y, along),
+        ...uniform(
+          interpolate(interpolate(recoil.scaleX, held, grow), endScale, land),
+        ),
+        rotation: interpolate(tilt * grow, 0, land),
       },
-      scorch: EXPLODED_SCORCH_OPACITY,
+      scorch: EXPLODED_SCORCH_OPACITY * (1 - t),
     };
   });
-
-  // 5. The burnt card tumbles into the discard pile.
-  time = addStep(FALL_SECONDS, (t) => ({
-    pose: {
-      x: interpolate(recoil.x, end.x, easeOut(t)),
-      y:
-        interpolate(recoil.y, end.y, easeIn(t))
-        - FALL_LIFT * unit * Math.sin(Math.PI * t) * (1 - t),
-      ...uniform(interpolate(recoil.scaleX, endScale, t)),
-      rotation: interpolate(recoil.rotation, FULL_TURN_DEGREES, easeOut(t)),
-    },
-    scorch: EXPLODED_SCORCH_OPACITY * (1 - t),
-  }));
 
   function poseAt(seconds: number): { pose: Pose; scorch: number } {
     const step =
