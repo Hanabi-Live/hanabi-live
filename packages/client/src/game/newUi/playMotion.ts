@@ -816,43 +816,29 @@ export function animateMisplay(
     return;
   }
 
-  // The strike appears in its box, with a pop, when the card explodes on it.
-  const at = explosion / (explosion + STRIKE_POP_SECONDS);
+  // The strike appears in its box, with a pop, when the card explodes on it. Until then, the box
+  // looks empty. After that, it has its own look of a strike.
+  const explosionMilliseconds = explosion * 1000;
   const empty = {
     backgroundColor: "transparent",
     borderColor: cssColor("--game-screen-line"),
   };
-  const filled = {
-    backgroundColor: cssColor("--critical"),
-    borderColor: cssColor("--critical"),
-  };
+  strikeBox.animate([empty, empty], {
+    id: PLAY_EFFECT_ANIMATION_ID,
+    duration: explosionMilliseconds,
+  });
   strikeBox.animate(
     [
       {
-        ...empty,
-        scale: 1,
-        offset: 0,
-      },
-      {
-        ...empty,
-        scale: 1,
-        offset: at,
-      },
-      {
-        ...filled,
         scale: STRIKE_POP_SCALE,
-        offset: at,
         easing: "ease-out",
       },
-      {
-        ...filled,
-        scale: 1,
-        offset: 1,
-      },
+      { scale: 1 },
     ],
     {
       id: PLAY_EFFECT_ANIMATION_ID,
-      duration: (explosion + STRIKE_POP_SECONDS) * 1000,
+      duration: STRIKE_POP_SECONDS * 1000,
+      delay: explosionMilliseconds,
     },
   );
 
