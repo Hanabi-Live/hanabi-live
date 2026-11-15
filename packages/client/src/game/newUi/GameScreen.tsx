@@ -81,8 +81,10 @@ import { usesSpeedrunClicks } from "./cardClicks.ts";
 import {
   DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
+  getHandsTopPadding,
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
+  TABLE_TOP_PADDING,
 } from "./cardSizes.ts";
 import {
   getCardsTouchedBefore,
@@ -842,7 +844,14 @@ export function GameScreen({
           reducedMotion={settings.reducedMotion}
         />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
-          <div className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
+          <div
+            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3"
+            style={{
+              paddingTop: stacked
+                ? TABLE_TOP_PADDING.STACKED
+                : TABLE_TOP_PADDING.WIDE,
+            }}
+          >
             <div
               className="tw:relative tw:flex tw:shrink-0 tw:narrow-980:justify-center"
               ref={setPlayAreaElement}
@@ -940,6 +949,13 @@ export function GameScreen({
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
                 ref={setHandsElement}
+                style={{
+                  paddingTop: getHandsTopPadding(
+                    handCardWidth,
+                    nameColumnWidth !== undefined,
+                    stacked,
+                  ),
+                }}
               >
                 <NameColumnSizer onWidthChange={setNameWidth} seats={seats} />
                 <Hands

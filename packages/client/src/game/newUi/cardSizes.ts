@@ -1,7 +1,11 @@
 // The sizes of the cards on the redesigned game screen, from the space that the screen has.
 
 import { clamp } from "complete-common";
-import { CARD_HEIGHT_PER_WIDTH, CLUED_RAISE_PER_WIDTH } from "./Card.tsx";
+import {
+  CARD_HEIGHT_PER_WIDTH,
+  CLUE_TOKEN_REACH_PER_WIDTH,
+  CLUED_RAISE_PER_WIDTH,
+} from "./Card.tsx";
 import {
   CARD_GAP,
   HAND_BOX_BOTTOM_PADDING,
@@ -47,6 +51,51 @@ const STACKED_PLAY_AREA_OTHER_WIDTH = 2 * PLAY_STACKS_PADDING + PLAY_AREA_GAP;
 const HAND_BOX_HORIZONTAL_PADDING = 32;
 
 /**
+ * The space above the hands and the play area, in CSS pixels. When the columns stack, the screen is
+ * narrow, so it is smaller.
+ */
+export const TABLE_TOP_PADDING = {
+  WIDE: 24,
+  STACKED: 12,
+} as const;
+
+/**
+ * How far the clue token of a card in a hand reaches above the hand's box, as a fraction of the
+ * card's width, before the fixed part of the box's top padding.
+ */
+const CLUE_TOKEN_OVERHANG_PER_WIDTH =
+  CLUE_TOKEN_REACH_PER_WIDTH - CLUED_RAISE_PER_WIDTH;
+
+/** The least space between a clue token on the top hand and the top of the table. */
+const CLUE_TOKEN_TABLE_MARGIN = 8;
+
+/**
+ * Returns the space above the hands, inside the table's top padding, for the clue tokens of the top
+ * hand. Otherwise, the top of the screen cuts a large token. With the names above the cards, the
+ * gap between the name and the cards already has room for the tokens.
+ */
+export function getHandsTopPadding(
+  cardWidth: number,
+  namesBesideCards: boolean,
+  stacked: boolean,
+): number {
+  if (!namesBesideCards) {
+    return 0;
+  }
+
+  const tablePadding = stacked
+    ? TABLE_TOP_PADDING.STACKED
+    : TABLE_TOP_PADDING.WIDE;
+  return Math.max(
+    0,
+    cardWidth * CLUE_TOKEN_OVERHANG_PER_WIDTH
+      - HAND_BOX_TOP_SPACE
+      - tablePadding
+      + CLUE_TOKEN_TABLE_MARGIN,
+  );
+}
+
+/**
  * The height in the play area that is not cards: the padding of the stacks' box, the gap above the
  * deck, the edges under the top of the deck, and the tokens under it.
  */
@@ -74,12 +123,20 @@ export function getHandCardWidth(
     - HAND_BOX_HORIZONTAL_PADDING
     - CARD_GAP * (cardsPerHand - 1);
   const byWidth = widthForCards / cardsPerHand;
-  const rowHeight = handsHeight / numPlayers;
-  const byHeight = stacked
-    ? Infinity
-    : // The padding above the cards grows with them (see "getHandBoxTopPadding").
-      (rowHeight - HAND_BOX_BOTTOM_PADDING - HAND_BOX_TOP_SPACE)
-      / (CARD_HEIGHT_PER_WIDTH + CLUED_RAISE_PER_WIDTH);
+  // The padding above the cards grows with them (see "getHandBoxTopPadding"), and so does the space
+  // above the hands (see "getHandsTopPadding").
+  const rowOtherHeight = HAND_BOX_BOTTOM_PADDING + HAND_BOX_TOP_SPACE;
+  const rowHeightPerWidth = CARD_HEIGHT_PER_WIDTH + CLUED_RAISE_PER_WIDTH;
+  const byRowHeight =
+    (handsHeight / numPlayers - rowOtherHeight) / rowHeightPerWidth;
+  const byTopPadding =
+    (handsHeight
+      - numPlayers * rowOtherHeight
+      + HAND_BOX_TOP_SPACE
+      + TABLE_TOP_PADDING.WIDE
+      - CLUE_TOKEN_TABLE_MARGIN)
+    / (numPlayers * rowHeightPerWidth + CLUE_TOKEN_OVERHANG_PER_WIDTH);
+  const byHeight = stacked ? Infinity : Math.min(byRowHeight, byTopPadding);
   return clamp(
     Math.floor(Math.min(byWidth, byHeight)),
     HAND_CARD_WIDTH.MIN,
