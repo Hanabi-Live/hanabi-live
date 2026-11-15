@@ -3,7 +3,6 @@ import type {
   CardNote,
   CardOrder,
   CardState,
-  Color,
   NumPlayers,
   PossibilityRowPresentation,
   Rank,
@@ -14,20 +13,16 @@ import type {
 } from "@hanabi-live/game";
 import {
   CardStatus,
-  DEFAULT_CARD_RANKS,
   PipState,
-  START_CARD_RANK,
   StackDirection,
   UNKNOWN_SUIT_NAME,
   canCardPossiblyBeFromEmpathy,
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
-  getColorForPrismCard,
   getIdentityFromNote,
   getInitialCardState,
   getSuit,
-  getSuitAbbreviationForVariant,
   hasReversedSuits,
   isCardClued,
   isCardDiscarded,
@@ -43,6 +38,7 @@ import * as tooltips from "../../tooltips.ts";
 import { getEmpathyNote } from "../empathyNote.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
+import { getSuitDescriptionHtml } from "../suitDescription.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import * as HanabiCardMouse from "./HanabiCardMouse.ts";
 import { LayoutChild } from "./LayoutChild.ts";
@@ -1397,74 +1393,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   /** A description of the card's suit, or `undefined` when its suit is unknown. */
   suitDescriptionNote(): string | undefined {
     const index = this.state.suitIndex;
-    if (index === undefined) {
-      return undefined;
-    }
-    const { variant } = this;
-    const suit = variant.suits[index]!;
-    const lines: string[] = [];
-
-    if (suit.oneOfEach) {
-      lines.push("Every card is unique.");
-    }
-
-    if (suit.clueColors.length > 1) {
-      const colors: string[] = Array.from(suit.clueColors, (color) =>
-        getColorHtml(color),
-      );
-      lines.push(`Touched by ${colors.join(", ")} color clues`);
-    }
-
-    if (suit.prism) {
-      const ranks = variant.upOrDown
-        ? [START_CARD_RANK, ...DEFAULT_CARD_RANKS]
-        : DEFAULT_CARD_RANKS;
-      const cards = ranks.map((rank) => {
-        const rankName = rank === START_CARD_RANK ? "START" : rank.toString();
-        const colorHtml = getColorHtml(getColorForPrismCard(variant, rank));
-        return `${rankName} is ${colorHtml}`;
-      });
-
-      lines.push(`Colors: ${cards.join(", ")}`);
-    }
-
-    if (suit.allClueColors) {
-      lines.push("Touched by every color clue.");
-    }
-
-    if (suit.noClueColors) {
-      lines.push("Not touched by any color clue.");
-    }
-
-    if (suit.allClueRanks) {
-      lines.push("Touched by every number clue.");
-    }
-
-    if (suit.noClueRanks) {
-      lines.push("Not touched by any number clue.");
-    }
-
-    if (variant.specialRankDeceptive && !suit.noClueRanks) {
-      const deceptiveRank = variant.clueRanks[index % variant.clueRanks.length];
-      lines.push(
-        `Deceptive: ${variant.specialRank} is touched by number ${deceptiveRank} clue.`,
-      );
-    }
-
-    if (suit.inverted) {
-      lines.push("Inverted: Plays on at attempted discard and vice-versa.");
-    }
-
-    const abbreviation = getSuitAbbreviationForVariant(suit, variant);
-
-    return `
-      <div class="small-tooltip-text">
-        <div class="align-center">
-          ${suit.displayName} (${abbreviation})
-        </div>
-        ${lines.join("<br>")}
-      </div>
-    `.trim();
+    return index === undefined
+      ? undefined
+      : getSuitDescriptionHtml(this.variant, index);
   }
 
   getLayoutParent(): LayoutChild {
@@ -1505,8 +1436,4 @@ export function updatePip(
       pip.hidePositiveClue();
     }
   }
-}
-
-function getColorHtml(color: Color) {
-  return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
 }

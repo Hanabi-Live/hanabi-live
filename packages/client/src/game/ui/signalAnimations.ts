@@ -8,6 +8,10 @@ import { globals } from "./UiGlobals.ts";
 import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants.ts";
 import {
   DROPPED_CARD_GLOW_SECONDS,
+  EMPTY_DECK_POP_SCALE,
+  EMPTY_DECK_POP_SECONDS,
+  EMPTY_DECK_RING_RADIUS,
+  EMPTY_DECK_RING_SECONDS,
   MAX_SCORE_FADE_SECONDS,
   MAX_SCORE_POP_SCALE,
   MAX_SCORE_POP_SECONDS,
@@ -37,11 +41,6 @@ import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView.ts";
 
 /** The flash of the strike that ends the game also uses the numbers in "misplayConfig.ts". */
 const STRIKEOUT_STROKE_WIDTH = 0.02;
-
-const EMPTY_DECK_RING_RADIUS = 0.8;
-const EMPTY_DECK_RING_SECONDS = 0.7;
-const EMPTY_DECK_POP_SCALE = 1.6;
-const EMPTY_DECK_POP_SECONDS = 0.5;
 
 let maxScoreDrop: { stop: () => void } | undefined;
 let emptyDeck: EffectTimeline | undefined;

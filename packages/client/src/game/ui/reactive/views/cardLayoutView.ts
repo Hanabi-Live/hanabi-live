@@ -1,15 +1,18 @@
-import type { CardOrder, GameState, SuitIndex } from "@hanabi-live/game";
-import {
+import type {
+  CardOrder,
+  GameState,
   StackDirection,
-  getStackStartRank,
-  getTotalCardsInDeck,
-  hasReversedSuits,
+  SuitIndex,
 } from "@hanabi-live/game";
-import { ReadonlyMap, assertDefined } from "complete-common";
+import { getTotalCardsInDeck, hasReversedSuits } from "@hanabi-live/game";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
 import { store } from "../../../../store.ts";
 import { areReplayAnimationsOn } from "../../../replayAnimations.ts";
+import {
+  getStackDirectionLabel,
+  getSudokuStackLabels,
+} from "../../../stackLabels.ts";
 import type { HanabiCard } from "../../HanabiCard.ts";
 import type { LayoutChild } from "../../LayoutChild.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -20,20 +23,6 @@ import {
 } from "../../signalAnimations.ts";
 import { startStackCompleteAnimation } from "../../stackCompleteAnimation.ts";
 import { updateCardVisuals } from "./cardsView.ts";
-
-const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
-  [StackDirection.Undecided, ""],
-  [StackDirection.Up, ""],
-  [StackDirection.Down, "Reversed"],
-  [StackDirection.Finished, "Reversed"],
-]);
-
-const STACK_STRINGS_UP_OR_DOWN = new ReadonlyMap<StackDirection, string>([
-  [StackDirection.Undecided, ""],
-  [StackDirection.Up, "Up"],
-  [StackDirection.Down, "Down"],
-  [StackDirection.Finished, "Finished"],
-]);
 
 export function onPlayStackDirectionsChanged(
   directions: readonly StackDirection[],
@@ -52,23 +41,11 @@ export function onPlayStackDirectionsChanged(
       continue;
     }
 
-    const suit = globals.variant.suits[i]!;
-    let text = "";
-    const isUpOrDown = globals.variant.upOrDown;
-    if (isUpOrDown || suit.reversed) {
-      const stackStrings = isUpOrDown
-        ? STACK_STRINGS_UP_OR_DOWN
-        : STACK_STRINGS_REVERSED;
-
-      const stackText = stackStrings.get(direction);
-      assertDefined(
-        stackText,
-        `Failed to find the stack string for the stack direction of: ${direction}`,
-      );
-
-      text = stackText;
-    }
-
+    const text = getStackDirectionLabel(
+      globals.variant,
+      i as SuitIndex,
+      direction,
+    );
     globals.elements.suitLabelTexts[i]!.fitText(text);
 
     const visibleCardsOfThisSuit = globals.deck.filter(
@@ -229,77 +206,13 @@ export function onPlayStacksChanged(
   }
 
   if (globals.variant.sudoku) {
-    // First, we will find out all available stack starts.
-    const availableStackStartsFlags: boolean[] = [
-      false,
-      false,
-      false,
-      false,
-      false,
-    ];
-    for (const rank of globals.variant.ranks) {
-      availableStackStartsFlags[rank - 1] = true;
-    }
-    for (const playStack of playStacks) {
-      const stackStart = getStackStartRank(
-        playStack,
-        globals.state.visibleState!.deck,
-      );
-      if (stackStart !== undefined) {
-        availableStackStartsFlags[stackStart - 1] = false;
-      }
-    }
-    const availableStackStarts: number[] = [];
-    for (const [index, available] of availableStackStartsFlags.entries()) {
-      if (available) {
-        availableStackStarts.push(index + 1);
-      }
-    }
-
-    // Now, add the suit label texts, showing current progress or the possible remaining starting
-    // values.
-    for (const [suitIndex, playStack] of playStacks.entries()) {
-      let text: string;
-      if (playStack.length === globals.variant.ranks.length) {
-        text = "Finished";
-      } else if (playStack.length > 0) {
-        const firstPlayedCardOrder = playStack[0];
-        assertDefined(
-          firstPlayedCardOrder,
-          `Failed to get the first card order from the play stack at suit index: ${suitIndex}`,
-        );
-        const firstPlayedCard = globals.deck[firstPlayedCardOrder];
-        assertDefined(
-          firstPlayedCard,
-          `Failed to get the first played card at index: ${firstPlayedCardOrder}`,
-        );
-        const firstPlayedRank = firstPlayedCard.getCardIdentity().rank;
-        assertDefined(
-          firstPlayedRank,
-          `Failed to get the rank of the first played card at index: ${firstPlayedCardOrder}`,
-        );
-        const playedRanks = playStack.map(
-          (_stack, rankOffset) =>
-            ((rankOffset + firstPlayedRank - 1) % globals.variant.stackSize)
-            + 1,
-        );
-        const ranksText =
-          playedRanks.join(" ")
-          + " _".repeat(globals.variant.stackSize - playStack.length);
-        text = `[ ${ranksText} ]`;
-      } else {
-        const bracketText =
-          availableStackStarts.length === globals.variant.stackSize
-            ? "Any"
-            : availableStackStarts.join("");
-        text = `Start: [${bracketText}]`;
-      }
-      const fitText = globals.elements.suitLabelTexts[suitIndex];
-      assertDefined(
-        fitText,
-        `Failed to get the fit text at suit index: ${suitIndex}`,
-      );
-      fitText.fitText(text);
+    const labels = getSudokuStackLabels(
+      globals.variant,
+      playStacks,
+      globals.state.visibleState!.playStackStarts,
+    );
+    for (const [suitIndex, text] of labels.entries()) {
+      globals.elements.suitLabelTexts[suitIndex]?.fitText(text);
     }
   }
 

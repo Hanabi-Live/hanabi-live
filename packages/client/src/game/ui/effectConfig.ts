@@ -92,6 +92,12 @@ export const SHEEN_DEGREES = 25;
 /** How large the glow of the score is. */
 export const SCORE_GLOW_BLUR = 0.13;
 
+// The last card leaves the deck: a ring spreads from the deck, and its count pops.
+export const EMPTY_DECK_RING_RADIUS = 0.8;
+export const EMPTY_DECK_RING_SECONDS = 0.7;
+export const EMPTY_DECK_POP_SCALE = 1.6;
+export const EMPTY_DECK_POP_SECONDS = 0.5;
+
 // The drop of the maximum score.
 export const MAX_SCORE_RING_RADIUS = 0.31;
 export const MAX_SCORE_RING_SECONDS = 0.6;
