@@ -39,6 +39,11 @@ const NUMBER_WORDS = [
   "six",
 ] as const;
 
+/** Returns a small number as a word, such as "three", or "unknown" when it has no word. */
+export function getNumberWord(number: number): string {
+  return NUMBER_WORDS[number] ?? "unknown";
+}
+
 export function getGoesFirstText(
   playerIndex: PlayerIndex | undefined,
   playerNames: Readonly<Tuple<string, NumPlayers>>,
@@ -59,7 +64,7 @@ export function getClueText(
 ): string {
   const giver = metadata.playerNames[action.playerIndex] ?? "unknown";
   const target = metadata.playerNames[action.receiverIndex] ?? "unknown";
-  const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
+  const word = getNumberWord(action.orders.length);
   const variant = getVariantById(metadata.options.variantId);
   const hypoPrefix = perspective === "hypothetical" ? HYPO_PREFIX : "";
 
@@ -185,7 +190,8 @@ export function getGameOverText(
   return "Players lose!";
 }
 
-function getPlayerNames(
+/** Returns the names of the players in order, such as "Alice, Bob, and Carol". */
+export function getPlayerNames(
   playerIndices: readonly PlayerIndex[],
   metadata: GameMetadata,
 ): string {

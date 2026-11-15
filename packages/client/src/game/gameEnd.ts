@@ -7,19 +7,24 @@ import type {
   PlayerIndex,
 } from "@hanabi-live/game";
 import {
-  getGameOverText,
+  getNumberWord,
   getPlayerName,
+  getPlayerNames,
+  MAX_STRIKES,
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { escapeHtml } from "../utils.ts";
 import type { State } from "./types/State.ts";
 
 export interface GameEnd {
-  /** A few words about how the game ended, such as "Out of strikes". */
+  /** A few words about how the game ended, such as "Strikeout". */
   readonly summary: string;
 
-  /** The sentence that the classic screen's action log writes, such as "Players lose!". */
-  readonly description: string;
+  /**
+   * A sentence that explains the summary, such as "Players had three misplayed cards.". It is
+   * `undefined` when the summary already says it all.
+   */
+  readonly description: string | undefined;
 
   /**
    * Each player's clock when the game ended, in seat order: the time left in a timed game, or the
@@ -70,10 +75,9 @@ export function getShownGameEnd(state: State): GameEnd | undefined {
       gameOver.playerIndex,
       state.metadata,
     ),
-    description: getGameOverText(
+    description: getGameOverDescription(
       gameOver.endCondition,
       gameOver.playerIndex,
-      visibleState.score,
       state.metadata,
       gameOver.voters,
     ),
@@ -96,7 +100,7 @@ function getGameOverSummary(
     }
 
     case "strikeout": {
-      return "Out of strikes";
+      return "Strikeout";
     }
 
     case "timeout": {
@@ -133,8 +137,73 @@ function getGameOverSummary(
   }
 }
 
-/** The tooltip of the game's result, as HTML: what happened, and how long the game took. */
-export function getGameEndTooltipHtml(gameEnd: GameEnd): string {
+/**
+ * A sentence that explains how a game ended, for the tooltip of its summary. The classic screen's
+ * action log has its own sentences (see `getGameOverText`).
+ */
+function getGameOverDescription(
+  endCondition: EndCondition,
+  playerIndex: PlayerIndex | undefined,
+  metadata: GameMetadata,
+  voters: readonly PlayerIndex[],
+): string | undefined {
+  const playerName = getPlayerName(playerIndex, metadata);
+
+  switch (endCondition) {
+    case "normal": {
+      return "Players finished the game normally.";
+    }
+
+    case "strikeout": {
+      return `Players had ${getNumberWord(MAX_STRIKES)} misplayed cards.`;
+    }
+
+    // The summary already says who ran out of time.
+    case "timeout": {
+      return undefined;
+    }
+
+    case "terminatedByPlayer": {
+      return `${playerName} terminated the game.`;
+    }
+
+    case "terminatedByVote": {
+      return `${getPlayerNames(voters, metadata)} voted to terminate the game.`;
+    }
+
+    case "speedrunFail": {
+      return "A perfect score was not attained.";
+    }
+
+    case "idleTimeout": {
+      return "Players were idle for too long.";
+    }
+
+    case "characterSoftlock": {
+      return `${playerName} was left with 0 clues.`;
+    }
+
+    // The game ends as soon as the maximum score drops below a perfect score.
+    case "allOrNothingFail": {
+      return "A perfect score was no longer possible.";
+    }
+
+    case "allOrNothingSoftlock": {
+      return `${playerName} was left with 0 clues and 0 cards.`;
+    }
+  }
+}
+
+/**
+ * The tooltip of the game's result, as HTML: what happened, and how long the game took. It is
+ * `undefined` when there is nothing to add to the summary.
+ */
+export function getGameEndTooltipHtml(gameEnd: GameEnd): string | undefined {
+  // The length of the game alone does not explain the result, so it goes only with a sentence.
+  if (gameEnd.description === undefined) {
+    return undefined;
+  }
+
   const description = escapeHtml(gameEnd.description);
   return gameEnd.durationMs === undefined
     ? description

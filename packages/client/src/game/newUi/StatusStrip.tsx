@@ -80,7 +80,8 @@ interface StatusStripProps {
    * writes it in its action log.
    */
   readonly result:
-    { readonly summary: string; readonly tooltipHtml: string } | undefined;
+    | { readonly summary: string; readonly tooltipHtml: string | undefined }
+    | undefined;
 
   readonly pace: string;
 
@@ -535,7 +536,11 @@ export function StatusStrip({
             <span
               className="tw:inline-block tw:max-w-[16em] tw:truncate tw:align-bottom"
               data-game-result
-              ref={tooltipRefHtml(valueTooltip(result.tooltipHtml))}
+              ref={tooltipRefHtml(
+                result.tooltipHtml === undefined
+                  ? undefined
+                  : valueTooltip(result.tooltipHtml),
+              )}
             >
               {result.summary}
             </span>

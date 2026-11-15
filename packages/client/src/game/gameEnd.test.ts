@@ -49,11 +49,11 @@ function showing({
 describe("how the game ended", () => {
   test("shows on the turn on which the game ended", () => {
     const gameEnd = getShownGameEnd(showing({}));
-    expect(gameEnd?.summary).toBe("Out of strikes");
-    expect(gameEnd?.description).toBe("Players lose!");
+    expect(gameEnd?.summary).toBe("Strikeout");
+    expect(gameEnd?.description).toBe("Players had three misplayed cards.");
     expect(gameEnd?.playerTimesMs).toStrictEqual([61_000, 125_000]);
     expect(getGameEndTooltipHtml(gameEnd!)).toBe(
-      "Players lose!<br />The game took 3:06.",
+      "Players had three misplayed cards.<br />The game took 3:06.",
     );
   });
 
@@ -68,6 +68,26 @@ describe("how the game ended", () => {
   test("shows without times when the server did not send them", () => {
     const gameEnd = getShownGameEnd(showing({ actions: [GAME_OVER] }));
     expect(gameEnd?.playerTimesMs).toBeUndefined();
-    expect(getGameEndTooltipHtml(gameEnd!)).toBe("Players lose!");
+    expect(getGameEndTooltipHtml(gameEnd!)).toBe(
+      "Players had three misplayed cards.",
+    );
+  });
+
+  test("has no tooltip when the summary says it all", () => {
+    const gameEnd = getShownGameEnd(
+      showing({
+        actions: [
+          {
+            type: "gameOver",
+            endCondition: "timeout",
+            playerIndex: 0,
+            voters: [],
+          },
+          PLAYER_TIMES,
+        ],
+      }),
+    );
+    expect(gameEnd?.summary).toBe("Alice ran out of time");
+    expect(getGameEndTooltipHtml(gameEnd!)).toBeUndefined();
   });
 });
