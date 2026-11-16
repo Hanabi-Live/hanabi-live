@@ -224,6 +224,9 @@ export function GameScreen({
   // of the two ways works at a time.
   const tapToMove = touch || stacked;
   const [menuCard, setMenuCard] = useState<CardOrder>();
+  const closeCardMenu = useCallback(() => {
+    setMenuCard(undefined);
+  }, []);
 
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
@@ -1010,6 +1013,7 @@ export function GameScreen({
                             current === deckOrder ? undefined : deckOrder,
                           );
                         },
+                        onCloseMenu: closeCardMenu,
                         onPlay: () => {
                           setMenuCard(undefined);
                           sendAction({
@@ -1160,6 +1164,7 @@ export function GameScreen({
                     );
                   }}
                   onChooseClueTarget={chooseClueTarget}
+                  onCloseCardMenu={closeCardMenu}
                   onDiscard={(order) => {
                     setMenuCard(undefined);
                     if (canDiscardNow()) {

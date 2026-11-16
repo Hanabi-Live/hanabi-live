@@ -6,16 +6,12 @@ import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
   BOTTOM_BAR_BUTTON_COLOR_CLASS,
-  MENU_ITEM_CLASS,
-  MENU_ITEM_COLOR_CLASS,
+  MENU_ICON_ITEM_CLASS,
   MENU_LABEL_CLASS,
 } from "./surfaces.ts";
 
 const VIEW_AS_TOOLTIP =
   "Watch the game from a player's seat, as that player sees it.";
-
-/** A seat to view the game from. The current one cannot be pressed, so it lies flat. */
-const ITEM_CLASS = `tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 
 /**
  * A menu to view the game from a player's seat, for anyone who does not play in it (see
@@ -77,9 +73,10 @@ export function ViewAsMenu({
             const playerIndex = i as PlayerIndex;
             const current = playerIndex === viewedSeat;
             return (
+              // The current seat cannot be pressed, so it lies flat.
               <button
                 aria-checked={current}
-                className={ITEM_CLASS}
+                className={MENU_ICON_ITEM_CLASS}
                 // The current view cannot be chosen again.
                 disabled={current}
                 key={name}
@@ -102,7 +99,7 @@ export function ViewAsMenu({
               <span className="tw:mx-1 tw:h-px tw:bg-game-line" />
               <button
                 aria-checked={viewedSeat === undefined}
-                className={ITEM_CLASS}
+                className={MENU_ICON_ITEM_CLASS}
                 disabled={viewedSeat === undefined}
                 onClick={() => {
                   choose(undefined);

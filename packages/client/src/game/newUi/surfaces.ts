@@ -59,3 +59,11 @@ export const MENU_ITEM_CLASS = `tw:min-h-10 tw:w-full tw:rounded-game-control tw
 /** The usual color of a choice in a menu. */
 export const MENU_ITEM_COLOR_CLASS =
   "tw:bg-white/8 tw:text-game-text tw:enabled:hover:bg-white/15";
+
+/** A choice in a menu that starts with an icon or a check mark, in the usual color. */
+export const MENU_ICON_ITEM_CLASS = `tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
+
+/**
+ * The icon at the start of a choice in a menu, as wide as every other, so that the names line up.
+ */
+export const MENU_ICON_CLASS = "fas tw:w-3.5 tw:text-center";

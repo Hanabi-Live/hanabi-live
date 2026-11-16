@@ -1092,12 +1092,7 @@ function getStates(): readonly State[] {
         }
 
         await card.click();
-        await page
-          .getByRole("button", {
-            name: "Empathy",
-            exact: true,
-          })
-          .waitFor();
+        await page.getByRole("menu").waitFor();
       },
     },
     // After the account plays a card that it does not know.

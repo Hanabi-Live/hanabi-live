@@ -1,5 +1,5 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { PauseAction } from "../pause.ts";
 import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
@@ -20,9 +20,15 @@ import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { FitText } from "./FitText.tsx";
-import { getScreenScale, measure } from "./screenScale.ts";
+import { useCloseOnOutsideClick } from "./hooks.ts";
+import { Menu } from "./Menu.tsx";
+import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
-import { KEY_CLASS } from "./surfaces.ts";
+import {
+  KEY_CLASS,
+  MENU_ICON_CLASS,
+  MENU_ICON_ITEM_CLASS,
+} from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
 
 export interface Seat {
@@ -167,6 +173,7 @@ interface HandsProps {
    */
   readonly menuCard: CardOrder | undefined;
   readonly onCardTap: (order: CardOrder) => void;
+  readonly onCloseCardMenu: () => void;
   readonly canDiscard: boolean;
   readonly onPlay: (order: CardOrder) => void;
   readonly onDiscard: (order: CardOrder) => void;
@@ -833,56 +840,6 @@ export function NameColumnSizer({
   );
 }
 
-/** The least space between a card's menu and the edges of the window, in CSS pixels. */
-const CARD_MENU_WINDOW_MARGIN = 8;
-
-/**
- * The buttons under a card that the viewer taps to move it. They center under the card, but move
- * sideways to stay inside the window, such as under a card at the edge of a phone's screen.
- */
-function CardMenu({
-  children,
-}: {
-  readonly children: React.ReactNode;
-}): React.JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shift, setShift] = useState(0);
-
-  useLayoutEffect(() => {
-    const element = ref.current;
-    if (element === null) {
-      return;
-    }
-
-    // The window's pixels, without the shift that the menu has now.
-    const scale = getScreenScale();
-    const rect = element.getBoundingClientRect();
-    const left = rect.left - shift * scale;
-    const right = rect.right - shift * scale;
-    const margin = CARD_MENU_WINDOW_MARGIN * scale;
-    let next = 0;
-    if (left < margin) {
-      next = margin - left;
-    } else if (right > globalThis.innerWidth - margin) {
-      next = globalThis.innerWidth - margin - right;
-    }
-    next /= scale;
-    if (Math.abs(next - shift) >= 1) {
-      setShift(next);
-    }
-  });
-
-  return (
-    <div
-      className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-game-panel tw:bg-game-text tw:p-1.5 tw:shadow-lg"
-      ref={ref}
-      style={{ marginLeft: shift }}
-    >
-      {children}
-    </div>
-  );
-}
-
 function OwnCard({
   card,
   slot,
@@ -1070,14 +1027,29 @@ function MenuCard({
     action = empathy ? "Play, discard, or show empathy" : "Play or discard";
   }
 
+  // A tap anywhere else closes the menu. A tap on another card then opens that card's menu.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { onCloseCardMenu } = props;
+  const setOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        onCloseCardMenu();
+      }
+    },
+    [onCloseCardMenu],
+  );
+  useCloseOnOutsideClick(menuOpen, containerRef, setOpen);
+
   return (
     <div
       className="tw:relative"
       data-card-order={order}
       data-card-place={place}
+      ref={containerRef}
     >
       <button
         aria-expanded={menuOpen}
+        aria-haspopup="menu"
         aria-label={`${label}. ${action}`}
         className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
         onClick={() => {
@@ -1090,20 +1062,25 @@ function MenuCard({
       </button>
       {children}
       {menuOpen && (
-        <CardMenu>
+        <Menu align="center" className="tw:min-w-40" side="below">
           {movable && (
             <>
               <button
-                className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
+                className={MENU_ICON_ITEM_CLASS}
                 onClick={() => {
                   props.onPlay(order);
                 }}
+                role="menuitem"
                 type="button"
               >
+                <i
+                  aria-hidden="true"
+                  className={`${MENU_ICON_CLASS} fa-play`}
+                />
                 Play
               </button>
               <button
-                className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
+                className={MENU_ICON_ITEM_CLASS}
                 disabled={!props.canDiscard}
                 onClick={() => {
                   props.onDiscard(order);
@@ -1113,20 +1090,21 @@ function MenuCard({
                     ? undefined
                     : "The team cannot discard at the maximum number of clues.",
                 )}
+                role="menuitem"
                 type="button"
               >
+                <i
+                  aria-hidden="true"
+                  className={`${MENU_ICON_CLASS} fa-trash`}
+                />
                 Discard
               </button>
             </>
           )}
           {empathy && (
             <button
-              aria-pressed={empathyOn}
-              className={`tw:flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:py-1.5 tw:font-bold ${
-                empathyOn
-                  ? "tw:bg-black/15 tw:text-card-ink tw:ring-2 tw:ring-card-ink tw:ring-inset"
-                  : "tw:bg-transparent tw:text-card-ink tw:hover:bg-black/10"
-              }`}
+              aria-checked={empathyOn}
+              className={MENU_ICON_ITEM_CLASS}
               onClick={() => {
                 props.onToggleEmpathy?.(seat.playerIndex);
               }}
@@ -1135,13 +1113,18 @@ function MenuCard({
                   ? "Show your hand without your notes."
                   : `Show ${seat.name}'s hand as they see it.`,
               )}
+              role="menuitemcheckbox"
               type="button"
             >
-              <i aria-hidden="true" className="fas fa-eye" />
+              <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-eye`} />
               Empathy
+              <i
+                aria-hidden="true"
+                className={`fas fa-check tw:ml-auto tw:text-game-text ${empathyOn ? "" : "tw:invisible"}`}
+              />
             </button>
           )}
-        </CardMenu>
+        </Menu>
       )}
     </div>
   );

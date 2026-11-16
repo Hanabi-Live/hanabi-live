@@ -7,7 +7,7 @@ import type {
 } from "@hanabi-live/game";
 import { getTotalCardsInDeck, MAX_CLUES, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
@@ -32,9 +32,14 @@ import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FitText } from "./FitText.tsx";
-import { useElementSize } from "./hooks.ts";
+import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
+import { Menu } from "./Menu.tsx";
 import { Pip } from "./Pip.tsx";
-import { WELL_CLASS } from "./surfaces.ts";
+import {
+  MENU_ICON_CLASS,
+  MENU_ICON_ITEM_CLASS,
+  WELL_CLASS,
+} from "./surfaces.ts";
 import type { PossibleCardsView } from "./tableView.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
@@ -761,6 +766,7 @@ interface DeckPlay {
 
   readonly onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
   readonly onTap: () => void;
+  readonly onCloseMenu: () => void;
   readonly onPlay: () => void;
   readonly onDiscard: () => void;
 }
@@ -877,6 +883,20 @@ function Deck({
   // the viewer holds Space over it, as over a card in a hand.
   const [hoveredTop, setHoveredTop] = useState<HTMLElement>();
   const held = play?.held === true;
+
+  // A tap anywhere else closes the menu.
+  const menuOpen = play?.menuOpen === true;
+  const onCloseMenu = play?.onCloseMenu;
+  const menuContainerRef = useRef<HTMLDivElement>(null);
+  const setMenuOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        onCloseMenu?.();
+      }
+    },
+    [onCloseMenu],
+  );
+  useCloseOnOutsideClick(menuOpen, menuContainerRef, setMenuOpen);
   // In the final round, only the border of the empty slot is faint, so that the turns left stand
   // out.
   let emptyStyle = "";
@@ -1001,6 +1021,7 @@ function Deck({
     >
       <div
         className="tw:relative"
+        ref={menuContainerRef}
         style={{
           width: cardWidth + DECK_PILE_DEPTH,
           height: height + DECK_PILE_DEPTH,
@@ -1071,6 +1092,7 @@ function Deck({
         ) : (
           <button
             aria-expanded={play.tapToMove ? play.menuOpen : undefined}
+            aria-haspopup={play.tapToMove ? "menu" : undefined}
             aria-label={
               play.tapToMove
                 ? "Play the last card of the deck"
@@ -1093,26 +1115,33 @@ function Deck({
             {bubble}
           </button>
         )}
-        {play?.menuOpen === true && (
-          <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-20 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-game-panel tw:bg-game-text tw:p-1.5 tw:shadow-lg">
+        {play !== undefined && menuOpen && (
+          <Menu align="center" className="tw:min-w-40" side="below">
             <button
-              className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
+              className={MENU_ICON_ITEM_CLASS}
               onClick={play.onPlay}
+              role="menuitem"
               type="button"
             >
+              <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-play`} />
               Play
             </button>
             {play.canDiscard !== undefined && (
               <button
-                className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
+                className={MENU_ICON_ITEM_CLASS}
                 disabled={!play.canDiscard}
                 onClick={play.onDiscard}
+                role="menuitem"
                 type="button"
               >
+                <i
+                  aria-hidden="true"
+                  className={`${MENU_ICON_CLASS} fa-trash`}
+                />
                 Discard
               </button>
             )}
-          </div>
+          </Menu>
         )}
       </div>
     </div>
