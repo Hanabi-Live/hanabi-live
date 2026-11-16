@@ -10,6 +10,8 @@ of the repository.
 ## November 16th, 2026
 
 - Removed Ctrl + Space, which showed every hand narrowed by notes.
+- Added Ctrl + Left and Ctrl + Right, which go to the beginning and the end of a
+  replay.
 
 ## November 15th, 2026
 

@@ -170,6 +170,26 @@ function keydown(event: KeyboardEvent) {
     }
   }
 
+  // Ctrl + Left and Ctrl + Right = Go to the beginning or the end of the replay, as Home and End
+  // do. In a text box, they still move the cursor by one word.
+  if (
+    event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && (event.key === "ArrowLeft" || event.key === "ArrowRight")
+    && !isTextBox(event.target)
+    && (globals.state.replay.hypothetical === undefined
+      || replay.isSpectatingHypothetical())
+  ) {
+    if (event.key === "ArrowLeft") {
+      replay.backFull();
+    } else {
+      replay.forwardFull();
+    }
+    return;
+  }
+
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat or if a
   // modifier key is pressed.
   if (
@@ -356,6 +376,16 @@ function getClueHotkeyFunction(event: KeyboardEvent): Callback | undefined {
       ? undefined
       : globals.elements.colorClueButtons[colorIndex];
   return button === undefined ? undefined : click(button);
+}
+
+/** Whether a key press goes into a text box, such as a chat or a note. */
+function isTextBox(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement
+    && (target.isContentEditable
+      || target instanceof HTMLInputElement
+      || target instanceof HTMLTextAreaElement)
+  );
 }
 
 /** Whether the player is typing in the game's chat, as jQuery's ":focus" selector. */
