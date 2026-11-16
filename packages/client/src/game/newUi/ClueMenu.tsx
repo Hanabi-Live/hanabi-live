@@ -219,8 +219,11 @@ export function ClueMenu({
         </button>
       </div>
       {/* The button to give the clue sits to the right of the clues, in the room that they leave.
-          When there is not enough room, it goes below them. */}
-      <div className="tw:flex tw:flex-wrap tw:gap-3">
+          When there is not enough room, it goes below them. A wide gap and a line keep a click on a
+          clue from landing on the button. When the button goes below the clues, the line is at the
+          left of the row, where the row clips it. The row reaches 8px into the padding, so that it
+          does not clip the rings and shadows of the buttons. */}
+      <div className="tw:-mx-2 tw:flex tw:flex-wrap tw:gap-6 tw:overflow-x-clip tw:px-2">
         <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
           <ClueRow>
             {colorClues.map((colorClue) => {
@@ -276,14 +279,16 @@ export function ClueMenu({
             })}
           </ClueRow>
         </div>
-        <button
-          className={`tw:min-h-11 tw:min-w-[140px] tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
-          disabled={!canGive}
-          onClick={onGive}
-          type="button"
-        >
-          {clue === undefined ? "Pick a color or number" : "Give clue"}
-        </button>
+        <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
+          <button
+            className={`tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+            disabled={!canGive}
+            onClick={onGive}
+            type="button"
+          >
+            {clue === undefined ? "Pick a color or number" : "Give clue"}
+          </button>
+        </div>
       </div>
     </div>
   );
