@@ -2991,6 +2991,12 @@ async function capture(
   page.on("pageerror", (error) => {
     results.errors.push(error.message);
   });
+  // Such as a script or image that the content security policy blocked.
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      results.errors.push(message.text());
+    }
+  });
   if (compareBundle !== undefined) {
     await page.route(`**${COMPARE_BUNDLE_PATH}`, async (route) => {
       await route.fulfill({

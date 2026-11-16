@@ -167,6 +167,7 @@
     "noopener",
     "noot",
     "noreferrer",
+    "nosniff",
     "nrconf",
     "nullary",
     "nuxt",

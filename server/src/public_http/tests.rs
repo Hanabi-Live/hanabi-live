@@ -115,6 +115,44 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
 }
 
 #[tokio::test]
+async fn content_security_policy_allows_each_inline_script() {
+    let pool = PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    let inline_scripts = regex!(r"(?s)<script\b[^>]*>(.*?)</script\s*>");
+    let handlers = regex!(r#"(?s)\son[a-z]+="([^"]*)""#);
+    for path in ["/", "/password-reset", "/public/css/main.css"] {
+        let response = router(pool.clone(), &config())
+            .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let headers = response.headers().clone();
+        let (status, body) = self::response(response).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert_eq!(headers["x-content-type-options"], "nosniff", "{path}");
+        let policy = headers["content-security-policy"].to_str().unwrap();
+        assert!(policy.contains("frame-ancestors 'none'"), "{policy}");
+        let script_sources = policy
+            .split("; ")
+            .find_map(|directive| directive.strip_prefix("script-src "))
+            .unwrap();
+        assert!(!script_sources.contains("'unsafe-inline'"), "{policy}");
+        let inline = inline_scripts
+            .captures_iter(&body)
+            .chain(handlers.captures_iter(&body))
+            .map(|captures| captures[1].to_owned())
+            .filter(|script| !script.trim().is_empty());
+        for script in inline {
+            let hash = security::hash(&script);
+            assert!(
+                script_sources.contains(&hash),
+                "{path}: {script:?} needs {hash}"
+            );
+        }
+    }
+}
+
+#[tokio::test]
 async fn shell_routes_metadata_and_static_files() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused:unused@localhost/unused")
