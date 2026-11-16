@@ -637,6 +637,33 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(actual.as_u16(), status, "{path}: {body}");
         assert!(body.contains(text), "{path}: {body}");
     }
+    // A long filter is refused, so that it cannot cost much time to check.
+    let too_many_terms = vec!["x"; pages::MAX_FILTER_TERMS + 1].join(",");
+    let too_long = "x".repeat(pages::MAX_FILTER_LENGTH + 1);
+    for (path, status, text) in [
+        (
+            format!("/shared-missing-scores/2/Alice/Bob?excludeVariants={too_many_terms}"),
+            400,
+            "at most",
+        ),
+        (
+            format!("/shared-missing-scores/2/Alice/Bob?excludePlayers={too_long}"),
+            400,
+            "at most",
+        ),
+        (
+            format!(
+                "/shared-missing-scores/2/Alice/Bob?excludeVariants={}",
+                vec!["x"; pages::MAX_FILTER_TERMS].join(",")
+            ),
+            200,
+            "",
+        ),
+    ] {
+        let (actual, body) = request(app.clone(), &path).await;
+        assert_eq!(actual.as_u16(), status, "{path}: {body}");
+        assert!(body.contains(text), "{path}: {body}");
+    }
     sqlx::query!("INSERT INTO banned_ips(ip) VALUES('127.0.0.5')")
         .execute(&db.pool)
         .await

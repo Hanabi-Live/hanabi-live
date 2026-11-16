@@ -582,6 +582,11 @@ fn best_score(score: Option<(i16, i16)>) -> Result<BestScore> {
     })
 }
 
+/// The most comma-separated names that a missing-scores filter, such as `excludeVariants`, takes.
+pub(super) const MAX_FILTER_TERMS: usize = 100;
+/// The most characters that a missing-scores filter, such as `excludeVariants`, takes.
+pub(super) const MAX_FILTER_LENGTH: usize = 1000;
+
 async fn missing(
     state: &PublicState,
     users: Vec<(i32, String)>,
@@ -597,12 +602,20 @@ async fn missing(
     }
     // Only the shared page takes these parameters, so they are absent from the others.
     let terms = |key| -> Result<Vec<String>> {
-        Ok(q.nonempty(key)
-            .map_err(HttpError::bad)?
-            .unwrap_or("")
+        let value = q.nonempty(key).map_err(HttpError::bad)?.unwrap_or("");
+        let terms: Vec<&str> = value
             .split(',')
             .map(str::trim)
             .filter(|s| !s.is_empty())
+            .collect();
+        if value.chars().count() > MAX_FILTER_LENGTH || terms.len() > MAX_FILTER_TERMS {
+            return Err(HttpError::bad(format!(
+                "The {key} filter can have at most {MAX_FILTER_TERMS} names and \
+                 {MAX_FILTER_LENGTH} characters."
+            )));
+        }
+        Ok(terms
+            .into_iter()
             .map(crate::accounts::normalize_string)
             .collect())
     };
@@ -644,16 +657,18 @@ async fn missing(
         },
         |p| vec![p],
     );
+    // Each variant name is normalized once, not once for each term and player count.
+    let variants: Vec<_> = catalog::variants()
+        .iter()
+        .filter(|variant| {
+            let name = crate::accounts::normalize_string(&variant.name);
+            !excluded_variants.iter().any(|term| name.contains(term))
+        })
+        .collect();
     let mut rows = Vec::new();
     for p in counts {
-        for variant in catalog::variants() {
+        for variant in variants.iter().copied() {
             let name = variant.name.as_str();
-            if excluded_variants
-                .iter()
-                .any(|term| crate::accounts::normalize_string(name).contains(term))
-            {
-                continue;
-            }
             let id = i64::from(variant.id);
             let max = i64::from(variant.max_score);
             let seat_count = usize::try_from(p)? - hanabi_protocol::MIN_PLAYERS;
