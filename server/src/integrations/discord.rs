@@ -907,7 +907,7 @@ fn outbound_text(name: Option<&str>, text: &str) -> String {
 
 /// The administrator's reason for the downtime, if they gave one.
 fn downtime_reason(message: Option<&str>) -> String {
-    message.map_or_else(String::new, |message| format!(" Reason: {message}"))
+    message.map_or_else(String::new, |message| format!("\nReason: {message}"))
 }
 
 #[cfg(test)]

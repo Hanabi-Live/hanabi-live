@@ -338,7 +338,7 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     assert!(development[2].starts_with("The server is stopping gracefully at: "));
     assert!(
         development[2].ends_with(&format!(
-            "({}) - Uptime: 1 hour and 18 minutes Reason: Upgrading <the> database & 'more'",
+            "({}) - Uptime: 1 hour and 18 minutes\nReason: Upgrading <the> database & 'more'",
             crate::restart::version()
         )),
         "{}",
