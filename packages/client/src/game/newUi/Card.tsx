@@ -2357,6 +2357,18 @@ export function CardFace({
   const [hovered, setHovered] = useState(false);
   // A callback ref keeps the bubble on the face that is on the page.
   const [faceElement, setFaceElement] = useState<HTMLDivElement | null>(null);
+  // The browser can miss a "pointerleave", such as when the pointer moves fast while the spacebar
+  // goes up and down. Then the card would open its bubble on every press of the spacebar. So, when
+  // the bubble can open, the card checks that the pointer is still over it.
+  useLayoutEffect(() => {
+    if (
+      showPossibleCards
+      && faceElement !== null
+      && !faceElement.matches(":hover")
+    ) {
+      setHovered(false);
+    }
+  }, [showPossibleCards, faceElement]);
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
   // The pips go in the middle of the card, or, under a rank, in the middle of the space between the

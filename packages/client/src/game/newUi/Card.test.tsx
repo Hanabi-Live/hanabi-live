@@ -30,13 +30,13 @@ const PIPS = {
   },
 } as const satisfies CardPipsView;
 
-function renderCard(trash: boolean) {
+function renderCard(trash: boolean, showPossibleCards = true) {
   return (
     <CardFace
       colorblindMode={false}
       pips={PIPS}
       rank={undefined}
-      showPossibleCards
+      showPossibleCards={showPossibleCards}
       suitIndex={undefined}
       trash={trash}
       variant={getDefaultVariant()}
@@ -93,5 +93,19 @@ test("the bubble follows the card when the card stops being trash", () => {
     `${CARD_RECT.left + CARD_RECT.width / 2}px`,
   );
   fireEvent.pointerLeave(face!);
+  expect(document.querySelector("[data-possible-cards]")).toBeNull();
+});
+
+test("the bubble stays closed when the card missed the pointer leaving it", () => {
+  const { container, rerender } = render(renderCard(false, false));
+  const face = container.querySelector("[data-card-face]");
+  expect(face).not.toBeNull();
+  // The card gets the "pointerenter" but not the "pointerleave". In jsdom, nothing matches
+  // ":hover", so the pointer is no longer over the card.
+  fireEvent.pointerEnter(face!);
+  act(() => {
+    rerender(renderCard(false));
+  });
+
   expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
