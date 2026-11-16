@@ -371,6 +371,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 "That username is too similar to the existing user of \"{similar}\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
             )));
         }
+        if let Err(message) = normalization::validate_new_username(username) {
+            return Ok(unauthorized(message));
+        }
         if !input.create_account {
             let error = Notice {
                 code: Some(hanabi_protocol::NoticeCode::NoAccount),

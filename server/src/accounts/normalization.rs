@@ -128,6 +128,22 @@ pub fn validate_username(input: &str) -> Result<&str, String> {
     Ok(name)
 }
 
+/// Matches characters that draw nothing or change how nearby text draws: control, format, and
+/// space characters, characters that fonts ignore, and blank glyphs such as the braille blank.
+fn has_invisible_characters(input: &str) -> bool {
+    regex!(r"[\p{Cc}\p{Cf}\p{Z}\p{Default_Ignorable_Code_Point}\x{2800}]").is_match(input)
+}
+
+/// Validates the name of a new account. It is stricter than `validate_username`, which still lets
+/// older accounts with such names sign in.
+pub fn validate_new_username(input: &str) -> Result<&str, String> {
+    let name = validate_username(input)?;
+    if has_invisible_characters(name) {
+        return Err("Usernames cannot contain invisible or blank characters.".into());
+    }
+    Ok(name)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -163,5 +179,24 @@ mod tests {
             assert!(has_username_emoji(emoji), "{emoji}");
         }
         assert!(!has_username_emoji("Alice_1.-é"));
+    }
+
+    #[test]
+    fn new_usernames_cannot_contain_invisible_characters() {
+        for name in [
+            "Alice\u{200B}",
+            "Al\u{180E}ice",
+            "\u{202E}Alice",
+            "\u{2800}\u{2800}",
+            "Al\u{AD}ice",
+            "Al\u{3164}ice",
+            "Al\u{8}ice",
+            "Al\u{2028}ice",
+        ] {
+            assert!(validate_new_username(name).is_err(), "{name:?}");
+        }
+        assert_eq!(validate_new_username(" Alice_1.-é "), Ok("Alice_1.-é"));
+        // Older accounts with such names can still sign in.
+        assert!(validate_username("\u{202E}Alice").is_ok());
     }
 }
