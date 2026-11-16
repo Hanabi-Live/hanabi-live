@@ -1306,8 +1306,14 @@ const POSSIBLE_CARDS = {
   /** The space between small cards. */
   gap: 0.05,
   padding: 0.12,
-  /** The icon in the corner of a card that the card cannot be. */
-  removedIcon: 0.15,
+  /**
+   * The width of the icon in the corner of a card that the card cannot be. The note is smaller than
+   * the eye, since it is as tall as it is wide.
+   */
+  removedIcon: {
+    seen: 0.15,
+    note: 0.1125,
+  },
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1392,7 +1398,7 @@ function RemovedCard({
   readonly rank: Rank;
   readonly unit: number;
 }): React.JSX.Element {
-  const icon = unit * POSSIBLE_CARDS.removedIcon;
+  const icon = unit * POSSIBLE_CARDS.removedIcon[by];
   return (
     <span className="tw:relative tw:block">
       <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
