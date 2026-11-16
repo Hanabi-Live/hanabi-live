@@ -318,7 +318,7 @@ function markedStyle(
 const FIRST_TWO_DIGIT_NUMBER = 10;
 
 /** The shape of a button on the bar. It sets no color. */
-const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
+const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:narrow-530:px-2 tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
 
 const buttonClass = `${BUTTON_SHAPE_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text`;
 
@@ -410,7 +410,9 @@ function ReplayToggle({
         <span
           className={`tw:flex tw:flex-col tw:items-center tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
         >
-          Back to the game
+          {/* On a phone, the short label lets all of the buttons fit in one row. */}
+          <span className="tw:narrow-530:hidden">Back to the game</span>
+          <span className="tw:hidden tw:narrow-530:inline">Back</span>
           {/* The name does not widen the button. A long one is cut off. */}
           {currentName !== undefined && (
             <span
@@ -519,13 +521,13 @@ export function StatusStrip({
   // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-narrow-980:data-own-row:h-auto tw:not-narrow-980:data-own-row:flex-wrap tw:not-narrow-980:data-own-row:gap-y-0 tw:not-narrow-980:data-own-row:pt-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3`}
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-narrow-980:data-own-row:h-auto tw:not-narrow-980:data-own-row:flex-wrap tw:not-narrow-980:data-own-row:gap-y-0 tw:not-narrow-980:data-own-row:pt-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-530:gap-x-4 tw:narrow-980:px-3 tw:narrow-980:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
     >
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5 tw:narrow-530:gap-4">
         <Stat
           label={
             <>
@@ -614,7 +616,7 @@ export function StatusStrip({
         </Stat>
       </div>
       <GroupDivider />
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5 tw:narrow-530:gap-4">
         <Stat
           label={
             <>
@@ -676,9 +678,10 @@ export function StatusStrip({
       </div>
       <GroupDivider />
       {/* The variant opens the game's information: its seed, options, and table. Its name gives up
-          its room first, so that the replay controls keep theirs. */}
+          its room first, so that the replay controls keep theirs. On a narrow window, it fills the
+          rest of the numbers' row, so that the bar takes only two rows. */}
       <div
-        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"}`}
+        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:narrow-980:min-w-0 tw:narrow-980:flex-1`}
       >
         <span className={STAT_LABEL_CLASS}>
           Variant
@@ -704,7 +707,8 @@ export function StatusStrip({
           {replayControls}
         </div>
       )}
-      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height)">
+      {/* On a narrow window, the buttons have the second row. */}
+      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:basis-full tw:narrow-980:gap-2">
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic UI
         </button>
