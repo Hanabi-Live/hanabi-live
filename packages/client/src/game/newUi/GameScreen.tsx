@@ -51,6 +51,7 @@ import {
   Hands,
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
+  PHONE_CLUE_RAIL_SPACE,
 } from "./Hands.tsx";
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { HighlightArrow } from "./HighlightArrow.tsx";
@@ -153,6 +154,9 @@ import { useQueuedMove } from "./useQueuedMove.ts";
 const MEDIUM_WIDTH_QUERY = "(max-width: 1440px)";
 const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
 const STACKED_WIDTH_QUERY = "(max-width: 980px)";
+
+/** The space on each side of the table in the phone layout. */
+const PHONE_SIDE_PADDING = "0.75em";
 
 /** A screen whose main pointer is a finger, which has no cursor to hover with. */
 const TOUCH_QUERY = "(pointer: coarse)";
@@ -903,12 +907,16 @@ export function GameScreen({
         />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
-            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3"
-            style={{
-              paddingTop: stacked
-                ? TABLE_TOP_PADDING.STACKED
-                : TABLE_TOP_PADDING.WIDE,
-            }}
+            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-(--phone-side-padding)"
+            style={
+              {
+                // The hands' margin subtracts this padding (see below).
+                "--phone-side-padding": PHONE_SIDE_PADDING,
+                paddingTop: stacked
+                  ? TABLE_TOP_PADDING.STACKED
+                  : TABLE_TOP_PADDING.WIDE,
+              } as React.CSSProperties
+            }
           >
             <div
               className="tw:relative tw:flex tw:shrink-0 tw:narrow-980:justify-center"
@@ -1007,8 +1015,15 @@ export function GameScreen({
             </div>
 
             {/* In the phone layout, the hands keep room on their left for the clue rail, which
-                runs beside them (see "Hands.tsx"). */}
-            <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:ml-4 tw:narrow-980:max-w-none tw:narrow-980:flex-none">
+                runs beside them (see "Hands.tsx"). The screen's padding is part of that room. */}
+            <div
+              className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:ml-(--clue-rail-margin) tw:narrow-980:max-w-none tw:narrow-980:flex-none"
+              style={
+                {
+                  "--clue-rail-margin": `calc(${PHONE_CLUE_RAIL_SPACE}px - var(--phone-side-padding))`,
+                } as React.CSSProperties
+              }
+            >
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
                 ref={setHandsElement}
@@ -1158,6 +1173,7 @@ export function GameScreen({
                   }
                   showPossibleCards={heldEmpathy !== undefined || globalEmpathy}
                   speedrunClicks={speedrunClicks}
+                  stacked={stacked}
                   tapToMove={tapToMove}
                   touchedCards={new Set(touched)}
                   variant={variant}

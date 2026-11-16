@@ -77,6 +77,9 @@ interface HandsProps {
    */
   readonly hidden?: boolean;
 
+  /** Whether the screen has the phone layout, where the columns stack. */
+  readonly stacked: boolean;
+
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly cardWidth: number;
@@ -217,6 +220,21 @@ const CLUE_RAIL_WINDOW_MARGIN = 6;
  */
 const CLUE_RAIL_TOKEN_MAX_SIZE = 40;
 
+/**
+ * The most width of the clue token on the rail in the phone layout, in CSS pixels. There, the room
+ * left of the hands is taken from the cards, so it is kept small.
+ */
+const CLUE_RAIL_PHONE_TOKEN_MAX_SIZE = 28;
+
+/**
+ * The room from the left edge of the window to the hands in the phone layout, in CSS pixels. It
+ * holds the rail at its usual distance from the hands, with the token centered on it.
+ */
+export const PHONE_CLUE_RAIL_SPACE =
+  CLUE_RAIL_WINDOW_MARGIN
+  + CLUE_RAIL_PHONE_TOKEN_MAX_SIZE / 2
+  + CLUE_RAIL_OFFSET;
+
 /** The radius of the rail's corners, in CSS pixels. */
 const CLUE_RAIL_CORNER = 6;
 
@@ -304,7 +322,11 @@ function ClueRail({
       const railX =
         stacks !== undefined && stacks.right < box.left
           ? -(box.left - stacks.right) / 2
-          : -Math.min(CLUE_RAIL_OFFSET, box.left - CLUE_RAIL_WINDOW_MARGIN);
+          : // The token stays centered on the rail, so the rail leaves room for half of it.
+            -Math.min(
+              CLUE_RAIL_OFFSET,
+              box.left - CLUE_RAIL_WINDOW_MARGIN - tokenSize / 2,
+            );
       const corner = Math.min(CLUE_RAIL_CORNER, Math.abs(toY - fromY) / 2);
       const down = toY > fromY ? 1 : -1;
       // On a narrow window, the head shrinks to fit between the rail's corner and the name.
@@ -1346,7 +1368,9 @@ export function Hands(props: HandsProps): React.JSX.Element {
           target={props.shownClue.target}
           tokenSize={Math.min(
             getClueTokenSize(props.cardWidth),
-            CLUE_RAIL_TOKEN_MAX_SIZE,
+            props.stacked
+              ? CLUE_RAIL_PHONE_TOKEN_MAX_SIZE
+              : CLUE_RAIL_TOKEN_MAX_SIZE,
           )}
         />
       )}
