@@ -26,7 +26,7 @@ use std::{
     net::SocketAddr,
     sync::{Arc, atomic::Ordering},
     task::Poll,
-    time::Duration,
+    time::{Duration, Instant},
 };
 use tokio::sync::mpsc;
 use tracing::Instrument;
@@ -50,6 +50,37 @@ const INBOUND_QUEUE: usize = 64;
 const PING_INTERVAL: Duration = Duration::from_secs(30);
 /// How long a connection may send nothing, not even a reply to a ping, before it is closed.
 const RECEIVE_TIMEOUT: Duration = Duration::from_secs(60);
+/// The commands per second that a connection runs on average, so that one connection cannot flood
+/// the server and the other users. Faster commands wait. A connection that keeps sending faster
+/// fills its `INBOUND_QUEUE` and is closed.
+const COMMANDS_PER_SECOND: u32 = 30;
+/// The commands that a connection can run at once after a pause, such as when the leader of a
+/// shared replay holds an arrow key.
+const COMMAND_BURST: u32 = 60;
+
+/// Spaces out a connection's commands to `COMMANDS_PER_SECOND`, after a burst of `COMMAND_BURST`.
+struct CommandPace {
+    /// When the connection's commands so far would have finished at the average rate.
+    finished: Instant,
+}
+
+impl CommandPace {
+    const INTERVAL: Duration = Duration::from_secs(1)
+        .checked_div(COMMANDS_PER_SECOND)
+        .unwrap();
+    const BURST: Duration = Self::INTERVAL.saturating_mul(COMMAND_BURST - 1);
+
+    fn new(now: Instant) -> Self {
+        Self { finished: now }
+    }
+
+    /// Counts a command received at `now`, and returns how long it must wait to run.
+    fn delay(&mut self, now: Instant) -> Duration {
+        let finished = self.finished.max(now);
+        self.finished = finished + Self::INTERVAL;
+        finished.saturating_duration_since(now + Self::BURST)
+    }
+}
 
 /// The account that a live connection signs in to, as `websocket` reads it before the upgrade.
 pub(super) struct Account {
@@ -577,6 +608,7 @@ async fn connection(
             .await?;
         drop(admission);
         load_lobby(app.clone(), session.clone());
+        let mut pace = CommandPace::new(Instant::now());
         loop {
             let command = tokio::select! {
                 ()=session.cancel.cancelled()=>break,
@@ -585,6 +617,13 @@ async fn connection(
             let Some(command) = command else {
                 break;
             };
+            let delay = pace.delay(Instant::now());
+            if !delay.is_zero() {
+                tokio::select! {
+                    ()=session.cancel.cancelled()=>break,
+                    ()=tokio::time::sleep(delay)=>{},
+                }
+            }
             // Once admitted, finish persistence rather than dropping a transaction
             // future on socket cancellation. Publication still checks generation.
             answer(&app, &user, &session, &command.text).await;
@@ -598,4 +637,33 @@ async fn connection(
     reader.await?;
     writer.await?;
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn commands_after_a_burst_wait_for_the_average_rate() {
+        let start = Instant::now();
+        let mut pace = CommandPace::new(start);
+        for _ in 0..COMMAND_BURST {
+            assert_eq!(pace.delay(start), Duration::ZERO);
+        }
+        assert_eq!(pace.delay(start), CommandPace::INTERVAL);
+        assert_eq!(pace.delay(start), CommandPace::INTERVAL * 2);
+        // After a pause, the connection has its whole burst again.
+        let later = start + CommandPace::INTERVAL * (2 * COMMAND_BURST);
+        for _ in 0..COMMAND_BURST {
+            assert_eq!(pace.delay(later), Duration::ZERO);
+        }
+        // Commands at the average rate never wait.
+        let mut pace = CommandPace::new(start);
+        for index in 0..10 * COMMAND_BURST {
+            assert_eq!(
+                pace.delay(start + CommandPace::INTERVAL * index),
+                Duration::ZERO
+            );
+        }
+    }
 }
