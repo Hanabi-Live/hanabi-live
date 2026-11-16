@@ -778,6 +778,9 @@ export interface DeckProps {
    * go.
    */
   readonly onHoldEmpathy: (held: boolean) => void;
+
+  /** The width of a card in a hand, so that the deck's bubble of possible cards is as large. */
+  readonly handCardWidth: number;
   readonly colorblindMode: boolean;
   readonly variant: Variant;
   readonly reducedMotion: boolean;
@@ -842,6 +845,7 @@ function Deck({
   play,
   empathy,
   onHoldEmpathy,
+  handCardWidth,
   colorblindMode,
   variant,
   reducedMotion,
@@ -886,6 +890,7 @@ function Deck({
       <PossibleCardsBubble
         anchor={hoveredTop}
         bubble={empathy.possibleCards}
+        cardWidth={handCardWidth}
         colorblindMode={colorblindMode}
         variant={variant}
       />,

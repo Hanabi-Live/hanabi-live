@@ -1530,11 +1530,17 @@ export function PossibleCardsBubble({
   colorblindMode,
   bubble,
   anchor,
+  cardWidth,
 }: {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly bubble: PossibleCardsView;
   readonly anchor: HTMLElement;
+  /**
+   * The width of a card that the bubble is sized for, in the game screen's pixels, when it is not
+   * the width of the anchor. The deck is smaller than a card in a hand, but its bubble is as large.
+   */
+  readonly cardWidth?: number;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{
@@ -1550,7 +1556,8 @@ export function PossibleCardsBubble({
 
   // The bubble is outside of the zoomed game screen, so it is measured in the window's pixels.
   const anchorRect = anchor.getBoundingClientRect();
-  const unit = anchorRect.width;
+  const unit =
+    cardWidth === undefined ? anchorRect.width : cardWidth * getScreenScale();
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
 

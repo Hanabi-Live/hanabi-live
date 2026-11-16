@@ -971,6 +971,7 @@ export function GameScreen({
                       ? getDeckEmpathy(state)
                       : undefined,
                   onHoldEmpathy: setDeckEmpathy,
+                  handCardWidth,
                   colorblindMode: settings.colorblindMode,
                   variant,
                   reducedMotion: settings.reducedMotion,
