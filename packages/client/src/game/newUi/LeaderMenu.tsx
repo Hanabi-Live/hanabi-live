@@ -111,7 +111,7 @@ export function LeaderMenu({
       {open && (
         <Menu align="left" className="tw:min-w-52">
           <span className={MENU_LABEL_CLASS}>
-            {others.length === 0 ? "No one else is here" : "Set new leader to"}
+            {others.length === 0 ? "No one else is here." : "Set new leader to"}
           </span>
           {others.map((spectator) => (
             <button
