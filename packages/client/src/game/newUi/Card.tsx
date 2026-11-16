@@ -1312,7 +1312,7 @@ const POSSIBLE_CARDS = {
   keyGap: 0.22,
   keyIconGap: 0.06,
   /** The icon in the corner of a card that the card cannot be. */
-  removedIcon: 0.19,
+  removedIcon: 0.15,
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1379,7 +1379,7 @@ function PossibleCard({
  * How opaque a card is in the bubble of possible cards when the card cannot be it, though the clues
  * allow it.
  */
-const REMOVED_CARD_OPACITY = 0.3;
+const REMOVED_CARD_OPACITY = 0.15;
 
 /**
  * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
