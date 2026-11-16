@@ -2392,8 +2392,7 @@ export function CardFace({
   const height = width * CARD_HEIGHT_PER_WIDTH;
   const bubble = pips?.bubble;
   const [hovered, setHovered] = useState(false);
-  // The face is a new element when the card starts or stops being trash, which puts the face in a
-  // wrapper or takes it out. A callback ref keeps the bubble on the face that is on the page.
+  // A callback ref keeps the bubble on the face that is on the page.
   const [faceElement, setFaceElement] = useState<HTMLDivElement | null>(null);
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
@@ -2564,22 +2563,22 @@ export function CardFace({
     </div>
   );
 
-  if (!trash) {
-    return face;
-  }
-
   // A faded card lets the felt show through it. A blurred copy of the felt sits behind it, so that
-  // the card blends into smooth green rather than into the texture.
+  // the card blends into smooth green rather than into the texture. The wrapper is there for every
+  // card, so that the face stays the same element when a card starts or stops being trash. A new
+  // element would never get the "pointerleave" of the old one, and its bubble would stay open.
   return (
     <div className="tw:relative tw:shrink-0">
-      <div
-        aria-hidden="true"
-        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:backdrop-blur-lg tw:transition-transform tw:duration-200 tw:ease-out"
-        style={{
-          borderRadius: width * CARD_CORNER_PER_WIDTH,
-          transform: `translateY(${-raise}px)`,
-        }}
-      />
+      {trash && (
+        <div
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:backdrop-blur-lg tw:transition-transform tw:duration-200 tw:ease-out"
+          style={{
+            borderRadius: width * CARD_CORNER_PER_WIDTH,
+            transform: `translateY(${-raise}px)`,
+          }}
+        />
+      )}
       {face}
     </div>
   );

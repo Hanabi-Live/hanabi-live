@@ -76,9 +76,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test("the bubble stays at the card when the card stops being trash", () => {
+test("the bubble follows the card when the card stops being trash", () => {
   // Holding the pointer down on a hand shows its holder's view, where a card that is trash may not
-  // be. Then the card's face leaves the wrapper of a trash card, and is a new element.
+  // be.
   const { container, rerender } = render(renderCard(true));
   const face = container.querySelector("[data-card-face]");
   expect(face).not.toBeNull();
@@ -87,8 +87,12 @@ test("the bubble stays at the card when the card stops being trash", () => {
     rerender(renderCard(false));
   });
 
+  // The face is the same element, so the pointer leaving it closes the bubble.
+  expect(container.querySelector("[data-card-face]")).toBe(face);
   const bubble = document.querySelector("[data-possible-cards]");
   expect((bubble?.parentElement as HTMLElement | null)?.style.left).toBe(
     `${CARD_RECT.left + CARD_RECT.width / 2}px`,
   );
+  fireEvent.pointerLeave(face!);
+  expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
