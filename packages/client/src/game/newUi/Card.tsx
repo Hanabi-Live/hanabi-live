@@ -1300,6 +1300,10 @@ const POSSIBLE_CARDS = {
   /** The space between small cards. */
   gap: 0.05,
   padding: 0.12,
+  /** The lines below the small cards that say what ruled out the other cards. */
+  textFont: 0.17,
+  /** The least width of the bubble when it has those lines, so that they do not wrap too much. */
+  textMinWidth: 3.4,
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1322,6 +1326,26 @@ const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
  * the outline, since the scale of the screen can round the outline to the next pixel.
  */
 const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
+
+/** The lines below the grid of the bubble that say what ruled out the cards that it leaves out. */
+function getPossibleCardsLines(bubble: PossibleCardsView): readonly string[] {
+  const lines: string[] = [];
+  if (bubble.removedByVisibleCards > 0) {
+    lines.push(
+      `Visible cards remove ${possibilities(bubble.removedByVisibleCards)}.`,
+    );
+  }
+  if (bubble.removedByNote !== undefined) {
+    lines.push(
+      `"${bubble.removedByNote.identity}" removes ${possibilities(bubble.removedByNote.count)}.`,
+    );
+  }
+  return lines;
+}
+
+function possibilities(count: number): string {
+  return count === 1 ? "1 possibility" : `${count} possibilities`;
+}
 
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
@@ -1414,6 +1438,7 @@ export function PossibleCardsBubble({
   const unit = anchorRect.width;
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
+  const lines = getPossibleCardsLines(bubble);
 
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
@@ -1501,6 +1526,8 @@ export function PossibleCardsBubble({
         style={{
           gap: unit * POSSIBLE_CARDS.padding,
           padding: unit * POSSIBLE_CARDS.padding,
+          minWidth:
+            lines.length > 0 ? unit * POSSIBLE_CARDS.textMinWidth : undefined,
           borderRadius: unit * CARD_CORNER_PER_WIDTH * 2,
           boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
         }}
@@ -1536,6 +1563,21 @@ export function PossibleCardsBubble({
             ),
           ])}
         </div>
+        {lines.length > 0 && (
+          // The lines take the width of the grid, and wrap in it.
+          <ul
+            className="tw:m-0 tw:w-0 tw:min-w-full tw:list-disc tw:text-card-ink"
+            style={{
+              fontSize: unit * POSSIBLE_CARDS.textFont,
+              lineHeight: 1.3,
+              paddingLeft: "1.2em",
+            }}
+          >
+            {lines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
       </div>
       {position !== undefined && (
         <svg

@@ -31,6 +31,7 @@ import {
   isCardTouchedByClue,
   isHandLocked,
 } from "@hanabi-live/game";
+import { getNoteIdentityText } from "../reducers/notesReducer.ts";
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
@@ -165,6 +166,21 @@ export interface PossibleCardsView {
    * card has a mark that points to the bubble.
    */
   readonly inexact: boolean;
+
+  /** How many of the cards that the clues allow the holder rules out, because they see them all. */
+  readonly removedByVisibleCards: number;
+
+  /**
+   * The identity in the note on the card, such as "r2", and how many more cards it rules out. It is
+   * `undefined` when the note does not rule out any card that the holder can still have, or when it
+   * rules out every one of them.
+   */
+  readonly removedByNote:
+    | {
+        readonly identity: string;
+        readonly count: number;
+      }
+    | undefined;
 }
 
 /**
@@ -190,7 +206,7 @@ interface CardViewOptions {
    */
   readonly empathy: boolean;
 
-  /** Whether the empathy view also applies the viewer's note, as it does with Ctrl + Space. */
+  /** Whether the empathy view also applies the viewer's note, as it does on the viewer's hand. */
   readonly empathyIncludesNotes?: boolean;
 
   readonly finished: boolean;
@@ -357,26 +373,12 @@ function getPipsView(
     suitIndex === undefined
     && rank === undefined
     && (suits.length > 0 || ranks.length > 0)
-      ? {
-          suits: (
-            getCardPipPresentation(variant, cardState, note, true, {
-              rowPerSuit: true,
-              empathyIncludesNotes,
-            }).possibilityRows ?? []
-          )
-            .flatMap((row) =>
-              row.suitPips.map((pip) => ({
-                ...toPipView(pip),
-                suitIndex: pip.suitIndex as SuitIndex,
-                // Only the cards that the holder has not ruled out.
-                ranks: row.rankPips
-                  .filter((rankPip) => rankPip.state === PipState.Visible)
-                  .map((rankPip) => rankPip.rank),
-              })),
-            )
-            .filter((suit) => suit.ranks.length > 0),
-          inexact: presentation.possibilityRows !== undefined,
-        }
+      ? getPossibleCardsView(
+          variant,
+          cardState,
+          note,
+          presentation.possibilityRows !== undefined,
+        )
       : undefined;
 
   return suits.length === 0 && ranks.length === 0
@@ -386,6 +388,69 @@ function getPipsView(
         ranks,
         bubble,
       };
+}
+
+/**
+ * Returns the bubble of every card that a card can be (see `PossibleCardsView`). It leaves out the
+ * cards that the holder sees every copy of. It also applies the identity in the card's note, unless
+ * that leaves no card.
+ */
+function getPossibleCardsView(
+  variant: Variant,
+  cardState: CardState,
+  note: CardNote,
+  inexact: boolean,
+): PossibleCardsView {
+  const fromClues = cardState.possibleCardsFromClues;
+  const holderCards = new Set(
+    cardState.possibleCardsForEmpathy.map(([suitIndex, rank]) =>
+      cardKey(suitIndex, rank),
+    ),
+  );
+  const fromVisibleCards = fromClues.filter(([suitIndex, rank]) =>
+    holderCards.has(cardKey(suitIndex, rank)),
+  );
+  const noteCards = new Set(
+    note.possibilities.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  );
+  const fromNote = fromVisibleCards.filter(([suitIndex, rank]) =>
+    noteCards.has(cardKey(suitIndex, rank)),
+  );
+  const appliesNote =
+    fromNote.length > 0 && fromNote.length < fromVisibleCards.length;
+
+  const rows =
+    getCardPipPresentation(variant, cardState, note, true, {
+      rowPerSuit: true,
+      empathyIncludesNotes: appliesNote,
+    }).possibilityRows ?? [];
+
+  return {
+    suits: rows
+      .flatMap((row) =>
+        row.suitPips.map((pip) => ({
+          ...toPipView(pip),
+          suitIndex: pip.suitIndex as SuitIndex,
+          // Only the cards that the holder has not ruled out.
+          ranks: row.rankPips
+            .filter((rankPip) => rankPip.state === PipState.Visible)
+            .map((rankPip) => rankPip.rank),
+        })),
+      )
+      .filter((suit) => suit.ranks.length > 0),
+    inexact,
+    removedByVisibleCards: fromClues.length - fromVisibleCards.length,
+    removedByNote: appliesNote
+      ? {
+          identity: getNoteIdentityText(variant, note.text),
+          count: fromVisibleCards.length - fromNote.length,
+        }
+      : undefined,
+  };
+}
+
+function cardKey(suitIndex: number, rank: Rank): string {
+  return `${suitIndex},${rank}`;
 }
 
 /**

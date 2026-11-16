@@ -34,7 +34,6 @@ import type { MorphTarget } from "../../modals.ts";
 import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
-import { getEmpathyNote } from "../empathyNote.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import {
   checkNoteImpossibility,
@@ -314,9 +313,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return {
       cardIdentity,
       state: this.state,
-      note: this.shownNote,
+      note: this.note,
       empathy: this.showsEmpathy,
-      empathyIncludesNotes: this.empathyIncludesNotes,
       morphedIdentity: this.isMorphed() ? this.getMorph() : undefined,
       isStackBase: this.isStackBase,
       finished: globals.state.finished,
@@ -446,29 +444,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private get showsEmpathy(): boolean {
     return this.empathy || this.cluePreviewState !== undefined;
-  }
-
-  /** Holding Ctrl + Space shows empathy that also applies our notes. */
-  private get empathyIncludesNotes(): boolean {
-    return (
-      this.empathy
-      && this.cluePreviewState === undefined
-      && globals.globalEmpathyIncludesNotes
-    );
-  }
-
-  /**
-   * The note that the card shows. Ctrl + Space empathy outside of our own game shows the note of
-   * the card's holder.
-   */
-  private get shownNote(): CardNote {
-    return this.empathyIncludesNotes
-      ? getEmpathyNote(globals.state, this.variant, this.order)
-      : this.note;
-  }
-
-  private get hidesNotes(): boolean {
-    return this.showsEmpathy && !this.empathyIncludesNotes;
   }
 
   get layout(): LayoutChild {
@@ -742,8 +717,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // If a card has a "blank" note on it, the user wants to force the card to appear blank.
     if (
-      this.shownNote.blank
-      && !this.hidesNotes
+      this.note.blank
+      && !this.showsEmpathy
       && !isCardPlayed(this.state)
       && !isCardDiscarded(this.state)
       && !globals.state.finished
@@ -796,9 +771,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const presentation = getCardPipPresentation(
       this.variant,
       this.state,
-      this.shownNote,
+      this.note,
       this.showsEmpathy,
-      { empathyIncludesNotes: this.empathyIncludesNotes },
     );
 
     for (const suitPip of presentation.suitPips) {
@@ -843,8 +817,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "question mark" image.
     this.questionMark.visible(
-      this.shownNote.questionMark
-        && !this.hidesNotes
+      this.note.questionMark
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -852,8 +826,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "exclamation mark" image.
     this.exclamationMark.visible(
-      this.shownNote.exclamationMark
-        && !this.hidesNotes
+      this.note.exclamationMark
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -861,8 +835,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "ghost" image.
     this.ghost.visible(
-      this.shownNote.spook
-        && !this.hidesNotes
+      this.note.spook
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -870,8 +844,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "trash" image.
     this.trashcan.visible(
-      this.shownNote.knownTrash
-        && !this.hidesNotes
+      this.note.knownTrash
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -879,8 +853,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "fix" image.
     this.wrench.visible(
-      this.shownNote.needsFix
-        && !this.hidesNotes
+      this.note.needsFix
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,

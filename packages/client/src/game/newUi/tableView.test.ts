@@ -14,6 +14,7 @@ import {
   newRankClue,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
+import { parseNote } from "../reducers/notesReducer.ts";
 import {
   BLANK_NOTE,
   getCardView,
@@ -252,6 +253,60 @@ describe("getCardView", () => {
         },
       ],
       inexact: true,
+      removedByVisibleCards: 1,
+      removedByNote: undefined,
+    });
+  });
+
+  test("narrows the bubble to the identity in the note", () => {
+    // Any red card, or a yellow 1. The holder sees every red 2.
+    const possibleCardsFromClues = [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [0, 5],
+      [1, 1],
+    ] as const;
+    function getBubble(noteText: string) {
+      return getEmpathyView(
+        {
+          possibleCardsFromClues,
+          possibleCardsForEmpathy: possibleCardsFromClues.filter(
+            ([suitIndex, rank]) => !(suitIndex === 0 && rank === 2),
+          ),
+        },
+        { note: parseNote(VARIANT, noteText) },
+      ).pips?.bubble;
+    }
+
+    expect(getBubble("r1, r3")).toMatchObject({
+      suits: [
+        {
+          suitIndex: 0,
+          ranks: [1, 3],
+        },
+      ],
+      removedByVisibleCards: 1,
+      removedByNote: {
+        identity: "r1, r3",
+        count: 3,
+      },
+    });
+
+    // The holder sees every red 2, so a note that says so is left out.
+    expect(getBubble("r2")).toMatchObject({
+      suits: [
+        {
+          suitIndex: 0,
+          ranks: [1, 3, 4, 5],
+        },
+        {
+          suitIndex: 1,
+          ranks: [1],
+        },
+      ],
+      removedByNote: undefined,
     });
   });
 

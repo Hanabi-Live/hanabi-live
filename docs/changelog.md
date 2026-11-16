@@ -7,6 +7,10 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 16th, 2026
+
+- Removed Ctrl + Space, which showed every hand narrowed by notes.
+
 ## November 15th, 2026
 
 - In a replay, Page Up enters a hypothetical, and Page Down leaves it.

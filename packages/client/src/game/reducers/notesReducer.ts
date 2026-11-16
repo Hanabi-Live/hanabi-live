@@ -176,6 +176,26 @@ export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
   return !noteEqual(noteWithoutText(note), getEmptyNote(variant));
 }
 
+/**
+ * The parts of a note that narrow the card's identity, such as "r2", in lower case. As in
+ * `parseNote`, only the text after the last pipe counts.
+ */
+export function getNoteIdentityText(variant: Variant, text: string): string {
+  const fullNote = text
+    .slice(text.lastIndexOf("|") + 1)
+    .toLowerCase()
+    .trim();
+  const allCards = variant.suits.length * variant.ranks.length;
+  return getNoteKeywords(fullNote)
+    .filter((keyword) => {
+      const possibilities = noteIdentity.getPossibilitiesFromKeywords(variant, [
+        keyword,
+      ]);
+      return possibilities.length > 0 && possibilities.length < allCards;
+    })
+    .join(", ");
+}
+
 export function parseNote(variant: Variant, text: string): CardNote {
   const lastPipeIndex = text.lastIndexOf("|");
 

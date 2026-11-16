@@ -78,10 +78,7 @@ before asking any questions in the chat.
   in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand
   to see how it appears to them. (This is referred to as "empathy".)
-- Hold Space to see every hand this way. Hold Ctrl + Space to see every hand
-  this way, but narrowed by your notes. In a replay, or when you spectate
-  without shadowing a player, each hand is narrowed by its own player's notes
-  instead.
+- Hold Space to see every hand this way.
 - Before you give a clue, click the flashlight button beside "Give Clue" to see
   the target's hand as they would see it after the clue.
 

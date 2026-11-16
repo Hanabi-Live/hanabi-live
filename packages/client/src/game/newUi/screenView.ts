@@ -26,7 +26,6 @@ import {
   isLowOnTime,
 } from "../clock.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
-import { getEmpathyNote } from "../empathyNote.ts";
 import { getShownGameEnd } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -82,15 +81,13 @@ export interface CluePreview {
 
 /**
  * Returns the seats in the order that the screen shows them. The hands of the players in
- * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
- * `empathyIncludesNotes`, that view also applies the notes that `getEmpathyNote` chooses. The
+ * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. The
  * viewer's own hand always applies the viewer's notes. With `cluePreview`, a hand shows its
  * player's view of it after a clue that the viewer is choosing.
  */
 export function getSeats(
   state: State,
   empathyPlayers: ReadonlySet<PlayerIndex>,
-  empathyIncludesNotes: boolean,
   connections: readonly boolean[],
   cluePreview?: CluePreview,
 ): readonly Seat[] {
@@ -141,9 +138,7 @@ export function getSeats(
       }
       // The preview of a clue shows only what the clues tell the player, as on the classic screen.
       const includesNotes =
-        previewDeck === undefined
-        && empathy
-        && (empathyIncludesNotes || (you && !empathyPlayers.has(playerIndex)));
+        previewDeck === undefined && you && !empathyPlayers.has(playerIndex);
 
       cards.push(
         getCardView({
@@ -153,10 +148,7 @@ export function getSeats(
             suitIndex: undefined,
             rank: undefined,
           },
-          note:
-            includesNotes && empathyIncludesNotes
-              ? getEmpathyNote(state, variant, order)
-              : (state.notes.ourNotes[order] ?? BLANK_NOTE),
+          note: state.notes.ourNotes[order] ?? BLANK_NOTE,
           variant,
           empathy,
           // Our own notes apply to our own hand, as on the classic screen: a note can show a card's
@@ -368,6 +360,9 @@ export function getDeckEmpathy(state: State): DeckEmpathy {
         }))
         .filter((suit) => suit.ranks.length > 0),
       inexact: false,
+      // The deck has no clues or note, so the bubble has no lines below its grid.
+      removedByVisibleCards: 0,
+      removedByNote: undefined,
     },
   };
 }

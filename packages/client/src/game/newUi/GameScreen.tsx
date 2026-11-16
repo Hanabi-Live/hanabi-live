@@ -270,7 +270,7 @@ export function GameScreen({
     setLogSeat(undefined);
   }, []);
 
-  const { globalEmpathy, globalEmpathyNotes } = useSpacebarEmpathy();
+  const globalEmpathy = useSpacebarEmpathy();
   const clueHotkeys = useRef<ClueHotkeys>(undefined);
   useClueHotkeys(clueHotkeys);
 
@@ -443,7 +443,6 @@ export function GameScreen({
   const seats = getSeats(
     state,
     empathyPlayers,
-    globalEmpathy && globalEmpathyNotes,
     connections,
     previewTarget === undefined
       || clue === undefined

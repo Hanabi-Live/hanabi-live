@@ -25,60 +25,31 @@ export function isGameKey(event: KeyboardEvent): boolean {
   return !isTyping(event.target) && !isModalVisible();
 }
 
-interface SpacebarEmpathy {
-  /** Whether every hand shows as its player sees it. */
-  readonly globalEmpathy: boolean;
-  /** Whether that view also applies the viewer's notes. */
-  readonly globalEmpathyNotes: boolean;
-}
-
-/**
- * Holding the spacebar shows every hand as its player sees it, as on the classic screen. Ctrl +
- * Space also applies the viewer's notes.
- */
-export function useSpacebarEmpathy(): SpacebarEmpathy {
+/** Holding the spacebar shows every hand as its player sees it, as on the classic screen. */
+export function useSpacebarEmpathy(): boolean {
   const [globalEmpathy, setGlobalEmpathy] = useState(false);
-  const [globalEmpathyNotes, setGlobalEmpathyNotes] = useState(false);
   useEffect(() => {
-    let spaceHeld = false;
-
     function onKeyDown(event: KeyboardEvent) {
-      // Pressing or releasing Ctrl while the spacebar is held changes the view at once. Otherwise,
-      // it changes only when the spacebar repeats, and Ctrl stops that repeat.
-      if (event.key === "Control") {
-        if (spaceHeld) {
-          setGlobalEmpathyNotes(true);
-        }
-        return;
-      }
       if (event.key !== " " || !isGameKey(event)) {
         return;
       }
       // Otherwise, the spacebar would also press the button that has the focus.
       event.preventDefault();
-      spaceHeld = true;
       setGlobalEmpathy(true);
-      setGlobalEmpathyNotes(event.ctrlKey);
     }
 
     function onKeyUp(event: KeyboardEvent) {
-      if (event.key === "Control") {
-        setGlobalEmpathyNotes(false);
-        return;
-      }
       if (event.key !== " ") {
         return;
       }
       if (!isTyping(event.target)) {
         event.preventDefault();
       }
-      spaceHeld = false;
       setGlobalEmpathy(false);
     }
 
     // A window that loses the focus never gets the key's release.
     function onBlur() {
-      spaceHeld = false;
       setGlobalEmpathy(false);
     }
 
@@ -92,10 +63,7 @@ export function useSpacebarEmpathy(): SpacebarEmpathy {
     };
   }, []);
 
-  return {
-    globalEmpathy,
-    globalEmpathyNotes,
-  };
+  return globalEmpathy;
 }
 
 export interface ClueHotkeys {
