@@ -97,7 +97,7 @@ export interface CardNotes {
 export function CardNote({
   order,
   notes: cardNotes,
-  noteInBubble = false,
+  possibleCards = false,
   className = "",
   style,
   children,
@@ -105,10 +105,10 @@ export function CardNote({
   readonly order: CardOrder;
   readonly notes: CardNotes;
   /**
-   * Whether the card shows its notes in its bubble of possible cards (see `PossibleCardsBubble`),
-   * so that the wrapper has no tooltip of its own.
+   * Whether the card shows its bubble of possible cards on hover (see `PossibleCardsBubble`). The
+   * bubble takes the place of the note's tooltip. Players who turn the bubble off see the note.
    */
-  readonly noteInBubble?: boolean;
+  readonly possibleCards?: boolean;
   readonly className?: string;
   readonly style?: React.CSSProperties;
   readonly children: React.ReactNode;
@@ -153,7 +153,7 @@ export function CardNote({
       // While the box is open, it shows the note instead. The note opens at once, as on the classic
       // screen, so that players can read the notes by moving the pointer along a hand.
       ref={tooltipRefHtml(
-        editing || noteInBubble ? "" : (cardNotes.notesHtml.get(order) ?? ""),
+        editing || possibleCards ? "" : (cardNotes.notesHtml.get(order) ?? ""),
         { instant: true },
       )}
       style={style}

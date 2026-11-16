@@ -369,12 +369,6 @@ interface CardFaceProps {
   /** Whether the card has a note that the viewer can read. */
   readonly note?: boolean;
 
-  /**
-   * The card's notes, as HTML, which its bubble of possible cards shows above the grid. A card with
-   * a bubble shows its notes there, instead of in a tooltip.
-   */
-  readonly noteHtml?: string;
-
   /** Whether someone else changed the note while we spectate, and we have not read it since. */
   readonly noteUnread?: boolean;
 
@@ -1329,18 +1323,6 @@ const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
  */
 const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
 
-/**
- * The widest that the notes in the bubble of possible cards are, in the notes' own font size. A
- * longer note wraps onto more lines.
- */
-const POSSIBLE_CARDS_NOTE_MAX_WIDTH = "16em";
-
-/**
- * The least height that the notes in the bubble of possible cards are cut off to, in the notes' own
- * font size, when the bubble is too tall for the window. It shows about two lines.
- */
-const POSSIBLE_CARDS_NOTE_MIN_HEIGHT_IN_EM = 4;
-
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
 
@@ -1408,14 +1390,11 @@ function PossibleCardsBubble({
   variant,
   colorblindMode,
   bubble,
-  noteHtml,
   anchor,
 }: {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly bubble: PossibleCardsView;
-  /** The card's notes, as HTML. They go above the grid, instead of in a tooltip of their own. */
-  readonly noteHtml: string | undefined;
   readonly anchor: HTMLElement;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
@@ -1426,8 +1405,6 @@ function PossibleCardsBubble({
     readonly side: "below" | "above";
     /** Where the tip of the pointer is, from the left edge of the bubble. */
     readonly pointerX: number;
-    /** The tallest that the notes can be, so that the bubble fits in the window. */
-    readonly noteMaxHeight: number | undefined;
     /** How much smaller the bubble is drawn, so that it fits in the window. */
     readonly scale: number;
   }>();
@@ -1438,27 +1415,18 @@ function PossibleCardsBubble({
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
 
-  // The bubble goes below the card, since the note of the card opens above it. It goes above the
-  // card when only that side has room. When neither side has room, it goes on the side with more
-  // room. Then the notes are cut off, and if the bubble is still too tall, it is drawn smaller. The
-  // pointer points at the middle of the card, even when the edge of the window moves the bubble to
-  // one side.
+  // The bubble goes below the card. It goes above the card when only that side has room. When
+  // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
+  // fits. The pointer points at the middle of the card, even when the edge of the window moves the
+  // bubble to one side.
   useLayoutEffect(() => {
     const element = ref.current;
     if (element === null) {
       return;
     }
 
-    // The sizes before the bubble is scaled, and with the whole notes, even when an earlier
-    // position cut them off.
-    const note = element.querySelector<HTMLElement>(
-      "[data-possible-cards-note]",
-    );
-    const fullNoteHeight = note?.scrollHeight ?? 0;
-    const height =
-      element.offsetHeight - (note?.offsetHeight ?? 0) + fullNoteHeight;
-    const width = element.offsetWidth;
-
+    // The sizes before the bubble is scaled.
+    const { offsetHeight: height, offsetWidth: width } = element;
     const offset =
       unit * POSSIBLE_CARDS.pointerGap + pointerHeight + POSSIBLE_CARDS_OUTLINE;
     const below = anchorRect.bottom + offset;
@@ -1469,22 +1437,7 @@ function PossibleCardsBubble({
         ? "below"
         : "above";
     const room = side === "below" ? roomBelow : roomAbove;
-
-    let noteMaxHeight: number | undefined;
-    let fittedHeight = height;
-    if (note !== null && height > room) {
-      // The computed font size is always in pixels, such as "24px".
-      const fontSize = Number(
-        getComputedStyle(note).fontSize.slice(0, -"px".length),
-      );
-      const noteMinHeight = Math.min(
-        fullNoteHeight,
-        POSSIBLE_CARDS_NOTE_MIN_HEIGHT_IN_EM * fontSize,
-      );
-      noteMaxHeight = Math.max(fullNoteHeight - (height - room), noteMinHeight);
-      fittedHeight = height - fullNoteHeight + noteMaxHeight;
-    }
-    const scale = Math.min(1, room / fittedHeight);
+    const scale = Math.min(1, room / height);
 
     const middle = anchorRect.left + anchorRect.width / 2;
     const left = Math.min(
@@ -1495,13 +1448,12 @@ function PossibleCardsBubble({
     setPosition({
       left,
       // The bubble is scaled from the edge that faces the card, so that edge stays in place.
-      top: side === "below" ? below : anchorRect.top - offset - fittedHeight,
+      top: side === "below" ? below : anchorRect.top - offset - height,
       side,
       pointerX: Math.min(
         Math.max((middle - left) / scale, radius + pointerWidth / 2),
         width - radius - pointerWidth / 2,
       ),
-      noteMaxHeight,
       scale,
     });
   }, [
@@ -1553,25 +1505,6 @@ function PossibleCardsBubble({
           boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
         }}
       >
-        {noteHtml !== undefined && (
-          // The notes look like a note tooltip: dark text on white, like a sheet of paper. The HTML
-          // escapes what players wrote.
-          <div
-            className="tw:box-border tw:self-stretch tw:overflow-hidden tw:bg-white tw:text-[1.5em] tw:text-card-ink tw:ring-1 tw:ring-black/25"
-            dangerouslySetInnerHTML={{ __html: noteHtml }}
-            data-possible-cards-note
-            style={
-              {
-                maxWidth: POSSIBLE_CARDS_NOTE_MAX_WIDTH,
-                maxHeight: position?.noteMaxHeight,
-                padding: "0.65em 0.85em",
-                borderRadius: unit * CARD_CORNER_PER_WIDTH,
-                "--surface": "white",
-                "--note-title-line": "rgb(0 0 0 / 35%)",
-              } as React.CSSProperties
-            }
-          />
-        )}
         <div
           className="tw:grid tw:items-center tw:justify-items-center"
           style={{
@@ -2317,7 +2250,6 @@ export function CardFace({
   noteMarks = [],
   trashIcon = false,
   note = false,
-  noteHtml,
   noteUnread = false,
   identityFromNote = false,
   raiseClued = false,
@@ -2492,7 +2424,6 @@ export function CardFace({
             anchor={hovered}
             bubble={bubble}
             colorblindMode={colorblindMode}
-            noteHtml={noteHtml}
             variant={variant}
           />,
           document.body,

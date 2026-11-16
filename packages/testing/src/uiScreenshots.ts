@@ -176,9 +176,6 @@ function ownCard(page: Page, index: number): Locator {
     .nth(index);
 }
 
-/** The note on the card whose bubble of possible cards shows. */
-const POSSIBLE_CARDS_NOTE = "T16 orange or a 1? | should be fine";
-
 /** Notes whose keywords draw a mark or a border on a card, by the place of the card. */
 const KEYWORD_NOTES = [
   ["hand-1-1", "f"],
@@ -1247,8 +1244,7 @@ function getStates(): readonly State[] {
     // The bubble of every card that a card can be, which opens over a card in the account's hand.
     // The table has five players, and every player has discarded cards, so that the account rules
     // out some of the cards. The variant's color clues touch every 1, so that some cards can be
-    // cards that the separate suits and ranks cannot show, and have a mark. The card has a note,
-    // which the bubble shows above its grid.
+    // cards that the separate suits and ranks cannot show, and have a mark.
     {
       name: "new-ui-possible-cards",
       path: "/",
@@ -1257,9 +1253,6 @@ function getStates(): readonly State[] {
       setup: async (cast) => {
         const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
         await game.discardTurns(15, { mixClueTypes: true });
-      },
-      prepare: async (page) => {
-        await writeNote(page, ownCard(page, 2), POSSIBLE_CARDS_NOTE);
       },
       hover: async (page) => {
         // The third card, since the others show their rank.

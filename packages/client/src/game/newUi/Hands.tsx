@@ -891,7 +891,6 @@ function OwnCard({
       identityFromNote={card.identityFromNote}
       note={props.notes.notesHtml.has(card.order)}
       noteBorder={card.noteBorder}
-      noteHtml={props.notes.notesHtml.get(card.order)}
       noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
       pips={card.pips}
@@ -1038,7 +1037,6 @@ function EditableCard({
         identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
         noteBorder={card.noteBorder}
-        noteHtml={props.notes.notesHtml.get(card.order)}
         noteMarks={card.noteMarks}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         pips={card.pips}
@@ -1114,7 +1112,6 @@ function HandCard({
         identityFromNote={card.identityFromNote}
         note={props.notes.notesHtml.has(card.order)}
         noteBorder={card.noteBorder}
-        noteHtml={props.notes.notesHtml.get(card.order)}
         noteMarks={card.noteMarks}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         pips={card.pips}
@@ -1306,9 +1303,9 @@ function Hand({
         {seat.cards.map((card, i) => (
           <CardNote
             key={card.order}
-            noteInBubble={card.pips?.bubble !== undefined}
             notes={props.notes}
             order={card.order}
+            possibleCards={card.pips?.bubble !== undefined}
           >
             <HandCard
               card={card}
