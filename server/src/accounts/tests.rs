@@ -114,6 +114,56 @@ async fn login_limit_blocks_guessing_before_hashing_postgres() {
 }
 
 #[tokio::test]
+async fn failed_logins_do_not_lock_out_the_correct_password_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let state = Accounts {
+        pool: db.pool.clone(),
+        config: config(),
+        limits: rate_limit::LoginLimits::default(),
+    };
+    let login = |ip: &'static str, password: &str| {
+        login_inner(
+            &state,
+            ip,
+            LoginRequest {
+                username: "Alice".into(),
+                password: password.into(),
+                version: Some(config().version),
+                create_account: true,
+                ..LoginRequest::default()
+            },
+        )
+    };
+    let owner = "198.18.1.1";
+    assert_eq!(
+        login(owner, "correct").await.unwrap().status(),
+        StatusCode::OK
+    );
+    let id = sqlx::query_scalar!("SELECT id FROM users WHERE username='Alice'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    // Record the guesses directly, over enough addresses that no address reaches its own limit.
+    let guesses_per_address = 10;
+    for index in 0..rate_limit::ACCOUNT_LIMIT {
+        let attacker = format!("198.18.2.{}", index / guesses_per_address);
+        let attempt = state.limits.begin(&attacker).unwrap();
+        attempt.fail_account(id).unwrap();
+    }
+    assert_eq!(
+        login("198.18.3.1", "wrong").await.unwrap().status(),
+        StatusCode::TOO_MANY_REQUESTS
+    );
+    assert_eq!(
+        login(owner, "correct").await.unwrap().status(),
+        StatusCode::OK
+    );
+    db.close().await;
+}
+
+#[tokio::test]
 async fn login_requires_matching_release_sha_or_bot_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;

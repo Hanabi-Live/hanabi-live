@@ -15,8 +15,9 @@ use std::{
 
 const IP_LIMIT: usize = 20;
 const IP_WINDOW: Duration = Duration::from_mins(15);
-/// The most that NIST SP 800-63B allows. A low limit would make it easy to lock someone out.
-const ACCOUNT_LIMIT: usize = 100;
+/// The most failed logins that NIST SP 800-63B allows. A login with the correct password is never
+/// refused by this limit, so others cannot lock the owner out.
+pub(super) const ACCOUNT_LIMIT: usize = 100;
 const ACCOUNT_WINDOW: Duration = Duration::from_hours(1);
 const MAX_TRACKED_KEYS: usize = 10_000;
 /// Every password check or hash costs the same, whether or not it succeeds, so all of them share
@@ -185,7 +186,6 @@ impl LoginLimits {
         Ok(LoginAttempt {
             limits: self,
             ip,
-            account: None,
             kept: false,
         })
     }
@@ -194,22 +194,23 @@ impl LoginLimits {
 pub(super) struct LoginAttempt<'a> {
     limits: &'a LoginLimits,
     ip: Option<IpAddr>,
-    account: Option<i32>,
     kept: bool,
 }
 
 impl LoginAttempt<'_> {
-    pub(super) fn charge_account(&mut self, id: i32) -> Result<(), Duration> {
-        self.limits
+    /// Counts a wrong password against the address and the account. Returns how long to wait if
+    /// the account has reached its limit.
+    pub(super) fn fail_account(self, id: i32) -> Result<(), Duration> {
+        let limits = self.limits;
+        self.keep();
+        limits
             .accounts
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-            .charge(id, Instant::now())?;
-        self.account = Some(id);
-        Ok(())
+            .charge(id, Instant::now())
     }
 
-    /// Counts this attempt against the limits. Successful logins are not kept, and they do not
+    /// Counts this attempt against the address. Successful logins are not kept, and they do not
     /// clear earlier failures, because attackers could otherwise reset the count with an account
     /// of their own.
     pub(super) fn keep(mut self) {
@@ -228,13 +229,6 @@ impl Drop for LoginAttempt<'_> {
                 .lock()
                 .unwrap_or_else(PoisonError::into_inner)
                 .refund(ip);
-        }
-        if let Some(account) = self.account {
-            self.limits
-                .accounts
-                .lock()
-                .unwrap_or_else(PoisonError::into_inner)
-                .refund(account);
         }
     }
 }
@@ -297,8 +291,7 @@ mod tests {
     fn dropped_attempts_are_refunded_and_kept_attempts_count() {
         let limits = LoginLimits::default();
         for _ in 0..IP_LIMIT * 2 {
-            let mut attempt = limits.begin("203.0.113.9").unwrap();
-            attempt.charge_account(1).unwrap();
+            limits.begin("203.0.113.9").unwrap();
         }
         for _ in 0..IP_LIMIT {
             limits.begin("203.0.113.9").unwrap().keep();
@@ -324,12 +317,12 @@ mod tests {
     fn accounts_are_limited_across_addresses() {
         let limits = LoginLimits::default();
         for index in 0..ACCOUNT_LIMIT {
-            let mut attempt = limits.begin(&format!("10.0.{}.1", index % 200)).unwrap();
-            attempt.charge_account(7).unwrap();
-            attempt.keep();
+            let attempt = limits.begin(&format!("10.0.{}.1", index % 200)).unwrap();
+            attempt.fail_account(7).unwrap();
         }
-        let mut attempt = limits.begin("203.0.113.9").unwrap();
-        assert!(attempt.charge_account(7).is_err());
-        assert!(attempt.charge_account(8).is_ok());
+        let attempt = limits.begin("203.0.113.9").unwrap();
+        assert!(attempt.fail_account(7).is_err());
+        let attempt = limits.begin("203.0.113.9").unwrap();
+        assert!(attempt.fail_account(8).is_ok());
     }
 }

@@ -304,7 +304,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         let error = Notice::outdated_client(message, &state.config.version);
         return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
     }
-    let mut attempt = match state.limits.begin(ip) {
+    let attempt = match state.limits.begin(ip) {
         Ok(attempt) => attempt,
         Err(wait) => return Ok(too_many_attempts(wait)),
     };
@@ -317,9 +317,6 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     let id: i32;
     if let Some(user) = existing {
         id = user.id;
-        if let Err(wait) = attempt.charge_account(id) {
-            return Ok(too_many_attempts(wait));
-        }
         let Some(original) = user.password_hash else {
             let error = Notice {
                 code: Some(hanabi_protocol::NoticeCode::PasswordResetRequired),
@@ -327,9 +324,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             };
             return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         };
+        // Only failures count against the account, so that others cannot lock its owner out.
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
-            attempt.keep();
+            let charged = attempt.fail_account(id);
             tracing::warn!("Failed login for account {id} from IP: {ip}");
+            if let Err(wait) = charged {
+                return Ok(too_many_attempts(wait));
+            }
             return Ok(unauthorized("That is not the correct password."));
         }
         let automatic_upgrade =
