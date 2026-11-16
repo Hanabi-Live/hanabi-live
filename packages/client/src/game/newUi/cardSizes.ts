@@ -125,6 +125,68 @@ export function namesFitBesideCards(
 }
 
 /**
+ * The width of the wide layout's right column, with the discard pile and the clue log, in CSS
+ * pixels. It is as wide as it can be, unless the hands need the room (see "getDiscardColumnWidth").
+ */
+const DISCARD_COLUMN_WIDTH = {
+  MIN: 240,
+  MAX: 300,
+} as const;
+
+/** The widest that the wide layout's hands get, in CSS pixels. */
+export const WIDE_HANDS_MAX_WIDTH = 760;
+
+/**
+ * Returns the width of the wide layout's right column. It gives up room only while the hands are
+ * too narrow for the cards that their height allows, and only as much as they need. `handsWidth`
+ * and `columnWidth` are the widths that the hands and the column have now.
+ */
+export function getDiscardColumnWidth(
+  handsWidth: number,
+  columnWidth: number,
+  handsHeight: number,
+  numPlayers: number,
+  cardsPerHand: number,
+  nameColumnWidth: number,
+): number {
+  if (handsWidth === 0 || handsWidth >= WIDE_HANDS_MAX_WIDTH) {
+    return DISCARD_COLUMN_WIDTH.MAX;
+  }
+
+  const cardWidth = getHandCardWidth(
+    Infinity,
+    handsHeight,
+    numPlayers,
+    cardsPerHand,
+    nameColumnWidth,
+    0,
+    false,
+  );
+  const neededWidth =
+    nameColumnWidth
+    + NAME_GAP
+    + HAND_BOX_HORIZONTAL_PADDING
+    + CARD_GAP * (cardsPerHand - 1)
+    + cardWidth * cardsPerHand;
+  // The hands take the rest of the row, so the room that the column gives up goes to them.
+  const handsWidthBesideWidest =
+    handsWidth + columnWidth - DISCARD_COLUMN_WIDTH.MAX;
+  return clamp(
+    DISCARD_COLUMN_WIDTH.MAX - (neededWidth - handsWidthBesideWidest),
+    DISCARD_COLUMN_WIDTH.MIN,
+    DISCARD_COLUMN_WIDTH.MAX,
+  );
+}
+
+/**
+ * Returns the room that the wide layout's right column can still give to the hands, in CSS pixels,
+ * when it is `columnWidth` wide.
+ */
+export function getDiscardColumnSpareWidth(columnWidth: number): number {
+  return Math.max(columnWidth - DISCARD_COLUMN_WIDTH.MIN, 0);
+}
+
+/**
  * Returns the width of the cards in a hand that fit in `handsWidth`, with the names beside the
  * cards in a column `nameColumnWidth` wide, or above them when it is `undefined`.
  */

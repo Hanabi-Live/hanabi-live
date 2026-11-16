@@ -95,12 +95,15 @@ import {
 import {
   areWideHandsTooNarrow,
   DISCARD_CARD_MAX_WIDTH,
+  getDiscardColumnSpareWidth,
+  getDiscardColumnWidth,
   getHandCardWidth,
   getHandsTopPadding,
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
   TABLE_TOP_PADDING,
+  WIDE_HANDS_MAX_WIDTH,
 } from "./cardSizes.ts";
 import {
   getCardsTouchedBefore,
@@ -272,6 +275,9 @@ export function GameScreen({
   );
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
   const handsSize = useElementSize(handsElement);
+  const [discardColumnElement, setDiscardColumnElement] =
+    useState<HTMLDivElement | null>(null);
+  const discardColumnSize = useElementSize(discardColumnElement);
   const tableSize = useElementSize(tableElement);
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
@@ -407,9 +413,12 @@ export function GameScreen({
     }
 
     if (!handsTooNarrow) {
-      if (handsSize.width > 0 && tooNarrow(handsSize.width, handsSize.height)) {
+      // The right column gives its spare room to the hands before the phone layout starts.
+      const handsWidth =
+        handsSize.width + getDiscardColumnSpareWidth(discardColumnSize.width);
+      if (handsSize.width > 0 && tooNarrow(handsWidth, handsSize.height)) {
         wideOther.current = {
-          width: root.clientWidth - handsSize.width,
+          width: root.clientWidth - handsWidth,
           height: root.clientHeight - handsSize.height,
           beside,
         };
@@ -823,6 +832,14 @@ export function GameScreen({
     );
   }
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
+  const discardColumnWidth = getDiscardColumnWidth(
+    handsSize.width,
+    discardColumnSize.width,
+    handsSize.height,
+    options.numPlayers,
+    getCardsPerHand(options),
+    nameColumnWidth,
+  );
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
     const widthWithNamesAbove = getHandCardWidthFor(undefined);
     if (
@@ -1136,9 +1153,10 @@ export function GameScreen({
             {/* In the phone layout, the hands keep room on their left for the clue rail, which
                 runs beside them (see "Hands.tsx"). The screen's padding is part of that room. */}
             <div
-              className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:order-first tw:phone:ml-(--clue-rail-margin) tw:phone:max-w-none tw:phone:flex-none"
+              className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:order-first tw:phone:ml-(--clue-rail-margin) tw:phone:flex-none"
               style={
                 {
+                  maxWidth: stacked ? undefined : WIDE_HANDS_MAX_WIDTH,
                   "--clue-rail-margin": `calc(${PHONE_CLUE_RAIL_SPACE}px - var(--phone-side-padding))`,
                 } as React.CSSProperties
               }
@@ -1317,8 +1335,12 @@ export function GameScreen({
             </div>
 
             <div
-              className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:phone:w-full`}
-              style={{ paddingTop: columnTopPadding }}
+              className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:phone:w-full`}
+              ref={setDiscardColumnElement}
+              style={{
+                paddingTop: columnTopPadding,
+                width: stacked ? undefined : discardColumnWidth,
+              }}
             >
               {stacked ? (
                 // The tokens share the row with the pile, so that they do not take a row of their
