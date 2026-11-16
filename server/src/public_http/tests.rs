@@ -503,39 +503,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let profile = serde_json::from_str::<Value>(&body).unwrap();
     hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&profile).unwrap();
     assert_eq!(profile, scores);
-    let (status, body) = request(app.clone(), "/api/v1/missing-scores/Alice/2").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    let missing_scores = serde_json::from_str::<Value>(&body).unwrap();
-    hanabi_protocol::validate::<hanabi_protocol::MissingScoresPage>(&missing_scores).unwrap();
-    assert_eq!(missing_scores["players"], json!(["Alice"]));
-    assert_eq!(missing_scores["summary"]["total"], 1);
-    assert_eq!(missing_scores["filters"]["type"], "player");
-    assert_eq!(missing_scores["filters"]["numPlayers"], 2);
-    assert!(
-        missing_scores["rows"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .all(|row| row["variantName"] != "No Variant")
-    );
-    let (status, body) = request(
-        app.clone(),
-        "/api/v1/shared-missing-scores/2/Alice/Bob?excludePlayers=Alice",
-    )
-    .await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    let shared = serde_json::from_str::<Value>(&body).unwrap();
-    hanabi_protocol::validate::<hanabi_protocol::MissingScoresPage>(&shared).unwrap();
-    assert!(shared.get("summary").is_none());
-    assert_eq!(shared["filters"]["type"], "shared");
-    assert_eq!(shared["filters"]["players"][0]["excluded"], true);
-    assert!(
-        shared["rows"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|row| row["variantName"] == "No Variant")
-    );
     let (status, body) = request(app.clone(), "/api/v1/seed/same/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let seed = serde_json::from_str::<Value>(&body).unwrap();
@@ -707,11 +674,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/variants?offset=1", 400, "takes no parameters"),
         ("/api/v1/scores/Alice?limit=1", 400, "takes no parameters"),
         (
-            "/api/v1/missing-scores/Alice/2?excludePlayers=Bob",
-            400,
-            "Unknown query parameter",
-        ),
-        (
             "/api/v1/seed/same/stats?limit=1",
             400,
             "takes no parameters",
@@ -719,19 +681,12 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?start=x", 400, "must be an integer"),
         ("/history/Alice?api=1", 400, "takes no value"),
         ("/scores/Alice?api=1", 400, "takes no value"),
-        ("/missing-scores/Alice/2?api=1", 400, "takes no value"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
         ("/lobby?login=", 400, "cannot be empty"),
         (
             "/missing-scores/Alice?excludePlayers=Bob",
             400,
-            "Unknown query parameter",
-        ),
-        ("/missing-scores/Alice/7", 400, "Number of players must be"),
-        (
-            "/api/v1/missing-scores/Alice/7",
-            400,
-            "Number of players must be",
+            "takes no parameters",
         ),
         ("/api/v1/seed/no-games/stats", 404, "has no games"),
         ("/api/v1/seed/same?limit=101", 400, "The limit must be"),
@@ -807,19 +762,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/history/Alice/Bob?api", "/api/v1/history/Alice/Bob"),
         ("/scores/Alice?api", "/api/v1/scores/Alice"),
         ("/profile/Alice?api", "/api/v1/profile/Alice"),
-        ("/missing-scores/Alice?api", "/api/v1/missing-scores/Alice"),
-        (
-            "/missing-scores/Alice/2?api",
-            "/api/v1/missing-scores/Alice/2",
-        ),
-        (
-            "/shared-missing-scores/2/Alice/Bob?api",
-            "/api/v1/shared-missing-scores/2/Alice/Bob",
-        ),
-        (
-            "/shared-missing-scores/2/Alice/Bob?api&excludePlayers=Alice",
-            "/api/v1/shared-missing-scores/2/Alice/Bob?excludePlayers=Alice",
-        ),
     ] {
         let redirect = app
             .clone()

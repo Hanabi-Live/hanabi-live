@@ -243,19 +243,6 @@ pub struct PlayerScores {
     pub variants: Vec<VariantScores>,
 }
 
-/// The max scores that one or more players are missing, from a missing-scores route.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MissingScoresPage {
-    /// In the order that the URL names them.
-    pub players: Vec<Username>,
-    /// Only a player's own page has this summary.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub summary: Option<MaxScoreSummary>,
-    pub rows: Vec<MissingScore>,
-    pub filters: MissingScoresFilters,
-}
-
 /// How hard a seed is compared to the other seeds of its variant and player count.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

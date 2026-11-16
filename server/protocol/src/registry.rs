@@ -128,7 +128,7 @@ macro_rules! exported_types {
             UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn, PublicPageTable,
             PlayerStatistics, MaxScoreCount, MaxScoreSummary, PlayerScores,
-            MissingScoresPage, SeedDifficulty, SeedStatistics,
+            SeedDifficulty, SeedStatistics,
         }
     };
 }

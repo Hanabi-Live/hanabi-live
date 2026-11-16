@@ -176,20 +176,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         .route(
             &format!("{API_PREFIX}/profile/{{player1}}"),
             get(api_handler),
-        )
-        .route(
-            &format!("{API_PREFIX}/missing-scores/{{player1}}"),
-            get(api_handler),
-        )
-        .route(
-            &format!("{API_PREFIX}/missing-scores/{{player1}}/{{numPlayers}}"),
-            get(api_handler),
         );
-    let mut shared = format!("{API_PREFIX}/shared-missing-scores/{{numPlayers}}");
-    for i in 1..=hanabi_protocol::MAX_PLAYERS {
-        shared = format!("{shared}/{{player{i}}}");
-        api = api.route(&shared, get(api_handler));
-    }
     api = api
         .route(&format!("{API_PREFIX}/variants"), get(api_handler))
         .route(&format!("{API_PREFIX}/variants-full"), get(api_handler))
@@ -296,10 +283,6 @@ async fn api_response(
         mode == "seed" && segments.next().is_some() && segments.next() == Some("stats");
     let list_parameters: Vec<String> = match mode {
         "history" | "seed" | "tags" | "tag" if !seed_statistics => data::list_parameters(mode),
-        "shared-missing-scores" => pages::SHARED_MISSING_PARAMETERS
-            .iter()
-            .map(|parameter| (*parameter).to_owned())
-            .collect(),
         _ => Vec::new(),
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
@@ -324,18 +307,6 @@ async fn api_response(
         "scores" | "profile" => {
             let users = data::players(state, params, false).await?;
             Json(pages::player_scores(state, users[0].0, &users[0].1).await?).into_response()
-        }
-        "missing-scores" => {
-            let users = data::players(state, params, false).await?;
-            let num_players = pages::num_players(params)?;
-            Json(pages::missing_page(state, &users, false, num_players, &q).await?).into_response()
-        }
-        "shared-missing-scores" => {
-            let num_players = pages::num_players(params)?
-                .ok_or_else(|| HttpError::bad("You must first specify the number of players."))?;
-            let users = data::players(state, params, true).await?;
-            Json(pages::missing_page(state, &users, true, Some(num_players), &q).await?)
-                .into_response()
         }
         _ => return Err(HttpError::not_found("Not found.")),
     })

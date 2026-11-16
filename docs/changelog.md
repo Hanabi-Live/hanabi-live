@@ -9,8 +9,7 @@ of the repository.
 
 ## November 16th, 2026
 
-- The public JSON API now includes player profiles, missing scores, and seed
-  statistics.
+- The public JSON API now includes player profiles and seed statistics.
 
 ## November 15th, 2026
 

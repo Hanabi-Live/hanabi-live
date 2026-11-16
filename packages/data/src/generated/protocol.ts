@@ -912,110 +912,6 @@ export const maxScoreSummarySchema = z
   .readonly();
 
 /**
- * How hard a max score is, from the clue efficiency that it needs.
- */
-const difficultySchema = z.enum(["normal", "hard", "veryHard"]);
-
-/**
- * A number of players.
- */
-const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
-
-/**
- * An option that keeps a best score from counting as a normal one. A score with several of
- * them shows only the first in this order.
- */
-const scoreModifierOptionSchema = z.enum([
-  "allOrNothing",
-  "oneExtraCard",
-  "oneLessCard",
-  "emptyClues",
-  "deckPlays",
-]);
-
-/**
- * A variant at a player count that has no normal max score yet.
- */
-const missingScoreSchema = z
-  .strictObject({
-    difficulty: difficultySchema,
-    /**
-     * The clue efficiency that a max score needs, rounded as the page shows it.
-     */
-    efficiency: z.string(),
-    maxScore: scoreSchema,
-    modifier: scoreModifierOptionSchema.optional(),
-    numPlayers: numPlayersSchema,
-    /**
-     * The best score of the players. Absent when none of them played.
-     */
-    score: scoreSchema.optional(),
-    variantName: z.string(),
-  })
-  .readonly();
-
-/**
- * A player of a shared missing scores page.
- */
-const missingScoresPlayerSchema = z
-  .strictObject({
-    /**
-     * Whether the filters leave the player's scores out.
-     */
-    excluded: z.boolean(),
-    name: z.string().min(1),
-  })
-  .readonly();
-
-/**
- * The filters of a missing scores page. They are query parameters, so the page reloads to apply
- * them.
- */
-const missingScoresFiltersSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      name: z.string().min(1),
-      /**
-       * Absent when the page shows every player count.
-       */
-      numPlayers: numPlayersSchema.optional(),
-      type: z.literal("player"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Whether any filter leaves out a player, a variant, or an efficiency.
-       */
-      active: z.boolean(),
-      excludeVariants: z.string(),
-      maxEfficiency: z.string(),
-      minEfficiency: z.string(),
-      players: z.array(missingScoresPlayerSchema).readonly(),
-      type: z.literal("shared"),
-    })
-    .readonly(),
-]);
-
-/**
- * The max scores that one or more players are missing, from a missing-scores route.
- */
-export const missingScoresPageSchema = z
-  .strictObject({
-    filters: missingScoresFiltersSchema,
-    /**
-     * In the order that the URL names them.
-     */
-    players: z.array(z.string().min(1)).readonly(),
-    rows: z.array(missingScoreSchema).readonly(),
-    /**
-     * Only a player's own page has this summary.
-     */
-    summary: maxScoreSummarySchema.optional(),
-  })
-  .readonly();
-
-/**
  * A note that someone else changed, sent to the spectators who may see it.
  */
 export const noteSchema = z
@@ -1169,6 +1065,18 @@ export const playerStatisticsSchema = z
   .readonly();
 
 /**
+ * An option that keeps a best score from counting as a normal one. A score with several of
+ * them shows only the first in this order.
+ */
+const scoreModifierOptionSchema = z.enum([
+  "allOrNothing",
+  "oneExtraCard",
+  "oneLessCard",
+  "emptyClues",
+  "deckPlays",
+]);
+
+/**
  * A best score on a public page, and the option that keeps it from counting as a normal one.
  */
 const bestScoreSchema = z
@@ -1210,6 +1118,11 @@ export const playerScoresSchema = z
     variants: z.array(variantScoresSchema).readonly(),
   })
   .readonly();
+
+/**
+ * A number of players.
+ */
+const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
 
 /**
  * A player's best score on a variant at one player count.
@@ -1311,6 +1224,75 @@ export const pregameSchema = z
     tableId: tableIdSchema,
   })
   .readonly();
+
+/**
+ * How hard a max score is, from the clue efficiency that it needs.
+ */
+const difficultySchema = z.enum(["normal", "hard", "veryHard"]);
+
+/**
+ * A variant at a player count that has no normal max score yet.
+ */
+const missingScoreSchema = z
+  .strictObject({
+    difficulty: difficultySchema,
+    /**
+     * The clue efficiency that a max score needs, rounded as the page shows it.
+     */
+    efficiency: z.string(),
+    maxScore: scoreSchema,
+    modifier: scoreModifierOptionSchema.optional(),
+    numPlayers: numPlayersSchema,
+    /**
+     * The best score of the players. Absent when none of them played.
+     */
+    score: scoreSchema.optional(),
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
+ * A player of a shared missing scores page.
+ */
+const missingScoresPlayerSchema = z
+  .strictObject({
+    /**
+     * Whether the filters leave the player's scores out.
+     */
+    excluded: z.boolean(),
+    name: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * The filters of a missing scores page. They are query parameters, so the page reloads to apply
+ * them.
+ */
+const missingScoresFiltersSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      name: z.string().min(1),
+      /**
+       * Absent when the page shows every player count.
+       */
+      numPlayers: numPlayersSchema.optional(),
+      type: z.literal("player"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Whether any filter leaves out a player, a variant, or an efficiency.
+       */
+      active: z.boolean(),
+      excludeVariants: z.string(),
+      maxEfficiency: z.string(),
+      minEfficiency: z.string(),
+      players: z.array(missingScoresPlayerSchema).readonly(),
+      type: z.literal("shared"),
+    })
+    .readonly(),
+]);
 
 /**
  * A list of games on a public page, which the page loads from the matching `/api/v1` route.

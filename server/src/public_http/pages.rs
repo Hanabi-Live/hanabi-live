@@ -9,9 +9,9 @@ use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{
     BestScore, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
-    MissingScoresFilters, MissingScoresPage, MissingScoresPlayer, NumPlayers, PlayerScores,
-    PlayerStatistics, PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty,
-    SeedStatistics, VariantScores,
+    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
+    PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
+    VariantScores,
 };
 use std::sync::Arc;
 
@@ -24,22 +24,6 @@ fn shown_modifier(bits: i16) -> Option<ScoreModifierOption> {
 fn set_table(values: &mut Value, table: &PublicPageTable) -> Result<()> {
     values["table"] = json!(serde_json::to_string(table)?);
     Ok(())
-}
-
-/// The number of players in a URL, if it has one.
-pub(super) fn num_players(params: &Params) -> Result<Option<NumPlayers>> {
-    let Some(raw) = params.get("numPlayers") else {
-        return Ok(None);
-    };
-    let value =
-        integer(raw).ok_or_else(|| HttpError::bad("The number of players must be an integer."))?;
-    NumPlayers::try_from(value).map(Some).map_err(|_| {
-        HttpError::bad(format!(
-            "Number of players must be between {} and {}.",
-            hanabi_protocol::MIN_PLAYERS,
-            hanabi_protocol::MAX_PLAYERS
-        ))
-    })
 }
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
@@ -135,14 +119,6 @@ pub(super) async fn main_page(
     )
 }
 
-/// The query parameters of a shared missing scores page.
-pub(super) const SHARED_MISSING_PARAMETERS: [&str; 4] = [
-    "excludePlayers",
-    "excludeVariants",
-    "minEfficiency",
-    "maxEfficiency",
-];
-
 pub(super) async fn page(
     State(state): State<PublicState>,
     axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
@@ -150,18 +126,17 @@ pub(super) async fn page(
     RawQuery(raw): RawQuery,
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(1).unwrap_or("");
-    let accepted: Vec<&str> = match mode {
-        "history" | "tags" | "seed" | "tag" | "scores" | "profile" | "missing-scores" => {
-            vec!["api"]
-        }
-        "shared-missing-scores" => SHARED_MISSING_PARAMETERS
-            .iter()
-            .copied()
-            .chain(["api"])
-            .collect(),
-        _ => Vec::new(),
+    let accepted: &[&str] = match mode {
+        "history" | "tags" | "seed" | "tag" | "scores" | "profile" => &["api"],
+        "shared-missing-scores" => &[
+            "excludePlayers",
+            "excludeVariants",
+            "minEfficiency",
+            "maxEfficiency",
+        ],
+        _ => &[],
     };
-    let q = match strict_query(raw.as_deref(), &accepted) {
+    let q = match strict_query(raw.as_deref(), accepted) {
         Ok(q) => q,
         // The replay export is JSON.
         Err(error) if mode == "export" => return Ok(error.json()),
@@ -179,11 +154,20 @@ pub(super) async fn page(
         "password-reset" => v["title"] = json!("Password Reset"),
         "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
             let shared = mode == "shared-missing-scores";
-            let num_players = num_players(&params)?;
-            if shared && num_players.is_none() {
-                return Err(HttpError::bad(
-                    "You must first specify the number of players.",
-                ));
+            let n = params.get("numPlayers").and_then(|n| integer(n));
+            if shared {
+                if n.is_none() {
+                    return Err(HttpError::bad(
+                        "You must first specify the number of players.",
+                    ));
+                }
+                if !n.is_some_and(hanabi_protocol::is_player_count) {
+                    return Err(HttpError::bad(format!(
+                        "Number of players must be between {} and {}.",
+                        hanabi_protocol::MIN_PLAYERS,
+                        hanabi_protocol::MAX_PLAYERS
+                    )));
+                }
             }
             let users = data::players(&state, &params, shared || mode == "history").await?;
             v["name"] = json!(users[0].1);
@@ -253,48 +237,16 @@ pub(super) async fn page(
                         )?;
                     }
                 }
-                "missing-scores" | "shared-missing-scores" => {
-                    if api_redirect {
-                        let encoded_names = users
-                            .iter()
-                            .map(|user| encoded(&user.1))
-                            .collect::<Vec<_>>();
-                        let names = encoded_names.join("/");
-                        let path = match (shared, num_players) {
-                            (false, num_players) => {
-                                let mut path =
-                                    format!("{API_PREFIX}/missing-scores/{}", encoded_names[0]);
-                                if let Some(n) = num_players {
-                                    path = format!("{path}/{n}");
-                                }
-                                path
-                            }
-                            (true, Some(n)) => {
-                                let mut path =
-                                    format!("{API_PREFIX}/shared-missing-scores/{n}/{names}");
-                                let filters = SHARED_MISSING_PARAMETERS
-                                    .iter()
-                                    .filter_map(|name| {
-                                        q.get(name)
-                                            .map(|value| format!("{name}={}", encoded(value)))
-                                    })
-                                    .collect::<Vec<_>>();
-                                if !filters.is_empty() {
-                                    path = format!("{path}?{}", filters.join("&"));
-                                }
-                                path
-                            }
-                            (true, None) => {
-                                return Err(HttpError::bad(
-                                    "You must first specify the number of players.",
-                                ));
-                            }
-                        };
-                        return Ok(Redirect::permanent(&path).into_response());
-                    }
-                    return missing(&state, users, shared, num_players, &q).await;
+                _ => {
+                    return missing(
+                        &state,
+                        users,
+                        shared,
+                        n.filter(|n| hanabi_protocol::is_player_count(*n)),
+                        &q,
+                    )
+                    .await;
                 }
-                _ => return Err(HttpError::not_found("Not found.")),
             }
         }
         "seed" => {
@@ -738,14 +690,13 @@ pub(super) const MAX_FILTER_TERMS: usize = 100;
 /// The most characters that a missing-scores filter, such as `excludeVariants`, takes.
 pub(super) const MAX_FILTER_LENGTH: usize = 1000;
 
-/// The max scores that one player or several players are missing.
-pub(super) async fn missing_page(
+async fn missing(
     state: &PublicState,
-    users: &[(i32, String)],
+    users: Vec<(i32, String)>,
     shared: bool,
-    num_players: Option<NumPlayers>,
+    num_players: Option<i64>,
     q: &Query,
-) -> Result<MissingScoresPage> {
+) -> Result<Response> {
     if shared && users.len() < hanabi_protocol::MIN_PLAYERS {
         return Err(HttpError::not_found(format!(
             "You must specify at least {} players.",
@@ -804,10 +755,10 @@ pub(super) async fn missing_page(
     let counts = num_players.map_or_else(
         || {
             (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                .map(|p| i64::try_from(p).unwrap_or_default())
+                .filter_map(|p| i64::try_from(p).ok())
                 .collect::<Vec<_>>()
         },
-        |p| vec![i64::from(p.get())],
+        |p| vec![p],
     );
     // Each variant name is normalized once, not once for each term and player count.
     let variants: Vec<_> = catalog::variants()
@@ -879,6 +830,7 @@ pub(super) async fn missing_page(
             });
         }
     }
+    let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let filters = if shared {
         MissingScoresFilters::Shared {
             players,
@@ -892,42 +844,15 @@ pub(super) async fn missing_page(
     } else {
         MissingScoresFilters::Player {
             name: users[0].1.as_str().into(),
-            num_players,
+            num_players: num_players.map(NumPlayers::try_from).transpose()?,
         }
     };
-    Ok(MissingScoresPage {
-        players: users.iter().map(|u| u.1.as_str().into()).collect(),
-        summary: if shared {
-            None
-        } else {
-            Some(score_summary(state, users[0].0).await?.0)
-        },
-        rows,
-        filters,
-    })
-}
-
-async fn missing(
-    state: &PublicState,
-    users: Vec<(i32, String)>,
-    shared: bool,
-    num_players: Option<NumPlayers>,
-    q: &Query,
-) -> Result<Response> {
-    let page = missing_page(state, &users, shared, num_players, q).await?;
-    let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let mut v = json!({"title":"Missing Scores","name":users[0].1,
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared});
-    if let Some(summary) = &page.summary {
-        v["summary"] = json!(summary);
+    if !shared {
+        v["summary"] = json!(score_summary(state, users[0].0).await?.0);
     }
-    set_table(
-        &mut v,
-        &PublicPageTable::MissingScores {
-            rows: page.rows,
-            filters: page.filters,
-        },
-    )?;
+    set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)
 }

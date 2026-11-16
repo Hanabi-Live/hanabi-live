@@ -872,24 +872,21 @@ move for the current situation.
 
 ### JSON Endpoints
 
-| URL                                                                         | Description                                                                                                 |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/export/[game ID]`                                                         | Provides the data for an arbitrary game from the database.                                                  |
-| `/api/v1/variants`                                                          | Displays a list of variants and their IDs.                                                                  |
-| `/api/v1/variants-full`                                                     | Displays a list of variants information and their IDs.                                                      |
-| `/api/v1/history/[username]`                                                | Lists a paginated list of the player's past games.                                                          |
-| `/api/v1/history/[username]/[username2]`                                    | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
-| `/api/v1/tags/[username]`                                                   | Lists a paginated list of the games tagged by the player, with only that player's tags on each game.        |
-| `/api/v1/tag/[tag]`                                                         | Lists a paginated list of the games containing the specified tag.                                           |
-| `/api/v1/seed/[seed]`                                                       | Lists paginated games played on a specific seed.                                                            |
-| `/api/v1/seed/[seed]/stats`                                                 | Shows the statistics of the games played on a specific seed.                                                |
-| `/api/v1/scores/[username]`                                                 | Shows the player's statistics, max scores, and best scores. The `/profile` route provides the same data.    |
-| `/api/v1/missing-scores/[username]`                                         | Lists the player's remaining non-max scores.                                                                |
-| `/api/v1/missing-scores/[username]/[number of players]`                     | Lists the player's remaining non-max scores for one number of players.                                      |
-| `/api/v1/shared-missing-scores/[number of players]/[username1]/[username2]` | Lists the remaining non-max scores that the players both need.                                              |
+| URL                                      | Description                                                                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/export/[game ID]`                      | Provides the data for an arbitrary game from the database.                                                  |
+| `/api/v1/variants`                       | Displays a list of variants and their IDs.                                                                  |
+| `/api/v1/variants-full`                  | Displays a list of variants information and their IDs.                                                      |
+| `/api/v1/history/[username]`             | Lists a paginated list of the player's past games.                                                          |
+| `/api/v1/history/[username]/[username2]` | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
+| `/api/v1/tags/[username]`                | Lists a paginated list of the games tagged by the player, with only that player's tags on each game.        |
+| `/api/v1/tag/[tag]`                      | Lists a paginated list of the games containing the specified tag.                                           |
+| `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
+| `/api/v1/seed/[seed]/stats`              | Shows the statistics of the games played on a specific seed.                                                |
+| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and best scores. The `/profile` route provides the same data.    |
 
-The profile, missing scores, and shared missing scores pages redirect to these
-routes when you add `?api` to their URL.
+The profile and scores pages redirect to their JSON routes when you add `?api`
+to their URLs.
 
 Notes: The paginated lists take the following query parameters, added with a `?`
 at the end of the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). A
