@@ -138,7 +138,7 @@ export function ClueLog({
     // a narrow window, the screen scrolls instead of the log, so the log is as tall as its clues.
     <section
       aria-label="Clue log"
-      className={`tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-game-panel tw:narrow-980:flex-none ${WELL_CLASS}`}
+      className={`tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-game-panel tw:phone:flex-none ${WELL_CLASS}`}
       ref={tooltipRef("Clue log")}
     >
       {/* The log needs no heading: its rows are clearly clues. */}
@@ -151,7 +151,7 @@ export function ClueLog({
         <ol
           // A thin scrollbar in the screen's colors has no arrow buttons, and the list stops short
           // of the panel's rounded corner, so that the corner does not cut the scrollbar off.
-          className={`tw:m-0 tw:mr-1 tw:mb-2.5 tw:grid tw:min-h-0 tw:flex-1 tw:list-none tw:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto] tw:content-start tw:gap-y-px tw:overflow-y-auto tw:px-2 tw:narrow-980:overflow-y-visible tw:py-1.5 tw:[scrollbar-color:var(--game-screen-line)_transparent] tw:[scrollbar-width:thin] ${
+          className={`tw:m-0 tw:mr-1 tw:mb-2.5 tw:grid tw:min-h-0 tw:flex-1 tw:list-none tw:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto] tw:content-start tw:gap-y-px tw:overflow-y-auto tw:px-2 tw:phone:overflow-y-visible tw:py-1.5 tw:[scrollbar-color:var(--game-screen-line)_transparent] tw:[scrollbar-width:thin] ${
             scrolledDown
               ? "tw:[mask-image:linear-gradient(to_bottom,transparent_0,#000_28px)]"
               : ""

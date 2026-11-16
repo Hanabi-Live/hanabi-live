@@ -9,7 +9,13 @@ import {
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import * as sounds from "../../sounds.ts";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
@@ -87,6 +93,7 @@ import {
   STACK_PLACE_PREFIX,
 } from "./cardMotion.ts";
 import {
+  areWideHandsTooNarrow,
   DISCARD_CARD_MAX_WIDTH,
   getHandCardWidth,
   getHandsTopPadding,
@@ -214,7 +221,11 @@ export function GameScreen({
   const sentMove = useAppSelector((root) => root.newUi.sentMove);
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
-  const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
+  const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
+  // Whether the wide layout's hands are too narrow (see "wideOther").
+  const [handsTooNarrow, setHandsTooNarrow] = useState(false);
+  // The phone layout: the columns stack, and the page scrolls.
+  const stacked = narrowWindow || handsTooNarrow;
   const touch = useMediaQuery(TOUCH_QUERY);
   // On a touch screen or a narrow window, the play stacks and the discard pile can be off the
   // screen, so the viewer taps a card and then "Play" or "Discard" instead of dragging it. Only one
@@ -357,6 +368,68 @@ export function GameScreen({
     heldRectRef,
     clearDrop,
   );
+
+  // The phone layout starts at the 980px breakpoint, or on a wider window when the wide layout's
+  // hands are too narrow (see "areWideHandsTooNarrow"). How large the hands are depends on the
+  // players, the names, the chat, and the size of the window, so it is measured, not a breakpoint.
+  // The phone layout cannot measure the wide layout's hands. So when it starts, it keeps the size
+  // of the rest of the wide layout, and it ends when the hands would fit beside it again. A change
+  // to what is beside the hands (the chat or the variant's play stacks) tries the wide layout
+  // again.
+  const wideOther = useRef<{
+    readonly width: number;
+    readonly height: number;
+    readonly beside: string;
+  }>(undefined);
+  const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
+  const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (narrowWindow || root === null || state === undefined) {
+      return;
+    }
+
+    // The wide layout has the names beside the cards, with the eye buttons only on a touch screen.
+    const nameColumnWidth =
+      Math.min(
+        nameWidth,
+        mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
+      ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
+    const { options } = state.metadata;
+    function tooNarrow(width: number, height: number) {
+      return areWideHandsTooNarrow(
+        width,
+        height,
+        options.numPlayers,
+        getCardsPerHand(options),
+        nameColumnWidth,
+      );
+    }
+
+    if (!handsTooNarrow) {
+      if (handsSize.width > 0 && tooNarrow(handsSize.width, handsSize.height)) {
+        wideOther.current = {
+          width: root.clientWidth - handsSize.width,
+          height: root.clientHeight - handsSize.height,
+          beside,
+        };
+        setHandsTooNarrow(true);
+      }
+      return;
+    }
+
+    const other = wideOther.current;
+    if (
+      other === undefined
+      || other.beside !== beside
+      || !tooNarrow(
+        root.clientWidth - other.width,
+        root.clientHeight - other.height,
+      )
+    ) {
+      setHandsTooNarrow(false);
+    }
+  });
 
   if (state?.visibleState === undefined) {
     return (
@@ -930,6 +1003,8 @@ export function GameScreen({
       // such as the chat input, still let the player select what they type.
       className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:select-none tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       {...cardInputHandlers}
+      // The "phone" variant of the styles follows it (see "tailwind.css").
+      data-phone-layout={stacked ? "" : undefined}
       // A right-click on a card or a number draws an arrow on it, when the viewer can draw one.
       onContextMenu={(event) => {
         const target = getArrowTargetAt(event.target as Element);
@@ -961,7 +1036,7 @@ export function GameScreen({
         />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
-            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-(--phone-side-padding)"
+            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:phone:flex-col tw:phone:justify-start tw:phone:gap-4 tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
             style={
               {
@@ -974,7 +1049,7 @@ export function GameScreen({
             }
           >
             <div
-              className="tw:relative tw:flex tw:shrink-0 tw:narrow-980:justify-center"
+              className="tw:relative tw:flex tw:shrink-0 tw:phone:justify-center"
               ref={setPlayAreaElement}
               style={{ paddingTop: columnTopPadding }}
             >
@@ -1061,7 +1136,7 @@ export function GameScreen({
             {/* In the phone layout, the hands keep room on their left for the clue rail, which
                 runs beside them (see "Hands.tsx"). The screen's padding is part of that room. */}
             <div
-              className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:ml-(--clue-rail-margin) tw:narrow-980:max-w-none tw:narrow-980:flex-none"
+              className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:order-first tw:phone:ml-(--clue-rail-margin) tw:phone:max-w-none tw:phone:flex-none"
               style={
                 {
                   "--clue-rail-margin": `calc(${PHONE_CLUE_RAIL_SPACE}px - var(--phone-side-padding))`,
@@ -1069,7 +1144,7 @@ export function GameScreen({
               }
             >
               <div
-                className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
+                className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:phone:flex-none"
                 ref={setHandsElement}
                 style={{ paddingTop: handsTopPadding }}
               >
@@ -1242,7 +1317,7 @@ export function GameScreen({
             </div>
 
             <div
-              className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full`}
+              className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:phone:w-full`}
               style={{ paddingTop: columnTopPadding }}
             >
               {stacked ? (
@@ -1353,6 +1428,7 @@ export function GameScreen({
             ? undefined
             : getPaceRiskColor(visibleState.stats.paceRisk)
         }
+        phoneLayout={stacked}
         // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
         // the height of the screen.
         replayControls={

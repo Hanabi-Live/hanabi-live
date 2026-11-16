@@ -34,7 +34,7 @@ export const KEY_CLASS =
 const BAR_BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text ${KEY_CLASS}`;
 
 /** A button on the bottom bar, which gets smaller on narrow screens. It sets no color. */
-export const BOTTOM_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:narrow-530:px-2`;
+export const BOTTOM_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:phone:h-9 tw:phone:px-3 tw:phone:text-sm tw:narrow-530:px-2`;
 
 /**
  * The usual color of a button on the bottom bar. It is translucent, so that it takes the color of

@@ -140,7 +140,7 @@ function SuitLabel({
   return (
     <div
       aria-label={getSuitLabelText(suit, abbreviation)}
-      className="tw:absolute tw:top-1/2 tw:left-0 tw:flex tw:w-(--suit-label-size) tw:-translate-y-1/2 tw:flex-col tw:items-center tw:justify-center tw:gap-[3px] tw:narrow-980:static tw:narrow-980:mt-(--suit-label-gap) tw:narrow-980:h-(--suit-label-size) tw:narrow-980:w-auto tw:narrow-980:translate-y-0 tw:narrow-980:flex-row"
+      className="tw:absolute tw:top-1/2 tw:left-0 tw:flex tw:w-(--suit-label-size) tw:-translate-y-1/2 tw:flex-col tw:items-center tw:justify-center tw:gap-[3px] tw:phone:static tw:phone:mt-(--suit-label-gap) tw:phone:h-(--suit-label-size) tw:phone:w-auto tw:phone:translate-y-0 tw:phone:flex-row"
       data-suit-label
       ref={tooltipRefHtml(
         showTooltip
@@ -467,7 +467,7 @@ export function PlayArea({
       style={{ gap: PLAY_AREA_GAP }}
     >
       <div
-        className="tw:contents tw:narrow-980:flex tw:narrow-980:items-start"
+        className="tw:contents tw:phone:flex tw:phone:items-start"
         style={{ gap: PLAY_AREA_GAP }}
       >
         <section
@@ -479,7 +479,7 @@ export function PlayArea({
           style={{ padding: PLAY_STACKS_PADDING }}
         >
           <div
-            className="tw:relative tw:flex tw:flex-col tw:narrow-980:flex-row tw:narrow-980:flex-wrap"
+            className="tw:relative tw:flex tw:flex-col tw:phone:flex-row tw:phone:flex-wrap"
             style={{ gap: PLAY_STACK_GAP }}
           >
             {stacks.map((stack) => {
@@ -540,7 +540,7 @@ export function PlayArea({
                   // stay in line with the deck below them.
                   className={
                     suitLabels
-                      ? "tw:relative tw:px-(--suit-label-space) tw:narrow-980:px-0"
+                      ? "tw:relative tw:px-(--suit-label-space) tw:phone:px-0"
                       : undefined
                   }
                   key={stack.suitIndex}
@@ -649,7 +649,7 @@ export function PlayArea({
         {/* In a row, the deck moves down by the stacks' padding, so that its top card is level
             with the cards of the stacks. */}
         <div
-          className="tw:contents tw:narrow-980:block tw:narrow-980:pt-(--play-stacks-padding)"
+          className="tw:contents tw:phone:block tw:phone:pt-(--play-stacks-padding)"
           style={
             {
               "--play-stacks-padding": `${PLAY_STACKS_PADDING}px`,
@@ -1427,7 +1427,7 @@ function StrikeMark({
   return (
     <svg
       aria-hidden="true"
-      className={`tw:size-[21px] tw:narrow-980:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
+      className={`tw:size-[21px] tw:phone:size-[22px] ${upcoming ? "tw:text-game-muted tw:opacity-35" : "tw:text-critical"}`}
       viewBox="0 0 24 24"
     >
       <path

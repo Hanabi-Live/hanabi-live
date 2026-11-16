@@ -59,7 +59,7 @@ function Controls({
 }): React.JSX.Element {
   return (
     <div
-      className="tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:narrow-980:flex-wrap"
+      className="tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap"
       role="status"
     >
       {children}
@@ -70,7 +70,7 @@ function Controls({
 /**
  * The middle of the controls. On a narrow window, it has the last row of the controls to itself.
  */
-const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-980:order-last tw:narrow-980:basis-full ${STEP_HEIGHT_CLASS}`;
+const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:phone:order-last tw:phone:basis-full ${STEP_HEIGHT_CLASS}`;
 
 /**
  * The right of the controls. On a narrow window, it shares the first row with the leader's
@@ -533,7 +533,7 @@ function HypotheticalHint({
   return (
     <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
       <p
-        className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:narrow-980:line-clamp-2 tw:narrow-980:text-[13px] tw:narrow-980:leading-tight tw:narrow-980:whitespace-normal"
+        className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal"
         ref={(element) => {
           textRef.current = element;
           return tooltip(element);
@@ -694,11 +694,11 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:narrow-980:min-w-0 tw:narrow-980:shrink tw:narrow-980:grow tw:narrow-980:basis-0">
+    <div className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0">
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
         // knows the room that it needs.
-        <div className="tw:flex tw:w-max tw:max-w-56 tw:min-w-0 tw:narrow-980:w-auto">
+        <div className="tw:flex tw:w-max tw:max-w-56 tw:min-w-0 tw:phone:w-auto">
           <LeaderMenu
             amLeader={shared.amLeader}
             leader={shared.leader}

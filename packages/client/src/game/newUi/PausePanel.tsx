@@ -42,14 +42,14 @@ export function PausePanel({
     // Over all of the hands, so that no one studies the cards while the game is paused. The hands
     // keep their size under it.
     <div
-      className="tw:absolute tw:inset-0 tw:z-20 tw:flex tw:items-center tw:justify-center tw:narrow-980:items-start tw:rounded-game-panel tw:bg-game-panel tw:shadow-[0_12px_32px_rgb(0_0_0/55%)] tw:ring-1 tw:ring-game-line"
+      className="tw:absolute tw:inset-0 tw:z-20 tw:flex tw:items-center tw:justify-center tw:phone:items-start tw:rounded-game-panel tw:bg-game-panel tw:shadow-[0_12px_32px_rgb(0_0_0/55%)] tw:ring-1 tw:ring-game-line"
       data-pause-panel
       ref={panelRef}
       role="status"
     >
       {/* On a narrow screen, the hands can be taller than the window, so the text stays in view
           while the player scrolls. */}
-      <div className="tw:flex tw:flex-col tw:items-center tw:gap-1 tw:px-8 tw:text-center tw:narrow-980:sticky tw:narrow-980:top-0 tw:narrow-980:py-12">
+      <div className="tw:flex tw:flex-col tw:items-center tw:gap-1 tw:px-8 tw:text-center tw:phone:sticky tw:phone:top-0 tw:phone:py-12">
         <i
           aria-hidden="true"
           className="fas fa-pause tw:mb-2 tw:text-4xl tw:text-game-turn"

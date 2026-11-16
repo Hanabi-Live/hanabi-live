@@ -8,7 +8,7 @@ import {
   LOW_SCORE_PHASE_COLOR,
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
-import { STACKED_WIDTH_QUERY, useElementSize, useMediaQuery } from "./hooks.ts";
+import { useElementSize } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
 /** What the efficiency numbers mean, for screen readers. */
@@ -17,7 +17,7 @@ const EFFICIENCY_HELP_LABEL =
 
 /** Explains pace, in the words of the classic screen's tooltip. */
 const PACE_HELP = `
-  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:narrow-980:max-w-[15em]">
+  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
     Pace is a measure of how many discards can happen while still having a
     chance to get the maximum score.
   </p>
@@ -123,6 +123,8 @@ interface StatusStripProps {
   readonly chatButton: React.ReactNode;
   readonly onClassicView: () => void;
   readonly onLobby: () => void;
+  /** Whether the game screen uses the phone layout (see "GameScreen.tsx"). */
+  readonly phoneLayout: boolean;
 }
 
 /**
@@ -139,11 +141,11 @@ const STAT_LABEL_CLASS =
  */
 const STAT_VALUE_CLASS = {
   large:
-    "tw:text-[28px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:narrow-980:text-[20px] tw:narrow-980:leading-[24px]",
+    "tw:text-[28px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:phone:text-[20px] tw:phone:leading-[24px]",
   normal:
-    "tw:text-[22px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:narrow-980:text-[17px] tw:narrow-980:leading-[24px]",
+    "tw:text-[22px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:phone:text-[17px] tw:phone:leading-[24px]",
   small:
-    "tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-text/85 tw:narrow-980:leading-[24px]",
+    "tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-text/85 tw:phone:leading-[24px]",
 } as const;
 
 function Stat({
@@ -180,7 +182,7 @@ function GroupDivider({
   return (
     <span
       aria-hidden="true"
-      className={`tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:narrow-980:hidden ${className}`}
+      className={`tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:phone:hidden ${className}`}
     />
   );
 }
@@ -324,7 +326,7 @@ function markedStyle(
 const FIRST_TWO_DIGIT_NUMBER = 10;
 
 /** The shape of a button on the bar. It sets no color. */
-const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:narrow-530:px-2 tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
+const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:phone:h-9 tw:phone:px-3 tw:phone:text-sm tw:narrow-530:px-2 tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
 
 const buttonClass = `${BUTTON_SHAPE_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text`;
 
@@ -418,12 +420,12 @@ function ReplayToggle({
         >
           {/* On a narrow window, the button says only "Back", which is easy to read and lets all
               of the buttons fit in one row on a phone. */}
-          <span className="tw:narrow-980:hidden">Back to the game</span>
-          <span className="tw:hidden tw:narrow-980:inline">Back</span>
+          <span className="tw:phone:hidden">Back to the game</span>
+          <span className="tw:hidden tw:phone:inline">Back</span>
           {/* The name does not widen the button. A long one is cut off. */}
           {currentName !== undefined && (
             <span
-              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:narrow-980:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
+              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:phone:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
               data-live-turn
             >
               {ourTurn ? "Your turn" : `${currentName}'s turn`}
@@ -578,6 +580,7 @@ export function StatusStrip({
   chatButton,
   onClassicView,
   onLobby,
+  phoneLayout,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
   const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
@@ -587,12 +590,11 @@ export function StatusStrip({
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const variantRef = useRef<HTMLDivElement>(null);
-  const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
   const shortLabels = useShortLabels(
     footer,
     buttonsRef,
     variantRef,
-    ownRow && !stacked,
+    ownRow && !phoneLayout,
   );
 
   // The line along the top is a shadow, not a border, so that its width does not move the bar's
@@ -608,13 +610,13 @@ export function StatusStrip({
   // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-narrow-980:data-own-row:h-auto tw:not-narrow-980:data-own-row:flex-wrap tw:not-narrow-980:data-own-row:gap-y-0 tw:not-narrow-980:data-own-row:pt-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-530:gap-x-4 tw:narrow-980:px-3 tw:narrow-980:py-3`}
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
     >
       {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
           and what game this is. */}
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5 tw:narrow-530:gap-4">
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
         <Stat
           label={
             <>
@@ -703,7 +705,7 @@ export function StatusStrip({
         </Stat>
       </div>
       <GroupDivider />
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5 tw:narrow-530:gap-4">
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
         <Stat
           label={
             <>
@@ -774,7 +776,7 @@ export function StatusStrip({
           the buttons get short labels, and the buttons get short labels before they go to a row
           of their own. */}
       <div
-        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-narrow-980:group-data-own-row/strip:min-w-min tw:not-narrow-980:group-data-own-row/strip:flex-1 tw:narrow-980:min-w-28 tw:narrow-980:flex-1 tw:narrow-530:min-w-0`}
+        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
         ref={variantRef}
       >
         <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
@@ -788,7 +790,7 @@ export function StatusStrip({
         <span
           // When the variant shares a row with the buttons, the name takes no width of its own, so
           // that only the label sets the variant's minimum width.
-          className="tw:block tw:max-w-full tw:truncate tw:not-narrow-980:group-data-own-row/strip:w-0 tw:not-narrow-980:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:narrow-980:leading-[24px]"
+          className="tw:block tw:max-w-full tw:truncate tw:not-phone:group-data-own-row/strip:w-0 tw:not-phone:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:phone:leading-[24px]"
         >
           {variantName}
         </span>
@@ -799,7 +801,7 @@ export function StatusStrip({
       {inReplay && (
         <div
           // When the controls have a row of their own, and on a narrow window, they are on top.
-          className="tw:flex tw:shrink-0 tw:grow tw:basis-0 tw:group-data-own-row/strip:order-first tw:group-data-own-row/strip:basis-full tw:narrow-980:order-first tw:narrow-980:basis-full"
+          className="tw:flex tw:shrink-0 tw:grow tw:basis-0 tw:group-data-own-row/strip:order-first tw:group-data-own-row/strip:basis-full tw:phone:order-first tw:phone:basis-full"
           ref={controlsRef}
         >
           {replayControls}
@@ -807,13 +809,11 @@ export function StatusStrip({
       )}
       {/* When the buttons have no room in one line, they have short labels. */}
       <div
-        className="tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2"
+        className="tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
         data-short-labels={shortLabels ? "" : undefined}
         ref={buttonsRef}
       >
-        <div className="tw:mr-auto tw:hidden tw:narrow-980:flex">
-          {chatButton}
-        </div>
+        <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
         <button className={buttonClass} onClick={onClassicView} type="button">
           {/* One box, so that the button's gap does not split the words. */}
           <span>

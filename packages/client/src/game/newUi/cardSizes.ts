@@ -125,6 +125,52 @@ export function namesFitBesideCards(
 }
 
 /**
+ * Returns the width of the cards in a hand that fit in `handsWidth`, with the names beside the
+ * cards in a column `nameColumnWidth` wide, or above them when it is `undefined`.
+ */
+function getHandCardWidthByWidth(
+  handsWidth: number,
+  cardsPerHand: number,
+  nameColumnWidth: number | undefined,
+): number {
+  const widthForCards =
+    handsWidth
+    - (nameColumnWidth === undefined ? 0 : nameColumnWidth + NAME_GAP)
+    - HAND_BOX_HORIZONTAL_PADDING
+    - CARD_GAP * (cardsPerHand - 1);
+  return widthForCards / cardsPerHand;
+}
+
+/**
+ * Whether the wide layout's hands are too narrow: the hands could take all of their height, with
+ * cards smaller than the largest card, but their width makes the cards smaller than that. Then the
+ * game screen uses the phone layout. When even the largest cards do not take all of the height,
+ * such as with two players, the hands are never too narrow.
+ */
+export function areWideHandsTooNarrow(
+  handsWidth: number,
+  handsHeight: number,
+  numPlayers: number,
+  cardsPerHand: number,
+  nameColumnWidth: number,
+): boolean {
+  const byHeight = getHandCardWidth(
+    Infinity,
+    handsHeight,
+    numPlayers,
+    cardsPerHand,
+    nameColumnWidth,
+    0,
+    false,
+  );
+  return (
+    byHeight < HAND_CARD_WIDTH.MAX
+    && getHandCardWidthByWidth(handsWidth, cardsPerHand, nameColumnWidth)
+      < byHeight
+  );
+}
+
+/**
  * Returns the width of the cards in the hands. They fit in `handsHeight`. In the phone layout, that
  * is the height of the table on the screen, so that every hand shows when the page is scrolled to
  * the top. Then the names can be above the cards, in a row `nameRowHeight` tall.
@@ -138,12 +184,11 @@ export function getHandCardWidth(
   nameRowHeight: number,
   stacked: boolean,
 ): number {
-  const widthForCards =
-    handsWidth
-    - (nameColumnWidth === undefined ? 0 : nameColumnWidth + NAME_GAP)
-    - HAND_BOX_HORIZONTAL_PADDING
-    - CARD_GAP * (cardsPerHand - 1);
-  const byWidth = widthForCards / cardsPerHand;
+  const byWidth = getHandCardWidthByWidth(
+    handsWidth,
+    cardsPerHand,
+    nameColumnWidth,
+  );
   // The padding above the cards grows with them (see "getHandBoxTopPadding"), and so does the space
   // above the hands (see "getHandsTopPadding").
   const rowOtherHeight = HAND_BOX_BOTTOM_PADDING + HAND_BOX_TOP_SPACE;

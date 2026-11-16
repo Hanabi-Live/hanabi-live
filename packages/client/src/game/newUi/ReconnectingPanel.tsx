@@ -85,7 +85,7 @@ export function ReconnectingPanel({
     // The cards show through the panel, and the text sits on a card of its own. Before it shows, it
     // is still there and empty, so that no click reaches the cards.
     <div
-      className={`tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center tw:narrow-980:items-start tw:rounded-game-panel ${
+      className={`tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center tw:phone:items-start tw:rounded-game-panel ${
         shown ? "tw:bg-game-panel/60" : ""
       }`}
       data-reconnecting-panel
@@ -93,7 +93,7 @@ export function ReconnectingPanel({
       role="status"
     >
       {shown && (
-        <div className="tw:flex tw:flex-col tw:items-center tw:gap-1 tw:rounded-game-panel tw:bg-game-panel tw:px-8 tw:py-6 tw:text-center tw:shadow-[0_12px_32px_rgb(0_0_0/55%)] tw:ring-1 tw:ring-game-line tw:narrow-980:sticky tw:narrow-980:top-12">
+        <div className="tw:flex tw:flex-col tw:items-center tw:gap-1 tw:rounded-game-panel tw:bg-game-panel tw:px-8 tw:py-6 tw:text-center tw:shadow-[0_12px_32px_rgb(0_0_0/55%)] tw:ring-1 tw:ring-game-line tw:phone:sticky tw:phone:top-12">
           <i
             aria-hidden="true"
             className="fas fa-plug tw:mb-2 tw:text-4xl tw:text-game-turn"
