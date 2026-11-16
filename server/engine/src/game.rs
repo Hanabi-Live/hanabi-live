@@ -231,7 +231,7 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
             } else {
                 if deck_move {
                     if !variant.has_inverted {
-                        return reject("You cannot discard the last card in non-Inverted games");
+                        return reject("You cannot discard the last card in non-Inverted games.");
                     }
                     return Ok(());
                 }

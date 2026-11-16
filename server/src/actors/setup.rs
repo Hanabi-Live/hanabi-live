@@ -35,7 +35,7 @@ pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
         options.time_control.is_none_or(|time| {
             time.base_seconds.get() >= 1 && time.per_turn_seconds.get() >= 1
         }),
-        "Invalid timed options"
+        "Invalid timed options."
     );
     Ok(())
 }
@@ -45,7 +45,7 @@ pub(super) fn table_name(requested: &str) -> CommandResult<String> {
     let name = crate::accounts::truncate_to_max_chars(requested.trim(), MAX_TABLE_NAME_LENGTH)
         .trim_end()
         .to_owned();
-    ensure_or_reject!(!name.is_empty(), "Table names cannot be blank");
+    ensure_or_reject!(!name.is_empty(), "Table names cannot be blank.");
     validate_table_name(&name)?;
     Ok(name)
 }
@@ -55,7 +55,7 @@ fn validate_table_name(name: &str) -> CommandResult<()> {
         name.chars().all(|c| c.is_alphanumeric()
             || unicode_normalization::char::is_combining_mark(c)
             || " _!#$'()+,-.:;=?@".contains(c)),
-        "Invalid table name"
+        "Invalid table name."
     );
     Ok(())
 }
@@ -65,11 +65,11 @@ pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<Option<String>
     let seed = seed.unwrap_or_default().trim();
     ensure_or_reject!(
         seed.chars().count() <= MAX_SEED_LENGTH,
-        "Seeds cannot be longer than {MAX_SEED_LENGTH} characters"
+        "Seeds cannot be longer than {MAX_SEED_LENGTH} characters."
     );
     ensure_or_reject!(
         crate::model::is_valid_seed(seed),
-        "Seeds can only contain letters, numbers, and hyphens"
+        "Seeds can only contain letters, numbers, and hyphens."
     );
     Ok((!seed.is_empty()).then(|| seed.into()))
 }
@@ -93,7 +93,7 @@ pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<St
                 .parse::<u64>()
                 .ok()
                 .and_then(|number| number.checked_add(1))
-                .or_reject("Seed suffix exhausted")?,
+                .or_reject("Seed suffix exhausted.")?,
             width = number.len()
         )
     };
@@ -134,7 +134,7 @@ pub(super) async fn load_replay(
     let historical = crate::archive::replay(&store.primary, game_id, table_id, user).await?;
     ensure_or_reject!(
         usize::try_from(historical.game.turn).is_ok_and(|limit| turns < limit),
-        "Replay turn exceeds game"
+        "Replay turn exceeds game."
     );
     *options = historical.game.options.clone();
     extra.custom_seed = historical.seed;
@@ -346,7 +346,7 @@ pub(super) async fn prepare_table(
     session: &Session,
     creation: Creation,
 ) -> CommandResult<(TableSnapshot, Saved, Vec<String>)> {
-    ensure_or_reject!(session.active(), "Stale session");
+    ensure_or_reject!(session.active(), "Stale session.");
     let id = store.allocate_table().await?;
     let result = async {
         let r = match creation {
@@ -403,13 +403,13 @@ pub(super) async fn prepare_table(
             Some(password) => {
                 ensure_or_reject!(
                     password.len() <= MAX_TABLE_PASSWORD_BYTES,
-                    "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes"
+                    "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes."
                 );
                 Some(crate::accounts::hash_password(&session.ip, password).await?)
             }
             None => None,
         };
-        ensure_or_reject!(session.active(), "Creator disconnected during preparation");
+        ensure_or_reject!(session.active(), "Creator disconnected during preparation.");
         let mut table = TableSnapshot {
             format: FORMAT.into(),
             id,

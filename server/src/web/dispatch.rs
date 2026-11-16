@@ -99,7 +99,10 @@ pub(super) fn invalid_request(command: Option<&str>, error: &anyhow::Error) -> C
         error.to_string()
     };
     let command = command.unwrap_or("unrecognized command");
-    rejection!("Cannot process {command}: {detail}")
+    rejection!(
+        "Cannot process {command}: {}.",
+        detail.trim_end_matches('.')
+    )
 }
 
 /// Does the work of a lobby command's effects that needs the server's runtime or integrations, and

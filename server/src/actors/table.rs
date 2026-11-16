@@ -42,20 +42,20 @@ const TIMER_RETRY: Duration = Duration::from_millis(250);
 pub(super) fn wrong_phase(message: &ClientRequest) -> CommandError {
     use ClientRequest as M;
     let reason = match message {
-        M::TableStart(_) => "Already started",
-        M::TableUpdate(_) => "Game already started",
+        M::TableStart(_) => "Already started.",
+        M::TableUpdate(_) => "Game already started.",
         M::PlayerAction(_)
         | M::Pause(_)
         | M::PauseQueue(_)
         | M::IdleReset(_)
         | M::Note(_)
         | M::TableTerminate(_)
-        | M::TableTerminateVote(_) => "Not an ongoing game",
-        M::ReplayAction(_) => "Not a replay",
-        M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay",
-        M::TableRestart(_) => "Only the shared replay leader can restart",
-        M::TagAdd(_) | M::TagRemove(_) | M::TagRemoveAll(_) => "No game",
-        _ => "This table does not accept that command now",
+        | M::TableTerminateVote(_) => "Not an ongoing game.",
+        M::ReplayAction(_) => "Not a replay.",
+        M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay.",
+        M::TableRestart(_) => "Only the shared replay leader can restart.",
+        M::TagAdd(_) | M::TagRemove(_) | M::TagRemoveAll(_) => "No game.",
+        _ => "This table does not accept that command now.",
     };
     rejection!("{reason}")
 }
@@ -65,7 +65,7 @@ pub(super) fn wrong_phase(message: &ClientRequest) -> CommandError {
 pub(super) fn game_mut(table: &mut TableSnapshot) -> CommandResult<&mut Snapshot> {
     match table.game_mut() {
         Some(snapshot) => Ok(snapshot),
-        None => bail_internal!("A game command ran at a table without a game"),
+        None => bail_internal!("A game command ran at a table without a game."),
     }
 }
 
@@ -263,7 +263,7 @@ impl TableActor {
             .players()
             .iter()
             .position(|p| p.is(s.user))
-            .or_reject("You are not playing at this table")
+            .or_reject("You are not playing at this table.")
     }
     /// Whether the user in `s` played the game at this table and can play it again with a restart.
     /// The seats of a replay of a saved or imported game have no users, so it matches nobody.
@@ -816,7 +816,7 @@ impl TableActor {
                     });
                 }
                 TableCommand::Client { reply, .. } => {
-                    let _ = reply.send(Err(rejection!("Table closed")));
+                    let _ = reply.send(Err(rejection!("Table closed.")));
                 }
             }
         }
@@ -1049,7 +1049,7 @@ impl TableActor {
         blocks: &Blocks,
         command: Command,
     ) -> CommandResult<Started> {
-        ensure_or_reject!(session.active(), "Stale session or unavailable authority");
+        ensure_or_reject!(session.active(), "Stale session or unavailable authority.");
         // A game that ran out of time ends before the command runs, so the command sees the end.
         if matches!(self.table.phase, Phase::Live { .. })
             && self
@@ -1096,7 +1096,7 @@ impl TableActor {
         };
         ensure_internal!(
             matches!(route(&message), Route::Table(_) | Route::TableChat(_)),
-            "Unsupported table command: {}",
+            "Unsupported table command: {}.",
             message.name()
         );
         let done = match message {
@@ -1124,7 +1124,7 @@ impl TableActor {
                 Ok(())
             }
             ClientRequest::GameLoaded(_) => {
-                ensure_or_reject!(self.attending(&session), "Reattend before loading");
+                ensure_or_reject!(self.attending(&session), "Reattend before loading.");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
                 if let Phase::Live { snapshot: s, .. } = &mut next.phase

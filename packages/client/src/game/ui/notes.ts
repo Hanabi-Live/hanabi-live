@@ -48,7 +48,7 @@ export const NOTE_SEPARATOR = " | ";
 export const NOTE_LENGTH_LIMIT = {
   max: MAX_NOTE_LENGTH,
   left: (text) => MAX_NOTE_LENGTH - countCharacters(savedNote(text)),
-  tooLongText: "Note is too long",
+  tooLongText: "Note is too long.",
 } as const satisfies LengthLimit;
 
 /** The character counter of the note that is being edited, and the tooltip that shows it. */

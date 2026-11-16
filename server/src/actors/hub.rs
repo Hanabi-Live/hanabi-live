@@ -309,7 +309,7 @@ impl Hub {
     }
     fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: RequestReply) {
         if self.closing || !self.current(&s) {
-            let _ = reply.send(Err(rejection!("Stale session or draining server")));
+            let _ = reply.send(Err(rejection!("Stale session or draining server.")));
             return;
         }
         let Some(sender) = self.tables.get(&id).map(|e| e.handle.sender.clone()) else {
@@ -361,7 +361,7 @@ impl Hub {
                 mpsc::error::TrySendError::Full(_) => {
                     rejection!("This table is busy. Please try again in a moment.")
                 }
-                mpsc::error::TrySendError::Closed(_) => rejection!("Table closed"),
+                mpsc::error::TrySendError::Closed(_) => rejection!("Table closed."),
             };
             match joined {
                 Some((_, _, reply)) => {
@@ -382,7 +382,7 @@ impl Hub {
         self.tasks.spawn(async move {
             let result = received
                 .await
-                .unwrap_or_else(|_| Err(rejection!("Table closed")));
+                .unwrap_or_else(|_| Err(rejection!("Table closed.")));
             if let Err(error) = hub
                 .send(HubCommand::JoinFinished {
                     result,
@@ -392,7 +392,7 @@ impl Hub {
                 .await
                 && let HubCommand::JoinFinished { reply, .. } = error.0
             {
-                let _ = reply.send(Err(internal!("Coordinator stopped")));
+                let _ = reply.send(Err(internal!("Coordinator stopped.")));
             }
         });
     }
@@ -539,7 +539,7 @@ impl Hub {
         effects: Vec<Publication>,
     ) -> CommandResult<()> {
         self.store.check_state()?;
-        ensure_or_reject!(self.current(session), "Stale session");
+        ensure_or_reject!(self.current(session), "Stale session.");
         for effect in effects {
             match effect {
                 Publication::Broadcast(message) => self.broadcast(message.frame()),
@@ -762,12 +762,12 @@ impl Hub {
                 } => {
                     if self.closing {
                         let _ = reply.send(Err(rejection!(
-                            "Server draining; the prepared table will recover"
+                            "Server draining; the prepared table will recover."
                         )));
                     } else if !self.current(&session) {
-                        let _ = reply.send(Err(rejection!("Session changed during preparation")));
+                        let _ = reply.send(Err(rejection!("Session changed during preparation.")));
                     } else if self.tables.contains_key(&table.id) || allocation.id != table.id {
-                        let _ = reply.send(Err(internal!("Duplicate table installation")));
+                        let _ = reply.send(Err(internal!("Duplicate table installation.")));
                     } else {
                         // The creator has seen the chat that preparing the table wrote.
                         let chat_read = HashMap::from([(table.owner.user_id, table.chat.len())]);
@@ -796,7 +796,7 @@ impl Hub {
                         session.emit(&frame);
                         Ok(())
                     } else {
-                        Err(rejection!("Session unavailable"))
+                        Err(rejection!("Session unavailable."))
                     };
                     let _ = reply.send(result);
                 }
@@ -840,7 +840,7 @@ impl Hub {
                 .is_some_and(|p| p.session.generation > session.generation)
         {
             session.cancel.cancel();
-            reject!("Stale or draining session");
+            reject!("Stale or draining session.");
         }
         if let Some(old) = self.sessions.remove(&session.user) {
             old.session.supersede();
@@ -914,7 +914,7 @@ impl Hub {
     }
     /// Lists the online users, for a session that is current.
     fn directory(&self, session: &Session) -> CommandResult<Vec<OnlineUser>> {
-        ensure_or_reject!(self.current(session), "Stale session");
+        ensure_or_reject!(self.current(session), "Stale session.");
         Ok(self
             .sessions
             .values()
@@ -948,7 +948,7 @@ impl Hub {
                 }
                 other => {
                     let _ = reply.send(Err(internal!(
-                        "Command {} runs at {other:?}, not at a table",
+                        "Command {} runs at {other:?}, not at a table.",
                         message.name()
                     )));
                 }
@@ -963,7 +963,7 @@ impl Hub {
         let closing = self.closing;
         self.tasks.spawn(async move {
             let result = async {
-                ensure_or_reject!(!closing, "Draining");
+                ensure_or_reject!(!closing, "Draining.");
                 let permit = permit?;
                 let id = store.allocate_table().await?;
                 Ok(Allocation::new(id, permit, store, tasks, 0))
@@ -1089,7 +1089,7 @@ async fn send_install(hub: &mpsc::Sender<HubCommand>, install: HubCommand) {
     if let Err(error) = hub.send(install).await
         && let HubCommand::Install { reply, .. } = error.0
     {
-        let _ = reply.send(Err(internal!("Coordinator stopped; table is recoverable")));
+        let _ = reply.send(Err(internal!("Coordinator stopped; table is recoverable.")));
     }
 }
 

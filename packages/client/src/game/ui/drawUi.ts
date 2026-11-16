@@ -1818,7 +1818,7 @@ function drawScoreArea() {
   );
   globals.elements.scoreArea.add(terminateButton);
   terminateButton.tooltipName = "kill";
-  terminateButton.tooltipContent = "End the game";
+  terminateButton.tooltipContent = "End the game.";
   initKonvaTooltips(terminateButton, true, false);
   globals.elements.terminateButton = terminateButton;
 }

@@ -31,7 +31,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         .map_or("", hanabi_protocol::Seed::as_str);
     ensure_or_reject!(
         seed.len() <= MAX_IMPORTED_SEED_LENGTH && crate::model::is_valid_seed(seed),
-        "Invalid seed"
+        "Invalid seed."
     );
     let mut options = crate::model::engine_options(&input.options)?;
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
@@ -40,12 +40,12 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
             .captures(seed)
-            .or_reject("Provide players when the seed has no player count")?[2]
+            .or_reject("Provide players when the seed has no player count.")?[2]
             .parse()
-            .or_reject("Invalid seed")?;
+            .or_reject("Invalid seed.")?;
         ensure_or_reject!(
             hanabi_protocol::is_player_count(count),
-            "The seed's player count must be between {} and {}",
+            "The seed's player count must be between {} and {}.",
             hanabi_protocol::MIN_PLAYERS,
             hanabi_protocol::MAX_PLAYERS
         );
@@ -58,7 +58,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             && players.iter().all(|n| !n.is_empty()
                 && n.len() <= crate::accounts::MAX_USERNAME_LENGTH
                 && !n.contains(|c| crate::accounts::USERNAME_SPECIAL_CHARACTERS.contains(c))),
-        "Invalid players"
+        "Invalid players."
     );
     options.num_players = players.len();
     options.variant_id = Some(variant.id);
@@ -93,11 +93,11 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     );
     ensure_or_reject!(
         seeded.as_ref().is_none_or(|d| *d == deck),
-        "The deck does not match the seed"
+        "The deck does not match the seed."
     );
     ensure_or_reject!(
         options.detrimental_characters || input.characters.is_empty(),
-        "Characters need the detrimental characters option"
+        "Characters need the detrimental characters option."
     );
     let mut characters: Vec<AssignedCharacter> = vec![];
     for &assignment in &input.characters {
@@ -127,7 +127,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     }
     ensure_or_reject!(
         characters.is_empty() || characters.len() == players.len(),
-        "The amount of characters must match the number of players"
+        "The amount of characters must match the number of players."
     );
     let actions: Vec<RecordedAction> = input.actions.clone();
     for (i, a) in actions.iter().enumerate() {
@@ -151,22 +151,22 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                         end.player_index.is_some_and(|p| p.index() < players.len())
                     },
             },
-            "Invalid action at index {i}"
+            "Invalid action at index {i}."
         );
     }
     let size = deck.len() + variant.suits.len();
     let raw_notes = &input.notes;
     ensure_or_reject!(
         raw_notes.is_empty() || raw_notes.len() == players.len(),
-        "Invalid note rows"
+        "Invalid note rows."
     );
     let mut notes = vec![vec![String::new(); size]; players.len()];
     for (i, row) in raw_notes.iter().enumerate() {
-        ensure_or_reject!(row.len() <= size, "Too many notes");
+        ensure_or_reject!(row.len() <= size, "Too many notes.");
         for (j, text) in row.iter().enumerate() {
             ensure_or_reject!(
                 text.chars().count() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
-                "Note too long"
+                "Note too long."
             );
             text.clone_into(&mut notes[i][j]);
         }
@@ -367,7 +367,7 @@ mod tests {
         assert_eq!(identities(input("", Some(&other))), expected(&other));
         assert_eq!(
             error(input(seed, Some(&other))),
-            "The deck does not match the seed"
+            "The deck does not match the seed."
         );
         assert_eq!(
             error(input(seed, Some(&seeded[..10]))),

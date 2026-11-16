@@ -581,7 +581,7 @@ function OwnHypotheticalControls({
           className={HYPOTHETICAL_BUTTON_CLASS}
           disabled={hypo === undefined || hypo.states.length <= 1}
           onClick={hypothetical.sendHypotheticalBack}
-          ref={tooltipRef("Back a turn in the hypothetical")}
+          ref={tooltipRef("Go back a turn in the hypothetical.")}
           type="button"
         >
           <i aria-hidden="true" className="fas fa-undo" />

@@ -67,7 +67,7 @@ const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 export const CHAT_LENGTH_LIMIT = {
   max: MAX_CHAT_LENGTH,
   left: (text) => MAX_CHAT_LENGTH - countCharacters(fillEmojis(text.trim())),
-  tooLongText: "Message is too long",
+  tooLongText: "Message is too long.",
 } as const satisfies LengthLimit;
 
 const emojiMap = new Map<string, string>();

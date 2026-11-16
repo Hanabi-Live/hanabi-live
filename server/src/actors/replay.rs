@@ -62,7 +62,7 @@ impl TableActor {
             }
             // A restart starts in `client`, through `start_restart`.
             ClientRequest::TableRestart(_) => {
-                bail_internal!("A restart ran without its statistics")
+                bail_internal!("A restart ran without its statistics.")
             }
             ClientRequest::TableRestartDecline(r) => {
                 self.decline_restart(session, r.declined).await
@@ -92,10 +92,10 @@ impl TableActor {
         self.tag(session, edit).await
     }
     async fn tag(&mut self, session: Arc<Session>, edit: TagEdit) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         let mut next = self.candidate();
         let replay = matches!(next.phase, Phase::Replay { .. });
-        let s = next.game_mut().or_reject("No game")?;
+        let s = next.game_mut().or_reject("No game.")?;
         if replay {
             let game = s
                 .game_id
@@ -165,7 +165,7 @@ impl TableActor {
             Some(PendingTag {
                 game_id: s
                     .game_id
-                    .or_reject("JSON replays cannot be tagged in the database")?,
+                    .or_reject("JSON replays cannot be tagged in the database.")?,
                 user_id: session.user,
                 edit,
             })
@@ -203,12 +203,12 @@ impl TableActor {
         session: Arc<Session>,
         user: UserId,
     ) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         // Anyone at a shared replay can take the lead. Elsewhere, only the owner can pass it on.
         let shared_replay = matches!(self.table.phase, Phase::Replay { .. }) && self.table.visible;
         ensure_or_reject!(
             shared_replay || session.user == self.table.owner.user_id,
-            "Only the table owner can change the leader"
+            "Only the table owner can change the leader."
         );
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
@@ -221,14 +221,14 @@ impl TableActor {
                 .find(|p| p.is(user))
                 .and_then(|p| Some((p.id?, p.name.clone())))
         }
-        .or_reject("That player is not at this table")?;
+        .or_reject("That player is not at this table.")?;
         ensure_or_reject!(
             target.0 != self.table.owner.user_id,
-            "That player is already the leader"
+            "That player is already the leader."
         );
         ensure_or_reject!(
             !matches!(self.table.phase, Phase::Replay { .. }) || self.table.visible,
-            "Solo replay cannot change leader"
+            "Solo replay cannot change leader."
         );
         let owner = hanabi_protocol::UserRef {
             user_id: target.0,
@@ -280,13 +280,13 @@ impl TableActor {
     ) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && self.table.visible,
-            "Not a shared replay"
+            "Not a shared replay."
         );
         let leader = self
             .attendees
             .get(&self.table.owner.user_id)
             .filter(|a| a.session.active())
-            .or_reject("Leader is not attending")?;
+            .or_reject("Leader is not attending.")?;
         let mut e = self.effects();
         e.messages.push((
             leader.session.clone(),
@@ -312,14 +312,14 @@ impl TableActor {
             self.attending(&session)
                 && session.user == self.table.owner.user_id
                 && self.table.visible,
-            "You must lead this shared replay"
+            "You must lead this shared replay."
         );
         let mut next = self.candidate();
         let Phase::Replay {
             snapshot, replay, ..
         } = &mut next.phase
         else {
-            bail_internal!("A replay command ran outside a replay");
+            bail_internal!("A replay command ran outside a replay.");
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r.action, R::Arrow { .. } | R::Sound { .. });
@@ -329,17 +329,17 @@ impl TableActor {
             R::Efficiency { modifier } => replay.efficiency_modifier = *modifier,
             R::Hypothetical { control } => match control {
                 H::Start {} => {
-                    ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
+                    ensure_or_reject!(!replay.hypothetical, "Already hypothetical.");
                     replay.hypothetical = true;
                     replay.show_drawn_cards = false;
                 }
                 H::End {} => {
-                    ensure_or_reject!(replay.hypothetical, "Not hypothetical");
+                    ensure_or_reject!(replay.hypothetical, "Not hypothetical.");
                     replay.hypothetical = false;
                     replay.hypothetical_actions.clear();
                 }
                 H::Events { events } => {
-                    ensure_or_reject!(!events.is_empty(), "No hypothetical actions");
+                    ensure_or_reject!(!events.is_empty(), "No hypothetical actions.");
                     let mut added = 0;
                     for event in events {
                         added += serde_json::to_string(event)?.len();
@@ -350,7 +350,7 @@ impl TableActor {
                             && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
                                 + added
                                 <= crate::model::MAX_HYPOTHETICAL_BYTES,
-                        "Too many hypothetical actions"
+                        "Too many hypothetical actions."
                     );
                     replay.hypothetical_actions.extend(events.iter().cloned());
                 }
@@ -373,18 +373,18 @@ impl TableActor {
     /// pregame hidden if `hide`.
     fn restart_players(&self, session: &Session, hide: bool) -> CommandResult<Vec<Player>> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
-            reject!("Only the shared replay leader can restart");
+            reject!("Only the shared replay leader can restart.");
         };
         ensure_or_reject!(
             self.attending(session)
                 && session.user == self.table.owner.user_id
                 && self.table.visible,
-            "Only the shared replay leader can restart"
+            "Only the shared replay leader can restart."
         );
         self.seat(session)?;
         ensure_or_reject!(
             self.table.extra.replay.is_none(),
-            "Cannot restart replayed games"
+            "Cannot restart replayed games."
         );
         let players = self
             .table
@@ -408,7 +408,7 @@ impl TableActor {
                 .map(|p| p.name.as_str())
                 .collect::<Vec<_>>()
                 .join(", ");
-            reject!("The original players must attend to restart. Missing: {missing}");
+            reject!("The original players must attend to restart. Missing: {missing}.");
         }
         Ok(players)
     }
@@ -466,7 +466,7 @@ impl TableActor {
         let mut stats = stats?;
         ensure_or_reject!(
             session.active(),
-            "Session changed while refreshing restart statistics"
+            "Session changed while refreshing restart statistics."
         );
         // The table kept running while the statistics were saved, so check the restart again.
         let mut players = self.restart_players(&session, hide)?;
@@ -581,12 +581,12 @@ impl TableActor {
     ) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && self.table.visible,
-            "Not a shared replay"
+            "Not a shared replay."
         );
         self.seat(&session)?;
         let mut next = self.candidate();
         let Phase::Replay { replay, .. } = &mut next.phase else {
-            bail_internal!("A replay command ran outside a replay");
+            bail_internal!("A replay command ran outside a replay.");
         };
         if replay.restart_declined.contains(&session.user) == declined {
             return Ok(());

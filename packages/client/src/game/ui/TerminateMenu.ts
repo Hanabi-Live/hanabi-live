@@ -143,7 +143,7 @@ export class TerminateMenu extends Konva.Group {
       text({
         y: countY * winH,
         fontSize: MENU.countFontSize * winH,
-        text: "Only you see your vote",
+        text: "Only you see your vote.",
       }),
     );
 

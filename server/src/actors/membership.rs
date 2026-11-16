@@ -36,11 +36,11 @@ impl TableActor {
             players, kicked, ..
         } = &self.table.phase
         else {
-            reject!("The table has started");
+            reject!("The table has started.");
         };
         ensure_or_reject!(
             !kicked.contains(&session.user),
-            "You were kicked from this table"
+            "You were kicked from this table."
         );
         ensure_or_reject!(
             !players.iter().any(|p| p.is(session.user)),
@@ -89,9 +89,9 @@ impl TableActor {
                 session.user,
                 session.ip
             );
-            reject!("Incorrect table password");
+            reject!("Incorrect table password.");
         }
-        ensure_or_reject!(session.active(), "Session changed during join");
+        ensure_or_reject!(session.active(), "Session changed during join.");
         self.join(session, blocks, Some(&hash)).await
     }
     /// Adds a user to the pregame. A table with a password needs `checked_hash`: the password hash
@@ -106,7 +106,7 @@ impl TableActor {
             return self.join_full(&session).await;
         }
         if let Some(hash) = &self.table.password_hash {
-            ensure_or_reject!(checked_hash.is_some(), "Incorrect table password");
+            ensure_or_reject!(checked_hash.is_some(), "Incorrect table password.");
             ensure_or_reject!(
                 checked_hash == Some(hash.as_str()),
                 "The table password changed. Please try again."
@@ -115,7 +115,7 @@ impl TableActor {
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         let player =
             crate::stats::player(&self.store.primary, &session.identity, variant.id).await?;
-        ensure_or_reject!(session.active(), "Session changed during join");
+        ensure_or_reject!(session.active(), "Session changed during join.");
         let mut next = self.candidate();
         if let Phase::Pregame { players, .. } = &mut next.phase {
             players.push(player);
@@ -174,15 +174,15 @@ impl TableActor {
         let seat = self.table.players().iter().position(|p| p.is(session.user));
         ensure_or_reject!(
             spectating || seat.is_some() || replay,
-            "You are not a player"
+            "You are not a player."
         );
         ensure_or_reject!(
             !spectating || seat.is_none() || replay,
-            "Players cannot spectate their own ongoing game"
+            "Players cannot spectate their own ongoing game."
         );
         ensure_or_reject!(
             !matches!(&self.table.phase, Phase::Pregame { kicked, .. } if kicked.contains(&session.user)),
-            "You were kicked from this table"
+            "You were kicked from this table."
         );
         // Only the owner, and those already there, can enter a solo replay.
         ensure_or_reject!(
@@ -190,7 +190,7 @@ impl TableActor {
                 || self.table.visible
                 || session.user == self.table.owner.user_id
                 || self.attendees.contains_key(&session.user),
-            "That replay is private"
+            "That replay is private."
         );
         if seat.is_none() {
             self.ensure_not_blocked(
@@ -315,7 +315,7 @@ impl TableActor {
                 || (remove
                     && matches!(self.table.phase, Phase::Pregame { .. })
                     && self.table.players().iter().any(|p| p.is(session.user))),
-            "You are not attending this table"
+            "You are not attending this table."
         );
         let mut next = self.candidate();
         let mut notices = vec![];

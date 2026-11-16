@@ -238,7 +238,7 @@ function getInitialForm(mode: Mode): CreateGameForm {
 const TABLE_NAME_LENGTH_LIMIT = {
   max: MAX_TABLE_NAME_LENGTH,
   left: (text) => MAX_TABLE_NAME_LENGTH - countCharacters(text.trim()),
-  tooLongText: "Name is too long",
+  tooLongText: "Name is too long.",
 } as const satisfies LengthLimit;
 
 function getMode(): Mode {

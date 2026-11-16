@@ -14,7 +14,7 @@ export interface LengthLimit {
   /** The characters left: negative for a text that is too long. */
   readonly left: (text: string) => number;
 
-  /** The tooltip of the counter when the text is too long, such as "Message is too long". */
+  /** The tooltip of the counter when the text is too long, such as "Message is too long.". */
   readonly tooLongText: string;
 }
 

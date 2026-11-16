@@ -66,11 +66,11 @@ impl TableActor {
     fn live(&self) -> CommandResult<&Snapshot> {
         match &self.table.phase {
             Phase::Live { snapshot, .. } => Ok(snapshot),
-            _ => bail_internal!("A live command ran outside a live game"),
+            _ => bail_internal!("A live command ran outside a live game."),
         }
     }
     async fn action(&mut self, session: Arc<Session>, a: PlayerAction) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Reattend before acting");
+        ensure_or_reject!(self.attending(&session), "Reattend before acting.");
         let seat = self.seat(&session)?;
         let old = self.live()?;
         hanabi_engine::validate_action(old.game.state(), seat, &a)?;
@@ -246,7 +246,7 @@ impl TableActor {
         ballot: Option<bool>,
     ) -> CommandResult<()> {
         let vote = ballot.is_some();
-        ensure_or_reject!(self.attending(&session), "You are not attending");
+        ensure_or_reject!(self.attending(&session), "You are not attending.");
         let seat = self.seat(&session)?;
         let from = self.live()?.game.events.len();
         let mut next = self.candidate();
@@ -305,7 +305,7 @@ impl TableActor {
     }
     /// A player keeps an idle game going, restarting its idle timer.
     async fn idle_reset(&mut self, session: Arc<Session>) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         self.seat(&session)?;
         self.live()?;
         let mut next = self.candidate();
@@ -324,12 +324,12 @@ impl TableActor {
         self.publish(e).await
     }
     async fn pause(&mut self, session: Arc<Session>, mut change: PauseChange) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         let seat = self.seat(&session)?;
         let old = self.live()?;
         ensure_or_reject!(
             old.game.options.time_control.is_some(),
-            "This is not a timed game"
+            "This is not a timed game."
         );
         if change == PauseChange::Queued(true) && seat == old.game.active_player_index {
             change = PauseChange::Paused(true);
@@ -339,7 +339,7 @@ impl TableActor {
                 PauseChange::Paused(paused) => old.paused() != paused,
                 PauseChange::Queued(queued) => old.queued_pauses[seat] != queued,
             },
-            "Pause setting already applied"
+            "Pause setting already applied."
         );
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
@@ -376,7 +376,7 @@ impl TableActor {
         card: CardOrder,
         note: &str,
     ) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         self.live()?;
         let order = card.index();
         let text = crate::accounts::truncate_to_max_chars(note, MAX_NOTE_LENGTH);
@@ -392,7 +392,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         let size = s.game.deck.len() + s.game.stacks.len();
-        ensure_or_reject!(order < size, "Invalid note order");
+        ensure_or_reject!(order < size, "Invalid note order.");
         if let Some(seat) = seat {
             s.notes[seat][order].clone_from(&text);
         } else {
@@ -549,7 +549,7 @@ impl TableActor {
     ) -> CommandResult<Option<ReplyData>> {
         ensure_or_reject!(
             self.attending(&session),
-            "Reattend before requesting private game data"
+            "Reattend before requesting private game data."
         );
         let s = self.table.game().context("No available game")?;
         let a = self.attendees.get(&session.user).expect("attendee");

@@ -2765,7 +2765,10 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
                 .send(1, command, data)
                 .await
                 .expect_err("A player added to a full chat");
-            ensure!(refused.to_string() == "Chat history is full", "{refused:#}");
+            ensure!(
+                refused.to_string() == "Chat history is full.",
+                "{refused:#}"
+            );
         }
         // The owner's changes still apply, without their notices.
         h.send(
@@ -3502,7 +3505,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             )
             .await
             .expect_err("A pregame accepted a game action");
-        ensure!(refusal(error)? == "Not an ongoing game");
+        ensure!(refusal(error)? == "Not an ongoing game.");
         let error = h
             .send(
                 0,
@@ -3511,7 +3514,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             )
             .await
             .expect_err("A pregame accepted a replay action");
-        ensure!(refusal(error)? == "Not a replay");
+        ensure!(refusal(error)? == "Not a replay.");
         h.start(0, id).await?;
         let error = h
             .send(
@@ -3521,7 +3524,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             )
             .await
             .expect_err("A live game accepted new options");
-        ensure!(refusal(error)? == "Game already started");
+        ensure!(refusal(error)? == "Game already started.");
         Ok::<(), anyhow::Error>(())
     }
     .await;

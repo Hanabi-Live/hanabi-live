@@ -100,7 +100,7 @@ pub(super) fn push_chat(
     let messages = messages.into_iter().collect::<Vec<_>>();
     ensure_or_reject!(
         table.chat.len() + messages.len() <= crate::model::MAX_TABLE_CHAT,
-        "Chat history is full"
+        "Chat history is full."
     );
     table
         .chat
@@ -155,7 +155,7 @@ impl TableActor {
         self.charge_chat(user)?;
         ensure_or_reject!(
             self.chat_bytes.player_room(&self.table.chat)?,
-            "Chat history is full"
+            "Chat history is full."
         );
         Ok(())
     }
@@ -199,7 +199,7 @@ impl TableActor {
         };
         ensure_or_reject!(
             hanabi_protocol::is_player_count(participants.len()),
-            "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
+            "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants."
         );
         Ok(participants)
     }
@@ -317,7 +317,7 @@ impl TableActor {
         session: Arc<Session>,
         typing: bool,
     ) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         let a = self.attendees.get_mut(&session.user).expect("attendee");
         let notify = typing && a.typing_until.is_none();
         if typing {
@@ -333,7 +333,7 @@ impl TableActor {
         Ok(())
     }
     pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending.");
         let text = crate::accounts::normalize_chat(msg).map_err(CommandError::rejected)?;
         self.admit_player_chat(session.user)?;
         let command = ChatCommand::parse(&text);
@@ -490,9 +490,9 @@ impl TableActor {
         if command == TableChatCommand::Suggest {
             ensure_or_reject!(
                 matches!(self.table.phase, Phase::Replay { .. }),
-                "Not a shared replay"
+                "Not a shared replay."
             );
-            ensure_or_reject!(args.len() == 1, "Expected /suggest [turn]");
+            ensure_or_reject!(args.len() == 1, "Expected /suggest [turn].");
             return self
                 .suggest(
                     session,
@@ -500,7 +500,7 @@ impl TableActor {
                         .parse::<usize>()
                         .ok()
                         .and_then(hanabi_protocol::Turn::new)
-                        .or_reject("Expected /suggest [turn]")?,
+                        .or_reject("Expected /suggest [turn].")?,
                 )
                 .await;
         }
@@ -509,25 +509,28 @@ impl TableActor {
         }
         ensure_or_reject!(
             session.user == self.table.owner.user_id,
-            "Only the table owner can use that command"
+            "Only the table owner can use that command."
         );
         let Phase::Pregame {
             players, kicked, ..
         } = &mut next.phase
         else {
-            reject!("This command requires a pregame table");
+            reject!("This command requires a pregame table.");
         };
         let (notice, kicked_user) = match command {
             TableChatCommand::Kick => {
-                ensure_or_reject!(args.len() == 1, "Expected /kick [username]");
+                ensure_or_reject!(args.len() == 1, "Expected /kick [username].");
                 let index = players
                     .iter()
                     .position(|p| {
                         crate::accounts::normalize_string(&p.name)
                             == crate::accounts::normalize_string(args[0])
                     })
-                    .or_reject("Player not found")?;
-                ensure_or_reject!(!players[index].is(session.user), "You cannot kick yourself");
+                    .or_reject("Player not found.")?;
+                ensure_or_reject!(
+                    !players[index].is(session.user),
+                    "You cannot kick yourself."
+                );
                 let player = players.remove(index);
                 let user = player.user()?;
                 kicked.push(user);
@@ -539,7 +542,7 @@ impl TableActor {
             TableChatCommand::Impostor => {
                 ensure_or_reject!(
                     players.len() >= MIN_IMPOSTOR_PLAYERS,
-                    "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players"
+                    "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players."
                 );
                 let chosen = rand::random_range(0..players.len());
                 let mut e = self.effects();
@@ -563,7 +566,7 @@ impl TableActor {
                 return self.publish(e).await;
             }
             // The table runs the variant search before its chat.
-            _ => bail_internal!("The table chat ran {command:?}"),
+            _ => bail_internal!("The table chat ran {command:?}."),
         };
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);
