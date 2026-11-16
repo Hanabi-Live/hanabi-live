@@ -146,8 +146,8 @@ export interface CardPipsView {
   readonly suits: readonly SuitPipView[];
   readonly ranks: readonly RankPipView[];
   /**
-   * The bubble that shows every card that this card can be, on hover. It is `undefined` unless both
-   * the suit and the rank are unknown.
+   * The bubble that shows every card that this card can be, while the viewer holds the pointer down
+   * on the card or holds Space over it.
    */
   readonly bubble: PossibleCardsView | undefined;
 }
@@ -178,12 +178,6 @@ export interface PossibleCardsView {
    * cannot be any of its cards.
    */
   readonly suits: readonly PossibleSuitView[];
-
-  /**
-   * Whether the separate suit and rank pips on the card cannot show the possible cards, so that the
-   * card has a mark that points to the bubble.
-   */
-  readonly inexact: boolean;
 }
 
 /**
@@ -278,7 +272,6 @@ export function getCardView({
   const pips =
     empathy && !realLifeMode && !blank
       ? getPipsView(variant, cardState, note, {
-          empathyIncludesNotes,
           suitIndex,
           rank,
         })
@@ -343,11 +336,9 @@ function getPipsView(
   cardState: CardState,
   note: CardNote,
   {
-    empathyIncludesNotes,
     suitIndex,
     rank,
   }: {
-    readonly empathyIncludesNotes: boolean;
     readonly suitIndex: SuitIndex | undefined;
     readonly rank: Rank | undefined;
   },
@@ -379,36 +370,12 @@ function getPipsView(
         }))
       : [];
 
-  // Whether separate suits and ranks cannot show the cards, as before the note faded pips: the note
-  // narrows them only where the empathy view applies it.
-  const { possibilityRows } = getCardPipPresentation(
-    variant,
-    cardState,
-    note,
-    true,
-    { empathyIncludesNotes },
-  );
-
-  // The bubble needs both the suit and the rank to be unknown, as the possibility rows of the
-  // classic screen do.
-  const bubble =
-    suitIndex === undefined
-    && rank === undefined
-    && (suits.length > 0 || ranks.length > 0)
-      ? getPossibleCardsView(
-          variant,
-          cardState,
-          note,
-          possibilityRows !== undefined,
-        )
-      : undefined;
-
   return suits.length === 0 && ranks.length === 0
     ? undefined
     : {
         suits,
         ranks,
-        bubble,
+        bubble: getPossibleCardsView(variant, cardState, note),
       };
 }
 
@@ -421,7 +388,6 @@ function getPossibleCardsView(
   variant: Variant,
   cardState: CardState,
   note: CardNote,
-  inexact: boolean,
 ): PossibleCardsView {
   const fromClues = cardState.possibleCardsFromClues;
   const ruledOut = getRuledOutCards(cardState, note);
@@ -461,7 +427,6 @@ function getPossibleCardsView(
         };
       })
       .filter((suit) => suit.ranks.length > 0 || suit.removed.length > 0),
-    inexact,
   };
 }
 

@@ -275,6 +275,42 @@ describe("getCardView", () => {
     });
   });
 
+  test("shows a bubble when the clues give the suit", () => {
+    // Any red card. The holder sees every red 2.
+    const possibleCardsFromClues = [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [0, 5],
+    ] as const;
+    const view = getEmpathyView({
+      possibleCardsFromClues,
+      possibleCardsForEmpathy: possibleCardsFromClues.filter(
+        ([, rank]) => rank !== 2,
+      ),
+      suitIndex: 0,
+      suitDetermined: true,
+    });
+    expect(view.suitIndex).toBe(0);
+    expect(view.pips?.bubble).toStrictEqual({
+      suits: [
+        {
+          suitIndex: 0,
+          eliminated: false,
+          positive: false,
+          ranks: [1, 3, 4, 5],
+          removed: [
+            {
+              rank: 2,
+              by: "seen",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
   test("shows the cards that separate suits and ranks cannot show in a bubble", () => {
     // Any red card, or a yellow 1. The holder sees every red 2.
     const possibleCardsFromClues = [
@@ -313,7 +349,6 @@ describe("getCardView", () => {
           removed: [],
         },
       ],
-      inexact: true,
     });
   });
 

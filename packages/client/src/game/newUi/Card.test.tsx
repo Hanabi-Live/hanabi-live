@@ -27,7 +27,6 @@ const PIPS = {
         removed: [],
       },
     ],
-    inexact: false,
   },
 } as const satisfies CardPipsView;
 

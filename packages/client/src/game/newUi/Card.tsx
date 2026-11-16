@@ -1697,43 +1697,6 @@ export function PossibleCardsBubble({
   );
 }
 
-/**
- * The mark on a card whose separate suit and rank pips cannot show the cards that it can be. It
- * shows that the bubble has more to tell: a small speech bubble with three dots.
- */
-function PossibleCardsMark({
-  width,
-}: {
-  readonly width: number;
-}): React.JSX.Element {
-  const size = width * BADGE_SIZE_PER_WIDTH;
-  return (
-    <svg
-      aria-label="Not every combination of these suits and ranks is possible"
-      className="tw:pointer-events-none tw:absolute tw:overflow-visible tw:drop-shadow-[0_1px_2px_rgb(0_0_0/45%)]"
-      data-possible-cards-mark
-      height={size}
-      role="img"
-      style={getBadgeStyle(width, "topLeft")}
-      viewBox="0 0 100 100"
-      width={size}
-    >
-      <path
-        className="tw:fill-white tw:stroke-card-ink"
-        d="M 18 8 H 82 Q 96 8 96 22 V 62 Q 96 76 82 76 H 40 L 18 96 V 76 Q 4 76 4 62 V 22 Q 4 8 18 8 Z"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        vectorEffect="non-scaling-stroke"
-      />
-      <g className="tw:fill-card-ink">
-        <circle cx={30} cy={42} r={8} />
-        <circle cx={50} cy={42} r={8} />
-        <circle cx={70} cy={42} r={8} />
-      </g>
-    </svg>
-  );
-}
-
 function rankColumnOrder(rank: Rank): number {
   return rank === START_CARD_RANK ? 0 : rank;
 }
@@ -2544,8 +2507,6 @@ export function CardFace({
       {noteMarks.length > 0 && (
         <NoteMarkIcons marks={noteMarks} width={width} />
       )}
-
-      {bubble?.inexact === true && <PossibleCardsMark width={width} />}
 
       {bubble !== undefined
         && showPossibleCards

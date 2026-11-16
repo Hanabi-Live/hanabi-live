@@ -361,7 +361,6 @@ export function getDeckEmpathy(state: State): DeckEmpathy {
           removed: [],
         }))
         .filter((suit) => suit.ranks.length > 0),
-      inexact: false,
     },
   };
 }
