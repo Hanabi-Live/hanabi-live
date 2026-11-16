@@ -1464,11 +1464,11 @@ export function TableTokens({
           )}
           role="group"
         >
-          {/* The row has one tooltip, so a frame around the whole row shows what it explains. A
-              box with a strike to show has its own tooltip, which shows instead. */}
+          {/* The row has one tooltip. While it is open, a frame around the whole row shows what
+              it explains. A box with a strike to show has its own tooltip, which shows instead. */}
           <span
             aria-hidden="true"
-            className="tw:pointer-events-none tw:absolute tw:-inset-[4px] tw:-z-1 tw:rounded-game-control tw:bg-game-text/8 tw:opacity-0 tw:outline-2 tw:outline-game-line tw:outline-solid tw:group-hover:opacity-100"
+            className="tw:pointer-events-none tw:absolute tw:-inset-[4px] tw:-z-1 tw:rounded-game-control tw:bg-game-text/8 tw:opacity-0 tw:outline-2 tw:outline-game-line tw:outline-solid tw:group-data-tooltip-open:opacity-100"
           />
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];

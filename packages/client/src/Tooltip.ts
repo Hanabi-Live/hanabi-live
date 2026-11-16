@@ -218,6 +218,10 @@ export class Tooltip {
       this.bubble.showPopover();
       watchAnchor(this);
     }
+    // While the tooltip is open, the anchor has the "data-tooltip-open" attribute, so that it can
+    // show that the tooltip is about it, such as with a frame (the Tailwind variant
+    // "data-tooltip-open").
+    this.anchor.dataset["tooltipOpen"] = "";
     this.position();
   }
 
@@ -240,6 +244,7 @@ export class Tooltip {
       { capture: true },
     );
     unwatchAnchor(this);
+    delete this.anchor.dataset["tooltipOpen"];
     if (!this.isOpen) {
       return;
     }

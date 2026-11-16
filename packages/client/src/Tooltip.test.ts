@@ -146,3 +146,16 @@ test("a tooltip closes when its anchor is removed", async () => {
   expect(tooltip.isOpen).toBe(false);
   tooltip.destroy();
 });
+
+test("an anchor is marked while its tooltip is open", () => {
+  const anchor = dom.window.document.createElement("div");
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, { content: "Text" });
+  tooltip.open();
+  expect(anchor.dataset["tooltipOpen"]).toBe("");
+
+  tooltip.close();
+  expect(anchor.dataset["tooltipOpen"]).toBeUndefined();
+  tooltip.destroy();
+  anchor.remove();
+});
