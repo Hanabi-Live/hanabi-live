@@ -1260,8 +1260,10 @@ function getStates(): readonly State[] {
         await writeNote(page, ownCard(page, 2), "!r1, !g1");
       },
       hover: async (page) => {
-        // The third card, since the others show their rank.
+        // The third card, since the others show their rank. The bubble opens only while Space is
+        // held.
         await ownCard(page, 2).hover();
+        await page.keyboard.down("Space");
         await page.locator("[data-possible-cards]").waitFor();
       },
     },

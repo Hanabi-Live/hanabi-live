@@ -106,7 +106,7 @@ export function CardNote({
   readonly notes: CardNotes;
   /**
    * Whether the card shows its bubble of possible cards on hover (see `PossibleCardsBubble`). The
-   * bubble takes the place of the note's tooltip. Players who turn the bubble off see the note.
+   * bubble takes the place of the note's tooltip while it shows.
    */
   readonly possibleCards?: boolean;
   readonly className?: string;

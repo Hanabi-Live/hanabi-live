@@ -188,6 +188,12 @@ interface HandsProps {
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
   readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
 
+  /**
+   * Whether the cards show their bubble of possible cards on hover, instead of their notes: while
+   * the viewer holds the pointer down on a hand or holds Space.
+   */
+  readonly showPossibleCards: boolean;
+
   /** What the pause button beside the viewer's clock does, if it shows (see "../pause.ts"). */
   readonly pauseAction: PauseAction | undefined;
   readonly onPause: () => void;
@@ -896,6 +902,7 @@ function OwnCard({
       pips={card.pips}
       raiseClued
       rank={card.rank}
+      showPossibleCards={props.showPossibleCards}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
       trash={card.trash}
@@ -1042,6 +1049,7 @@ function EditableCard({
         pips={card.pips}
         raiseClued
         rank={card.rank}
+        showPossibleCards={props.showPossibleCards}
         stackDirection={card.stackDirection}
         suitIndex={card.suitIndex}
         trash={card.trash}
@@ -1117,6 +1125,7 @@ function HandCard({
         pips={card.pips}
         raiseClued
         rank={card.rank}
+        showPossibleCards={props.showPossibleCards}
         stackDirection={card.stackDirection}
         suitIndex={card.suitIndex}
         trash={card.trash}
@@ -1314,7 +1323,9 @@ function Hand({
             key={card.order}
             notes={props.notes}
             order={card.order}
-            possibleCards={card.pips?.bubble !== undefined}
+            possibleCards={
+              props.showPossibleCards && card.pips?.bubble !== undefined
+            }
           >
             <HandCard
               card={card}

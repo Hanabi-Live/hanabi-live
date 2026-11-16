@@ -1154,6 +1154,7 @@ export function GameScreen({
                           ),
                         }
                   }
+                  showPossibleCards={heldEmpathy !== undefined || globalEmpathy}
                   speedrunClicks={speedrunClicks}
                   tapToMove={tapToMove}
                   touchedCards={new Set(touched)}

@@ -384,6 +384,12 @@ interface CardFaceProps {
   /** What the holder of the card knows about it, when they cannot see it. */
   readonly pips?: CardPipsView;
 
+  /**
+   * Whether the bubble of possible cards opens while the pointer is over the card. The hands turn
+   * it on only while the viewer holds the pointer down on a hand or holds Space.
+   */
+  readonly showPossibleCards?: boolean;
+
   /** Whether a "blank" note makes the card look like the back of a card. */
   readonly blank?: boolean;
 
@@ -1138,7 +1144,7 @@ function RankChip({
  * card, so that they are easy to read at a glance. Each suit is a pip on a gray chip with a dark
  * ring, and each rank is a dark chip with a white number. A suit or a rank that the holder ruled
  * out is crossed out, and one that a clue touched has a ring in the clue color. The card shows the
- * exact cards that it can be in a bubble on hover (see `PossibleCardsBubble`).
+ * exact cards that it can be in a bubble (see `PossibleCardsBubble`).
  *
  * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
  * holder learns that the card is not one of them. Its place stays empty.
@@ -1406,9 +1412,10 @@ function ImpossibleCard({
 }
 
 /**
- * Every card that a card can be, in a bubble beside it while the pointer is over it. It is a grid
- * with a row for each suit that the card can be and a column for every rank of the variant, so that
- * each rank is always in the same column. A card that this card cannot be leaves an empty place.
+ * Every card that a card can be, in a bubble beside it while the viewer holds the pointer down on
+ * it or holds Space over it. It is a grid with a row for each suit that the card can be and a
+ * column for every rank of the variant, so that each rank is always in the same column. A card that
+ * this card cannot be leaves an empty place.
  */
 export function PossibleCardsBubble({
   variant,
@@ -1615,7 +1622,7 @@ export function PossibleCardsBubble({
 
 /**
  * The mark on a card whose separate suit and rank pips cannot show the cards that it can be. It
- * shows that the bubble on hover has more to tell: a small speech bubble with three dots.
+ * shows that the bubble has more to tell: a small speech bubble with three dots.
  */
 function PossibleCardsMark({
   width,
@@ -2297,6 +2304,7 @@ export function CardFace({
   raiseClued = false,
   highlighted = false,
   pips,
+  showPossibleCards = false,
   blank = false,
   doubleDiscard = false,
   stackDirection,
@@ -2460,6 +2468,7 @@ export function CardFace({
       {bubble?.inexact === true && <PossibleCardsMark width={width} />}
 
       {bubble !== undefined
+        && showPossibleCards
         && hovered !== undefined
         && createPortal(
           <PossibleCardsBubble
