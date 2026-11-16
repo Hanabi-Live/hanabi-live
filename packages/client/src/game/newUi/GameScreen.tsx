@@ -1283,6 +1283,7 @@ export function GameScreen({
           )}
           unread={zen ? 0 : chatUnread}
           zen={zen}
+          zenAvailable={!state.finished}
         />
       </div>
 
@@ -1294,6 +1295,7 @@ export function GameScreen({
             poppedOut={chatPoppedOut}
             unread={zen ? 0 : chatUnread}
             zen={zen}
+            zenAvailable={!state.finished}
           />
         }
         colorblindMode={settings.colorblindMode}

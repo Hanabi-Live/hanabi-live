@@ -150,6 +150,7 @@ function setUpChatWindow(chatWindow: Window): () => void {
 export function ChatPanel({
   open,
   zen,
+  zenAvailable,
   poppedOut,
   overlay,
   unread,
@@ -163,6 +164,12 @@ export function ChatPanel({
    * messages and no spectators.
    */
   readonly zen: boolean;
+
+  /**
+   * Whether the player can turn zen mode on. A finished game has no players to distract, so zen
+   * mode is off, and the tooltips do not offer it (see "zen.ts").
+   */
+  readonly zenAvailable: boolean;
 
   /** Whether the chat is in its own window. The panel then stays collapsed. */
   readonly poppedOut: boolean;
@@ -232,6 +239,7 @@ export function ChatPanel({
           poppedOut={poppedOut}
           unread={unread}
           zen={zen}
+          zenAvailable={zenAvailable}
         />
         {/* Only a count: the open panel's header names the people watching. */}
         {spectators.length > 0 && (
@@ -296,11 +304,7 @@ export function ChatPanel({
             event.preventDefault();
             toggleZen();
           }}
-          ref={tooltipRef(
-            zen
-              ? "Collapse chat. Right-click to leave zen mode."
-              : "Collapse chat. Right-click for zen mode, which hides the chat and who is watching.",
-          )}
+          ref={tooltipRef(getZenTooltip("Collapse chat", zen, zenAvailable))}
           type="button"
         >
           <i aria-hidden="true" className="fas fa-angle-double-right" />
@@ -322,12 +326,16 @@ export function ChatPanel({
  */
 export function ChatButton({
   zen,
+  zenAvailable,
   open,
   poppedOut,
   unread,
   className,
 }: {
   readonly zen: boolean;
+
+  /** Whether the player can turn zen mode on (see `ChatPanel`). */
+  readonly zenAvailable: boolean;
 
   /** Whether the chat panel is open. */
   readonly open: boolean;
@@ -350,9 +358,7 @@ export function ChatButton({
   } else if (!poppedOut && !collapses && unread > 0) {
     label = `Open chat, ${unread} unread messages`;
   }
-  const tooltip = zen
-    ? `Zen mode hides the chat and who is watching. Click to ${action.toLowerCase()}. Right-click to leave zen mode.`
-    : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
+  const tooltip = getZenTooltip(action, zen, zenAvailable);
   let icon = "fa-comment";
   if (zen) {
     icon = "fa-yin-yang";
@@ -389,4 +395,21 @@ export function ChatButton({
       )}
     </button>
   );
+}
+
+/**
+ * The tooltip of a button that opens or collapses the chat. A right-click turns zen mode on or off,
+ * but only in a game that is not finished.
+ */
+function getZenTooltip(
+  action: string,
+  zen: boolean,
+  zenAvailable: boolean,
+): string {
+  if (zen) {
+    return `Zen mode hides the chat and who is watching. Click to ${action.toLowerCase()}. Right-click to leave zen mode.`;
+  }
+  return zenAvailable
+    ? `${action}. Right-click for zen mode, which hides the chat and who is watching.`
+    : action;
 }
