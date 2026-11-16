@@ -1473,10 +1473,12 @@ export function TableTokens({
               : `${strikes} of ${MAX_STRIKES} strikes`
           }
           className="tw:group tw:relative tw:isolate tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
-          ref={tooltipRef(
-            strikesHidden
-              ? "Strikes. In this variant, the players cannot see them."
-              : `Strikes: ${strikes} / ${MAX_STRIKES}. The game ends at ${MAX_STRIKES} strikes.`,
+          ref={tooltipRefHtml(
+            `<span class="small-tooltip-text">${
+              strikesHidden
+                ? "Strikes<br>In this variant, the players cannot see them."
+                : `Strikes: ${strikes} / ${MAX_STRIKES}<br>The game ends at ${MAX_STRIKES} strikes.`
+            }</span>`,
           )}
           role="group"
         >
