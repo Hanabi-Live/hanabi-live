@@ -1306,11 +1306,6 @@ const POSSIBLE_CARDS = {
   /** The space between small cards. */
   gap: 0.05,
   padding: 0.12,
-  /** The key below the small cards, which counts the cards that each reason rules out. */
-  keyFont: 0.19,
-  /** The space between the two counts of the key, and between an icon and its count. */
-  keyGap: 0.22,
-  keyIconGap: 0.06,
   /** The icon in the corner of a card that the card cannot be. */
   removedIcon: 0.15,
   /** The pointer that points from the bubble at the card. */
@@ -1492,33 +1487,6 @@ function RemovedByIcon({
   );
 }
 
-/** The name of each reason in the key of the bubble of possible cards. */
-const REMOVED_BY_LABELS = {
-  seen: "Seen",
-  note: "Note",
-} as const;
-
-/** One count in the key of the bubble of possible cards, such as an eye with "Seen: 2". */
-function PossibleCardsKeyItem({
-  by,
-  count,
-  unit,
-}: {
-  readonly by: "seen" | "note";
-  readonly count: number;
-  readonly unit: number;
-}): React.JSX.Element {
-  return (
-    <span
-      className="tw:flex tw:items-center"
-      style={{ gap: unit * POSSIBLE_CARDS.keyIconGap }}
-    >
-      <RemovedByIcon by={by} size={unit * POSSIBLE_CARDS.keyFont} />
-      {REMOVED_BY_LABELS[by]}: {count}
-    </span>
-  );
-}
-
 /** An empty place in the bubble of possible cards, for a card that this card cannot be. */
 function ImpossibleCard({
   unit,
@@ -1572,9 +1540,6 @@ export function PossibleCardsBubble({
   const unit = anchorRect.width;
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
-  const removedCards = bubble.suits.flatMap((suit) => suit.removed);
-  const seenCount = removedCards.filter((card) => card.by === "seen").length;
-  const noteCount = removedCards.filter((card) => card.by === "note").length;
 
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
@@ -1715,23 +1680,6 @@ export function PossibleCardsBubble({
             }),
           ])}
         </div>
-        {removedCards.length > 0 && (
-          // The key of the icons on the cards that the card cannot be, with how many have each.
-          <div
-            className="tw:flex tw:items-center tw:font-semibold tw:leading-none tw:text-card-ink"
-            style={{
-              fontSize: unit * POSSIBLE_CARDS.keyFont,
-              gap: unit * POSSIBLE_CARDS.keyGap,
-            }}
-          >
-            {seenCount > 0 && (
-              <PossibleCardsKeyItem by="seen" count={seenCount} unit={unit} />
-            )}
-            {noteCount > 0 && (
-              <PossibleCardsKeyItem by="note" count={noteCount} unit={unit} />
-            )}
-          </div>
-        )}
       </div>
       {position !== undefined && (
         <svg
