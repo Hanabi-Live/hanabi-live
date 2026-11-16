@@ -720,7 +720,8 @@ function TurnsControls({
   // The buttons and the timeline step through segments, as the classic screen's do.
   const atStart = segment === 0;
   const atEnd = segment >= lastSegment;
-  const canEnterHypothetical = hypothetical.canStartHypothetical(state);
+  const mayEnterHypothetical = hypothetical.mayStartHypothetical(state);
+  const afterGameEnd = hypothetical.isAfterGameEnd(state);
 
   // While we follow someone else's lead, the turn moves without us, so the controls show which way.
   const following =
@@ -806,13 +807,20 @@ function TurnsControls({
         )}
       </div>
       <div className={RIGHT_CLASS}>
-        {canEnterHypothetical && (
+        {/* On a turn after the game ended, the button is disabled instead of hidden, so that the
+            bar does not change its shape on the last turn. */}
+        {mayEnterHypothetical && (
           <IconButton
+            disabled={afterGameEnd}
             icon="fa-flask"
             iconClassName="tw:text-game-hypothetical"
             label="Enter hypothetical"
             onClick={hypothetical.startHypothetical}
-            tooltip="Enter hypothetical: try out other moves from this turn."
+            tooltip={
+              afterGameEnd
+                ? "The game is over on this turn. Go back a turn to enter a hypothetical."
+                : "Enter hypothetical: try out other moves from this turn."
+            }
           />
         )}
       </div>
