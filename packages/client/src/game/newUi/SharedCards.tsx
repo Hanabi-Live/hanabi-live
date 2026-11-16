@@ -29,6 +29,7 @@ import {
 } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
+import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FitText } from "./FitText.tsx";
 import { Pip } from "./Pip.tsx";
@@ -1291,31 +1292,6 @@ const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap
 export const TABLE_TOKENS_HEIGHT = PLAY_AREA_GAP + 8 + 34 + 8 + 28 + 8;
 
 /**
- * A clue token, drawn as a disc in the color of clues with a ring inside it: the physical game
- * counts clues with tokens.
- */
-function ClueTokenIcon(): React.JSX.Element {
-  return (
-    <svg
-      aria-hidden="true"
-      className="tw:size-[24px] tw:text-clue"
-      viewBox="0 0 24 24"
-    >
-      <circle cx={12} cy={12} fill="currentColor" r={11} />
-      <circle
-        cx={12}
-        cy={12}
-        fill="none"
-        r={6.5}
-        stroke="var(--card-ink)"
-        strokeOpacity={0.45}
-        strokeWidth={2}
-      />
-    </svg>
-  );
-}
-
-/**
  * The color of the clue count: it stands out only at the limits, and with one clue left, as on the
  * classic screen. "Real life mode" leaves the colors out.
  */
@@ -1447,7 +1423,7 @@ export function TableTokens({
             limits, where the rules change what the team can do: in the color of clues at the
             maximum, when someone must clue, and gray with none, when no one can. It is yellow
             with one clue left, as a warning before the limit. */}
-        <ClueTokenIcon />
+        <ClueTokenIcon className="tw:size-[24px]" />
         <span
           className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues, oneClueLeft, realLifeMode)}`}
           // A spark flies to the count when a completed stack gives a clue back (see

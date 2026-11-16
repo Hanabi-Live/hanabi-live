@@ -18,6 +18,7 @@ import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
+import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { FitText } from "./FitText.tsx";
 import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
@@ -498,31 +499,6 @@ const NAME_CHIP_LOOK_CLASS = {
     "tw:bg-transparent tw:font-medium tw:text-game-muted tw:outline-2 tw:-outline-offset-2 tw:outline-game-muted tw:outline-dashed",
 } as const satisfies Record<NameChipLook, string>;
 
-/**
- * A clue token on a name key: the token under the deck, drawn dark, so that it shows on the key's
- * color.
- */
-function NameClueToken(): React.JSX.Element {
-  return (
-    <svg
-      aria-hidden="true"
-      className="tw:size-4 tw:shrink-0"
-      data-name-clue-token
-      viewBox="0 0 24 24"
-    >
-      <circle cx={12} cy={12} fill="var(--card-ink)" r={11} />
-      <circle
-        cx={12}
-        cy={12}
-        fill="none"
-        r={6.5}
-        stroke="var(--clue-border)"
-        strokeWidth={2.5}
-      />
-    </svg>
-  );
-}
-
 function NameChip({
   seat,
   look,
@@ -578,7 +554,7 @@ function NameChip({
       } ${NAME_CHIP_LOOK_CLASS[look]} ${disconnectedClass}`}
       ref={tooltipRef(tooltip)}
     >
-      {hasToken && <NameClueToken />}
+      {hasToken && <ClueTokenIcon className="tw:size-5" />}
       <FitText text={seat.name} />
       {disconnectedBadge}
     </span>
