@@ -2,7 +2,8 @@
 // emoji name is in two groups, that each emote list in "emotes.json" matches the images in its
 // directory, and that the Twitch, BetterTTV, and FrankerFaceZ directories hold exactly the global
 // emotes of those services, each showing the same pixels as the PNG that the service serves. It
-// exits with an error if any check fails.
+// exits with an error if any check fails. A service that cannot be reached is skipped with a
+// warning.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
@@ -18,6 +19,7 @@ const TWITCH_GLOBAL_EMOTES_URL =
 const FRANKERFACEZ_GLOBAL_EMOTES_URL =
   "https://api.frankerfacez.com/v1/set/global";
 const TIMEOUT_MS = 30_000;
+const HTTP_SERVER_ERROR = 500;
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
 const EMOTE_EXTENSION = ".png";
@@ -37,6 +39,11 @@ const OPAQUE_ALPHA = 255;
 interface UpstreamEmote {
   readonly code: string;
   readonly imageUrl: string;
+}
+
+/** A site did not answer, or answered with a server error. */
+class UnreachableError extends Error {
+  override name = "UnreachableError";
 }
 
 interface Service {
@@ -115,12 +122,12 @@ const orderFailures = [
 ].filter((failure) => failure !== undefined);
 const directoryFailures = await checkDirectories();
 const serviceFailures = await Promise.all(
-  SERVICES.map(async (service) => await checkService(service)),
+  SERVICES.map(async (service) => await checkReachableService(service)),
 );
 const failures = [
   ...orderFailures,
   ...directoryFailures,
-  ...serviceFailures.flat(),
+  ...serviceFailures.flatMap((serviceFailure) => serviceFailure ?? []),
 ];
 
 if (failures.length > 0) {
@@ -131,8 +138,15 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
+const checkedServiceNames = SERVICES.filter(
+  (_service, i) => serviceFailures[i] !== undefined,
+).map((service) => service.name);
+const servicesMatch =
+  checkedServiceNames.length === 0
+    ? ""
+    : ` The ${new Intl.ListFormat("en").format(checkedServiceNames)} emotes match their global emotes.`;
 console.log(
-  "The emoji and emotes are in alphabetical order, no emoji is in two groups, every emote list matches its directory, and the Twitch, BetterTTV, and FrankerFaceZ emotes match their global emotes.",
+  `The emoji and emotes are in alphabetical order, no emoji is in two groups, and every emote list matches its directory.${servicesMatch}`,
 );
 
 /**
@@ -314,13 +328,44 @@ async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
 }
 
 async function fetchOk(url: string): Promise<Response> {
-  const response = await fetch(url, {
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (error) {
+    // "fetch" rejects only when it gets no response: a timeout, or a network or TLS error.
+    throw new UnreachableError(`${url} did not answer: ${String(error)}`);
+  }
+  if (response.status >= HTTP_SERVER_ERROR) {
+    throw new UnreachableError(`${url} returned HTTP ${response.status}.`);
+  }
   if (!response.ok) {
     throw new Error(`${url} returned HTTP ${response.status}.`);
   }
   return response;
+}
+
+/**
+ * Checks a service. When its site cannot be reached, it skips the service with a warning and
+ * returns undefined. The FrankerFaceZ API seems to be unreliable: it often times out or answers
+ * with HTTP 502, while its CDN still works. A failure there says nothing about this repository, and
+ * it would block every push and CI run until the site comes back.
+ */
+async function checkReachableService(
+  service: Service,
+): Promise<readonly string[] | undefined> {
+  try {
+    return await checkService(service);
+  } catch (error) {
+    if (!(error instanceof UnreachableError)) {
+      throw error;
+    }
+    console.warn(
+      `Skipping the ${service.name} emotes, because ${service.name} cannot be reached. ${error.message}`,
+    );
+    return undefined;
+  }
 }
 
 /**
