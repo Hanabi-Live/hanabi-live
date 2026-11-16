@@ -1,6 +1,7 @@
 import type { CardIdentity, CardOrder, CardState } from "@hanabi-live/game";
 import {
   getDefaultVariant,
+  getTotalCardsInDeck,
   newColorClue,
   newRankClue,
 } from "@hanabi-live/game";
@@ -29,6 +30,7 @@ function click(button: number, keys: Partial<CardClick> = {}): CardClick {
 const OUR_CARD = 0 as CardOrder;
 const TEAMMATE_CARD = 1 as CardOrder;
 const PLAYED_CARD = 2 as CardOrder;
+const STACK_BASE = getTotalCardsInDeck(VARIANT) as CardOrder;
 
 function card(
   location: CardState["location"],
@@ -200,6 +202,28 @@ describe("getCardClickCommand", () => {
         click(RIGHT, { altKey: true }),
         TEAMMATE_CARD,
         context({ finished: true }),
+        false,
+      ),
+    ).toBeUndefined();
+  });
+
+  test("Alt + right-click changes a stack base in our hypothetical", () => {
+    expect(
+      getCardClickCommand(
+        click(RIGHT, { altKey: true }),
+        STACK_BASE,
+        context({ hypothetical: true }),
+        false,
+      ),
+    ).toStrictEqual({ type: "morph" });
+  });
+
+  test("Ctrl + click edits no note on a stack base that takes no notes", () => {
+    expect(
+      getCardClickCommand(
+        click(LEFT, { ctrlKey: true }),
+        STACK_BASE,
+        context(),
         false,
       ),
     ).toBeUndefined();

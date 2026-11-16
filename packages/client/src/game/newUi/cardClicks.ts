@@ -202,11 +202,15 @@ export function getCardClickCommand(
   { state, variant }: CardClickContext,
   speedrunClicks: boolean,
 ): CardCommand | undefined {
-  // Ctrl + left-click also edits the note, since some Mac computers have no right-click.
+  const stackBase = isStackBase(order, variant);
+
+  // Ctrl + left-click also edits the note, since some Mac computers have no right-click. Only the
+  // stack bases of "Throw It in a Hole" variants take notes.
   if (
     click.button === LEFT_MOUSE_BUTTON
     && isOnlyCtrl(click)
     && !state.finished
+    && (!stackBase || variant.throwItInAHole)
   ) {
     return { type: "editNote" };
   }
@@ -216,9 +220,8 @@ export function getCardClickCommand(
     return undefined;
   }
 
-  const stackBase = isStackBase(order, variant);
   if (click.button === RIGHT_MOUSE_BUTTON) {
-    return !stackBase && isOnlyAlt(click) && controlsHypothetical(state)
+    return isOnlyAlt(click) && controlsHypothetical(state)
       ? { type: "morph" }
       : undefined;
   }

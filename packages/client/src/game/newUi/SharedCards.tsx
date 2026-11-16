@@ -204,11 +204,12 @@ export interface StackView {
   readonly belowRank: Rank | undefined;
 
   /**
-   * The rank that the viewer's note gives the stack base, in a game that is still going. In "Throw
-   * It in a Hole" variants, players note what they think the hole holds, so the empty stack shows
-   * that card, as on the classic screen.
+   * The rank that the stack base shows, as on the classic screen. In a hypothetical, it is the rank
+   * that the stack base was changed into. Otherwise, it is the rank that the viewer's note gives
+   * the stack base, in a game that is still going: in "Throw It in a Hole" variants, players note
+   * what they think the hole holds.
    */
-  readonly notedBaseRank: Rank | undefined;
+  readonly baseRank: Rank | undefined;
 
   /**
    * The label on the stack, or an empty string: which way it goes in "Up or Down" variants and for
@@ -476,7 +477,7 @@ export function PlayArea({
 
               // What lies under the top card: the card below it, or else the empty stack. It stays
               // in place while a newly played card moves on top of it.
-              const belowRank = stack.belowRank ?? stack.notedBaseRank;
+              const belowRank = stack.belowRank ?? stack.baseRank;
               const below =
                 belowRank === undefined ? (
                   <div
@@ -549,7 +550,13 @@ export function PlayArea({
                     role="img"
                   >
                     {stackBaseOrder === undefined ? (
-                      below
+                      // Alt + right-click changes the stack base in a hypothetical (see
+                      // "cardClicks.ts").
+                      <div
+                        data-stack-base={getStackBase(variant, stack.suitIndex)}
+                      >
+                        {below}
+                      </div>
                     ) : (
                       <CardNote notes={notes} order={stackBaseOrder}>
                         <div data-stack-base={stackBaseOrder}>{below}</div>
@@ -635,7 +642,10 @@ export function PlayArea({
  * The order of the stack base of a suit. Stack bases use the orders after the final card in the
  * deck.
  */
-function getStackBase(variant: Variant, suitIndex: SuitIndex): CardOrder {
+export function getStackBase(
+  variant: Variant,
+  suitIndex: SuitIndex,
+): CardOrder {
   return (getTotalCardsInDeck(variant) + suitIndex) as CardOrder;
 }
 

@@ -1287,7 +1287,16 @@ function Hand({
         }}
         onPointerCancel={endHold}
         onPointerDown={(event) => {
-          if (!empathyHold || event.button !== 0) {
+          // A click with Shift, Alt, or Meta does something else, such as Alt + click going to the
+          // turn on which the card was drawn, so it does not show the view, as on the classic
+          // screen.
+          if (
+            !empathyHold
+            || event.button !== 0
+            || event.shiftKey
+            || event.altKey
+            || event.metaKey
+          ) {
             return;
           }
           heldRef.current = true;

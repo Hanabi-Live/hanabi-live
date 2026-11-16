@@ -45,7 +45,7 @@ import type {
   HoleView,
   StackView,
 } from "./SharedCards.tsx";
-import { getNotedStackBase } from "./SharedCards.tsx";
+import { getNotedStackBase, getStackBase } from "./SharedCards.tsx";
 import { getClueMarker } from "./clueMarkers.ts";
 import type { CardView } from "./tableView.ts";
 import {
@@ -261,7 +261,9 @@ export function getStacks(state: State): readonly StackView[] {
       topOrder: top,
       topRank: rankOf(top),
       belowRank: rankOf(stack.at(-2)),
-      notedBaseRank: getNotedBaseRank(state, suitIndex),
+      baseRank:
+        identities[getStackBase(variant, suitIndex)]?.rank
+        ?? getNotedBaseRank(state, suitIndex),
       label:
         sudokuLabels?.[i]
         ?? getStackDirectionLabel(

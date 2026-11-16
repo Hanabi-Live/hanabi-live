@@ -1,7 +1,12 @@
 // What the redesigned game screen does when the player makes a move or picks a turn to see.
 
-import type { CardOrder, GameState } from "@hanabi-live/game";
-import { isAtMaxClueTokens } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  GameState,
+  SuitIndex,
+  SuitRankTuple,
+} from "@hanabi-live/game";
+import { getTotalCardsInDeck, isAtMaxClueTokens } from "@hanabi-live/game";
 import { flushSync } from "react-dom";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
@@ -91,11 +96,46 @@ export function canDiscardNow(): boolean {
 /** In a hypothetical with the cards turned on for editing, a card changes into another. */
 export function editCard(order: CardOrder): void {
   const state = store.getState().game.current;
-  const target =
-    state === undefined ? undefined : hypothetical.getMorphTarget(state, order);
-  if (target !== undefined) {
-    modals.askForMorph(target, currentVariant());
+  if (state === undefined) {
+    return;
   }
+
+  const variant = currentVariant();
+  const target =
+    order >= getTotalCardsInDeck(variant)
+      ? getStackBaseMorphTarget(state, order)
+      : hypothetical.getMorphTarget(state, order);
+  if (target !== undefined) {
+    modals.askForMorph(target, variant);
+  }
+}
+
+/**
+ * A stack base, as the morph dialog starts with it. Stack bases use the orders after the final card
+ * in the deck. A stack base can show any rank of its own suit, as on the classic screen.
+ */
+function getStackBaseMorphTarget(
+  state: State,
+  order: CardOrder,
+): modals.MorphTarget | undefined {
+  const variant = currentVariant();
+  const suitIndex = (order - getTotalCardsInDeck(variant)) as SuitIndex;
+  if (variant.suits[suitIndex] === undefined) {
+    return undefined;
+  }
+
+  const morph = state.replay.hypothetical?.morphedIdentities[order];
+  return {
+    order,
+    identity: morph ?? {
+      suitIndex,
+      rank: undefined,
+    },
+    possibilities: variant.ranks.map((rank): SuitRankTuple => [
+      suitIndex,
+      rank,
+    ]),
+  };
 }
 
 /** Shows the turn just after a clue, in the in-game replay. */
