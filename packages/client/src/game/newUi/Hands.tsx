@@ -161,7 +161,10 @@ interface HandsProps {
    */
   readonly tapToMove: boolean;
 
-  /** The card whose "Play" and "Discard" buttons show, when the viewer taps cards to move them. */
+  /**
+   * The card whose menu shows, when the viewer taps cards to move them: "Play" and "Discard" on a
+   * card that the viewer can move, and "Empathy" on any card in a hand (see `MenuCard`).
+   */
   readonly menuCard: CardOrder | undefined;
   readonly onCardTap: (order: CardOrder) => void;
   readonly canDiscard: boolean;
@@ -885,6 +888,7 @@ function OwnCard({
   slot,
   place,
   movable,
+  empathyMenu,
   props,
   seat,
 }: {
@@ -896,6 +900,8 @@ function OwnCard({
 
   /** Whether the viewer can play or discard the card now. */
   readonly movable: boolean;
+  /** Whether a tap on the card opens a menu with "Empathy" (see `MenuCard`). */
+  readonly empathyMenu: boolean;
   readonly props: HandsProps;
   readonly seat: Seat;
 }): React.JSX.Element {
@@ -936,8 +942,6 @@ function OwnCard({
     );
   }
 
-  const menuOpen = props.tapToMove && props.menuCard === card.order;
-  const empathyOn = props.empathyToggled.has(seat.playerIndex);
   const face = (
     <CardFace
       blank={card.blank}
@@ -965,6 +969,32 @@ function OwnCard({
   );
   const label = `Slot ${slot}: ${describeCard(variant, card.suitIndex, card.rank)}`;
 
+  const sendingMark = props.sendingCard === card.order && (
+    <SendingMark
+      label="Sending your move"
+      labelEdge="bottom"
+      radius={cardWidth * CARD_CORNER_PER_WIDTH}
+      reducedMotion={props.reducedMotion}
+    />
+  );
+
+  if (props.tapToMove && (movable || empathyMenu)) {
+    return (
+      <MenuCard
+        empathy={empathyMenu}
+        face={face}
+        label={label}
+        movable={movable}
+        order={card.order}
+        place={place}
+        props={props}
+        seat={seat}
+      >
+        {sendingMark}
+      </MenuCard>
+    );
+  }
+
   if (!movable) {
     return (
       <div
@@ -975,14 +1005,7 @@ function OwnCard({
         <div aria-label={label} role="img">
           {face}
         </div>
-        {props.sendingCard === card.order && (
-          <SendingMark
-            label="Sending your move"
-            labelEdge="bottom"
-            radius={cardWidth * CARD_CORNER_PER_WIDTH}
-            reducedMotion={props.reducedMotion}
-          />
-        )}
+        {sendingMark}
       </div>
     );
   }
@@ -994,67 +1017,109 @@ function OwnCard({
       data-card-place={place}
     >
       <button
-        aria-expanded={props.tapToMove ? menuOpen : undefined}
-        aria-label={
-          props.tapToMove
-            ? `${label}. Play or discard`
-            : `${label}. Drag it to the play stacks or the discard pile`
-        }
+        aria-label={`${label}. Drag it to the play stacks or the discard pile`}
         // Under the pointer, a card that the player can drag rises a little, to invite them to pick
         // it up. Pressed, it is picked up (see "HeldCardGhost.tsx"). The shadow is a filter, so
-        // that it follows a clued card, which is drawn raised. A card that is tapped to move it can
-        // still scroll the page.
-        className={`tw:block tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out ${
-          props.tapToMove
-            ? "tw:cursor-pointer"
-            : "tw:cursor-grab tw:touch-none tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
-        }`}
-        onClick={
-          props.tapToMove
-            ? () => {
-                props.onCardTap(card.order);
-              }
-            : undefined
-        }
-        onPointerDown={
-          props.tapToMove
-            ? undefined
-            : (event) => {
-                props.onCardPointerDown(event, card.order);
-              }
-        }
+        // that it follows a clued card, which is drawn raised.
+        className="tw:block tw:cursor-grab tw:touch-none tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
+        onPointerDown={(event) => {
+          props.onCardPointerDown(event, card.order);
+        }}
         style={{ borderRadius: cardWidth * CARD_CORNER_PER_WIDTH }}
         type="button"
       >
         {face}
       </button>
+    </div>
+  );
+}
+
+/**
+ * A card in tap-to-move mode that opens a menu when the viewer taps it. The menu plays or discards
+ * the card, if the viewer can, and shows the hand as its player sees it ("Empathy"), where a
+ * desktop shows it while the viewer holds the pointer down on the hand. A tapped card can still
+ * scroll the page.
+ */
+function MenuCard({
+  order,
+  place,
+  label,
+  face,
+  movable,
+  empathy,
+  seat,
+  props,
+  children,
+}: {
+  readonly order: CardOrder;
+  readonly place: string;
+  readonly label: string;
+  readonly face: React.JSX.Element;
+  /** Whether the menu plays and discards the card. */
+  readonly movable: boolean;
+  /** Whether the menu shows "Empathy". */
+  readonly empathy: boolean;
+  readonly seat: Seat;
+  readonly props: HandsProps;
+  readonly children?: React.ReactNode;
+}): React.JSX.Element {
+  const menuOpen = props.menuCard === order;
+  const empathyOn = props.empathyToggled.has(seat.playerIndex);
+  let action = "Show empathy";
+  if (movable) {
+    action = empathy ? "Play, discard, or show empathy" : "Play or discard";
+  }
+
+  return (
+    <div
+      className="tw:relative"
+      data-card-order={order}
+      data-card-place={place}
+    >
+      <button
+        aria-expanded={menuOpen}
+        aria-label={`${label}. ${action}`}
+        className="tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0"
+        onClick={() => {
+          props.onCardTap(order);
+        }}
+        style={{ borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH }}
+        type="button"
+      >
+        {face}
+      </button>
+      {children}
       {menuOpen && (
         <CardMenu>
-          <button
-            className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
-            onClick={() => {
-              props.onPlay(card.order);
-            }}
-            type="button"
-          >
-            Play
-          </button>
-          <button
-            className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
-            disabled={!props.canDiscard}
-            onClick={() => {
-              props.onDiscard(card.order);
-            }}
-            ref={tooltipRef(
-              props.canDiscard
-                ? undefined
-                : "The team cannot discard at the maximum number of clues.",
-            )}
-            type="button"
-          >
-            Discard
-          </button>
-          {props.onToggleEmpathy !== undefined && (
+          {movable && (
+            <>
+              <button
+                className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
+                onClick={() => {
+                  props.onPlay(order);
+                }}
+                type="button"
+              >
+                Play
+              </button>
+              <button
+                className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
+                disabled={!props.canDiscard}
+                onClick={() => {
+                  props.onDiscard(order);
+                }}
+                ref={tooltipRef(
+                  props.canDiscard
+                    ? undefined
+                    : "The team cannot discard at the maximum number of clues.",
+                )}
+                type="button"
+              >
+                Discard
+              </button>
+            </>
+          )}
+          {empathy && (
             <button
               aria-pressed={empathyOn}
               className={`tw:flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:py-1.5 tw:font-bold ${
@@ -1141,6 +1206,7 @@ function HandCard({
   slot,
   seat,
   editing,
+  empathyMenu,
   props,
 }: {
   readonly card: CardView;
@@ -1148,6 +1214,8 @@ function HandCard({
   readonly slot: number;
   readonly seat: Seat;
   readonly editing: boolean;
+  /** Whether a tap on the card opens a menu with "Empathy" (see `MenuCard`). */
+  readonly empathyMenu: boolean;
   readonly props: HandsProps;
 }): React.JSX.Element {
   const place = `${HAND_PLACE_PREFIX}${seat.playerIndex}-${slot - 1}`;
@@ -1167,6 +1235,7 @@ function HandCard({
       <OwnCard
         card={card}
 
+        empathyMenu={empathyMenu}
         movable={props.canMoveCards && seat.acting}
         place={place}
         props={props}
@@ -1176,38 +1245,56 @@ function HandCard({
     );
   }
 
+  const label = describeCard(props.variant, card.suitIndex, card.rank);
+  const face = (
+    <CardFace
+      blank={card.blank}
+      clued={card.clued}
+      clueMarker={props.clueMarkers.get(card.order)}
+      colorblindMode={props.colorblindMode}
+      critical={card.critical}
+      doubleDiscard={card.doubleDiscard}
+      highlighted={props.touchedCards.has(card.order)}
+      identityFromNote={card.identityFromNote}
+      note={props.notes.notesHtml.has(card.order)}
+      noteBorder={card.noteBorder}
+      noteMarks={card.noteMarks}
+      noteUnread={props.notes.unreadNotes.has(card.order)}
+      pips={card.pips}
+      raiseClued
+      rank={card.rank}
+      showPossibleCards={props.showPossibleCards}
+      stackDirection={card.stackDirection}
+      suitIndex={card.suitIndex}
+      trash={card.trash}
+      trashIcon={card.trashIcon}
+      variant={props.variant}
+      width={props.cardWidth}
+    />
+  );
+  if (empathyMenu) {
+    return (
+      <MenuCard
+        empathy
+        face={face}
+        label={label}
+        movable={false}
+        order={card.order}
+        place={place}
+        props={props}
+        seat={seat}
+      />
+    );
+  }
+
   return (
     <div
-      aria-label={describeCard(props.variant, card.suitIndex, card.rank)}
+      aria-label={label}
       data-card-order={card.order}
       data-card-place={place}
-
       role="img"
     >
-      <CardFace
-        blank={card.blank}
-        clued={card.clued}
-        clueMarker={props.clueMarkers.get(card.order)}
-        colorblindMode={props.colorblindMode}
-        critical={card.critical}
-        doubleDiscard={card.doubleDiscard}
-        highlighted={props.touchedCards.has(card.order)}
-        identityFromNote={card.identityFromNote}
-        note={props.notes.notesHtml.has(card.order)}
-        noteBorder={card.noteBorder}
-        noteMarks={card.noteMarks}
-        noteUnread={props.notes.unreadNotes.has(card.order)}
-        pips={card.pips}
-        raiseClued
-        rank={card.rank}
-        showPossibleCards={props.showPossibleCards}
-        stackDirection={card.stackDirection}
-        suitIndex={card.suitIndex}
-        trash={card.trash}
-        trashIcon={card.trashIcon}
-        variant={props.variant}
-        width={props.cardWidth}
-      />
+      {face}
     </div>
   );
 }
@@ -1249,7 +1336,9 @@ function Hand({
   // editing cards, a press picks the card to change instead. In tap-to-move mode, "Empathy" in a
   // card's menu and the eye buttons show the view instead, so that a touch on a hand does nothing
   // until it ends as a tap.
-  const empathyHold = !editing && !props.speedrunClicks && !props.tapToMove;
+  const empathyAvailable = !editing && !props.speedrunClicks;
+  const empathyHold = empathyAvailable && !props.tapToMove;
+  const empathyMenu = empathyAvailable && props.tapToMove;
   const heldRef = useRef(false);
   function endHold() {
     if (!heldRef.current) {
@@ -1400,6 +1489,7 @@ function Hand({
             <HandCard
               card={card}
               editing={editing}
+              empathyMenu={empathyMenu}
               props={props}
               seat={seat}
               slot={i + 1}
