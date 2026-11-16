@@ -416,14 +416,14 @@ function ReplayToggle({
         <span
           className={`tw:flex tw:flex-col tw:items-center tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
         >
-          {/* On a phone, the short label lets all of the buttons fit in one row. */}
-          <span className="tw:narrow-530:hidden">Back to the game</span>
-          <span className="tw:hidden tw:narrow-530:inline">Back</span>
-          {/* The name does not widen the button. A long one is cut off. A phone has no room for
-              it, so there the button says only "Back". */}
+          {/* On a narrow window, the button says only "Back", which is easy to read and lets all
+              of the buttons fit in one row on a phone. */}
+          <span className="tw:narrow-980:hidden">Back to the game</span>
+          <span className="tw:hidden tw:narrow-980:inline">Back</span>
+          {/* The name does not widen the button. A long one is cut off. */}
           {currentName !== undefined && (
             <span
-              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:narrow-530:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
+              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:narrow-980:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
               data-live-turn
             >
               {ourTurn ? "Your turn" : `${currentName}'s turn`}
