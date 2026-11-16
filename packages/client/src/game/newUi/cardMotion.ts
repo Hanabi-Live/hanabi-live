@@ -595,11 +595,16 @@ export function getPlayLandingSeconds(card: HTMLElement | undefined): number {
 }
 
 /**
- * Moves a card that left a hand back to the deck. The card is no longer in the page, so its old
- * element moves over the screen, and is removed when it reaches the deck.
+ * Moves a card that left a hand back to the deck. The card is no longer in the page, so a copy of
+ * its old element moves over the screen, and is removed when it reaches the deck.
+ *
+ * The copy has none of the old element's moves. A move that was still going when the card left the
+ * hand, such as its draw, restores the element's position when it ends, and would drop the card at
+ * the corner of the window.
  */
 function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
-  const { rect: from, element } = was;
+  const { rect: from } = was;
+  const element = was.element.cloneNode(true) as HTMLElement;
   Object.assign(element.style, {
     position: "fixed",
     // The card is outside of the zoomed game screen, so it takes the same zoom.
