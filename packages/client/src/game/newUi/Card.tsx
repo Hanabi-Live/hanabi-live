@@ -1312,7 +1312,7 @@ const POSSIBLE_CARDS = {
    */
   removedIcon: {
     seen: 0.15,
-    note: 0.084375,
+    note: 0.1,
   },
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
