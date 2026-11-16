@@ -130,6 +130,9 @@ function Timeline({
         readonly name: string;
         readonly amLeader: boolean;
         readonly segment: number;
+
+        /** The number of the turn that the leader shows, as players count it, if it is known. */
+        readonly turn: number | undefined;
       }
     | undefined;
 
@@ -218,11 +221,7 @@ function Timeline({
             // The timeline would show the turn under the pointer instead.
             event.stopPropagation();
           }}
-          ref={tooltipRef(
-            leader.amLeader
-              ? "Everyone else sees this turn. Go back to it, and take everyone along again."
-              : `Follow ${leader.name} again, from the turn that they show.`,
-          )}
+          ref={tooltipRef(leaderMarkTooltip(leader))}
           style={{ left: timelineLeft(leader.segment, lastSegment) }}
           tabIndex={-1}
           type="button"
@@ -241,6 +240,17 @@ function Timeline({
       />
     </div>
   );
+}
+
+function leaderMarkTooltip(leader: {
+  readonly name: string;
+  readonly amLeader: boolean;
+  readonly turn: number | undefined;
+}): string {
+  const turn = leader.turn === undefined ? "this turn" : `turn ${leader.turn}`;
+  return leader.amLeader
+    ? `Everyone else sees ${turn}. Go back to it, and take everyone along again.`
+    : `Follow ${leader.name} again, from ${turn}.`;
 }
 
 /** Where a turn is along the timeline, as a CSS length from its left end. */
@@ -717,6 +727,14 @@ function TurnsControls({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, segment, turn);
 
+  // The states are indexed by segment, and their turn numbers start at 0.
+  const sharedTurnNum =
+    shared === undefined
+      ? undefined
+      : replayState.states[shared.segment]?.turn.turnNum;
+  const sharedTurn =
+    sharedTurnNum === undefined ? undefined : sharedTurnNum + 1;
+
   // Once we look at other turns on our own, the timeline marks the turn that the leader shows. For
   // the leader, it marks the turn that everyone else sees.
   const leaderMark =
@@ -726,6 +744,7 @@ function TurnsControls({
           name: shared.leader,
           amLeader: shared.amLeader,
           segment: shared.segment,
+          turn: sharedTurn,
         };
 
   // The buttons that step through the turns are together, so that a player can click back and forth
