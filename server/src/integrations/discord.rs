@@ -46,6 +46,9 @@ const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 const EVENT_QUEUE: usize = 1000;
 /// How long resolving Discord mentions in a message may take before the raw text is used.
 const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
+/// The most mentions in a message that are looked up on Discord. Each lookup asks Discord, so
+/// later mentions stay as they are.
+const MAX_RENDERED_MENTIONS: usize = 5;
 /// The gateway intents we identify with.
 const INTENTS: Intents = Intents::GUILDS
     .union(Intents::GUILD_MESSAGES)
@@ -364,7 +367,10 @@ impl Bridge {
     async fn render_inner(&self, text: &str) -> String {
         let mut result = String::new();
         let mut offset = 0;
-        for capture in regex!(r"<(@!?|@&|#)([0-9]+)>").captures_iter(text) {
+        for capture in regex!(r"<(@!?|@&|#)([0-9]+)>")
+            .captures_iter(text)
+            .take(MAX_RENDERED_MENTIONS)
+        {
             let id = &capture[2];
             let Some(id) = id
                 .parse()

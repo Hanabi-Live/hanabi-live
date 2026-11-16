@@ -172,8 +172,13 @@ pub(super) async fn lobby_command(
         Vec::new()
     };
     let caller = session.identity.clone();
+    // A muted user's message is refused later, so it is not rendered, which asks Discord.
     let rendered = match &message {
-        ClientRequest::Chat(request) if lobby_chat => discord_rendering(app, &request.text).await,
+        ClientRequest::Chat(request)
+            if lobby_chat && !accounts::is_muted(&app.store.primary, &session.ip).await? =>
+        {
+            discord_rendering(app, &request.text).await
+        }
         _ => None,
     };
     let history = history_command(&message);
