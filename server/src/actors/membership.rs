@@ -180,6 +180,14 @@ impl TableActor {
             !spectating || seat.is_none() || replay,
             "Players cannot spectate their own ongoing game"
         );
+        // Only the owner, and those already there, can enter a solo replay.
+        ensure_or_reject!(
+            !replay
+                || self.table.visible
+                || session.user == self.table.owner.user_id
+                || self.attendees.contains_key(&session.user),
+            "That replay is private"
+        );
         if seat.is_none() {
             self.ensure_not_blocked(
                 blocks,

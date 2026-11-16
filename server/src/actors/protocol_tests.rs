@@ -780,6 +780,27 @@ async fn only_the_owner_changes_the_leader_before_the_replay() -> Result<()> {
 }
 
 #[tokio::test]
+async fn others_cannot_enter_a_solo_replay() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        h.send(0,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"solo"}})).await?;
+        let id = h.receive_game(0).await?["tableId"].clone();
+        ensure!(
+            h.send(1, "tableSpectate", json!({"tableId":id})).await.is_err(),
+            "Another user entered a solo replay"
+        );
+        h.send(0, "tableSpectate", json!({"tableId":id})).await?;
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
