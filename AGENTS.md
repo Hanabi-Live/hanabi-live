@@ -63,6 +63,13 @@ Technical English, as Andrej Karpathy recommends: short sentences, one idea per
 sentence, active voice, and common words that have one meaning. Keep technical
 names, such as identifiers, commands, and error messages, exact.
 
+End a full sentence that tells the user something with a period, including in
+tooltips and server messages, such as "No one else is here.". Do not end a label
+with a period, such as a button name or text that leads into a list ("Set new
+leader to"). When a message ends with an inserted value, such as a command, a
+list, or a name, put a colon before the value and no period after it: "Missing:
+{missing}".
+
 ## Documentation
 
 Default to no documentation changes. Update prose only when explicitly requested
