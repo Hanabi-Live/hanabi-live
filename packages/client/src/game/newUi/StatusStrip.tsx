@@ -477,15 +477,20 @@ export function StatusStrip({
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
 
-  let colorClass = "tw:border-t tw:border-game-raised tw:bg-game-panel";
+  // The line along the top is a shadow, not a border, so that its width does not move the bar's
+  // contents when a replay makes it thicker.
+  let colorClass =
+    "tw:bg-game-panel tw:[box-shadow:inset_0_1px_0_var(--game-screen-raised)]";
   if (inReplay) {
     colorClass =
-      "tw:border-0 tw:border-t-2 tw:border-solid tw:border-game-mode tw:bg-game-mode-panel";
+      "tw:bg-game-mode-panel tw:[box-shadow:inset_0_2px_0_var(--game-screen-mode)]";
   }
 
+  // When the replay controls have a row of their own, the row under them keeps the height of the
+  // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 ${colorClass} tw:data-own-row:h-auto tw:data-own-row:flex-wrap tw:data-own-row:gap-y-2.5 tw:data-own-row:py-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3`}
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-narrow-980:data-own-row:h-auto tw:not-narrow-980:data-own-row:flex-wrap tw:not-narrow-980:data-own-row:gap-y-0 tw:not-narrow-980:data-own-row:pt-2.5 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
     >
@@ -666,7 +671,7 @@ export function StatusStrip({
           {replayControls}
         </div>
       )}
-      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
+      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height)">
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic UI
         </button>
