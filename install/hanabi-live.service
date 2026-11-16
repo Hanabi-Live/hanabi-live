@@ -13,5 +13,30 @@ Restart=on-failure
 RestartSec=2
 TimeoutStopSec=infinity
 
+# Sandboxing. The server only reads files, except for the directory that certbot serves challenges
+# from, which it creates at startup. The deployment script and certbot run outside this service, so
+# they can still replace the binary and certificates. A graceful restart runs the new binary in the
+# same sandbox.
+ProtectSystem=strict
+ReadWritePaths=-/home/hanabi/hanabi-live/letsencrypt
+PrivateTmp=true
+PrivateDevices=true
+ProtectProc=invisible
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
 [Install]
 WantedBy=multi-user.target
