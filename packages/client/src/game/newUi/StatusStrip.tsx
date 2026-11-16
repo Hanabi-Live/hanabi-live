@@ -447,6 +447,10 @@ const OWN_ROW_ATTRIBUTE = "data-own-row";
  * controls overflow when they have no room. After each render and resize, the bar takes away the
  * attribute of the two-row layout, checks whether anything overflows, and puts the attribute back.
  * All of it happens before the browser draws the bar.
+ *
+ * Once the controls have a row of their own, they keep it until the bar's width changes or the
+ * replay ends. Otherwise, the bar would change its height when the controls change, such as when a
+ * hypothetical starts or ends, and the screen above it would jump.
  */
 function useOwnRow(
   footer: HTMLElement | null,
@@ -455,9 +459,14 @@ function useOwnRow(
   // Measures again when the bar's width changes.
   useElementSize(footer);
   const [ownRow, setOwnRow] = useState(false);
+
+  /** The width of the bar when the controls got a row of their own. */
+  const ownRowWidth = useRef<number | undefined>(undefined);
+
   useLayoutEffect(() => {
     const group = controls.current;
     if (footer === null || group === null) {
+      ownRowWidth.current = undefined;
       setOwnRow(false);
       return;
     }
@@ -469,7 +478,12 @@ function useOwnRow(
     if (hadOwnRow) {
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
-    setOwnRow(overflows);
+    if (overflows) {
+      ownRowWidth.current = footer.clientWidth;
+    } else if (ownRowWidth.current !== footer.clientWidth) {
+      ownRowWidth.current = undefined;
+    }
+    setOwnRow(ownRowWidth.current !== undefined);
   });
   return ownRow;
 }
