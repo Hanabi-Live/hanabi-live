@@ -1382,8 +1382,8 @@ function PossibleCard({
 const REMOVED_CARD_OPACITY = 0.25;
 
 /**
- * A card that the clues allow, but that the card cannot be: a faded small card with a faded icon in
- * its corner that says what ruled it out.
+ * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
+ * corner that says what ruled it out.
  */
 function RemovedCard({
   by,
@@ -1399,21 +1399,51 @@ function RemovedCard({
 }): React.JSX.Element {
   const icon = unit * POSSIBLE_CARDS.removedIcon;
   return (
-    // The icon fades with the card.
-    <span
-      className="tw:relative tw:block"
-      style={{ opacity: REMOVED_CARD_OPACITY }}
-    >
-      <PossibleCard unit={unit} {...cardProps} />
-      {/* The icon stays inside the card, so that it never covers the next card. */}
-      <span className="tw:absolute tw:right-0 tw:bottom-0">
+    <span className="tw:relative tw:block">
+      <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
+        <PossibleCard unit={unit} {...cardProps} />
+      </span>
+      {/* The icon's edges meet the card's edges, so that it never covers the next card. */}
+      <span
+        className="tw:absolute tw:right-0 tw:bottom-0"
+        style={{ opacity: REMOVED_BY_ICON_OPACITY }}
+      >
         <RemovedByIcon by={by} size={icon} />
       </span>
     </span>
   );
 }
 
-/** An eye for the cards that the holder sees, or a note for the note on the card. */
+/** How opaque the icon on a card that the card cannot be is. It fades less than the card. */
+const REMOVED_BY_ICON_OPACITY = 0.75;
+
+/** The width of the outline of the icons, in their drawing's units. */
+const REMOVED_BY_ICON_STROKE = 9;
+
+/**
+ * The box around each icon's shape and its outline, in its drawing's units. The icon is drawn in
+ * this box, so that the shape touches the edges of the icon.
+ */
+const REMOVED_BY_ICON_BOUNDS = {
+  // The eye's corners are at x 4 and 96, and its curves reach from y 26 to y 74.
+  seen: {
+    left: 4 - REMOVED_BY_ICON_STROKE / 2,
+    top: 26 - REMOVED_BY_ICON_STROKE / 2,
+    right: 96 + REMOVED_BY_ICON_STROKE / 2,
+    bottom: 74 + REMOVED_BY_ICON_STROKE / 2,
+  },
+  note: {
+    left: 8 - REMOVED_BY_ICON_STROKE / 2,
+    top: 8 - REMOVED_BY_ICON_STROKE / 2,
+    right: 92 + REMOVED_BY_ICON_STROKE / 2,
+    bottom: 92 + REMOVED_BY_ICON_STROKE / 2,
+  },
+} as const;
+
+/**
+ * An eye for the cards that the holder sees, or a note for the note on the card. It is `size` wide,
+ * and as tall as its shape.
+ */
 function RemovedByIcon({
   by,
   size,
@@ -1421,12 +1451,15 @@ function RemovedByIcon({
   readonly by: "seen" | "note";
   readonly size: number;
 }): React.JSX.Element {
+  const bounds = REMOVED_BY_ICON_BOUNDS[by];
+  const boxWidth = bounds.right - bounds.left;
+  const boxHeight = bounds.bottom - bounds.top;
   return (
     <svg
       aria-hidden="true"
-      className="tw:block tw:overflow-visible"
-      height={size}
-      viewBox="0 0 100 100"
+      className="tw:block"
+      height={(size * boxHeight) / boxWidth}
+      viewBox={`${bounds.left} ${bounds.top} ${boxWidth} ${boxHeight}`}
       width={size}
     >
       {by === "seen" ? (
@@ -1435,7 +1468,7 @@ function RemovedByIcon({
             className="tw:fill-card-note tw:stroke-card-ink"
             d="M 4 50 Q 50 2 96 50 Q 50 98 4 50 Z"
             strokeLinejoin="round"
-            strokeWidth={9}
+            strokeWidth={REMOVED_BY_ICON_STROKE}
           />
           <circle className="tw:fill-card-ink" cx={50} cy={50} r={17} />
         </>
@@ -1445,7 +1478,7 @@ function RemovedByIcon({
             className="tw:fill-card-note tw:stroke-card-ink"
             d="M 8 8 H 92 V 68 L 68 92 H 8 Z"
             strokeLinejoin="round"
-            strokeWidth={9}
+            strokeWidth={REMOVED_BY_ICON_STROKE}
           />
           <path
             className="tw:stroke-card-ink/70"
