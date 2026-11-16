@@ -95,7 +95,12 @@ export function ClueMenu({
   const ref = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
-  const [above, setAbove] = useState(false);
+  // Where the drawer opens for the player whose menu this is. It is undefined until it is measured.
+  const [placement, setPlacement] = useState<{
+    readonly name: string;
+    readonly above: boolean;
+  }>();
+  const above = placement?.name === name && placement.above;
 
   // The drawer opens below the hand, or above it when only that fits. It unfolds out of the hand,
   // from the edge that touches it. The unfolding only decorates.
@@ -109,7 +114,10 @@ export function ClueMenu({
     const fitsBelow = handRect.bottom + height <= roomRect.bottom;
     const fitsAbove = handRect.top - height >= roomRect.top;
     const opensAbove = !fitsBelow && fitsAbove;
-    setAbove(opensAbove);
+    setPlacement({
+      name,
+      above: opensAbove,
+    });
 
     if (reducedMotion) {
       return undefined;
@@ -138,12 +146,14 @@ export function ClueMenu({
     };
   }, [name, reducedMotion]);
 
-  // On a narrow window, the page scrolls, so it scrolls to show all of the menu.
+  // On a narrow window, the page scrolls, so it scrolls to show all of the menu. It waits until the
+  // drawer is in its place. Otherwise, it scrolls to show the drawer below the hand, and then the
+  // drawer moves above the hand, out of view.
   useEffect(() => {
-    if (!openedItself) {
+    if (placement !== undefined && !openedItself) {
       ref.current?.scrollIntoView({ block: "nearest" });
     }
-  }, [name, openedItself]);
+  }, [placement, openedItself]);
 
   useEffect(() => {
     if (!openedItself) {
