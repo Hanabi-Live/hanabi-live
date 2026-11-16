@@ -141,3 +141,29 @@ test("an outer tooltip stays shut while an inner one waits to open", () => {
     vi.useRealTimers();
   }
 });
+
+test("an outer tooltip opens when the pointer leaves an inner one but stays in the outer one", () => {
+  vi.useFakeTimers();
+  try {
+    const { getByRole } = render(
+      <div ref={tooltipRef("Outer")}>
+        <Button instant={false} text="Inner" />
+      </div>,
+    );
+    const outer = getByRole("button").parentElement!;
+
+    // The pointer crosses the outer element onto the inner one, and rests there.
+    fireEvent.pointerEnter(outer);
+    fireEvent.pointerEnter(getByRole("button"));
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS);
+    expect(getOpenTexts()).toStrictEqual(["Inner"]);
+
+    // The pointer moves off the inner element, to another part of the outer one.
+    fireEvent.pointerLeave(getByRole("button"));
+    expect(getOpenTexts()).toStrictEqual([]);
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS);
+    expect(getOpenTexts()).toStrictEqual(["Outer"]);
+  } finally {
+    vi.useRealTimers();
+  }
+});

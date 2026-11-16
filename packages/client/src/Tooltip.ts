@@ -59,6 +59,8 @@ export class Tooltip {
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
   private openingTimeout: ReturnType<typeof setTimeout> | undefined;
   private readonly hoverListeners = new AbortController();
+  /** Whether the tooltip waits for the pointer to rest on its anchor (see `openOnHover`). */
+  private openOnHoverDelayed = false;
 
   private readonly closeOnPointerDownElsewhere = (event: PointerEvent) => {
     const { target } = event;
@@ -144,6 +146,20 @@ export class Tooltip {
     this.bubble.style.left = `${left}px`;
     this.bubble.style.top = `${top}px`;
     this.bubble.style.setProperty("--tooltip-arrow-x", `${center - left}px`);
+  }
+
+  /** Opens the tooltip for the pointer over its anchor, after the wait if it has one. */
+  private openForHover() {
+    clearTimeout(this.openingTimeout);
+    this.openingTimeout = undefined;
+    if (this.openOnHoverDelayed) {
+      this.openingTimeout = setTimeout(() => {
+        this.openingTimeout = undefined;
+        this.open();
+      }, TOOLTIP_DELAY_IN_MILLISECONDS);
+    } else {
+      this.open();
+    }
   }
 
   get isOpen(): boolean {
@@ -287,15 +303,8 @@ export class Tooltip {
           return;
         }
         hoveredTooltips.add(this);
-        if (delayed) {
-          clearTimeout(this.openingTimeout);
-          this.openingTimeout = setTimeout(() => {
-            this.openingTimeout = undefined;
-            this.open();
-          }, TOOLTIP_DELAY_IN_MILLISECONDS);
-        } else {
-          this.open();
-        }
+        this.openOnHoverDelayed = delayed;
+        this.openForHover();
       },
       { signal },
     );
@@ -308,6 +317,14 @@ export class Tooltip {
 
         hoveredTooltips.delete(this);
         this.close();
+        // An outer tooltip stays shut while the pointer is over this one. The pointer can leave
+        // this anchor without leaving the outer one, such as from one box of a row to the next, so
+        // the outer tooltip opens now.
+        for (const tooltip of hoveredTooltips) {
+          if (tooltip.anchor.contains(this.anchor)) {
+            tooltip.openForHover();
+          }
+        }
       },
       { signal },
     );
