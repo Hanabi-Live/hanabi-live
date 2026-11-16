@@ -2,6 +2,7 @@ import type { Options, PlayerIndex } from "@hanabi-live/game";
 import {
   getCharacters,
   getDefaultVariant,
+  getVariant,
   newRankClue,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
@@ -35,6 +36,7 @@ function isAllowed(
       numTouched,
       giverIndex: 0,
       receiverIndex: receiverIndex as PlayerIndex,
+      lastClueType: undefined,
     },
     VARIANT,
     options,
@@ -67,5 +69,26 @@ describe("isClueAllowed", () => {
   test('lets "Oblivious" give any clue to the previous player only', () => {
     expect(isAllowed(0, 3, { giverCharacter: "Oblivious" })).toBe(true);
     expect(isAllowed(0, 1, { giverCharacter: "Oblivious" })).toBe(false);
+  });
+
+  test('refuses a clue of the same type as the last clue in "Alternating Clues" variants', () => {
+    const variant = getVariant("Alternating Clues (5 Suits)");
+    function isAllowedAfter(lastClueType: "color" | "rank" | undefined) {
+      return isClueAllowed(
+        {
+          clue: newRankClue(1),
+          numTouched: 1,
+          giverIndex: 0,
+          receiverIndex: 1,
+          lastClueType,
+        },
+        variant,
+        OPTIONS,
+        [],
+      );
+    }
+    expect(isAllowedAfter("rank")).toBe(false);
+    expect(isAllowedAfter("color")).toBe(true);
+    expect(isAllowedAfter(undefined)).toBe(true);
   });
 });

@@ -20,6 +20,7 @@ import {
   newRankClue,
 } from "@hanabi-live/game";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
+import { isClueTypeAllowed } from "../isClueAllowed.ts";
 import {
   getColorForSpeedrunClue,
   getRankForSpeedrunClue,
@@ -142,9 +143,10 @@ export function getSpeedrunCommand(
   }
 
   const clueAvailable = ongoingGame.clueTokens >= getClueCost(variant);
+  const lastClueType = ongoingGame.clues.at(-1)?.type;
   const identity = identities[order];
   if (click.button === LEFT_MOUSE_BUTTON) {
-    if (!clueAvailable) {
+    if (!clueAvailable || !isClueTypeAllowed("color", lastClueType, variant)) {
       return { type: "refuse" };
     }
     const color = getColorForSpeedrunClue(
@@ -171,7 +173,7 @@ export function getSpeedrunCommand(
   ) {
     return undefined;
   }
-  if (!clueAvailable) {
+  if (!clueAvailable || !isClueTypeAllowed("rank", lastClueType, variant)) {
     return { type: "refuse" };
   }
   const rank = getRankForSpeedrunClue(

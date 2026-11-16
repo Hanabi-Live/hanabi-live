@@ -106,20 +106,22 @@ describe("getCardView", () => {
   }
 
   test("shows the mark of a note keyword", () => {
-    expect(getView({}).noteMark).toBeUndefined();
-    expect(getView({ questionMark: true }).noteMark).toBe("questionMark");
+    expect(getView({}).noteMarks).toStrictEqual([]);
+    expect(getView({ questionMark: true }).noteMarks).toStrictEqual([
+      "questionMark",
+    ]);
     expect(
       getView({
-        knownTrash: true,
-        questionMark: true,
-      }).noteMark,
-    ).toBe("trash");
+        needsFix: true,
+        exclamationMark: true,
+      }).noteMarks,
+    ).toStrictEqual(["fix", "exclamationMark"]);
   });
 
   test("hides the marks of notes in a finished game", () => {
     expect(
-      getView({ questionMark: true }, { finished: true }).noteMark,
-    ).toBeUndefined();
+      getView({ questionMark: true }, { finished: true }).noteMarks,
+    ).toStrictEqual([]);
   });
 
   test("shows a card with a blank note as unknown", () => {

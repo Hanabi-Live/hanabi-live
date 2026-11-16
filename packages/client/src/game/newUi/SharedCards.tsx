@@ -204,6 +204,13 @@ export interface StackView {
   readonly belowRank: Rank | undefined;
 
   /**
+   * The rank that the viewer's note gives the stack base, in a game that is still going. In "Throw
+   * It in a Hole" variants, players note what they think the hole holds, so the empty stack shows
+   * that card, as on the classic screen.
+   */
+  readonly notedBaseRank: Rank | undefined;
+
+  /**
    * The label on the stack, or an empty string: which way it goes in "Up or Down" variants and for
    * a reversed suit, or which ranks it can start with in "Sudoku" variants (see "stackLabels.ts").
    */
@@ -469,8 +476,9 @@ export function PlayArea({
 
               // What lies under the top card: the card below it, or else the empty stack. It stays
               // in place while a newly played card moves on top of it.
+              const belowRank = stack.belowRank ?? stack.notedBaseRank;
               const below =
-                stack.belowRank === undefined ? (
+                belowRank === undefined ? (
                   <div
                     className="tw:box-border tw:flex tw:items-center tw:justify-center tw:border-2 tw:border-solid tw:border-game-line"
                     style={{
@@ -493,7 +501,7 @@ export function PlayArea({
                 ) : (
                   <CardFace
                     colorblindMode={colorblindMode}
-                    rank={stack.belowRank}
+                    rank={belowRank}
                     suitIndex={stack.suitIndex}
                     variant={variant}
                     width={cardWidth}
@@ -1353,6 +1361,7 @@ export function TableTokens({
   oneClueLeft,
   realLifeMode,
   strikes,
+  strikesHidden,
   strikeSegments,
   onShowStrike,
 }: {
@@ -1372,6 +1381,12 @@ export function TableTokens({
    */
   readonly realLifeMode: boolean;
   readonly strikes: number;
+
+  /**
+   * Whether the viewer cannot see the strikes, as in "Throw It in a Hole" variants. Each box then
+   * shows a question mark.
+   */
+  readonly strikesHidden: boolean;
 
   /**
    * For each strike box, the segment of the strike that it stands for, or `undefined` when it does
@@ -1409,13 +1424,17 @@ export function TableTokens({
       </section>
       <section aria-label="Strikes">
         <div
-          aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
+          aria-label={
+            strikesHidden
+              ? "The strikes are hidden"
+              : `${strikes} of ${MAX_STRIKES} strikes`
+          }
           className="tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
           role="group"
         >
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
-            const struck = i < strikes;
+            const struck = !strikesHidden && i < strikes;
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
@@ -1425,7 +1444,13 @@ export function TableTokens({
                 : "tw:border-game-line tw:bg-transparent"
             }`;
             let mark: React.ReactNode;
-            if (struck) {
+            if (strikesHidden) {
+              mark = (
+                <span className="tw:text-[17px] tw:leading-none tw:font-bold tw:text-game-muted">
+                  ?
+                </span>
+              );
+            } else if (struck) {
               mark = <StrikeMark />;
             } else if (upcoming) {
               mark = <StrikeMark upcoming />;
@@ -1437,7 +1462,11 @@ export function TableTokens({
                 className={className}
                 data-strike-box={i}
                 key={i}
-                ref={tooltipRef("Strikes")}
+                ref={tooltipRef(
+                  strikesHidden
+                    ? "Strikes. In this variant, the players cannot see them."
+                    : "Strikes",
+                )}
               >
                 {mark}
               </span>

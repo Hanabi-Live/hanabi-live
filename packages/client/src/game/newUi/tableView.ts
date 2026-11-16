@@ -34,7 +34,7 @@ import {
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
- * with several keywords shows the first mark in this order.
+ * with several keywords shows each of their marks, in this order.
  */
 const NOTE_MARKS = [
   "trash",
@@ -84,8 +84,8 @@ export interface CardView {
   /** Whether the card shows faded, because it can no longer be played (see `shouldFadeTrash`). */
   readonly trash: boolean;
 
-  /** The large mark that the viewer's note shows over the card. */
-  readonly noteMark: NoteMark | undefined;
+  /** The large marks that the viewer's note shows over the card. */
+  readonly noteMarks: readonly NoteMark[];
 
   /**
    * Whether the card shows a trash badge, because the clues prove to its holder that it is trash.
@@ -267,10 +267,10 @@ export function getCardView({
 
   const clued = isCardClued(cardState);
   const border = getCardBorderPresentation(cardState, note, finished);
-  const noteMark = showsNoteMarks
-    ? NOTE_MARKS.find((mark) => note[NOTE_MARK_KEYWORDS[mark]])
-    : undefined;
-  const markedTrash = noteMark === "trash";
+  const noteMarks = showsNoteMarks
+    ? NOTE_MARKS.filter((mark) => note[NOTE_MARK_KEYWORDS[mark]])
+    : [];
+  const markedTrash = noteMarks.includes("trash");
   const trashIcon =
     !realLifeMode && !markedTrash && cardState.isKnownTrashFromEmpathy;
   const critical = !realLifeMode && status === CardStatus.Critical;
@@ -295,7 +295,7 @@ export function getCardView({
         note,
         throwItInAHole: variant.throwItInAHole,
       }),
-    noteMark,
+    noteMarks,
     trashIcon,
     pips,
     identityFromNote:

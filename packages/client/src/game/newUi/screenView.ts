@@ -7,6 +7,7 @@ import type {
   CardState,
   GameState,
   PlayerIndex,
+  Rank,
   StateClue,
   SuitIndex,
 } from "@hanabi-live/game";
@@ -44,6 +45,7 @@ import type {
   HoleView,
   StackView,
 } from "./SharedCards.tsx";
+import { getNotedStackBase } from "./SharedCards.tsx";
 import { getClueMarker } from "./clueMarkers.ts";
 import type { CardView } from "./tableView.ts";
 import {
@@ -259,6 +261,7 @@ export function getStacks(state: State): readonly StackView[] {
       topOrder: top,
       topRank: rankOf(top),
       belowRank: rankOf(stack.at(-2)),
+      notedBaseRank: getNotedBaseRank(state, suitIndex),
       label:
         sudokuLabels?.[i]
         ?? getStackDirectionLabel(
@@ -269,6 +272,25 @@ export function getStacks(state: State): readonly StackView[] {
         ),
     };
   });
+}
+
+/**
+ * The rank that the viewer's note gives a stack base, when every card that the note names has that
+ * rank. Only stack bases in "Throw It in a Hole" variants take notes.
+ */
+function getNotedBaseRank(
+  state: State,
+  suitIndex: SuitIndex,
+): Rank | undefined {
+  const order = getNotedStackBase(currentVariant(), suitIndex);
+  if (order === undefined || state.finished) {
+    return undefined;
+  }
+  const ranks = (state.notes.ourNotes[order]?.possibilities ?? []).map(
+    ([, rank]) => rank,
+  );
+  const [rank] = ranks;
+  return ranks.every((other) => other === rank) ? rank : undefined;
 }
 
 /**

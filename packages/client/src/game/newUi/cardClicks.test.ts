@@ -65,6 +65,7 @@ function context({
   const gameState = {
     deck: DECK,
     clueTokens,
+    clues: [],
   };
   return {
     state: {

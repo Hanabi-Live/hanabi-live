@@ -551,6 +551,7 @@ export function GameScreen({
         numTouched: getTouched(target, choice).length,
         giverIndex: actingPlayerIndex,
         receiverIndex: target,
+        lastClueType: visibleState.clues.at(-1)?.type,
       },
       variant,
       options,
@@ -833,7 +834,7 @@ export function GameScreen({
             doubleDiscard={queuedView.doubleDiscard}
             identityFromNote={queuedView.identityFromNote}
             noteBorder={queuedView.noteBorder}
-            noteMark={queuedView.noteMark}
+            noteMarks={queuedView.noteMarks}
             pips={queuedView.pips}
             rank={queuedView.rank}
             stackDirection={queuedView.stackDirection}
@@ -996,6 +997,7 @@ export function GameScreen({
                     realLifeMode={settings.realLifeMode}
                     strikes={visibleState.strikes.length}
                     strikeSegments={getStrikeSegments(state)}
+                    strikesHidden={scoreHidden}
                   />
                 }
                 variant={variant}
@@ -1453,7 +1455,7 @@ export function GameScreen({
             doubleDiscard={heldView.doubleDiscard}
             identityFromNote={heldView.identityFromNote}
             noteBorder={heldView.noteBorder}
-            noteMark={heldView.noteMark}
+            noteMarks={heldView.noteMarks}
             pips={heldView.pips}
             rank={heldView.rank}
             stackDirection={heldView.stackDirection}

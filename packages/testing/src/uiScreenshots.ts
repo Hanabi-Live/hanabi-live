@@ -184,7 +184,8 @@ const KEYWORD_NOTES = [
   ["hand-1-1", "f"],
   ["hand-1-2", "cm"],
   ["hand-1-3", "ptd"],
-  ["hand-2-0", "fix"],
+  // Two keywords, so that the card shows both of their marks.
+  ["hand-2-0", "[fix][!]"],
   ["hand-2-1", "spook"],
   ["hand-2-2", "!"],
   ["hand-2-3", "blank"],
@@ -248,6 +249,9 @@ const ANIMAL_CLUE_VARIANT_NAME = "Cow & Pig (6 Suits)";
 
 /** A variant with suits of two colors, whose play stacks have labels that name their suits. */
 const DUAL_COLOR_VARIANT_NAME = "Dual-Color & Rainbow (6 Suits)";
+
+/** A variant whose played cards go into a hole, so that the players cannot see their strikes. */
+const HOLE_VARIANT_NAME = "Throw It in a Hole (5 Suits)";
 
 /**
  * The seed of Bob's game, so that every state deals the same cards. Each player has a card that the
@@ -974,6 +978,25 @@ function getStates(): readonly State[] {
       },
       hover: async (page) => {
         await hoverForTooltip(page, page.locator("[data-suit-label]").first());
+      },
+    },
+    // Bob's game with five players in a "Throw It in a Hole" variant. The strike boxes show
+    // question marks, since the players cannot see their strikes. The account notes a rank on the
+    // first stack base, so that the stack shows that card.
+    {
+      name: "new-ui-hole",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5, HOLE_VARIANT_NAME, NO_SPEEDRUN);
+      },
+      prepare: async (page) => {
+        await writeNote(
+          page,
+          page.locator("#game-new-ui [data-stack-base]").first(),
+          "3",
+        );
       },
     },
     // After every player has discarded cards, so that the discard pile has rows of several suits.

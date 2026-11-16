@@ -855,7 +855,7 @@ function OwnCard({
       note={props.notes.notesHtml.has(card.order)}
       noteBorder={card.noteBorder}
       noteHtml={props.notes.notesHtml.get(card.order)}
-      noteMark={card.noteMark}
+      noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
       pips={card.pips}
       raiseClued
@@ -1002,7 +1002,7 @@ function EditableCard({
         note={props.notes.notesHtml.has(card.order)}
         noteBorder={card.noteBorder}
         noteHtml={props.notes.notesHtml.get(card.order)}
-        noteMark={card.noteMark}
+        noteMarks={card.noteMarks}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         pips={card.pips}
         raiseClued
@@ -1078,7 +1078,7 @@ function HandCard({
         note={props.notes.notesHtml.has(card.order)}
         noteBorder={card.noteBorder}
         noteHtml={props.notes.notesHtml.get(card.order)}
-        noteMark={card.noteMark}
+        noteMarks={card.noteMarks}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         pips={card.pips}
         raiseClued

@@ -361,8 +361,8 @@ interface CardFaceProps {
   /** The border that a note gives a card that does not show as clued. */
   readonly noteBorder?: NoteBorder;
 
-  /** The large mark that the viewer's note shows over the card. */
-  readonly noteMark?: NoteMark;
+  /** The large marks that the viewer's note shows over the card. */
+  readonly noteMarks?: readonly NoteMark[];
 
   readonly trashIcon?: boolean;
 
@@ -787,27 +787,35 @@ const NOTE_MARK_ICONS = {
 } as const satisfies Record<NoteMark, { icon: string; label: string }>;
 
 /**
- * A large mark over a card from a keyword in the viewer's note, such as a trash can for "kt", as on
- * the classic screen. It covers the possibilities, so that the mark is never hidden.
+ * The large marks over a card from keywords in the viewer's note, such as a trash can for "kt", as
+ * on the classic screen. They cover the possibilities, so that a mark is never hidden. Several
+ * marks sit side by side and share the size of one, so that they do not cover each other.
  */
-function NoteMarkIcon({
-  mark,
+function NoteMarkIcons({
+  marks,
   width,
 }: {
-  readonly mark: NoteMark;
+  readonly marks: readonly NoteMark[];
   readonly width: number;
 }): React.JSX.Element {
-  const { icon, label } = NOTE_MARK_ICONS[mark];
   return (
-    <i
-      aria-label={label}
-      className={`fas ${icon} tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-card-ink`}
-      role="img"
-      style={{
-        fontSize: width * NOTE_MARK_SIZE_PER_WIDTH,
-        opacity: NOTE_MARK_OPACITY,
-      }}
-    />
+    <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center">
+      {marks.map((mark) => {
+        const { icon, label } = NOTE_MARK_ICONS[mark];
+        return (
+          <i
+            aria-label={label}
+            className={`fas ${icon} tw:text-card-ink`}
+            key={mark}
+            role="img"
+            style={{
+              fontSize: (width * NOTE_MARK_SIZE_PER_WIDTH) / marks.length,
+              opacity: NOTE_MARK_OPACITY,
+            }}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -2255,7 +2263,7 @@ export function CardFace({
   critical = false,
   trash = false,
   noteBorder,
-  noteMark,
+  noteMarks = [],
   trashIcon = false,
   note = false,
   noteHtml,
@@ -2420,7 +2428,9 @@ export function CardFace({
         />
       )}
 
-      {noteMark !== undefined && <NoteMarkIcon mark={noteMark} width={width} />}
+      {noteMarks.length > 0 && (
+        <NoteMarkIcons marks={noteMarks} width={width} />
+      )}
 
       {bubble?.inexact === true && <PossibleCardsMark width={width} />}
 

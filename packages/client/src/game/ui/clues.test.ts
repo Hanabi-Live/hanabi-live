@@ -47,6 +47,7 @@ describe("hypothetical clue matching", () => {
           hypothetical: {},
         },
         visibleState: {
+          clues: [],
           turn: {
             currentPlayerIndex: 0,
           },
