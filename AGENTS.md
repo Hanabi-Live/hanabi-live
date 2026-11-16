@@ -277,6 +277,16 @@ maintaining storage; a successful HTTP response only acknowledges the request.
 HTTP success response does not prove a graceful restart has finished: verify the
 new PID, running revision, restored tables, client assets, and logs.
 
+## Discord links
+
+When the user gives you a Discord link, read the messages through the Discord
+API with the bot token in `DISCORD_TOKEN`. Send it as
+`Authorization: Bot $DISCORD_TOKEN`. For example, for a link to
+`https://discord.com/channels/<guild>/<channel>/<message>`, fetch
+`https://discord.com/api/v10/channels/<channel>/messages/<message>`. If
+`DISCORD_TOKEN` is empty, read it from `/home/hanabi/hanabi-live/.env` on the
+production server. Do not print or commit the token.
+
 ## Database migrations
 
 Use `./hanabi-live migrate status` to inspect migration state and
