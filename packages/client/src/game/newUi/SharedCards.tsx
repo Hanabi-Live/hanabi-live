@@ -32,6 +32,7 @@ import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FitText } from "./FitText.tsx";
+import { useElementSize } from "./hooks.ts";
 import { Pip } from "./Pip.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
 import type { PossibleCardsView } from "./tableView.ts";
@@ -453,8 +454,9 @@ export function PlayArea({
 
   return (
     // One column: the stacks, the deck, and the tokens. The boxes are as wide as the widest, and
-    // the tokens are at the bottom, level with the bottom of the controls below the hands. When the
-    // columns stack, the stacks and the deck are one row, with the tokens below it.
+    // the tokens are at the bottom, level with the bottom of the controls below the hands. In the
+    // phone layout, the stacks and the deck are one row, and the tokens are beside the discard pile
+    // instead.
     <div
       className="tw:flex tw:shrink-0 tw:flex-col tw:items-center"
       style={{ gap: PLAY_AREA_GAP }}
@@ -1120,7 +1122,8 @@ function Deck({
 /**
  * The discarded cards, one row for each suit, where the player drops a card to discard it. Each
  * card is a button that shows the turn on which it was discarded. The pile keeps room for a row of
- * every suit, so that it stays the same size as cards are discarded.
+ * every suit, so that it stays the same size as cards are discarded. A row that would be wider than
+ * the pile overlaps its cards more, so that it still fits.
  */
 export function DiscardPile({
   rows,
@@ -1164,6 +1167,15 @@ export function DiscardPile({
   const rowStep =
     cardWidth * (RANK_BOTTOM_PER_WIDTH + DISCARD_ROW_GAP_PER_WIDTH);
   const rowsHeight = height + (variant.suits.length - 1) * rowStep;
+  const [rowsElement, setRowsElement] = useState<HTMLDivElement | null>(null);
+  const rowsWidth = useElementSize(rowsElement).width;
+  const cardStep = cardWidth * (1 - DISCARD_OVERLAP_PER_WIDTH);
+  function getCardStep(cards: number): number {
+    // Before the rows are measured, their width is 0.
+    return rowsWidth === 0 || cards <= 1
+      ? cardStep
+      : Math.min(cardStep, (rowsWidth - cardWidth) / (cards - 1));
+  }
 
   return (
     <section
@@ -1192,6 +1204,7 @@ export function DiscardPile({
         className={`tw:relative tw:flex tw:flex-col ${
           isRefusing(zoneState) ? "tw:opacity-60" : ""
         }`}
+        ref={setRowsElement}
         style={{ height: rowsHeight }}
       >
         {rows.map((row, rowIndex) => (
@@ -1209,8 +1222,7 @@ export function DiscardPile({
                 notes={notes}
                 order={card.order}
                 style={{
-                  marginLeft:
-                    i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,
+                  marginLeft: i === 0 ? 0 : getCardStep(row.length) - cardWidth,
                 }}
               >
                 <button
@@ -1314,7 +1326,7 @@ function NoEntrySign(): React.JSX.Element {
  * The box of the clue tokens and the strikes. Under the deck, the clue count is above the strikes,
  * so that the column stays narrow and short. When the columns stack, they are side by side.
  */
-const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:gap-[8px] tw:rounded-game-panel tw:px-1.5 tw:py-[8px] tw:narrow-980:flex-row tw:narrow-980:justify-center tw:narrow-980:gap-8 tw:narrow-980:px-4 tw:narrow-980:py-4 ${WELL_CLASS}`;
+const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:justify-center tw:gap-[8px] tw:rounded-game-panel tw:px-1.5 tw:py-[8px] ${WELL_CLASS}`;
 
 /**
  * The height of the tokens under the deck, with the gap above them. It is the sum of the box's
@@ -1401,8 +1413,9 @@ function StrikeMark({
 }
 
 /**
- * The clue tokens and the strikes, below the deck. They are real tokens in the physical game, so
- * they sit on the table instead of with the numbers along the bottom.
+ * The clue tokens and the strikes, below the deck, or beside the discard pile in the phone layout.
+ * They are real tokens in the physical game, so they sit on the table instead of with the numbers
+ * along the bottom.
  */
 export function TableTokens({
   clues,
@@ -1414,6 +1427,7 @@ export function TableTokens({
   strikesHidden,
   strikeSegments,
   onShowStrike,
+  placementClass,
 }: {
   readonly clues: number;
 
@@ -1444,14 +1458,15 @@ export function TableTokens({
    */
   readonly strikeSegments: ReadonlyArray<number | undefined>;
   readonly onShowStrike: (segment: number) => void;
+
+  /** Where the box sits in its column or row. */
+  readonly placementClass: string;
 }): React.JSX.Element {
   return (
-    <div
-      className={`tw:mt-auto tw:shrink-0 tw:self-stretch ${TOKENS_BOX_CLASS}`}
-    >
+    <div className={`tw:shrink-0 ${placementClass} ${TOKENS_BOX_CLASS}`}>
       <section
         aria-label="Clue tokens"
-        className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
+        className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5"
         ref={tooltipRefHtml(
           getClueTokensTooltipHtml(
             clues,
@@ -1483,7 +1498,7 @@ export function TableTokens({
               ? "The strikes are hidden"
               : `${strikes} of ${MAX_STRIKES} strikes`
           }
-          className="tw:group tw:relative tw:isolate tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
+          className="tw:group tw:relative tw:isolate tw:flex tw:h-[28px] tw:items-center tw:gap-1.5"
           ref={tooltipRefHtml(
             `<span class="small-tooltip-text">${
               strikesHidden
@@ -1505,7 +1520,7 @@ export function TableTokens({
             // In a replay, a strike that happens later in the game shows faded, as on the classic
             // screen. Clicking it goes to its turn.
             const upcoming = !struck && segment !== undefined;
-            const className = `tw:box-border tw:flex tw:size-[28px] tw:items-center tw:justify-center tw:rounded-game-control tw:narrow-980:size-[32px] tw:border-2 tw:border-solid tw:p-0 ${
+            const className = `tw:box-border tw:flex tw:size-[28px] tw:items-center tw:justify-center tw:rounded-game-control tw:border-2 tw:border-solid tw:p-0 ${
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"

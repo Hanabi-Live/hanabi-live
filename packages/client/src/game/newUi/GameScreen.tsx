@@ -883,6 +883,36 @@ export function GameScreen({
     shouldModifyEfficiency(state),
   );
 
+  const tokensProps = {
+    atMaxClues: isAtMaxClueTokens(visibleState.clueTokens, variant),
+    clues: getUnadjustedClueTokens(visibleState.clueTokens, variant),
+    oneClueLeft: visibleState.clueTokens === getClueCost(variant),
+    onShowStrike: showStrike,
+    outOfClues: visibleState.clueTokens < getClueCost(variant),
+    realLifeMode: settings.realLifeMode,
+    strikes: visibleState.strikes.length,
+    strikeSegments: getStrikeSegments(state),
+    strikesHidden: scoreHidden,
+  };
+  const discardPile = (
+    <DiscardPile
+      atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
+      cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
+      colorblindMode={settings.colorblindMode}
+      doubleDiscard={
+        settings.hGroupConventions
+        && visibleState.stats.doubleDiscardCard !== undefined
+      }
+      notes={cardNotes}
+      onShowDiscard={showDiscard}
+      realLifeMode={settings.realLifeMode}
+      reducedMotion={settings.reducedMotion}
+      rows={discardRows}
+      variant={variant}
+      zoneState={discardZoneState}
+    />
+  );
+
   return (
     <div
       // A browser draws a button in its own font, with normal letter spacing. Here, a button takes
@@ -1004,26 +1034,14 @@ export function GameScreen({
                 hole={getHole(state)}
                 notes={cardNotes}
                 stacks={stacks}
+                // In the phone layout, the tokens are beside the discard pile instead.
                 tokens={
-                  <TableTokens
-                    atMaxClues={isAtMaxClueTokens(
-                      visibleState.clueTokens,
-                      variant,
-                    )}
-                    clues={getUnadjustedClueTokens(
-                      visibleState.clueTokens,
-                      variant,
-                    )}
-                    oneClueLeft={
-                      visibleState.clueTokens === getClueCost(variant)
-                    }
-                    onShowStrike={showStrike}
-                    outOfClues={visibleState.clueTokens < getClueCost(variant)}
-                    realLifeMode={settings.realLifeMode}
-                    strikes={visibleState.strikes.length}
-                    strikeSegments={getStrikeSegments(state)}
-                    strikesHidden={scoreHidden}
-                  />
+                  stacked ? undefined : (
+                    <TableTokens
+                      placementClass="tw:mt-auto tw:self-stretch"
+                      {...tokensProps}
+                    />
+                  )
                 }
                 variant={variant}
                 zoneState={playZoneState}
@@ -1216,22 +1234,19 @@ export function GameScreen({
               className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full`}
               style={{ paddingTop: columnTopPadding }}
             >
-              <DiscardPile
-                atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
-                cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
-                colorblindMode={settings.colorblindMode}
-                doubleDiscard={
-                  settings.hGroupConventions
-                  && visibleState.stats.doubleDiscardCard !== undefined
-                }
-                notes={cardNotes}
-                onShowDiscard={showDiscard}
-                realLifeMode={settings.realLifeMode}
-                reducedMotion={settings.reducedMotion}
-                rows={discardRows}
-                variant={variant}
-                zoneState={discardZoneState}
-              />
+              {stacked ? (
+                // The tokens fill the room on the right of the pile, which is empty for most of the
+                // game, so that they do not take a row of their own.
+                <div className="tw:flex tw:gap-3">
+                  <div className="tw:min-w-0 tw:flex-1">{discardPile}</div>
+                  <TableTokens
+                    placementClass="tw:self-stretch"
+                    {...tokensProps}
+                  />
+                </div>
+              ) : (
+                discardPile
+              )}
               {queuedMove?.type === "discard" && queuedMoveElement}
               <ClueLog
                 entries={getClueLogEntries(state)}
