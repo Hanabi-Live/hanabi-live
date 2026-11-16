@@ -1313,6 +1313,8 @@ const POSSIBLE_CARDS = {
   keyIconGap: 0.06,
   /** The icon in the corner of a card that the card cannot be. */
   removedIcon: 0.15,
+  /** The space between that icon and the corner of the card, which clears the rounded corner. */
+  removedIconInset: 0.015,
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1379,7 +1381,7 @@ function PossibleCard({
  * How opaque a card is in the bubble of possible cards when the card cannot be it, though the clues
  * allow it.
  */
-const REMOVED_CARD_OPACITY = 0.15;
+const REMOVED_CARD_OPACITY = 0.25;
 
 /**
  * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
@@ -1403,12 +1405,12 @@ function RemovedCard({
       <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
         <PossibleCard unit={unit} {...cardProps} />
       </span>
-      {/* The icon sits on the corner, partly outside the card, so that it covers little of the rank. */}
+      {/* The icon stays inside the card, so that it never covers the next card. */}
       <span
         className="tw:absolute"
         style={{
-          right: -icon / 3,
-          bottom: -icon / 3,
+          right: unit * POSSIBLE_CARDS.removedIconInset,
+          bottom: unit * POSSIBLE_CARDS.removedIconInset,
         }}
       >
         <RemovedByIcon by={by} size={icon} />
