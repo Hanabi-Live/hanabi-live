@@ -86,7 +86,7 @@ async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
 /// Adds the catalog's new variants to the `variants` table, and checks that each variant ID keeps
 /// its recipe. Games name their variant by ID, so a new recipe for an ID would change the rules of
 /// its old games.
-async fn record_variants(primary: &PgPool) -> Result<()> {
+pub(crate) async fn record_variants(primary: &PgPool) -> Result<()> {
     let catalog = hanabi_engine::variants();
     let mut ids = Vec::with_capacity(catalog.len());
     let mut recipes = Vec::with_capacity(catalog.len());
@@ -1009,7 +1009,7 @@ mod tests {
         let Some(db) = TestDb::create().await else {
             return Ok(());
         };
-        // The first run records the catalog.
+        // `TestDb` already recorded the catalog, so this only checks it again.
         record_variants(&db.pool).await?;
         sqlx::query!("UPDATE variants SET recipe = 'r-y-g-b-p_cb_nb_cm_nm' WHERE id = 0")
             .execute(&db.pool)

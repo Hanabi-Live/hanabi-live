@@ -53,6 +53,8 @@ impl TestDb {
         crate::migrations::apply(&mut pool.acquire().await.unwrap())
             .await
             .unwrap();
+        // Games refer to the variants, which the server records at startup.
+        crate::store::record_variants(&pool).await.unwrap();
         Some(Self { pool, admin, name })
     }
 

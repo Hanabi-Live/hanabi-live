@@ -177,6 +177,7 @@ CREATE TABLE games (
 
     datetime_started        TIMESTAMPTZ  NOT NULL,
     datetime_finished       TIMESTAMPTZ  NOT NULL,
+    CONSTRAINT games_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES variants (id),
     CONSTRAINT games_time_base_check CHECK (timed = (time_base IS NOT NULL)),
     CONSTRAINT games_time_per_turn_check CHECK (timed = (time_per_turn IS NOT NULL))
 );
