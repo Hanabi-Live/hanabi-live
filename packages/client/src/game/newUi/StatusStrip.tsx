@@ -475,6 +475,50 @@ function useOwnRow(
 }
 
 /**
+ * The attribute that gives the bar's buttons their short labels, such as a door icon for "Lobby".
+ * The labels depend on it (as "data-short-labels"), so that the bar can try the long labels without
+ * drawing them.
+ */
+const SHORT_LABELS_ATTRIBUTE = "data-short-labels";
+
+/**
+ * Whether the bar's buttons need short labels, because their row has no room for the long ones.
+ * Which buttons show depends on the game, so the row is measured instead of using a breakpoint.
+ * After each render and resize, the row takes away the attribute of the short labels, checks
+ * whether its buttons wrap onto a second line, and puts the attribute back. All of it happens
+ * before the browser draws the bar.
+ */
+function useShortLabels(
+  footer: HTMLElement | null,
+  row: RefObject<HTMLDivElement | null>,
+): boolean {
+  // Measures again when the bar's width changes.
+  useElementSize(footer);
+  const [shortLabels, setShortLabels] = useState(false);
+  useLayoutEffect(() => {
+    const element = row.current;
+    if (element === null) {
+      return;
+    }
+    const hadShortLabels = element.hasAttribute(SHORT_LABELS_ATTRIBUTE);
+    element.removeAttribute(SHORT_LABELS_ATTRIBUTE);
+    // A hidden child, such as the chat button on a wide screen, has no place in the row.
+    const tops = [...element.children]
+      .filter(
+        (child): child is HTMLElement =>
+          child instanceof HTMLElement && child.offsetParent !== null,
+      )
+      .map((child) => child.offsetTop);
+    const wraps = tops.some((top) => top !== tops[0]);
+    if (hadShortLabels) {
+      element.setAttribute(SHORT_LABELS_ATTRIBUTE, "");
+    }
+    setShortLabels(wraps);
+  });
+  return shortLabels;
+}
+
+/**
  * The numbers about the whole game, along the bottom of the screen, most important first. (The clue
  * tokens and strikes sit with the deck instead, since they are tokens on the table.) In a replay,
  * the bar takes the colors of the screen's mode, and its controls are in the middle. So the numbers
@@ -515,6 +559,8 @@ export function StatusStrip({
   const inReplay = replayControls !== undefined;
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+  const shortLabels = useShortLabels(footer, buttonsRef);
 
   // The line along the top is a shadow, not a border, so that its width does not move the bar's
   // contents when a replay makes it thicker.
@@ -717,15 +763,23 @@ export function StatusStrip({
           {replayControls}
         </div>
       )}
-      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2">
+      {/* When the buttons have no room in one line, they have short labels. */}
+      <div
+        className="tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2"
+        data-short-labels={shortLabels ? "" : undefined}
+        ref={buttonsRef}
+      >
         <div className="tw:mr-auto tw:hidden tw:narrow-980:flex">
           {chatButton}
         </div>
-        {/* On a phone, the buttons have short labels, so that all of them fit in one row. */}
         <button className={buttonClass} onClick={onClassicView} type="button">
           {/* One box, so that the button's gap does not split the words. */}
           <span>
-            Classic<span className="tw:narrow-530:hidden"> UI</span>
+            Classic
+            <span className="tw:group-data-short-labels/buttons:hidden">
+              {" "}
+              UI
+            </span>
           </span>
         </button>
         {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
@@ -740,9 +794,11 @@ export function StatusStrip({
         >
           <i
             aria-hidden="true"
-            className="fas fa-door-open tw:hidden tw:narrow-530:inline"
+            className="fas fa-door-open tw:hidden tw:group-data-short-labels/buttons:inline"
           />
-          <span className="tw:narrow-530:hidden">Lobby</span>
+          <span className="tw:group-data-short-labels/buttons:hidden">
+            Lobby
+          </span>
         </button>
       </div>
     </footer>
