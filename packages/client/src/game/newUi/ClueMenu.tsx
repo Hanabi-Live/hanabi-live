@@ -186,7 +186,7 @@ export function ClueMenu({
         <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:pl-0.5 tw:text-[14px] tw:font-semibold tw:text-game-muted">
           Clue {name}
         </span>
-        {/* Like the eye beside a name, which shows a hand as its player sees it now. */}
+        {/* The classic screen's flashlight. The eye beside a name already shows a hand as its player sees it now. */}
         <button
           aria-label={`Show ${name}'s view of their hand after the clue`}
           aria-pressed={cluePreview}
@@ -202,7 +202,11 @@ export function ClueMenu({
           )}
           type="button"
         >
-          <i aria-hidden="true" className="fas fa-eye" />
+          {/* The image is a white shape, so it masks the text color to follow the button's state. */}
+          <span
+            aria-hidden="true"
+            className="tw:size-4 tw:shrink-0 tw:bg-current tw:mask-[url(/public/img/flashlight.png)] tw:mask-contain tw:mask-center tw:mask-no-repeat"
+          />
         </button>
         <button
           aria-label={`Show ${name}'s actions`}
