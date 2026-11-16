@@ -326,6 +326,20 @@ pub(super) async fn websocket(
         )
         .json();
     }
+    let Some(network_slot) = app.network_sockets.acquire(ip) else {
+        tracing::warn!("Rejected websocket for account {id} from {ip} over the network limit.");
+        return crate::errors::Report::known(
+            "Opening a live connection",
+            hanabi_protocol::NoticeCode::ConnectionLimit,
+            format!(
+                "Your network has reached its limit of {} live connections. Close another tab or \
+                 client and retry.",
+                super::network_sockets::MAX_SOCKETS_PER_NETWORK
+            ),
+            StatusCode::TOO_MANY_REQUESTS,
+        )
+        .response(true);
+    };
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
         return crate::errors::Report::known(
             "Opening a live connection",
@@ -365,7 +379,7 @@ pub(super) async fn websocket(
             tracker
                 .track_future(
                     async move {
-                    let _slot = slot;
+                    let _slots = (slot, network_slot);
                     let result = match version_check {
                         Ok(()) => {
                             connection(

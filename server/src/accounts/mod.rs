@@ -19,8 +19,8 @@ pub use normalization::{
     normalize_chat, normalize_discord_chat, normalize_string, remove_disallowed_characters,
     truncate_to_max_chars, validate_username,
 };
-pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;
+pub(crate) use rate_limit::{Counter, network_key};
 
 use crate::errors::HttpError;
 use crate::{cookie, public_http::API_PREFIX, query::Query};

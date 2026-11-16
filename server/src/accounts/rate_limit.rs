@@ -143,9 +143,16 @@ impl<K: Copy + Eq + Hash + Ord> Counter<K> {
     }
 }
 
-/// One customer can control an entire IPv6 subnet, so individual addresses are not a useful limit.
+/// The `network_key` of an address in text form.
 fn ip_key(ip: &str) -> Option<IpAddr> {
-    let ip = ip.parse::<IpAddr>().ok()?.to_canonical();
+    network_key(ip.parse::<IpAddr>().ok()?)
+}
+
+/// The network that an address belongs to, which limits count as one client: the address itself
+/// for IPv4, or its /64 network for IPv6. One customer can control an entire IPv6 subnet, so
+/// individual addresses are not a useful limit. Loopback addresses have no key and are not limited.
+pub(crate) fn network_key(ip: IpAddr) -> Option<IpAddr> {
+    let ip = ip.to_canonical();
     // Nothing remote can arrive from loopback, which local tools and tests use.
     if ip.is_loopback() {
         return None;

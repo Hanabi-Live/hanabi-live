@@ -3,6 +3,7 @@
 mod dispatch;
 #[cfg(test)]
 mod integration_tests;
+mod network_sockets;
 mod protocol;
 mod socket;
 #[cfg(test)]
@@ -53,6 +54,7 @@ pub struct App {
     pub background: TaskTracker,
     generation: AtomicU64,
     sockets: Arc<Semaphore>,
+    network_sockets: network_sockets::NetworkSockets,
     incoming_bytes: Arc<Semaphore>,
     outgoing_bytes: Arc<Semaphore>,
     lobby_slots: Arc<Semaphore>,
@@ -109,6 +111,7 @@ impl App {
             lifecycle,
             generation: AtomicU64::new(1),
             sockets: Arc::new(Semaphore::new(MAX_SOCKETS)),
+            network_sockets: network_sockets::NetworkSockets::default(),
             incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
             outgoing_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
             lobby_slots: Arc::new(Semaphore::new(LOBBY_SLOTS)),
