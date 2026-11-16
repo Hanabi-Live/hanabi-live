@@ -108,7 +108,7 @@ const SIZES = [
     height: 500,
   },
   {
-    width: 375,
+    width: 360,
     height: 700,
   },
 ] as const;
