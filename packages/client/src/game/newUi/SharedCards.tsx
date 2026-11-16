@@ -1441,9 +1441,20 @@ export function TableTokens({
               ? "The strikes are hidden"
               : `${strikes} of ${MAX_STRIKES} strikes`
           }
-          className="tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
+          className="tw:group tw:relative tw:isolate tw:flex tw:h-[28px] tw:items-center tw:gap-1.5 tw:narrow-980:h-[32px]"
+          ref={tooltipRef(
+            strikesHidden
+              ? "Strikes. In this variant, the players cannot see them."
+              : `Strikes: ${strikes} of ${MAX_STRIKES}. The game ends at ${MAX_STRIKES} strikes.`,
+          )}
           role="group"
         >
+          {/* The row has one tooltip, so a frame around the whole row shows what it explains. A
+              box with a strike to show has its own tooltip, which shows instead. */}
+          <span
+            aria-hidden="true"
+            className="tw:pointer-events-none tw:absolute tw:-inset-[4px] tw:-z-1 tw:rounded-game-control tw:bg-game-text/8 tw:opacity-0 tw:outline-2 tw:outline-game-line tw:outline-solid tw:group-hover:opacity-100"
+          />
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];
             const struck = !strikesHidden && i < strikes;
@@ -1468,18 +1479,7 @@ export function TableTokens({
               mark = <StrikeMark upcoming />;
             }
             return segment === undefined ? (
-              // A box without a strike to show says what the boxes are. A box with one has its own
-              // tooltip.
-              <span
-                className={className}
-                data-strike-box={i}
-                key={i}
-                ref={tooltipRef(
-                  strikesHidden
-                    ? "Strikes. In this variant, the players cannot see them."
-                    : "Strikes",
-                )}
-              >
+              <span className={className} data-strike-box={i} key={i}>
                 {mark}
               </span>
             ) : (
