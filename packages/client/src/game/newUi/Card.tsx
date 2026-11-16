@@ -1313,8 +1313,6 @@ const POSSIBLE_CARDS = {
   keyIconGap: 0.06,
   /** The icon in the corner of a card that the card cannot be. */
   removedIcon: 0.15,
-  /** The space between that icon and the corner of the card, which clears the rounded corner. */
-  removedIconInset: 0.015,
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1384,8 +1382,8 @@ function PossibleCard({
 const REMOVED_CARD_OPACITY = 0.25;
 
 /**
- * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
- * corner that says what ruled it out.
+ * A card that the clues allow, but that the card cannot be: a faded small card with a faded icon in
+ * its corner that says what ruled it out.
  */
 function RemovedCard({
   by,
@@ -1401,18 +1399,14 @@ function RemovedCard({
 }): React.JSX.Element {
   const icon = unit * POSSIBLE_CARDS.removedIcon;
   return (
-    <span className="tw:relative">
-      <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
-        <PossibleCard unit={unit} {...cardProps} />
-      </span>
+    // The icon fades with the card.
+    <span
+      className="tw:relative tw:block"
+      style={{ opacity: REMOVED_CARD_OPACITY }}
+    >
+      <PossibleCard unit={unit} {...cardProps} />
       {/* The icon stays inside the card, so that it never covers the next card. */}
-      <span
-        className="tw:absolute"
-        style={{
-          right: unit * POSSIBLE_CARDS.removedIconInset,
-          bottom: unit * POSSIBLE_CARDS.removedIconInset,
-        }}
-      >
+      <span className="tw:absolute tw:right-0 tw:bottom-0">
         <RemovedByIcon by={by} size={icon} />
       </span>
     </span>
