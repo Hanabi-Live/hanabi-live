@@ -990,13 +990,11 @@ const RANK_CHIP_HEIGHT_PER_WIDTH = 1.1;
 const RANK_CHIP_FONT_PER_WIDTH = 0.84;
 
 /**
- * How opaque a suit or a rank is when the holder ruled it out. It stays in its place, crossed out,
- * so that the others do not move when the holder learns more.
+ * How opaque a suit, a rank, or a card in the bubble of possible cards is when the card cannot be
+ * it, though the clues allow it. A suit or a rank stays in its place, so that the others do not
+ * move when the holder learns more.
  */
-const ELIMINATED_PIP_OPACITY = 0.55;
-
-/** The width of the cross over a suit or a rank that the holder ruled out, per its size. */
-const ELIMINATED_CROSS_WIDTH = 0.11;
+const RULED_OUT_OPACITY = 0.2;
 
 /**
  * The width of the ring in the clue color around a suit or a rank that a clue touched, per the
@@ -1007,34 +1005,6 @@ const POSITIVE_RING_PER_WIDTH = 0.022;
 /** The ring of a suit or a rank that a clue touched, in the color of a clued card's border. */
 function getPositiveRing(width: number): string {
   return `0 0 0 ${Math.max(1, width * POSITIVE_RING_PER_WIDTH)}px var(--clue-border)`;
-}
-
-/**
- * A cross over a suit or a rank that the holder ruled out: a dark X with a light edge, so that it
- * shows on the gray chip of a suit and on the dark chip of a rank.
- */
-function EliminatedCross(): React.JSX.Element {
-  return (
-    <svg
-      aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:size-full tw:overflow-visible"
-      viewBox="0 0 100 100"
-    >
-      <path
-        className="tw:fill-none tw:stroke-card-ink"
-        d="M 18 18 L 82 82 M 82 18 L 18 82"
-        paintOrder="stroke"
-        strokeLinecap="round"
-        strokeWidth={ELIMINATED_CROSS_WIDTH * 100}
-      />
-      <path
-        className="tw:fill-none tw:stroke-white"
-        d="M 18 18 L 82 82 M 82 18 L 18 82"
-        strokeLinecap="round"
-        strokeWidth={ELIMINATED_CROSS_WIDTH * 100 * 0.45}
-      />
-    </svg>
-  );
 }
 
 /** A suit that a card can be: its pip on a gray chip, in a square cell. */
@@ -1071,7 +1041,7 @@ function SuitChip({
           width: chip,
           height: chip,
           background: SUIT_CHIP_BACKGROUND,
-          opacity: pip.eliminated ? ELIMINATED_PIP_OPACITY : 1,
+          opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
           boxShadow: pip.positive
             ? `${SUIT_CHIP_RING}, ${getPositiveRing(width)}`
             : SUIT_CHIP_RING,
@@ -1086,17 +1056,6 @@ function SuitChip({
           variant={variant}
         />
       </span>
-      {pip.eliminated && (
-        <span
-          className="tw:absolute"
-          style={{
-            width: chip,
-            height: chip,
-          }}
-        >
-          <EliminatedCross />
-        </span>
-      )}
     </span>
   );
 }
@@ -1128,13 +1087,12 @@ function RankChip({
         style={{
           fontSize: chipWidth * RANK_CHIP_FONT_PER_WIDTH,
           borderRadius: chipWidth * 0.25,
-          opacity: pip.eliminated ? ELIMINATED_PIP_OPACITY : 1,
+          opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
           boxShadow: pip.positive ? getPositiveRing(width) : undefined,
         }}
       >
         {getRankLabel(pip.rank)}
       </span>
-      {pip.eliminated && <EliminatedCross />}
     </span>
   );
 }
@@ -1142,9 +1100,9 @@ function RankChip({
 /**
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
  * card, so that they are easy to read at a glance. Each suit is a pip on a gray chip with a dark
- * ring, and each rank is a dark chip with a white number. A suit or a rank that the holder ruled
- * out is crossed out, and one that a clue touched has a ring in the clue color. The card shows the
- * exact cards that it can be in a bubble (see `PossibleCardsBubble`).
+ * ring, and each rank is a dark chip with a white number. A suit or a rank that the card cannot be
+ * is faded, and one that a clue touched has a ring in the clue color. The card shows the exact
+ * cards that it can be in a bubble (see `PossibleCardsBubble`).
  *
  * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
  * holder learns that the card is not one of them. Its place stays empty.
@@ -1384,12 +1342,6 @@ function PossibleCard({
 }
 
 /**
- * How opaque a card is in the bubble of possible cards when the card cannot be it, though the clues
- * allow it.
- */
-const REMOVED_CARD_OPACITY = 0.2;
-
-/**
  * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
  * corner that says what ruled it out.
  */
@@ -1408,7 +1360,7 @@ function RemovedCard({
   const icon = unit * POSSIBLE_CARDS.removedIcon[by];
   return (
     <span className="tw:relative tw:block">
-      <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
+      <span className="tw:block" style={{ opacity: RULED_OUT_OPACITY }}>
         <PossibleCard unit={unit} {...cardProps} />
       </span>
       {/* The icon's edges meet the card's edges, so that it never covers the next card. */}

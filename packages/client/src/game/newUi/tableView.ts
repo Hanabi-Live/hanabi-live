@@ -118,8 +118,9 @@ export interface CardView {
 /** A suit or a rank that a card can be, as a pip on the card. */
 interface PipView {
   /**
-   * Whether the holder ruled it out because they see every copy of the cards that it would make,
-   * though the clues allow it. The card crosses it out.
+   * Whether the card cannot be any of the cards that it would make, though the clues allow them:
+   * the holder sees every copy of them, or the identity in the note on the card leaves them out.
+   * The card shows it faded.
    */
   readonly eliminated: boolean;
 
@@ -351,23 +352,42 @@ function getPipsView(
     readonly rank: Rank | undefined;
   },
 ): CardPipsView | undefined {
-  const presentation = getCardPipPresentation(variant, cardState, note, true, {
-    empathyIncludesNotes,
-  });
+  // The pips are the suits and ranks that the clues allow. The note fades the ones that it rules
+  // out, as the bubble does, instead of hiding them.
+  const presentation = getCardPipPresentation(variant, cardState, note, true);
+  const ruledOut = getRuledOutCards(cardState, note);
+  const remaining = cardState.possibleCardsFromClues.filter(
+    ([cardSuitIndex, cardRank]) =>
+      ruledOut(cardSuitIndex, cardRank) === undefined,
+  );
   const suits =
     suitIndex === undefined
       ? getShownPips(presentation.suitPips).map((pip) => ({
-          ...toPipView(pip),
+          eliminated: remaining.every(
+            ([cardSuitIndex]) => cardSuitIndex !== pip.suitIndex,
+          ),
+          positive: pip.positive,
           suitIndex: pip.suitIndex as SuitIndex,
         }))
       : [];
   const ranks =
     rank === undefined
       ? getShownPips(presentation.rankPips).map((pip) => ({
-          ...toPipView(pip),
+          eliminated: remaining.every(([, cardRank]) => cardRank !== pip.rank),
+          positive: pip.positive,
           rank: pip.rank,
         }))
       : [];
+
+  // Whether separate suits and ranks cannot show the cards, as before the note faded pips: the note
+  // narrows them only where the empathy view applies it.
+  const { possibilityRows } = getCardPipPresentation(
+    variant,
+    cardState,
+    note,
+    true,
+    { empathyIncludesNotes },
+  );
 
   // The bubble needs both the suit and the rank to be unknown, as the possibility rows of the
   // classic screen do.
@@ -379,7 +399,7 @@ function getPipsView(
           variant,
           cardState,
           note,
-          presentation.possibilityRows !== undefined,
+          possibilityRows !== undefined,
         )
       : undefined;
 
@@ -404,22 +424,7 @@ function getPossibleCardsView(
   inexact: boolean,
 ): PossibleCardsView {
   const fromClues = cardState.possibleCardsFromClues;
-  const holderCards = new Set(
-    cardState.possibleCardsForEmpathy.map(([suitIndex, rank]) =>
-      cardKey(suitIndex, rank),
-    ),
-  );
-  const noteCards = new Set(
-    note.possibilities.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
-  );
-  const fromVisibleCards = fromClues.filter(([suitIndex, rank]) =>
-    holderCards.has(cardKey(suitIndex, rank)),
-  );
-  const fromNote = fromVisibleCards.filter(([suitIndex, rank]) =>
-    noteCards.has(cardKey(suitIndex, rank)),
-  );
-  const appliesNote =
-    fromNote.length > 0 && fromNote.length < fromVisibleCards.length;
+  const ruledOut = getRuledOutCards(cardState, note);
 
   // The rows leave out the note, so that a suit that only the note rules out keeps its row.
   const rows =
@@ -437,19 +442,14 @@ function getPossibleCardsView(
           if (suitIndex !== pip.suitIndex) {
             continue;
           }
-          const key = cardKey(suitIndex, rank);
-          if (!holderCards.has(key)) {
-            removed.push({
-              rank,
-              by: "seen",
-            });
-          } else if (appliesNote && !noteCards.has(key)) {
-            removed.push({
-              rank,
-              by: "note",
-            });
-          } else {
+          const by = ruledOut(suitIndex, rank);
+          if (by === undefined) {
             ranks.push(rank);
+          } else {
+            removed.push({
+              rank,
+              by,
+            });
           }
         }
         return {
@@ -462,6 +462,44 @@ function getPossibleCardsView(
       })
       .filter((suit) => suit.ranks.length > 0 || suit.removed.length > 0),
     inexact,
+  };
+}
+
+/**
+ * Returns what rules out a card that the clues allow: "seen" when the holder sees every copy of it,
+ * "note" when the identity in the note on the card leaves it out, or `undefined` when the card can
+ * be it. The note applies only when it leaves at least one card and rules out at least one.
+ */
+function getRuledOutCards(
+  cardState: CardState,
+  note: CardNote,
+): (suitIndex: number, rank: Rank) => RemovedCardView["by"] | undefined {
+  const holderCards = new Set(
+    cardState.possibleCardsForEmpathy.map(([suitIndex, rank]) =>
+      cardKey(suitIndex, rank),
+    ),
+  );
+  const noteCards = new Set(
+    note.possibilities.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  );
+  const fromVisibleCards = cardState.possibleCardsFromClues.filter(
+    ([suitIndex, rank]) => holderCards.has(cardKey(suitIndex, rank)),
+  );
+  const fromNote = fromVisibleCards.filter(([suitIndex, rank]) =>
+    noteCards.has(cardKey(suitIndex, rank)),
+  );
+  const appliesNote =
+    fromNote.length > 0 && fromNote.length < fromVisibleCards.length;
+
+  return (suitIndex, rank) => {
+    const key = cardKey(suitIndex, rank);
+    if (!holderCards.has(key)) {
+      return "seen";
+    }
+    if (appliesNote && !noteCards.has(key)) {
+      return "note";
+    }
+    return undefined;
   };
 }
 
@@ -478,16 +516,6 @@ function getShownPips<T extends { readonly state: PipState }>(
 ): readonly T[] {
   const shown = pips.filter((pip) => pip.state !== PipState.Hidden);
   return shown.length > 1 ? shown : [];
-}
-
-function toPipView(pip: {
-  readonly state: PipState;
-  readonly positive: boolean;
-}): PipView {
-  return {
-    eliminated: pip.state === PipState.Eliminated,
-    positive: pip.positive,
-  };
 }
 
 function getNoteBorder(

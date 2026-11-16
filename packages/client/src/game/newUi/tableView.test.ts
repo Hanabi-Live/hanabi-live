@@ -163,7 +163,7 @@ describe("getCardView", () => {
     possibleCardsForEmpathy: [[1, 4]],
   } as const satisfies Partial<typeof cardState>;
 
-  test("crosses out the suits and ranks that the holder ruled out", () => {
+  test("fades the suits and ranks that the holder ruled out", () => {
     const view = getEmpathyView(learnedByElimination);
     expect(view).toMatchObject({
       suitIndex: undefined,
@@ -191,6 +191,60 @@ describe("getCardView", () => {
         ],
       },
     });
+  });
+
+  test("fades the suits and ranks that the note rules out", () => {
+    // The clues say a red or yellow 3 or 4, and the note says a yellow 4 or a red 3.
+    const { possibleCardsFromClues } = learnedByElimination;
+    const view = getEmpathyView(
+      {
+        possibleCardsFromClues,
+        possibleCardsForEmpathy: possibleCardsFromClues,
+      },
+      { note: parseNote(VARIANT, "y4, r3") },
+    );
+    expect(view.pips).toMatchObject({
+      suits: [
+        {
+          suitIndex: 0,
+          eliminated: false,
+        },
+        {
+          suitIndex: 1,
+          eliminated: false,
+        },
+      ],
+      ranks: [
+        {
+          rank: 3,
+          eliminated: false,
+        },
+        {
+          rank: 4,
+          eliminated: false,
+        },
+      ],
+    });
+
+    // The note says a yellow card, so the red pip fades. It stays, so that the pips do not move.
+    expect(
+      getEmpathyView(
+        {
+          possibleCardsFromClues,
+          possibleCardsForEmpathy: possibleCardsFromClues,
+        },
+        { note: parseNote(VARIANT, "y") },
+      ).pips?.suits,
+    ).toMatchObject([
+      {
+        suitIndex: 0,
+        eliminated: true,
+      },
+      {
+        suitIndex: 1,
+        eliminated: false,
+      },
+    ]);
   });
 
   test("marks the suits and ranks that a clue touched", () => {
