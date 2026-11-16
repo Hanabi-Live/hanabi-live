@@ -404,8 +404,11 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
     )
 }
 
-/// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest.
-pub(super) type SeedAverages = HashMap<String, (std::time::Instant, Arc<[f64]>)>;
+/// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest, and
+/// when they were computed. Each prefix has its own lock, so that a slow query for one prefix does
+/// not delay the others, and so that requests for the same prefix wait for one query.
+pub(super) type SeedAverages =
+    HashMap<String, Arc<tokio::sync::Mutex<Option<(std::time::Instant, Arc<[f64]>)>>>>;
 
 /// The statistics of a seed's games, and how hard the seed is compared to the other seeds of its
 /// variant, player count, and hand size.
@@ -483,8 +486,15 @@ async fn seed_averages(
     variant: i16,
     num_players: i16,
 ) -> Result<Arc<[f64]>> {
-    let mut cache = state.seed_averages.lock().await;
-    if let Some((computed, averages)) = cache.get(&prefix)
+    let entry = state
+        .seed_averages
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .entry(prefix.clone())
+        .or_default()
+        .clone();
+    let mut cache = entry.lock().await;
+    if let Some((computed, averages)) = &*cache
         && computed.elapsed() < SEED_AVERAGES_LIFETIME
     {
         return Ok(averages.clone());
@@ -503,7 +513,7 @@ async fn seed_averages(
     .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?
     .into();
     transaction.commit().await?;
-    cache.insert(prefix, (std::time::Instant::now(), averages.clone()));
+    *cache = Some((std::time::Instant::now(), averages.clone()));
     Ok(averages)
 }
 

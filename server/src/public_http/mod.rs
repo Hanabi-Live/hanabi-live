@@ -39,7 +39,7 @@ struct PublicState {
     pool: PgPool,
     config: PublicConfig,
     templates: Arc<minijinja::Environment<'static>>,
-    seed_averages: Arc<tokio::sync::Mutex<pages::SeedAverages>>,
+    seed_averages: Arc<std::sync::Mutex<pages::SeedAverages>>,
 }
 
 use crate::errors::HttpError;
