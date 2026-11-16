@@ -182,14 +182,10 @@ pub(super) async fn page(
                     }
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let scores = player_scores(&state, users[0].0, &users[0].1).await?;
-                    v["stats"] = statistics_value(&scores.statistics)?;
-                    set_table(
-                        &mut v,
-                        &PublicPageTable::Scores {
-                            variants: scores.variants,
-                        },
-                    )?;
+                    let (statistics, joined) = player_statistics(&state, users[0].0).await?;
+                    v["stats"] = statistics_value(&statistics, joined);
+                    let (_, variants) = score_summary(&state, users[0].0).await?;
+                    set_table(&mut v, &PublicPageTable::Scores { variants })?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -374,8 +370,12 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
     Ok(transaction)
 }
 
-/// A player's game counts, time played, and the date they joined.
-async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStatistics> {
+/// A player's game counts, time played, and the date they joined. The date is also returned as a
+/// `DateTime`, so that the profile can show it in words.
+async fn player_statistics(
+    state: &PublicState,
+    user: i32,
+) -> Result<(PlayerStatistics, chrono::DateTime<chrono::Utc>)> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
@@ -400,7 +400,7 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
     )
     .fetch_one(&state.pool)
     .await?;
-    Ok(PlayerStatistics {
+    let statistics = PlayerStatistics {
         num_games_normal: Count::try_from(row.normal)?,
         num_games_other: Count::try_from(row.other)?,
         num_games_total: Count::try_from(row.normal + row.other)?,
@@ -414,41 +414,39 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
                 .saturating_add(account.seconds_reviewing),
         )?,
         date_joined: account.datetime_created.into(),
-    })
+    };
+    Ok((statistics, account.datetime_created))
 }
 
 /// A player's statistics as their profile shows them, with durations and the joined date in words.
-fn statistics_value(statistics: &PlayerStatistics) -> Result<Value> {
+fn statistics_value(statistics: &PlayerStatistics, date: chrono::DateTime<chrono::Utc>) -> Value {
     use chrono::Datelike;
-    let seconds = |count: Count| count.get();
-    let date = chrono::DateTime::parse_from_rfc3339(statistics.date_joined.as_str())?
-        .with_timezone(&chrono::Utc);
     let suffix = match date.day() {
         1 | 21 | 31 => "st",
         2 | 22 => "nd",
         3 | 23 => "rd",
         _ => "th",
     };
-    Ok(json!({
+    json!({
         "numGamesNormal": statistics.num_games_normal,
         "numGamesOther": statistics.num_games_other,
         "numGamesTotal": statistics.num_games_total,
         "numGamesSpeedrun": statistics.num_games_speedrun,
-        "timePlayed": duration(seconds(statistics.time_played_seconds)),
-        "timePlayedSpeedrun": duration(seconds(statistics.time_played_speedrun_seconds)),
-        "timeReviewed": duration(seconds(statistics.time_reviewed_seconds)),
-        "timeTotal": duration(seconds(statistics.time_total_seconds)),
+        "timePlayed": duration(statistics.time_played_seconds.get()),
+        "timePlayedSpeedrun": duration(statistics.time_played_speedrun_seconds.get()),
+        "timeReviewed": duration(statistics.time_reviewed_seconds.get()),
+        "timeTotal": duration(statistics.time_total_seconds.get()),
         "dateJoined": format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year()),
-    }))
+    })
 }
 
-/// A player's statistics and best scores, which their profile and its JSON route show.
+/// A player's statistics and best scores, for `/api/v1/scores/{username}`.
 pub(super) async fn player_scores(
     state: &PublicState,
     user: i32,
     name: &str,
 ) -> Result<PlayerScores> {
-    let statistics = player_statistics(state, user).await?;
+    let (statistics, _) = player_statistics(state, user).await?;
     let (max_scores, variants) = score_summary(state, user).await?;
     Ok(PlayerScores {
         name: name.into(),
