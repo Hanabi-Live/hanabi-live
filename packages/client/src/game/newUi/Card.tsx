@@ -1305,6 +1305,12 @@ const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
 
+/**
+ * The least width of the card that the bubble of possible cards is sized for, in the window's
+ * pixels. With small cards, as in the phone layout, the bubble is still easy to read.
+ */
+const POSSIBLE_CARDS_MIN_UNIT = 90;
+
 /** A small card in the bubble of possible cards: a card face of the suit's color with the rank. */
 function PossibleCard({
   variant,
@@ -1508,15 +1514,17 @@ export function PossibleCardsBubble({
 
   // The bubble is outside of the zoomed game screen, so it is measured in the window's pixels.
   const anchorRect = anchor.getBoundingClientRect();
-  const unit =
-    cardWidth === undefined ? anchorRect.width : cardWidth * getScreenScale();
+  const unit = Math.max(
+    cardWidth === undefined ? anchorRect.width : cardWidth * getScreenScale(),
+    POSSIBLE_CARDS_MIN_UNIT,
+  );
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
 
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
-  // fits. The pointer points at the middle of the card, even when the edge of the window moves the
-  // bubble to one side.
+  // fits. It is also drawn smaller when it is wider than the window. The pointer points at the
+  // middle of the card, even when the edge of the window moves the bubble to one side.
   useLayoutEffect(() => {
     const element = ref.current;
     if (element === null) {
@@ -1535,7 +1543,8 @@ export function PossibleCardsBubble({
         ? "below"
         : "above";
     const room = side === "below" ? roomBelow : roomAbove;
-    const scale = Math.min(1, room / height);
+    const roomAcross = window.innerWidth - 2 * POSSIBLE_CARDS_WINDOW_MARGIN;
+    const scale = Math.min(1, room / height, roomAcross / width);
 
     const middle = anchorRect.left + anchorRect.width / 2;
     const left = Math.min(
