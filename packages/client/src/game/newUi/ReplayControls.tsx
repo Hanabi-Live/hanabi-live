@@ -13,6 +13,7 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import {
   canToggleDrawnCards,
   controlsHypothetical,
+  getDrawnCardsLockTurn,
 } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
@@ -561,6 +562,7 @@ function OwnHypotheticalControls({
   readonly hint: string;
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical;
+  const lockTurn = getDrawnCardsLockTurn(state);
 
   // A hypothetical in a shared replay is the leader's, like the replay around it, and here we lead.
   const name =
@@ -606,7 +608,11 @@ function OwnHypotheticalControls({
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo?.showDrawnCards === true}
-          tooltip="Show the faces of the cards drawn during the hypothetical."
+          tooltip={
+            lockTurn === undefined
+              ? "Show the faces of the cards drawn during the hypothetical."
+              : `Locked, because a card drawn during the hypothetical was played, discarded, or clued. Go back to before turn ${lockTurn} to unlock it.`
+          }
         />
         <IconToggle
           icon="fa-pen"
