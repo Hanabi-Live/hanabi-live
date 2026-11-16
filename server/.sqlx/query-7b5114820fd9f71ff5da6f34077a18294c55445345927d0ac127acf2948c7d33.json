@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET session_version=session_version+1 WHERE username='EndedSession'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "7b5114820fd9f71ff5da6f34077a18294c55445345927d0ac127acf2948c7d33"
+}

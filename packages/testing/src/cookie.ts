@@ -6,25 +6,31 @@ const SESSION_COOKIE_NAME = "hanabi.sid";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-/** Decodes a cookie in the form `{id}.{timestamp}.{signature}`. */
+/**
+ * Decodes a cookie in the form `{id}.{timestamp}.{version}.{signature}`. Older cookies have no
+ * version.
+ */
 export function decodeSessionCookie(
   encoded: string,
   secret: string,
   now = Math.floor(Date.now() / 1000),
 ): UserId | undefined {
-  const match = /^(?<id>\d+)\.(?<timestamp>\d+)\.(?<signature>[\w-]+)$/u.exec(
-    encoded,
-  );
+  const match =
+    /^(?<message>(?<id>\d+)\.(?<timestamp>\d+)(?:\.\d+)?)\.(?<signature>[\w-]+)$/u.exec(
+      encoded,
+    );
   if (match?.groups === undefined) {
     return undefined;
   }
   const {
+    message,
     id: idText,
     timestamp: timestampText,
     signature: signatureText,
   } = match.groups;
   if (
-    idText === undefined
+    message === undefined
+    || idText === undefined
     || timestampText === undefined
     || signatureText === undefined
   ) {
@@ -34,7 +40,7 @@ export function decodeSessionCookie(
     throw new Error("Missing session signing key.");
   }
   const expected = createHmac("sha256", secret)
-    .update(`${SESSION_COOKIE_NAME}|${idText}.${timestampText}`)
+    .update(`${SESSION_COOKIE_NAME}|${message}`)
     .digest();
   const actual = Buffer.from(signatureText, "base64url");
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {

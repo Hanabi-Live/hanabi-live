@@ -88,6 +88,36 @@ async fn websocket_handshake_database_failure_has_a_diagnostic_response_postgres
     fixture.close().await;
 }
 
+#[tokio::test]
+async fn websocket_rejects_an_ended_session_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "EndedSession").await;
+    // A password change from another session increases the version.
+    sqlx::query!(
+        "UPDATE users SET session_version=session_version+1 WHERE username='EndedSession'"
+    )
+    .execute(&fixture.app.store.primary)
+    .await
+    .unwrap();
+    let mut request = format!("ws://{}/ws?version=42", fixture.address)
+        .into_client_request()
+        .unwrap();
+    request
+        .headers_mut()
+        .insert(header::COOKIE, HeaderValue::from_str(&cookie).unwrap());
+    request
+        .headers_mut()
+        .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
+    let error = connect_async(request).await.unwrap_err();
+    let tokio_tungstenite::tungstenite::Error::Http(response) = error else {
+        panic!("Expected HTTP rejection");
+    };
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    fixture.close().await;
+}
+
 async fn login(fixture: &test_support::Fixture, name: &str) -> String {
     let response = reqwest::Client::new()
         .post(format!("{}/login", fixture.url))

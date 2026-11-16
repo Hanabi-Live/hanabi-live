@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
+  "query": "SELECT username,normalized_username,datetime_created,is_bot,session_version\n             FROM users WHERE id=$1",
   "describe": {
     "columns": [
       {
@@ -46,6 +46,17 @@
             "name": "is_bot"
           }
         }
+      },
+      {
+        "ordinal": 4,
+        "name": "session_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "session_version"
+          }
+        }
       }
     ],
     "parameters": {
@@ -57,8 +68,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "bf432baeb5fb5fe683fcbc842bc8ed69f6cf13f99ee6fe41716d1c8de9f70340"
+  "hash": "1c1978e58f8d37284fd609f91e37ac8cff396504a8308990b107ad3516f57bac"
 }

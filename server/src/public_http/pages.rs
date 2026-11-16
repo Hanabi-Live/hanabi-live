@@ -106,29 +106,9 @@ pub(super) async fn main_page(
     let q = strict_query(raw.as_deref(), MAIN_PAGE_PARAMETERS)?;
     q.flag("dev").map_err(HttpError::bad)?;
     q.nonempty("login").map_err(HttpError::bad)?;
-    let user_id = headers
-        .get(axum::http::header::COOKIE)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|cookies| {
-            cookies.split(';').find_map(|cookie| {
-                let (name, value) = cookie.trim().split_once('=')?;
-                (name == crate::cookie::NAME).then_some(value)
-            })
-        })
-        .and_then(|cookie| {
-            crate::cookie::decode(
-                cookie,
-                &state.config.session_secret,
-                chrono::Utc::now().timestamp(),
-            )
-            .ok()
-        });
-    let username = if let Some(id) = user_id {
-        sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
-            .fetch_optional(&state.pool)
-            .await?
-    } else {
-        None
+    let username = match crate::accounts::session(&headers, &state.config.session_secret, None) {
+        Some(session) => crate::accounts::session_username(&state.pool, session).await?,
+        None => None,
     };
     render(
         &state,

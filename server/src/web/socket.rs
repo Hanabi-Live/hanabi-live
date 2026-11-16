@@ -58,13 +58,16 @@ pub(super) struct Account {
     pub(super) normalized_name: String,
     pub(super) created: DateTime<Utc>,
     pub(super) bot: bool,
+    /// Sessions signed with another version have ended.
+    pub(super) session_version: i32,
 }
 
 impl Account {
     /// Reads the account with `id`, if it still exists.
     pub(super) async fn read(pool: &sqlx::PgPool, id: UserId) -> sqlx::Result<Option<Self>> {
         Ok(sqlx::query!(
-            "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
+            "SELECT username,normalized_username,datetime_created,is_bot,session_version
+             FROM users WHERE id=$1",
             id.get()
         )
         .fetch_optional(pool)
@@ -75,6 +78,7 @@ impl Account {
             normalized_name: row.normalized_username,
             created: row.datetime_created,
             bot: row.is_bot,
+            session_version: row.session_version,
         }))
     }
 }
@@ -96,6 +100,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         normalized_name,
         created,
         bot,
+        session_version: _,
     } = account;
     let (settings, friends, blocked, blocks, muted) = tokio::try_join!(
         lobby::get_settings(pool, id),
@@ -273,8 +278,9 @@ pub(super) async fn websocket(
     let bot = client == ClientKind::Bot;
     let ip = address.ip();
     let requested = query.account.map(UserId::get);
-    let Some(id) =
-        accounts::session_id(&headers, &app.public.session_secret, requested).and_then(UserId::new)
+    let session = accounts::session(&headers, &app.public.session_secret, requested);
+    let Some((id, session_version)) =
+        session.and_then(|session| Some((UserId::new(session.id)?, session.version)))
     else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
         return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
@@ -312,6 +318,14 @@ pub(super) async fn websocket(
             .response(true);
         }
     };
+    if account.session_version != session_version {
+        tracing::warn!("Rejected websocket for account {id} with an ended session from IP: {ip}");
+        return HttpError::refused(
+            StatusCode::UNAUTHORIZED,
+            "This session has ended, such as after a password change. Please sign in again.",
+        )
+        .json();
+    }
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
         return crate::errors::Report::known(
             "Opening a live connection",

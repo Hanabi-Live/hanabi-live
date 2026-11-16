@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT username FROM users WHERE id=$1",
+  "query": "SELECT username FROM users WHERE id=$1 AND session_version=$2",
   "describe": {
     "columns": [
       {
@@ -17,6 +17,7 @@
     ],
     "parameters": {
       "Left": [
+        "Int4",
         "Int4"
       ]
     },
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "b7236abb3cf562ee4e33559acbaab901f9a4cf4b1bdf4e4e7dfac6977f1f3b8f"
+  "hash": "075442dfd2872baa1ae782129d4111a4de63480920fceebae1ca29378fb5bc13"
 }

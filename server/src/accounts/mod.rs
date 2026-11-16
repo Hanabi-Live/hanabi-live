@@ -83,21 +83,48 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
 
 /// Reads the signed-in account. A tab may choose any account this browser is signed in to with
 /// `?account=<user ID>`; otherwise the most recent sign-in is used.
-pub fn session_id(headers: &HeaderMap, secret: &str, requested: Option<i32>) -> Option<i32> {
+///
+/// The session may have ended since it was signed. Callers must compare its version with the
+/// account's, such as with `session_username`.
+pub fn session(
+    headers: &HeaderMap,
+    secret: &str,
+    requested: Option<i32>,
+) -> Option<cookie::Session> {
     let account_name = requested.map(cookie::account_name);
     let now = Utc::now().timestamp();
-    headers.get_all(header::COOKIE).iter().find_map(|value| {
-        value.to_str().ok()?.split(';').find_map(|pair| {
+    let mut sessions = headers
+        .get_all(header::COOKIE)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .flat_map(|value| value.split(';'))
+        .filter_map(|pair| {
             let (name, value) = pair.trim().split_once('=')?;
             if name != cookie::NAME && Some(name) != account_name.as_deref() {
                 return None;
             }
-            let id = cookie::decode(value, secret, now).ok()?;
+            let session = cookie::decode(value, secret, now).ok()?;
             requested
-                .is_none_or(|requested| requested == id)
-                .then_some(id)
-        })
-    })
+                .is_none_or(|requested| requested == session.id)
+                .then_some(session)
+        });
+    if requested.is_some() {
+        // Both cookies can name the requested account, and only the newer sign-in may be current.
+        sessions.max_by_key(|session| session.version)
+    } else {
+        sessions.next()
+    }
+}
+
+/// The username of the session's account, if the account exists and the session has not ended.
+pub async fn session_username(pool: &PgPool, session: cookie::Session) -> Result<Option<String>> {
+    Ok(sqlx::query_scalar!(
+        "SELECT username FROM users WHERE id=$1 AND session_version=$2",
+        session.id,
+        session.version
+    )
+    .fetch_optional(pool)
+    .await?)
 }
 
 fn parse_account(value: &str) -> Option<i32> {
@@ -309,14 +336,18 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(wait) => return Ok(too_many_attempts(wait)),
     };
     let existing = sqlx::query!(
-        "SELECT id, password_hash AS \"password_hash?\" FROM users WHERE username=$1",
+        "SELECT id, password_hash AS \"password_hash?\", session_version FROM users
+         WHERE username=$1",
         username
     )
     .fetch_optional(&state.pool)
     .await?;
     let id: i32;
+    // New accounts start at the column's default.
+    let mut version = 0;
     if let Some(user) = existing {
         id = user.id;
+        version = user.session_version;
         let Some(original) = user.password_hash else {
             let error = Notice {
                 code: Some(hanabi_protocol::NoticeCode::PasswordResetRequired),
@@ -338,15 +369,19 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         if input.new_password.is_some() || automatic_upgrade {
             let password = input.new_password.unwrap_or(input.password);
             let hash = hash_password(ip, password).await?;
-            // Do not let a concurrent login overwrite a newer password change.
-            let changed = update_password_if_unchanged(&state.pool, id, &hash, &original).await?;
-            if !changed && !automatic_upgrade {
-                return Ok(unauthorized("That is not the correct password."));
-            }
-            if !changed {
-                tracing::info!(
+            // Do not let a concurrent login overwrite a newer password change. A password change
+            // ends the account's other sessions, and this one gets a cookie with the new version.
+            let changed =
+                update_password_if_unchanged(&state.pool, id, &hash, &original, !automatic_upgrade)
+                    .await?;
+            match changed {
+                Some(changed) => version = changed,
+                None if !automatic_upgrade => {
+                    return Ok(unauthorized("That is not the correct password."));
+                }
+                None => tracing::info!(
                     "Skipped password hash upgrade after a concurrent credential change."
-                );
+                ),
             }
         }
         if input.client == ClientKind::Bot {
@@ -408,7 +443,11 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         ClientKind::App => " from an app",
     };
     tracing::info!("Successful login for account {id}{client} from IP: {ip}");
-    let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
+    let signed = cookie::encode(
+        cookie::Session { id, version },
+        &state.config.secret,
+        Utc::now().timestamp(),
+    )?;
     Ok(with_cookies(
         Json(hanabi_protocol::UserRef {
             user_id: hanabi_protocol::UserId::try_from(id)?,
@@ -422,22 +461,27 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     ))
 }
 
+/// Returns the account's session version after the change, or `None` if the password changed
+/// concurrently. Ending the sessions increases the version, which signs out every other session.
 async fn update_password_if_unchanged(
     pool: &PgPool,
     id: i32,
     hash: &str,
     original: &str,
-) -> Result<bool> {
-    Ok(sqlx::query!(
-        "UPDATE users SET password_hash=$2 WHERE id=$1 AND password_hash=$3",
+    end_sessions: bool,
+) -> Result<Option<i32>> {
+    Ok(sqlx::query_scalar!(
+        "UPDATE users
+         SET password_hash=$2, session_version=session_version + CASE WHEN $4 THEN 1 ELSE 0 END
+         WHERE id=$1 AND password_hash=$3
+         RETURNING session_version",
         id,
         hash,
-        original
+        original,
+        end_sessions
     )
-    .execute(pool)
-    .await?
-    .rows_affected()
-        == 1)
+    .fetch_optional(pool)
+    .await?)
 }
 
 /// The shared test accounts, whose passwords are their usernames. Visiting `/<name>` (such as
@@ -495,7 +539,7 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
             return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
         }
     };
-    let latest = session_id(&headers, &state.config.secret, None);
+    let latest = session(&headers, &state.config.secret, None).map(|session| session.id);
     let requested = requested_account(&query);
     let mut cookies = Vec::new();
     if let Some(id) = requested.or(latest) {
@@ -527,18 +571,14 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
         Ok(query) => query,
         Err(message) => return HttpError::refused(StatusCode::BAD_REQUEST, message).json(),
     };
-    let Some(id) = session_id(&headers, &state.config.secret, requested_account(&query)) else {
+    let Some(session) = session(&headers, &state.config.secret, requested_account(&query)) else {
         return StatusCode::NO_CONTENT.into_response();
     };
     // A valid cookie can outlive its account, such as when a development database is reset.
-    let username: sqlx::Result<Option<String>> =
-        sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
-            .fetch_optional(&state.pool)
-            .await;
-    match username {
+    match session_username(&state.pool, session).await {
         Ok(Some(_)) => "OK\n".into_response(),
         Ok(None) => StatusCode::NO_CONTENT.into_response(),
-        Err(error) => account_failure("session-check", &error.into()),
+        Err(error) => account_failure("session-check", &error),
     }
 }
 
@@ -582,16 +622,14 @@ async fn identity_token(
         if is_banned(&state.pool, &address.ip().to_string()).await? {
             return Ok(banned());
         }
-        let Some(id) = session_id(&headers, &state.config.secret, requested_account(&query)) else {
+        let Some(session) = session(&headers, &state.config.secret, requested_account(&query))
+        else {
             return Ok(
                 HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
             );
         };
-        let username: Option<String> =
-            sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
-                .fetch_optional(&state.pool)
-                .await?;
-        let Some(username) = username else {
+        let id = session.id;
+        let Some(username) = session_username(&state.pool, session).await? else {
             return Ok(
                 HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
             );

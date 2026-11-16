@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users\n         SET password_hash=$2, session_version=session_version + CASE WHEN $4 THEN 1 ELSE 0 END\n         WHERE id=$1 AND password_hash=$3\n         RETURNING session_version",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "session_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "session_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f0c83465cdde056b4eba8abdf356b15da5ba32511c1d546bdce1e4c199c3d068"
+}

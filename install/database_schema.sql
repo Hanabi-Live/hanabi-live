@@ -52,7 +52,13 @@ CREATE TABLE users (
     settings                   JSONB    NOT NULL  DEFAULT '{}',
 
     /* Set when the account authenticates with the bot client version. */
-    is_bot                     BOOLEAN  NOT NULL  DEFAULT FALSE
+    is_bot                     BOOLEAN  NOT NULL  DEFAULT FALSE,
+
+    /**
+     * Session cookies carry the version that they were signed with. A password change increases it,
+     * which ends the user's other sessions.
+     */
+    session_version            INTEGER  NOT NULL  DEFAULT 0
 );
 
 /* User stats are per variant. */

@@ -663,8 +663,13 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .unwrap();
     assert_eq!(redirect.status(), StatusCode::PERMANENT_REDIRECT);
     assert_eq!(redirect.headers()["location"], "/api/v1/history/Alice/Bob");
-    let cookie =
-        crate::cookie::encode(1, "public-test-secret", chrono::Utc::now().timestamp()).unwrap();
+    let session = crate::cookie::Session { id: 1, version: 0 };
+    let cookie = crate::cookie::encode(
+        session,
+        "public-test-secret",
+        chrono::Utc::now().timestamp(),
+    )
+    .unwrap();
     let req = Request::builder()
         .uri("/")
         .header("Cookie", format!("hanabi.sid={cookie}"))

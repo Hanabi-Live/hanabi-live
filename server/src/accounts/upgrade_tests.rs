@@ -106,15 +106,17 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
         .await
         .unwrap();
     let upgrade = hash_password("127.0.0.1", PASSWORD.into()).await.unwrap();
-    assert!(
-        update_password_if_unchanged(&db.pool, id, &next, OLD_HASH)
+    assert_eq!(
+        update_password_if_unchanged(&db.pool, id, &next, OLD_HASH, true)
             .await
-            .unwrap()
+            .unwrap(),
+        Some(1)
     );
-    assert!(
-        !update_password_if_unchanged(&db.pool, id, &upgrade, OLD_HASH)
+    assert_eq!(
+        update_password_if_unchanged(&db.pool, id, &upgrade, OLD_HASH, false)
             .await
-            .unwrap()
+            .unwrap(),
+        None
     );
     let stored: String = sqlx::query_scalar!(
         "SELECT password_hash AS \"password_hash!\" FROM users WHERE id=$1",

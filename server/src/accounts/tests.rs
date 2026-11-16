@@ -392,7 +392,7 @@ async fn native_accounts_http_and_identity_postgres() {
             Utc::now().timestamp()
         )
         .unwrap(),
-        id
+        cookie::Session { id, version: 0 }
     );
     assert_eq!(
         request(
@@ -420,17 +420,29 @@ async fn native_accounts_http_and_identity_postgres() {
         .0,
         StatusCode::UNAUTHORIZED
     );
+    let (status, headers, _) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=Alice&password=old&newPassword=new&client=bot&createAccount=true",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    // A password change ends other sessions, but keeps the one that changed it.
     assert_eq!(
-        request(
-            &app,
-            "POST",
-            "/login",
-            "username=Alice&password=old&newPassword=new&client=bot&createAccount=true",
-            None,
-            false
-        )
-        .await
-        .0,
+        request(&app, "GET", "/test-cookie", "", Some(cookie), false)
+            .await
+            .0,
+        StatusCode::NO_CONTENT
+    );
+    let header = headers[header::SET_COOKIE].to_str().unwrap();
+    let cookie = header.split(';').next().unwrap();
+    assert_eq!(
+        request(&app, "GET", "/test-cookie", "", Some(cookie), false)
+            .await
+            .0,
         StatusCode::OK
     );
     assert_eq!(
@@ -597,21 +609,27 @@ fn set_cookies(headers: &HeaderMap) -> Vec<String> {
 fn tabs_choose_among_signed_in_accounts() {
     let secret = &config().secret;
     let now = Utc::now().timestamp();
-    let alice = cookie::encode(1, secret, now).unwrap();
-    let bob = cookie::encode(2, secret, now).unwrap();
+    let alice = cookie::Session { id: 1, version: 0 };
+    let bob = cookie::Session { id: 2, version: 1 };
+    let old_bob = cookie::Session { id: 2, version: 0 };
+    let [alice_cookie, bob_cookie, old_bob_cookie] =
+        [alice, bob, old_bob].map(|session| cookie::encode(session, secret, now).unwrap());
     let headers = HeaderMap::from_iter([(
         header::COOKIE,
-        format!("hanabi.sid={bob}; hanabi.sid.1={alice}; hanabi.sid.3={bob}")
-            .parse()
-            .unwrap(),
+        format!(
+            "hanabi.sid.2={old_bob_cookie}; hanabi.sid={bob_cookie}; hanabi.sid.1={alice_cookie}; hanabi.sid.3={bob_cookie}"
+        )
+        .parse()
+        .unwrap(),
     )]);
-    assert_eq!(session_id(&headers, secret, None), Some(2));
-    assert_eq!(session_id(&headers, secret, Some(1)), Some(1));
-    // The latest sign-in also covers its own account, so older sessions keep working.
-    assert_eq!(session_id(&headers, secret, Some(2)), Some(2));
+    let id = |requested| session(&headers, secret, requested).map(|session| session.id);
+    assert_eq!(id(None), Some(2));
+    assert_eq!(id(Some(1)), Some(1));
+    // The latest sign-in also covers its own account, and it is newer than the account's cookie.
+    assert_eq!(session(&headers, secret, Some(2)), Some(bob));
     // A cookie must belong to the account named after it.
-    assert_eq!(session_id(&headers, secret, Some(3)), None);
-    assert_eq!(session_id(&headers, secret, Some(4)), None);
+    assert_eq!(id(Some(3)), None);
+    assert_eq!(id(Some(4)), None);
     for query in ["account=0", "account=x", "account="] {
         assert!(account_query(Some(query), &["account"]).is_err(), "{query}");
     }
@@ -623,7 +641,11 @@ async fn cookie_for_a_missing_account_is_not_a_session_postgres() {
         return;
     };
     let app = router(db.pool.clone(), config());
-    let value = cookie::encode(i32::MAX, &config().secret, Utc::now().timestamp()).unwrap();
+    let session = cookie::Session {
+        id: i32::MAX,
+        version: 0,
+    };
+    let value = cookie::encode(session, &config().secret, Utc::now().timestamp()).unwrap();
     let cookie = format!("hanabi.sid={value}");
     let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
     assert_eq!(status, StatusCode::NO_CONTENT);
@@ -713,7 +735,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
         let ids: std::collections::HashSet<_> = results
             .iter()
             .map(|(_, headers, _)| {
-                session_id(
+                session(
                     &HeaderMap::from_iter([(
                         header::COOKIE,
                         headers[header::SET_COOKIE]
@@ -729,6 +751,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
                     None,
                 )
                 .unwrap()
+                .id
             })
             .collect();
         assert_eq!(ids.len(), 7);
