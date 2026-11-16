@@ -296,7 +296,7 @@ pub(super) async fn websocket(
                     .map(|client| format!("\"{}\"", client.name()))
                     .collect::<Vec<_>>()
                     .join(", ");
-                format!("The client must be one of {clients}.")
+                format!("The client must be one of: {clients}")
             })
         }) {
             Ok(query) => query,

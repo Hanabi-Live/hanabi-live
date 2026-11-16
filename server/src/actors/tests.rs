@@ -447,7 +447,7 @@ async fn restarting_without_the_original_players_names_who_is_missing() -> Resul
         bail!("Restarted without Bob");
     };
     ensure!(
-        error.to_string() == "The original players must attend to restart. Missing: Bob.",
+        error.to_string() == "The original players must attend to restart. Missing: Bob",
         "Unexpected rejection: {error}"
     );
     actor.retire().await?;

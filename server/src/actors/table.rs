@@ -1096,7 +1096,7 @@ impl TableActor {
         };
         ensure_internal!(
             matches!(route(&message), Route::Table(_) | Route::TableChat(_)),
-            "Unsupported table command: {}.",
+            "Unsupported table command: {}",
             message.name()
         );
         let done = match message {

@@ -216,7 +216,7 @@ pub(super) async fn list(
             .filter(|column| SORTABLE_COLUMNS.contains(column))
             .ok_or_else(|| {
                 HttpError::bad(format!(
-                    "Sort by one of: {}.",
+                    "Sort by one of: {}",
                     SORTABLE_COLUMNS
                         .iter()
                         .map(|c| c.name())

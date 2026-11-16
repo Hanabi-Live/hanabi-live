@@ -21,7 +21,7 @@ impl Query {
                     format!("Unknown query parameter \"{shown}\": this URL takes no parameters.")
                 } else {
                     format!(
-                        "Unknown query parameter \"{shown}\". This URL takes: {}.",
+                        "Unknown query parameter \"{shown}\". This URL takes: {}",
                         accepted.join(", ")
                     )
                 });
@@ -85,7 +85,7 @@ mod tests {
         assert!(
             Query::parse(Some("utm_source=x"), &["page"])
                 .unwrap_err()
-                .contains("This URL takes: page.")
+                .contains("This URL takes: page")
         );
         assert!(
             Query::parse(Some("page=1"), &[])

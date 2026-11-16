@@ -566,7 +566,7 @@ impl TableActor {
                 return self.publish(e).await;
             }
             // The table runs the variant search before its chat.
-            _ => bail_internal!("The table chat ran {command:?}."),
+            _ => bail_internal!("The table chat got an unexpected command: {command:?}"),
         };
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);

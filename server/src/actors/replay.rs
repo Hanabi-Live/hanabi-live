@@ -408,7 +408,7 @@ impl TableActor {
                 .map(|p| p.name.as_str())
                 .collect::<Vec<_>>()
                 .join(", ");
-            reject!("The original players must attend to restart. Missing: {missing}.");
+            reject!("The original players must attend to restart. Missing: {missing}");
         }
         Ok(players)
     }

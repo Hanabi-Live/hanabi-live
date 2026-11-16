@@ -172,7 +172,7 @@ async fn loopback_routes_admission() {
         (
             "/ban",
             Some("username=Alice&reason=x"),
-            "This URL takes: username.",
+            "This URL takes: username",
         ),
     ] {
         let (status, text) = request(app.clone(), path, body).await;

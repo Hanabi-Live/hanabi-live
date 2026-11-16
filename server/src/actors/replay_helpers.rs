@@ -151,7 +151,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                         end.player_index.is_some_and(|p| p.index() < players.len())
                     },
             },
-            "Invalid action at index {i}."
+            "Invalid action at index: {i}"
         );
     }
     let size = deck.len() + variant.suits.len();
