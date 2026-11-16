@@ -1338,31 +1338,28 @@ function getClueCountClass(
 }
 
 /**
- * The tooltip of the clue tokens. It gives the count out of the maximum, and explains the color of
- * the count. The count is in the tokens that the players see, not in the half tokens of "Clue
- * Starved" variants, so its maximum is the same in every variant.
+ * The tooltip of the clue tokens, in HTML. It gives the count out of the maximum. Under it, a
+ * second line explains the color of the count. The count is in the tokens that the players see, not
+ * in the half tokens of "Clue Starved" variants, so its maximum is the same in every variant.
  */
-function getClueTokensTooltip(
+function getClueTokensTooltipHtml(
   clues: number,
   atMaxClues: boolean,
   outOfClues: boolean,
   oneClueLeft: boolean,
   realLifeMode: boolean,
 ): string {
-  const count = `Clue tokens: ${clues} / ${MAX_CLUES}`;
-  if (realLifeMode) {
-    return count;
+  const lines = [`Clue tokens: ${clues} / ${MAX_CLUES}`];
+  if (!realLifeMode) {
+    if (outOfClues) {
+      lines.push("No one can give a clue.");
+    } else if (oneClueLeft) {
+      lines.push("The team has one clue left.");
+    } else if (atMaxClues) {
+      lines.push("No one can discard.");
+    }
   }
-  if (outOfClues) {
-    return `${count}. No one can give a clue.`;
-  }
-  if (oneClueLeft) {
-    return `${count}. The team has one clue left.`;
-  }
-  if (atMaxClues) {
-    return `${count}. No one can discard.`;
-  }
-  return count;
+  return `<span class="small-tooltip-text">${lines.join("<br>")}</span>`;
 }
 
 /**
@@ -1444,8 +1441,8 @@ export function TableTokens({
       <section
         aria-label="Clue tokens"
         className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
-        ref={tooltipRef(
-          getClueTokensTooltip(
+        ref={tooltipRefHtml(
+          getClueTokensTooltipHtml(
             clues,
             atMaxClues,
             outOfClues,
