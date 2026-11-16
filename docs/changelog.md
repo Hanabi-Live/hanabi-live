@@ -14,6 +14,7 @@ of the repository.
   `/id` chat commands to see the seed and the database ID of the game.
 - Cards no longer list each suit with the ranks that it can be. They always show
   the separate suit and rank pips.
+- Lobby chat no longer pings Discord roles, such as the Ping Crew.
 
 ## November 13th, 2026
 

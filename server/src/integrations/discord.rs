@@ -91,7 +91,6 @@ pub struct Configuration {
     lobby: Id<ChannelMarker>,
     development: Id<ChannelMarker>,
     ping_role: String,
-    teacher_role: String,
 }
 
 impl Configuration {
@@ -101,8 +100,7 @@ impl Configuration {
         const LOBBY: &str = "DISCORD_CHANNEL_SYNC_WITH_LOBBY";
         const DEVELOPMENT: &str = "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT";
         const PING_ROLE: &str = "DISCORD_PING_CREW_ROLE_NAME";
-        const TEACHER_ROLE: &str = "DISCORD_TRUSTED_TEACHER_ROLE_NAME";
-        const KEYS: [&str; 6] = [TOKEN, GUILD, LOBBY, DEVELOPMENT, PING_ROLE, TEACHER_ROLE];
+        const KEYS: [&str; 5] = [TOKEN, GUILD, LOBBY, DEVELOPMENT, PING_ROLE];
         if KEYS
             .iter()
             .all(|key| values.get(*key).is_none_or(|v| v.trim().is_empty()))
@@ -128,7 +126,6 @@ impl Configuration {
             lobby: configured_id(LOBBY, &value(LOBBY)?)?,
             development: configured_id(DEVELOPMENT, &value(DEVELOPMENT)?)?,
             ping_role: value(PING_ROLE)?,
-            teacher_role: value(TEACHER_ROLE)?,
         }))
     }
 
@@ -186,18 +183,13 @@ impl Bridge {
         let http = http.unwrap_or_else(|| config.client());
         let bot_id = http.current_user().await?.model().await?.id;
         let roles = roles(&http, config.guild).await?;
-        for (key, configured) in [
-            ("DISCORD_PING_CREW_ROLE_NAME", &config.ping_role),
-            ("DISCORD_TRUSTED_TEACHER_ROLE_NAME", &config.teacher_role),
-        ] {
-            if !roles.values().any(|name| name == configured) {
-                return Err(crate::errors::Fault::new(
-                    hanabi_protocol::NoticeCode::DiscordRoleMissing,
-                    format!("The role configured by {key} was not found in the Discord guild."),
-                    axum::http::StatusCode::BAD_GATEWAY,
-                )
-                .into());
-            }
+        if !roles.values().any(|name| *name == config.ping_role) {
+            return Err(crate::errors::Fault::new(
+                hanabi_protocol::NoticeCode::DiscordRoleMissing,
+                "The role configured by DISCORD_PING_CREW_ROLE_NAME was not found in the Discord guild.",
+                axum::http::StatusCode::BAD_GATEWAY,
+            )
+            .into());
         }
         for (key, channel) in [
             ("DISCORD_CHANNEL_SYNC_WITH_LOBBY", config.lobby),
@@ -406,29 +398,13 @@ impl Bridge {
         result
     }
 
-    async fn send(&self, text: &str, roles: bool) -> Result<String> {
-        self.send_to(self.config.lobby, text, roles).await
+    async fn send(&self, text: &str) -> Result<String> {
+        self.send_to(self.config.lobby, text).await
     }
 
-    /// Posts `text` to `channel`, and returns the message's ID. With `roles`, the message can
-    /// mention the ping and teacher roles; it never mentions anyone else.
-    async fn send_to(&self, channel: Id<ChannelMarker>, text: &str, roles: bool) -> Result<String> {
-        let roles = if roles {
-            self.current_roles()
-                .await?
-                .into_iter()
-                .filter(|(_, name)| {
-                    *name == self.config.ping_role || *name == self.config.teacher_role
-                })
-                .map(|(id, _)| id)
-                .collect()
-        } else {
-            Vec::new()
-        };
-        let mentions = AllowedMentions {
-            roles,
-            ..AllowedMentions::default()
-        };
+    /// Posts `text` to `channel`, and returns the message's ID. The message never mentions anyone.
+    async fn send_to(&self, channel: Id<ChannelMarker>, text: &str) -> Result<String> {
+        let mentions = AllowedMentions::default();
         self.available()?;
         let message = self
             .http
@@ -443,7 +419,7 @@ impl Bridge {
 
     /// Posts a server error alert to the development channel, without mentions.
     pub async fn alert(&self, text: &str) -> Result<()> {
-        self.send_to(self.config.development, text, false).await?;
+        self.send_to(self.config.development, text).await?;
         Ok(())
     }
     pub async fn mirror(&self, chat_id: i32, supplied: Option<&str>) -> Result<()> {
@@ -482,7 +458,7 @@ impl Bridge {
         } else {
             row.username.as_deref()
         };
-        let id = self.send(&outbound_text(username, raw), true).await?;
+        let id = self.send(&outbound_text(username, raw)).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::event::CHAT_DELETED,
@@ -543,7 +519,7 @@ impl Bridge {
     async fn announce(&self, message: &str, lobby: bool) -> Result<()> {
         self.available()?;
         if !lobby {
-            self.send_to(self.config.development, message, true)
+            self.send_to(self.config.development, message)
                 .await
                 .context("Sending lifecycle announcement to the development channel")?;
             return Ok(());
@@ -552,7 +528,7 @@ impl Bridge {
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
         let (lobby, development) = tokio::join!(
             self.publish_saved(vec![saved]),
-            self.send_to(self.config.development, message, true),
+            self.send_to(self.config.development, message),
         );
         lobby.context("Sending lifecycle announcement to the lobby channel")?;
         development.context("Sending lifecycle announcement to the development channel")?;
@@ -734,14 +710,11 @@ impl Bridge {
                 &error.into(),
             );
             report.log();
-            self.send(
-                &format!(
-                    "Error: the `@Ping Crew` role could not be {} your profile. {}",
-                    if add { "added to" } else { "removed from" },
-                    report.text()
-                ),
-                false,
-            )
+            self.send(&format!(
+                "Error: the `@Ping Crew` role could not be {} your profile. {}",
+                if add { "added to" } else { "removed from" },
+                report.text()
+            ))
             .await?;
             return Ok(());
         }
@@ -766,7 +739,7 @@ impl Bridge {
             )])
             .await?;
         }
-        self.send(&format!("`@{name}` {action} the `@Ping Crew`."), false)
+        self.send(&format!("`@{name}` {action} the `@Ping Crew`."))
             .await?;
         Ok(())
     }

@@ -107,10 +107,7 @@ async fn answer(
                    "permissions":"0","position":1,"flags":0,
                    "colors":{"primary_color":0,"secondary_color":null,"tertiary_color":null}})
         };
-        json!([
-            role("111111111111111111", "Ping Crew"),
-            role("222222222222222222", "Trusted Teacher")
-        ])
+        json!([role("111111111111111111", "Ping Crew")])
     } else if path.contains("/roles/") {
         return StatusCode::NO_CONTENT.into_response();
     } else if path.contains("/members/") {
@@ -261,10 +258,6 @@ fn configuration() -> Configuration {
             "666666666666666666".into(),
         ),
         ("DISCORD_PING_CREW_ROLE_NAME".into(), "Ping Crew".into()),
-        (
-            "DISCORD_TRUSTED_TEACHER_ROLE_NAME".into(),
-            "Trusted Teacher".into(),
-        ),
     ]))
     .unwrap()
     .unwrap()
@@ -528,8 +521,8 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         "<**Alice**> public <text>"
     );
     assert_eq!(
-        outbound[0].2.as_ref().unwrap()["allowed_mentions"]["parse"],
-        json!([])
+        outbound[0].2.as_ref().unwrap()["allowed_mentions"],
+        json!({"parse": []})
     );
     drop(requests);
     bridge.event(Event::GatewayClose(None)).await.unwrap();
