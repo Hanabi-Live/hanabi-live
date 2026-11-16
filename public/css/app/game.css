@@ -24,11 +24,14 @@
   list-style-type: none;
   margin-top: 0.5em;
   margin-bottom: 0;
-  text-indent: -0.5em;
 }
 
+/* A hanging indent: the icon sits left of the text, so that a wrapped line lines up with the text
+   above it, not with the icon. */
 .game-tooltips-ul > li {
   margin-bottom: 0.1em;
+  padding-left: 0.4em;
+  text-indent: -0.9em;
 }
 
 .game-tooltips-icon {
