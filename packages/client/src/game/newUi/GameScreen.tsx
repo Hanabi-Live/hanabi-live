@@ -1006,7 +1006,9 @@ export function GameScreen({
               {queuedMove?.type === "play" && queuedMoveElement}
             </div>
 
-            <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
+            {/* In the phone layout, the hands keep room on their left for the clue rail, which
+                runs beside them (see "Hands.tsx"). */}
+            <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:ml-4 tw:narrow-980:max-w-none tw:narrow-980:flex-none">
               <div
                 className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:narrow-980:flex-none"
                 ref={setHandsElement}
