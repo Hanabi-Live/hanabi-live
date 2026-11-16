@@ -102,6 +102,9 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.finished = true;
       state.finishedAt = action.finishedAt;
 
+      // A game in progress hides its seed, so it arrives now.
+      state.metadata.seed = action.seed;
+
       // Record the database ID of the game, if it was saved.
       state.replay.gameId = action.view.gameId;
 

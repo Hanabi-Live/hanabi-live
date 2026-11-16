@@ -750,6 +750,35 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
 }
 
 #[tokio::test]
+async fn a_live_game_sends_its_seed_only_when_it_ends() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Hidden seed", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
+        ensure!(
+            init.get("seed").is_none(),
+            "A live game sent its seed: {init}"
+        );
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        let finished = h.receive(1, "gameFinished").await?;
+        let seed = h.snapshot(id).await?.0.game().unwrap().seed.clone();
+        ensure!(
+            seed.is_some() && finished["seed"] == json!(seed),
+            "A finished game did not send its seed: {finished}"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn only_the_owner_changes_the_leader_before_the_replay() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Watcher"]).await? else {
         return Ok(());

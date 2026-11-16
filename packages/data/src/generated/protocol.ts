@@ -435,6 +435,11 @@ export const gameFinishedSchema = z
      * Every player's and spectator's notes, which the recipient may now all see.
      */
     notes: z.array(authorNotesSchema).readonly(),
+    /**
+     * The game's seed, which `GameInit` leaves out while the game is in progress. Absent for a
+     * game with its own deck instead of a seed.
+     */
+    seed: z.string().min(1).optional(),
     sharedReplay: sharedReplayStateSchema,
     tableId: tableIdSchema,
     /**
@@ -550,7 +555,9 @@ export const gameInitSchema = z
     options: gameOptionsSchema,
     playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
+     * Absent for a game with its own deck instead of a seed, such as an imported one. Also absent
+     * while the game is in progress, unless the table chose its deal: the seed finds other games
+     * on the same deck. `GameFinished` sends it when the game ends.
      */
     seed: z.string().min(1).optional(),
     startedAt: z.iso.datetime({ precision: 3 }),

@@ -189,6 +189,7 @@ impl TableActor {
                         hanabi_protocol::GameFinished {
                             table_id: self.table.id,
                             finished_at: finished_at.clone(),
+                            seed: s.seed.clone().map(Into::into),
                             deck: deck.clone(),
                             events: events.clone(),
                             notes: self.observer_notes(a),
@@ -534,6 +535,10 @@ impl TableActor {
         let data = if part == GameInfo::Init {
             let our_player_index = Self::our_player_index(s, a);
             let shared_replay = self.shared_replay_view(s, &session, our_player_index);
+            // The seed finds other games on the same deck, so a live game keeps it hidden. Its
+            // players chose a custom deal, so they know its seed.
+            let custom_deal = self.table.extra.custom_seed.is_some();
+            let live = matches!(self.table.phase, Phase::Live { .. });
             let init = hanabi_protocol::GameInit {
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
                 mode: match (shared_replay, a.shadow) {
@@ -548,8 +553,12 @@ impl TableActor {
                         our_player_index: our_player_index.context("Missing player")?,
                     },
                 },
-                custom_deal: self.table.extra.custom_seed.is_some(),
-                seed: s.seed.clone().map(Into::into),
+                custom_deal,
+                seed: s
+                    .seed
+                    .clone()
+                    .filter(|_| custom_deal || !live)
+                    .map(Into::into),
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),

@@ -106,7 +106,7 @@ interface ActionSpectators {
 }
 
 interface ActionGameFinished extends Readonly<
-  Pick<ServerEventData["gameFinished"], "view" | "sharedReplay">
+  Pick<ServerEventData["gameFinished"], "view" | "sharedReplay" | "seed">
 > {
   readonly type: "gameFinished";
 

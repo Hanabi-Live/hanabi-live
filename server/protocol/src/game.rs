@@ -108,6 +108,10 @@ pub struct CardIdentity {
 pub struct GameFinished {
     pub table_id: TableId,
     pub finished_at: Timestamp,
+    /// The game's seed, which `GameInit` leaves out while the game is in progress. Absent for a
+    /// game with its own deck instead of a seed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub seed: Option<Seed>,
     /// Every card's identity, by card order. The client rebuilds the game as a replay, which needs
     /// the cards that were hidden from it.
     #[schemars(length(max = MAX_DECK_SIZE))]
@@ -452,7 +456,9 @@ pub struct GameInit {
     pub mode: ViewMode,
     /// Whether the table chose its deal, so that the deck does not count down to a new seed.
     pub custom_deal: bool,
-    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    /// Absent for a game with its own deck instead of a seed, such as an imported one. Also absent
+    /// while the game is in progress, unless the table chose its deal: the seed finds other games
+    /// on the same deck. `GameFinished` sends it when the game ends.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<Seed>,
     pub started_at: Timestamp,

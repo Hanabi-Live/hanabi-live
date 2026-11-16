@@ -112,6 +112,7 @@ gameCommands.set("gameFinished", (data) => {
       actions: data.events.map(toGameAction),
       view: data.view,
       sharedReplay: data.sharedReplay,
+      seed: data.seed,
       finishedAt: data.finishedAt,
       leader: data.sharedReplay.owner.username,
     }),
