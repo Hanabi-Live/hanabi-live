@@ -1312,7 +1312,7 @@ const POSSIBLE_CARDS = {
    */
   removedIcon: {
     seen: 0.15,
-    note: 0.1125,
+    note: 0.084375,
   },
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
@@ -1380,7 +1380,7 @@ function PossibleCard({
  * How opaque a card is in the bubble of possible cards when the card cannot be it, though the clues
  * allow it.
  */
-const REMOVED_CARD_OPACITY = 0.25;
+const REMOVED_CARD_OPACITY = 0.2;
 
 /**
  * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
@@ -1416,7 +1416,7 @@ function RemovedCard({
 }
 
 /** How opaque the icon on a card that the card cannot be is. It fades less than the card. */
-const REMOVED_BY_ICON_OPACITY = 0.75;
+const REMOVED_BY_ICON_OPACITY = 0.66;
 
 /** The width of the outline of the icons, in their drawing's units. */
 const REMOVED_BY_ICON_STROKE = 9;
