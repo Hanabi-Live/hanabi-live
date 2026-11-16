@@ -92,6 +92,7 @@ import {
   getHandsTopPadding,
   getTableCardWidth,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
+  namesFitBesideCards,
   TABLE_TOP_PADDING,
 } from "./cardSizes.ts";
 import {
@@ -751,7 +752,14 @@ export function GameScreen({
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
     const widthWithNamesAbove = getHandCardWidthFor(undefined);
-    if (widthWithNamesAbove > handCardWidth) {
+    if (
+      widthWithNamesAbove > handCardWidth
+      || !namesFitBesideCards(
+        handsSize.width,
+        getCardsPerHand(options),
+        nameColumnWidth,
+      )
+    ) {
       nameColumnWidth = undefined;
       handCardWidth = widthWithNamesAbove;
     }

@@ -28,7 +28,8 @@ const HAND_CARD_WIDTH = {
 
 /**
  * In the phone layout, the names go beside the cards if the cards are still at least this wide.
- * Otherwise, the names go above the cards, if that makes the cards larger.
+ * Otherwise, the names go above the cards, if that makes the cards larger, or if the names and the
+ * smallest cards do not fit beside each other (see "namesFitBesideCards").
  */
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
@@ -103,6 +104,25 @@ const PLAY_AREA_OTHER_HEIGHT =
   + PLAY_AREA_GAP
   + DECK_PILE_DEPTH
   + TABLE_TOKENS_HEIGHT;
+
+/**
+ * Whether the column of names and a hand of the smallest cards fit in the width of the hands. If
+ * not, the hands would be wider than the screen.
+ */
+export function namesFitBesideCards(
+  handsWidth: number,
+  cardsPerHand: number,
+  nameColumnWidth: number,
+): boolean {
+  return (
+    nameColumnWidth
+      + NAME_GAP
+      + HAND_BOX_HORIZONTAL_PADDING
+      + CARD_GAP * (cardsPerHand - 1)
+      + HAND_CARD_WIDTH.MIN * cardsPerHand
+    <= handsWidth
+  );
+}
 
 /**
  * Returns the width of the cards in the hands. They fit in `handsHeight`. In the phone layout, that
