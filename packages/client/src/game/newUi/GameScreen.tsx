@@ -1239,7 +1239,7 @@ export function GameScreen({
                 // own. The pile is on the right, as the discard column is on a wide screen.
                 <div className="tw:flex tw:gap-3">
                   <TableTokens
-                    placementClass="tw:self-stretch"
+                    placementClass="tw:self-center"
                     {...tokensProps}
                   />
                   <div className="tw:min-w-0 tw:flex-1">{discardPile}</div>
