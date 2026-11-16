@@ -165,6 +165,15 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
             );
     }
     api = api
+        .route(
+            &format!("{API_PREFIX}/seed/{{seed}}/stats"),
+            get(api_handler),
+        )
+        .route(
+            &format!("{API_PREFIX}/scores/{{player1}}"),
+            get(api_handler),
+        );
+    api = api
         .route(&format!("{API_PREFIX}/variants"), get(api_handler))
         .route(&format!("{API_PREFIX}/variants-full"), get(api_handler))
         .route_layer(axum::middleware::from_fn_with_state(
@@ -258,23 +267,42 @@ async fn api_response(
     params: &Params,
     raw: Option<String>,
 ) -> Result<Response> {
-    let mode = uri
+    let mut segments = uri
         .path()
         .strip_prefix(API_PREFIX)
-        .and_then(|rest| rest.split('/').nth(1))
-        .unwrap_or("");
-    let list_parameters = match mode {
-        "history" | "seed" | "tags" | "tag" => data::list_parameters(mode),
+        .unwrap_or("")
+        .trim_start_matches('/')
+        .split('/');
+    let mode = segments.next().unwrap_or("");
+    // The only route under a seed's path is its statistics: "/seed/{seed}/stats".
+    let seed_statistics =
+        mode == "seed" && segments.next().is_some() && segments.next() == Some("stats");
+    let list_parameters: Vec<String> = match mode {
+        "history" | "seed" | "tags" | "tag" if !seed_statistics => data::list_parameters(mode),
         _ => Vec::new(),
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
     let q = strict_query(raw.as_deref(), &list_parameters)?;
+    if seed_statistics {
+        let seed = params
+            .get("seed")
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| HttpError::not_found("You must specify a seed."))?;
+        let statistics = pages::seed_statistics(state, seed)
+            .await?
+            .ok_or_else(|| HttpError::not_found("That seed has no games."))?;
+        return Ok(Json(statistics).into_response());
+    }
     Ok(match mode {
         "variants" => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
         "history" | "seed" | "tags" | "tag" => {
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
+        }
+        "scores" => {
+            let users = data::players(state, params, false).await?;
+            Json(pages::player_scores(state, users[0].0, &users[0].1).await?).into_response()
         }
         _ => return Err(HttpError::not_found("Not found.")),
     })

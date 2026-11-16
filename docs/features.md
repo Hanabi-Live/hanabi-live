@@ -882,6 +882,11 @@ move for the current situation.
 | `/api/v1/tags/[username]`                | Lists a paginated list of the games tagged by the player, with only that player's tags on each game.        |
 | `/api/v1/tag/[tag]`                      | Lists a paginated list of the games containing the specified tag.                                           |
 | `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
+| `/api/v1/seed/[seed]/stats`              | Shows the statistics of the games played on a specific seed.                                                |
+| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and best scores.                                                 |
+
+The profile and scores pages redirect to their JSON routes when you add `?api`
+to their URLs.
 
 Notes: The paginated lists take the following query parameters, added with a `?`
 at the end of the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). A

@@ -192,6 +192,83 @@ pub struct VariantScores {
     pub best_scores: Vec<BestScore>,
 }
 
+/// A player's game counts and time on their profile.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerStatistics {
+    pub num_games_normal: Count,
+    pub num_games_other: Count,
+    pub num_games_total: Count,
+    pub num_games_speedrun: Count,
+    /// The time that the player spent in games that are not speedruns, in seconds.
+    pub time_played_seconds: Count,
+    /// The time that the player spent in speedruns, in seconds.
+    pub time_played_speedrun_seconds: Count,
+    /// The time that the player spent reviewing replays, in seconds.
+    pub time_reviewed_seconds: Count,
+    /// The time from the other three fields, in seconds.
+    pub time_total_seconds: Count,
+    pub date_joined: Timestamp,
+}
+
+/// The number of max scores at one player count, or at all of them.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MaxScoreCount {
+    pub total: Count,
+    /// The percentage of the variants that the player has a max score on, from 0 to 100.
+    pub percentage: f64,
+}
+
+/// A player's max scores: the total and the count at each player count.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MaxScoreSummary {
+    pub total: Count,
+    /// The percentage of the variants and player counts that the player has a max score on, from 0
+    /// to 100.
+    pub percentage: f64,
+    /// From the fewest players to the most.
+    #[schemars(length(min = MAX_PLAYERS - MIN_PLAYERS + 1, max = MAX_PLAYERS - MIN_PLAYERS + 1))]
+    pub per_type: Vec<MaxScoreCount>,
+}
+
+/// A player's profile and their best scores, from `/api/v1/scores/{username}`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerScores {
+    pub name: Username,
+    pub statistics: PlayerStatistics,
+    pub max_scores: MaxScoreSummary,
+    /// The variants that the player has played, in the catalog's order.
+    pub variants: Vec<VariantScores>,
+}
+
+/// How hard a seed is compared to the other seeds of its variant and player count.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SeedDifficulty {
+    /// The percentage of the other seeds that this seed is harder than, from 0 to 100.
+    pub percentile: f64,
+    pub num_seeds: Count,
+    pub num_players: NumPlayers,
+    pub variant_name: String,
+}
+
+/// The statistics of the games on a seed, from `/api/v1/seed/{seed}/stats`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SeedStatistics {
+    pub num_games: Count,
+    pub num_max_scores: Count,
+    /// The percentage of the games that reached the maximum score, from 0 to 100.
+    pub max_score_rate: f64,
+    pub average_score: f64,
+    pub max_score: Score,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub difficulty: Option<SeedDifficulty>,
+}
+
 named_enum! {
     /// How hard a max score is, from the clue efficiency that it needs.
     pub enum Difficulty {

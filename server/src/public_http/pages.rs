@@ -8,8 +8,10 @@ use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{
-    BestScore, Count, Difficulty, MissingScore, MissingScoresFilters, MissingScoresPlayer,
-    NumPlayers, PublicGameList, PublicPageTable, Score, ScoreModifierOption, VariantScores,
+    BestScore, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
+    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
+    PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
+    VariantScores,
 };
 use std::sync::Arc;
 
@@ -125,7 +127,7 @@ pub(super) async fn page(
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(1).unwrap_or("");
     let accepted: &[&str] = match mode {
-        "history" | "tags" | "seed" | "tag" => &["api"],
+        "history" | "tags" | "seed" | "tag" | "scores" | "profile" => &["api"],
         "shared-missing-scores" => &[
             "excludePlayers",
             "excludeVariants",
@@ -171,9 +173,17 @@ pub(super) async fn page(
             v["name"] = json!(users[0].1);
             match mode {
                 "scores" | "profile" => {
+                    if api_redirect {
+                        return Ok(Redirect::permanent(&format!(
+                            "{API_PREFIX}/scores/{}",
+                            encoded(&users[0].1)
+                        ))
+                        .into_response());
+                    }
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    v["stats"] = player_statistics(&state, users[0].0).await?;
+                    let (statistics, joined) = player_statistics(&state, users[0].0).await?;
+                    v["stats"] = statistics_value(&statistics, joined);
                     let (_, variants) = score_summary(&state, users[0].0).await?;
                     set_table(&mut v, &PublicPageTable::Scores { variants })?;
                 }
@@ -245,13 +255,11 @@ pub(super) async fn page(
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
-            let rows = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
-                .fetch_all(&state.pool)
-                .await?
-                .into_iter()
-                .map(serde_json::from_value)
-                .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
-            v["stats"] = seed_stats(&state, seed, &rows).await?;
+            let rows = score_frequencies(&state, seed).await?;
+            v["stats"] = match seed_stats(&state, seed, &rows).await? {
+                Some(statistics) => seed_statistics_value(&statistics)?,
+                None => json!({}),
+            };
             set_table(
                 &mut v,
                 &PublicPageTable::Games {
@@ -298,17 +306,19 @@ pub(super) async fn page(
 fn float(n: i64) -> f64 {
     n as f64
 }
+/// `n` as a percentage of `total`, or 0 when `total` is 0.
+fn percentage(n: i64, total: i64) -> f64 {
+    if total == 0 {
+        0.0
+    } else {
+        float(n) * 100.0 / float(total)
+    }
+}
 /// The decimal places that a percentage is shown with.
 const PERCENTAGE_DECIMALS: usize = 1;
-fn percentage(n: i64, total: i64) -> String {
-    let s = format!(
-        "{:.PERCENTAGE_DECIMALS$}",
-        if total == 0 {
-            0.0
-        } else {
-            float(n) * 100.0 / float(total)
-        }
-    );
+/// A percentage as the pages show it, without a fraction of zeros.
+fn format_percentage(percentage: f64) -> String {
+    let s = format!("{percentage:.PERCENTAGE_DECIMALS$}");
     match s.split_once('.') {
         Some((whole, fraction)) if fraction.bytes().all(|b| b == b'0') => whole.to_owned(),
         _ => s,
@@ -360,9 +370,12 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
     Ok(transaction)
 }
 
-/// A player's game counts, time played, and the date they joined.
-async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
-    use chrono::Datelike;
+/// A player's game counts, time played, and the date they joined. The date is also returned as a
+/// `DateTime`, so that the profile can show it in words.
+async fn player_statistics(
+    state: &PublicState,
+    user: i32,
+) -> Result<(PlayerStatistics, chrono::DateTime<chrono::Utc>)> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
@@ -387,21 +400,60 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
     )
     .fetch_one(&state.pool)
     .await?;
-    let date = account.datetime_created;
+    let statistics = PlayerStatistics {
+        num_games_normal: Count::try_from(row.normal)?,
+        num_games_other: Count::try_from(row.other)?,
+        num_games_total: Count::try_from(row.normal + row.other)?,
+        num_games_speedrun: Count::try_from(row.speed)?,
+        time_played_seconds: Count::try_from(row.duration)?,
+        time_played_speedrun_seconds: Count::try_from(row.speed_duration)?,
+        time_reviewed_seconds: Count::try_from(account.seconds_reviewing)?,
+        time_total_seconds: Count::try_from(
+            row.duration
+                .saturating_add(row.speed_duration)
+                .saturating_add(account.seconds_reviewing),
+        )?,
+        date_joined: account.datetime_created.into(),
+    };
+    Ok((statistics, account.datetime_created))
+}
+
+/// A player's statistics as their profile shows them, with durations and the joined date in words.
+fn statistics_value(statistics: &PlayerStatistics, date: chrono::DateTime<chrono::Utc>) -> Value {
+    use chrono::Datelike;
     let suffix = match date.day() {
         1 | 21 | 31 => "st",
         2 | 22 => "nd",
         3 | 23 => "rd",
         _ => "th",
     };
-    Ok(
-        json!({"numGamesNormal":row.normal,"numGamesOther":row.other,
-        "numGamesTotal":row.normal+row.other,"numGamesSpeedrun":row.speed,
-        "timePlayed":duration(row.duration),"timePlayedSpeedrun":duration(row.speed_duration),
-        "timeReviewed":duration(account.seconds_reviewing),
-        "timeTotal":duration(row.duration.saturating_add(row.speed_duration).saturating_add(account.seconds_reviewing)),
-        "dateJoined":format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year())}),
-    )
+    json!({
+        "numGamesNormal": statistics.num_games_normal,
+        "numGamesOther": statistics.num_games_other,
+        "numGamesTotal": statistics.num_games_total,
+        "numGamesSpeedrun": statistics.num_games_speedrun,
+        "timePlayed": duration(statistics.time_played_seconds.get()),
+        "timePlayedSpeedrun": duration(statistics.time_played_speedrun_seconds.get()),
+        "timeReviewed": duration(statistics.time_reviewed_seconds.get()),
+        "timeTotal": duration(statistics.time_total_seconds.get()),
+        "dateJoined": format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year()),
+    })
+}
+
+/// A player's statistics and best scores, for `/api/v1/scores/{username}`.
+pub(super) async fn player_scores(
+    state: &PublicState,
+    user: i32,
+    name: &str,
+) -> Result<PlayerScores> {
+    let (statistics, _) = player_statistics(state, user).await?;
+    let (max_scores, variants) = score_summary(state, user).await?;
+    Ok(PlayerScores {
+        name: name.into(),
+        statistics,
+        max_scores,
+        variants,
+    })
 }
 
 /// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest, and
@@ -410,13 +462,35 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
 pub(super) type SeedAverages =
     HashMap<String, Arc<tokio::sync::Mutex<Option<(std::time::Instant, Arc<[f64]>)>>>>;
 
+/// How many games reached each score on a seed.
+pub(super) async fn score_frequencies(
+    state: &PublicState,
+    seed: &str,
+) -> Result<Vec<hanabi_protocol::ScoreFrequency>> {
+    Ok(sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
+        .fetch_all(&state.pool)
+        .await?
+        .into_iter()
+        .map(serde_json::from_value)
+        .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?)
+}
+
+/// The statistics of a seed's games, or `None` when the seed has no games.
+pub(super) async fn seed_statistics(
+    state: &PublicState,
+    seed: &str,
+) -> Result<Option<SeedStatistics>> {
+    let frequencies = score_frequencies(state, seed).await?;
+    seed_stats(state, seed, &frequencies).await
+}
+
 /// The statistics of a seed's games, and how hard the seed is compared to the other seeds of its
 /// variant, player count, and hand size.
 async fn seed_stats(
     state: &PublicState,
     seed: &str,
     frequencies: &[hanabi_protocol::ScoreFrequency],
-) -> Result<Value> {
+) -> Result<Option<SeedStatistics>> {
     let games: i64 = frequencies.iter().map(|row| row.num_games.get()).sum();
     let Some(game) = sqlx::query!(
         "SELECT variant_id,num_players FROM games WHERE seed=$1 LIMIT 1",
@@ -425,10 +499,10 @@ async fn seed_stats(
     .fetch_optional(&state.pool)
     .await?
     else {
-        return Ok(json!({}));
+        return Ok(None);
     };
     let Some(variant) = catalog::variant(i64::from(game.variant_id)) else {
-        return Ok(json!({}));
+        return Ok(None);
     };
     let total: i64 = frequencies
         .iter()
@@ -440,18 +514,19 @@ async fn seed_stats(
         .filter(|row| i64::from(row.score.get()) == i64::from(variant.max_score))
         .map(|row| row.num_games.get())
         .sum();
-    let mut statistics = json!({
-        "numGames": games,
-        "numMaxScores": max_scores,
-        "maxScoreRate": percentage(max_scores, games),
-        "averageScore": format!("{average:.AVERAGE_SCORE_DECIMALS$}"),
-        "maxScore": variant.max_score,
-    });
+    let mut statistics = SeedStatistics {
+        num_games: Count::try_from(games)?,
+        num_max_scores: Count::try_from(max_scores)?,
+        max_score_rate: percentage(max_scores, games),
+        average_score: average,
+        max_score: Score::try_from(variant.max_score)?,
+        difficulty: None,
+    };
     let Some(prefix) = regex!(crate::game::SEED_PATTERN)
         .captures(seed)
         .map(|captures| captures[1].to_owned())
     else {
-        return Ok(statistics);
+        return Ok(Some(statistics));
     };
     let averages = seed_averages(state, prefix, game.variant_id, game.num_players).await?;
     let lower = averages.partition_point(|other| *other < average);
@@ -463,20 +538,32 @@ async fn seed_stats(
     if others > 0 {
         // A seed is harder than each seed with a higher average and half as hard as each tie, as
         // in duplicate bridge's match points.
-        statistics["difficulty"] = json!({
-            "percentile": format!(
-                "{:.0}",
-                float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0 / float(others)
-            ),
-            "numSeeds": others,
-            "numPlayers": game.num_players,
-            "variantName": variant.name,
+        statistics.difficulty = Some(SeedDifficulty {
+            percentile: float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0
+                / float(others),
+            num_seeds: Count::try_from(others)?,
+            num_players: NumPlayers::try_from(game.num_players)?,
+            variant_name: variant.name.clone(),
         });
     }
-    Ok(statistics)
+    Ok(Some(statistics))
 }
 /// The decimal places that a seed's average score is shown with.
 const AVERAGE_SCORE_DECIMALS: usize = 1;
+
+/// A seed's statistics as its page shows them, with rounded numbers.
+fn seed_statistics_value(statistics: &SeedStatistics) -> Result<Value> {
+    let mut v = serde_json::to_value(statistics)?;
+    v["maxScoreRate"] = json!(format_percentage(statistics.max_score_rate));
+    v["averageScore"] = json!(format!(
+        "{:.AVERAGE_SCORE_DECIMALS$}",
+        statistics.average_score
+    ));
+    if let Some(difficulty) = &statistics.difficulty {
+        v["difficulty"]["percentile"] = json!(format!("{:.0}", difficulty.percentile));
+    }
+    Ok(v)
+}
 
 /// The sorted average scores of the seeds with a prefix. A large variant has thousands of seeds,
 /// so the averages are shared for `SEED_AVERAGES_LIFETIME`.
@@ -545,7 +632,10 @@ const VERY_HARD_EFFICIENCY: f64 = 1.5;
 
 /// A player's count of max scores at each player count, and their best scores on each variant that
 /// they have played.
-async fn score_summary(state: &PublicState, id: i32) -> Result<(Value, Vec<VariantScores>)> {
+async fn score_summary(
+    state: &PublicState,
+    id: i32,
+) -> Result<(MaxScoreSummary, Vec<VariantScores>)> {
     let statistics = user_stats(state, id).await?;
     let mut totals = [0; crate::database::PLAYER_COUNTS];
     let mut played = Vec::new();
@@ -577,11 +667,36 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<(Value, Vec<Varia
     }
     let total: i64 = totals.iter().sum();
     let variants = i64::try_from(catalog::variants().len())?;
+    let per_type = totals
+        .iter()
+        .map(|&total| {
+            Ok(MaxScoreCount {
+                total: Count::try_from(total)?,
+                percentage: percentage(total, variants),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
     Ok((
-        json!({"total":total,"percentage":percentage(total,variants*i64::try_from(crate::database::PLAYER_COUNTS)?),
-        "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
+        MaxScoreSummary {
+            total: Count::try_from(total)?,
+            percentage: percentage(
+                total,
+                variants * i64::try_from(crate::database::PLAYER_COUNTS)?,
+            ),
+            per_type,
+        },
         played,
     ))
+}
+
+/// A player's max scores as their profile shows them, with rounded percentages.
+fn summary_value(summary: &MaxScoreSummary) -> Result<Value> {
+    let mut v = serde_json::to_value(summary)?;
+    v["percentage"] = json!(format_percentage(summary.percentage));
+    for (row, count) in summary.per_type.iter().enumerate() {
+        v["perType"][row]["percentage"] = json!(format_percentage(count.percentage));
+    }
+    Ok(v)
 }
 
 /// A stored best score and its modifier bits, if there is a game.
@@ -758,7 +873,7 @@ async fn missing(
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared});
     if !shared {
-        v["summary"] = score_summary(state, users[0].0).await?.0;
+        v["summary"] = summary_value(&score_summary(state, users[0].0).await?.0)?;
     }
     set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)

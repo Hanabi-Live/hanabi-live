@@ -882,6 +882,37 @@ export const loginRequestSchema = z
   .readonly();
 
 /**
+ * The number of max scores at one player count, or at all of them.
+ */
+export const maxScoreCountSchema = z
+  .strictObject({
+    /**
+     * The percentage of the variants that the player has a max score on, from 0 to 100.
+     */
+    percentage: z.number(),
+    total: countSchema,
+  })
+  .readonly();
+
+/**
+ * A player's max scores: the total and the count at each player count.
+ */
+export const maxScoreSummarySchema = z
+  .strictObject({
+    /**
+     * From the fewest players to the most.
+     */
+    perType: z.array(maxScoreCountSchema).min(5).max(5).readonly(),
+    /**
+     * The percentage of the variants and player counts that the player has a max score on, from 0
+     * to 100.
+     */
+    percentage: z.number(),
+    total: countSchema,
+  })
+  .readonly();
+
+/**
  * A note that someone else changed, sent to the spectators who may see it.
  */
 export const noteSchema = z
@@ -1006,6 +1037,90 @@ export const playerActionRequestSchema = z
   .readonly();
 
 /**
+ * A player's game counts and time on their profile.
+ */
+export const playerStatisticsSchema = z
+  .strictObject({
+    dateJoined: z.iso.datetime({ precision: 3 }),
+    numGamesNormal: countSchema,
+    numGamesOther: countSchema,
+    numGamesSpeedrun: countSchema,
+    numGamesTotal: countSchema,
+    /**
+     * The time that the player spent in games that are not speedruns, in seconds.
+     */
+    timePlayedSeconds: countSchema,
+    /**
+     * The time that the player spent in speedruns, in seconds.
+     */
+    timePlayedSpeedrunSeconds: countSchema,
+    /**
+     * The time that the player spent reviewing replays, in seconds.
+     */
+    timeReviewedSeconds: countSchema,
+    /**
+     * The time from the other three fields, in seconds.
+     */
+    timeTotalSeconds: countSchema,
+  })
+  .readonly();
+
+/**
+ * An option that keeps a best score from counting as a normal one. A score with several of
+ * them shows only the first in this order.
+ */
+const scoreModifierOptionSchema = z.enum([
+  "allOrNothing",
+  "oneExtraCard",
+  "oneLessCard",
+  "emptyClues",
+  "deckPlays",
+]);
+
+/**
+ * A best score on a public page, and the option that keeps it from counting as a normal one.
+ */
+const bestScoreSchema = z
+  .strictObject({
+    modifier: scoreModifierOptionSchema.optional(),
+    /**
+     * Absent when no game was played.
+     */
+    score: scoreSchema.optional(),
+  })
+  .readonly();
+
+/**
+ * A variant that a player has played, with their best score at each player count.
+ */
+const variantScoresSchema = z
+  .strictObject({
+    /**
+     * From the fewest players to the most.
+     */
+    bestScores: z.array(bestScoreSchema).min(5).max(5).readonly(),
+    maxScore: scoreSchema,
+    numGames: countSchema,
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
+ * A player's profile and their best scores, from `/api/v1/scores/{username}`.
+ */
+export const playerScoresSchema = z
+  .strictObject({
+    maxScores: maxScoreSummarySchema,
+    name: z.string().min(1),
+    statistics: playerStatisticsSchema,
+    /**
+     * The variants that the player has played, in the catalog's order.
+     */
+    variants: z.array(variantScoresSchema).readonly(),
+  })
+  .readonly();
+
+/**
  * A number of players.
  */
 const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
@@ -1117,18 +1232,6 @@ export const pregameSchema = z
 const difficultySchema = z.enum(["normal", "hard", "veryHard"]);
 
 /**
- * An option that keeps a best score from counting as a normal one. A score with several of
- * them shows only the first in this order.
- */
-const scoreModifierOptionSchema = z.enum([
-  "allOrNothing",
-  "oneExtraCard",
-  "oneLessCard",
-  "emptyClues",
-  "deckPlays",
-]);
-
-/**
  * A variant at a player count that has no normal max score yet.
  */
 const missingScoreSchema = z
@@ -1202,34 +1305,6 @@ const publicGameListSchema = z.enum(["history", "seed", "tags", "tag"]);
  */
 export const scoreFrequencySchema = z
   .strictObject({ numGames: countSchema, score: scoreSchema })
-  .readonly();
-
-/**
- * A best score on a public page, and the option that keeps it from counting as a normal one.
- */
-const bestScoreSchema = z
-  .strictObject({
-    modifier: scoreModifierOptionSchema.optional(),
-    /**
-     * Absent when no game was played.
-     */
-    score: scoreSchema.optional(),
-  })
-  .readonly();
-
-/**
- * A variant that a player has played, with their best score at each player count.
- */
-const variantScoresSchema = z
-  .strictObject({
-    /**
-     * From the fewest players to the most.
-     */
-    bestScores: z.array(bestScoreSchema).min(5).max(5).readonly(),
-    maxScore: scoreSchema,
-    numGames: countSchema,
-    variantName: z.string(),
-  })
   .readonly();
 
 /**
@@ -1487,6 +1562,21 @@ export const requestIdSchema = z
   .brand<"RequestId">();
 
 /**
+ * How hard a seed is compared to the other seeds of its variant and player count.
+ */
+export const seedDifficultySchema = z
+  .strictObject({
+    numPlayers: numPlayersSchema,
+    numSeeds: countSchema,
+    /**
+     * The percentage of the other seeds that this seed is harder than, from 0 to 100.
+     */
+    percentile: z.number(),
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
  * A page of the games on a seed, best scores first.
  */
 export const seedGamesRequestSchema = z
@@ -1494,6 +1584,23 @@ export const seedGamesRequestSchema = z
     limit: pageLimitSchema,
     offset: countSchema,
     seed: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * The statistics of the games on a seed, from `/api/v1/seed/{seed}/stats`.
+ */
+export const seedStatisticsSchema = z
+  .strictObject({
+    averageScore: z.number(),
+    difficulty: seedDifficultySchema.optional(),
+    maxScore: scoreSchema,
+    /**
+     * The percentage of the games that reached the maximum score, from 0 to 100.
+     */
+    maxScoreRate: z.number(),
+    numGames: countSchema,
+    numMaxScores: countSchema,
   })
   .readonly();
 

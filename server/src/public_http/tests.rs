@@ -484,6 +484,36 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(page["total"], 2);
     let (_, body) = request(app.clone(), "/api/v1/tag/%20MINE%20").await;
     assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["total"], 2);
+    // The remaining public pages have JSON routes with the same data.
+    let (status, body) = request(app.clone(), "/api/v1/scores/Alice").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let scores = serde_json::from_str::<Value>(&body).unwrap();
+    hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
+    assert_eq!(scores["name"], "Alice");
+    assert_eq!(scores["statistics"]["numGamesNormal"], 1);
+    assert_eq!(scores["statistics"]["numGamesOther"], 1);
+    assert_eq!(scores["statistics"]["numGamesTotal"], 2);
+    assert_eq!(scores["statistics"]["numGamesSpeedrun"], 1);
+    assert_eq!(scores["statistics"]["timePlayedSeconds"], 2 * 60 * 60);
+    assert_eq!(scores["statistics"]["timePlayedSpeedrunSeconds"], 60 * 60);
+    assert_eq!(scores["maxScores"]["total"], 1);
+    assert_eq!(scores["variants"][0]["variantName"], "No Variant");
+    let (status, body) = request(app.clone(), "/api/v1/seed/same/stats").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let seed = serde_json::from_str::<Value>(&body).unwrap();
+    hanabi_protocol::validate::<hanabi_protocol::SeedStatistics>(&seed).unwrap();
+    assert_eq!(seed["numGames"], 2);
+    assert_eq!(seed["numMaxScores"], 1);
+    assert_eq!(seed["maxScoreRate"], 50.0);
+    assert_eq!(seed["averageScore"], 20.0);
+    assert_eq!(seed["maxScore"], 25);
+    assert!(seed.get("difficulty").is_none());
+    // A seed named "stats" is a game list, not the statistics route.
+    let (status, body) = request(app.clone(), "/api/v1/seed/stats").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let stats_seed = serde_json::from_str::<Value>(&body).unwrap();
+    hanabi_protocol::validate::<hanabi_protocol::GamePage>(&stats_seed).unwrap();
+    assert_eq!(stats_seed["total"], 0);
     let (status, body) = request(app.clone(), "/export/3").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let export: Value = serde_json::from_str(&body).unwrap();
@@ -638,9 +668,15 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "Unknown query parameter",
         ),
         ("/api/v1/variants?offset=1", 400, "takes no parameters"),
+        ("/api/v1/scores/Alice?limit=1", 400, "takes no parameters"),
+        (
+            "/api/v1/seed/same/stats?limit=1",
+            400,
+            "takes no parameters",
+        ),
         ("/api/v1/history/Alice?start=x", 400, "must be an integer"),
         ("/history/Alice?api=1", 400, "takes no value"),
-        ("/scores/Alice?api", 400, "takes no parameters"),
+        ("/scores/Alice?api=1", 400, "takes no value"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
         ("/lobby?login=", 400, "cannot be empty"),
         (
@@ -648,6 +684,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             400,
             "takes no parameters",
         ),
+        ("/api/v1/seed/no-games/stats", 404, "has no games"),
         ("/api/v1/seed/same?limit=101", 400, "The limit must be"),
         ("/api/v1/seed/same?offset=-1", 400, "The offset must be"),
         (
@@ -717,18 +754,19 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(status, StatusCode::FORBIDDEN);
     let error: hanabi_protocol::Notice = serde_json::from_str(&body).unwrap();
     assert!(error.message.contains("banned"));
-    let redirect = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .uri("/history/Alice/Bob?api")
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(redirect.status(), StatusCode::PERMANENT_REDIRECT);
-    assert_eq!(redirect.headers()["location"], "/api/v1/history/Alice/Bob");
+    for (page, api) in [
+        ("/history/Alice/Bob?api", "/api/v1/history/Alice/Bob"),
+        ("/scores/Alice?api", "/api/v1/scores/Alice"),
+        ("/profile/Alice?api", "/api/v1/scores/Alice"),
+    ] {
+        let redirect = app
+            .clone()
+            .oneshot(Request::builder().uri(page).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(redirect.status(), StatusCode::PERMANENT_REDIRECT, "{page}");
+        assert_eq!(redirect.headers()["location"], api, "{page}");
+    }
     let session = crate::cookie::Session { id: 1, version: 0 };
     let cookie = crate::cookie::encode(
         session,
