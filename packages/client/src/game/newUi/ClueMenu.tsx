@@ -34,6 +34,12 @@ interface ClueMenuProps {
    * not take the focus or scroll the page, so that it does not interrupt the viewer.
    */
   readonly openedItself: boolean;
+
+  /**
+   * Whether the drawer always opens below the hand, as in the phone layout, where the page scrolls
+   * to show it.
+   */
+  readonly alwaysBelow: boolean;
 }
 
 function isSameClue(a: Clue | undefined, b: Clue): boolean {
@@ -71,10 +77,10 @@ const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it out of their
  * hand, as a drawer as wide as the hand (see `CLUE_DRAWER_HAND_CLASS`). It opens below the hand, so
- * that the cards that the chosen clue would touch stay in view. When there is no room below, it
- * opens above. A clue that the rules do not allow, such as one that touches no cards, leaves an
- * empty well in its place, so that every clue keeps its position. Clicking outside of it or
- * pressing Escape closes it.
+ * that the cards that the chosen clue would touch stay in view. When there is no room below and the
+ * page does not scroll, it opens above. A clue that the rules do not allow, such as one that
+ * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
+ * Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -91,6 +97,7 @@ export function ClueMenu({
   onShowActions,
   onClose,
   openedItself,
+  alwaysBelow,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
@@ -102,8 +109,8 @@ export function ClueMenu({
   }>();
   const above = placement?.name === name && placement.above;
 
-  // The drawer opens below the hand, or above it when only that fits. It unfolds out of the hand,
-  // from the edge that touches it. The unfolding only decorates.
+  // The drawer opens below the hand, or above it when only that fits and the page does not scroll.
+  // It unfolds out of the hand, from the edge that touches it. The unfolding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current!;
     const hand = menu.parentElement!;
@@ -113,7 +120,7 @@ export function ClueMenu({
     const { height } = menu.getBoundingClientRect();
     const fitsBelow = handRect.bottom + height <= roomRect.bottom;
     const fitsAbove = handRect.top - height >= roomRect.top;
-    const opensAbove = !fitsBelow && fitsAbove;
+    const opensAbove = !alwaysBelow && !fitsBelow && fitsAbove;
     setPlacement({
       name,
       above: opensAbove,
@@ -144,15 +151,30 @@ export function ClueMenu({
     return () => {
       animation.cancel();
     };
-  }, [name, reducedMotion]);
+  }, [name, reducedMotion, alwaysBelow]);
 
   // On a narrow window, the page scrolls, so it scrolls to show all of the menu. It waits until the
   // drawer is in its place. Otherwise, it scrolls to show the drawer below the hand, and then the
-  // drawer moves above the hand, out of view.
+  // drawer moves above the hand, out of view. It also waits until the drawer has unfolded, because
+  // the drawer is shorter while it unfolds, and the page would not scroll far enough.
   useEffect(() => {
-    if (placement !== undefined && !openedItself) {
+    const menu = ref.current;
+    if (placement === undefined || openedItself || menu === null) {
+      return undefined;
+    }
+
+    function scroll() {
       ref.current?.scrollIntoView({ block: "nearest" });
     }
+    const [unfolding] = menu.getAnimations();
+    if (unfolding === undefined) {
+      scroll();
+      return undefined;
+    }
+    unfolding.addEventListener("finish", scroll);
+    return () => {
+      unfolding.removeEventListener("finish", scroll);
+    };
   }, [placement, openedItself]);
 
   useEffect(() => {

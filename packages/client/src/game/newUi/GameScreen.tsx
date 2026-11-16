@@ -1098,6 +1098,7 @@ export function GameScreen({
                   clueMenu={
                     menuTarget === undefined ? undefined : (
                       <ClueMenu
+                        alwaysBelow={stacked}
                         canGive={canGive}
                         clue={clue}
                         cluePreview={cluePreview}
