@@ -93,13 +93,11 @@ import {
   STACK_PLACE_PREFIX,
 } from "./cardMotion.ts";
 import {
-  areWideHandsTooNarrow,
   DISCARD_CARD_MAX_WIDTH,
-  getDiscardColumnSpareWidth,
-  getDiscardColumnWidth,
   getHandCardWidth,
   getHandsTopPadding,
   getTableCardWidth,
+  getWideLayoutRoom,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
   TABLE_TOP_PADDING,
@@ -113,7 +111,6 @@ import {
 } from "./clueMarkers.ts";
 import {
   CHAT_OVERLAY_WIDTH_QUERY,
-  MEDIUM_WIDTH_QUERY,
   STACKED_WIDTH_QUERY,
   useElementSize,
   useMediaQuery,
@@ -222,7 +219,6 @@ export function GameScreen({
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const arrow = useAppSelector((root) => root.newUi.arrow);
   const sentMove = useAppSelector((root) => root.newUi.sentMove);
-  const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
   // Whether the wide layout's hands are too narrow (see "wideOther").
@@ -275,9 +271,6 @@ export function GameScreen({
   );
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
   const handsSize = useElementSize(handsElement);
-  const [discardColumnElement, setDiscardColumnElement] =
-    useState<HTMLDivElement | null>(null);
-  const discardColumnSize = useElementSize(discardColumnElement);
   const tableSize = useElementSize(tableElement);
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
@@ -376,12 +369,12 @@ export function GameScreen({
   );
 
   // The phone layout starts at the 980px breakpoint, or on a wider window when the wide layout's
-  // hands are too narrow (see "areWideHandsTooNarrow"). How large the hands are depends on the
-  // players, the names, the chat, and the size of the window, so it is measured, not a breakpoint.
-  // The phone layout cannot measure the wide layout's hands. So when it starts, it keeps the size
-  // of the rest of the wide layout, and it ends when the hands would fit beside it again. A change
-  // to what is beside the hands (the chat or the variant's play stacks) tries the wide layout
-  // again.
+  // hands are too narrow, even after the parts beside them gave up their room (see
+  // "getWideLayoutRoom"). How large the hands are depends on the players, the names, the chat, and
+  // the size of the window, so it is measured, not a breakpoint. The phone layout cannot measure
+  // the wide layout. So when it starts, it keeps the size of the rest of the wide layout, and it
+  // ends when the hands would fit beside it again. A change to what is beside the hands (the chat
+  // or the variant's play stacks) tries the wide layout again.
   const wideOther = useRef<{
     readonly width: number;
     readonly height: number;
@@ -391,35 +384,38 @@ export function GameScreen({
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (narrowWindow || root === null || state === undefined) {
+    if (
+      narrowWindow
+      || root === null
+      || tableElement === null
+      || playAreaElement === null
+      || handsElement === null
+      || state === undefined
+    ) {
       return;
     }
 
-    // The wide layout has the names beside the cards, with the eye buttons only on a touch screen.
-    const nameColumnWidth =
-      Math.min(
-        nameWidth,
-        mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
-      ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
     const { options } = state.metadata;
-    function tooNarrow(width: number, height: number) {
-      return areWideHandsTooNarrow(
-        width,
-        height,
+    function tooNarrow(rowWidth: number, handsHeight: number) {
+      return getWideLayoutRoom(
+        rowWidth,
+        handsHeight,
         options.numPlayers,
         getCardsPerHand(options),
-        nameColumnWidth,
-      );
+        nameWidth,
+        touch ? EMPATHY_TOGGLE_SPACE : 0,
+      ).handsTooNarrow;
     }
 
     if (!handsTooNarrow) {
-      // The right column gives its spare room to the hands before the phone layout starts.
-      const handsWidth =
-        handsSize.width + getDiscardColumnSpareWidth(discardColumnSize.width);
-      if (handsSize.width > 0 && tooNarrow(handsWidth, handsSize.height)) {
+      // The elements are measured now, because the wide layout might have just started, before
+      // their sizes were observed.
+      const rowWidth = tableElement.clientWidth - playAreaElement.clientWidth;
+      const handsHeight = handsElement.clientHeight;
+      if (tooNarrow(rowWidth, handsHeight)) {
         wideOther.current = {
-          width: root.clientWidth - handsWidth,
-          height: root.clientHeight - handsSize.height,
+          width: root.clientWidth - rowWidth,
+          height: root.clientHeight - handsHeight,
           beside,
         };
         setHandsTooNarrow(true);
@@ -808,12 +804,21 @@ export function GameScreen({
     hypotheticalHint = "The team has no clues. Play or discard a card.";
   }
 
+  // The parts of the wide layout beside the hands give up room only when the hands need it.
+  const wideRoom = getWideLayoutRoom(
+    tableSize.width - playAreaSize.width,
+    handsSize.height,
+    options.numPlayers,
+    getCardsPerHand(options),
+    nameWidth,
+    tapToMove ? EMPATHY_TOGGLE_SPACE : 0,
+  );
   // In tap-to-move mode, the name column also holds the eye button that shows a player's view of
   // their hand.
   let nameColumnWidth: number | undefined =
     Math.min(
       nameWidth,
-      mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
+      stacked ? NAME_COLUMN_MAX_WIDTH.MIN : wideRoom.nameColumnMaxWidth,
     ) + (tapToMove ? EMPATHY_TOGGLE_SPACE : 0);
   // In the phone layout, the page scrolls, and the hands fit in the height of the table on the
   // screen, with the same space below them as above them.
@@ -832,14 +837,6 @@ export function GameScreen({
     );
   }
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
-  const discardColumnWidth = getDiscardColumnWidth(
-    handsSize.width,
-    discardColumnSize.width,
-    handsSize.height,
-    options.numPlayers,
-    getCardsPerHand(options),
-    nameColumnWidth,
-  );
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
     const widthWithNamesAbove = getHandCardWidthFor(undefined);
     if (
@@ -1053,7 +1050,7 @@ export function GameScreen({
         />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
-            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:phone:flex-col tw:phone:justify-start tw:phone:gap-4 tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
+            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:gap-4 tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
             style={
               {
@@ -1062,6 +1059,10 @@ export function GameScreen({
                 paddingTop: stacked
                   ? TABLE_TOP_PADDING.STACKED
                   : TABLE_TOP_PADDING.WIDE,
+                ...(!stacked && {
+                  paddingInline: wideRoom.tableSidePadding,
+                  columnGap: wideRoom.tableColumnGap,
+                }),
               } as React.CSSProperties
             }
           >
@@ -1336,10 +1337,9 @@ export function GameScreen({
 
             <div
               className={`tw:relative ${DISCARD_COLUMN_CLASS} tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:phone:w-full`}
-              ref={setDiscardColumnElement}
               style={{
                 paddingTop: columnTopPadding,
-                width: stacked ? undefined : discardColumnWidth,
+                width: stacked ? undefined : wideRoom.discardColumnWidth,
               }}
             >
               {stacked ? (

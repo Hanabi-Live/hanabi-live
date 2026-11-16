@@ -498,13 +498,13 @@ export const NAME_GAP = 16;
 
 /**
  * The most width that the column with each player's name takes, in CSS pixels. Below it, the column
- * is as wide as the widest name. A longer name is drawn smaller.
+ * is as wide as the widest name. A longer name is drawn smaller. The wide layout uses the larger
+ * limit, unless the hands need the room (see "getWideLayoutRoom"). The phone layout uses the
+ * smaller one.
  */
 export const NAME_COLUMN_MAX_WIDTH = {
-  WIDE: 150,
-
-  /** For windows up to the 1440 px breakpoint, where the side columns are narrower too. */
-  MEDIUM: 110,
+  MIN: 110,
+  MAX: 150,
 } as const;
 
 /**

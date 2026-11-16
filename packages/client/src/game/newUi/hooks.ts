@@ -69,13 +69,12 @@ export function useWindowSize(): { width: number; height: number } {
 }
 
 /**
- * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
- * widths through the "narrow-1440" and "narrow-1280" variants. At or below each one, the screen
- * makes room: first the side columns get narrower, then chat covers the table when open, and then
- * the columns stack and the page scrolls. The columns can also stack on a wider window, when the
- * hands are too narrow (the "phone" variant, see "GameScreen.tsx").
+ * Window widths from the breakpoints in "public/css/tokens.css". At or below each one, the game
+ * screen makes room: first chat covers the table when open, and then the columns stack and the page
+ * scrolls. Before that, the parts beside the hands give up room when the hands need it, and the
+ * columns can also stack on a wider window, when the hands are too narrow (see "getWideLayoutRoom"
+ * and the "phone" variant).
  */
-export const MEDIUM_WIDTH_QUERY = "(max-width: 1440px)";
 export const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
 export const STACKED_WIDTH_QUERY = "(max-width: 980px)";
 
