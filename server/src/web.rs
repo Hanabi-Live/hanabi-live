@@ -160,6 +160,7 @@ pub fn router(app: Arc<App>) -> Router {
             version: app.public.client_version.to_string(),
             is_dev: app.public.is_dev,
         },
+        app.hub.clone(),
     );
     let authenticated = Router::new()
         .route("/ws", get(socket::websocket))

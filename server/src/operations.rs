@@ -1,10 +1,19 @@
 use hanabi_protocol::UserId;
 
-/// An administrator's operation that the hub carries out.
+/// An operation that the hub carries out for an administrator, or for an account that signs out.
 #[derive(Clone, Debug)]
 pub enum Operation {
-    Ban { user_id: UserId, ip: String },
-    Mute { user_id: UserId },
+    Ban {
+        user_id: UserId,
+        ip: String,
+    },
+    Mute {
+        user_id: UserId,
+    },
+    /// Closes the account's connections after its sessions end.
+    SignOut {
+        user_id: UserId,
+    },
 }
 
 use crate::store::PoolReport;

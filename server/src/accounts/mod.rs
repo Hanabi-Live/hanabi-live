@@ -23,7 +23,9 @@ pub use rate_limit::TooMuchPasswordWork;
 pub(crate) use rate_limit::{Counter, network_key};
 
 use crate::errors::HttpError;
-use crate::{cookie, public_http::API_PREFIX, query::Query};
+use crate::{
+    actors::HubCommand, cookie, operations::Operation, public_http::API_PREFIX, query::Query,
+};
 use anyhow::Result;
 use axum::{
     Form, Json, Router,
@@ -39,6 +41,7 @@ use hanabi_protocol::{
 };
 use sqlx::PgPool;
 use std::{net::SocketAddr, sync::Arc};
+use tokio::sync::mpsc;
 
 #[derive(Clone)]
 pub struct AccountConfig {
@@ -53,9 +56,10 @@ struct Accounts {
     pool: PgPool,
     config: AccountConfig,
     limits: rate_limit::LoginLimits,
+    hub: mpsc::Sender<HubCommand>,
 }
 
-pub fn router(pool: PgPool, config: AccountConfig) -> Router {
+pub fn router(pool: PgPool, config: AccountConfig, hub: mpsc::Sender<HubCommand>) -> Router {
     TEST_ACCOUNTS
         .iter()
         .fold(Router::new(), |router, &account| {
@@ -78,6 +82,7 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
             pool,
             config,
             limits: rate_limit::LoginLimits::default(),
+            hub,
         }))
 }
 
@@ -525,7 +530,8 @@ async fn test_login(
 }
 
 /// Signs out of the requested account, or the most recent sign-in, without affecting other accounts.
-/// It takes only POST, so that the origin check stops other sites from signing a player out.
+/// It ends every session of that account, so that a copy of the cookie stops working too. It takes
+/// only POST, so that the origin check stops other sites from signing a player out.
 async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
     let query = match account_query(uri.query(), &["account", "dev"]) {
         Ok(query) => query,
@@ -541,6 +547,13 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
     };
     let latest = session(&headers, &state.config.secret, None).map(|session| session.id);
     let requested = requested_account(&query);
+    if let Some(signed_in) = requested
+        .or(latest)
+        .and_then(|id| session(&headers, &state.config.secret, Some(id)))
+        && let Err(error) = end_sessions(&state, signed_in).await
+    {
+        return account_failure("logout", &error);
+    }
     let mut cookies = Vec::new();
     if let Some(id) = requested.or(latest) {
         cookies.push(cookie_header(
@@ -564,6 +577,29 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
             .into_response(),
         cookies,
     )
+}
+
+/// Ends every session of the cookie's account, unless they have already ended, and closes the
+/// account's connections.
+async fn end_sessions(state: &Accounts, session: cookie::Session) -> Result<()> {
+    let ended = sqlx::query!(
+        "UPDATE users SET session_version=session_version + 1 WHERE id=$1 AND session_version=$2",
+        session.id,
+        session.version
+    )
+    .execute(&state.pool)
+    .await?
+    .rows_affected()
+        > 0;
+    if ended {
+        let user_id = hanabi_protocol::UserId::try_from(session.id)?;
+        crate::actors::request(&state.hub, |reply| HubCommand::Operations {
+            command: Operation::SignOut { user_id },
+            reply,
+        })
+        .await??;
+    }
+    Ok(())
 }
 
 async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {

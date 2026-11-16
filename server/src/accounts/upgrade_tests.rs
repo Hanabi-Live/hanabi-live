@@ -19,7 +19,7 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
     .execute(&db.pool)
     .await
     .unwrap();
-    let app = router(db.pool.clone(), tests::config());
+    let app = router(db.pool.clone(), tests::config(), tests::hub());
     let login = |password: &str| {
         format!("username=Upgrade&password={password}&version=42&createAccount=true")
     };

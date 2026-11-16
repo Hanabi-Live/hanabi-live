@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET session_version=session_version + 1 WHERE id=$1 AND session_version=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8595e90e48aae5bc59f56386d4a5fc75a827ca68d23d706f0d8c4a0b32ed7a41"
+}

@@ -16,6 +16,19 @@ pub(super) fn config() -> AccountConfig {
     }
 }
 
+/// A hub that carries out every operation at once, as when no one is connected.
+pub(super) fn hub() -> mpsc::Sender<HubCommand> {
+    let (sender, mut receiver) = mpsc::channel(1);
+    tokio::spawn(async move {
+        while let Some(command) = receiver.recv().await {
+            if let HubCommand::Operations { reply, .. } = command {
+                let _ = reply.send(Ok(()));
+            }
+        }
+    });
+    sender
+}
+
 pub(super) async fn request(
     app: &Router,
     method: &str,
@@ -76,7 +89,7 @@ async fn login_limit_blocks_guessing_before_hashing_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     let (attacker, player) = ("203.0.113.9", "203.0.113.10");
     assert_eq!(
         login_from(&app, player, "Alice", "correct").await.status(),
@@ -122,6 +135,7 @@ async fn failed_logins_do_not_lock_out_the_correct_password_postgres() {
         pool: db.pool.clone(),
         config: config(),
         limits: rate_limit::LoginLimits::default(),
+        hub: hub(),
     };
     let login = |ip: &'static str, password: &str| {
         login_inner(
@@ -175,6 +189,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             version: version.clone(),
             ..config()
         },
+        hub(),
     );
     for submitted in [format!("version={version}"), "client=bot".into()] {
         let (status, _, _) = request(
@@ -280,7 +295,7 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     for extra in ["", "&newPassword=unverified"] {
         let (status, headers, body) = request(
             &app,
@@ -334,7 +349,7 @@ async fn native_accounts_http_and_identity_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     assert_eq!(
         request(&app, "GET", "/test-cookie", "", None, false)
             .await
@@ -640,7 +655,7 @@ async fn cookie_for_a_missing_account_is_not_a_session_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     let session = cookie::Session {
         id: i32::MAX,
         version: 0,
@@ -657,7 +672,7 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     let mut jar = Vec::new();
     let mut ids = Vec::new();
     for name in ["Alice", "Bob"] {
@@ -688,6 +703,14 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     let path = format!("/logout?account={}", ids[0]);
     let (_, headers, _) = request(&app, "POST", &path, "", Some(&cookie), false).await;
     assert_eq!(set_cookies(&headers), [format!("hanabi.sid.{}=", ids[0])]);
+    // Signing out ends the session, so a copy of its cookie stops working.
+    let path = format!("/test-cookie?account={}", ids[0]);
+    assert_eq!(
+        request(&app, "GET", &path, "", Some(&cookie), false)
+            .await
+            .0,
+        StatusCode::NO_CONTENT
+    );
     // Signing out of the latest account also clears it for new tabs.
     let path = format!("/logout?account={}", ids[1]);
     let (_, headers, _) = request(&app, "POST", &path, "", Some(&cookie), false).await;
@@ -703,7 +726,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     for phase in ["registration", "login"] {
         let results = tokio::time::timeout(
             std::time::Duration::from_secs(25),
@@ -771,7 +794,7 @@ async fn an_unknown_username_creates_an_account_only_when_asked_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     let login = "username=Newcomer&password=secret&version=42";
     let (status, _, body) = request(&app, "POST", "/login", login, None, false).await;
     assert_eq!(status, StatusCode::UNAUTHORIZED, "{body}");
@@ -805,7 +828,7 @@ async fn new_accounts_start_with_the_light_theme_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     let (status, _, body) = request(
         &app,
         "POST",
@@ -834,7 +857,7 @@ async fn login_rejects_unknown_form_fields() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
-    let app = router(pool, config());
+    let app = router(pool, config(), hub());
     let (status, _, body) = request(
         &app,
         "POST",
@@ -856,7 +879,7 @@ async fn password_reset_hashes_only_a_password() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
-    let app = router(pool, config());
+    let app = router(pool, config(), hub());
     let (status, _, body) = request(
         &app,
         "POST",
@@ -929,7 +952,7 @@ async fn test_paths_sign_in_to_the_test_accounts_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), config(), hub());
     for account in [TEST_ACCOUNTS[0], TEST_ACCOUNTS[TEST_ACCOUNTS.len() - 1]] {
         let path = format!("/{account}");
         let (status, headers, _) = request(&app, "GET", &path, "", None, false).await;

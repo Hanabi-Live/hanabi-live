@@ -15,6 +15,7 @@ of the repository.
 - Cards no longer list each suit with the ranks that it can be. They always show
   the separate suit and rank pips.
 - Lobby chat no longer pings Discord roles, such as the Ping Crew.
+- Signing out signs you out of that account on every device.
 
 ## November 13th, 2026
 

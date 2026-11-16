@@ -619,7 +619,9 @@ impl Hub {
             return;
         }
         match command {
-            Operation::Mute { user_id } => self.disconnect(&[user_id]),
+            Operation::Mute { user_id } | Operation::SignOut { user_id } => {
+                self.disconnect(&[user_id]);
+            }
             Operation::Ban { user_id, ip } => {
                 // Bans apply to an IP address, which is checked when connecting rather than on
                 // every command, so also disconnect other accounts using that address.
