@@ -5,7 +5,7 @@ import type {
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
-import { getTotalCardsInDeck, MAX_STRIKES } from "@hanabi-live/game";
+import { getTotalCardsInDeck, MAX_CLUES, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -1332,22 +1332,32 @@ function getClueCountClass(
   return "tw:text-game-text";
 }
 
-/** The tooltip of the clue tokens, which explains the color of the count. */
+/**
+ * The tooltip of the clue tokens. It gives the count out of the maximum, and explains the color of
+ * the count. The count is in the tokens that the players see, not in the half tokens of "Clue
+ * Starved" variants, so its maximum is the same in every variant.
+ */
 function getClueTokensTooltip(
+  clues: number,
   atMaxClues: boolean,
   outOfClues: boolean,
   oneClueLeft: boolean,
+  realLifeMode: boolean,
 ): string {
+  const count = `Clue tokens: ${clues} / ${MAX_CLUES}`;
+  if (realLifeMode) {
+    return count;
+  }
   if (outOfClues) {
-    return "Clue tokens: the team has none, so no one can give a clue.";
+    return `${count}. No one can give a clue.`;
   }
   if (oneClueLeft) {
-    return "Clue tokens: the team has one clue left.";
+    return `${count}. The team has one clue left.`;
   }
   if (atMaxClues) {
-    return "Clue tokens: the team has all of them, so no one can discard.";
+    return `${count}. No one can discard.`;
   }
-  return "Clue tokens";
+  return count;
 }
 
 /**
@@ -1430,9 +1440,13 @@ export function TableTokens({
         aria-label="Clue tokens"
         className="tw:flex tw:h-[34px] tw:items-center tw:gap-1.5 tw:narrow-980:gap-2"
         ref={tooltipRef(
-          realLifeMode
-            ? "Clue tokens"
-            : getClueTokensTooltip(atMaxClues, outOfClues, oneClueLeft),
+          getClueTokensTooltip(
+            clues,
+            atMaxClues,
+            outOfClues,
+            oneClueLeft,
+            realLifeMode,
+          ),
         )}
       >
         {/* One large number: the count that players check most. It stands out only at the
@@ -1460,7 +1474,7 @@ export function TableTokens({
           ref={tooltipRef(
             strikesHidden
               ? "Strikes. In this variant, the players cannot see them."
-              : `Strikes: ${strikes} of ${MAX_STRIKES}. The game ends at ${MAX_STRIKES} strikes.`,
+              : `Strikes: ${strikes} / ${MAX_STRIKES}. The game ends at ${MAX_STRIKES} strikes.`,
           )}
           role="group"
         >
