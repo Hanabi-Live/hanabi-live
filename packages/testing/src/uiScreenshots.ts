@@ -107,6 +107,8 @@ const SIZES = [
     width: 600,
     height: 500,
   },
+  // The smallest supported width (see "AGENTS.md"). Do not make it wider: a phone that is 360px
+  // wide is more common than one that is 375px wide.
   {
     width: 360,
     height: 700,

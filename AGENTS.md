@@ -117,6 +117,10 @@ shows, so that `--state` can run it alone. Mark it `isolated` unless it shows
 the lobby, so that it runs in parallel with its own accounts. Wait for what the
 page does, not for a fixed time.
 
+The smallest supported width is 360px, the most common width of Android phones.
+Every screen must fit at that width without scrolling sideways. Narrower screens
+may wrap, but they must not break.
+
 When other authenticated browser checks need test accounts, use the existing
 shared accounts: `test` / `test`, `test2` / `test2`, and so on (username /
 password). Choose an account that is not already in use. Do not change these
