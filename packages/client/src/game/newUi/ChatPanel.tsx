@@ -228,6 +228,7 @@ export function ChatPanel({
       >
         <ChatButton
           className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
+          open={false}
           poppedOut={poppedOut}
           unread={unread}
           zen={zen}
@@ -285,9 +286,11 @@ export function ChatPanel({
         >
           <i aria-hidden="true" className="fas fa-external-link-alt" />
         </button>
+        {/* In the phone layout, the chat's floating button takes the place of this one (see
+            "GameScreen.tsx"). */}
         <button
           aria-label="Collapse chat"
-          className={HEADER_BUTTON_CLASSES}
+          className={`${HEADER_BUTTON_CLASSES} tw:narrow-980:invisible`}
           onClick={() => {
             gameChat.hide();
           }}
@@ -315,35 +318,51 @@ export function ChatPanel({
 }
 
 /**
- * The button that opens the chat, or shows the chat window when the chat is popped out. It shows
- * how many messages are unread. A right-click turns zen mode on or off.
+ * The button that opens the chat, or shows the chat window when the chat is popped out. While the
+ * chat panel is open, it collapses the chat. It shows how many messages are unread. A right-click
+ * turns zen mode on or off.
  */
 export function ChatButton({
   zen,
+  open,
   poppedOut,
   unread,
   className,
 }: {
   readonly zen: boolean;
+
+  /** Whether the chat panel is open. */
+  readonly open: boolean;
   readonly poppedOut: boolean;
   readonly unread: number;
 
   /** The button's size and colors. */
   readonly className: string;
 }): React.JSX.Element {
-  const action = poppedOut ? "Show chat window" : "Open chat";
+  const collapses = open && !poppedOut;
+  let action = "Open chat";
+  if (poppedOut) {
+    action = "Show chat window";
+  } else if (collapses) {
+    action = "Collapse chat";
+  }
   let label = action;
   if (zen) {
     label = `${action}, in zen mode`;
-  } else if (!poppedOut && unread > 0) {
+  } else if (!poppedOut && !collapses && unread > 0) {
     label = `Open chat, ${unread} unread messages`;
   }
   const tooltip = zen
-    ? `Zen mode hides the chat and who is watching. Click to ${poppedOut ? "show the chat window" : "open the chat"}. Right-click to leave zen mode.`
+    ? `Zen mode hides the chat and who is watching. Click to ${action.toLowerCase()}. Right-click to leave zen mode.`
     : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
-  let icon = poppedOut ? "fa-external-link-alt" : "fa-comment";
-  if (zen) {
+  let icon = "fa-comment";
+  if (collapses) {
+    // The same icon as the open panel's button that collapses the chat.
+    icon = "fa-angle-double-right";
+  } else if (zen) {
     icon = "fa-yin-yang";
+  } else if (poppedOut) {
+    icon = "fa-external-link-alt";
   }
 
   return (
@@ -353,6 +372,8 @@ export function ChatButton({
       onClick={() => {
         if (poppedOut) {
           focusChatWindow(true);
+        } else if (collapses) {
+          gameChat.hide();
         } else {
           gameChat.show();
         }
@@ -365,7 +386,7 @@ export function ChatButton({
       type="button"
     >
       <i aria-hidden="true" className={`fas ${icon}`} />
-      {unread > 0 && (
+      {unread > 0 && !collapses && (
         <span className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink">
           {unread}
         </span>
