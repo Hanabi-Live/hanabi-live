@@ -107,7 +107,7 @@ export function hypotheticalStateReducer(
   metadata: GameMetadata,
 ): HypotheticalState {
   const newState = produceHypotheticalState(state, action, metadata);
-  // Restoring an original identity can leave undefined elements behind.
+  // The array is sparse, so reading a card without an entry gives undefined.
   const shownIdentities: ReadonlyArray<CardIdentity | undefined> =
     newState.morphedIdentities;
 
@@ -170,12 +170,15 @@ function hypotheticalStateReducerFunction(
 
     case "showDrawnCards": {
       state.showDrawnCards = action.showDrawnCards;
-      for (const order of state.drawnCardsInHypothetical) {
-        if (action.showDrawnCards) {
-          // This is a sparse array, so delete the entry instead of splicing it.
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
-          delete state.morphedIdentities[order];
-        } else {
+      if (action.showDrawnCards) {
+        state.morphedIdentities = castDraft(
+          withoutMorphs(
+            state.morphedIdentities,
+            state.drawnCardsInHypothetical,
+          ),
+        );
+      } else {
+        for (const order of state.drawnCardsInHypothetical) {
           state.morphedIdentities[order] = {
             rank: undefined,
             suitIndex: undefined,
@@ -194,9 +197,9 @@ function hypotheticalStateReducerFunction(
     }
 
     case "unmorph": {
-      // This is a sparse array, so delete the entry instead of splicing it.
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
-      delete state.morphedIdentities[action.order];
+      state.morphedIdentities = castDraft(
+        withoutMorphs(state.morphedIdentities, [action.order]),
+      );
       return;
     }
 
@@ -257,6 +260,24 @@ function hypotheticalStateReducerFunction(
     // Save the new segment in case we want to go backwards.
     state.states.push(castDraft(newState));
   }
+}
+
+/**
+ * Returns the sparse array of shown identities without the entries of `orders`. Immer turns
+ * `delete` on an array into an `undefined` entry, which a reader that lists the entries would show
+ * as an unknown card, so this builds a new array.
+ */
+function withoutMorphs(
+  morphedIdentities: ReadonlyArray<CardIdentity | undefined>,
+  orders: readonly number[],
+): readonly CardIdentity[] {
+  const result: CardIdentity[] = [];
+  for (const [order, identity] of morphedIdentities.entries()) {
+    if (identity !== undefined && !orders.includes(order)) {
+      result[order] = identity;
+    }
+  }
+  return result;
 }
 
 /**

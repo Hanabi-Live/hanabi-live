@@ -98,7 +98,7 @@ describe("hypothetical state", () => {
     });
   });
 
-  test("morph and unmorph preserve the game state and sparse indexes", () => {
+  test("morph and unmorph preserve the game state", () => {
     const initial = initializeHypotheticalState(
       startingState,
       false,
@@ -146,8 +146,8 @@ describe("hypothetical state", () => {
       },
       metadata,
     );
-    expect(state.morphedIdentities[30]).toBeUndefined();
-    expect(state.morphedIdentities).toHaveLength(31);
+    // The card shows its own identity again, so no entry may remain, not even an undefined one.
+    expect(Object.keys(state.morphedIdentities)).toEqual([]);
     expect(state.ongoing).toBe<unknown>(startingState);
     expect(state.states).toBe<unknown>(initial.states);
     expect(initial.morphedIdentities).toEqual([]);
@@ -316,7 +316,8 @@ describe("hypothetical state", () => {
       metadata,
     );
     expect(state.showDrawnCards).toBe(true);
-    expect(state.morphedIdentities[order]).toBeUndefined();
+    // The cards drawn while hidden show their identities, so no entry may remain for them.
+    expect(Object.keys(state.morphedIdentities)).toEqual(["0"]);
     expect(state.ongoing).toBe(ongoing);
     state = hypotheticalStateReducer(state, draw(0, order + 2, 0, 2), metadata);
     expect(state.morphedIdentities[order + 2]).toBeUndefined();

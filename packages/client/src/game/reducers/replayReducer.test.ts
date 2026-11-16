@@ -102,7 +102,7 @@ describe("replayReducer", () => {
       });
     });
 
-    test("morph and unmorph only change sparse identities", () => {
+    test("morph and unmorph only change the shown identities", () => {
       let state = replayReducer(testState.replay, hypoStart(), metadata);
       const ongoing = state.hypothetical?.ongoing;
       const states = state.hypothetical?.states;
@@ -147,8 +147,9 @@ describe("replayReducer", () => {
         }),
         metadata,
       );
-      expect(state.hypothetical?.morphedIdentities[30]).toBeUndefined();
-      expect(state.hypothetical?.morphedIdentities).toHaveLength(31);
+      expect(Object.keys(state.hypothetical?.morphedIdentities ?? [])).toEqual(
+        [],
+      );
       expect(state.hypothetical?.ongoing).toBe(ongoing);
       expect(state.hypothetical?.states).toBe(states);
     });
