@@ -151,7 +151,13 @@ function Timeline({
       travel <= 0
         ? 1
         : clamp((clientX - box.left - KNOB_INSET_PX) / travel, 0, 1);
-    replay.goToSegment(Math.round(at * lastSegment), true);
+    const target = Math.round(at * lastSegment);
+
+    // As on the classic screen, the timeline only moves the knob. Asking for the last turn while it
+    // is on screen would exit the in-game replay.
+    if (target !== segment) {
+      replay.goToSegment(target, true);
+    }
   }
 
   return (
