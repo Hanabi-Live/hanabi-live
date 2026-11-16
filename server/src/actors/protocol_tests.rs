@@ -1269,6 +1269,12 @@ async fn pregame_changes_announce_new_owners_and_splits() -> Result<()> {
         h.send(3, "tableJoin", json!({"tableId":id})).await?;
         h.send(0, "tableLeave", json!({"tableId":id})).await?;
         h.send(1, "chat", chat("/kick Dave")).await?;
+        ensure!(
+            h.send(3, "tableSpectate", json!({"tableId":id}))
+                .await
+                .is_err(),
+            "A kicked player spectated the pregame"
+        );
         h.send(1, "chat", chat("/split Bob")).await?;
         let source = notices(&h.snapshot(id).await?.0);
         ensure!(

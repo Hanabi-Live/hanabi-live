@@ -180,6 +180,10 @@ impl TableActor {
             !spectating || seat.is_none() || replay,
             "Players cannot spectate their own ongoing game"
         );
+        ensure_or_reject!(
+            !matches!(&self.table.phase, Phase::Pregame { kicked, .. } if kicked.contains(&session.user)),
+            "You were kicked from this table"
+        );
         // Only the owner, and those already there, can enter a solo replay.
         ensure_or_reject!(
             !replay
