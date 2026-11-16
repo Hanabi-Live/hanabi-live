@@ -117,8 +117,8 @@ interface StatusStripProps {
   readonly tableMenu: React.ReactNode;
 
   /**
-   * The button that opens the chat. The bar shows it only on a phone, where the chat's rail is
-   * hidden, so that the table gets its width.
+   * The button that opens the chat. The bar shows it only in the phone layout, where the chat's
+   * rail is hidden, so that the table gets its width.
    */
   readonly chatButton: React.ReactNode;
   readonly onClassicView: () => void;
@@ -719,7 +719,7 @@ export function StatusStrip({
       )}
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2">
         {chatButton !== undefined && (
-          <div className="tw:mr-auto tw:hidden tw:narrow-530:flex">
+          <div className="tw:mr-auto tw:hidden tw:narrow-980:flex">
             {chatButton}
           </div>
         )}

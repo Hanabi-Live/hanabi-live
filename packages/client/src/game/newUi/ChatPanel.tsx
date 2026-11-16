@@ -218,13 +218,13 @@ export function ChatPanel({
   const spectatorsLabel = `${spectators.length} watching`;
 
   if (!open || poppedOut) {
-    // On a phone, the chat button is on the bottom bar instead (see "StatusStrip.tsx"), and the
-    // rail is hidden, so that the table gets its width. The open panel's header still names the
-    // people watching.
+    // In the phone layout, the chat button is on the bottom bar instead (see "StatusStrip.tsx"),
+    // and the rail is hidden, so that the table gets its width. The open panel's header still names
+    // the people watching.
     return (
       <aside
         aria-label="Chat, collapsed"
-        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5 tw:narrow-530:hidden"
+        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5 tw:narrow-980:hidden"
       >
         <ChatButton
           className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
