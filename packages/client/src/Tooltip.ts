@@ -164,6 +164,23 @@ export class Tooltip {
     }
   }
 
+  /** Puts the content in the box, if it changed since the box last showed it. */
+  private showContent() {
+    const { content } = this;
+    if (!this.contentPending) {
+      return;
+    }
+
+    this.contentPending = false;
+    if (typeof content === "string") {
+      // The client builds tooltip HTML itself and escapes anything that users wrote.
+      // eslint-disable-next-line unicorn/no-unsafe-dom-html
+      this.box.innerHTML = content;
+    } else {
+      this.box.replaceChildren(content);
+    }
+  }
+
   get isOpen(): boolean {
     return this.bubble.matches(":popover-open");
   }
@@ -286,23 +303,6 @@ export class Tooltip {
       this.bubble.remove();
       this.showContent();
     }, CLOSE_DURATION_IN_MILLISECONDS);
-  }
-
-  /** Puts the content in the box, if it changed since the box last showed it. */
-  private showContent() {
-    const { content } = this;
-    if (!this.contentPending) {
-      return;
-    }
-
-    this.contentPending = false;
-    if (typeof content === "string") {
-      // The client builds tooltip HTML itself and escapes anything that users wrote.
-      // eslint-disable-next-line unicorn/no-unsafe-dom-html
-      this.box.innerHTML = content;
-    } else {
-      this.box.replaceChildren(content);
-    }
   }
 
   /**
