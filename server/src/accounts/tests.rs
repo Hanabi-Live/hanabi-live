@@ -722,6 +722,32 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
 }
 
 #[tokio::test]
+async fn a_new_username_cannot_look_like_an_existing_one_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config(), hub());
+    let register = |name: &str| {
+        url::form_urlencoded::Serializer::new(String::new())
+            .append_pair("username", name)
+            .append_pair("password", "secret")
+            .append_pair("version", "42")
+            .append_pair("createAccount", "true")
+            .finish()
+    };
+    let (status, _, _) = request(&app, "POST", "/login", &register("Alice"), None, false).await;
+    assert_eq!(status, StatusCode::OK);
+    // A capital i and a Cyrillic A.
+    for lookalike in ["AIice", "\u{410}lice"] {
+        let (status, _, body) =
+            request(&app, "POST", "/login", &register(lookalike), None, false).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{lookalike}");
+        assert!(body.contains("too similar"), "{lookalike}: {body}");
+    }
+    db.close().await;
+}
+
+#[tokio::test]
 async fn seven_concurrent_account_registrations_and_logins_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;

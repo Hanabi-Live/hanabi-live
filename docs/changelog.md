@@ -16,6 +16,8 @@ of the repository.
   the separate suit and rank pips.
 - Lobby chat no longer pings Discord roles, such as the Ping Crew.
 - Signing out signs you out of that account on every device.
+- A new account cannot use a username that looks like an existing one, such as
+  "AIice" (with a capital i) next to "Alice".
 
 ## November 13th, 2026
 

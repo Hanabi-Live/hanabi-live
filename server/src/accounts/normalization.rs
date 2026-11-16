@@ -6,6 +6,14 @@ pub fn normalize_string(input: &str) -> String {
     deunicode::deunicode_with_tofu(input, "").to_lowercase()
 }
 
+/// The key that a new username must not share with an existing account's normalized username. It
+/// replaces each character that looks like another with that character (the "skeleton" of Unicode
+/// Technical Standard #39), then normalizes the result. For example, `AIice` (with a capital i)
+/// and `Alice` with a Cyrillic A both have the key `alice`.
+pub fn lookalike_key(username: &str) -> String {
+    normalize_string(&unicode_security::skeleton(username.trim()).collect::<String>())
+}
+
 #[cfg(test)]
 pub fn normalize_username(input: &str) -> String {
     normalize_string(input.trim())
@@ -147,6 +155,23 @@ pub fn validate_new_username(input: &str) -> Result<&str, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn lookalike_usernames_share_a_key() {
+        for lookalike in [
+            "Alice",
+            "AIice",
+            "A1ice",
+            "\u{410}lice",
+            "\u{13AA}lice",
+            " alice ",
+        ] {
+            assert_eq!(lookalike_key(lookalike), "alice", "{lookalike}");
+        }
+        for (lookalike, key) in [("\u{421}at", "cat"), ("\u{440}aul", "paul"), ("B0b", "bob")] {
+            assert_eq!(lookalike_key(lookalike), key, "{lookalike}");
+        }
+    }
     #[test]
     fn byte_limits_and_decomposed_marks() {
         assert!(validate_username("123456789012345").is_ok());

@@ -401,9 +401,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 "That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.",
             ));
         }
+        // A new name must also not look like an existing one, such as "AIice" (with a capital i)
+        // next to "Alice".
+        let keys = [normalized.clone(), normalization::lookalike_key(username)];
         let similar: Option<String> = sqlx::query_scalar!(
-            "SELECT username FROM users WHERE normalized_username=$1",
-            &normalized
+            "SELECT username FROM users WHERE normalized_username=ANY($1) LIMIT 1",
+            &keys
         )
         .fetch_optional(&state.pool)
         .await?;

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT username FROM users WHERE normalized_username=$1",
+  "query": "SELECT username FROM users WHERE normalized_username=ANY($1) LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -17,12 +17,12 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "TextArray"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "3328b1442775a40bedb6b2219368b4b6e890c847cc7accbb2d0e2a4b425ff262"
+  "hash": "f852c09cd2e75481047a12225e70068c64b4dbaf968c98e6637d6bbfc56eeffa"
 }
