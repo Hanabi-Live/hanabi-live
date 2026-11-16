@@ -71,6 +71,12 @@ export function Pip({
       Math.ceil(canvasSize * getScreenScale() * window.devicePixelRatio),
     );
 
+    // Safari cannot give the size in display pixels, and throws if asked. There, the pip stays as
+    // drawn above.
+    if (!supportsDevicePixelBox()) {
+      return undefined;
+    }
+
     const observer = new ResizeObserver(
       ([entry]: readonly ResizeObserverEntry[]) => {
         const box = entry?.devicePixelContentBoxSize[0];
@@ -97,6 +103,14 @@ export function Pip({
         margin,
       }}
     />
+  );
+}
+
+/** Whether a `ResizeObserver` can report an element's size in display pixels. */
+function supportsDevicePixelBox(): boolean {
+  return (
+    typeof ResizeObserverEntry !== "undefined"
+    && "devicePixelContentBoxSize" in ResizeObserverEntry.prototype
   );
 }
 
