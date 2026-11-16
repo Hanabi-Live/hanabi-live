@@ -48,6 +48,7 @@ function pixels(value: string) {
 }
 
 const domGlobals = {
+  AbortController: dom.window.AbortController,
   document: dom.window.document,
   MutationObserver: dom.window.MutationObserver,
   window: dom.window,
@@ -156,6 +157,33 @@ test("an anchor is marked while its tooltip is open", () => {
 
   tooltip.close();
   expect(anchor.dataset["tooltipOpen"]).toBeUndefined();
+  tooltip.destroy();
+  anchor.remove();
+});
+
+/** A mouse event of the given type. */
+function pointerEvent(type: string) {
+  // The "jsdom" library has no "PointerEvent", but the tooltip only reads "pointerType".
+  return Object.assign(new dom.window.Event(type), { pointerType: "mouse" });
+}
+
+test("a tooltip that gets its content back opens again while the mouse is over its anchor", () => {
+  const anchor = dom.window.document.createElement("div");
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, { content: "Note" });
+  tooltip.openOnHover(false);
+  anchor.dispatchEvent(pointerEvent("pointerenter"));
+  expect(tooltip.isOpen).toBe(true);
+
+  tooltip.setContent("");
+  expect(tooltip.isOpen).toBe(false);
+  tooltip.setContent("Note");
+  expect(tooltip.isOpen).toBe(true);
+
+  anchor.dispatchEvent(pointerEvent("pointerleave"));
+  tooltip.setContent("");
+  tooltip.setContent("Note");
+  expect(tooltip.isOpen).toBe(false);
   tooltip.destroy();
   anchor.remove();
 });

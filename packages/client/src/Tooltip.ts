@@ -159,8 +159,13 @@ export class Tooltip {
     return this.closingTimeout !== undefined;
   }
 
-  /** Changes what the tooltip shows. With no content, the tooltip closes. */
+  /**
+   * Changes what the tooltip shows. With no content, the tooltip closes. When an empty tooltip gets
+   * content while the mouse is over its anchor, it opens again. For example, a card's note shows
+   * again when the player lets go of the card that showed its possible cards.
+   */
   setContent(content: Node | string): void {
+    const wasEmpty = this.content === "";
     this.content = content;
     if (content === "") {
       this.close();
@@ -175,6 +180,14 @@ export class Tooltip {
 
     if (this.isOpen) {
       this.position();
+    } else if (
+      wasEmpty
+      && content !== ""
+      && hoveredTooltips.has(this)
+      // A tooltip that waits for the pointer to rest on its anchor opens when the wait ends.
+      && this.openingTimeout === undefined
+    ) {
+      this.open();
     }
   }
 
