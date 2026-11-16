@@ -213,6 +213,13 @@ passed. Fix any failures and rerun the full suite before pushing. If a required
 check cannot run or still fails, report the blocker instead of pushing. Run the
 relevant tests and builds as well; passing lint does not replace those checks.
 
+Bring in upstream changes before the final lint, so that you lint only once:
+
+1. Commit your changes.
+2. Run `git fetch` and `git rebase origin/main`.
+3. Run `bash lint.sh` and the relevant tests.
+4. Push. If the push is rejected because `main` moved, go back to step 2.
+
 The root lint entrypoint caches package lint scripts in Turborepo's local
 `.turbo/cache`; CI restores results from trusted `main` runs. Source changes
 invalidate dependent packages through transit tasks. Keep shared lint
