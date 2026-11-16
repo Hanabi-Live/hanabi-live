@@ -83,6 +83,50 @@ async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
         .await?)
 }
 
+/// Adds the catalog's new variants to the `variants` table, and checks that each variant ID keeps
+/// its recipe. Games name their variant by ID, so a new recipe for an ID would change the rules of
+/// its old games.
+async fn record_variants(primary: &PgPool) -> Result<()> {
+    let catalog = hanabi_engine::variants();
+    let mut ids = Vec::with_capacity(catalog.len());
+    let mut recipes = Vec::with_capacity(catalog.len());
+    for variant in catalog {
+        ids.push(i16::try_from(variant.id)?);
+        recipes.push(variant.recipe.clone());
+    }
+    sqlx::query!(
+        "INSERT INTO variants (id, recipe)
+         SELECT id, recipe FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, recipe)
+         ON CONFLICT DO NOTHING",
+        &ids,
+        &recipes
+    )
+    .execute(primary)
+    .await
+    .context("Failed to record the variants")?;
+    let stored: std::collections::HashMap<i16, String> =
+        sqlx::query!("SELECT id, recipe FROM variants")
+            .fetch_all(primary)
+            .await?
+            .into_iter()
+            .map(|row| (row.id, row.recipe))
+            .collect();
+    for (variant, id) in catalog.iter().zip(&ids) {
+        let recorded = stored.get(id);
+        ensure!(
+            recorded == Some(&variant.recipe),
+            "Variant {id} ({}) has the recipe \"{}\" in variants.json, but the database records {}. A variant ID must keep its recipe.",
+            variant.name,
+            variant.recipe,
+            recorded.map_or_else(
+                || "it for another variant ID".to_owned(),
+                |recipe| format!("\"{recipe}\" for this ID")
+            )
+        );
+    }
+    Ok(())
+}
+
 impl Store {
     #[cfg(test)]
     pub(crate) fn fixture(primary: PgPool, state: LiveState) -> Self {
@@ -123,6 +167,7 @@ impl Store {
             ]))
             .await?;
         crate::migrations::require_current(&mut *primary.acquire().await?).await?;
+        record_variants(&primary).await?;
         let state =
             LiveState::connect(primary.clone(), &options.application_name(&ownership_name)).await?;
         Ok(Self {
@@ -958,6 +1003,23 @@ mod tests {
         sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&db.pool).await?;
         let pool = db.pool.clone();
         Ok(Some((db, pool)))
+    }
+    #[tokio::test]
+    async fn startup_refuses_a_variant_id_whose_recipe_changed() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        // The first run records the catalog.
+        record_variants(&db.pool).await?;
+        sqlx::query!("UPDATE variants SET recipe = 'r-y-g-b-p_cb_nb_cm_nm' WHERE id = 0")
+            .execute(&db.pool)
+            .await?;
+        let error = record_variants(&db.pool).await.unwrap_err();
+        assert!(
+            error.to_string().contains("Variant 0 (No Variant)"),
+            "{error:#}"
+        );
+        Ok(())
     }
     #[tokio::test]
     async fn recovered_pregames_refresh_their_totals_after_startup() -> Result<()> {

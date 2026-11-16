@@ -61,6 +61,16 @@ CREATE TABLE users (
     session_version            INTEGER  NOT NULL  DEFAULT 0
 );
 
+/**
+ * The recipe of each variant ID, such as "r-y-g-b-p" for variant 0. Games name their variant by ID,
+ * so an ID must keep its recipe. The server adds new variants from the catalog at startup.
+ */
+DROP TABLE IF EXISTS variants CASCADE;
+CREATE TABLE variants (
+    id      SMALLINT  PRIMARY KEY,
+    recipe  TEXT      NOT NULL  UNIQUE
+);
+
 /* User stats are per variant. */
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
@@ -142,7 +152,7 @@ CREATE TABLE games (
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
 
-    /* The ID for a particular variant can be found in the "variants.json" file. */
+    /* The ID for a particular variant can be found in the "variants" table. */
     variant_id              SMALLINT     NOT NULL,
 
     timed                   BOOLEAN      NOT NULL,

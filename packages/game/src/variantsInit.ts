@@ -1,11 +1,16 @@
-import { assertDefined, parseIntSafe } from "complete-common";
+import { assertDefined } from "complete-common";
 import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations.ts";
 import {
   DEFAULT_CLUE_RANKS,
   DEFAULT_FINISHED_STACK_LENGTH,
 } from "./constants.ts";
 import { Pip } from "./enums/Pip.ts";
-import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "./generated/protocol.ts";
+import {
+  DEFAULT_CARD_RANKS,
+  RECIPE_SUIT_FLAG_SEPARATOR,
+  START_CARD_RANK,
+  suitFlagSchema,
+} from "./generated/protocol.ts";
 import type { Color } from "./interfaces/Color.ts";
 import type { Suit } from "./interfaces/Suit.ts";
 import type { Variant } from "./interfaces/Variant.ts";
@@ -349,20 +354,17 @@ function getVariantShowSuitNames(
   upOrDown: boolean,
   sudoku: boolean,
 ): boolean {
-  // If the suit ID ends in a number, it is an "Ambiguous" suit, which means that its identity is
-  // not easily identifiable from a glance. Thus, we want to show the suit names for the variant in
-  // this case.
-  const hasSuitIdThatEndsWithANumber = suits.some((suit) => {
-    const finalIdCharacter = suit.id.at(-1);
-    assertDefined(
-      finalIdCharacter,
-      `Failed to get the final character of the ID of suit: ${suit.name}`,
-    );
-
-    const finalIdNumber = parseIntSafe(finalIdCharacter);
-    return finalIdNumber !== undefined;
-  });
-  if (hasSuitIdThatEndsWithANumber) {
+  // A dark suit looks like its light suit, and an "Ambiguous" suit is touched by a color whose name
+  // it does not have. Thus, these suits are not easily identifiable from a glance, and we want to
+  // show the suit names for the variant.
+  const darkSuffix = `${RECIPE_SUIT_FLAG_SEPARATOR}${suitFlagSchema.enum.dark}`;
+  const hasHardToIdentifySuit = suits.some(
+    (suit) =>
+      suit.id.endsWith(darkSuffix)
+      || (suit.clueColors.length === 1
+        && suit.clueColors[0]?.name !== suit.name),
+  );
+  if (hasHardToIdentifySuit) {
     return true;
   }
 

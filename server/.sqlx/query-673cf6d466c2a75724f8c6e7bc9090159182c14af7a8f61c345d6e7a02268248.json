@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variants SET recipe = 'r-y-g-b-p_cb_nb_cm_nm' WHERE id = 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "673cf6d466c2a75724f8c6e7bc9090159182c14af7a8f61c345d6e7a02268248"
+}

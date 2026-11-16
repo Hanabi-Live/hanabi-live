@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO variants (id, recipe)\n         SELECT id, recipe FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, recipe)\n         ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "db42ea55edcf5fa7d31b9e071b7ed181aea233ac97f34d00da234a3a669b40e9"
+}

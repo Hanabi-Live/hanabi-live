@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions.ts";
-import { getVariantRecipe, validateVariantRecipes } from "./recipe.ts";
+import { getVariantRecipe } from "./recipe.ts";
 
 const PACKAGE_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
@@ -40,7 +40,6 @@ export async function generateVariantFiles(): Promise<VariantFiles> {
 
   const suits = getJsonAndParse(suitsPath) as SuitJson[];
   validateSuits(suits);
-  const { suitsNameMap, suitsIdMap } = getSuitMaps(suits);
 
   const oldVariants = getJsonAndParse(variantsPath) as VariantJson[];
   validateVariants(oldVariants);
@@ -51,12 +50,10 @@ export async function generateVariantFiles(): Promise<VariantFiles> {
   const variantDescriptions = getVariantDescriptions(suits);
   const variants = getVariantsFromVariantDescriptions(
     variantDescriptions,
-    suitsNameMap,
+    suits,
     oldVariantsNameToIdMap,
     oldVariantsIdToNameMap,
   );
-
-  validateVariantRecipes(variants, suitsIdMap);
 
   if (hasMissingVariants(variants, oldVariants)) {
     throw new Error(
@@ -131,21 +128,6 @@ function validateSuits(suits: readonly SuitJson[]) {
   }
 }
 
-function getSuitMaps(suits: readonly SuitJson[]) {
-  const suitsNameMap = new Map<string, SuitJson>();
-  const suitsIdMap = new Map<string, SuitJson>();
-
-  for (const suit of suits) {
-    suitsNameMap.set(suit.name, suit);
-    suitsIdMap.set(suit.id, suit);
-  }
-
-  return {
-    suitsNameMap,
-    suitsIdMap,
-  };
-}
-
 function validateVariants(variants: readonly VariantJson[]) {
   const variantNames = new Set<string>();
   const variantIds = new Set<number>();
@@ -199,7 +181,7 @@ function getOldVariantMaps(variants: readonly VariantJson[]) {
 /** Mutates `oldVariantsNameToIdMap` and `oldVariantsIdToNameMap`. */
 function getVariantsFromVariantDescriptions(
   variantDescriptions: readonly VariantDescription[],
-  suitsNameMap: ReadonlyMap<string, SuitJson>,
+  suits: readonly SuitJson[],
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   oldVariantsNameToIdMap: Map<string, VariantId>,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
@@ -211,7 +193,7 @@ function getVariantsFromVariantDescriptions(
       oldVariantsNameToIdMap,
       oldVariantsIdToNameMap,
     ),
-    recipe: getVariantRecipe(variantDescription, suitsNameMap),
+    recipe: getVariantRecipe(variantDescription, suits),
     ...variantDescription,
   }));
 }

@@ -10,7 +10,6 @@
     "@hanabi-live/game": "workspace:*",
     "complete-common": "catalog:",
     "complete-node": "catalog:",
-    "fast-deep-equal": "catalog:",
     "fast-png": "catalog:",
     "lightningcss": "catalog:",
     "prettier": "catalog:"

@@ -1,3 +1,4 @@
+use crate::recipe::{self, RecipeSuits};
 use crate::{ClueType, int};
 use anyhow::{Result, anyhow};
 use hanabi_protocol::{
@@ -7,12 +8,15 @@ use hanabi_protocol::{
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{collections::HashMap, sync::OnceLock};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::OnceLock,
+};
 
 pub use hanabi_protocol::CatalogCharacter as Character;
 
 /// A suit as the rules use it. The game library derives the same values in `suitsInit.ts`.
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Suit {
     pub name: String,
@@ -187,29 +191,67 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
     }
 }
 
+/// Panics unless the entry has exactly the rules that its recipe describes. The client builds its
+/// variants from the entry's fields, and the recipe is the variant's identity, so both must agree.
+fn check_recipe(entry: &CatalogVariant, suits: &RecipeSuits) {
+    let mut expected = recipe::catalog_fields(&entry.recipe, suits)
+        .unwrap_or_else(|error| panic!("variants.json: {}: {error:#}", entry.name));
+    expected.insert("id".into(), serde_json::json!(entry.id));
+    expected.insert("recipe".into(), serde_json::json!(entry.recipe));
+    expected.insert("name".into(), serde_json::json!(entry.name));
+    let actual = serde_json::to_value(entry).expect("a catalog entry serializes");
+    assert!(
+        actual == Value::Object(expected.clone()),
+        "variants.json: {} does not match its recipe \"{}\"\nentry:  {actual}\nrecipe: {}",
+        entry.name,
+        entry.recipe,
+        Value::Object(expected)
+    );
+}
+
+/// The suits of `suits.json`, each with its ID.
+pub(crate) fn suits_by_id() -> Vec<(String, Suit)> {
+    let colors: Vec<CatalogColor> = catalog(
+        "colors.json",
+        include_str!("../../../packages/game/src/json/colors.json"),
+    );
+    catalog::<CatalogSuit>(
+        "suits.json",
+        include_str!("../../../packages/game/src/json/suits.json"),
+    )
+    .into_iter()
+    .map(|entry| (entry.id.clone(), suit(entry, &colors)))
+    .collect()
+}
+
 pub fn variants() -> &'static [Variant] {
     static DATA: OnceLock<Vec<Variant>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let colors: Vec<CatalogColor> = catalog(
-            "colors.json",
-            include_str!("../../../packages/game/src/json/colors.json"),
-        );
+        let suits_by_id = suits_by_id();
+        let recipe_suits = RecipeSuits::new(&suits_by_id).unwrap_or_else(|error| {
+            panic!("suits.json: {error:#}");
+        });
         let mut suits = HashMap::new();
-        for entry in catalog::<CatalogSuit>(
-            "suits.json",
-            include_str!("../../../packages/game/src/json/suits.json"),
-        ) {
-            let mut suit = suit(entry, &colors);
+        for (_, mut suit) in suits_by_id {
             suits.insert(suit.name.clone(), suit.clone());
             suit.reversed = true;
             suits.insert(format!("{} Reversed", suit.name), suit);
         }
+        let mut recipes = HashSet::new();
         catalog::<CatalogVariant>(
             "variants.json",
             include_str!("../../../packages/game/src/json/variants.json"),
         )
         .into_iter()
-        .map(|entry| variant(entry, &suits))
+        .map(|entry| {
+            check_recipe(&entry, &recipe_suits);
+            assert!(
+                recipes.insert(entry.recipe.clone()),
+                "variants.json: two variants have the recipe \"{}\"",
+                entry.recipe
+            );
+            variant(entry, &suits)
+        })
         .collect()
     })
 }

@@ -359,7 +359,7 @@ function getVariantsForSpecialRanks(
   return variantDescriptions;
 }
 
-export function getSpecialClueRanks(specialRank: Rank): readonly ClueRank[] {
+function getSpecialClueRanks(specialRank: Rank): readonly ClueRank[] {
   return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 

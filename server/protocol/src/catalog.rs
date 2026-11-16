@@ -66,16 +66,9 @@ catalog_entry! {
         // --------------------
         #[schemars(length(min = 1))]
         pub name: String,
-        /// A short code that names the suit:
-        /// - A normal suit has one capital letter, such as `R` for Red.
-        /// - A special suit has a capital letter and a lowercase letter, such as `Bk` for Black.
-        /// - A combination suit joins two special suits, such as `BrRa` for Muddy Rainbow.
-        /// - A dark suit adds `1` to the ID of its light suit, such as `Ra1` for Dark Rainbow.
-        /// - An ambiguous suit has `A` and the letter of its color, then a number, such as `AR1`
-        ///   for Tomato. An extremely ambiguous suit begins with `E` instead, such as `EB1` for
-        ///   Ice EA.
-        /// - A dual-color suit has `D` and the letters of its colors, sometimes with a number, such
-        ///   as `DRY` for Tangerine.
+        /// A short code that names the suit, in lowercase letters, such as `r` for Red or `tomato`
+        /// for Tomato. A dark suit adds `.dark` to the ID of its light suit, such as `ra.dark` for
+        /// Dark Rainbow. Recipes name suits by these IDs, so an ID never changes.
         #[schemars(length(min = 1))]
         pub id: String,
         /// The symbol that represents this suit: a pip name, "auto", or "none".
@@ -129,8 +122,9 @@ catalog_entry! {
         /// A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1,
         /// and so on. The database and seeds name a variant by this number.
         pub id: VariantId,
-        /// The variant's suits and modifiers, from which the catalog generator checks the entry.
-        /// For example, "No Variant" is `R+Y+G+B+P`.
+        /// The variant's suits and modifiers, from which the engine builds its rules. Each variant
+        /// has exactly one recipe. For example, "No Variant" is `r-y-g-b-p`. See `recipe.rs` for
+        /// the grammar.
         #[schemars(length(min = 1))]
         pub recipe: String,
         #[schemars(length(min = 1))]

@@ -140,7 +140,8 @@ macro_rules! game_library_types {
     ($apply:ident) => {
         $apply! {
             AuthorNote, AuthorNotes, CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant,
-            CardOrder, CharacterId, Clue, GameEvent, GameOptions, HypotheticalEvent, VariantId,
+            CardOrder, CharacterId, Clue, GameEvent, GameOptions, HypotheticalEvent, RecipeFlag,
+            SuitFlag, VariantId,
         }
     };
 }

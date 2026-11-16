@@ -6,7 +6,6 @@ export * from "./enums/CardStatus.ts";
 export * from "./enums/PaceRisk.ts";
 export * from "./enums/Pip.ts";
 export * from "./enums/StackDirection.ts";
-export * from "./enums/VariantModifier.ts";
 export * from "./gameData.ts";
 export * from "./gameEvents.ts";
 export * from "./generated/protocol.ts";

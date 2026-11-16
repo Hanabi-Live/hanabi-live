@@ -58,6 +58,7 @@ mod game;
 mod http;
 mod integers;
 mod lobby;
+mod recipe;
 mod replay;
 mod requests;
 pub use catalog::*;
@@ -66,6 +67,7 @@ pub use game::*;
 pub use http::*;
 pub use integers::*;
 pub use lobby::*;
+pub use recipe::*;
 pub use replay::*;
 pub use requests::*;
 
@@ -129,6 +131,18 @@ constants! {
     @game pub const DEFAULT_VARIANT_ID: VariantId = VariantId(0);
     /// The most suits a variant can have.
     @game pub const MAX_SUITS: usize = 6;
+    /// Separates the suits of a variant's recipe, such as `r-y-g`.
+    @game pub const RECIPE_SUIT_SEPARATOR: &str = "-";
+    /// Separates a suit ID from its flags in a recipe, such as `ra.dark`.
+    @game pub const RECIPE_SUIT_FLAG_SEPARATOR: &str = ".";
+    /// Separates the suits of a recipe from each modifier, such as `r-y-g_cb`.
+    @game pub const RECIPE_MODIFIER_SEPARATOR: &str = "_";
+    /// The rank modifier of a Deceptive-Ones (to Fives) variant, such as `1de`.
+    @game pub const RECIPE_DECEPTIVE_RANK: &str = "de";
+    /// The rank modifier of a Critical Ones (to Fives) variant, such as `4crit`.
+    @game pub const RECIPE_CRITICAL_RANK: &str = "crit";
+    /// The rank modifier of a Scarce Ones variant: `1scarce`.
+    @game pub const RECIPE_SCARCE_RANK: &str = "scarce";
     /// The highest suit index.
     pub(crate) const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
     /// The lowest rank.

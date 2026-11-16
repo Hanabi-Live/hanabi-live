@@ -1,4 +1,3 @@
-import { ReadonlySet } from "complete-common";
 import {
   DEFAULT_CARD_RANKS,
   MAX_RANK,
@@ -57,9 +56,3 @@ export const DEFAULT_PLAYER_NAMES = [
 ] as const;
 
 export const SUIT_REVERSED_SUFFIX = " Reversed";
-
-export const SUIT_DELIMITER = "+";
-export const SUIT_MODIFIER_DELIMITER = ":";
-export const REVERSE_MODIFIER = "R";
-export const SUIT_MODIFIERS = new ReadonlySet(REVERSE_MODIFIER);
-export const VARIANT_DELIMITER = ",";

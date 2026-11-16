@@ -20,6 +20,7 @@ mod catalog;
 mod character;
 mod characters;
 mod game;
+mod recipe;
 mod rules;
 mod setup;
 mod types;
