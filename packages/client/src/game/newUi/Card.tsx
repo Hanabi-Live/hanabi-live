@@ -1327,6 +1327,13 @@ const POSSIBLE_CARDS = {
 /** The outline of the bubble of possible cards and of its pointer, in pixels. */
 const POSSIBLE_CARDS_OUTLINE = 1;
 
+/**
+ * The shadow of the bubble of possible cards and of its pointer: a tight shadow that marks the
+ * edge, and a wide one that lifts the bubble off the table.
+ */
+const POSSIBLE_CARDS_SHADOW =
+  "drop-shadow(0 2px 3px rgb(0 0 0 / 55%)) drop-shadow(0 10px 24px rgb(0 0 0 / 60%))";
+
 /** The color of the outline of the bubble of possible cards and of its pointer. */
 const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
 
@@ -1613,7 +1620,7 @@ export function PossibleCardsBubble({
     // The shadow is on the wrapper, so that it follows the outline of the bubble and its pointer.
     <div
       aria-hidden="true"
-      className="tw:pointer-events-none tw:fixed tw:z-50 tw:drop-shadow-[0_4px_7px_rgb(0_0_0/45%)]"
+      className="tw:pointer-events-none tw:fixed tw:z-50"
       ref={ref}
       style={{
         left: position?.left ?? 0,
@@ -1625,6 +1632,7 @@ export function PossibleCardsBubble({
               position.side === "below" ? "left top" : "left bottom",
           }),
         visibility: position === undefined ? "hidden" : undefined,
+        filter: POSSIBLE_CARDS_SHADOW,
       }}
     >
       <div
