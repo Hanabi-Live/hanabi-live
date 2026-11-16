@@ -17,7 +17,6 @@ import { controlsHypothetical } from "../controlsHypothetical.ts";
 import {
   formatEfficiency,
   getEfficiencyStats,
-  getEfficiencyTooltip,
   getMaxTurns,
   getMaxTurnsTooltip,
   isLowScorePhase,
@@ -1235,10 +1234,7 @@ export function GameScreen({
       <StatusStrip
         colorblindMode={settings.colorblindMode}
         efficiencyModified={efficiencyStats.modified}
-        efficiencyTooltip={getEfficiencyTooltip(
-          efficiencyStats,
-          "Click the first number to add a modifier.",
-        )}
+        efficiencyStats={efficiencyStats}
         futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
         // The game's length changes as the clock ticks, and the screen draws again with it.
         gameInfoTooltip={getGameInfoTooltip()}

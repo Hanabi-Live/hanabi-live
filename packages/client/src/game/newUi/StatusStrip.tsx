@@ -1,6 +1,8 @@
 import type { RefObject } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
+import type { EfficiencyStats } from "../efficiency.ts";
+import { formatEfficiency } from "../efficiency.ts";
 import {
   HARD_VARIANT_EFFICIENCY_COLOR,
   LOW_SCORE_PHASE_COLOR,
@@ -9,25 +11,7 @@ import {
 import { useElementSize } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
-/**
- * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
- * in a narrow box: the icon is near the left edge of the window, and a wide tooltip would not fit
- * centered over it. In the tooltip, the breakdown of the first number follows it.
- */
-const EFFICIENCY_HELP = `
-  <ul class="tw:m-0 tw:max-w-[19em] tw:list-disc tw:space-y-2 tw:pl-[1.2em] tw:narrow-980:max-w-[15em]">
-    <li>
-      <strong>First number:</strong> the efficiency that the team needs from
-      now on in order to win.
-    </li>
-    <li>
-      <strong>Second number:</strong> the efficiency needed over the whole
-      game, for this variant and number of players.
-    </li>
-  </ul>
-`;
-
-/** The plain text of `EFFICIENCY_HELP`, for screen readers. */
+/** What the efficiency numbers mean, for screen readers. */
 const EFFICIENCY_HELP_LABEL =
   "About efficiency: the first number is the efficiency that the team needs from now on in order to win, and the second number is the efficiency needed over the whole game, for this variant and number of players.";
 
@@ -95,11 +79,8 @@ interface StatusStripProps {
   /** Whether the player's own modifier changes the future efficiency, so it is in another color. */
   readonly efficiencyModified: boolean;
 
-  /**
-   * The HTML that breaks down the future efficiency. It goes under the explanation in the tooltip
-   * of the efficiency's information icon.
-   */
-  readonly efficiencyTooltip: string;
+  /** The numbers that the efficiency's tooltip breaks the efficiency into. */
+  readonly efficiencyStats: EfficiencyStats;
 
   /** Asks for a modifier of the cards gotten. */
   readonly onEfficiencyClick: () => void;
@@ -260,12 +241,60 @@ const VALUE_BUTTON_CLASS =
 const VALUE_LINE_CLASS =
   "tw:border-b-2 tw:border-dotted tw:border-transparent tw:group-hover:border-current tw:group-focus-visible:border-current";
 
-/**
- * Puts the tooltip of a value in the smaller text of the screen's other tooltips. Its labels are
- * wide enough for "Current cards noted as gotten" to fit on one line.
- */
+/** Puts the tooltip of a value in the smaller text of the screen's other tooltips. */
 function valueTooltip(html: string): string {
-  return `<div class="small-tooltip-text tw:[&_.efficiency-description]:w-[14em]">${html}</div>`;
+  return `<div class="small-tooltip-text">${html}</div>`;
+}
+
+/**
+ * The HTML of the efficiency's tooltip. It is laid out like the game's information: a title, then
+ * short rows, with no blank lines. The first group names the two numbers on the screen, so that it
+ * also explains them. The other groups break the first number down, as on the classic screen. All
+ * of the rows are in one grid, so that the values of every group line up.
+ */
+function getEfficiencyTooltip(
+  stats: EfficiencyStats,
+  futureEfficiency: string,
+  minEfficiency: string,
+): string {
+  const groups: ReadonlyArray<
+    ReadonlyArray<readonly [label: string, value: number | string]>
+  > = [
+    [
+      ["Needed from now on to win", futureEfficiency],
+      ["Needed over the whole game", minEfficiency],
+    ],
+    [
+      ["Cards gotten", stats.cardsGotten],
+      ["Cards noted as gotten", stats.cardsGottenByNotes ?? "-"],
+      ["Cards gotten modifier", stats.modifier ?? "-"],
+      ["Potential clues lost", stats.potentialCluesLost],
+      ["Current efficiency", formatEfficiency(stats.currentEfficiency)],
+    ],
+    [
+      ["Cards left to get", stats.cardsNotGotten],
+      ["Clues left to give", stats.cluesStillUsableNotRounded ?? "-"],
+      ["Spare clues", stats.spareClues ?? "-"],
+    ],
+  ];
+
+  // The first row of each group has a gap above it.
+  const cells = groups
+    .flatMap((rows) =>
+      rows.map(([label, value], i) => {
+        const gap = i === 0 ? ' class="tw:mt-2"' : "";
+        return `<span${gap}>${label}:</span><strong${gap}>${value}</strong>`;
+      }),
+    )
+    .join("");
+
+  return `
+    <div class="tw:leading-[1.2]">
+      <strong>Efficiency:</strong>
+      <div class="tw:grid tw:grid-cols-[auto_auto] tw:justify-start tw:gap-x-4 tw:gap-y-[0.15em]">${cells}</div>
+      <div class="tw:mt-2">Click the first number to add a modifier.</div>
+    </div>
+  `;
 }
 
 /** The color of a number that a setting or the player's own modifier marks, and its weight. */
@@ -456,7 +485,7 @@ export function StatusStrip({
   paceColor,
   futureEfficiency,
   efficiencyModified,
-  efficiencyTooltip,
+  efficiencyStats,
   onEfficiencyClick,
   minEfficiency,
   hardVariant,
@@ -607,7 +636,11 @@ export function StatusStrip({
                 icon="fa-info-circle"
                 label={EFFICIENCY_HELP_LABEL}
                 tooltip={valueTooltip(
-                  `${EFFICIENCY_HELP}<div class="tw:mt-3">${efficiencyTooltip}</div>`,
+                  getEfficiencyTooltip(
+                    efficiencyStats,
+                    futureEfficiency,
+                    minEfficiency,
+                  ),
                 )}
               />
             </>
