@@ -492,6 +492,31 @@ const NAME_CHIP_LOOK_CLASS = {
     "tw:bg-transparent tw:font-medium tw:text-game-muted tw:outline-2 tw:-outline-offset-2 tw:outline-game-muted tw:outline-dashed",
 } as const satisfies Record<NameChipLook, string>;
 
+/**
+ * A clue token on a name key: the token under the deck, drawn dark, so that it shows on the key's
+ * color.
+ */
+function NameClueToken(): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:size-4 tw:shrink-0"
+      data-name-clue-token
+      viewBox="0 0 24 24"
+    >
+      <circle cx={12} cy={12} fill="var(--card-ink)" r={11} />
+      <circle
+        cx={12}
+        cy={12}
+        fill="none"
+        r={6.5}
+        stroke="var(--clue-border)"
+        strokeWidth={2.5}
+      />
+    </svg>
+  );
+}
+
 function NameChip({
   seat,
   look,
@@ -529,13 +554,25 @@ function NameChip({
     );
   }
 
+  let tooltip: string | undefined;
+  if (look === "key") {
+    tooltip = `Give ${seat.name} a clue`;
+  } else if (look === "noClues") {
+    tooltip = "The team has no clues to give.";
+  }
+
+  // The key has a clue token before the name, so that it shows what the key does. The chosen key
+  // keeps it, so that the name does not move.
+  const hasToken = look === "key" || look === "chosen";
+
   return (
     <span
-      className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:px-3.5 tw:py-1.5 ${NAME_CHIP_LOOK_CLASS[look]} ${disconnectedClass}`}
-      ref={tooltipRef(
-        look === "noClues" ? "The team has no clues to give." : undefined,
-      )}
+      className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-1.5 tw:rounded-full tw:py-1.5 tw:pr-3.5 ${
+        hasToken ? "tw:pl-2" : "tw:pl-3.5"
+      } ${NAME_CHIP_LOOK_CLASS[look]} ${disconnectedClass}`}
+      ref={tooltipRef(tooltip)}
     >
+      {hasToken && <NameClueToken />}
       <FitText text={seat.name} />
       {disconnectedBadge}
     </span>
