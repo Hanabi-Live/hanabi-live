@@ -353,6 +353,22 @@ export function getDeckEmpathy(state: State): DeckEmpathy {
     possibleRanks: variant.ranks.filter((rank) =>
       possibilities.some(([, possibleRank]) => possibleRank === rank),
     ),
+    possibleCards: {
+      suits: variant.suits
+        .map((_suit, i) => ({
+          suitIndex: i as SuitIndex,
+          eliminated: false,
+          positive: false,
+          ranks: variant.ranks.filter((rank) =>
+            possibilities.some(
+              ([possibleSuit, possibleRank]) =>
+                possibleSuit === i && possibleRank === rank,
+            ),
+          ),
+        }))
+        .filter((suit) => suit.ranks.length > 0),
+      inexact: false,
+    },
   };
 }
 

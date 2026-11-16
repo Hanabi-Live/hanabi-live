@@ -7,6 +7,8 @@ import type {
 } from "@hanabi-live/game";
 import { getTotalCardsInDeck, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
@@ -17,6 +19,7 @@ import {
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
   describeCard,
+  PossibleCardsBubble,
   RANK_BOTTOM_PER_WIDTH,
 } from "./Card.tsx";
 import {
@@ -30,6 +33,7 @@ import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FitText } from "./FitText.tsx";
 import { Pip } from "./Pip.tsx";
 import { WELL_CLASS } from "./surfaces.ts";
+import type { PossibleCardsView } from "./tableView.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -236,6 +240,9 @@ export interface HoleView {
 export interface DeckEmpathy {
   readonly possibleSuitIndexes: readonly SuitIndex[];
   readonly possibleRanks: readonly Rank[];
+
+  /** The exact cards that the deck can still hold, for the bubble of possible cards. */
+  readonly possibleCards: PossibleCardsView;
 }
 
 export interface DiscardView {
@@ -846,6 +853,9 @@ function Deck({
   const finalRound = empty && turnsLeft !== undefined;
   const turns = turnsLeft === 1 ? "turn" : "turns";
   const showEmpathy = empathy !== undefined && !empty;
+  // The top card of the deck, while the viewer holds it down, so that the bubble of possible cards
+  // points at it.
+  const [heldTop, setHeldTop] = useState<HTMLElement>();
   const held = play?.held === true;
   // In the final round, only the border of the empty slot is faint, so that the turns left stand
   // out.
@@ -857,6 +867,7 @@ function Deck({
   }
 
   function stopEmpathy() {
+    setHeldTop(undefined);
     onHoldEmpathy(false);
   }
 
@@ -997,19 +1008,33 @@ function Deck({
             onPointerCancel={stopEmpathy}
             onPointerDown={(event) => {
               if (
-                event.button === 0
-                && !event.shiftKey
-                && !event.altKey
-                && !event.metaKey
+                event.button !== 0
+                || event.shiftKey
+                || event.altKey
+                || event.metaKey
               ) {
-                onHoldEmpathy(true);
+                return;
               }
+              setHeldTop(event.currentTarget);
+              onHoldEmpathy(true);
             }}
             onPointerLeave={stopEmpathy}
             onPointerUp={stopEmpathy}
             style={topStyle}
           >
             {face}
+            {showEmpathy
+              && heldTop !== undefined
+              && empathy.possibleCards.suits.length > 0
+              && createPortal(
+                <PossibleCardsBubble
+                  anchor={heldTop}
+                  bubble={empathy.possibleCards}
+                  colorblindMode={colorblindMode}
+                  variant={variant}
+                />,
+                document.body,
+              )}
           </div>
         ) : (
           <button

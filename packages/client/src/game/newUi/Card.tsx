@@ -1386,7 +1386,7 @@ function ImpossibleCard({
  * with a row for each suit that the card can be and a column for every rank of the variant, so that
  * each rank is always in the same column. A card that this card cannot be leaves an empty place.
  */
-function PossibleCardsBubble({
+export function PossibleCardsBubble({
   variant,
   colorblindMode,
   bubble,
