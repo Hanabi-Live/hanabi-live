@@ -131,7 +131,7 @@ import {
   getStrikeSegments,
   isScoreHidden,
 } from "./screenView.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 import {
   formatPace,
   getCluePreviewDeck,
@@ -1284,23 +1284,18 @@ export function GameScreen({
           unread={zen ? 0 : chatUnread}
           zen={zen}
         />
-        {/* In the phone layout, the chat has no rail. Its button floats in the top-right corner,
-            where the rail's button is on a wide screen. It is in the same place as the open
-            panel's button that collapses the chat, and takes its place, so that the same button
-            opens and closes the chat. It floats over the table, so that the hands keep their
-            size. */}
-        <div className="tw:absolute tw:top-3.5 tw:right-2 tw:z-30 tw:hidden tw:narrow-980:block">
+      </div>
+
+      <StatusStrip
+        chatButton={
           <ChatButton
-            className={`tw:size-9 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
+            className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
             open={chatOpen}
             poppedOut={chatPoppedOut}
             unread={zen ? 0 : chatUnread}
             zen={zen}
           />
-        </div>
-      </div>
-
-      <StatusStrip
+        }
         colorblindMode={settings.colorblindMode}
         efficiencyModified={efficiencyStats.modified}
         efficiencyStats={efficiencyStats}

@@ -286,11 +286,9 @@ export function ChatPanel({
         >
           <i aria-hidden="true" className="fas fa-external-link-alt" />
         </button>
-        {/* In the phone layout, the chat's floating button takes the place of this one (see
-            "GameScreen.tsx"). */}
         <button
           aria-label="Collapse chat"
-          className={`${HEADER_BUTTON_CLASSES} tw:narrow-980:invisible`}
+          className={HEADER_BUTTON_CLASSES}
           onClick={() => {
             gameChat.hide();
           }}
@@ -336,7 +334,7 @@ export function ChatButton({
   readonly poppedOut: boolean;
   readonly unread: number;
 
-  /** The button's size and colors. */
+  /** The button's size and colors. While it collapses the chat, it is lit, as a pressed toggle. */
   readonly className: string;
 }): React.JSX.Element {
   const collapses = open && !poppedOut;
@@ -356,10 +354,7 @@ export function ChatButton({
     ? `Zen mode hides the chat and who is watching. Click to ${action.toLowerCase()}. Right-click to leave zen mode.`
     : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
   let icon = "fa-comment";
-  if (collapses) {
-    // The same icon as the open panel's button that collapses the chat.
-    icon = "fa-angle-double-right";
-  } else if (zen) {
+  if (zen) {
     icon = "fa-yin-yang";
   } else if (poppedOut) {
     icon = "fa-external-link-alt";
@@ -368,6 +363,7 @@ export function ChatButton({
   return (
     <button
       aria-label={label}
+      aria-pressed={collapses ? true : undefined}
       className={`tw:relative tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${className}`}
       onClick={() => {
         if (poppedOut) {
