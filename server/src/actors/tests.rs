@@ -1388,7 +1388,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
 }
 
 #[test]
-fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
+fn a_table_that_players_and_spectators_filled_still_fits_in_a_checkpoint() -> Result<()> {
     const CHAT_BATCH: usize = 64;
     let mut table = review(TableId::new(1).unwrap(), EndCondition::TerminatedByPlayer)?;
     let name = "x".repeat(crate::accounts::MAX_USERNAME_LENGTH);
@@ -1422,10 +1422,27 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
             ),
         });
     }
+    // Every seat and the spectators fill each card's note.
+    let note = "\"".repeat(hanabi_protocol::MAX_NOTE_LENGTH);
+    let cards = hanabi_protocol::MAX_DECK_SIZE + hanabi_protocol::MAX_SUITS;
+    let s = table.game_mut().context("Not a game")?;
+    s.notes = vec![vec![note.clone(); cards]; hanabi_protocol::MAX_PLAYERS];
+    for user in 1.. {
+        if play::spectator_note_bytes(s.spectator_notes.values()) > play::MAX_SPECTATOR_NOTE_BYTES {
+            break;
+        }
+        s.spectator_notes.insert(
+            UserId::new(user).unwrap(),
+            crate::model::NoteOwner {
+                name: name.clone(),
+                notes: vec![note.clone(); cards],
+            },
+        );
+    }
     let size = serde_json::to_vec(&table)?.len();
     ensure!(
         size <= crate::state::MAX_CHECKPOINT_BYTES,
-        "A full table chat takes {size} bytes, more than a checkpoint's {} bytes",
+        "A full table takes {size} bytes, more than a checkpoint's {} bytes",
         crate::state::MAX_CHECKPOINT_BYTES
     );
     Ok(())

@@ -20,6 +20,18 @@ use hanabi_protocol::{ClientRequest, ReplyData};
 use hanabi_protocol::{PlayerIndex, UserId};
 use std::sync::Arc;
 
+/// Spectators can fill only part of a table's checkpoint with notes, so the game can still be saved.
+/// Their notes stay after they leave, so the budget covers every spectator who wrote one.
+pub(super) const MAX_SPECTATOR_NOTE_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 8;
+
+/// The size of all spectators' notes at a table, with their names.
+pub(super) fn spectator_note_bytes<'a>(owners: impl IntoIterator<Item = &'a NoteOwner>) -> usize {
+    owners
+        .into_iter()
+        .map(|owner| owner.name.len() + owner.notes.iter().map(String::len).sum::<usize>())
+        .sum()
+}
+
 /// What a `pause` or `pauseQueue` request changes.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum PauseChange {
@@ -384,6 +396,18 @@ impl TableActor {
         if let Some(seat) = seat {
             s.notes[seat][order].clone_from(&text);
         } else {
+            let before = spectator_note_bytes(s.spectator_notes.values());
+            let (removed, added) = s
+                .spectator_notes
+                .get(&session.user)
+                .map_or((0, session.name.len() + text.len()), |owner| {
+                    (owner.notes[order].len(), text.len())
+                });
+            ensure_or_reject!(
+                added <= removed || before - removed + added <= MAX_SPECTATOR_NOTE_BYTES,
+                "The spectators' notes at this table have reached their size limit of {} KiB.",
+                MAX_SPECTATOR_NOTE_BYTES / crate::KIB
+            );
             s.spectator_notes
                 .entry(session.user)
                 .or_insert_with(|| NoteOwner {
