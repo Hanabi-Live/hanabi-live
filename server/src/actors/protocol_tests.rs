@@ -801,6 +801,43 @@ async fn others_cannot_enter_a_solo_replay() -> Result<()> {
 }
 
 #[tokio::test]
+async fn a_user_holds_one_solo_replay_and_leads_few_shared_ones() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let solo = json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"solo"}});
+        h.send(0, "replayCreate", solo.clone()).await?;
+        let first = h.receive_game(0).await?["tableId"]
+            .as_u64()
+            .and_then(TableId::new)
+            .context("Missing replay identity")?;
+        h.send(0, "replayCreate", solo).await?;
+        h.receive_game(0).await?;
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while h.store.get(first).await?.is_some() {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            Ok::<(), anyhow::Error>(())
+        })
+        .await
+        .context("The first solo replay stayed open")??;
+        for _ in 0..hub::MAX_SHARED_REPLAYS_PER_USER {
+            h.replay(0).await?;
+        }
+        ensure!(
+            h.send(0,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false}})).await.is_err(),
+            "A user led too many shared replays"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

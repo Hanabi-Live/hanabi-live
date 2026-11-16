@@ -154,6 +154,8 @@ impl Drop for Allocation {
 #[derive(Clone, PartialEq)]
 pub struct TableView {
     players: Vec<UserId>,
+    /// The table's owner, or a replay's leader.
+    owner: UserId,
     replay: bool,
     /// The database game shown by a replay.
     replay_game: Option<GameId>,

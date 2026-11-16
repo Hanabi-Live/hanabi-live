@@ -1156,6 +1156,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .map_err(|_| anyhow::anyhow!("fixture mailbox"))?;
     let view = TableView {
         players: vec![UserId::new(1).unwrap()],
+        owner: UserId::new(1).unwrap(),
         replay: false,
         replay_game: None,
         listing: None,
@@ -1322,6 +1323,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
             },
             view: TableView {
                 players: vec![UserId::new(1).unwrap()],
+                owner: UserId::new(1).unwrap(),
                 replay: false,
                 replay_game: None,
                 listing: Some(test_table()),

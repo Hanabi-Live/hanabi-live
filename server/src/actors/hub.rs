@@ -33,6 +33,12 @@ use tracing::Instrument;
 const HUB_QUEUE: usize = 512;
 /// The most tables open at once.
 const MAX_TABLES: usize = 256;
+/// The tables that only pregames and games can use, so that replays cannot fill the server.
+const RESERVED_GAME_TABLES: usize = 64;
+/// The most replays open at once.
+const MAX_REPLAYS: usize = MAX_TABLES - RESERVED_GAME_TABLES;
+/// The most shared replays that one user can lead at once.
+pub(super) const MAX_SHARED_REPLAYS_PER_USER: usize = 3;
 /// The commands a table queues before senders wait.
 const TABLE_QUEUE: usize = 64;
 /// How long a graceful restart waits for connections to receive their closing messages.
@@ -410,6 +416,54 @@ impl Hub {
             .map(|(id, _)| *id)
             .min()
     }
+    /// Checks the replay limits before a user creates a replay, and closes the user's other solo
+    /// replays. Bots are trusted, so the per-user limits do not apply to them.
+    fn make_room_for_replay(
+        &mut self,
+        s: &Arc<Session>,
+        r: &hanabi_protocol::ReplayCreateRequest,
+    ) -> CommandResult<()> {
+        let replays = self.tables.values().filter(|e| e.view.replay).count();
+        ensure_or_reject!(
+            replays < MAX_REPLAYS,
+            "The server has reached its limit of {MAX_REPLAYS} open replays. Please try again later."
+        );
+        if s.bot {
+            return Ok(());
+        }
+        if matches!(
+            r.visibility,
+            hanabi_protocol::ReplayVisibility::Shared { .. }
+        ) {
+            let led = self
+                .tables
+                .values()
+                .filter(|e| e.view.replay && e.view.visible() && e.view.owner == s.user)
+                .count();
+            ensure_or_reject!(
+                led < MAX_SHARED_REPLAYS_PER_USER,
+                "You cannot lead more than {MAX_SHARED_REPLAYS_PER_USER} shared replays at once. Leave one before you create another."
+            );
+        }
+        let solo: Vec<TableId> = self
+            .tables
+            .iter()
+            .filter(|(_, e)| {
+                e.view.replay
+                    && !e.view.visible()
+                    && e.view.owner == s.user
+                    && e.attendees.contains(&s.user)
+            })
+            .map(|(id, _)| *id)
+            .collect();
+        for id in solo {
+            // The owner is alone at a solo replay, so it closes when they leave.
+            let (reply, _) = oneshot::channel();
+            let leave = ClientRequest::TableUnattend(TableRef { table_id: id });
+            self.route(s.clone(), id, Command::Client(Box::new(leave)), reply);
+        }
+        Ok(())
+    }
     fn create(&mut self, s: Arc<Session>, creation: Creation, reply: RequestReply) {
         if self.closing || !self.current(&s) {
             let message = if self.closing {
@@ -418,6 +472,12 @@ impl Hub {
                 "Your session is no longer current."
             };
             let _ = reply.send(Err(rejection!("{message}")));
+            return;
+        }
+        if let Creation::Replay(r) = &creation
+            && let Err(error) = self.make_room_for_replay(&s, r)
+        {
+            let _ = reply.send(Err(error));
             return;
         }
         // Take capacity first: a refused request then never holds a seat reservation, which would

@@ -177,6 +177,7 @@ impl TableActor {
         };
         TableView {
             players: self.table.seated_users().collect(),
+            owner: self.table.owner.user_id,
             replay,
             replay_game,
             reconnects: self
