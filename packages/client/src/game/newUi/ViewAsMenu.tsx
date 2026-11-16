@@ -12,7 +12,7 @@ import {
 } from "./surfaces.ts";
 
 const VIEW_AS_TOOLTIP =
-  "Watch the game from a player's seat. You can also right-click a player's name.";
+  "Watch the game from a player's seat, as that player sees it.";
 
 /** A seat to view the game from. The current one cannot be pressed, so it lies flat. */
 const ITEM_CLASS = `tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;

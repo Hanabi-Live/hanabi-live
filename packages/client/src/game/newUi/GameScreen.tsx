@@ -1125,7 +1125,6 @@ export function GameScreen({
                         }
                       : undefined
                   }
-                  onViewAs={canChooseSeat() ? viewAs : undefined}
                   outOfClues={outOfCluesOnTurn}
                   pauseAction={getPauseAction(state)}
                   queuedCard={queuedCard}
