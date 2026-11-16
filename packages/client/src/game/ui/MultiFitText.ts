@@ -66,8 +66,4 @@ export class MultiFitText extends Konva.Group {
       fitText.fitText("");
     }
   }
-
-  isEmpty(): boolean {
-    return this.smallHistory.length === 0;
-  }
 }

@@ -11,7 +11,6 @@ vi.mock("../../tooltips.ts", () => ({ close: vi.fn() }));
 vi.mock("./HanabiCardClick.ts", () => ({ HanabiCardClick: vi.fn() }));
 vi.mock("./HanabiCardClickSpeedrun.ts", () => ({
   mouseDownSpeedrun: vi.fn(),
-  mouseUpSpeedrun: vi.fn(),
 }));
 vi.mock("./HanabiCardTouchActions.ts", () => ({
   HanabiCardDblTap: vi.fn(),

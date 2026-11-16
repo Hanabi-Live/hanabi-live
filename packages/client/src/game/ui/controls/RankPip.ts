@@ -7,8 +7,7 @@ import { drawWithKonva3Shadow } from "./konva3Shadow.ts";
 const CANVAS_DEFAULT_MITER_LIMIT = 10;
 
 export class RankPip extends Konva.Text {
-  private fillValue: string | CanvasGradient | undefined;
-  private positive = false;
+  private readonly fillValue: string | CanvasGradient | undefined;
 
   constructor(config?: Konva.TextConfig) {
     super(config);
@@ -29,26 +28,11 @@ export class RankPip extends Konva.Text {
     return opacity !== 1 && super._useBufferCanvas(forceFill, opacity);
   }
 
-  setFillValue(fill: string): void {
-    if (this.fillValue === fill) {
-      return;
-    }
-
-    this.fillValue = fill;
-    if (this.positive) {
-      this.showPositiveClue();
-    } else {
-      this.hidePositiveClue();
-    }
-  }
-
   showPositiveClue(): void {
-    this.positive = true;
     this.fill(CLUED_COLOR);
   }
 
   hidePositiveClue(): void {
-    this.positive = false;
     this.fill(this.fillValue ?? "black");
   }
 }
