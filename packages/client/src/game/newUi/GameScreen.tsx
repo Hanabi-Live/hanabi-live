@@ -1235,14 +1235,14 @@ export function GameScreen({
               style={{ paddingTop: columnTopPadding }}
             >
               {stacked ? (
-                // The tokens fill the room on the right of the pile, which is empty for most of the
-                // game, so that they do not take a row of their own.
+                // The tokens share the row with the pile, so that they do not take a row of their
+                // own. The pile is on the right, as the discard column is on a wide screen.
                 <div className="tw:flex tw:gap-3">
-                  <div className="tw:min-w-0 tw:flex-1">{discardPile}</div>
                   <TableTokens
                     placementClass="tw:self-stretch"
                     {...tokensProps}
                   />
+                  <div className="tw:min-w-0 tw:flex-1">{discardPile}</div>
                 </div>
               ) : (
                 discardPile
