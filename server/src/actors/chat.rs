@@ -145,10 +145,7 @@ impl TableActor {
     /// the table's checkpoint, so its cost grows with the chat.
     pub(super) fn charge_chat(&mut self, user: UserId) -> CommandResult<()> {
         if let Err(wait) = self.chat_limit.charge(user.get(), Instant::now()) {
-            reject!(
-                "You are sending messages too quickly. Please wait {} seconds.",
-                wait.as_secs().max(1)
-            );
+            reject!("{}", crate::lobby::too_quickly(wait));
         }
         Ok(())
     }

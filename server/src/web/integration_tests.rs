@@ -1073,3 +1073,43 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
     drop(task);
     fixture.close().await;
 }
+
+#[tokio::test]
+async fn lobby_chat_and_private_messages_share_a_rate_limit_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    login(&fixture, "Chatty").await;
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that reads the fixture account"
+    )]
+    let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'Chatty'")
+        .fetch_one(&fixture.app.store.primary)
+        .await
+        .unwrap();
+    let (session, _frames) = Session::new(UserId::new(id).unwrap(), "Chatty".into(), 1);
+    let command = |name: &str, data: Value| crate::actors::client_message(name, &data).unwrap();
+    let too_quickly = |result: &crate::errors::CommandResult<dispatch::LobbyOutcome>| matches!(result, Err(CommandError::Rejected { message, .. }) if message.contains("too quickly"));
+    // The hub does not know this session, so the messages are charged but not published.
+    for _ in 0..lobby::LOBBY_CHAT_LIMIT {
+        let sent = dispatch::lobby_command(
+            &fixture.app,
+            session.clone(),
+            command("chat", json!({"text":"Hello"})),
+        )
+        .await;
+        assert!(!too_quickly(&sent), "A message under the limit was refused");
+    }
+    let refused = dispatch::lobby_command(
+        &fixture.app,
+        session,
+        command("chatPm", json!({"text":"Hello","recipient":"Someone"})),
+    )
+    .await;
+    assert!(
+        too_quickly(&refused),
+        "A private message passed the lobby chat limit"
+    );
+    fixture.close().await;
+}

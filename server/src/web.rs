@@ -62,6 +62,7 @@ pub struct App {
     integration_started: AtomicBool,
     /// Each connected user's lobby task.
     users: user::Users,
+    lobby_chat_limit: crate::lobby::LobbyChatLimit,
 }
 
 impl App {
@@ -118,6 +119,7 @@ impl App {
             integrations,
             integration_started: AtomicBool::new(false),
             users: user::Users::default(),
+            lobby_chat_limit: crate::lobby::LobbyChatLimit::default(),
         })
     }
 

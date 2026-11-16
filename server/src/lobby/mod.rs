@@ -7,9 +7,11 @@ mod settings;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+pub use chat::LOBBY_CHAT_LIMIT;
 pub use chat::{
-    ChatCommand, Classification, CommandKind, GeneralResponse, RuntimeCommand, TableChatCommand,
-    classify_chat, external_command, lobby_history, server_chat,
+    ChatCommand, Classification, CommandKind, GeneralResponse, LobbyChatLimit, RuntimeCommand,
+    TableChatCommand, classify_chat, external_command, lobby_history, server_chat, too_quickly,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
 use history::{seed_game_count, seed_history_ids};

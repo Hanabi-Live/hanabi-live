@@ -157,6 +157,10 @@ pub(super) async fn lobby_command(
     session: Arc<Session>,
     message: ClientRequest,
 ) -> CommandResult<LobbyOutcome> {
+    let lobby_chat = matches!(&message, ClientRequest::Chat(r) if r.table_id.is_none());
+    if lobby_chat || matches!(message, ClientRequest::ChatPm(_)) {
+        app.lobby_chat_limit.charge(session.user)?;
+    }
     // Only private messages need the list of online users.
     let online = if matches!(message, ClientRequest::ChatPm(_)) {
         request(&app.hub, |reply| HubCommand::Directory {
@@ -169,9 +173,7 @@ pub(super) async fn lobby_command(
     };
     let caller = session.identity.clone();
     let rendered = match &message {
-        ClientRequest::Chat(request) if request.table_id.is_none() => {
-            discord_rendering(app, &request.text).await
-        }
+        ClientRequest::Chat(request) if lobby_chat => discord_rendering(app, &request.text).await,
         _ => None,
     };
     let history = history_command(&message);

@@ -8,7 +8,49 @@ use hanabi_protocol::{
 };
 use serde::Deserialize;
 use sqlx::PgPool;
-use std::sync::LazyLock;
+use std::{
+    sync::{LazyLock, Mutex, PoisonError},
+    time::{Duration, Instant},
+};
+
+/// The most lobby chat and private messages that one user can send per `LOBBY_CHAT_WINDOW`.
+pub const LOBBY_CHAT_LIMIT: usize = 30;
+const LOBBY_CHAT_WINDOW: Duration = Duration::from_mins(1);
+
+/// The refusal of a message from a user who must wait before they send another.
+pub fn too_quickly(wait: Duration) -> String {
+    format!(
+        "You are sending messages too quickly. Please wait {} seconds.",
+        wait.as_secs().max(1)
+    )
+}
+
+/// Counts each user's lobby chat and private messages.
+pub struct LobbyChatLimit(Mutex<crate::accounts::Counter<i32>>);
+
+impl Default for LobbyChatLimit {
+    fn default() -> Self {
+        Self(Mutex::new(crate::accounts::Counter::new(
+            LOBBY_CHAT_LIMIT,
+            LOBBY_CHAT_WINDOW,
+        )))
+    }
+}
+
+impl LobbyChatLimit {
+    /// Charges a user for a message, or refuses it when they send too many.
+    pub fn charge(&self, user: hanabi_protocol::UserId) -> crate::errors::CommandResult<()> {
+        if let Err(wait) = self
+            .0
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .charge(user.get(), Instant::now())
+        {
+            reject!("{}", too_quickly(wait));
+        }
+        Ok(())
+    }
+}
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
