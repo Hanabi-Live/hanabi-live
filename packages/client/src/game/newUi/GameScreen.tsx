@@ -725,13 +725,13 @@ export function GameScreen({
     hypotheticalHint = "The team has no clues. Play or discard a card.";
   }
 
-  // On a touch screen, the name column also holds the eye button that shows a player's view of
+  // In tap-to-move mode, the name column also holds the eye button that shows a player's view of
   // their hand.
   let nameColumnWidth: number | undefined =
     Math.min(
       nameWidth,
       mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
-    ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
+    ) + (tapToMove ? EMPATHY_TOGGLE_SPACE : 0);
   // In the phone layout, the page scrolls, and the hands fit in the height of the table on the
   // screen, with the same space below them as above them.
   const handsHeight = stacked
@@ -1167,7 +1167,7 @@ export function GameScreen({
                   }}
                   onShowPlayerLog={setLogSeat}
                   onToggleEmpathy={
-                    touch
+                    tapToMove
                       ? (playerIndex) => {
                           setEmpathyToggled((current) => {
                             const next = new Set(current);

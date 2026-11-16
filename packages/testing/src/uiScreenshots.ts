@@ -1073,6 +1073,28 @@ function getStates(): readonly State[] {
       },
       prepare: chooseClueForNextPlayer,
     },
+    // In the phone layout, the account taps its last card on its turn in a five-player game, which
+    // opens the card's menu at the edge of the window. Wider windows drag cards instead, so they
+    // have no menu.
+    {
+      name: "new-ui-card-menu",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
+        await game.discardUntilAccountsTurn();
+      },
+      hover: async (page) => {
+        const card = ownCard(page, 3).getByRole("button").first();
+        if ((await card.getAttribute("aria-expanded")) !== "false") {
+          return;
+        }
+
+        await card.click();
+        await page.getByRole("button", { name: "Empathy" }).waitFor();
+      },
+    },
     // After the account plays a card that it does not know.
     {
       name: "new-ui-play",

@@ -1,5 +1,5 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { PauseAction } from "../pause.ts";
 import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
@@ -20,7 +20,7 @@ import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { FitText } from "./FitText.tsx";
-import { measure } from "./screenScale.ts";
+import { getScreenScale, measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
@@ -179,8 +179,8 @@ interface HandsProps {
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
    * player. A hand shows it while the viewer holds the pointer down on it, or while its eye button
-   * is on. Only touch screens, which have no cursor to show the eye over the cards, get eye buttons
-   * (`onToggleEmpathy`).
+   * or the "Empathy" button in a card's menu is on. In tap-to-move mode, holding the pointer down
+   * does nothing, and the eye buttons and the "Empathy" buttons show instead (`onToggleEmpathy`).
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
@@ -830,12 +830,63 @@ export function NameColumnSizer({
   );
 }
 
+/** The least space between a card's menu and the edges of the window, in CSS pixels. */
+const CARD_MENU_WINDOW_MARGIN = 8;
+
+/**
+ * The buttons under a card that the viewer taps to move it. They center under the card, but move
+ * sideways to stay inside the window, such as under a card at the edge of a phone's screen.
+ */
+function CardMenu({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState(0);
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (element === null) {
+      return;
+    }
+
+    // The window's pixels, without the shift that the menu has now.
+    const scale = getScreenScale();
+    const rect = element.getBoundingClientRect();
+    const left = rect.left - shift * scale;
+    const right = rect.right - shift * scale;
+    const margin = CARD_MENU_WINDOW_MARGIN * scale;
+    let next = 0;
+    if (left < margin) {
+      next = margin - left;
+    } else if (right > globalThis.innerWidth - margin) {
+      next = globalThis.innerWidth - margin - right;
+    }
+    next /= scale;
+    if (Math.abs(next - shift) >= 1) {
+      setShift(next);
+    }
+  });
+
+  return (
+    <div
+      className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-game-panel tw:bg-game-text tw:p-1.5 tw:shadow-lg"
+      ref={ref}
+      style={{ marginLeft: shift }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function OwnCard({
   card,
   slot,
   place,
   movable,
   props,
+  seat,
 }: {
   readonly card: CardView;
   readonly slot: number;
@@ -846,6 +897,7 @@ function OwnCard({
   /** Whether the viewer can play or discard the card now. */
   readonly movable: boolean;
   readonly props: HandsProps;
+  readonly seat: Seat;
 }): React.JSX.Element {
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -885,6 +937,7 @@ function OwnCard({
   }
 
   const menuOpen = props.tapToMove && props.menuCard === card.order;
+  const empathyOn = props.empathyToggled.has(seat.playerIndex);
   const face = (
     <CardFace
       blank={card.blank}
@@ -976,7 +1029,7 @@ function OwnCard({
         {face}
       </button>
       {menuOpen && (
-        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-game-panel tw:bg-game-text tw:p-1.5 tw:shadow-lg">
+        <CardMenu>
           <button
             className="tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
             onClick={() => {
@@ -1001,7 +1054,29 @@ function OwnCard({
           >
             Discard
           </button>
-        </div>
+          {props.onToggleEmpathy !== undefined && (
+            <button
+              aria-pressed={empathyOn}
+              className={`tw:flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-game-control tw:border-0 tw:px-3 tw:py-1.5 tw:font-bold ${
+                empathyOn
+                  ? "tw:bg-black/15 tw:text-card-ink tw:ring-2 tw:ring-card-ink tw:ring-inset"
+                  : "tw:bg-transparent tw:text-card-ink tw:hover:bg-black/10"
+              }`}
+              onClick={() => {
+                props.onToggleEmpathy?.(seat.playerIndex);
+              }}
+              ref={tooltipRef(
+                seat.you
+                  ? "Show your hand without your notes."
+                  : `Show ${seat.name}'s hand as they see it.`,
+              )}
+              type="button"
+            >
+              <i aria-hidden="true" className="fas fa-eye" />
+              Empathy
+            </button>
+          )}
+        </CardMenu>
       )}
     </div>
   );
@@ -1095,6 +1170,7 @@ function HandCard({
         movable={props.canMoveCards && seat.acting}
         place={place}
         props={props}
+        seat={seat}
         slot={slot}
       />
     );
@@ -1170,8 +1246,10 @@ function Hand({
 
   // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
   // classic screen. On the viewer's own hand, it shows the hand without the viewer's notes. While
-  // editing cards, a press picks the card to change instead.
-  const empathyHold = !editing && !props.speedrunClicks;
+  // editing cards, a press picks the card to change instead. In tap-to-move mode, "Empathy" in a
+  // card's menu and the eye buttons show the view instead, so that a touch on a hand does nothing
+  // until it ends as a tap.
+  const empathyHold = !editing && !props.speedrunClicks && !props.tapToMove;
   const heldRef = useRef(false);
   function endHold() {
     if (!heldRef.current) {
@@ -1258,9 +1336,7 @@ function Hand({
               onClick={() => {
                 props.onToggleEmpathy?.(seat.playerIndex);
               }}
-              ref={tooltipRef(
-                `Show ${seat.name}'s hand as they see it. You can also hold your finger on their cards.`,
-              )}
+              ref={tooltipRef(`Show ${seat.name}'s hand as they see it.`)}
               type="button"
             >
               <i aria-hidden="true" className="fas fa-eye" />
