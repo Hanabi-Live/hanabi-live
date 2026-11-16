@@ -139,8 +139,8 @@ async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
         client.get(format!("{}/test-cookie", fixture.url)).body("x"),
         client.get(format!("{}/test-cookie?utm_source=x", fixture.url)),
         client.get(format!("{}/test-cookie?account=0", fixture.url)),
-        client.get(format!("{}/logout?dev=1", fixture.url)),
-        client.get(format!("{}/logout?return=%2F", fixture.url)),
+        client.post(format!("{}/logout?dev=1", fixture.url)),
+        client.post(format!("{}/logout?return=%2F", fixture.url)),
         client
             .post(format!("{}/api/v1/identity/token", fixture.url))
             .body("token=x"),
@@ -676,6 +676,22 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     assert_eq!(cross.status(), StatusCode::FORBIDDEN);
+    // Other sites cannot sign a player out.
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .unwrap();
+    let logout = format!("{}/logout", fixture.url);
+    let cross = client
+        .post(&logout)
+        .header("Origin", "https://evil.invalid")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(cross.status(), StatusCode::FORBIDDEN);
+    let navigation = client.get(&logout).send().await.unwrap();
+    assert_eq!(navigation.status(), StatusCode::METHOD_NOT_ALLOWED);
+    assert!(navigation.headers().get(header::SET_COOKIE).is_none());
     let _ = alice.close(None).await;
     let _ = bob.close(None).await;
     let _ = replacement.close(None).await;

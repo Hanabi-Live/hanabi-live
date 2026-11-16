@@ -65,7 +65,7 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
             )
         })
         .route("/login", post(login))
-        .route("/logout", get(logout))
+        .route("/logout", post(logout))
         .route("/test-cookie", get(test_cookie))
         .route(
             &format!("{API_PREFIX}/identity/token"),
@@ -481,6 +481,7 @@ async fn test_login(
 }
 
 /// Signs out of the requested account, or the most recent sign-in, without affecting other accounts.
+/// It takes only POST, so that the origin check stops other sites from signing a player out.
 async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
     let query = match account_query(uri.query(), &["account", "dev"]) {
         Ok(query) => query,
@@ -510,7 +511,7 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
     }
     with_cookies(
         (
-            StatusCode::MOVED_PERMANENTLY,
+            StatusCode::SEE_OTHER,
             [
                 (header::CACHE_CONTROL, "no-store"),
                 (header::LOCATION, if dev { "/?dev" } else { "/" }),

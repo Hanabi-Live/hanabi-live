@@ -564,8 +564,8 @@ async fn native_accounts_http_and_identity_postgres() {
         .0,
         StatusCode::FORBIDDEN
     );
-    let (status, headers, _) = request(&app, "GET", "/logout?dev", "", Some(cookie), false).await;
-    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    let (status, headers, _) = request(&app, "POST", "/logout?dev", "", Some(cookie), false).await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
     assert_eq!(headers[header::CACHE_CONTROL], "no-store");
     assert_eq!(headers[header::LOCATION], "/?dev");
     assert!(
@@ -664,11 +664,11 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     }
     // Signing out of an older account keeps the latest sign-in for new tabs.
     let path = format!("/logout?account={}", ids[0]);
-    let (_, headers, _) = request(&app, "GET", &path, "", Some(&cookie), false).await;
+    let (_, headers, _) = request(&app, "POST", &path, "", Some(&cookie), false).await;
     assert_eq!(set_cookies(&headers), [format!("hanabi.sid.{}=", ids[0])]);
     // Signing out of the latest account also clears it for new tabs.
     let path = format!("/logout?account={}", ids[1]);
-    let (_, headers, _) = request(&app, "GET", &path, "", Some(&cookie), false).await;
+    let (_, headers, _) = request(&app, "POST", &path, "", Some(&cookie), false).await;
     assert_eq!(
         set_cookies(&headers),
         [format!("hanabi.sid.{}=", ids[1]), "hanabi.sid=".to_owned()]
