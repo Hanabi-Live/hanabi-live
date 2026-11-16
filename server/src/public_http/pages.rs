@@ -8,8 +8,10 @@ use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{
-    BestScore, Count, Difficulty, MissingScore, MissingScoresFilters, MissingScoresPlayer,
-    NumPlayers, PublicGameList, PublicPageTable, Score, ScoreModifierOption, VariantScores,
+    BestScore, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
+    MissingScoresFilters, MissingScoresPage, MissingScoresPlayer, NumPlayers, PlayerScores,
+    PlayerStatistics, PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty,
+    SeedStatistics, VariantScores,
 };
 use std::sync::Arc;
 
@@ -22,6 +24,22 @@ fn shown_modifier(bits: i16) -> Option<ScoreModifierOption> {
 fn set_table(values: &mut Value, table: &PublicPageTable) -> Result<()> {
     values["table"] = json!(serde_json::to_string(table)?);
     Ok(())
+}
+
+/// The number of players in a URL, if it has one.
+pub(super) fn num_players(params: &Params) -> Result<Option<NumPlayers>> {
+    let Some(raw) = params.get("numPlayers") else {
+        return Ok(None);
+    };
+    let value =
+        integer(raw).ok_or_else(|| HttpError::bad("The number of players must be an integer."))?;
+    NumPlayers::try_from(value).map(Some).map_err(|_| {
+        HttpError::bad(format!(
+            "Number of players must be between {} and {}.",
+            hanabi_protocol::MIN_PLAYERS,
+            hanabi_protocol::MAX_PLAYERS
+        ))
+    })
 }
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
@@ -117,6 +135,14 @@ pub(super) async fn main_page(
     )
 }
 
+/// The query parameters of a shared missing scores page.
+pub(super) const SHARED_MISSING_PARAMETERS: [&str; 4] = [
+    "excludePlayers",
+    "excludeVariants",
+    "minEfficiency",
+    "maxEfficiency",
+];
+
 pub(super) async fn page(
     State(state): State<PublicState>,
     axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
@@ -124,17 +150,18 @@ pub(super) async fn page(
     RawQuery(raw): RawQuery,
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(1).unwrap_or("");
-    let accepted: &[&str] = match mode {
-        "history" | "tags" | "seed" | "tag" => &["api"],
-        "shared-missing-scores" => &[
-            "excludePlayers",
-            "excludeVariants",
-            "minEfficiency",
-            "maxEfficiency",
-        ],
-        _ => &[],
+    let accepted: Vec<&str> = match mode {
+        "history" | "tags" | "seed" | "tag" | "scores" | "profile" | "missing-scores" => {
+            vec!["api"]
+        }
+        "shared-missing-scores" => SHARED_MISSING_PARAMETERS
+            .iter()
+            .copied()
+            .chain(["api"])
+            .collect(),
+        _ => Vec::new(),
     };
-    let q = match strict_query(raw.as_deref(), accepted) {
+    let q = match strict_query(raw.as_deref(), &accepted) {
         Ok(q) => q,
         // The replay export is JSON.
         Err(error) if mode == "export" => return Ok(error.json()),
@@ -152,30 +179,33 @@ pub(super) async fn page(
         "password-reset" => v["title"] = json!("Password Reset"),
         "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
             let shared = mode == "shared-missing-scores";
-            let n = params.get("numPlayers").and_then(|n| integer(n));
-            if shared {
-                if n.is_none() {
-                    return Err(HttpError::bad(
-                        "You must first specify the number of players.",
-                    ));
-                }
-                if !n.is_some_and(hanabi_protocol::is_player_count) {
-                    return Err(HttpError::bad(format!(
-                        "Number of players must be between {} and {}.",
-                        hanabi_protocol::MIN_PLAYERS,
-                        hanabi_protocol::MAX_PLAYERS
-                    )));
-                }
+            let num_players = num_players(&params)?;
+            if shared && num_players.is_none() {
+                return Err(HttpError::bad(
+                    "You must first specify the number of players.",
+                ));
             }
             let users = data::players(&state, &params, shared || mode == "history").await?;
             v["name"] = json!(users[0].1);
             match mode {
                 "scores" | "profile" => {
+                    if api_redirect {
+                        return Ok(Redirect::permanent(&format!(
+                            "{API_PREFIX}/{mode}/{}",
+                            encoded(&users[0].1)
+                        ))
+                        .into_response());
+                    }
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    v["stats"] = player_statistics(&state, users[0].0).await?;
-                    let (_, variants) = score_summary(&state, users[0].0).await?;
-                    set_table(&mut v, &PublicPageTable::Scores { variants })?;
+                    let scores = player_scores(&state, users[0].0, &users[0].1).await?;
+                    v["stats"] = statistics_value(&scores.statistics)?;
+                    set_table(
+                        &mut v,
+                        &PublicPageTable::Scores {
+                            variants: scores.variants,
+                        },
+                    )?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -223,16 +253,48 @@ pub(super) async fn page(
                         )?;
                     }
                 }
-                _ => {
-                    return missing(
-                        &state,
-                        users,
-                        shared,
-                        n.filter(|n| hanabi_protocol::is_player_count(*n)),
-                        &q,
-                    )
-                    .await;
+                "missing-scores" | "shared-missing-scores" => {
+                    if api_redirect {
+                        let encoded_names = users
+                            .iter()
+                            .map(|user| encoded(&user.1))
+                            .collect::<Vec<_>>();
+                        let names = encoded_names.join("/");
+                        let path = match (shared, num_players) {
+                            (false, num_players) => {
+                                let mut path =
+                                    format!("{API_PREFIX}/missing-scores/{}", encoded_names[0]);
+                                if let Some(n) = num_players {
+                                    path = format!("{path}/{n}");
+                                }
+                                path
+                            }
+                            (true, Some(n)) => {
+                                let mut path =
+                                    format!("{API_PREFIX}/shared-missing-scores/{n}/{names}");
+                                let filters = SHARED_MISSING_PARAMETERS
+                                    .iter()
+                                    .filter_map(|name| {
+                                        q.get(name)
+                                            .map(|value| format!("{name}={}", encoded(value)))
+                                    })
+                                    .collect::<Vec<_>>();
+                                if !filters.is_empty() {
+                                    path = format!("{path}?{}", filters.join("&"));
+                                }
+                                path
+                            }
+                            (true, None) => {
+                                return Err(HttpError::bad(
+                                    "You must first specify the number of players.",
+                                ));
+                            }
+                        };
+                        return Ok(Redirect::permanent(&path).into_response());
+                    }
+                    return missing(&state, users, shared, num_players, &q).await;
                 }
+                _ => return Err(HttpError::not_found("Not found.")),
             }
         }
         "seed" => {
@@ -245,13 +307,11 @@ pub(super) async fn page(
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
-            let rows = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
-                .fetch_all(&state.pool)
-                .await?
-                .into_iter()
-                .map(serde_json::from_value)
-                .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
-            v["stats"] = seed_stats(&state, seed, &rows).await?;
+            let rows = score_frequencies(&state, seed).await?;
+            v["stats"] = match seed_stats(&state, seed, &rows).await? {
+                Some(statistics) => json!(statistics),
+                None => json!({}),
+            };
             set_table(
                 &mut v,
                 &PublicPageTable::Games {
@@ -361,8 +421,7 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
 }
 
 /// A player's game counts, time played, and the date they joined.
-async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
-    use chrono::Datelike;
+async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStatistics> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
@@ -387,21 +446,62 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
     )
     .fetch_one(&state.pool)
     .await?;
-    let date = account.datetime_created;
+    Ok(PlayerStatistics {
+        num_games_normal: Count::try_from(row.normal)?,
+        num_games_other: Count::try_from(row.other)?,
+        num_games_total: Count::try_from(row.normal + row.other)?,
+        num_games_speedrun: Count::try_from(row.speed)?,
+        time_played_seconds: Count::try_from(row.duration)?,
+        time_played_speedrun_seconds: Count::try_from(row.speed_duration)?,
+        time_reviewed_seconds: Count::try_from(account.seconds_reviewing)?,
+        time_total_seconds: Count::try_from(
+            row.duration
+                .saturating_add(row.speed_duration)
+                .saturating_add(account.seconds_reviewing),
+        )?,
+        date_joined: account.datetime_created.into(),
+    })
+}
+
+/// A player's statistics as their profile shows them, with durations and the joined date in words.
+fn statistics_value(statistics: &PlayerStatistics) -> Result<Value> {
+    use chrono::Datelike;
+    let seconds = |count: Count| count.get();
+    let date = chrono::DateTime::parse_from_rfc3339(statistics.date_joined.as_str())?
+        .with_timezone(&chrono::Utc);
     let suffix = match date.day() {
         1 | 21 | 31 => "st",
         2 | 22 => "nd",
         3 | 23 => "rd",
         _ => "th",
     };
-    Ok(
-        json!({"numGamesNormal":row.normal,"numGamesOther":row.other,
-        "numGamesTotal":row.normal+row.other,"numGamesSpeedrun":row.speed,
-        "timePlayed":duration(row.duration),"timePlayedSpeedrun":duration(row.speed_duration),
-        "timeReviewed":duration(account.seconds_reviewing),
-        "timeTotal":duration(row.duration.saturating_add(row.speed_duration).saturating_add(account.seconds_reviewing)),
-        "dateJoined":format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year())}),
-    )
+    Ok(json!({
+        "numGamesNormal": statistics.num_games_normal,
+        "numGamesOther": statistics.num_games_other,
+        "numGamesTotal": statistics.num_games_total,
+        "numGamesSpeedrun": statistics.num_games_speedrun,
+        "timePlayed": duration(seconds(statistics.time_played_seconds)),
+        "timePlayedSpeedrun": duration(seconds(statistics.time_played_speedrun_seconds)),
+        "timeReviewed": duration(seconds(statistics.time_reviewed_seconds)),
+        "timeTotal": duration(seconds(statistics.time_total_seconds)),
+        "dateJoined": format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year()),
+    }))
+}
+
+/// A player's statistics and best scores, which their profile and its JSON route show.
+pub(super) async fn player_scores(
+    state: &PublicState,
+    user: i32,
+    name: &str,
+) -> Result<PlayerScores> {
+    let statistics = player_statistics(state, user).await?;
+    let (max_scores, variants) = score_summary(state, user).await?;
+    Ok(PlayerScores {
+        name: name.into(),
+        statistics,
+        max_scores,
+        variants,
+    })
 }
 
 /// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest, and
@@ -410,13 +510,35 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
 pub(super) type SeedAverages =
     HashMap<String, Arc<tokio::sync::Mutex<Option<(std::time::Instant, Arc<[f64]>)>>>>;
 
+/// How many games reached each score on a seed.
+pub(super) async fn score_frequencies(
+    state: &PublicState,
+    seed: &str,
+) -> Result<Vec<hanabi_protocol::ScoreFrequency>> {
+    Ok(sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
+        .fetch_all(&state.pool)
+        .await?
+        .into_iter()
+        .map(serde_json::from_value)
+        .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?)
+}
+
+/// The statistics of a seed's games, or `None` when the seed has no games.
+pub(super) async fn seed_statistics(
+    state: &PublicState,
+    seed: &str,
+) -> Result<Option<SeedStatistics>> {
+    let frequencies = score_frequencies(state, seed).await?;
+    seed_stats(state, seed, &frequencies).await
+}
+
 /// The statistics of a seed's games, and how hard the seed is compared to the other seeds of its
 /// variant, player count, and hand size.
 async fn seed_stats(
     state: &PublicState,
     seed: &str,
     frequencies: &[hanabi_protocol::ScoreFrequency],
-) -> Result<Value> {
+) -> Result<Option<SeedStatistics>> {
     let games: i64 = frequencies.iter().map(|row| row.num_games.get()).sum();
     let Some(game) = sqlx::query!(
         "SELECT variant_id,num_players FROM games WHERE seed=$1 LIMIT 1",
@@ -425,10 +547,10 @@ async fn seed_stats(
     .fetch_optional(&state.pool)
     .await?
     else {
-        return Ok(json!({}));
+        return Ok(None);
     };
     let Some(variant) = catalog::variant(i64::from(game.variant_id)) else {
-        return Ok(json!({}));
+        return Ok(None);
     };
     let total: i64 = frequencies
         .iter()
@@ -440,18 +562,19 @@ async fn seed_stats(
         .filter(|row| i64::from(row.score.get()) == i64::from(variant.max_score))
         .map(|row| row.num_games.get())
         .sum();
-    let mut statistics = json!({
-        "numGames": games,
-        "numMaxScores": max_scores,
-        "maxScoreRate": percentage(max_scores, games),
-        "averageScore": format!("{average:.AVERAGE_SCORE_DECIMALS$}"),
-        "maxScore": variant.max_score,
-    });
+    let mut statistics = SeedStatistics {
+        num_games: Count::try_from(games)?,
+        num_max_scores: Count::try_from(max_scores)?,
+        max_score_rate: percentage(max_scores, games),
+        average_score: format!("{average:.AVERAGE_SCORE_DECIMALS$}"),
+        max_score: Score::try_from(variant.max_score)?,
+        difficulty: None,
+    };
     let Some(prefix) = regex!(crate::game::SEED_PATTERN)
         .captures(seed)
         .map(|captures| captures[1].to_owned())
     else {
-        return Ok(statistics);
+        return Ok(Some(statistics));
     };
     let averages = seed_averages(state, prefix, game.variant_id, game.num_players).await?;
     let lower = averages.partition_point(|other| *other < average);
@@ -463,17 +586,17 @@ async fn seed_stats(
     if others > 0 {
         // A seed is harder than each seed with a higher average and half as hard as each tie, as
         // in duplicate bridge's match points.
-        statistics["difficulty"] = json!({
-            "percentile": format!(
+        statistics.difficulty = Some(SeedDifficulty {
+            percentile: format!(
                 "{:.0}",
                 float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0 / float(others)
             ),
-            "numSeeds": others,
-            "numPlayers": game.num_players,
-            "variantName": variant.name,
+            num_seeds: Count::try_from(others)?,
+            num_players: NumPlayers::try_from(game.num_players)?,
+            variant_name: variant.name.clone(),
         });
     }
-    Ok(statistics)
+    Ok(Some(statistics))
 }
 /// The decimal places that a seed's average score is shown with.
 const AVERAGE_SCORE_DECIMALS: usize = 1;
@@ -545,7 +668,10 @@ const VERY_HARD_EFFICIENCY: f64 = 1.5;
 
 /// A player's count of max scores at each player count, and their best scores on each variant that
 /// they have played.
-async fn score_summary(state: &PublicState, id: i32) -> Result<(Value, Vec<VariantScores>)> {
+async fn score_summary(
+    state: &PublicState,
+    id: i32,
+) -> Result<(MaxScoreSummary, Vec<VariantScores>)> {
     let statistics = user_stats(state, id).await?;
     let mut totals = [0; crate::database::PLAYER_COUNTS];
     let mut played = Vec::new();
@@ -577,9 +703,24 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<(Value, Vec<Varia
     }
     let total: i64 = totals.iter().sum();
     let variants = i64::try_from(catalog::variants().len())?;
+    let per_type = totals
+        .iter()
+        .map(|&total| {
+            Ok(MaxScoreCount {
+                total: Count::try_from(total)?,
+                percentage: percentage(total, variants),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
     Ok((
-        json!({"total":total,"percentage":percentage(total,variants*i64::try_from(crate::database::PLAYER_COUNTS)?),
-        "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
+        MaxScoreSummary {
+            total: Count::try_from(total)?,
+            percentage: percentage(
+                total,
+                variants * i64::try_from(crate::database::PLAYER_COUNTS)?,
+            ),
+            per_type,
+        },
         played,
     ))
 }
@@ -597,13 +738,14 @@ pub(super) const MAX_FILTER_TERMS: usize = 100;
 /// The most characters that a missing-scores filter, such as `excludeVariants`, takes.
 pub(super) const MAX_FILTER_LENGTH: usize = 1000;
 
-async fn missing(
+/// The max scores that one player or several players are missing.
+pub(super) async fn missing_page(
     state: &PublicState,
-    users: Vec<(i32, String)>,
+    users: &[(i32, String)],
     shared: bool,
-    num_players: Option<i64>,
+    num_players: Option<NumPlayers>,
     q: &Query,
-) -> Result<Response> {
+) -> Result<MissingScoresPage> {
     if shared && users.len() < hanabi_protocol::MIN_PLAYERS {
         return Err(HttpError::not_found(format!(
             "You must specify at least {} players.",
@@ -662,10 +804,10 @@ async fn missing(
     let counts = num_players.map_or_else(
         || {
             (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                .filter_map(|p| i64::try_from(p).ok())
+                .map(|p| i64::try_from(p).unwrap_or_default())
                 .collect::<Vec<_>>()
         },
-        |p| vec![p],
+        |p| vec![i64::from(p.get())],
     );
     // Each variant name is normalized once, not once for each term and player count.
     let variants: Vec<_> = catalog::variants()
@@ -737,7 +879,6 @@ async fn missing(
             });
         }
     }
-    let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let filters = if shared {
         MissingScoresFilters::Shared {
             players,
@@ -751,15 +892,42 @@ async fn missing(
     } else {
         MissingScoresFilters::Player {
             name: users[0].1.as_str().into(),
-            num_players: num_players.map(NumPlayers::try_from).transpose()?,
+            num_players,
         }
     };
+    Ok(MissingScoresPage {
+        players: users.iter().map(|u| u.1.as_str().into()).collect(),
+        summary: if shared {
+            None
+        } else {
+            Some(score_summary(state, users[0].0).await?.0)
+        },
+        rows,
+        filters,
+    })
+}
+
+async fn missing(
+    state: &PublicState,
+    users: Vec<(i32, String)>,
+    shared: bool,
+    num_players: Option<NumPlayers>,
+    q: &Query,
+) -> Result<Response> {
+    let page = missing_page(state, &users, shared, num_players, q).await?;
+    let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let mut v = json!({"title":"Missing Scores","name":users[0].1,
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared});
-    if !shared {
-        v["summary"] = score_summary(state, users[0].0).await?.0;
+    if let Some(summary) = &page.summary {
+        v["summary"] = json!(summary);
     }
-    set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
+    set_table(
+        &mut v,
+        &PublicPageTable::MissingScores {
+            rows: page.rows,
+            filters: page.filters,
+        },
+    )?;
     render(state, "missing-scores.html", v)
 }
