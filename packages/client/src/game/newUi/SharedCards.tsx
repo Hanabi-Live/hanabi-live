@@ -855,9 +855,10 @@ function Deck({
   const finalRound = empty && turnsLeft !== undefined;
   const turns = turnsLeft === 1 ? "turn" : "turns";
   const showEmpathy = empathy !== undefined && !empty;
-  // The top card of the deck, while the viewer holds it down, so that the bubble of possible cards
-  // points at it.
-  const [heldTop, setHeldTop] = useState<HTMLElement>();
+  // The top card of the deck, while the pointer is over it, so that the bubble of possible cards
+  // points at it. The deck tracks the pointer even without a bubble, so that the bubble opens when
+  // the viewer holds Space over it, as over a card in a hand.
+  const [hoveredTop, setHoveredTop] = useState<HTMLElement>();
   const held = play?.held === true;
   // In the final round, only the border of the empty slot is faint, so that the turns left stand
   // out.
@@ -868,10 +869,28 @@ function Deck({
     emptyStyle = "tw:border-game-line tw:opacity-60";
   }
 
-  function stopEmpathy() {
-    setHeldTop(undefined);
+  function onPointerEnter(event: React.PointerEvent<HTMLElement>) {
+    setHoveredTop(event.currentTarget);
+  }
+
+  function onPointerLeave() {
+    setHoveredTop(undefined);
     onHoldEmpathy(false);
   }
+
+  const bubble =
+    showEmpathy
+    && hoveredTop !== undefined
+    && empathy.possibleCards.suits.length > 0
+    && createPortal(
+      <PossibleCardsBubble
+        anchor={hoveredTop}
+        bubble={empathy.possibleCards}
+        colorblindMode={colorblindMode}
+        variant={variant}
+      />,
+      document.body,
+    );
 
   let face: React.ReactNode;
   if (showEmpathy) {
@@ -1007,7 +1026,9 @@ function Deck({
             className={topClass}
             data-deck
             // Held down, the deck shows which cards can still be in it, as on the classic screen.
-            onPointerCancel={stopEmpathy}
+            onPointerCancel={() => {
+              onHoldEmpathy(false);
+            }}
             onPointerDown={(event) => {
               if (
                 event.button !== 0
@@ -1017,26 +1038,17 @@ function Deck({
               ) {
                 return;
               }
-              setHeldTop(event.currentTarget);
               onHoldEmpathy(true);
             }}
-            onPointerLeave={stopEmpathy}
-            onPointerUp={stopEmpathy}
+            onPointerEnter={onPointerEnter}
+            onPointerLeave={onPointerLeave}
+            onPointerUp={() => {
+              onHoldEmpathy(false);
+            }}
             style={topStyle}
           >
             {face}
-            {showEmpathy
-              && heldTop !== undefined
-              && empathy.possibleCards.suits.length > 0
-              && createPortal(
-                <PossibleCardsBubble
-                  anchor={heldTop}
-                  bubble={empathy.possibleCards}
-                  colorblindMode={colorblindMode}
-                  variant={variant}
-                />,
-                document.body,
-              )}
+            {bubble}
           </div>
         ) : (
           <button
@@ -1054,10 +1066,13 @@ function Deck({
             data-deck
             onClick={play.tapToMove ? play.onTap : undefined}
             onPointerDown={play.tapToMove ? undefined : play.onPointerDown}
+            onPointerEnter={onPointerEnter}
+            onPointerLeave={onPointerLeave}
             style={topStyle}
             type="button"
           >
             {face}
+            {bubble}
           </button>
         )}
         {play?.menuOpen === true && (
