@@ -151,11 +151,6 @@ def control(port, path, method="GET"):
         with urllib.request.urlopen(request, timeout=30) as response:
             text = response.read().decode()
     except urllib.error.HTTPError as error:
-        # Servers from before 2026-11-15 take only GET for /gracefulRestart. Remove this once the
-        # server that takes POST is deployed.
-        if method == "POST" and error.code == 405:
-            error.close()
-            return control(port, path)
         with error:
             detail = error.read(8192).decode(errors="replace").strip()
         raise urllib.error.URLError(
