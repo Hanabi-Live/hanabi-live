@@ -639,7 +639,18 @@ export function PlayArea({
           </div>
           <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
         </section>
-        <Deck {...deck} cardWidth={cardWidth} />
+        {/* In a row, the deck moves down by the stacks' padding, so that its top card is level
+            with the cards of the stacks. */}
+        <div
+          className="tw:contents tw:narrow-980:block tw:narrow-980:pt-(--play-stacks-padding)"
+          style={
+            {
+              "--play-stacks-padding": `${PLAY_STACKS_PADDING}px`,
+            } as React.CSSProperties
+          }
+        >
+          <Deck {...deck} cardWidth={cardWidth} />
+        </div>
       </div>
       {tokens}
     </div>
