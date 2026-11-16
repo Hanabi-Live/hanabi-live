@@ -101,7 +101,14 @@ import {
   getClueMarkers,
   getPreviewMarker,
 } from "./clueMarkers.ts";
-import { useElementSize, useMediaQuery, useNow } from "./hooks.ts";
+import {
+  CHAT_OVERLAY_WIDTH_QUERY,
+  MEDIUM_WIDTH_QUERY,
+  STACKED_WIDTH_QUERY,
+  useElementSize,
+  useMediaQuery,
+  useNow,
+} from "./hooks.ts";
 import { newUiArrowChanged } from "./newUiSlice.ts";
 import {
   canDiscardNow,
@@ -145,16 +152,6 @@ import { useCardMotion } from "./useCardMotion.ts";
 import type { ClueHotkeys } from "./useHotkeys.ts";
 import { useClueHotkeys, useSpacebarEmpathy } from "./useHotkeys.ts";
 import { useQueuedMove } from "./useQueuedMove.ts";
-
-/**
- * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
- * widths through the "narrow-1440" and "narrow-980" variants. At or below each one, the screen
- * makes room: first the side columns get narrower, then chat covers the table when open, and then
- * the columns stack and the page scrolls.
- */
-const MEDIUM_WIDTH_QUERY = "(max-width: 1440px)";
-const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
-const STACKED_WIDTH_QUERY = "(max-width: 980px)";
 
 /** The space on each side of the table in the phone layout. */
 const PHONE_SIDE_PADDING = "0.75em";

@@ -8,7 +8,7 @@ import {
   LOW_SCORE_PHASE_COLOR,
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
-import { useElementSize } from "./hooks.ts";
+import { STACKED_WIDTH_QUERY, useElementSize, useMediaQuery } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
 /** What the efficiency numbers mean, for screen readers. */
@@ -501,10 +501,16 @@ const SHORT_LABELS_ATTRIBUTE = "data-short-labels";
  * After each render and resize, the row takes away the attribute of the short labels, checks
  * whether its buttons wrap onto a second line, and puts the attribute back. All of it happens
  * before the browser draws the bar.
+ *
+ * When the replay controls have a row of their own on a wide window (`besideVariant`), the buttons
+ * share the next row with the variant, and they also need short labels when they would go to a row
+ * under it.
  */
 function useShortLabels(
   footer: HTMLElement | null,
   row: RefObject<HTMLDivElement | null>,
+  variant: RefObject<HTMLDivElement | null>,
+  besideVariant: boolean,
 ): boolean {
   // Measures again when the bar's width changes.
   useElementSize(footer);
@@ -523,7 +529,13 @@ function useShortLabels(
           child instanceof HTMLElement && child.offsetParent !== null,
       )
       .map((child) => child.offsetTop);
-    const wraps = tops.some((top) => top !== tops[0]);
+    const variantElement = variant.current;
+    const wraps =
+      tops.some((top) => top !== tops[0])
+      || (besideVariant
+        && variantElement !== null
+        && element.getBoundingClientRect().top
+          >= variantElement.getBoundingClientRect().bottom);
     if (hadShortLabels) {
       element.setAttribute(SHORT_LABELS_ATTRIBUTE, "");
     }
@@ -574,7 +586,14 @@ export function StatusStrip({
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
-  const shortLabels = useShortLabels(footer, buttonsRef);
+  const variantRef = useRef<HTMLDivElement>(null);
+  const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
+  const shortLabels = useShortLabels(
+    footer,
+    buttonsRef,
+    variantRef,
+    ownRow && !stacked,
+  );
 
   // The line along the top is a shadow, not a border, so that its width does not move the bar's
   // contents when a replay makes it thicker.
@@ -749,11 +768,16 @@ export function StatusStrip({
           its room first, so that the replay controls keep theirs. On a narrow window, it fills the
           rest of the row. The buttons go to a second row when the name would get less than its
           minimum width. On a phone, that minimum is zero, so that the name stays in the row of the
-          numbers, and the bar takes only two rows. */}
+          numbers, and the bar takes only two rows. When the replay controls have a row of their
+          own on a wide window, the name shares the next row with the buttons. Then it starts from
+          no width, and its minimum is the width of its label, so that the name gets shorter before
+          the buttons get short labels, and the buttons get short labels before they go to a row
+          of their own. */}
       <div
-        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:narrow-980:min-w-28 tw:narrow-980:flex-1 tw:narrow-530:min-w-0`}
+        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-narrow-980:group-data-own-row/strip:min-w-min tw:not-narrow-980:group-data-own-row/strip:flex-1 tw:narrow-980:min-w-28 tw:narrow-980:flex-1 tw:narrow-530:min-w-0`}
+        ref={variantRef}
       >
-        <span className={STAT_LABEL_CLASS}>
+        <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
           Variant
           <HelpIcon
             icon="fa-info-circle"
@@ -761,7 +785,11 @@ export function StatusStrip({
             tooltip={valueTooltip(gameInfoTooltip)}
           />
         </span>
-        <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:narrow-980:leading-[24px]">
+        <span
+          // When the variant shares a row with the buttons, the name takes no width of its own, so
+          // that only the label sets the variant's minimum width.
+          className="tw:block tw:max-w-full tw:truncate tw:not-narrow-980:group-data-own-row/strip:w-0 tw:not-narrow-980:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:narrow-980:leading-[24px]"
+        >
           {variantName}
         </span>
       </div>
