@@ -150,7 +150,7 @@ function keydown(event: KeyboardEvent) {
 
   // Pressing or releasing Ctrl while the spacebar is held changes the view at once. Otherwise, it
   // changes only when the spacebar repeats, and Ctrl stops that repeat.
-  if (event.key === "Control") {
+  if (event.key === KeyCode.VALUE_CONTROL) {
     if (globals.globalEmpathyEnabled) {
       setGlobalEmpathy(true, true);
     }
@@ -399,7 +399,7 @@ function isGameChatInputFocused(): boolean {
 }
 
 function keyup(event: KeyboardEvent) {
-  if (event.key === "Control") {
+  if (event.key === KeyCode.VALUE_CONTROL) {
     if (globals.globalEmpathyEnabled) {
       setGlobalEmpathy(true);
     }
