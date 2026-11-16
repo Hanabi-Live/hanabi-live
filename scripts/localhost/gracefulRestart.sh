@@ -11,8 +11,9 @@ fi
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 COMMAND=$(basename "$0" | cut -f 1 -d '.')
 source "$DIR/common.sh"
+# The command takes only POST, with the message in the query string.
+arguments=(--request POST)
 if [[ $# -eq 1 ]]; then
-  admin_request "http://localhost:$LOCALHOST_PORT/$COMMAND" --get --data-urlencode "message=$1"
-else
-  admin_command "$COMMAND"
+  arguments+=(--get --data-urlencode "message=$1")
 fi
+admin_request "http://localhost:$LOCALHOST_PORT/$COMMAND" "${arguments[@]}"

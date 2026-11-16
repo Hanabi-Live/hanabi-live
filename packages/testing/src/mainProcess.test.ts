@@ -281,6 +281,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             const ready = processState.nextReady();
             const response = await fetch(
               `${operationsAddress}/gracefulRestart`,
+              { method: "POST" },
             );
             expect(response.status).toBe(200);
             await response.text();
@@ -289,7 +290,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
             const crashed = processState.child;
             const crashedClosed = once(crashed, "close");
             if (signal === "HTTP_STOP") {
-              const response = await fetch(`${operationsAddress}/gracefulStop`);
+              const response = await fetch(
+                `${operationsAddress}/gracefulStop`,
+                { method: "POST" },
+              );
               expect(response.status).toBe(200);
               await response.text();
               await Promise.all(
@@ -513,7 +517,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
             "banned",
           );
           const stopped = once(processState.child, "close");
-          const stop = await fetch(`${operationsAddress}/gracefulStop`);
+          const stop = await fetch(`${operationsAddress}/gracefulStop`, {
+            method: "POST",
+          });
           expect(stop.status).toBe(200);
           await stop.text();
           await bounded(stopped, "empty server graceful stop", 5000);

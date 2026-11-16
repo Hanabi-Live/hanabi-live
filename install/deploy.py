@@ -145,11 +145,17 @@ def download(github, run, revision, work):
     return staged, metadata
 
 
-def control(port, path):
+def control(port, path, method="GET"):
+    request = urllib.request.Request(f"http://127.0.0.1:{port}{path}", method=method)
     try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=30) as response:
+        with urllib.request.urlopen(request, timeout=30) as response:
             text = response.read().decode()
     except urllib.error.HTTPError as error:
+        # Servers from before 2026-11-15 take only GET for /gracefulRestart. Remove this once the
+        # server that takes POST is deployed.
+        if method == "POST" and error.code == 405:
+            error.close()
+            return control(port, path)
         with error:
             detail = error.read(8192).decode(errors="replace").strip()
         raise urllib.error.URLError(
@@ -368,7 +374,7 @@ def deploy(root, check, apply_migrations):
             publish(root, staged, metadata)
             subprocess.run([str(root / "hanabi-live"), "--check-startup"], cwd=root, check=True)
             phase("restarting")
-            require(control(port, "/gracefulRestart") == "success", "Restart request was not acknowledged.")
+            require(control(port, "/gracefulRestart", "POST") == "success", "Restart request was not acknowledged.")
             await_restart(port, revision)
             for name in runtime_files(metadata):
                 require(release.digest(root / name) == metadata["files"][name], f"Published file differs: {name}")

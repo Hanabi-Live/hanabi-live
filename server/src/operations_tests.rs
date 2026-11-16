@@ -73,8 +73,9 @@ impl Harness {
     }
 }
 async fn request(app: Router, path: &str, body: Option<&str>) -> (StatusCode, String) {
+    let read = matches!(path.split('?').next(), Some("/metrics" | "/version"));
     let mut request = Request::builder()
-        .method(if body.is_some() { "POST" } else { "GET" })
+        .method(if read { "GET" } else { "POST" })
         .uri(path)
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(Body::from(body.unwrap_or("").to_owned()))
@@ -103,10 +104,14 @@ async fn graceful_stop_is_loopback_only_and_rejects_repeated_requests() {
         .unwrap();
     let mut h = Harness::new(pool);
     let app = router(h.control.clone());
-    for (peer, browser) in [("192.0.2.1:1234", false), ("127.0.0.1:1234", true)] {
-        let mut builder = Request::builder().uri("/gracefulStop");
-        if browser {
-            builder = builder.header("Origin", "http://localhost");
+    for (peer, header) in [
+        ("192.0.2.1:1234", None),
+        ("127.0.0.1:1234", Some(("Origin", "http://localhost"))),
+        ("127.0.0.1:1234", Some(("Host", "rebound.example:8081"))),
+    ] {
+        let mut builder = Request::builder().method("POST").uri("/gracefulStop");
+        if let Some((name, value)) = header {
+            builder = builder.header(name, value);
         }
         let mut request = builder.body(Body::empty()).unwrap();
         request
@@ -185,6 +190,18 @@ async fn loopback_routes_admission() {
         app.clone().oneshot(with_body).await.unwrap().status(),
         StatusCode::BAD_REQUEST
     );
+    // A command that changes state takes only POST.
+    let mut get_stop = Request::builder()
+        .uri("/gracefulStop")
+        .body(Body::empty())
+        .unwrap();
+    get_stop
+        .extensions_mut()
+        .insert(ConnectInfo("127.0.0.1:1234".parse::<SocketAddr>().unwrap()));
+    assert_eq!(
+        app.clone().oneshot(get_stop).await.unwrap().status(),
+        StatusCode::METHOD_NOT_ALLOWED
+    );
     for removed in ["/getLongTables", "/terminate?tableId=7"] {
         assert_eq!(
             request(app.clone(), removed, None).await.0,
@@ -192,6 +209,7 @@ async fn loopback_routes_admission() {
         );
     }
     let mut browser = Request::builder()
+        .method("POST")
         .uri("/gracefulStop")
         .header("Origin", "")
         .body(Body::empty())
@@ -204,6 +222,7 @@ async fn loopback_routes_admission() {
         StatusCode::FORBIDDEN
     );
     let mut remote = Request::builder()
+        .method("POST")
         .uri("/gracefulStop")
         .body(Body::empty())
         .unwrap();

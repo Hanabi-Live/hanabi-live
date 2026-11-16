@@ -37,10 +37,12 @@ use std::{collections::BTreeMap, net::SocketAddr, sync::Arc};
 
 pub fn router(control: Arc<Control>) -> Router {
     let mut router = Router::new();
-    for path in ["/ban", "/mute"] {
+    // Commands that change state take only POST, so that a page cannot send them with a link or an
+    // image.
+    for path in ["/ban", "/mute", "/gracefulRestart", "/gracefulStop"] {
         router = router.route(path, post(handle));
     }
-    for path in ["/gracefulRestart", "/gracefulStop", "/metrics", "/version"] {
+    for path in ["/metrics", "/version"] {
         router = router.route(path, get(handle));
     }
     router
@@ -56,12 +58,27 @@ pub fn router(control: Arc<Control>) -> Router {
         .with_state(control)
 }
 
+/// Whether a `Host` header names this machine, with or without a port.
+fn loopback_host(host: &[u8]) -> bool {
+    let Ok(authority) = axum::http::uri::Authority::try_from(host) else {
+        return false;
+    };
+    matches!(authority.host(), "localhost" | "127.0.0.1" | "[::1]")
+}
+
 fn mutating(path: &str) -> bool {
     matches!(path, "/ban" | "/mute" | "/gracefulStop")
 }
 async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next) -> Response {
     let peer = request.extensions().get::<ConnectInfo<SocketAddr>>();
-    let browser = request.headers().contains_key(header::ORIGIN)
+    // A page on another domain can resolve that domain to this machine (DNS rebinding). Its
+    // requests then name that domain as the host.
+    let foreign_host = request
+        .headers()
+        .get(header::HOST)
+        .is_some_and(|host| !loopback_host(host.as_bytes()));
+    let browser = foreign_host
+        || request.headers().contains_key(header::ORIGIN)
         || request
             .headers()
             .get("sec-fetch-site")
