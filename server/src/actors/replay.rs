@@ -54,7 +54,12 @@ impl TableActor {
     ) -> CommandResult<()> {
         match message {
             ClientRequest::ReplayAction(r) => self.replay_action(session, r).await,
-            ClientRequest::TableSuggest(r) => self.suggest(session, r.turn).await,
+            // A suggestion is a message to the leader, so it is charged like one. The "/suggest"
+            // command is charged as a chat message.
+            ClientRequest::TableSuggest(r) => {
+                self.charge_chat(session.user)?;
+                self.suggest(session, r.turn).await
+            }
             // A restart starts in `client`, through `start_restart`.
             ClientRequest::TableRestart(_) => {
                 bail_internal!("A restart ran without its statistics")
