@@ -218,49 +218,20 @@ export function ChatPanel({
   const spectatorsLabel = `${spectators.length} watching`;
 
   if (!open || poppedOut) {
-    const action = poppedOut ? "Show chat window" : "Open chat";
-    let chatButtonLabel = action;
-    if (zen) {
-      chatButtonLabel = `${action}, in zen mode`;
-    } else if (!poppedOut && unread > 0) {
-      chatButtonLabel = `Open chat, ${unread} unread messages`;
-    }
-    const chatButtonTooltip = zen
-      ? `Zen mode hides the chat and who is watching. Click to ${poppedOut ? "show the chat window" : "open the chat"}. Right-click to leave zen mode.`
-      : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
-    let chatIcon = poppedOut ? "fa-external-link-alt" : "fa-comment";
-    if (zen) {
-      chatIcon = "fa-yin-yang";
-    }
+    // On a phone, the chat button is on the bottom bar instead (see "StatusStrip.tsx"), and the
+    // rail is hidden, so that the table gets its width. The open panel's header still names the
+    // people watching.
     return (
       <aside
         aria-label="Chat, collapsed"
-        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5"
+        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5 tw:narrow-530:hidden"
       >
-        <button
-          aria-label={chatButtonLabel}
-          className={`tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
-          onClick={() => {
-            if (poppedOut) {
-              focusChatWindow(true);
-            } else {
-              gameChat.show();
-            }
-          }}
-          onContextMenu={(event) => {
-            event.preventDefault();
-            toggleZen();
-          }}
-          ref={tooltipRef(chatButtonTooltip)}
-          type="button"
-        >
-          <i aria-hidden="true" className={`fas ${chatIcon}`} />
-          {unread > 0 && (
-            <span className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink">
-              {unread}
-            </span>
-          )}
-        </button>
+        <ChatButton
+          className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
+          poppedOut={poppedOut}
+          unread={unread}
+          zen={zen}
+        />
         {/* Only a count: the open panel's header names the people watching. */}
         {spectators.length > 0 && (
           <div
@@ -340,5 +311,65 @@ export function ChatPanel({
         style={CHAT_BOX_COLORS as React.CSSProperties}
       />
     </aside>
+  );
+}
+
+/**
+ * The button that opens the chat, or shows the chat window when the chat is popped out. It shows
+ * how many messages are unread. A right-click turns zen mode on or off.
+ */
+export function ChatButton({
+  zen,
+  poppedOut,
+  unread,
+  className,
+}: {
+  readonly zen: boolean;
+  readonly poppedOut: boolean;
+  readonly unread: number;
+
+  /** The button's size and colors. */
+  readonly className: string;
+}): React.JSX.Element {
+  const action = poppedOut ? "Show chat window" : "Open chat";
+  let label = action;
+  if (zen) {
+    label = `${action}, in zen mode`;
+  } else if (!poppedOut && unread > 0) {
+    label = `Open chat, ${unread} unread messages`;
+  }
+  const tooltip = zen
+    ? `Zen mode hides the chat and who is watching. Click to ${poppedOut ? "show the chat window" : "open the chat"}. Right-click to leave zen mode.`
+    : `${action}. Right-click for zen mode, which hides the chat and who is watching.`;
+  let icon = poppedOut ? "fa-external-link-alt" : "fa-comment";
+  if (zen) {
+    icon = "fa-yin-yang";
+  }
+
+  return (
+    <button
+      aria-label={label}
+      className={`tw:relative tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${className}`}
+      onClick={() => {
+        if (poppedOut) {
+          focusChatWindow(true);
+        } else {
+          gameChat.show();
+        }
+      }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        toggleZen();
+      }}
+      ref={tooltipRef(tooltip)}
+      type="button"
+    >
+      <i aria-hidden="true" className={`fas ${icon}`} />
+      {unread > 0 && (
+        <span className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink">
+          {unread}
+        </span>
+      )}
+    </button>
   );
 }

@@ -41,7 +41,7 @@ import type { CardClueMarker } from "./Card.tsx";
 import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
-import { ChatPanel } from "./ChatPanel.tsx";
+import { ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 import { ClueMenu } from "./ClueMenu.tsx";
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
@@ -130,6 +130,7 @@ import {
   getStrikeSegments,
   isScoreHidden,
 } from "./screenView.ts";
+import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 import {
   formatPace,
   getCluePreviewDeck,
@@ -1232,6 +1233,17 @@ export function GameScreen({
       </div>
 
       <StatusStrip
+        chatButton={
+          // Like the chat's rail, the button is there while the chat panel is closed.
+          !chatOpen || chatPoppedOut ? (
+            <ChatButton
+              className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text ${KEY_CLASS}`}
+              poppedOut={chatPoppedOut}
+              unread={zen ? 0 : chatUnread}
+              zen={zen}
+            />
+          ) : undefined
+        }
         colorblindMode={settings.colorblindMode}
         efficiencyModified={efficiencyStats.modified}
         efficiencyStats={efficiencyStats}

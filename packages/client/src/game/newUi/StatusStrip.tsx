@@ -115,6 +115,12 @@ interface StatusStripProps {
    * a finished one again.
    */
   readonly tableMenu: React.ReactNode;
+
+  /**
+   * The button that opens the chat. The bar shows it only on a phone, where the chat's rail is
+   * hidden, so that the table gets its width.
+   */
+  readonly chatButton: React.ReactNode;
   readonly onClassicView: () => void;
   readonly onLobby: () => void;
 }
@@ -498,6 +504,7 @@ export function StatusStrip({
   replayControls,
   viewAsMenu,
   tableMenu,
+  chatButton,
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
@@ -710,15 +717,33 @@ export function StatusStrip({
         </div>
       )}
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2">
+        {chatButton !== undefined && (
+          <div className="tw:mr-auto tw:hidden tw:narrow-530:flex">
+            {chatButton}
+          </div>
+        )}
+        {/* On a phone, the buttons have short labels, so that all of them fit in one row. */}
         <button className={buttonClass} onClick={onClassicView} type="button">
-          Classic UI
+          {/* One box, so that the button's gap does not split the words. */}
+          <span>
+            Classic<span className="tw:narrow-530:hidden"> UI</span>
+          </span>
         </button>
         {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
         {viewAsMenu}
         {tableMenu}
         {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}
-        <button className={buttonClass} onClick={onLobby} type="button">
-          Lobby
+        <button
+          aria-label="Lobby"
+          className={buttonClass}
+          onClick={onLobby}
+          type="button"
+        >
+          <i
+            aria-hidden="true"
+            className="fas fa-door-open tw:hidden tw:narrow-530:inline"
+          />
+          <span className="tw:narrow-530:hidden">Lobby</span>
         </button>
       </div>
     </footer>
