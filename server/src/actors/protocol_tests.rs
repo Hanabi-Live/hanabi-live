@@ -750,6 +750,36 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
 }
 
 #[tokio::test]
+async fn only_the_owner_changes_the_leader_before_the_replay() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Watcher"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Takeover", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.send(2, "tableSpectate", json!({"tableId":id})).await?;
+        for live in [false, true] {
+            if live {
+                h.start(0, id).await?;
+            }
+            for (actor, target) in [(1, 1), (2, 1)] {
+                let data = json!({"tableId":id,"userId":h.users[target].user});
+                ensure!(
+                    h.send(actor, "tableSetOwner", data).await.is_err(),
+                    "A non-owner changed the leader (live: {live})"
+                );
+            }
+            ensure!(h.snapshot(id).await?.0.owner.user_id == h.users[0].user);
+        }
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

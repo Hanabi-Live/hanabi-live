@@ -199,6 +199,12 @@ impl TableActor {
         user: UserId,
     ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
+        // Anyone at a shared replay can take the lead. Elsewhere, only the owner can pass it on.
+        let shared_replay = matches!(self.table.phase, Phase::Replay { .. }) && self.table.visible;
+        ensure_or_reject!(
+            shared_replay || session.user == self.table.owner.user_id,
+            "Only the table owner can change the leader"
+        );
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .find(|a| a.session.user == user)
