@@ -198,18 +198,11 @@ export function useCardMotion(
     /** The clue whose markers show, so that they fly in only once. */
     readonly shownClue: StateClue | undefined;
     readonly finished: boolean;
-    readonly move:
-      | {
-          readonly startPositions: CardPositions;
-          readonly startState: GameState;
-        }
-      | undefined;
   }>({
     settledPositions: new Map(),
     shownState: undefined,
     shownClue: undefined,
     finished: false,
-    move: undefined,
   });
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -225,7 +218,6 @@ export function useCardMotion(
         shownState,
         shownClue: getClueForTurn(shownState),
         finished: state.finished,
-        move: undefined,
       };
       return;
     }
@@ -242,14 +234,11 @@ export function useCardMotion(
     }
 
     // The end of a game ("gameFinished") arrives just after its last move, and turns the game into
-    // a replay, which shows the turn before the end. While the cards of the last move still move,
-    // it joins that move: the cards start again from where they were before the move, toward their
-    // newest places. It never stops the score's animations, such as the finale.
+    // a replay, which shows the turn before the end. The cards of the last move go on to their
+    // places, and the score's animations, such as the finale, go on too.
     const endsGame = state.finished && !previous.finished;
-    const joined = endsGame && areCardsMoving() ? previous.move : undefined;
-    const startState = joined?.startState ?? previous.shownState;
     const segmentChange =
-      (shownState.turn.segment ?? 0) - (startState.turn.segment ?? 0);
+      (shownState.turn.segment ?? 0) - (previous.shownState.turn.segment ?? 0);
     const animated = Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE;
     if (!endsGame) {
       finishScoreSignals();
@@ -266,7 +255,7 @@ export function useCardMotion(
     // jumps over turns.
     let positions: CardPositions;
     let startPositions = previous.settledPositions;
-    if (joined === undefined && animated) {
+    if (animated) {
       ({ positions, startPositions } = measureMovingCards(
         root,
         previous.settledPositions,
@@ -291,20 +280,16 @@ export function useCardMotion(
       }
       clearDrop();
     }
-    const move = joined ?? {
-      startPositions,
-      startState,
-    };
     if (animated) {
       const effects = getMoveEffects(
         state,
-        move.startState,
+        previous.shownState,
         shownState,
         segmentChange,
       );
       animateCardMoves(
         root,
-        move.startPositions,
+        startPositions,
         positions,
         segmentChange > 0,
         effects,
@@ -336,7 +321,6 @@ export function useCardMotion(
       shownState,
       shownClue: newClue,
       finished: state.finished,
-      move,
     };
   });
 
