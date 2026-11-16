@@ -776,23 +776,30 @@ function TurnWarningTag({
  */
 export function NameColumnSizer({
   seats,
-  onWidthChange,
+  onSizeChange,
 }: {
   readonly seats: readonly Seat[];
-  readonly onWidthChange: (width: number) => void;
+
+  /** Gets the width of the widest name, and the height of a name. */
+  readonly onSizeChange: (width: number, height: number) => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = ref.current!;
-    // Round up, so that the widest name is not cut short by a fraction of a pixel.
+    // Round up, so that the widest name is not cut short by a fraction of a pixel. Every name is as
+    // tall as the first one.
     const observer = new ResizeObserver(() => {
-      onWidthChange(Math.ceil(measure(element).width));
+      const first = element.firstElementChild;
+      onSizeChange(
+        Math.ceil(measure(element).width),
+        first === null ? 0 : Math.ceil(measure(first).height),
+      );
     });
     observer.observe(element);
     return () => {
       observer.disconnect();
     };
-  }, [onWidthChange]);
+  }, [onSizeChange]);
 
   return (
     <div

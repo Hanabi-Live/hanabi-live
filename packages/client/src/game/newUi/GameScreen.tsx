@@ -258,9 +258,16 @@ export function GameScreen({
   const [playAreaElement, setPlayAreaElement] = useState<HTMLDivElement | null>(
     null,
   );
+  const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
   const handsSize = useElementSize(handsElement);
+  const tableSize = useElementSize(tableElement);
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
+  const [nameHeight, setNameHeight] = useState(0);
+  const onNameSizeChange = useCallback((width: number, height: number) => {
+    setNameWidth(width);
+    setNameHeight(height);
+  }, []);
 
   // The hands that show their player's view of them: those whose eye button is on, and the one that
   // the viewer holds the pointer down on.
@@ -725,20 +732,29 @@ export function GameScreen({
       nameWidth,
       mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
     ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
+  // In the phone layout, the page scrolls, and the hands fit in the height of the table on the
+  // screen, with the same space below them as above them.
+  const handsHeight = stacked
+    ? tableSize.height - 2 * TABLE_TOP_PADDING.STACKED
+    : handsSize.height;
   function getHandCardWidthFor(columnWidth: number | undefined) {
     return getHandCardWidth(
       handsSize.width,
-      handsSize.height,
+      handsHeight,
       options.numPlayers,
       getCardsPerHand(options),
       columnWidth,
+      nameHeight,
       stacked,
     );
   }
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
-    nameColumnWidth = undefined;
-    handCardWidth = getHandCardWidthFor(undefined);
+    const widthWithNamesAbove = getHandCardWidthFor(undefined);
+    if (widthWithNamesAbove > handCardWidth) {
+      nameColumnWidth = undefined;
+      handCardWidth = widthWithNamesAbove;
+    }
   }
   const handsTopPadding = getHandsTopPadding(
     handCardWidth,
@@ -908,6 +924,7 @@ export function GameScreen({
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
             className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-(--phone-side-padding)"
+            ref={setTableElement}
             style={
               {
                 // The hands' margin subtracts this padding (see below).
@@ -1029,7 +1046,10 @@ export function GameScreen({
                 ref={setHandsElement}
                 style={{ paddingTop: handsTopPadding }}
               >
-                <NameColumnSizer onWidthChange={setNameWidth} seats={seats} />
+                <NameColumnSizer
+                  onSizeChange={onNameSizeChange}
+                  seats={seats}
+                />
                 <Hands
                   canChooseClueTarget={canClue}
                   canDiscard={canDiscard}

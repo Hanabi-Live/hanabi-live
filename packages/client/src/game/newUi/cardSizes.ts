@@ -27,9 +27,8 @@ const HAND_CARD_WIDTH = {
 } as const;
 
 /**
- * When the columns stack, the names go beside the cards only if the cards are still at least this
- * wide. Otherwise, as on a phone, the names go above the cards, so that the cards get the whole
- * width.
+ * In the phone layout, the names go beside the cards if the cards are still at least this wide.
+ * Otherwise, the names go above the cards, if that makes the cards larger.
  */
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
@@ -106,8 +105,9 @@ const PLAY_AREA_OTHER_HEIGHT =
   + TABLE_TOKENS_HEIGHT;
 
 /**
- * Returns the width of the cards in the hands. When the columns stack, the page scrolls, so only
- * the width of the screen limits the cards.
+ * Returns the width of the cards in the hands. They fit in `handsHeight`. In the phone layout, that
+ * is the height of the table on the screen, so that every hand shows when the page is scrolled to
+ * the top. Then the names can be above the cards, in a row `nameRowHeight` tall.
  */
 export function getHandCardWidth(
   handsWidth: number,
@@ -115,6 +115,7 @@ export function getHandCardWidth(
   numPlayers: number,
   cardsPerHand: number,
   nameColumnWidth: number | undefined,
+  nameRowHeight: number,
   stacked: boolean,
 ): number {
   const widthForCards =
@@ -127,16 +128,24 @@ export function getHandCardWidth(
   // above the hands (see "getHandsTopPadding").
   const rowOtherHeight = HAND_BOX_BOTTOM_PADDING + HAND_BOX_TOP_SPACE;
   const rowHeightPerWidth = CARD_HEIGHT_PER_WIDTH + CLUED_RAISE_PER_WIDTH;
-  const byRowHeight =
-    (handsHeight / numPlayers - rowOtherHeight) / rowHeightPerWidth;
-  const byTopPadding =
-    (handsHeight
-      - numPlayers * rowOtherHeight
-      + HAND_BOX_TOP_SPACE
-      + TABLE_TOP_PADDING.WIDE
-      - CLUE_TOKEN_TABLE_MARGIN)
-    / (numPlayers * rowHeightPerWidth + CLUE_TOKEN_OVERHANG_PER_WIDTH);
-  const byHeight = stacked ? Infinity : Math.min(byRowHeight, byTopPadding);
+  let byHeight: number;
+  if (nameColumnWidth === undefined) {
+    // The name's row is above the cards, with a gap for the clue tokens (see "Hands.tsx").
+    byHeight =
+      (handsHeight / numPlayers - rowOtherHeight - nameRowHeight)
+      / (rowHeightPerWidth + CLUE_TOKEN_REACH_PER_WIDTH);
+  } else {
+    const byRowHeight =
+      (handsHeight / numPlayers - rowOtherHeight) / rowHeightPerWidth;
+    const byTopPadding =
+      (handsHeight
+        - numPlayers * rowOtherHeight
+        + HAND_BOX_TOP_SPACE
+        + (stacked ? TABLE_TOP_PADDING.STACKED : TABLE_TOP_PADDING.WIDE)
+        - CLUE_TOKEN_TABLE_MARGIN)
+      / (numPlayers * rowHeightPerWidth + CLUE_TOKEN_OVERHANG_PER_WIDTH);
+    byHeight = Math.min(byRowHeight, byTopPadding);
+  }
   return clamp(
     Math.floor(Math.min(byWidth, byHeight)),
     HAND_CARD_WIDTH.MIN,
