@@ -4,7 +4,7 @@ mod catalog;
 mod data;
 mod pages;
 mod replay;
-mod security;
+pub(crate) mod security;
 #[cfg(test)]
 mod tests;
 
@@ -189,10 +189,6 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
             tower_http::services::ServeFile::new(config.root.join("public/img/favicon.ico")),
         )
         .with_state(state)
-        .layer(axum::middleware::from_fn_with_state(
-            config.is_dev,
-            security::headers,
-        ))
         .layer(axum::middleware::from_fn(crate::errors::lobby_reads))
         .layer(axum::middleware::from_fn(crate::errors::http_context))
 }

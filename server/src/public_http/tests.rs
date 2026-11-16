@@ -122,7 +122,7 @@ async fn content_security_policy_allows_each_inline_script() {
     let inline_scripts = regex!(r"(?s)<script\b[^>]*>(.*?)</script\s*>");
     let handlers = regex!(r#"(?s)\son[a-z]+="([^"]*)""#);
     for path in ["/", "/password-reset", "/public/css/main.css"] {
-        let response = router(pool.clone(), &config())
+        let response = security::protect(router(pool.clone(), &config()), false, true)
             .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
             .await
             .unwrap();
@@ -130,6 +130,7 @@ async fn content_security_policy_allows_each_inline_script() {
         let (status, body) = self::response(response).await;
         assert_eq!(status, StatusCode::OK, "{path}");
         assert_eq!(headers["x-content-type-options"], "nosniff", "{path}");
+        assert!(headers.contains_key("strict-transport-security"), "{path}");
         let policy = headers["content-security-policy"].to_str().unwrap();
         assert!(policy.contains("frame-ancestors 'none'"), "{policy}");
         let script_sources = policy

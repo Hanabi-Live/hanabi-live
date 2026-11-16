@@ -150,7 +150,13 @@ impl App {
     }
 }
 
+/// The site's routes, each with the security headers (see `security::protect`).
 pub fn router(app: Arc<App>) -> Router {
+    let (is_dev, use_tls) = (app.public.is_dev, app.public.use_tls);
+    public_http::security::protect(routes(app), is_dev, use_tls)
+}
+
+fn routes(app: Arc<App>) -> Router {
     let accounts = accounts::router(
         app.store.primary.clone(),
         AccountConfig {

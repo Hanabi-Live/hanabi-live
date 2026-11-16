@@ -62,9 +62,30 @@ pub(super) fn hash(script: &str) -> String {
     )
 }
 
-/// Adds the security headers to a response.
-pub(super) async fn headers(
-    axum::extract::State(is_dev): axum::extract::State<bool>,
+/// How long browsers must use only HTTPS for the site, in seconds (one year).
+const STRICT_TRANSPORT_MAX_AGE: i64 = 365 * hanabi_protocol::SECONDS_PER_DAY;
+
+static STRICT_TRANSPORT: LazyLock<HeaderValue> =
+    LazyLock::new(|| header_value(format!("max-age={STRICT_TRANSPORT_MAX_AGE}")));
+
+/// Which security headers a server sends.
+#[derive(Clone, Copy)]
+struct Policy {
+    is_dev: bool,
+    use_tls: bool,
+}
+
+/// Adds the security headers to every response of `router`, including its fallbacks. The site's
+/// router is built only through this, so that no route can leave them out.
+pub(crate) fn protect(router: axum::Router, is_dev: bool, use_tls: bool) -> axum::Router {
+    router.layer(axum::middleware::from_fn_with_state(
+        Policy { is_dev, use_tls },
+        headers,
+    ))
+}
+
+async fn headers(
+    axum::extract::State(policy): axum::extract::State<Policy>,
     request: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> axum::response::Response {
@@ -76,7 +97,15 @@ pub(super) async fn headers(
     );
     headers.insert(
         header::CONTENT_SECURITY_POLICY,
-        if is_dev { &*DEV_POLICY } else { &*POLICY }.clone(),
+        if policy.is_dev {
+            &*DEV_POLICY
+        } else {
+            &*POLICY
+        }
+        .clone(),
     );
+    if policy.use_tls && !policy.is_dev {
+        headers.insert(header::STRICT_TRANSPORT_SECURITY, STRICT_TRANSPORT.clone());
+    }
     response
 }

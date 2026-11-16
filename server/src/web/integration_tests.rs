@@ -520,6 +520,12 @@ async fn http2_login_accepts_uri_authority_without_host_header_postgres() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(response.headers().contains_key(header::SET_COOKIE));
+    // Routes outside the public pages also get the security headers.
+    assert!(
+        response
+            .headers()
+            .contains_key(header::CONTENT_SECURITY_POLICY)
+    );
     fixture.close().await;
 }
 
