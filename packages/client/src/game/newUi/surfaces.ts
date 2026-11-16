@@ -36,9 +36,12 @@ const BAR_BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:g
 /** A button on the bottom bar, which gets smaller on narrow screens. It sets no color. */
 export const BOTTOM_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm`;
 
-/** The usual color of a button on the bottom bar. */
+/**
+ * The usual color of a button on the bottom bar. It is translucent, so that it takes the color of
+ * the bar in each of the screen's modes.
+ */
 export const BOTTOM_BAR_BUTTON_COLOR_CLASS =
-  "tw:bg-game-raised tw:hover:bg-game-line";
+  "tw:bg-white/8 tw:hover:bg-white/15";
 
 /** A button on the replay bar that is not its main action. */
 export const REPLAY_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:justify-center tw:bg-white/8 tw:font-semibold tw:hover:bg-white/15`;

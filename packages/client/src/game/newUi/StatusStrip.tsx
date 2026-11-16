@@ -7,7 +7,7 @@ import {
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
 import { useElementSize } from "./hooks.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
 /**
  * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
@@ -291,7 +291,7 @@ const FIRST_TWO_DIGIT_NUMBER = 10;
 /** The shape of a button on the bar. It sets no color. */
 const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
 
-const buttonClass = `${BUTTON_SHAPE_CLASS} tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line`;
+const buttonClass = `${BUTTON_SHAPE_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text`;
 
 /** How many times the replay button pulses when it becomes our turn while we look back. */
 const OUR_TURN_PULSES = 3;
