@@ -56,6 +56,8 @@ export class Tooltip {
   private readonly bubble = document.createElement("div");
   private readonly box = document.createElement("div");
   private content: Node | string = "";
+  /** Whether the box has yet to show `content`, which can wait while the tooltip fades out. */
+  private contentPending = false;
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
   private openingTimeout: ReturnType<typeof setTimeout> | undefined;
   private readonly hoverListeners = new AbortController();
@@ -184,16 +186,14 @@ export class Tooltip {
     const wasEmpty = this.content === "";
     this.content = content;
     if (content === "") {
-      // The box keeps its old content while it fades out. Otherwise, an empty bubble fades out.
       this.close();
       return;
     }
-    if (typeof content === "string") {
-      // The client builds tooltip HTML itself and escapes anything that users wrote.
-      // eslint-disable-next-line unicorn/no-unsafe-dom-html
-      this.box.innerHTML = content;
-    } else {
-      this.box.replaceChildren(content);
+    this.contentPending = true;
+    // The box keeps what it showed while it fades out. Otherwise, the fading bubble would show
+    // other content, at the place and size of the old content.
+    if (!this.isClosing) {
+      this.showContent();
     }
 
     if (this.isOpen) {
@@ -234,6 +234,7 @@ export class Tooltip {
 
     clearTimeout(this.closingTimeout);
     this.closingTimeout = undefined;
+    this.showContent();
     if (!this.bubble.isConnected) {
       // The anchor can be in another window, such as the popped-out chat of the New UI.
       this.anchor.ownerDocument.body.append(this.bubble);
@@ -283,7 +284,25 @@ export class Tooltip {
     this.closingTimeout = setTimeout(() => {
       this.closingTimeout = undefined;
       this.bubble.remove();
+      this.showContent();
     }, CLOSE_DURATION_IN_MILLISECONDS);
+  }
+
+  /** Puts the content in the box, if it changed since the box last showed it. */
+  private showContent() {
+    const { content } = this;
+    if (!this.contentPending) {
+      return;
+    }
+
+    this.contentPending = false;
+    if (typeof content === "string") {
+      // The client builds tooltip HTML itself and escapes anything that users wrote.
+      // eslint-disable-next-line unicorn/no-unsafe-dom-html
+      this.box.innerHTML = content;
+    } else {
+      this.box.replaceChildren(content);
+    }
   }
 
   /**
