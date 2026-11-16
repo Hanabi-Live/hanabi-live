@@ -50,7 +50,7 @@ const ICON_BUTTON_SIZE_CLASS = {
  * on the left, its main controls in the middle, and its other buttons on the right. Each part is as
  * tall as a step. The timeline has a smallest width, and the hint takes only the room that is left,
  * so that the bar knows the room that the controls need (see "StatusStrip.tsx"). On a narrow
- * window, the middle has a row of its own, under the others.
+ * window, the middle has a row of its own, under the others, when there are leader's controls.
  */
 function Controls({
   children,
@@ -59,7 +59,7 @@ function Controls({
 }): React.JSX.Element {
   return (
     <div
-      className="tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap"
+      className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3"
       role="status"
     >
       {children}
@@ -68,13 +68,17 @@ function Controls({
 }
 
 /**
- * The middle of the controls. On a narrow window, it has the last row of the controls to itself.
+ * The middle of the controls. On a narrow window, it has the last row of the controls to itself
+ * when there are leader's controls. Otherwise, it shares its row with the right of the controls, as
+ * on a wide window, so that the buttons on the right do not take a row of their own. It starts from
+ * no width there, so that the timeline gets shorter before the buttons wrap. On the narrowest
+ * screens, the gaps get smaller too, so that the buttons on the right still fit.
  */
-const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:phone:order-last tw:phone:basis-full ${STEP_HEIGHT_CLASS}`;
+const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS}`;
 
 /**
  * The right of the controls. On a narrow window, it shares the first row with the leader's
- * controls.
+ * controls, if there are any.
  */
 const RIGHT_CLASS =
   "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden";
@@ -171,7 +175,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:narrow-530:min-w-20 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
+      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -694,7 +698,10 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0">
+    <div
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0"
+      data-leader-controls
+    >
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
         // knows the room that it needs.
