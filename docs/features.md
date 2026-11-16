@@ -891,7 +891,7 @@ request with any other parameter, or with a parameter repeated, is rejected.
 
 | Parameter | Type    | Explanation                     | Values          |
 | --------- | ------- | ------------------------------- | --------------- |
-| limit     | integer | controls the number of results  | 1 to 100        |
+| limit     | integer | controls the number of results  | 1 to 10000      |
 | offset    | integer | skips this many results         | 0 to ...        |
 | sort      | string  | sorts by one column (see below) | a column name   |
 | order     | string  | sets the direction of the sort  | `asc` or `desc` |

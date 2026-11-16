@@ -54,7 +54,11 @@ fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
     Query::parse(raw, accepted).map_err(HttpError::bad)
 }
 
-pub(super) use hanabi_protocol::{DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT};
+pub(super) use hanabi_protocol::DEFAULT_PAGE_LIMIT;
+
+/// The most games that a page of the HTTP API can have. It is larger than `MAX_PAGE_LIMIT`, which
+/// limits the pages that people read, so that a script can fetch a long history in a few requests.
+const MAX_API_PAGE_LIMIT: i64 = 10_000;
 
 /// The query parameters that page a list.
 const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];
@@ -72,9 +76,11 @@ fn pagination(q: &Query) -> Result<Page> {
     let limit = match q.get("limit") {
         None => DEFAULT_PAGE_LIMIT,
         Some(limit) => integer(limit)
-            .filter(|n| (1..=MAX_PAGE_LIMIT).contains(n))
+            .filter(|n| (1..=MAX_API_PAGE_LIMIT).contains(n))
             .ok_or_else(|| {
-                HttpError::bad(format!("The limit must be between 1 and {MAX_PAGE_LIMIT}."))
+                HttpError::bad(format!(
+                    "The limit must be between 1 and {MAX_API_PAGE_LIMIT}."
+                ))
             })?,
     };
     let offset = match q.get("offset") {

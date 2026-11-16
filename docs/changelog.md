@@ -10,6 +10,7 @@ of the repository.
 ## November 16th, 2026
 
 - Removed Ctrl + Space, which showed every hand narrowed by notes.
+- The paginated lists of the API return up to 10000 games per page.
 
 ## November 15th, 2026
 

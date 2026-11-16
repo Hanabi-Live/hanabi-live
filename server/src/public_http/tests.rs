@@ -685,7 +685,11 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "takes no parameters",
         ),
         ("/api/v1/seed/no-games/stats", 404, "has no games"),
-        ("/api/v1/seed/same?limit=101", 400, "The limit must be"),
+        (
+            format!("/api/v1/seed/same?limit={}", MAX_API_PAGE_LIMIT + 1).as_str(),
+            400,
+            "The limit must be",
+        ),
         ("/api/v1/seed/same?offset=-1", 400, "The offset must be"),
         (
             "/api/v1/seed/same?limit=100&offset=9223372036854775807",
