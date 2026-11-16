@@ -883,7 +883,7 @@ move for the current situation.
 | `/api/v1/tag/[tag]`                      | Lists a paginated list of the games containing the specified tag.                                           |
 | `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
 | `/api/v1/seed/[seed]/stats`              | Shows the statistics of the games played on a specific seed.                                                |
-| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and best scores. The `/profile` route provides the same data.    |
+| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and best scores.                                                 |
 
 The profile and scores pages redirect to their JSON routes when you add `?api`
 to their URLs.

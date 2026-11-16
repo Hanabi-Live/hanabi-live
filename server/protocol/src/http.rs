@@ -216,8 +216,8 @@ pub struct PlayerStatistics {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MaxScoreCount {
     pub total: Count,
-    /// The percentage of the variants that the player has a max score on, as the page shows it.
-    pub percentage: String,
+    /// The percentage of the variants that the player has a max score on, from 0 to 100.
+    pub percentage: f64,
 }
 
 /// A player's max scores: the total and the count at each player count.
@@ -225,8 +225,9 @@ pub struct MaxScoreCount {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MaxScoreSummary {
     pub total: Count,
-    /// The percentage of the variants and player counts that the player has a max score on.
-    pub percentage: String,
+    /// The percentage of the variants and player counts that the player has a max score on, from 0
+    /// to 100.
+    pub percentage: f64,
     /// From the fewest players to the most.
     #[schemars(length(min = MAX_PLAYERS - MIN_PLAYERS + 1, max = MAX_PLAYERS - MIN_PLAYERS + 1))]
     pub per_type: Vec<MaxScoreCount>,
@@ -247,8 +248,8 @@ pub struct PlayerScores {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SeedDifficulty {
-    /// The percentage of the other seeds that this seed is harder than, as the page shows it.
-    pub percentile: String,
+    /// The percentage of the other seeds that this seed is harder than, from 0 to 100.
+    pub percentile: f64,
     pub num_seeds: Count,
     pub num_players: NumPlayers,
     pub variant_name: String,
@@ -260,10 +261,9 @@ pub struct SeedDifficulty {
 pub struct SeedStatistics {
     pub num_games: Count,
     pub num_max_scores: Count,
-    /// The percentage of the games that reached the maximum score, as the page shows it.
-    pub max_score_rate: String,
-    /// The average score, with the decimal places that the page shows.
-    pub average_score: String,
+    /// The percentage of the games that reached the maximum score, from 0 to 100.
+    pub max_score_rate: f64,
+    pub average_score: f64,
     pub max_score: Score,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub difficulty: Option<SeedDifficulty>,

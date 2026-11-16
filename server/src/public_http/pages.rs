@@ -175,7 +175,7 @@ pub(super) async fn page(
                 "scores" | "profile" => {
                     if api_redirect {
                         return Ok(Redirect::permanent(&format!(
-                            "{API_PREFIX}/{mode}/{}",
+                            "{API_PREFIX}/scores/{}",
                             encoded(&users[0].1)
                         ))
                         .into_response());
@@ -261,7 +261,7 @@ pub(super) async fn page(
             v["namesTitle"] = json!(format!("seed: {seed}"));
             let rows = score_frequencies(&state, seed).await?;
             v["stats"] = match seed_stats(&state, seed, &rows).await? {
-                Some(statistics) => json!(statistics),
+                Some(statistics) => seed_statistics_value(&statistics)?,
                 None => json!({}),
             };
             set_table(
@@ -310,17 +310,19 @@ pub(super) async fn page(
 fn float(n: i64) -> f64 {
     n as f64
 }
+/// `n` as a percentage of `total`, or 0 when `total` is 0.
+fn percentage(n: i64, total: i64) -> f64 {
+    if total == 0 {
+        0.0
+    } else {
+        float(n) * 100.0 / float(total)
+    }
+}
 /// The decimal places that a percentage is shown with.
 const PERCENTAGE_DECIMALS: usize = 1;
-fn percentage(n: i64, total: i64) -> String {
-    let s = format!(
-        "{:.PERCENTAGE_DECIMALS$}",
-        if total == 0 {
-            0.0
-        } else {
-            float(n) * 100.0 / float(total)
-        }
-    );
+/// A percentage as the pages show it, without a fraction of zeros.
+fn format_percentage(percentage: f64) -> String {
+    let s = format!("{percentage:.PERCENTAGE_DECIMALS$}");
     match s.split_once('.') {
         Some((whole, fraction)) if fraction.bytes().all(|b| b == b'0') => whole.to_owned(),
         _ => s,
@@ -518,7 +520,7 @@ async fn seed_stats(
         num_games: Count::try_from(games)?,
         num_max_scores: Count::try_from(max_scores)?,
         max_score_rate: percentage(max_scores, games),
-        average_score: format!("{average:.AVERAGE_SCORE_DECIMALS$}"),
+        average_score: average,
         max_score: Score::try_from(variant.max_score)?,
         difficulty: None,
     };
@@ -539,10 +541,8 @@ async fn seed_stats(
         // A seed is harder than each seed with a higher average and half as hard as each tie, as
         // in duplicate bridge's match points.
         statistics.difficulty = Some(SeedDifficulty {
-            percentile: format!(
-                "{:.0}",
-                float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0 / float(others)
-            ),
+            percentile: float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0
+                / float(others),
             num_seeds: Count::try_from(others)?,
             num_players: NumPlayers::try_from(game.num_players)?,
             variant_name: variant.name.clone(),
@@ -552,6 +552,20 @@ async fn seed_stats(
 }
 /// The decimal places that a seed's average score is shown with.
 const AVERAGE_SCORE_DECIMALS: usize = 1;
+
+/// A seed's statistics as its page shows them, with rounded numbers.
+fn seed_statistics_value(statistics: &SeedStatistics) -> Result<Value> {
+    let mut v = serde_json::to_value(statistics)?;
+    v["maxScoreRate"] = json!(format_percentage(statistics.max_score_rate));
+    v["averageScore"] = json!(format!(
+        "{:.AVERAGE_SCORE_DECIMALS$}",
+        statistics.average_score
+    ));
+    if let Some(difficulty) = &statistics.difficulty {
+        v["difficulty"]["percentile"] = json!(format!("{:.0}", difficulty.percentile));
+    }
+    Ok(v)
+}
 
 /// The sorted average scores of the seeds with a prefix. A large variant has thousands of seeds,
 /// so the averages are shared for `SEED_AVERAGES_LIFETIME`.
@@ -675,6 +689,16 @@ async fn score_summary(
         },
         played,
     ))
+}
+
+/// A player's max scores as their profile shows them, with rounded percentages.
+fn summary_value(summary: &MaxScoreSummary) -> Result<Value> {
+    let mut v = serde_json::to_value(summary)?;
+    v["percentage"] = json!(format_percentage(summary.percentage));
+    for (row, count) in summary.per_type.iter().enumerate() {
+        v["perType"][row]["percentage"] = json!(format_percentage(count.percentage));
+    }
+    Ok(v)
 }
 
 /// A stored best score and its modifier bits, if there is a game.
@@ -851,7 +875,7 @@ async fn missing(
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared});
     if !shared {
-        v["summary"] = json!(score_summary(state, users[0].0).await?.0);
+        v["summary"] = summary_value(&score_summary(state, users[0].0).await?.0)?;
     }
     set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)

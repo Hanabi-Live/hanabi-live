@@ -887,9 +887,9 @@ export const loginRequestSchema = z
 export const maxScoreCountSchema = z
   .strictObject({
     /**
-     * The percentage of the variants that the player has a max score on, as the page shows it.
+     * The percentage of the variants that the player has a max score on, from 0 to 100.
      */
-    percentage: z.string(),
+    percentage: z.number(),
     total: countSchema,
   })
   .readonly();
@@ -904,9 +904,10 @@ export const maxScoreSummarySchema = z
      */
     perType: z.array(maxScoreCountSchema).min(5).max(5).readonly(),
     /**
-     * The percentage of the variants and player counts that the player has a max score on.
+     * The percentage of the variants and player counts that the player has a max score on, from 0
+     * to 100.
      */
-    percentage: z.string(),
+    percentage: z.number(),
     total: countSchema,
   })
   .readonly();
@@ -1568,9 +1569,9 @@ export const seedDifficultySchema = z
     numPlayers: numPlayersSchema,
     numSeeds: countSchema,
     /**
-     * The percentage of the other seeds that this seed is harder than, as the page shows it.
+     * The percentage of the other seeds that this seed is harder than, from 0 to 100.
      */
-    percentile: z.string(),
+    percentile: z.number(),
     variantName: z.string(),
   })
   .readonly();
@@ -1591,16 +1592,13 @@ export const seedGamesRequestSchema = z
  */
 export const seedStatisticsSchema = z
   .strictObject({
-    /**
-     * The average score, with the decimal places that the page shows.
-     */
-    averageScore: z.string(),
+    averageScore: z.number(),
     difficulty: seedDifficultySchema.optional(),
     maxScore: scoreSchema,
     /**
-     * The percentage of the games that reached the maximum score, as the page shows it.
+     * The percentage of the games that reached the maximum score, from 0 to 100.
      */
-    maxScoreRate: z.string(),
+    maxScoreRate: z.number(),
     numGames: countSchema,
     numMaxScores: countSchema,
   })

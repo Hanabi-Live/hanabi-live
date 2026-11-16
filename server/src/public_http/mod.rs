@@ -172,10 +172,6 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         .route(
             &format!("{API_PREFIX}/scores/{{player1}}"),
             get(api_handler),
-        )
-        .route(
-            &format!("{API_PREFIX}/profile/{{player1}}"),
-            get(api_handler),
         );
     api = api
         .route(&format!("{API_PREFIX}/variants"), get(api_handler))
@@ -304,7 +300,7 @@ async fn api_response(
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
         }
-        "scores" | "profile" => {
+        "scores" => {
             let users = data::players(state, params, false).await?;
             Json(pages::player_scores(state, users[0].0, &users[0].1).await?).into_response()
         }

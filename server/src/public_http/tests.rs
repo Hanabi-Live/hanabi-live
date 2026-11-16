@@ -498,18 +498,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(scores["statistics"]["timePlayedSpeedrunSeconds"], 60 * 60);
     assert_eq!(scores["maxScores"]["total"], 1);
     assert_eq!(scores["variants"][0]["variantName"], "No Variant");
-    let (status, body) = request(app.clone(), "/api/v1/profile/Alice").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    let profile = serde_json::from_str::<Value>(&body).unwrap();
-    hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&profile).unwrap();
-    assert_eq!(profile, scores);
     let (status, body) = request(app.clone(), "/api/v1/seed/same/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let seed = serde_json::from_str::<Value>(&body).unwrap();
     hanabi_protocol::validate::<hanabi_protocol::SeedStatistics>(&seed).unwrap();
     assert_eq!(seed["numGames"], 2);
     assert_eq!(seed["numMaxScores"], 1);
-    assert_eq!(seed["averageScore"], "20.0");
+    assert_eq!(seed["maxScoreRate"], 50.0);
+    assert_eq!(seed["averageScore"], 20.0);
     assert_eq!(seed["maxScore"], 25);
     assert!(seed.get("difficulty").is_none());
     // A seed named "stats" is a game list, not the statistics route.
@@ -761,7 +757,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     for (page, api) in [
         ("/history/Alice/Bob?api", "/api/v1/history/Alice/Bob"),
         ("/scores/Alice?api", "/api/v1/scores/Alice"),
-        ("/profile/Alice?api", "/api/v1/profile/Alice"),
+        ("/profile/Alice?api", "/api/v1/scores/Alice"),
     ] {
         let redirect = app
             .clone()
