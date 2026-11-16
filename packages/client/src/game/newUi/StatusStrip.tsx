@@ -679,9 +679,11 @@ export function StatusStrip({
       <GroupDivider />
       {/* The variant opens the game's information: its seed, options, and table. Its name gives up
           its room first, so that the replay controls keep theirs. On a narrow window, it fills the
-          rest of the numbers' row, so that the bar takes only two rows. */}
+          rest of the row. The buttons go to a second row when the name would get less than its
+          minimum width. On a phone, that minimum is zero, so that the name stays in the row of the
+          numbers, and the bar takes only two rows. */}
       <div
-        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:narrow-980:min-w-0 tw:narrow-980:flex-1`}
+        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:narrow-980:min-w-28 tw:narrow-980:flex-1 tw:narrow-530:min-w-0`}
       >
         <span className={STAT_LABEL_CLASS}>
           Variant
@@ -707,8 +709,7 @@ export function StatusStrip({
           {replayControls}
         </div>
       )}
-      {/* On a narrow window, the buttons have the second row. */}
-      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:basis-full tw:narrow-980:gap-2">
+      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-narrow-980:group-data-own-row/strip:min-h-(--strip-height) tw:narrow-980:gap-2">
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic UI
         </button>
