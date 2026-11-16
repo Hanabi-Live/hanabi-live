@@ -168,7 +168,9 @@ export class Tooltip {
     const wasEmpty = this.content === "";
     this.content = content;
     if (content === "") {
+      // The box keeps its old content while it fades out. Otherwise, an empty bubble fades out.
       this.close();
+      return;
     }
     if (typeof content === "string") {
       // The client builds tooltip HTML itself and escapes anything that users wrote.
@@ -182,7 +184,6 @@ export class Tooltip {
       this.position();
     } else if (
       wasEmpty
-      && content !== ""
       && hoveredTooltips.has(this)
       // A tooltip that waits for the pointer to rest on its anchor opens when the wait ends.
       && this.openingTimeout === undefined

@@ -187,3 +187,17 @@ test("a tooltip that gets its content back opens again while the mouse is over i
   tooltip.destroy();
   anchor.remove();
 });
+
+test("a tooltip that loses its content keeps it while it fades out", () => {
+  const anchor = dom.window.document.createElement("div");
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, { content: "Note" });
+  tooltip.open();
+  const box = dom.window.document.querySelector(".tooltip-box");
+
+  tooltip.setContent("");
+  expect(tooltip.isClosing).toBe(true);
+  expect(box?.textContent).toBe("Note");
+  tooltip.destroy();
+  anchor.remove();
+});
