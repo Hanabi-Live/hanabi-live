@@ -652,7 +652,7 @@ export function StatusStrip({
           <HelpIcon
             icon="fa-info-circle"
             label={"Show the game's information: its table, options, and seed"}
-            tooltip={gameInfoTooltip}
+            tooltip={valueTooltip(gameInfoTooltip)}
           />
         </span>
         <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:narrow-980:leading-[24px]">

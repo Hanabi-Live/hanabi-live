@@ -178,6 +178,8 @@ export function ChatPanel({
   readonly spectatorsTooltip: string;
 }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null);
+  // The classic screen's spectators tooltip, in the smaller text of this screen's other tooltips.
+  const spectatorsTooltipHtml = `<div class="small-tooltip-text">${spectatorsTooltip}</div>`;
 
   // Borrow the chat box from the classic chat window while the panel is open, and give it back when
   // the panel closes, so that the classic screen can show it again.
@@ -264,7 +266,7 @@ export function ChatPanel({
           <div
             aria-label={spectatorsLabel}
             className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted"
-            ref={tooltipRefHtml(spectatorsTooltip, { instant: true })}
+            ref={tooltipRefHtml(spectatorsTooltipHtml, { instant: true })}
             role="img"
           >
             <i aria-hidden="true" className="fas fa-eye" />
@@ -291,7 +293,7 @@ export function ChatPanel({
           className="tw:min-w-0 tw:flex-1 tw:leading-relaxed"
           ref={
             spectators.length > 0
-              ? tooltipRefHtml(spectatorsTooltip, { instant: true })
+              ? tooltipRefHtml(spectatorsTooltipHtml, { instant: true })
               : undefined
           }
         >
