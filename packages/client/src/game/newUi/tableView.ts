@@ -31,7 +31,6 @@ import {
   isCardTouchedByClue,
   isHandLocked,
 } from "@hanabi-live/game";
-import { getNoteIdentityText } from "../reducers/notesReducer.ts";
 
 /**
  * A large mark over a card, from a keyword in the viewer's note, as on the classic screen. A note
@@ -152,13 +151,31 @@ export interface CardPipsView {
   readonly bubble: PossibleCardsView | undefined;
 }
 
-/** A suit that a card can be, with the ranks that it can be in that suit. */
+/** A suit that the clues allow, with the ranks that the card can be and the ones that it cannot. */
 interface PossibleSuitView extends SuitPipView {
+  /** The ranks that the card can be in this suit. */
   readonly ranks: readonly Rank[];
+
+  /** The cards of this suit that the clues allow, but that the card cannot be. */
+  readonly removed: readonly RemovedCardView[];
+}
+
+/** A card that the clues allow, but that the card cannot be. */
+interface RemovedCardView {
+  readonly rank: Rank;
+
+  /**
+   * What rules it out: "seen" when the holder sees every copy of it, and "note" when the identity
+   * in the note on the card leaves it out.
+   */
+  readonly by: "seen" | "note";
 }
 
 export interface PossibleCardsView {
-  /** The suits that the card can be, in the variant's order, with the ranks that it can be. */
+  /**
+   * The suits that the clues allow, in the variant's order. A suit is eliminated when the card
+   * cannot be any of its cards.
+   */
   readonly suits: readonly PossibleSuitView[];
 
   /**
@@ -166,21 +183,6 @@ export interface PossibleCardsView {
    * card has a mark that points to the bubble.
    */
   readonly inexact: boolean;
-
-  /** How many of the cards that the clues allow the holder rules out, because they see them all. */
-  readonly removedByVisibleCards: number;
-
-  /**
-   * The identity in the note on the card, such as "r2", and how many more cards it rules out. It is
-   * `undefined` when the note does not rule out any card that the holder can still have, or when it
-   * rules out every one of them.
-   */
-  readonly removedByNote:
-    | {
-        readonly identity: string;
-        readonly count: number;
-      }
-    | undefined;
 }
 
 /**
@@ -391,9 +393,9 @@ function getPipsView(
 }
 
 /**
- * Returns the bubble of every card that a card can be (see `PossibleCardsView`). It leaves out the
- * cards that the holder sees every copy of. It also applies the identity in the card's note, unless
- * that leaves no card.
+ * Returns the bubble of every card that a card can be (see `PossibleCardsView`). It shows the cards
+ * that the clues allow, and marks the ones that the holder sees every copy of. It also applies the
+ * identity in the card's note, unless that leaves no card.
  */
 function getPossibleCardsView(
   variant: Variant,
@@ -407,11 +409,11 @@ function getPossibleCardsView(
       cardKey(suitIndex, rank),
     ),
   );
-  const fromVisibleCards = fromClues.filter(([suitIndex, rank]) =>
-    holderCards.has(cardKey(suitIndex, rank)),
-  );
   const noteCards = new Set(
     note.possibilities.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  );
+  const fromVisibleCards = fromClues.filter(([suitIndex, rank]) =>
+    holderCards.has(cardKey(suitIndex, rank)),
   );
   const fromNote = fromVisibleCards.filter(([suitIndex, rank]) =>
     noteCards.has(cardKey(suitIndex, rank)),
@@ -419,33 +421,47 @@ function getPossibleCardsView(
   const appliesNote =
     fromNote.length > 0 && fromNote.length < fromVisibleCards.length;
 
+  // The rows leave out the note, so that a suit that only the note rules out keeps its row.
   const rows =
     getCardPipPresentation(variant, cardState, note, true, {
       rowPerSuit: true,
-      empathyIncludesNotes: appliesNote,
     }).possibilityRows ?? [];
 
   return {
     suits: rows
-      .flatMap((row) =>
-        row.suitPips.map((pip) => ({
-          ...toPipView(pip),
-          suitIndex: pip.suitIndex as SuitIndex,
-          // Only the cards that the holder has not ruled out.
-          ranks: row.rankPips
-            .filter((rankPip) => rankPip.state === PipState.Visible)
-            .map((rankPip) => rankPip.rank),
-        })),
-      )
-      .filter((suit) => suit.ranks.length > 0),
-    inexact,
-    removedByVisibleCards: fromClues.length - fromVisibleCards.length,
-    removedByNote: appliesNote
-      ? {
-          identity: getNoteIdentityText(variant, note.text),
-          count: fromVisibleCards.length - fromNote.length,
+      .flatMap((row) => row.suitPips)
+      .map((pip) => {
+        const ranks: Rank[] = [];
+        const removed: RemovedCardView[] = [];
+        for (const [suitIndex, rank] of fromClues) {
+          if (suitIndex !== pip.suitIndex) {
+            continue;
+          }
+          const key = cardKey(suitIndex, rank);
+          if (!holderCards.has(key)) {
+            removed.push({
+              rank,
+              by: "seen",
+            });
+          } else if (appliesNote && !noteCards.has(key)) {
+            removed.push({
+              rank,
+              by: "note",
+            });
+          } else {
+            ranks.push(rank);
+          }
         }
-      : undefined,
+        return {
+          suitIndex: pip.suitIndex as SuitIndex,
+          eliminated: ranks.length === 0,
+          positive: pip.positive,
+          ranks,
+          removed,
+        };
+      })
+      .filter((suit) => suit.ranks.length > 0 || suit.removed.length > 0),
+    inexact,
   };
 }
 

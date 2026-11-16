@@ -357,12 +357,11 @@ export function getDeckEmpathy(state: State): DeckEmpathy {
                 possibleSuit === i && possibleRank === rank,
             ),
           ),
+          // The deck has no clues or note, so it shows only the cards that it can be.
+          removed: [],
         }))
         .filter((suit) => suit.ranks.length > 0),
       inexact: false,
-      // The deck has no clues or note, so the bubble has no lines below its grid.
-      removedByVisibleCards: 0,
-      removedByNote: undefined,
     },
   };
 }

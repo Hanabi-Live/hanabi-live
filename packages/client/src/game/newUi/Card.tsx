@@ -1306,10 +1306,13 @@ const POSSIBLE_CARDS = {
   /** The space between small cards. */
   gap: 0.05,
   padding: 0.12,
-  /** The lines below the small cards that say what ruled out the other cards. */
-  textFont: 0.17,
-  /** The least width of the bubble when it has those lines, so that they do not wrap too much. */
-  textMinWidth: 3.4,
+  /** The key below the small cards, which counts the cards that each reason rules out. */
+  keyFont: 0.19,
+  /** The space between the two counts of the key, and between an icon and its count. */
+  keyGap: 0.22,
+  keyIconGap: 0.06,
+  /** The icon in the corner of a card that the card cannot be. */
+  removedIcon: 0.19,
   /** The pointer that points from the bubble at the card. */
   pointerWidth: 0.26,
   pointerHeight: 0.13,
@@ -1332,26 +1335,6 @@ const POSSIBLE_CARDS_OUTLINE_COLOR = "rgb(0 0 0 / 45%)";
  * the outline, since the scale of the screen can round the outline to the next pixel.
  */
 const POSSIBLE_CARDS_POINTER_OVERLAP = 2;
-
-/** The lines below the grid of the bubble that say what ruled out the cards that it leaves out. */
-function getPossibleCardsLines(bubble: PossibleCardsView): readonly string[] {
-  const lines: string[] = [];
-  if (bubble.removedByVisibleCards > 0) {
-    lines.push(
-      `Visible cards remove ${possibilities(bubble.removedByVisibleCards)}.`,
-    );
-  }
-  if (bubble.removedByNote !== undefined) {
-    lines.push(
-      `"${bubble.removedByNote.identity}" removes ${possibilities(bubble.removedByNote.count)}.`,
-    );
-  }
-  return lines;
-}
-
-function possibilities(count: number): string {
-  return count === 1 ? "1 possibility" : `${count} possibilities`;
-}
 
 /** The least space between the bubble of possible cards and the edge of the window, in pixels. */
 const POSSIBLE_CARDS_WINDOW_MARGIN = 8;
@@ -1388,6 +1371,121 @@ function PossibleCard({
       }}
     >
       {getRankLabel(rank)}
+    </span>
+  );
+}
+
+/**
+ * How opaque a card is in the bubble of possible cards when the card cannot be it, though the clues
+ * allow it.
+ */
+const REMOVED_CARD_OPACITY = 0.3;
+
+/**
+ * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
+ * corner that says what ruled it out.
+ */
+function RemovedCard({
+  by,
+  unit,
+  ...cardProps
+}: {
+  readonly by: "seen" | "note";
+  readonly variant: Variant;
+  readonly colorblindMode: boolean;
+  readonly suitIndex: SuitIndex;
+  readonly rank: Rank;
+  readonly unit: number;
+}): React.JSX.Element {
+  const icon = unit * POSSIBLE_CARDS.removedIcon;
+  return (
+    <span className="tw:relative">
+      <span className="tw:block" style={{ opacity: REMOVED_CARD_OPACITY }}>
+        <PossibleCard unit={unit} {...cardProps} />
+      </span>
+      {/* The icon sits on the corner, partly outside the card, so that it covers little of the rank. */}
+      <span
+        className="tw:absolute"
+        style={{
+          right: -icon / 3,
+          bottom: -icon / 3,
+        }}
+      >
+        <RemovedByIcon by={by} size={icon} />
+      </span>
+    </span>
+  );
+}
+
+/** An eye for the cards that the holder sees, or a note for the note on the card. */
+function RemovedByIcon({
+  by,
+  size,
+}: {
+  readonly by: "seen" | "note";
+  readonly size: number;
+}): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:block tw:overflow-visible"
+      height={size}
+      viewBox="0 0 100 100"
+      width={size}
+    >
+      {by === "seen" ? (
+        <>
+          <path
+            className="tw:fill-card-note tw:stroke-card-ink"
+            d="M 4 50 Q 50 2 96 50 Q 50 98 4 50 Z"
+            strokeLinejoin="round"
+            strokeWidth={9}
+          />
+          <circle className="tw:fill-card-ink" cx={50} cy={50} r={17} />
+        </>
+      ) : (
+        <>
+          <path
+            className="tw:fill-card-note tw:stroke-card-ink"
+            d="M 8 8 H 92 V 68 L 68 92 H 8 Z"
+            strokeLinejoin="round"
+            strokeWidth={9}
+          />
+          <path
+            className="tw:stroke-card-ink/70"
+            d="M 26 34 H 74 M 26 56 H 58"
+            strokeLinecap="round"
+            strokeWidth={11}
+          />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/** The name of each reason in the key of the bubble of possible cards. */
+const REMOVED_BY_LABELS = {
+  seen: "Seen",
+  note: "Note",
+} as const;
+
+/** One count in the key of the bubble of possible cards, such as an eye with "Seen: 2". */
+function PossibleCardsKeyItem({
+  by,
+  count,
+  unit,
+}: {
+  readonly by: "seen" | "note";
+  readonly count: number;
+  readonly unit: number;
+}): React.JSX.Element {
+  return (
+    <span
+      className="tw:flex tw:items-center"
+      style={{ gap: unit * POSSIBLE_CARDS.keyIconGap }}
+    >
+      <RemovedByIcon by={by} size={unit * POSSIBLE_CARDS.keyFont} />
+      {REMOVED_BY_LABELS[by]}: {count}
     </span>
   );
 }
@@ -1445,7 +1543,9 @@ export function PossibleCardsBubble({
   const unit = anchorRect.width;
   const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
   const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
-  const lines = getPossibleCardsLines(bubble);
+  const removedCards = bubble.suits.flatMap((suit) => suit.removed);
+  const seenCount = removedCards.filter((card) => card.by === "seen").length;
+  const noteCount = removedCards.filter((card) => card.by === "note").length;
 
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
@@ -1533,8 +1633,6 @@ export function PossibleCardsBubble({
         style={{
           gap: unit * POSSIBLE_CARDS.padding,
           padding: unit * POSSIBLE_CARDS.padding,
-          minWidth:
-            lines.length > 0 ? unit * POSSIBLE_CARDS.textMinWidth : undefined,
           borderRadius: unit * CARD_CORNER_PER_WIDTH * 2,
           boxShadow: `0 0 0 ${POSSIBLE_CARDS_OUTLINE}px ${POSSIBLE_CARDS_OUTLINE_COLOR}`,
         }}
@@ -1554,36 +1652,56 @@ export function PossibleCardsBubble({
               variant={variant}
               width={unit / getScreenScale()}
             />,
-            ...ranks.map((rank) =>
-              suit.ranks.includes(rank) ? (
-                <PossibleCard
-                  colorblindMode={colorblindMode}
-                  key={`${suit.suitIndex}-${rank}`}
-                  rank={rank}
-                  suitIndex={suit.suitIndex}
-                  unit={unit}
-                  variant={variant}
-                />
-              ) : (
-                <ImpossibleCard key={`${suit.suitIndex}-${rank}`} unit={unit} />
-              ),
-            ),
+            ...ranks.map((rank) => {
+              const removed = suit.removed.find(
+                (removedCard) => removedCard.rank === rank,
+              );
+              const key = `${suit.suitIndex}-${rank}`;
+              if (removed !== undefined) {
+                return (
+                  <RemovedCard
+                    by={removed.by}
+                    colorblindMode={colorblindMode}
+                    key={key}
+                    rank={rank}
+                    suitIndex={suit.suitIndex}
+                    unit={unit}
+                    variant={variant}
+                  />
+                );
+              }
+              if (suit.ranks.includes(rank)) {
+                return (
+                  <PossibleCard
+                    colorblindMode={colorblindMode}
+                    key={key}
+                    rank={rank}
+                    suitIndex={suit.suitIndex}
+                    unit={unit}
+                    variant={variant}
+                  />
+                );
+              }
+              return <ImpossibleCard key={key} unit={unit} />;
+            }),
           ])}
         </div>
-        {lines.length > 0 && (
-          // The lines take the width of the grid, and wrap in it.
-          <ul
-            className="tw:m-0 tw:w-0 tw:min-w-full tw:list-disc tw:text-card-ink"
+        {removedCards.length > 0 && (
+          // The key of the icons on the cards that the card cannot be, with how many have each.
+          <div
+            className="tw:flex tw:items-center tw:font-semibold tw:leading-none tw:text-card-ink"
             style={{
-              fontSize: unit * POSSIBLE_CARDS.textFont,
-              lineHeight: 1.3,
-              paddingLeft: "1.2em",
+              fontSize: unit * POSSIBLE_CARDS.keyFont,
+              gap: unit * POSSIBLE_CARDS.keyGap,
             }}
           >
-            {lines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+            {seenCount > 0 && (
+              <PossibleCardsKeyItem by="seen" count={seenCount} unit={unit} />
+            )}
+            {noteCount > 0 && (
+              <PossibleCardsKeyItem by="note" count={noteCount} unit={unit} />
+            )}
+          </div>
         )}
       </div>
       {position !== undefined && (

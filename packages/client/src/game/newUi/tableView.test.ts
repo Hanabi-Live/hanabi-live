@@ -244,17 +244,22 @@ describe("getCardView", () => {
           eliminated: false,
           positive: false,
           ranks: [1, 3, 4, 5],
+          removed: [
+            {
+              rank: 2,
+              by: "seen",
+            },
+          ],
         },
         {
           suitIndex: 1,
           eliminated: false,
           positive: false,
           ranks: [1],
+          removed: [],
         },
       ],
       inexact: true,
-      removedByVisibleCards: 1,
-      removedByNote: undefined,
     });
   });
 
@@ -280,18 +285,40 @@ describe("getCardView", () => {
       ).pips?.bubble;
     }
 
+    // The yellow 1 keeps its row, so that the bubble shows that the note rules it out.
     expect(getBubble("r1, r3")).toMatchObject({
       suits: [
         {
           suitIndex: 0,
+          eliminated: false,
           ranks: [1, 3],
+          removed: [
+            {
+              rank: 2,
+              by: "seen",
+            },
+            {
+              rank: 4,
+              by: "note",
+            },
+            {
+              rank: 5,
+              by: "note",
+            },
+          ],
+        },
+        {
+          suitIndex: 1,
+          eliminated: true,
+          ranks: [],
+          removed: [
+            {
+              rank: 1,
+              by: "note",
+            },
+          ],
         },
       ],
-      removedByVisibleCards: 1,
-      removedByNote: {
-        identity: "r1, r3",
-        count: 3,
-      },
     });
 
     // The holder sees every red 2, so a note that says so is left out.
@@ -300,13 +327,19 @@ describe("getCardView", () => {
         {
           suitIndex: 0,
           ranks: [1, 3, 4, 5],
+          removed: [
+            {
+              rank: 2,
+              by: "seen",
+            },
+          ],
         },
         {
           suitIndex: 1,
           ranks: [1],
+          removed: [],
         },
       ],
-      removedByNote: undefined,
     });
   });
 
