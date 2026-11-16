@@ -67,6 +67,13 @@ const POINTER_INSIDE_CLASS = {
 /** The least space between a centered menu and the edges of the window, in CSS pixels. */
 const MENU_WINDOW_MARGIN = 8;
 
+/**
+ * The least space between the middle of the pointer and the sides of the menu, in CSS pixels: the
+ * radius of the menu's corners (`tw:rounded-game-panel`) and half the width of the pointer
+ * (`tw:w-5`). The pointer then joins the straight part of the menu's edge, not a corner.
+ */
+const POINTER_SIDE_MARGIN = 8 + 20 / 2;
+
 export function Menu({
   align,
   side = "above",
@@ -76,7 +83,7 @@ export function Menu({
   /**
    * The side of the button that the menu lines up with. A centered menu moves sideways to stay
    * inside the window, such as under a card at the edge of a phone's screen. Its pointer stays on
-   * the button.
+   * the button, but moves toward the middle of the menu to stay off of the menu's corners.
    */
   readonly align: "left" | "right" | "center";
   readonly side?: "above" | "below";
@@ -85,7 +92,11 @@ export function Menu({
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const [shift, setShift] = useState(0);
+  // How far the menu and its pointer move sideways from the middle of the button, in CSS pixels.
+  const [shift, setShift] = useState({
+    menu: 0,
+    pointer: 0,
+  });
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -96,17 +107,30 @@ export function Menu({
     // The window's pixels, without the shift that the menu has now.
     const scale = getScreenScale();
     const rect = element.getBoundingClientRect();
-    const left = rect.left - shift * scale;
-    const right = rect.right - shift * scale;
+    const left = rect.left - shift.menu * scale;
+    const right = rect.right - shift.menu * scale;
     const margin = MENU_WINDOW_MARGIN * scale;
-    let next = 0;
+    let menu = 0;
     if (left < margin) {
-      next = margin - left;
+      menu = margin - left;
     } else if (right > globalThis.innerWidth - margin) {
-      next = globalThis.innerWidth - margin - right;
+      menu = globalThis.innerWidth - margin - right;
     }
-    next /= scale;
-    if (Math.abs(next - shift) >= 1) {
+
+    const middle = (left + right) / 2;
+    const pointerMargin = POINTER_SIDE_MARGIN * scale;
+    const pointerMiddle = Math.min(
+      Math.max(middle, left + menu + pointerMargin),
+      right + menu - pointerMargin,
+    );
+    const next = {
+      menu: menu / scale,
+      pointer: (pointerMiddle - middle) / scale,
+    };
+    if (
+      Math.abs(next.menu - shift.menu) >= 1
+      || Math.abs(next.pointer - shift.pointer) >= 1
+    ) {
       setShift(next);
     }
   });
@@ -117,13 +141,14 @@ export function Menu({
         className={`${MENU_CLASS} ${MENU_SIDE_CLASS[side]} ${MENU_ALIGN_CLASS[align]} ${className}`}
         ref={ref}
         role="menu"
-        style={shift === 0 ? undefined : { marginLeft: shift }}
+        style={shift.menu === 0 ? undefined : { marginLeft: shift.menu }}
       >
         {children}
       </div>
       <div
         aria-hidden="true"
         className={`${POINTER_CLASS} ${POINTER_SIDE_CLASS[side]}`}
+        style={shift.pointer === 0 ? undefined : { marginLeft: shift.pointer }}
       >
         <div className={POINTER_OUTLINE_CLASS[side]} />
         <div className={POINTER_INSIDE_CLASS[side]} />
