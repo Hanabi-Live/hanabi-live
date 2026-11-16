@@ -12,6 +12,7 @@ pub struct Outbound {
     pub message: Message,
     pub permit: OwnedSemaphorePermit,
     pub completion: Option<oneshot::Sender<()>>,
+    /// The frame's bytes in the session's reserve, or else in the server's output budget.
     pub global_permit: OwnedSemaphorePermit,
 }
 
@@ -22,6 +23,9 @@ pub const GLOBAL_INPUT_BYTES: usize = 64 * crate::MIB;
 const SESSION_INPUT_BYTES: usize = 8 * crate::MIB;
 const SESSION_OUTPUT_BYTES: usize = 8 * crate::MIB;
 pub const GLOBAL_OUTPUT_BYTES: usize = 128 * crate::MIB;
+/// The bytes each session can queue without using the server's output budget. When other
+/// connections fill that budget, only a connection that queues more than this is closed.
+const SESSION_RESERVED_OUTPUT_BYTES: usize = 64 * crate::KIB;
 /// The frames a session queues for its writer.
 const OUTBOUND_QUEUE: usize = 64;
 /// The WebSocket close code for "Service Restart", which tells clients to reconnect.
@@ -100,6 +104,8 @@ pub struct Session {
     superseded: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
+    /// The bytes this session can queue before it uses `global_bytes`.
+    reserved_bytes: Arc<Semaphore>,
     /// The server's output budget, which every session shares.
     global_bytes: Arc<Semaphore>,
 }
@@ -163,6 +169,7 @@ impl Session {
                 lobby_load: Arc::new(Semaphore::new(1)),
                 outbound,
                 bytes: Arc::new(Semaphore::new(SESSION_OUTPUT_BYTES)),
+                reserved_bytes: Arc::new(Semaphore::new(SESSION_RESERVED_OUTPUT_BYTES)),
                 global_bytes,
             }),
             receiver,
@@ -192,9 +199,9 @@ impl Session {
         self.enqueue(Message::Text(message.clone()), None);
     }
 
-    /// Queues a frame for the writer, holding its bytes against the session's and the server's
-    /// output budgets until it is written. A frame that does not fit closes the connection. Returns
-    /// whether the frame was queued.
+    /// Queues a frame for the writer, holding its bytes against the session's budget, and against
+    /// its reserve or the server's output budget, until it is written. A frame that does not fit
+    /// closes the connection. Returns whether the frame was queued.
     fn enqueue(&self, message: Message, completion: Option<oneshot::Sender<()>>) -> bool {
         let length = match &message {
             Message::Text(text) => text.len(),
@@ -214,7 +221,12 @@ impl Session {
             self.cancel.cancel();
             return false;
         };
-        let Ok(global_permit) = self.global_bytes.clone().try_acquire_many_owned(length) else {
+        let Ok(global_permit) = self
+            .reserved_bytes
+            .clone()
+            .try_acquire_many_owned(length)
+            .or_else(|_| self.global_bytes.clone().try_acquire_many_owned(length))
+        else {
             tracing::warn!(user = %self.user,
                 "Closing a connection because the aggregate output byte budget is exhausted."
             );
@@ -388,6 +400,31 @@ mod tests {
         assert!(session.active());
         session.emit(&Frame::from("x".repeat(MAX_MESSAGE_BYTES + 1)));
         assert!(!session.active());
+    }
+
+    #[test]
+    fn a_full_output_budget_closes_only_connections_that_queue_more_than_their_reserve() {
+        let global = Arc::new(Semaphore::new(0));
+        let connect = |user| {
+            Session::with_token(
+                Identity {
+                    user: UserId::new(user).unwrap(),
+                    name: String::new(),
+                    normalized_name: String::new(),
+                    ip: String::new(),
+                    bot: false,
+                },
+                1,
+                CancellationToken::new(),
+                global.clone(),
+            )
+        };
+        let (reader, _reader_frames) = connect(1);
+        let (slow, _slow_frames) = connect(2);
+        reader.emit(&Frame::from("x".repeat(SESSION_RESERVED_OUTPUT_BYTES / 2)));
+        slow.emit(&Frame::from("x".repeat(SESSION_RESERVED_OUTPUT_BYTES + 1)));
+        assert!(reader.active());
+        assert!(!slow.active());
     }
 
     #[test]
