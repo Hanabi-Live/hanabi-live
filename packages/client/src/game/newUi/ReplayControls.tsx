@@ -683,7 +683,9 @@ export function ReplayControls({
  * The shared replay's leader menu and the switch to follow the leader, on the left of the controls.
  * A long name makes the menu's text smaller, so that the menu does not push the other controls
  * aside. They do not shrink in the bar's row, so that the bar sees when it has no room for them. On
- * a narrow window, they share a row with the buttons on the right, and the menu can shrink.
+ * a narrow window, they share a row with the buttons on the right, and the menu can shrink. There,
+ * they start with no width and take the room that the buttons leave. Otherwise, more buttons on the
+ * right, as in a hypothetical, would wrap onto a row of their own, and the bar would grow.
  */
 function LeaderControls({
   state,
@@ -692,7 +694,7 @@ function LeaderControls({
 }): React.JSX.Element {
   const { shared } = state.replay;
   return (
-    <div className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:narrow-980:min-w-0 tw:narrow-980:shrink">
+    <div className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:narrow-980:min-w-0 tw:narrow-980:shrink tw:narrow-980:grow tw:narrow-980:basis-0">
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
         // knows the room that it needs.
