@@ -2391,7 +2391,10 @@ export function CardFace({
   const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
   const height = width * CARD_HEIGHT_PER_WIDTH;
   const bubble = pips?.bubble;
-  const [hovered, setHovered] = useState<HTMLElement>();
+  const [hovered, setHovered] = useState(false);
+  // The face is a new element when the card starts or stops being trash, which puts the face in a
+  // wrapper or takes it out. A callback ref keeps the bubble on the face that is on the page.
+  const [faceElement, setFaceElement] = useState<HTMLDivElement | null>(null);
   const raise = clued && raiseClued ? width * CLUED_RAISE_PER_WIDTH : 0;
 
   // The pips go in the middle of the card, or, under a rank, in the middle of the space between the
@@ -2443,12 +2446,13 @@ export function CardFace({
       // The card tracks the pointer even without a bubble, so that the bubble opens when the card
       // gets one under the pointer, such as when the viewer holds the pointer down on a hand to see
       // its holder's view.
-      onPointerEnter={(event) => {
-        setHovered(event.currentTarget);
+      onPointerEnter={() => {
+        setHovered(true);
       }}
       onPointerLeave={() => {
-        setHovered(undefined);
+        setHovered(false);
       }}
+      ref={setFaceElement}
       style={{
         width,
         height,
@@ -2546,10 +2550,11 @@ export function CardFace({
 
       {bubble !== undefined
         && showPossibleCards
-        && hovered !== undefined
+        && hovered
+        && faceElement !== null
         && createPortal(
           <PossibleCardsBubble
-            anchor={hovered}
+            anchor={faceElement}
             bubble={bubble}
             colorblindMode={colorblindMode}
             variant={variant}
