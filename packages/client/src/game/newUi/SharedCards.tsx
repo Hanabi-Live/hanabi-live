@@ -822,8 +822,9 @@ function getDeckTooltip(
     );
   }
 
-  // The tooltip is narrow, so that its lines wrap as in a paragraph.
-  return `<div class="tw:max-w-80">${lines.join("<br>")}</div>`;
+  // The tooltip is narrow, so that its lines wrap as in a paragraph. It uses the smaller text of
+  // the screen's other tooltips.
+  return `<div class="small-tooltip-text tw:max-w-80">${lines.join("<br>")}</div>`;
 }
 
 /**
