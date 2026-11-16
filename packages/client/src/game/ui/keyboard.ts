@@ -1,9 +1,5 @@
 // Functions for handling all of the keyboard shortcuts.
 
-/* eslint-disable unicorn/prefer-keyboard-event-key -- The hotkeys compare key codes. On macOS,
-Alt + B gives a symbol in `event.key`, not "b". And `event.code` names the physical key, which moves
-the hotkeys on French keyboards. */
-
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getClueCost,
@@ -11,10 +7,10 @@ import {
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
-import * as KeyCode from "keycode-js";
 import type Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import { isElementShown } from "../../elementVisibility.ts";
+import { getHotkeyLetter } from "../../hotkeyLetter.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import { isModalVisible, showPrompt } from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
@@ -22,6 +18,7 @@ import { store } from "../../store.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
+import { getColorKeyIndex, getRankKeyIndex } from "../clueKeys.ts";
 import { confirmPlay } from "../confirmPlay.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
@@ -38,10 +35,6 @@ import * as turn from "./turn.ts";
 
 type Callback = () => void;
 
-const hotkeyClueMap = new Map<number, Callback>();
-const hotkeyPlayMap = new Map<number, Callback>();
-const hotkeyDiscardMap = new Map<number, Callback>();
-
 function selectNextPlayerTarget() {
   if (globals.state.replay.hypothetical === undefined) {
     globals.elements.clueTargetButtonGroup!.selectNextTarget();
@@ -50,53 +43,7 @@ function selectNextPlayerTarget() {
   }
 }
 
-// Build a mapping of hotkeys to functions.
 export function init(): void {
-  hotkeyClueMap.clear();
-  hotkeyPlayMap.clear();
-  hotkeyDiscardMap.clear();
-
-  // Add Tab and semicolon for player selection.
-  hotkeyClueMap.set(KeyCode.KEY_TAB, selectNextPlayerTarget);
-  hotkeyClueMap.set(KeyCode.KEY_SEMICOLON, selectNextPlayerTarget);
-
-  // Add "1", "2", "3", "4", and "5" (for rank clues).
-  for (const [
-    i,
-    rankClueButton,
-  ] of globals.elements.rankClueButtons.entries()) {
-    hotkeyClueMap.set(i + KeyCode.KEY_1, click(rankClueButton)); // Normal keyboard
-    hotkeyClueMap.set(i + KeyCode.KEY_NUMPAD1, click(rankClueButton)); // Numpad
-  }
-
-  // Add "q", "w", "e", "r", "t", and "y" (for color clues). (We use qwert since they are
-  // conveniently next to 12345, and also because the clue colors can change between different
-  // variants.)
-  const clueKeyRow = [
-    KeyCode.KEY_Q,
-    KeyCode.KEY_W,
-    KeyCode.KEY_E,
-    KeyCode.KEY_R,
-    KeyCode.KEY_T,
-    KeyCode.KEY_Y,
-  ];
-  for (
-    let i = 0;
-    i < globals.elements.colorClueButtons.length && i < clueKeyRow.length;
-    i++
-  ) {
-    hotkeyClueMap.set(
-      clueKeyRow[i]!,
-      click(globals.elements.colorClueButtons[i]!),
-    );
-  }
-
-  hotkeyPlayMap.set(KeyCode.KEY_A, play); // The main play hotkey
-  hotkeyPlayMap.set(KeyCode.KEY_ADD, play); // For numpad users
-  hotkeyDiscardMap.set(KeyCode.KEY_D, discard); // The main discard hotkey
-  hotkeyDiscardMap.set(KeyCode.KEY_SUBTRACT, discard); // For numpad users
-
-  // Enable all of the keyboard hotkeys.
   document.addEventListener("keydown", keydown);
   document.addEventListener("keyup", keyup);
 }
@@ -118,7 +65,7 @@ function keydown(event: KeyboardEvent) {
     return;
   }
 
-  if (event.which === KeyCode.KEY_ESCAPE) {
+  if (event.key === "Escape") {
     // Escape = If the menu to end the game is open, close it.
     if (globals.elements.terminateMenu?.isVisible() === true) {
       globals.elements.terminateMenu.close();
@@ -150,14 +97,14 @@ function keydown(event: KeyboardEvent) {
 
   // Pressing or releasing Ctrl while the spacebar is held changes the view at once. Otherwise, it
   // changes only when the spacebar repeats, and Ctrl stops that repeat.
-  if (event.key === KeyCode.VALUE_CONTROL) {
+  if (event.key === "Control") {
     if (globals.globalEmpathyEnabled) {
       setGlobalEmpathy(true, true);
     }
     return;
   }
 
-  if (event.which === KeyCode.KEY_SPACE) {
+  if (event.key === " ") {
     // Space bar. Do not activate global empathy if we are typing in the in-game chat.
     if (isGameChatInputFocused()) {
       return;
@@ -175,7 +122,7 @@ function keydown(event: KeyboardEvent) {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && event.which === KeyCode.KEY_RETURN
+    && event.key === "Enter"
     && !store.getState().newUi.shown
   ) {
     clues.give(); // This function has validation inside of it
@@ -184,48 +131,52 @@ function keydown(event: KeyboardEvent) {
 
   // Alt hotkeys
   if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
-    // Sound hotkeys
-    if (event.which === KeyCode.KEY_B) {
-      // Alt + b. This is used for fun in shared replays.
-      sharedReplaySendSound("buzz");
-      return;
-    }
-    if (event.which === KeyCode.KEY_H) {
-      // Alt + h. This is used for fun in shared replays.
-      sharedReplaySendSound("holy");
-      return;
-    }
-    if (event.which === KeyCode.KEY_N) {
-      // Alt + n. This is used for fun in shared replays.
-      sharedReplaySendSound("nooo");
-      return;
-    }
-    if (event.which === KeyCode.KEY_Z) {
-      // Alt + z. This is used as a sound test.
-      sounds.play(SoundType.Us);
-      return;
-    }
-    if (event.which === KeyCode.KEY_A) {
-      // Alt + a. This is used for fun in shared replays.
-      sharedReplaySendSound("clap");
-      return;
-    }
+    switch (getHotkeyLetter(event)) {
+      // Sounds. These are used for fun in shared replays.
+      case "a": {
+        sharedReplaySendSound("clap");
+        return;
+      }
 
-    // Other
-    if (event.which === KeyCode.KEY_C) {
-      // Alt + c
-      gameChat.toggle();
-      return;
-    }
-    if (event.which === KeyCode.KEY_L) {
-      // Alt + l
-      backToLobby();
-      return;
-    }
-    if (event.which === KeyCode.KEY_T) {
-      // Alt + t
-      replay.promptTurn();
-      return;
+      case "b": {
+        sharedReplaySendSound("buzz");
+        return;
+      }
+
+      case "h": {
+        sharedReplaySendSound("holy");
+        return;
+      }
+
+      case "n": {
+        sharedReplaySendSound("nooo");
+        return;
+      }
+
+      // A sound test.
+      case "z": {
+        sounds.play(SoundType.Us);
+        return;
+      }
+
+      case "c": {
+        gameChat.toggle();
+        return;
+      }
+
+      case "l": {
+        backToLobby();
+        return;
+      }
+
+      case "t": {
+        replay.promptTurn();
+        return;
+      }
+
+      default: {
+        break;
+      }
     }
   }
 
@@ -243,7 +194,7 @@ function keydown(event: KeyboardEvent) {
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any.
   if (
-    event.which === KeyCode.KEY_DELETE
+    event.key === "Delete"
     && globals.activeHover !== undefined
     && globals.activeHover instanceof HanabiCard
   ) {
@@ -254,7 +205,7 @@ function keydown(event: KeyboardEvent) {
 
   // Page Up = Enter a hypothetical from the replay, as the "Enter Hypothetical" button does. (The
   // browser would otherwise scroll the page.)
-  if (event.which === KeyCode.KEY_PAGE_UP) {
+  if (event.key === "PageUp") {
     event.preventDefault();
     if (globals.state.finished || globals.state.replay.segment !== undefined) {
       hypothetical.startHypothetical(); // This function has validation inside of it
@@ -263,7 +214,7 @@ function keydown(event: KeyboardEvent) {
   }
 
   // Page Down = Leave the hypothetical.
-  if (event.which === KeyCode.KEY_PAGE_DOWN) {
+  if (event.key === "PageDown") {
     event.preventDefault();
     hypothetical.endHypothetical(); // This function has validation inside of it
     return;
@@ -274,19 +225,30 @@ function keydown(event: KeyboardEvent) {
     globals.state.replay.hypothetical === undefined
     || replay.isSpectatingHypothetical()
   ) {
-    switch (event.which) {
-      case KeyCode.KEY_LEFT: {
+    // The brackets count by where the keys are, to the right of P, because many keyboards need
+    // AltGr to type "[" and "]".
+    if (event.code === "BracketLeft") {
+      replay.backRound();
+      return;
+    }
+    if (event.code === "BracketRight") {
+      replay.forwardRound();
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowLeft": {
         replay.back();
         return;
       }
 
-      case KeyCode.KEY_RIGHT: {
+      case "ArrowRight": {
         replay.forward();
         return;
       }
 
-      case KeyCode.KEY_UP:
-      case KeyCode.KEY_DOWN: {
+      case "ArrowUp":
+      case "ArrowDown": {
         if (globals.state.replay.shared !== undefined) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
@@ -299,22 +261,12 @@ function keydown(event: KeyboardEvent) {
         return;
       }
 
-      case KeyCode.KEY_OPEN_BRACKET: {
-        replay.backRound();
-        return;
-      }
-
-      case KeyCode.KEY_CLOSE_BRACKET: {
-        replay.forwardRound();
-        return;
-      }
-
-      case KeyCode.KEY_HOME: {
+      case "Home": {
         replay.backFull();
         return;
       }
 
-      case KeyCode.KEY_END: {
+      case "End": {
         replay.forwardFull();
         return;
       }
@@ -323,16 +275,16 @@ function keydown(event: KeyboardEvent) {
         break;
       }
     }
-  } else if (event.which === KeyCode.KEY_LEFT) {
+  } else if (event.key === "ArrowLeft") {
     hypothetical.sendHypotheticalBack();
     return;
-  } else if (event.which === KeyCode.KEY_RIGHT) {
+  } else if (event.key === "ArrowRight") {
     hypothetical.sendHypotheticalPassTurn();
     return;
   }
 
   // Normal gameplay hotkeys
-  const hotkeyFunction = getNormalGameplayHotkeyFunction(event.which);
+  const hotkeyFunction = getNormalGameplayHotkeyFunction(event);
   if (hotkeyFunction === undefined) {
     return;
   }
@@ -343,7 +295,7 @@ function keydown(event: KeyboardEvent) {
 
 /** The "normal" hotkeys include hotkeys for playing cards, discarding cards, and giving clues. */
 function getNormalGameplayHotkeyFunction(
-  keyCode: number,
+  event: KeyboardEvent,
 ): Callback | undefined {
   // Do nothing if we are not in a normal game situation.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
@@ -368,7 +320,7 @@ function getNormalGameplayHotkeyFunction(
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
   // The redesigned game screen handles the clue hotkeys itself, on its own clue panel.
   if (isClueAvailable && !store.getState().newUi.shown) {
-    const hotkeyFunction = hotkeyClueMap.get(keyCode);
+    const hotkeyFunction = getClueHotkeyFunction(event);
     if (hotkeyFunction !== undefined) {
       return hotkeyFunction;
     }
@@ -378,14 +330,42 @@ function getNormalGameplayHotkeyFunction(
     ongoingGameState.clueTokens,
     globals.variant,
   );
-  if (!atMaxClueTokens) {
-    const hotkeyFunction = hotkeyDiscardMap.get(keyCode);
-    if (hotkeyFunction !== undefined) {
-      return hotkeyFunction;
-    }
+  // "a" and "d", and "+" and "-" on the number pad.
+  if (
+    !atMaxClueTokens
+    && (getHotkeyLetter(event) === "d" || event.code === "NumpadSubtract")
+  ) {
+    return discard;
+  }
+  if (getHotkeyLetter(event) === "a" || event.code === "NumpadAdd") {
+    return play;
   }
 
-  return hotkeyPlayMap.get(keyCode);
+  return undefined;
+}
+
+/**
+ * Tab and ";" select the next player. "1" to "5" select a rank (see `getRankKeyIndex`). "q" to "y"
+ * select a color (see `getColorKeyIndex`). We use "qwerty" because these keys are next to the
+ * number keys, and because the clue colors change between variants.
+ */
+function getClueHotkeyFunction(event: KeyboardEvent): Callback | undefined {
+  if (event.key === "Tab" || event.key === ";") {
+    return selectNextPlayerTarget;
+  }
+
+  const rankIndex = getRankKeyIndex(event);
+  if (rankIndex !== undefined) {
+    const button = globals.elements.rankClueButtons[rankIndex];
+    return button === undefined ? undefined : click(button);
+  }
+
+  const colorIndex = getColorKeyIndex(event);
+  const button =
+    colorIndex === undefined
+      ? undefined
+      : globals.elements.colorClueButtons[colorIndex];
+  return button === undefined ? undefined : click(button);
 }
 
 /** Whether the player is typing in the game's chat, as jQuery's ":focus" selector. */
@@ -399,14 +379,14 @@ function isGameChatInputFocused(): boolean {
 }
 
 function keyup(event: KeyboardEvent) {
-  if (event.key === KeyCode.VALUE_CONTROL) {
+  if (event.key === "Control") {
     if (globals.globalEmpathyEnabled) {
       setGlobalEmpathy(true);
     }
     return;
   }
 
-  if (event.which === KeyCode.KEY_SPACE) {
+  if (event.key === " ") {
     // Space bar
     setGlobalEmpathy(false);
   }

@@ -1,10 +1,5 @@
-import { expect, test, vi } from "vitest";
-
-// The dialogs need a browser.
-vi.mock("../../modals.ts", () => ({
-  isModalVisible: () => false,
-}));
-const { getRankKeyIndex } = await import("./useHotkeys.ts");
+import { expect, test } from "vitest";
+import { getRankKeyIndex } from "./clueKeys.ts";
 
 test("a number key chooses a rank by where it is", () => {
   expect(

@@ -5,31 +5,7 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useState } from "react";
 import { isModalVisible } from "../../modals.ts";
-
-/**
- * The keys that choose a color clue, in the order of the variant's colors, as on the classic
- * screen. They sit next to the number keys, which choose a rank.
- */
-const COLOR_CLUE_KEYS = ["q", "w", "e", "r", "t", "y"] as const;
-
-/** The number keys of the top row and of the number pad, as `event.code` names them. */
-const RANK_KEY_CODE = /^(?:Digit|Numpad)(?<digit>[1-9])$/u;
-
-/**
- * The index of the rank that a number key chooses, if it is one. The top row counts by where the
- * key is, as on the classic screen, so that it works on keyboards that need Shift for the digits,
- * such as French ones. A number pad key counts only while it types a digit: without Num Lock, it is
- * an arrow or Home or End.
- */
-export function getRankKeyIndex(
-  event: Pick<KeyboardEvent, "code" | "key">,
-): number | undefined {
-  const digit = RANK_KEY_CODE.exec(event.code)?.groups?.["digit"];
-  return digit === undefined
-    || (event.code.startsWith("Numpad") && !/^\d$/u.test(event.key))
-    ? undefined
-    : Number(digit) - 1;
-}
+import { getColorKeyIndex, getRankKeyIndex } from "../clueKeys.ts";
 
 /** Whether a key press goes into a text box, such as the chat, rather than to the game. */
 function isTyping(target: EventTarget | null): boolean {
@@ -136,9 +112,9 @@ export interface ClueHotkeys {
 
 /**
  * The clue hotkeys of the classic screen: Tab or ";" picks the next player, "1" to "5" pick a rank
- * (see `getRankKeyIndex`), "q" to "y" pick a color by the letter that they type, and Ctrl + Enter
- * gives the clue. The listener stays the same, so it reads the latest screen from `hotkeys`, which
- * each render of the screen replaces. They do nothing while it is empty.
+ * (see `getRankKeyIndex`), "q" to "y" pick a color (see `getColorKeyIndex`), and Ctrl + Enter gives
+ * the clue. The listener stays the same, so it reads the latest screen from `hotkeys`, which each
+ * render of the screen replaces. They do nothing while it is empty.
  */
 export function useClueHotkeys(
   hotkeys: RefObject<ClueHotkeys | undefined>,
@@ -190,12 +166,9 @@ function onClueKey(event: KeyboardEvent, hotkeys: ClueHotkeys) {
     hotkeys.onChooseClue(newRankClue(rank));
     return;
   }
+  const colorIndex = getColorKeyIndex(event);
   const color =
-    variant.clueColors[
-      COLOR_CLUE_KEYS.indexOf(
-        event.key.toLowerCase() as (typeof COLOR_CLUE_KEYS)[number],
-      )
-    ];
+    colorIndex === undefined ? undefined : variant.clueColors[colorIndex];
   if (color !== undefined) {
     hotkeys.onChooseClue(newColorClue(color));
   }
