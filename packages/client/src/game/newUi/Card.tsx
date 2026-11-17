@@ -1270,11 +1270,11 @@ const POSSIBLE_CARDS = {
   gap: 0.05,
   padding: 0.12,
   /**
-   * The width of the icon in the corner of a card that the card cannot be. The note is smaller than
-   * the eye, since it is as tall as it is wide.
+   * The width of the icon in the corner of a card that the card cannot be. The two cards are
+   * narrower than the note, since they are taller than they are wide.
    */
   removedIcon: {
-    seen: 0.15,
+    seen: 0.09,
     note: 0.1,
   },
   /** The pointer that points from the bubble at the card. */
@@ -1396,12 +1396,12 @@ const REMOVED_BY_ICON_STROKE = 9;
  * this box, so that the shape touches the edges of the icon.
  */
 const REMOVED_BY_ICON_BOUNDS = {
-  // The eye's corners are at x 4 and 96, and its curves reach from y 26 to y 74.
+  // The back card's corner is at x 10 and y 6, and the front card's corner is at x 86 and y 94.
   seen: {
-    left: 4 - REMOVED_BY_ICON_STROKE / 2,
-    top: 26 - REMOVED_BY_ICON_STROKE / 2,
-    right: 96 + REMOVED_BY_ICON_STROKE / 2,
-    bottom: 74 + REMOVED_BY_ICON_STROKE / 2,
+    left: 10 - REMOVED_BY_ICON_STROKE / 2,
+    top: 6 - REMOVED_BY_ICON_STROKE / 2,
+    right: 86 + REMOVED_BY_ICON_STROKE / 2,
+    bottom: 94 + REMOVED_BY_ICON_STROKE / 2,
   },
   note: {
     left: 8 - REMOVED_BY_ICON_STROKE / 2,
@@ -1412,8 +1412,9 @@ const REMOVED_BY_ICON_BOUNDS = {
 } as const;
 
 /**
- * An eye for the cards that the holder sees, or a note for the note on the card. It is `size` wide,
- * and as tall as its shape.
+ * Two stacked cards when the holder sees every copy of the card elsewhere, or a note for the note
+ * on the card. It is `size` wide, and as tall as its shape. (It is not an eye, since an eye already
+ * means spectators and a player's view of a hand.)
  */
 function RemovedByIcon({
   by,
@@ -1435,13 +1436,24 @@ function RemovedByIcon({
     >
       {by === "seen" ? (
         <>
-          <path
-            className="tw:fill-card-note tw:stroke-card-ink"
-            d="M 4 50 Q 50 2 96 50 Q 50 98 4 50 Z"
-            strokeLinejoin="round"
+          <rect
+            className="tw:fill-card-unknown tw:stroke-card-ink"
+            height={66}
+            rx={6}
             strokeWidth={REMOVED_BY_ICON_STROKE}
+            width={50}
+            x={10}
+            y={6}
           />
-          <circle className="tw:fill-card-ink" cx={50} cy={50} r={17} />
+          <rect
+            className="tw:fill-white tw:stroke-card-ink"
+            height={66}
+            rx={6}
+            strokeWidth={REMOVED_BY_ICON_STROKE}
+            width={50}
+            x={36}
+            y={28}
+          />
         </>
       ) : (
         <>
