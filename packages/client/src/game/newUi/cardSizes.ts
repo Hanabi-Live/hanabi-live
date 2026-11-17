@@ -196,8 +196,7 @@ export interface WideLayoutRoom {
   /**
    * Whether the hands are still too narrow when everything beside them has given up its room: the
    * width makes the cards smaller than their height allows, and smaller than
-   * `WIDE_LAYOUT_MIN_CARD_WIDTH`. Then the game screen uses the phone layout. When even the largest
-   * cards do not take all of the height, such as with two players, the hands are never too narrow.
+   * `WIDE_LAYOUT_MIN_CARD_WIDTH`. Then the game screen uses the phone layout.
    */
   readonly handsTooNarrow: boolean;
 }
@@ -305,10 +304,9 @@ export function getWideLayoutRoom(
     handsNarrowed: missing > 0,
     // Each pixel that the cards lose gives the hands `cardsPerHand` pixels.
     handsTooNarrow:
-      cardWidth < HAND_CARD_WIDTH.MAX
-      && missing
-        > cardsPerHand
-          * (cardWidth - Math.min(cardWidth, WIDE_LAYOUT_MIN_CARD_WIDTH)),
+      missing
+      > cardsPerHand
+        * (cardWidth - Math.min(cardWidth, WIDE_LAYOUT_MIN_CARD_WIDTH)),
   };
 }
 
