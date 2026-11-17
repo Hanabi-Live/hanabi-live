@@ -33,6 +33,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "esbuild": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "jsdom": "catalog:",
     "tailwindcss": "catalog:",
     "vite": "catalog:",

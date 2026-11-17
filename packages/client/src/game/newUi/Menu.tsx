@@ -102,6 +102,7 @@ export function Menu({
     pointer: 0,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const element = ref.current;
     if (align !== "center" || element === null) {

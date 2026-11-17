@@ -383,6 +383,7 @@ export function GameScreen({
   }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (

@@ -179,6 +179,7 @@ export function HighlightArrow({
     return () => {
       drop.cancel();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- The arrow appears once. A later change to the motion setting does not play it again.
   }, []);
 
   return (

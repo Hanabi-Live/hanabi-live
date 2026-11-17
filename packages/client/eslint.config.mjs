@@ -1,8 +1,21 @@
+import reactHooks from "eslint-plugin-react-hooks";
 import { defineConfig } from "eslint/config";
 import { hanabiConfigBase } from "../../eslint.config.mjs";
 
 export default defineConfig(
   ...hanabiConfigBase,
+
+  // Only the rules of hooks. The other rules of the plugin check code for the React Compiler, which
+  // the client does not use.
+  {
+    plugins: {
+      "react-hooks": reactHooks,
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+    },
+  },
 
   {
     rules: {

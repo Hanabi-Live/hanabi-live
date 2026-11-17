@@ -457,6 +457,7 @@ function useOwnRow(
   /** The width of the bar when the controls got a row of their own. */
   const ownRowWidth = useRef<number | undefined>(undefined);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const group = controls.current;
     if (footer === null || group === null) {
@@ -509,6 +510,7 @@ function useShortLabels(
   // Measures again when the bar's width changes.
   useElementSize(footer);
   const [shortLabels, setShortLabels] = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const element = row.current;
     if (element === null) {

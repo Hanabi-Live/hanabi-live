@@ -120,7 +120,7 @@ function mouseDown(
   event: Konva.KonvaEventObject<MouseEvent>,
 ) {
   // Speedrunning overrides the normal card clicking behavior.
-  if (useSpeedrunClickHandlers()) {
+  if (shouldUseSpeedrunClickHandlers()) {
     mouseDownSpeedrun(this, event.evt);
     return;
   }
@@ -148,7 +148,7 @@ function mouseDown(
 
 function mouseUp(this: HanabiCard) {
   // Speedrunning overrides the normal card clicking behavior.
-  if (useSpeedrunClickHandlers()) {
+  if (shouldUseSpeedrunClickHandlers()) {
     return;
   }
 
@@ -266,7 +266,7 @@ function checkHideNoteTooltip(card: HanabiCard) {
   tooltips.close(tooltip);
 }
 
-function useSpeedrunClickHandlers() {
+function shouldUseSpeedrunClickHandlers() {
   return (
     (globals.options.speedrun
       || store.getState().session.settings.speedrunFeatures)
