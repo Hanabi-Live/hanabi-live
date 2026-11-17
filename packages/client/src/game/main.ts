@@ -18,6 +18,7 @@ import { releaseGameObservers } from "./gameObservers.ts";
 import * as gameSession from "./gameSession.ts";
 import * as newUi from "./newUi/newUi.ts";
 import { setPlayStartSound } from "./soundEffects.ts";
+import { abortEffectTimelines } from "./ui/fireworks.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
 import * as keyboard from "./ui/keyboard.ts";
 import { StateObserver } from "./ui/reactive/StateObserver.ts";
@@ -69,6 +70,8 @@ export function show(justStarted: boolean): void {
   gameSession.openGame();
   clock.reset();
   setPlayStartSound(justStarted);
+  // A new table can open without closing the previous game, whose effects would outlive its state.
+  abortEffectTimelines();
   resetGlobals();
   if (store.getState().session.settings.newUi) {
     newUi.mount();

@@ -33,6 +33,19 @@ export function absoluteCenter(node: Konva.Node): Point {
   });
 }
 
+/** The timelines that are playing. */
+const playing = new Set<EffectTimeline>();
+
+/**
+ * Stops every timeline where it is, without its callbacks, since they read the game's state. Call
+ * it before the game closes: the animations run on Konva's global loop, not on the stage.
+ */
+export function abortEffectTimelines(): void {
+  for (const timeline of playing) {
+    timeline.abort();
+  }
+}
+
 /**
  * Runs effects on a fixed schedule. Each effect is a track that starts at a time (in seconds) and
  * runs for a duration. Shapes are drawn above the cards and are destroyed when their track ends.
@@ -43,6 +56,7 @@ export class EffectTimeline {
   private readonly fxInverse: Konva.Transform;
   private readonly tracks: Track[] = [];
   private animation: Konva.Animation | undefined = undefined;
+  private aborted = false;
 
   /** Sizes and distances are fractions of this length, which is the height of a play stack. */
   readonly unit: number;
@@ -199,10 +213,24 @@ export class EffectTimeline {
       [...layers, this.fxLayer],
     );
     this.animation.start();
+    playing.add(this);
+  }
+
+  /** Stops the animation and removes the effects, without calling the callbacks of the tracks. */
+  abort(): void {
+    this.aborted = true;
+    playing.delete(this);
+    this.animation?.stop();
+    this.fx.destroy();
   }
 
   /** Ends every track where it is and removes the effects. */
   stop(): void {
+    // The tracks of an aborted timeline belong to a closed game.
+    if (this.aborted) {
+      return;
+    }
+    playing.delete(this);
     this.animation?.stop();
     for (const track of this.tracks) {
       if (track.ended) {

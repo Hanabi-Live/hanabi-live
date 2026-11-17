@@ -9,6 +9,7 @@ import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
 import { drawUi } from "./drawUi.ts";
+import { abortEffectTimelines } from "./fireworks.ts";
 import * as keyboard from "./keyboard.ts";
 import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
@@ -239,6 +240,7 @@ export class HanabiUi {
     keyboard.destroy();
     this.stopDrawingTimers();
     globals.elements.restartWaitingOnServerAnimation?.stop();
+    abortEffectTimelines();
     globals.stage.destroy();
   }
 }
