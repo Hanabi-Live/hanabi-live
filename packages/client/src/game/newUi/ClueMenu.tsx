@@ -60,6 +60,12 @@ export const CLUE_DRAWER_HAND_CLASS =
 const DRAWER_RADIUS = 8;
 
 /**
+ * The least distance, in CSS pixels, that the drawer reaches past the hand when it is taller than
+ * the hand. A smaller step would look like a mistake, so the drawer grows instead.
+ */
+const MIN_STEP = 2 * DRAWER_RADIUS;
+
+/**
  * The menu below the hand. It has no outline on its top, where it joins the hand, and its shadow
  * falls down.
  */
@@ -84,11 +90,11 @@ const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it out of their
  * hand, as a drawer (see `CLUE_DRAWER_HAND_CLASS`). It opens to the right of the hand, so that it
- * does not cover the other hands. It starts at the top of the hand, and moves up only as far as it
- * must to fit beside the hands. In the phone layout, or when the window is too narrow, it opens
- * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
- * no cards, leaves an empty well in its place, so that every clue keeps its position. Clicking
- * outside of it or pressing Escape closes it.
+ * does not cover the other hands. Its top lines up with the top of the hand. When there is not
+ * enough room below, its bottom lines up with the bottom of the hand instead. In the phone layout,
+ * or when the window is too narrow, it opens below the hand, as wide as the hand. A clue that the
+ * rules do not allow, such as one that touches no cards, leaves an empty well in its place, so that
+ * every clue keeps its position. Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -111,13 +117,13 @@ export function ClueMenu({
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
   // Where the drawer is for the player whose menu this is, in this layout: whether it is below the
-  // hand, the distance from the top of the hand to the top of the drawer, and the heights of both.
-  // It is undefined until it is measured.
+  // hand, whether its bottom lines up with the bottom of the hand instead of its top with the top,
+  // and the heights of both. It is undefined until it is measured.
   const [placement, setPlacement] = useState<{
     readonly name: string;
     readonly phoneLayout: boolean;
     readonly below: boolean;
-    readonly top: number;
+    readonly alignBottom: boolean;
     readonly height: number;
     readonly handHeight: number;
   }>();
@@ -139,15 +145,18 @@ export function ClueMenu({
     const { height, width } = menu.getBoundingClientRect();
     const fitsRight =
       handRect.right + width <= document.documentElement.clientWidth;
+    // The drawer is at least as tall as the hand, so that the hand's side is not left without an
+    // outline. When it is taller, it reaches past the hand by at least `MIN_STEP`.
+    const drawerHeight =
+      height <= handRect.height
+        ? handRect.height
+        : Math.max(height, handRect.height + MIN_STEP);
     setPlacement({
       name,
       phoneLayout: below,
       below: below || !fitsRight,
-      top: Math.max(
-        roomRect.top - handRect.top,
-        Math.min(0, roomRect.bottom - handRect.top - height),
-      ),
-      height,
+      alignBottom: handRect.top + drawerHeight > roomRect.bottom,
+      height: drawerHeight,
       handHeight: handRect.height,
     });
   }, [name, below]);
@@ -235,17 +244,17 @@ export function ClueMenu({
     };
   }, [onClose, openedItself]);
 
-  // The corners where the drawer joins the hand are square. A corner of the drawer that reaches
-  // past the hand is round.
-  const drawerTop = measured?.top ?? 0;
+  // An edge of the drawer lines up with an edge of the hand through CSS, so that rounding does not
+  // leave a step between them. The corners where the drawer joins the hand are square. A corner of
+  // the drawer that reaches past the hand is round.
+  const alignBottom = measured?.alignBottom === true;
+  const reachesPast =
+    measured !== undefined && measured.height > measured.handHeight;
   const rightStyle: React.CSSProperties = {
-    top: drawerTop,
-    borderTopLeftRadius: drawerTop <= -DRAWER_RADIUS ? DRAWER_RADIUS : 0,
-    borderBottomLeftRadius:
-      measured !== undefined
-      && drawerTop + measured.height >= measured.handHeight + DRAWER_RADIUS
-        ? DRAWER_RADIUS
-        : 0,
+    ...(alignBottom ? { bottom: 0 } : { top: 0 }),
+    minHeight: measured?.height,
+    borderTopLeftRadius: alignBottom && reachesPast ? DRAWER_RADIUS : 0,
+    borderBottomLeftRadius: !alignBottom && reachesPast ? DRAWER_RADIUS : 0,
   };
 
   return (
@@ -267,7 +276,7 @@ export function ClueMenu({
           aria-hidden="true"
           className="tw:absolute tw:left-0 tw:w-px tw:bg-game-panel"
           style={{
-            top: 1 - measured.top,
+            ...(alignBottom ? { bottom: 1 } : { top: 1 }),
             height: measured.handHeight - 2,
           }}
         />
