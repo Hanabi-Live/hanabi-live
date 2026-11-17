@@ -1506,8 +1506,9 @@ export function DiscardPile({
 }
 
 /**
- * The tooltip of the discard pile, in HTML. It has none while the player drags a card. At max
- * clues, a second line explains why no one can discard, like the tooltip of the clue tokens.
+ * The tooltip of the discard pile, in HTML. It has none while the player drags a card. A second
+ * line explains why no one can discard or warns of a Double Discard, like the tooltip of the clue
+ * tokens.
  */
 function getDiscardPileTooltipHtml(
   zoneState: ZoneState,
@@ -1517,14 +1518,17 @@ function getDiscardPileTooltipHtml(
   if (zoneState !== "idle") {
     return undefined;
   }
-  let text = "Discard pile";
+  const lines = ["Discard pile"];
   if (noDiscard) {
-    text += `<br>The team has all ${MAX_CLUES} clue tokens, so no one can discard.`;
+    lines.push(
+      `The team has all ${MAX_CLUES} clue tokens, so no one can discard.`,
+    );
   } else if (doubleDiscard) {
-    text +=
-      ". Double Discard: the card just discarded is still needed, so the chop of the player whose turn it is could be its last copy.";
+    lines.push(
+      "Double Discard: the card just discarded is still needed, so the chop of the player whose turn it is could be its last copy.",
+    );
   }
-  return `<span class="small-tooltip-text">${text}</span>`;
+  return `<span class="small-tooltip-text">${lines.join("<br>")}</span>`;
 }
 
 /** How long the discard pile pulses when the team gets to max clues, in milliseconds. */
