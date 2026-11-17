@@ -48,6 +48,15 @@ const ARROW_ANCHOR = {
     y: 0.1,
   },
 
+  /**
+   * The lid of the trash can in the discard pile. The arrow stays inside the pile, so that it does
+   * not cover the statistics above it.
+   */
+  DISCARD_PILE: {
+    x: 0.5,
+    y: 0.35,
+  },
+
   /** The first digit of the turn, score, plays, and clues numbers. */
   SCORE_AREA_NUMBER: {
     x: 0.15,
@@ -335,6 +344,13 @@ function getPos(element: Konva.Node, rot: number) {
         break;
       }
 
+      case globals.elements.noDiscardBorder: {
+        pos.x += element.width() * ARROW_ANCHOR.DISCARD_PILE.x;
+        pos.y += element.height() * ARROW_ANCHOR.DISCARD_PILE.y;
+
+        break;
+      }
+
       case globals.elements.turnNumberLabel:
       case globals.elements.scoreNumberLabel:
       case globals.elements.playsNumberLabel:
@@ -498,7 +514,7 @@ function getElementFromTarget(
     }
 
     case "discardPile": {
-      // The border has the bounds of the discard panel, even while it is hidden.
+      // The border has the bounds of the discard pile, even while it is hidden.
       return globals.elements.noDiscardBorder!;
     }
   }

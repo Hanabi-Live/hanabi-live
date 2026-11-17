@@ -1332,6 +1332,44 @@ function getStates(): readonly State[] {
         await page.locator(TOOLTIP_SELECTOR).waitFor();
       },
     },
+    // Bob points the arrow at the name of the second player, on the classic screen.
+    {
+      name: "classic-name-arrow",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        await showClassic(page);
+        cast.bobsGame().showArrow({
+          type: "player",
+          playerIndex: 1 as PlayerIndex,
+        });
+        await settle(page);
+      },
+    },
+    // Bob points the arrow at the discard pile, on the classic screen.
+    {
+      name: "classic-discard-arrow",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        await showClassic(page);
+        cast.bobsGame().showArrow({
+          type: "board",
+          element: "discardPile",
+        });
+        await settle(page);
+      },
+    },
     // After the account switches to the classic screen.
     {
       name: "new-ui-classic",

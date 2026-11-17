@@ -2195,8 +2195,14 @@ function drawDiscardArea() {
     fill: "black",
     opacity: PANEL_OPACITY,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
-    listening: false,
   });
+  // Right-click beside the discarded cards to highlight the pile with an arrow.
+  discardAreaRect.on(
+    "click tap",
+    (event: Konva.KonvaEventObject<MouseEvent>) => {
+      arrows.click(event, "discardPile");
+    },
+  );
   globals.layers.UI.add(discardAreaRect);
 
   // The trash can icon over the discard pile.

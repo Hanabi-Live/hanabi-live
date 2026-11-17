@@ -6,7 +6,8 @@ import { store } from "../../store.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import * as clock from "../clock.ts";
-import { globals } from "./UiGlobals.ts";
+import { canDrawArrow } from "../highlightArrow.ts";
+import * as arrows from "./arrows.ts";
 import {
   FONT_FAMILY,
   LABEL_COLOR,
@@ -19,6 +20,7 @@ import {
   WARNING_COLOR,
 } from "./constants.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
+import { globals } from "./UiGlobals.ts";
 import { viewAs } from "./viewAs.ts";
 
 const NAME_SHADOW_OPACITY = 0.9;
@@ -88,8 +90,15 @@ export class NameFrame extends Konva.Group {
           // Left-click
           this.leftClick();
         } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
-          // Right-click
-          this.rightClick();
+          // Ctrl + right-click highlights the name with an arrow, when we can draw one. A
+          // right-click alone views the game as the player.
+          if (event.evt.ctrlKey && canDrawArrow(globals.state, event.evt)) {
+            arrows.toggle({
+              playerIndex: this.playerIndex,
+            });
+          } else {
+            this.rightClick();
+          }
         }
       },
     );
