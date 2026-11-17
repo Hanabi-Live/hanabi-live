@@ -256,10 +256,11 @@ const SUITES = [
 ] as const;
 
 /**
- * The "ui-screenshots" options of the "ui-layout" suite: New UI games in the wide layout, where
- * "ui-screenshots" checks that the hands, the play stacks, and the discard pile line up at the top.
- * The games have two and five players, and one is a replay. One theme is enough, since the themes
- * have the same layout.
+ * The "ui-screenshots" options of the "ui-layout" suite: New UI games, where "ui-screenshots"
+ * checks that the hands, the play stacks, and the discard pile line up at the top in the wide
+ * layout, and that no element sticks out of its box. The games have two and five players, one is a
+ * replay, and one is a shared replay, which has the most controls. The smallest width (360px) has
+ * the least room. One theme is enough, since the themes have the same layout.
  */
 const UI_LAYOUT_ARGS = [
   "--state",
@@ -268,10 +269,14 @@ const UI_LAYOUT_ARGS = [
   "new-ui-five-players",
   "--state",
   "new-ui-replay",
+  "--state",
+  "new-ui-shared-replay",
   "--width",
   "1600",
   "--width",
   "1200",
+  "--width",
+  "360",
   "--theme",
   "light",
 ] as const;

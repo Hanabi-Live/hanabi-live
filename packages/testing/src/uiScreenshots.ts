@@ -3256,6 +3256,131 @@ function getColumnTops():
 /** How far apart, in CSS pixels, the tops of the New UI's columns can be and still line up. */
 const COLUMN_TOP_TOLERANCE = 1;
 
+/**
+ * Runs in the page. Returns each element that sticks out of a box that it is in, such as a button
+ * past the edge of a panel. A box is an element that is not inline, that shows its edges with a
+ * background or a border, and that lets its content overflow. (A box that clips or scrolls its
+ * content means to.) An element that is positioned, or that is in a positioned element inside the
+ * box, is placed on purpose, such as a menu or a token that overhangs a card, so it does not count.
+ * Neither does an element with a negative margin or a relative offset. `tolerance` is in CSS
+ * pixels.
+ */
+function getOverflows(tolerance: number): readonly string[] {
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
+  function pixels(value: string): number {
+    return Number(value.replace(/px$/u, ""));
+  }
+
+  /** Names an element for the report: its tag, its ID or label, and the start of its text. */
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
+  function describe(element: Element): string {
+    const id = element.id === "" ? "" : `#${element.id}`;
+    const label = element.getAttribute("aria-label");
+    if (label !== null) {
+      return `<${element.tagName.toLowerCase()}${id}> [${label}]`;
+    }
+    const text = element.textContent.trim().replaceAll(/\s+/gu, " ");
+    const name = text === "" ? "" : ` "${text.slice(0, 30)}"`;
+    return `<${element.tagName.toLowerCase()}${id}>${name}`;
+  }
+
+  function isBox(style: CSSStyleDeclaration): boolean {
+    const background =
+      style.backgroundImage !== "none"
+      || !/^(?:transparent|rgba\([^)]*,\s*0\))$/u.test(style.backgroundColor);
+    const border = ["top", "right", "bottom", "left"].some(
+      (side) =>
+        style.getPropertyValue(`border-${side}-style`) !== "none"
+        && pixels(style.getPropertyValue(`border-${side}-width`)) > 0,
+    );
+    // An inline element's box is only its line of text, so an image or a button in the line can be
+    // taller than it.
+    return (
+      style.display !== "inline"
+      && (background || border)
+      && style.overflowX === "visible"
+      && style.overflowY === "visible"
+    );
+  }
+
+  /** Whether an element is placed on purpose, so that it may stick out of its box. */
+
+  function isPlaced(style: CSSStyleDeclaration): boolean {
+    // A negative margin moves an element past its neighbors, such as the image of a pip with a
+    // shadow, which is larger than the pip. A relative offset moves it from its place, such as a
+    // close button that sits higher.
+    const negativeMargin = [
+      style.marginTop,
+      style.marginRight,
+      style.marginBottom,
+      style.marginLeft,
+    ].some((margin) => pixels(margin) < 0);
+    const offset =
+      style.position === "relative"
+      && [style.top, style.right, style.bottom, style.left].some(
+        (value) => value !== "auto" && pixels(value) !== 0,
+      );
+    return (
+      style.position === "absolute"
+      || style.position === "fixed"
+      || negativeMargin
+      || offset
+    );
+  }
+
+  const overflows: string[] = [];
+
+  /**
+   * Checks the elements in `parent` against `box`, and the elements in them. What an element clips
+   * does not count, but its own edges do.
+   */
+  function check(parent: Element, box: Element, outer: DOMRect) {
+    for (const element of parent.children) {
+      const style = getComputedStyle(element);
+      if (style.display === "none" || isPlaced(style)) {
+        continue;
+      }
+      const rect = element.getBoundingClientRect();
+      const sides = {
+        left: outer.left - rect.left,
+        top: outer.top - rect.top,
+        right: rect.right - outer.right,
+        bottom: rect.bottom - outer.bottom,
+      };
+      const past = Object.entries(sides)
+        .filter(([, distance]) => distance > tolerance)
+        .map(([side, distance]) => `${distance.toFixed(1)}px on the ${side}`);
+      if (
+        past.length > 0
+        && style.visibility !== "hidden"
+        && rect.width > 0
+        && rect.height > 0
+      ) {
+        overflows.push(
+          `${describe(element)} sticks out of ${describe(box)} by ${past.join(" and ")}.`,
+        );
+      }
+      if (style.overflowX === "visible" && style.overflowY === "visible") {
+        check(element, box, outer);
+      }
+    }
+  }
+
+  for (const box of document.body.querySelectorAll("*")) {
+    if (!isBox(getComputedStyle(box))) {
+      continue;
+    }
+    const outer = box.getBoundingClientRect();
+    if (outer.width > 0 && outer.height > 0) {
+      check(box, box, outer);
+    }
+  }
+  return overflows;
+}
+
+/** How far, in CSS pixels, an element can stick out of its box, for rounding. */
+const OVERFLOW_TOLERANCE = 1;
+
 /** Takes the screenshots of a state. */
 async function captureState(
   page: Page,
@@ -3324,6 +3449,14 @@ async function captureState(
         ) {
           results.errors.push(
             `${state.name} ${size.width} ${theme}: The tops of the hands (${tops.hands.toFixed(1)}px), the play stacks (${tops.stacks.toFixed(1)}px), and the discard pile (${tops.discardPile.toFixed(1)}px) do not line up.`,
+          );
+        }
+        for (const overflow of await page.evaluate(
+          getOverflows,
+          OVERFLOW_TOLERANCE,
+        )) {
+          results.errors.push(
+            `${state.name} ${size.width} ${theme}: ${overflow}`,
           );
         }
         if (openedWindow !== undefined) {
