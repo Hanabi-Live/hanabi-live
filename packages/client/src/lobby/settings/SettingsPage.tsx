@@ -205,7 +205,7 @@ function VolumeRow() {
       {status}
       <span className="tw:flex tw:shrink-0 tw:items-center tw:gap-4">
         <input
-          className="tw:h-[0.25em] tw:w-[10em] tw:rounded-[3px] tw:border-none tw:bg-(--slider-track) tw:narrow-640:flex-1"
+          className="tw:h-[0.25em] tw:w-[10em] tw:rounded-[3px] tw:border-none tw:bg-(--slider-track) tw:narrow-640:min-w-0 tw:narrow-640:flex-1"
           id="settings-volume-slider"
           max={MAX_VOLUME}
           min="0"
