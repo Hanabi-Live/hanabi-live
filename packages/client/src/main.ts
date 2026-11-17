@@ -24,6 +24,7 @@ import * as modals from "./modals.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as tooltips from "./tooltips.ts";
+import { allowTranslators } from "./translators.ts";
 import { setBrowserAddressBarPath } from "./utils.ts";
 
 // Manually redirect users that are going to wrong URLs.
@@ -38,6 +39,7 @@ if (
 }
 
 initErrorListener();
+allowTranslators();
 
 /** Starts the client once the page has loaded. */
 function init() {
