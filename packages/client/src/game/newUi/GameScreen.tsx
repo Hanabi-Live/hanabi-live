@@ -99,6 +99,7 @@ import {
   getHandCardWidth,
   getHandsTopPadding,
   getTableCardWidth,
+  getWideHandsWidth,
   getWideLayoutRoom,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
@@ -807,8 +808,9 @@ export function GameScreen({
   }
 
   // The parts of the wide layout beside the hands give up room only when the hands need it.
+  const rowWidth = tableSize.width - playAreaSize.width;
   const wideRoom = getWideLayoutRoom(
-    tableSize.width - playAreaSize.width,
+    rowWidth,
     handsSize.height,
     options.numPlayers,
     getCardsPerHand(options),
@@ -827,9 +829,12 @@ export function GameScreen({
   const handsHeight = stacked
     ? tableSize.height - 2 * TABLE_TOP_PADDING.STACKED
     : handsSize.height;
+  const handsWidth = stacked
+    ? handsSize.width
+    : getWideHandsWidth(rowWidth, wideRoom);
   function getHandCardWidthFor(columnWidth: number | undefined) {
     return getHandCardWidth(
-      handsSize.width,
+      handsWidth,
       handsHeight,
       options.numPlayers,
       getCardsPerHand(options),
@@ -844,7 +849,7 @@ export function GameScreen({
     if (
       widthWithNamesAbove > handCardWidth
       || !namesFitBesideCards(
-        handsSize.width,
+        handsWidth,
         getCardsPerHand(options),
         nameColumnWidth,
       )

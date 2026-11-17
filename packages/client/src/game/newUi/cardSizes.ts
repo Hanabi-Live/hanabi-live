@@ -282,6 +282,26 @@ export function getWideLayoutRoom(
 }
 
 /**
+ * Returns the width of the wide layout's hands, from the sizes that `getWideLayoutRoom` returned
+ * for `rowWidth`. It is the width that the hands' column gets on the screen. The game screen uses
+ * it rather than measuring the column, because a measurement is one render late: while the window
+ * resizes, the cards would show at the wrong size for a frame, and then jump to the right one.
+ */
+export function getWideHandsWidth(
+  rowWidth: number,
+  room: WideLayoutRoom,
+): number {
+  return clamp(
+    rowWidth
+      - room.discardColumnWidth
+      - 2 * room.tableSidePadding
+      - 2 * room.tableColumnGap,
+    0,
+    room.handsColumnMaxWidth,
+  );
+}
+
+/**
  * Returns the width of the cards in a hand that fit in `handsWidth`, with the names beside the
  * cards in a column `nameColumnWidth` wide, or above them when it is `undefined`.
  */
