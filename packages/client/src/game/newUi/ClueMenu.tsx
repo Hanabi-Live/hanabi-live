@@ -5,6 +5,7 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import { ColorSymbolView, getRankClueLabel } from "./Card.tsx";
 import { getColorSymbol } from "./clueMarkers.ts";
 import { onEscapeKey } from "./escapeKey.ts";
+import { measure } from "./screenScale.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 interface ClueMenuProps {
@@ -175,14 +176,17 @@ export function ClueMenu({
     // and kept for when the drawer is below the hand.
     let rightWidth = 0;
 
-    function measure() {
+    function place() {
       if (menu.dataset["clueDrawer"] === "right") {
         rightWidth = menu.getBoundingClientRect().width;
       }
-      const handRect = hand.getBoundingClientRect();
+      // It compares the width with the window in the window's pixels, and the heights in the
+      // screen's CSS pixels, which become styles.
       const fitsRight =
-        handRect.right + rightWidth <= document.documentElement.clientWidth;
-      const roomRect = room.getBoundingClientRect();
+        hand.getBoundingClientRect().right + rightWidth
+        <= document.documentElement.clientWidth;
+      const handRect = measure(hand);
+      const roomRect = measure(room);
       // The height of the drawer with the normal spaces. The content has the spaces that it has
       // now, so they are swapped for the normal ones.
       const spacing =
@@ -190,7 +194,7 @@ export function ClueMenu({
           ? SPACING.NORMAL
           : SPACING.COMPACT;
       const height =
-        content.getBoundingClientRect().height
+        measure(content).height
         - spacing.title
         - spacing.button
         + getSpaces(SPACING.NORMAL);
@@ -223,8 +227,8 @@ export function ClueMenu({
       );
     }
 
-    measure();
-    const observer = new ResizeObserver(measure);
+    place();
+    const observer = new ResizeObserver(place);
     observer.observe(hand);
     observer.observe(content);
     observer.observe(document.documentElement);
@@ -240,7 +244,7 @@ export function ClueMenu({
     if (measuredBelow === undefined || reducedMotion || menu === null) {
       return undefined;
     }
-    const { height, width } = menu.getBoundingClientRect();
+    const { height, width } = measure(menu);
     const animation = menu.animate(
       [
         measuredBelow
