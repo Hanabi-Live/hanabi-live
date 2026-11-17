@@ -155,6 +155,7 @@ export function getSeats(
           // identity and remove possibilities. Holding the pointer down on the hand shows it
           // without them.
           empathyIncludesNotes: includesNotes,
+          showsRevealedIdentity: includesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
           hGroupConventions:

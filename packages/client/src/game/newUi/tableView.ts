@@ -206,6 +206,12 @@ interface CardViewOptions {
   /** Whether the empathy view also applies the viewer's note, as it does on the viewer's hand. */
   readonly empathyIncludesNotes?: boolean;
 
+  /**
+   * Whether the card shows its identity once the game reveals it, even on a turn before that. As on
+   * the classic screen, the viewer's own hand does this, so that a replay shows what each card was.
+   */
+  readonly showsRevealedIdentity?: boolean;
+
   readonly finished: boolean;
 
   /** "Real life mode" hides the hints that a physical game would not have. */
@@ -225,6 +231,7 @@ export function getCardView({
   variant,
   empathy,
   empathyIncludesNotes = false,
+  showsRevealedIdentity = false,
   finished,
   realLifeMode,
   hGroupConventions = false,
@@ -233,7 +240,7 @@ export function getCardView({
     cardIdentity,
     state: cardState,
     note,
-    empathy,
+    empathy: empathy && !showsRevealedIdentity,
     empathyIncludesNotes,
     isStackBase: false,
     finished,

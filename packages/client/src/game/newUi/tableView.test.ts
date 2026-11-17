@@ -432,6 +432,23 @@ describe("getCardView", () => {
     });
   });
 
+  test("shows the revealed identity of a card in the viewer's own hand", () => {
+    // The clues do not tell the holder what the card is, but the game later reveals it.
+    expect(getEmpathyView({})).toMatchObject({
+      suitIndex: undefined,
+      rank: undefined,
+    });
+    expect(
+      getEmpathyView(
+        {},
+        {
+          empathyIncludesNotes: true,
+          showsRevealedIdentity: true,
+        },
+      ),
+    ).toMatchObject(red1);
+  });
+
   test("hides what the holder knows in real life mode and on a blank card", () => {
     expect(
       getEmpathyView(learnedByElimination, { realLifeMode: true }).pips,
