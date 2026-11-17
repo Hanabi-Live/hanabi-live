@@ -306,19 +306,21 @@ const COLOR_SYMBOL_PER_SIZE = 0.6;
 const COLOR_PIP_PER_SIZE = 1.3;
 
 /**
- * The symbol of a color, centered in a box `size` pixels wide. It is white with a dark border, so
- * that it shows on every color.
+ * The symbol of a color, centered in a box `size` pixels wide. By default, it is white with a dark
+ * border, so that it shows on every color.
  */
 export function ColorSymbolView({
   symbol,
   size,
+  fill = "white",
 }: {
   readonly symbol: ColorSymbol;
   readonly size: number;
+  readonly fill?: string;
 }): React.JSX.Element {
   return symbol.type === "pip" ? (
     <Pip
-      fill="white"
+      fill={fill}
       shadow
       size={size * COLOR_PIP_PER_SIZE}
       suit={symbol.suit}
@@ -326,8 +328,11 @@ export function ColorSymbolView({
     />
   ) : (
     <span
-      className="tw:block tw:font-extrabold tw:leading-none tw:text-white tw:[paint-order:stroke] tw:[-webkit-text-stroke:2px_black] tw:[text-box:trim-both_cap_alphabetic]"
-      style={{ fontSize: size * COLOR_SYMBOL_PER_SIZE }}
+      className="tw:block tw:font-extrabold tw:leading-none tw:[paint-order:stroke] tw:[-webkit-text-stroke:2px_black] tw:[text-box:trim-both_cap_alphabetic]"
+      style={{
+        fontSize: size * COLOR_SYMBOL_PER_SIZE,
+        color: fill,
+      }}
     >
       {symbol.text}
     </span>

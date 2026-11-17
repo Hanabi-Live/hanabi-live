@@ -16,6 +16,9 @@ const CLUE_DISC_SIZE = 16;
 /** The size of the number on a clue disc, as a fraction of the disc's size. */
 const DISC_FONT_SIZE_PER_SIZE = 10 / CLUE_DISC_SIZE;
 
+/** The size of a color's symbol on a clue disc, as a fraction of the disc's size. */
+const DISC_SYMBOL_PER_SIZE = 0.8;
+
 /**
  * How close to the bottom of the log, in CSS pixels, the viewer must scroll for the log to stay on
  * the newest clue.
@@ -275,7 +278,9 @@ function FitName({ name }: { readonly name: string }): React.JSX.Element {
 
 /**
  * The clue as a small disc, like the tokens on the cards: the clue's color, or a white disc with
- * the token's label. Its label also says whether the clue touched the card under the mouse.
+ * the token's label. In colorblind mode, a color is a white disc with the color's symbol in that
+ * color, which is easier to read than a white symbol on the color. Its label also says whether the
+ * clue touched the card under the mouse.
  */
 export function ClueDisc({
   marker,
@@ -290,6 +295,7 @@ export function ClueDisc({
   readonly size?: number;
 }): React.JSX.Element {
   const label = `${clueName}${MATCH_LABEL_SUFFIX[match]}`;
+  const colorSymbol = marker.type === "color" ? marker.symbol : undefined;
   return (
     <span
       aria-label={label}
@@ -299,7 +305,8 @@ export function ClueDisc({
         width: size,
         height: size,
         fontSize: size * DISC_FONT_SIZE_PER_SIZE,
-        background: getClueMarkerColor(marker),
+        background:
+          colorSymbol === undefined ? getClueMarkerColor(marker) : "white",
       }}
     >
       {/* The number's box is trimmed to the height of the digits, so that the digits are centered
@@ -310,8 +317,12 @@ export function ClueDisc({
           {getClueMarkerLabel(marker)}
         </span>
       )}
-      {marker.type === "color" && marker.symbol !== undefined && (
-        <ColorSymbolView size={size} symbol={marker.symbol} />
+      {marker.type === "color" && colorSymbol !== undefined && (
+        <ColorSymbolView
+          fill={marker.fill}
+          size={size * DISC_SYMBOL_PER_SIZE}
+          symbol={colorSymbol}
+        />
       )}
       {marker.type === "sound" && (
         <span
