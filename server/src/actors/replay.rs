@@ -321,6 +321,16 @@ impl TableActor {
         else {
             bail_internal!("A replay command ran outside a replay.");
         };
+        // The leader can undo a turn or show the drawn cards just after the hypothetical ends, before
+        // the end reaches them. There is nothing to change, and the clients have no hypothetical to
+        // change, so the server ignores it.
+        if let R::Hypothetical {
+            control: H::Back {} | H::ShowDrawnCards { .. },
+        } = &r.action
+            && !replay.hypothetical
+        {
+            return Ok(());
+        }
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r.action, R::Arrow { .. } | R::Sound { .. });
         match &r.action {
@@ -339,6 +349,7 @@ impl TableActor {
                     replay.hypothetical_actions.clear();
                 }
                 H::Events { events } => {
+                    ensure_or_reject!(replay.hypothetical, "Not hypothetical.");
                     ensure_or_reject!(!events.is_empty(), "No hypothetical actions.");
                     let mut added = 0;
                     for event in events {

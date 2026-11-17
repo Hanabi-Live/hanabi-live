@@ -1086,6 +1086,68 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
 }
 
 #[tokio::test]
+async fn hypothetical_controls_after_the_end_do_not_reach_spectators() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.replay(0).await?;
+        h.send(1, "tableSpectate", json!({"tableId":id})).await?;
+        h.receive_game(1).await?;
+        let control = |control: Value| {
+            json!({"tableId":id,"action":{"type":"hypothetical","control":control}})
+        };
+        h.send(0, "replayAction", control(json!({"type":"start"})))
+            .await?;
+        h.send(0, "replayAction", control(json!({"type":"end"})))
+            .await?;
+        // The leader clicked these before the end reached them.
+        h.send(0, "replayAction", control(json!({"type":"back"})))
+            .await?;
+        h.send(
+            0,
+            "replayAction",
+            control(json!({"type":"showDrawnCards","show":true})),
+        )
+        .await?;
+        let event = json!({"type":"turn","turn":1,"currentPlayerIndex":1});
+        ensure!(
+            h.send(
+                0,
+                "replayAction",
+                control(json!({"type":"events","events":[event]})),
+            )
+            .await
+            .is_err(),
+            "Events were accepted without a hypothetical"
+        );
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableId":id,"action":{"type":"turn","turn":1}}),
+        )
+        .await?;
+
+        let mut actions = vec![];
+        loop {
+            let action = h.receive(1, "replayAction").await?["action"].clone();
+            if action["type"] == "turn" {
+                break;
+            }
+            actions.push(action["control"]["type"].clone());
+        }
+        ensure!(
+            actions == [json!("start"), json!("end")],
+            "The spectator received: {actions:?}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn shared_replay_spectators_return_to_the_same_replay_after_a_restart() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());
