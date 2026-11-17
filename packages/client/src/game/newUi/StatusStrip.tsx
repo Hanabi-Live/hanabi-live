@@ -62,14 +62,6 @@ interface StatusStripProps {
    */
   readonly lowScorePhase: boolean;
 
-  /**
-   * How a finished game ended, on every turn of its replay, with a tooltip in HTML. The classic
-   * screen writes it in its action log. Here, an icon beside the score shows it, so that the bar
-   * does not grow.
-   */
-  readonly result:
-    { readonly summary: string; readonly tooltipHtml: string } | undefined;
-
   readonly pace: string;
 
   /** The color of the pace, by how risky it would be to discard, as on the classic screen. */
@@ -561,7 +553,6 @@ export function StatusStrip({
   maxScore,
   scoreLabel,
   lowScorePhase,
-  result,
   pace,
   paceColor,
   futureEfficiency,
@@ -654,22 +645,7 @@ export function StatusStrip({
             </span>
           </button>
         </Stat>
-        <Stat
-          label={
-            <>
-              {scoreLabel}
-              {result !== undefined && (
-                <HelpIcon
-                  icon="fa-info-circle"
-                  label={`How the game ended: ${result.summary}`}
-                  tooltip={valueTooltip(result.tooltipHtml)}
-                />
-              )}
-            </>
-          }
-          size="large"
-          truncate={false}
-        >
+        <Stat label={scoreLabel} size="large" truncate={false}>
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span
             className="tw:inline-block"

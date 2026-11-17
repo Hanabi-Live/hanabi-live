@@ -29,7 +29,7 @@ import {
   shouldModifyEfficiency,
 } from "../efficiency.ts";
 import { askForEfficiency } from "../efficiencyModifier.ts";
-import { getGameEnd, getGameEndTooltipHtml } from "../gameEnd.ts";
+import { getShownGameEnd } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
 import { isClueAllowed } from "../isClueAllowed.ts";
 import { getPauseAction, pause, unpause } from "../pause.ts";
@@ -528,7 +528,6 @@ export function GameScreen({
     previewHand === undefined || clue === undefined
       ? []
       : getTouchedCards(variant, previewHand, getShownIdentities(state), clue);
-  const gameEnd = getGameEnd(state);
   const seats = getSeats(
     state,
     empathyPlayers,
@@ -1133,6 +1132,7 @@ export function GameScreen({
                   variant,
                   reducedMotion: settings.reducedMotion,
                 }}
+                gameEnd={getShownGameEnd(state)}
                 hole={getHole(state)}
                 notes={cardNotes}
                 stacks={stacks}
@@ -1480,14 +1480,6 @@ export function GameScreen({
                     === metadata.ourPlayerIndex,
                 reducedMotion: settings.reducedMotion,
                 onToggle: toggleReplay,
-              }
-        }
-        result={
-          gameEnd === undefined
-            ? undefined
-            : {
-                summary: gameEnd.summary,
-                tooltipHtml: getGameEndTooltipHtml(gameEnd),
               }
         }
         score={

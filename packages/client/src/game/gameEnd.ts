@@ -19,6 +19,7 @@ import type { State } from "./types/State.ts";
 export interface GameEnd {
   /** A few words about how the game ended, such as "Strikeout". */
   readonly summary: string;
+  readonly endCondition: EndCondition;
 
   /**
    * A sentence that explains the summary, such as "Players had three misplayed cards.". It is
@@ -76,6 +77,7 @@ export function getGameEnd(state: State): GameEnd | undefined {
   }
 
   return {
+    endCondition: gameOver.endCondition,
     summary: getGameOverSummary(
       gameOver.endCondition,
       gameOver.playerIndex,

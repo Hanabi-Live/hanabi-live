@@ -37,6 +37,7 @@ import {
   isValidClueRank,
   MAX_CLUES,
   MAX_RANK,
+  MAX_STRIKES,
   START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -1379,6 +1380,24 @@ function getStates(): readonly State[] {
         await page.getByRole("button", { name: /'s turn$/u }).waitFor();
       },
     },
+    // The players of a five-player game strike out. On the turn on which the game ended, the deck
+    // shows how it ended. The pointer rests on it, which shows its tooltip.
+    {
+      name: "new-ui-game-over",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.strikeOut();
+      },
+      prepare: async (page) => {
+        await page.locator("[data-result]").waitFor();
+      },
+      hover: async (page) => {
+        await hoverForTooltip(page, page.locator("[data-result]"));
+      },
+    },
     // Bob, who leads a five-player shared replay, points an arrow at the first card of the next
     // player's hand. The account follows him, so it sees the arrow.
     {
@@ -1688,6 +1707,8 @@ interface BobsGame {
   ) => Promise<void>;
   /** The account plays a card, Bob plays one, and the account misplays one. */
   readonly playAndMisplay: () => Promise<void>;
+  /** The players misplay a card on each turn until the game ends. */
+  readonly strikeOut: () => Promise<void>;
   /**
    * The account and Bob write a note on a card that the player whose turn it is can play, and then
    * that player plays it. The account can do this only until the page loads.
@@ -2683,6 +2704,28 @@ async function createCast(
         await play("account", true);
         await play("bob", true);
         await play("account", false);
+      },
+      strikeOut: async () => {
+        const variant = getVariant(LONG_VARIANT_NAME);
+        for (let i = 0; i < MAX_STRIKES; i++) {
+          const { player } = readTurn(await loadEvents(viewer, tableId));
+          // A play of a card of an inverted suit discards it instead.
+          const cards = await handAt(player);
+          const card = cards.find(
+            (other) =>
+              !other.playable
+              && variant.suits[other.suitIndex]?.inverted !== true,
+          );
+          assertDefined(
+            card,
+            `Seat ${player} has no card to misplay. Choose another seed for Bob's game.`,
+          );
+          await moveAt(player, {
+            type: "play",
+            order: card.order,
+          });
+        }
+        over = true;
       },
       playWithNotes: async ([accountNote, bobNote]) => {
         const MAX_TURNS = 10;

@@ -1,5 +1,6 @@
 import type {
   CardOrder,
+  EndCondition,
   Rank,
   Suit,
   SuitIndex,
@@ -7,10 +8,12 @@ import type {
 } from "@hanabi-live/game";
 import { getTotalCardsInDeck, MAX_CLUES, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
+import type { GameEnd } from "../gameEnd.ts";
+import { getGameEndTooltipHtml } from "../gameEnd.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
@@ -435,6 +438,7 @@ export function PlayArea({
   colorblindMode,
   cardWidth,
   deck,
+  gameEnd,
   zoneState,
   notes,
   tokens,
@@ -447,6 +451,9 @@ export function PlayArea({
   readonly colorblindMode: boolean;
   readonly cardWidth: number;
   readonly deck: DeckProps;
+
+  /** How the game ended, on the turn on which it ended. It takes the place of the deck. */
+  readonly gameEnd: GameEnd | undefined;
   readonly zoneState: ZoneState;
   readonly notes: CardNotes;
 
@@ -656,7 +663,15 @@ export function PlayArea({
             } as React.CSSProperties
           }
         >
-          <Deck {...deck} cardWidth={cardWidth} />
+          {gameEnd === undefined ? (
+            <Deck {...deck} cardWidth={cardWidth} />
+          ) : (
+            <DeckResult
+              cardWidth={cardWidth}
+              gameEnd={gameEnd}
+              reducedMotion={deck.reducedMotion}
+            />
+          )}
         </div>
       </div>
       {tokens}
@@ -1143,6 +1158,174 @@ function Deck({
             )}
           </Menu>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The icon and the short caption of each way that a game can end. The caption has one or two lines,
+ * so that it fits on a card. The tooltip says the rest.
+ */
+const RESULT_FACES = {
+  normal: {
+    icon: "fa-flag-checkered",
+    caption: ["Finished"],
+  },
+  strikeout: {
+    icon: "fa-bomb",
+    caption: ["Strike", "out"],
+  },
+  timeout: {
+    icon: "fa-hourglass-end",
+    caption: ["Out of", "time"],
+  },
+  terminatedByPlayer: {
+    icon: "fa-stop-circle",
+    caption: ["Ended", "early"],
+  },
+  terminatedByVote: {
+    icon: "fa-vote-yea",
+    caption: ["Ended", "by vote"],
+  },
+  speedrunFail: {
+    icon: "fa-bolt",
+    caption: ["Speedrun", "failed"],
+  },
+  idleTimeout: {
+    icon: "fa-bed",
+    caption: ["Idle"],
+  },
+  characterSoftlock: {
+    icon: "fa-lock",
+    caption: ["No", "clues"],
+  },
+  allOrNothingFail: {
+    icon: "fa-times-circle",
+    caption: ["Not", "perfect"],
+  },
+  allOrNothingSoftlock: {
+    icon: "fa-lock",
+    caption: ["Stuck"],
+  },
+} as const satisfies Record<
+  EndCondition,
+  { readonly icon: string; readonly caption: readonly string[] }
+>;
+
+/** The size of the icon, in card widths. */
+const ICON_SIZE = 0.36;
+
+/** The largest size of the caption, in card widths. */
+const CAPTION_MAX_SIZE = 0.2;
+
+/** The widest that the caption can be, in card widths. */
+const CAPTION_MAX_WIDTH = 0.86;
+
+/** About how wide a letter of the caption is, in its font size. */
+const CAPTION_LETTER_WIDTH = 0.62;
+
+/** How long the card takes to turn over, in milliseconds. */
+const FLIP_MILLISECONDS = 400;
+
+/**
+ * How the game ended, in the place of the deck, on the turn on which the game ended. It is a card
+ * with an icon and a few words, and its tooltip says the rest. It is red when the players lost or
+ * did not finish the game, and white when they finished it. It turns over when it appears, so that
+ * the players see that the game is over. It takes the same room as the deck, so that nothing around
+ * it moves.
+ */
+function DeckResult({
+  gameEnd,
+  cardWidth,
+  reducedMotion,
+}: {
+  readonly gameEnd: GameEnd;
+  readonly cardWidth: number;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+  const face = RESULT_FACES[gameEnd.endCondition];
+  const longestLine = Math.max(...face.caption.map((line) => line.length));
+  const captionSize = Math.min(
+    cardWidth * CAPTION_MAX_SIZE,
+    (cardWidth * CAPTION_MAX_WIDTH) / (longestLine * CAPTION_LETTER_WIDTH),
+  );
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  // Only when it appears, not when the setting changes.
+  const flip = useRef(!reducedMotion);
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (card === null || !flip.current) {
+      return undefined;
+    }
+    const animation = card.animate(
+      [
+        { transform: "perspective(600px) rotateY(90deg)" },
+        {
+          transform: "perspective(600px) rotateY(-8deg) scale(1.08)",
+          offset: 0.7,
+        },
+        { transform: "none" },
+      ],
+      {
+        duration: FLIP_MILLISECONDS,
+        easing: "ease-out",
+      },
+    );
+    return () => {
+      animation.cancel();
+    };
+  }, []);
+
+  return (
+    <div
+      aria-label={`Game over: ${gameEnd.summary}`}
+      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
+      ref={tooltipRefHtml(
+        `<div class="small-tooltip-text tw:max-w-80">${getGameEndTooltipHtml(gameEnd)}</div>`,
+      )}
+      role="img"
+    >
+      <div
+        className="tw:relative"
+        style={{
+          width: cardWidth + DECK_PILE_DEPTH,
+          height: height + DECK_PILE_DEPTH,
+        }}
+      >
+        <div
+          className={`tw:absolute tw:top-0 tw:left-0 tw:box-border tw:flex tw:flex-col tw:items-center tw:justify-center tw:leading-none tw:font-extrabold tw:text-card-ink tw:uppercase tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80 ${
+            gameEnd.endCondition === "normal"
+              ? "tw:bg-game-text"
+              : "tw:bg-game-error"
+          }`}
+          data-deck
+          data-result={gameEnd.endCondition}
+          ref={cardRef}
+          style={{
+            width: cardWidth,
+            height,
+            borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+          }}
+        >
+          <i
+            aria-hidden="true"
+            className={`fas ${face.icon}`}
+            style={{ fontSize: cardWidth * ICON_SIZE }}
+          />
+          <span
+            className="tw:mt-[0.5em] tw:text-center tw:whitespace-nowrap"
+            style={{ fontSize: captionSize }}
+          >
+            {face.caption.map((line) => (
+              <span className="tw:block" key={line}>
+                {line}
+              </span>
+            ))}
+          </span>
+        </div>
       </div>
     </div>
   );
