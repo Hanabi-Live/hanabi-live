@@ -80,6 +80,7 @@ export function ChatTextBox({
 
   // Then the lines do not move while someone reads older ones.
   const atBottomRef = useRef(true);
+  const scrollTopRef = useRef(0);
   useLayoutEffect(() => {
     if (atBottomRef.current) {
       scrollToBottom(ref.current!);
@@ -109,9 +110,15 @@ export function ChatTextBox({
       onClick={onClick}
       onScroll={(event) => {
         const { clientHeight, scrollHeight, scrollTop } = event.currentTarget;
-        atBottomRef.current =
+        const atBottom =
           Math.abs(clientHeight + scrollTop - scrollHeight)
           < AT_BOTTOM_EPSILON_PIXELS;
+        // Only a scroll up leaves the bottom. The event of a scroll down can come after the box got
+        // shorter, such as when the replay controls open. Then the box is no longer at the bottom,
+        // but it was when it scrolled, so it must stay there.
+        const scrolledDown = scrollTop > scrollTopRef.current;
+        scrollTopRef.current = scrollTop;
+        atBottomRef.current = atBottom || (scrolledDown && atBottomRef.current);
       }}
       ref={ref}
     >
