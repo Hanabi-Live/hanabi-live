@@ -300,7 +300,7 @@ export type ColorSymbol =
   | { readonly type: "text"; readonly text: string };
 
 /** How much of a clue token or button the abbreviation of a color fills. */
-const COLOR_SYMBOL_PER_SIZE = 0.6;
+export const COLOR_SYMBOL_PER_SIZE = 0.6;
 
 /** How much of a clue token or button the pip of a color fills. */
 const COLOR_PIP_PER_SIZE = 1.3;

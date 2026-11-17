@@ -4,6 +4,7 @@ import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CLUE_EMOJI_FONT_PER_SIZE,
+  COLOR_SYMBOL_PER_SIZE,
   ColorSymbolView,
   getClueMarkerColor,
   getClueMarkerLabel,
@@ -13,11 +14,14 @@ import { WELL_CLASS } from "./surfaces.ts";
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
 const CLUE_DISC_SIZE = 16;
 
-/** The size of the number on a clue disc, as a fraction of the disc's size. */
-const DISC_FONT_SIZE_PER_SIZE = 10 / CLUE_DISC_SIZE;
+/**
+ * The font size of a number or a color's letter on a clue disc, as a fraction of the disc's size.
+ * The characters fill most of the inside of the disc, so that they are easy to read.
+ */
+const DISC_FONT_SIZE_PER_SIZE = 0.8;
 
-/** The size of a color's symbol on a clue disc, as a fraction of the disc's size. */
-const DISC_SYMBOL_PER_SIZE = 0.8;
+/** The size of a color's pip on a clue disc, as a fraction of the disc's size. */
+const DISC_PIP_PER_SIZE = 0.8;
 
 /**
  * How close to the bottom of the log, in CSS pixels, the viewer must scroll for the log to stay on
@@ -320,7 +324,11 @@ export function ClueDisc({
       {marker.type === "color" && colorSymbol !== undefined && (
         <ColorSymbolView
           fill={marker.fill}
-          size={size * DISC_SYMBOL_PER_SIZE}
+          size={
+            colorSymbol.type === "text"
+              ? (size * DISC_FONT_SIZE_PER_SIZE) / COLOR_SYMBOL_PER_SIZE
+              : size * DISC_PIP_PER_SIZE
+          }
           symbol={colorSymbol}
         />
       )}
