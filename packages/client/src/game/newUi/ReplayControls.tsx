@@ -739,7 +739,6 @@ function TurnsControls({
   // The buttons and the timeline step through segments, as the classic screen's do.
   const atStart = segment === 0;
   const atEnd = segment >= lastSegment;
-  const mayEnterHypothetical = hypothetical.mayStartHypothetical(state);
   const afterGameEnd = hypothetical.isAfterGameEnd(state);
 
   // While we follow someone else's lead, the turn moves without us, so the controls show which way.
@@ -826,17 +825,16 @@ function TurnsControls({
         )}
       </div>
       <div className={RIGHT_CLASS}>
-        {/* The button is disabled instead of hidden while we follow the leader, and on a turn
-            after the game ended, so that the timeline does not change its width when we stop
-            following or reach the last turn. */}
+        {/* On a turn after the game ended, the button is disabled instead of hidden, so that the
+            timeline does not change its width on the last turn. */}
         <IconButton
-          disabled={!mayEnterHypothetical || afterGameEnd}
+          disabled={afterGameEnd}
           icon="fa-flask"
           iconClassName="tw:text-game-hypothetical"
           label="Enter hypothetical"
           onClick={hypothetical.startHypothetical}
           tooltip={enterHypotheticalTooltip(
-            mayEnterHypothetical ? undefined : shared?.leader,
+            following ? shared.leader : undefined,
             afterGameEnd,
           )}
         />
@@ -853,12 +851,12 @@ function enterHypotheticalTooltip(
   followedLeader: string | undefined,
   afterGameEnd: boolean,
 ): string {
-  if (followedLeader !== undefined) {
-    return `You follow ${followedLeader}. Stop following them to enter a hypothetical.`;
+  if (afterGameEnd) {
+    return "The game is over on this turn. Go back a turn to enter a hypothetical.";
   }
-  return afterGameEnd
-    ? "The game is over on this turn. Go back a turn to enter a hypothetical."
-    : "Enter hypothetical: try out other moves from this turn.";
+  return followedLeader === undefined
+    ? "Enter hypothetical: try out other moves from this turn."
+    : `Enter hypothetical: stop following ${followedLeader}, and try out other moves from this turn.`;
 }
 
 /** A move of the shared replay leader, to a later turn or an earlier one. */

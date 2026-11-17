@@ -157,7 +157,7 @@ describe("hypothetical start", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
-  test("does not start a hypothetical while we follow the leader", () => {
+  test("stops following the leader and starts our own hypothetical", () => {
     const store = startReplay({
       amLeader: false,
       useSharedSegments: true,
@@ -165,7 +165,10 @@ describe("hypothetical start", () => {
 
     startHypothetical();
 
-    expect(store.getState().replay.hypothetical).toBeUndefined();
+    const { replay } = store.getState();
+    expect(replay.shared?.useSharedSegments).toBe(false);
+    expect(replay.ownHypothetical).not.toBeUndefined();
+    expect(replay.hypothetical).toBe(replay.ownHypothetical);
     expect(send).not.toHaveBeenCalled();
   });
 

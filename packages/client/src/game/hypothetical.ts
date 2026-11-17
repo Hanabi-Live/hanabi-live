@@ -49,23 +49,10 @@ function sendControl(control: HypotheticalControl) {
 }
 
 /**
- * A leader who shares their turns starts the shared hypothetical. Everyone else starts their own,
- * but a player who follows the leader cannot, because the leader decides what they see.
- */
-export function mayStartHypothetical(state: State): boolean {
-  const { shared } = state.replay;
-  return shared === undefined || shared.amLeader || !shared.useSharedSegments;
-}
-
-/**
  * No one can start a hypothetical on a turn after the game ended, since no player has a turn there.
  */
 export function isAfterGameEnd(state: State): boolean {
   return state.visibleState?.turn.currentPlayerIndex === undefined;
-}
-
-function canStartHypothetical(state: State): boolean {
-  return mayStartHypothetical(state) && !isAfterGameEnd(state);
 }
 
 function startsSharedHypothetical(state: State): boolean {
@@ -75,8 +62,20 @@ function startsSharedHypothetical(state: State): boolean {
 
 export function startHypothetical(): void {
   const state = getState();
-  if (state.replay.hypothetical !== undefined || !canStartHypothetical(state)) {
+  if (state.replay.hypothetical !== undefined || isAfterGameEnd(state)) {
     return;
+  }
+
+  // The leader decides what a follower sees, so a follower stops following to try out their own
+  // moves. They stay on the turn that the leader shows.
+  const { shared } = state.replay;
+  if (shared !== undefined && !shared.amLeader && shared.useSharedSegments) {
+    store.dispatch(
+      gameUpdated({
+        type: "replayUseSharedSegments",
+        useSharedSegments: false,
+      }),
+    );
   }
 
   if (startsSharedHypothetical(state)) {
