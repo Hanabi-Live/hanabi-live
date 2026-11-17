@@ -22,7 +22,7 @@ import {
 } from "./SharedCards.tsx";
 
 /** The smallest and largest card in a hand, in CSS pixels of width. */
-export const HAND_CARD_WIDTH = {
+const HAND_CARD_WIDTH = {
   MIN: 36,
   MAX: 150,
 } as const;

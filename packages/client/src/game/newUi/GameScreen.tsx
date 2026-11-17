@@ -101,7 +101,6 @@ import {
   getTableCardWidth,
   getWideHandsWidth,
   getWideLayoutRoom,
-  HAND_CARD_WIDTH,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
   TABLE_TOP_PADDING,
@@ -165,6 +164,13 @@ import { useQueuedMove } from "./useQueuedMove.ts";
 
 /** The space on each side of the table in the phone layout. */
 const PHONE_SIDE_PADDING = "0.75em";
+
+/**
+ * The bar moves into the panel of the right column when the hand cards would be narrower than this
+ * with the bar (see "barRef"). It is the width that the check finds for a five-player game on a
+ * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
+ */
+const PANEL_CARD_WIDTH = 83;
 
 /** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
 const CLUE_LOG_MIN_HEIGHT = 60;
@@ -405,14 +411,14 @@ export function GameScreen({
   }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
-  // In the wide layout, the bar is along the bottom of the screen while the cards have their
-  // largest size. When the cards would get smaller with it, it moves to a panel at the bottom of
-  // the right column, so that the hands get the whole height of the screen. The check counts the
-  // taller bar of a replay, so that a replay in an ongoing game does not move the bar. The panel
-  // needs room below the discard pile for itself and a few lines of the clue log. The clue log
-  // gives up its height first, so the panel has room while the clue log keeps its smallest height.
-  // When it has no room, the bar goes back along the bottom, until the window, the chat, or the
-  // panel's controls change.
+  // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
+  // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
+  // the bottom of the right column, so that the hands get the whole height of the screen. The check
+  // counts the taller bar of a replay, so that a replay in an ongoing game does not move the bar.
+  // The panel needs room below the discard pile for itself and a few lines of the clue log. The
+  // clue log gives up its height first, so the panel has room while the clue log keeps its smallest
+  // height. When it has no room, the bar goes back along the bottom, until the window, the chat, or
+  // the panel's controls change.
   const barRef = useRef<HTMLElement>(null);
   /** What the panel had no room with, as "panelKey" in the effect below. */
   const panelMissedRoom = useRef<string>(undefined);
@@ -532,7 +538,7 @@ export function GameScreen({
         false,
       );
       setSidePanel(
-        panelMissedRoom.current !== panelKey && cardWidth < HAND_CARD_WIDTH.MAX,
+        panelMissedRoom.current !== panelKey && cardWidth < PANEL_CARD_WIDTH,
       );
       return;
     }
