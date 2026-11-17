@@ -134,7 +134,7 @@ import {
   toggleReplay,
 } from "./screenActions.ts";
 import { getScreenModeStyle } from "./screenMode.ts";
-import { measure } from "./screenScale.ts";
+import { measure, REFERENCE_SIZE } from "./screenScale.ts";
 import {
   getClueForTurn,
   getClueLogEntries,
@@ -170,7 +170,7 @@ const PHONE_SIDE_PADDING = "0.75em";
  * with the bar (see "barRef"). It is the width that the check finds for a five-player game on a
  * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
  */
-const PANEL_CARD_WIDTH = 83;
+const PANEL_CARD_WIDTH = 82;
 
 /** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
 const CLUE_LOG_MIN_HEIGHT = 60;
@@ -413,12 +413,13 @@ export function GameScreen({
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
   // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
   // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
-  // the bottom of the right column, so that the hands get the whole height of the screen. The check
-  // counts the taller bar of a replay, so that a replay in an ongoing game does not move the bar.
-  // The panel needs room below the discard pile for itself and a few lines of the clue log. The
-  // clue log gives up its height first, so the panel has room while the clue log keeps its smallest
-  // height. When it has no room, the bar goes back along the bottom, until the window, the chat, or
-  // the panel's controls change.
+  // the bottom of the right column, so that the hands get the whole height of the screen. It also
+  // moves on a screen narrower than its reference layout, where the bar would need two rows. The
+  // check counts the taller bar of a replay, so that a replay in an ongoing game does not move the
+  // bar. The panel needs room below the discard pile for itself and a few lines of the clue log.
+  // The clue log gives up its height first, so the panel has room while the clue log keeps its
+  // smallest height. When it has no room, the bar goes back along the bottom, until the window, the
+  // chat, or the panel's controls change.
   const barRef = useRef<HTMLElement>(null);
   /** What the panel had no room with, as "panelKey" in the effect below. */
   const panelMissedRoom = useRef<string>(undefined);
@@ -537,8 +538,13 @@ export function GameScreen({
         nameHeight,
         false,
       );
+      // The bar also moves when the screen is narrower than its reference layout. There, the bar of
+      // a shared replay or a hypothetical needs two rows. A window that is 1920px wide is never
+      // that narrow (see "screenScale.ts"), so it keeps the bar.
       setSidePanel(
-        panelMissedRoom.current !== panelKey && cardWidth < PANEL_CARD_WIDTH,
+        panelMissedRoom.current !== panelKey
+          && (cardWidth < PANEL_CARD_WIDTH
+            || root.clientWidth < REFERENCE_SIZE.width),
       );
       return;
     }

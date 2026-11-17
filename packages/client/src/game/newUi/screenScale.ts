@@ -7,7 +7,7 @@
 import { clamp } from "complete-common";
 
 /** The window size that the screen was laid out for. It shows at a scale of 1. */
-const REFERENCE_SIZE = {
+export const REFERENCE_SIZE = {
   width: 1600,
   height: 900,
 } as const;

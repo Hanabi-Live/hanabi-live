@@ -463,10 +463,10 @@ const BAR_HEIGHT = 76;
 
 /**
  * The height of the bar along the bottom of the screen when the replay controls have a row of their
- * own: the controls (`tw:h-11`), the padding above them (`tw:pt-2.5`), and the row under them,
- * which keeps the bar's height.
+ * own: the controls (55px, since `tw:h-11` is in "em" at their 20px text), the padding above them
+ * (9px, from `tw:pt-2.5` at the bar's text), and the row under them, which keeps the bar's height.
  */
-export const REPLAY_BAR_HEIGHT = 44 + 10 + BAR_HEIGHT;
+export const REPLAY_BAR_HEIGHT = 55 + 9 + BAR_HEIGHT;
 
 /**
  * The attribute that gives the replay controls a row of their own. The bar's styles for that layout
