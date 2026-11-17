@@ -43,25 +43,29 @@ const POINTER_SIDE_CLASS = {
   below: "tw:top-full tw:mt-0.5",
 } as const;
 
-/** The outline of the pointer: a triangle in the color of the menu's outline, under the menu. */
+/**
+ * The outline of the pointer: a triangle under the menu. It sets no color. Give it the color of the
+ * menu's outline.
+ */
 const POINTER_OUTLINE_CLASS = {
   above:
-    "tw:absolute tw:inset-x-0 tw:bottom-0 tw:h-2.5 tw:bg-game-line tw:[clip-path:polygon(0_0,100%_0,50%_100%)]",
+    "tw:absolute tw:inset-x-0 tw:bottom-0 tw:h-2.5 tw:[clip-path:polygon(0_0,100%_0,50%_100%)]",
   below:
-    "tw:absolute tw:inset-x-0 tw:top-0 tw:h-2.5 tw:bg-game-line tw:[clip-path:polygon(50%_0,100%_100%,0_100%)]",
+    "tw:absolute tw:inset-x-0 tw:top-0 tw:h-2.5 tw:[clip-path:polygon(50%_0,100%_100%,0_100%)]",
 } as const;
 
 /**
- * The inside of the pointer, in the color of the menu. It is smaller than the outline by the width
- * of the outline, so that the outline goes along the pointer's sides. It covers the menu's outline
- * where they meet, so that one outline goes around both shapes. It reaches into the menu, because
- * the screen's scale can round the menu's outline to a pixel past the pointer's edge.
+ * The inside of the pointer. It sets no color. Give it the color of the menu. It is smaller than
+ * the outline by the width of the outline, so that the outline goes along the pointer's sides. It
+ * covers the menu's outline where they meet, so that one outline goes around both shapes. It
+ * reaches into the menu, because the screen's scale can round the menu's outline to a pixel past
+ * the pointer's edge.
  */
 const POINTER_INSIDE_CLASS = {
   above:
-    "tw:absolute tw:inset-0 tw:bg-game-panel tw:[clip-path:polygon(1.4px_0,calc(100%_-_1.4px)_0,calc(100%_-_1.4px)_2px,50%_calc(100%_-_1.4px),1.4px_2px)]",
+    "tw:absolute tw:inset-0 tw:[clip-path:polygon(1.4px_0,calc(100%_-_1.4px)_0,calc(100%_-_1.4px)_2px,50%_calc(100%_-_1.4px),1.4px_2px)]",
   below:
-    "tw:absolute tw:inset-0 tw:bg-game-panel tw:[clip-path:polygon(1.4px_100%,calc(100%_-_1.4px)_100%,calc(100%_-_1.4px)_calc(100%_-_2px),50%_1.4px,1.4px_calc(100%_-_2px))]",
+    "tw:absolute tw:inset-0 tw:[clip-path:polygon(1.4px_100%,calc(100%_-_1.4px)_100%,calc(100%_-_1.4px)_calc(100%_-_2px),50%_1.4px,1.4px_calc(100%_-_2px))]",
 } as const;
 
 /** The least space between a centered menu and the edges of the window, in CSS pixels. */
@@ -145,15 +149,46 @@ export function Menu({
       >
         {children}
       </div>
-      <div
-        aria-hidden="true"
-        className={`${POINTER_CLASS} ${POINTER_SIDE_CLASS[side]}`}
-        style={shift.pointer === 0 ? undefined : { marginLeft: shift.pointer }}
-      >
-        <div className={POINTER_OUTLINE_CLASS[side]} />
-        <div className={POINTER_INSIDE_CLASS[side]} />
-      </div>
+      <MenuPointer
+        insideClassName="tw:bg-game-panel"
+        outlineClassName="tw:bg-game-line"
+        shift={shift.pointer}
+        side={side}
+      />
     </>
+  );
+}
+
+/**
+ * The pointer between a box and the element that it belongs to, such as a menu and its button. It
+ * points at the middle of the element. The box must have an outline as wide as `tw:ring-1`, and a
+ * gap of `tw:mt-3` (or `tw:mb-3`) between it and the element. The pointer and the box then have one
+ * outline. The element must have the class `tw:relative`.
+ */
+export function MenuPointer({
+  side,
+  outlineClassName,
+  insideClassName,
+  shift = 0,
+}: {
+  /** The side of the element that the box is on. */
+  readonly side: "above" | "below";
+  /** The color of the box's outline, such as `tw:bg-game-line`. It must not be translucent. */
+  readonly outlineClassName: string;
+  /** The color of the box, such as `tw:bg-game-panel`. */
+  readonly insideClassName: string;
+  /** How far the pointer moves sideways from the middle of the element, in CSS pixels. */
+  readonly shift?: number;
+}): React.JSX.Element {
+  return (
+    <div
+      aria-hidden="true"
+      className={`${POINTER_CLASS} ${POINTER_SIDE_CLASS[side]}`}
+      style={shift === 0 ? undefined : { marginLeft: shift }}
+    >
+      <div className={`${POINTER_OUTLINE_CLASS[side]} ${outlineClassName}`} />
+      <div className={`${POINTER_INSIDE_CLASS[side]} ${insideClassName}`} />
+    </div>
   );
 }
 

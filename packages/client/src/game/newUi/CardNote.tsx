@@ -15,6 +15,7 @@ import {
 } from "../noteShortcuts.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
+import { MenuPointer } from "./Menu.tsx";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { toScreenPixels } from "./screenScale.ts";
 
@@ -165,8 +166,8 @@ export function CardNote({
 }
 
 /**
- * The box to type a note in, below its card. Enter saves the note. Escape, or a click elsewhere,
- * closes the box without saving it, as on the classic screen.
+ * The box to type a note in, below its card, with a pointer at the card. Enter saves the note.
+ * Escape, or a click elsewhere, closes the box without saving it, as on the classic screen.
  */
 function NoteEditor({
   order,
@@ -217,84 +218,92 @@ function NoteEditor({
     input.value = noteRef.current;
   }
 
+  // The pointer stays at the middle of the card when the box moves sideways.
   return (
-    <div
-      className="tw:absolute tw:top-full tw:left-1/2 tw:mt-2 tw:-translate-x-1/2 tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-black/25"
-      ref={boxRef}
-      style={{
-        width: NOTE_EDITOR_WIDTH,
-        marginLeft: shift,
-      }}
-    >
-      <span className="tw:relative tw:block">
-        <input
-          aria-label="Note"
-          autoCapitalize="off"
-          autoComplete="off"
-          autoCorrect="off"
-          className="tw:box-border tw:block tw:w-full tw:rounded-game-control tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-base tw:text-card-ink tw:outline-none"
-          onBlur={() => {
-            chat.tabResetAutoCompleteList();
-            onClose();
-          }}
-          onInput={(event) => {
-            const input = event.currentTarget;
-            chat.tabResetAutoCompleteList();
-            const substituted = chat.substituteEmoji(input.value);
-            if (substituted !== undefined) {
-              input.value = substituted;
-            }
-          }}
-          onKeyDown={(event) => {
-            // The game's hotkeys do not apply while the player types.
-            event.stopPropagation();
-            const input = event.currentTarget;
-            const { key } = event;
-
-            if (!["Alt", "Control", "Shift"].includes(key)) {
-              if (separatorRef.current && notes.REMOVE_PIPE_KEYS.has(key)) {
-                if (key !== "Home") {
-                  event.preventDefault();
-                }
-                removeSeparator(input);
-              }
-              separatorRef.current = false;
-            }
-
-            if (key === "Tab") {
-              event.preventDefault();
-              chat.tab(input, event.shiftKey);
-              return;
-            }
-
-            if (key === "Escape") {
+    <>
+      <div
+        className="tw:absolute tw:top-full tw:left-1/2 tw:mt-3 tw:-translate-x-1/2 tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line"
+        ref={boxRef}
+        style={{
+          width: NOTE_EDITOR_WIDTH,
+          marginLeft: shift,
+        }}
+      >
+        <span className="tw:relative tw:block">
+          <input
+            aria-label="Note"
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            className="tw:box-border tw:block tw:w-full tw:rounded-game-control tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-base tw:text-card-ink tw:outline-none"
+            onBlur={() => {
+              chat.tabResetAutoCompleteList();
               onClose();
-              return;
-            }
+            }}
+            onInput={(event) => {
+              const input = event.currentTarget;
+              chat.tabResetAutoCompleteList();
+              const substituted = chat.substituteEmoji(input.value);
+              if (substituted !== undefined) {
+                input.value = substituted;
+              }
+            }}
+            onKeyDown={(event) => {
+              // The game's hotkeys do not apply while the player types.
+              event.stopPropagation();
+              const input = event.currentTarget;
+              const { key } = event;
 
-            // Only Enter saves the note. Keep a note that is too long open, so that the player can
-            // shorten it.
-            if (
-              key !== "Enter"
-              || rejectTooLong(input, notes.NOTE_LENGTH_LIMIT)
-            ) {
-              return;
-            }
-            notes.set(order, notes.savedNote(input.value));
-            onClose();
-          }}
-          onKeyUp={(event) => {
-            event.stopPropagation();
-          }}
-          onMouseDown={(event) => {
-            removeSeparator(event.currentTarget);
-          }}
-          ref={inputRef}
-          spellCheck={false}
-          type="text"
-        />
-        <LengthCounter input={inputRef} limit={notes.NOTE_LENGTH_LIMIT} />
-      </span>
-    </div>
+              if (!["Alt", "Control", "Shift"].includes(key)) {
+                if (separatorRef.current && notes.REMOVE_PIPE_KEYS.has(key)) {
+                  if (key !== "Home") {
+                    event.preventDefault();
+                  }
+                  removeSeparator(input);
+                }
+                separatorRef.current = false;
+              }
+
+              if (key === "Tab") {
+                event.preventDefault();
+                chat.tab(input, event.shiftKey);
+                return;
+              }
+
+              if (key === "Escape") {
+                onClose();
+                return;
+              }
+
+              // Only Enter saves the note. Keep a note that is too long open, so that the player
+              // can shorten it.
+              if (
+                key !== "Enter"
+                || rejectTooLong(input, notes.NOTE_LENGTH_LIMIT)
+              ) {
+                return;
+              }
+              notes.set(order, notes.savedNote(input.value));
+              onClose();
+            }}
+            onKeyUp={(event) => {
+              event.stopPropagation();
+            }}
+            onMouseDown={(event) => {
+              removeSeparator(event.currentTarget);
+            }}
+            ref={inputRef}
+            spellCheck={false}
+            type="text"
+          />
+          <LengthCounter input={inputRef} limit={notes.NOTE_LENGTH_LIMIT} />
+        </span>
+      </div>
+      <MenuPointer
+        insideClassName="tw:bg-white"
+        outlineClassName="tw:bg-game-line"
+        side="below"
+      />
+    </>
   );
 }
