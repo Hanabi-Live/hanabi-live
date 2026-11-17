@@ -1377,6 +1377,7 @@ export const replayBoardElementSchema = z.enum([
   "pace",
   "efficiency",
   "minEfficiency",
+  "discardPile",
 ]);
 
 /**

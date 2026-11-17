@@ -144,6 +144,7 @@ pub enum ReplayBoardElement {
     Pace,
     Efficiency,
     MinEfficiency,
+    DiscardPile,
 }
 
 /// A sound effect that a shared-replay leader plays for everyone watching.

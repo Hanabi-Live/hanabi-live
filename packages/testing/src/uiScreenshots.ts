@@ -1422,6 +1422,25 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
+    // Bob points the arrow at the discard pile instead.
+    {
+      name: "new-ui-discard-arrow",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().showArrow({
+          type: "board",
+          element: "discardPile",
+        });
+        await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
+        await settle(page);
+      },
+    },
     // Bob points the arrow at the name of the second player instead.
     {
       name: "new-ui-name-arrow",
@@ -1785,13 +1804,14 @@ interface BobsGame {
   /** Bob, who leads the shared replay, starts a hypothetical that everyone watches. */
   readonly startHypothetical: () => void;
   /**
-   * Bob, who leads the shared replay, points an arrow at a card or at a player's name for everyone
-   * who follows him.
+   * Bob, who leads the shared replay, points an arrow at a card, a player's name, or the discard
+   * pile for everyone who follows him.
    */
   readonly showArrow: (
     target:
       | { type: "card"; order: CardOrder }
-      | { type: "player"; playerIndex: PlayerIndex },
+      | { type: "player"; playerIndex: PlayerIndex }
+      | { type: "board"; element: "discardPile" },
   ) => void;
   /**
    * Tells the leader of the shared replay whether Bob will play again. It returns once the server

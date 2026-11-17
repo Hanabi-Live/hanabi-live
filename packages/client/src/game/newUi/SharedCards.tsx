@@ -1393,6 +1393,8 @@ export function DiscardPile({
     <section
       aria-label="Discards"
       className="tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4"
+      // A right-click beside the cards points the arrow at the pile (see "arrowAnchor.ts").
+      data-discard-pile
       ref={tooltipRef(getDiscardPileTooltip(zoneState, showDoubleDiscard))}
     >
       {/* While the player drags a card, the well of the pile fades out, so that the pile is part of
@@ -1410,6 +1412,7 @@ export function DiscardPile({
         className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
           isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
         }`}
+        data-discard-pile-icon
         style={{ fontSize: cardWidth * 1.125 }}
       />
       <div

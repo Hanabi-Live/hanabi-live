@@ -496,5 +496,10 @@ function getElementFromTarget(
     case "minEfficiency": {
       return globals.elements.efficiencyMinNeededLabel!;
     }
+
+    case "discardPile": {
+      // The border has the bounds of the discard panel, even while it is hidden.
+      return globals.elements.noDiscardBorder!;
+    }
   }
 }

@@ -45,6 +45,12 @@ beforeEach(() => {
     "data-strike-box": "1",
   });
   add(add(document.body, { "data-name-chip": "1" }), { id: "name" });
+  const discardPile = add(document.body, { "data-discard-pile": "" });
+  add(add(discardPile, { "data-card-order": "7" }), { id: "discard" });
+  add(discardPile, {
+    id: "trash",
+    "data-discard-pile-icon": "",
+  });
 });
 
 function byId(id: string): Element {
@@ -58,6 +64,8 @@ test("a right-click finds the card or the number that it lands on", () => {
   expect(getArrowTargetAt(byId("max"))).toBe("maxScore");
   expect(getArrowTargetAt(byId("min"))).toBe("minEfficiency");
   expect(getArrowTargetAt(byId("strike"))).toBe("strike2");
+  expect(getArrowTargetAt(byId("discard"))).toBe(7);
+  expect(getArrowTargetAt(byId("trash"))).toBe("discardPile");
   expect(getArrowTargetAt(document.body)).toBeUndefined();
 });
 
@@ -77,6 +85,7 @@ test("a played card under the top of its stack points at the stack", () => {
     document.querySelector('[data-stack-slot="3"]'),
   );
   expect(findArrowAnchor(document, "maxScore", deck)).toBe(byId("max"));
+  expect(findArrowAnchor(document, "discardPile", deck)).toBe(byId("trash"));
 });
 
 test("a right-click on a player's name points at the name", () => {

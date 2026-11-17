@@ -21,7 +21,16 @@ const BOARD_ELEMENT_SELECTORS = [
   ["strike1", '[data-strike-box="0"]'],
   ["strike2", '[data-strike-box="1"]'],
   ["strike3", '[data-strike-box="2"]'],
+  ["discardPile", "[data-discard-pile]"],
 ] as const satisfies ReadonlyArray<readonly [ReplayBoardElement, string]>;
+
+/**
+ * The parts of the board whose arrow points at an element inside them. The discard pile is at the
+ * top of the screen, with no room for the arrow above it, so the arrow points at its trash can.
+ */
+const INNER_ANCHOR_SELECTORS: ReadonlyMap<ReplayBoardElement, string> = new Map(
+  [["discardPile", "[data-discard-pile] [data-discard-pile-icon]"]],
+);
 
 /**
  * The parts of the board whose element shows another number after their own, as "5 / 21" does. The
@@ -111,7 +120,8 @@ export function findArrowAnchor(
   const entry = BOARD_ELEMENT_SELECTORS.find(
     ([boardElement]) => boardElement === target,
   );
-  const element = entry === undefined ? null : root.querySelector(entry[1]);
+  const selector = INNER_ANCHOR_SELECTORS.get(target) ?? entry?.[1];
+  const element = selector === undefined ? null : root.querySelector(selector);
   return element ?? undefined;
 }
 
