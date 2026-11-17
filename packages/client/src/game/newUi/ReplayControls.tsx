@@ -600,9 +600,9 @@ function OwnHypotheticalControls({
           )}
           type="button"
         >
-          {/* A flat hand, as card players wave to pass. An arrow would look like a step through
-              the replay's turns. */}
-          <i aria-hidden="true" className="fas fa-hand-paper" />
+          {/* A hand that points to the next player. An arrow would look like a step through the
+              replay's turns, and the flat hand is the icon of the "Real life mode" setting. */}
+          <i aria-hidden="true" className="fas fa-hand-point-right" />
         </button>
         <HypotheticalHint hint={hint} />
       </div>
