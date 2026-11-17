@@ -1035,6 +1035,139 @@ export function GameScreen({
     />
   );
 
+  // In the phone layout, the bar is along the bottom of the screen. In the wide layout, it is a
+  // panel at the bottom of the right column, so that the hands get the whole height of the screen.
+  const statusStrip = (
+    <StatusStrip
+      chatButton={
+        <ChatButton
+          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
+          open={chatOpen}
+          poppedOut={chatPoppedOut}
+          unread={zen ? 0 : chatUnread}
+          zen={zen}
+          zenAvailable={!state.finished}
+        />
+      }
+      colorblindMode={settings.colorblindMode}
+      efficiencyModified={efficiencyStats.modified}
+      efficiencyStats={efficiencyStats}
+      futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
+      // The game's length changes as the clock ticks, and the screen draws again with it.
+      gameInfoTooltip={getGameInfoTooltip()}
+      hardVariant={metadata.hardVariant && settings.hGroupConventions}
+      // The replay controls have no turn, so the turn here says how far into the game it is. A
+      // spoiler-free replay hides how long the game lasts.
+      lastTurn={
+        (state.replay.segment !== undefined || state.finished)
+        && state.replay.hypothetical === undefined
+        && state.replay.shared?.spoilerFree !== true
+          ? state.ongoingGame.turn.turnNum + 1
+          : undefined
+      }
+      lowScorePhase={
+        settings.hGroupConventions
+        && isLowScorePhase(visibleState.score, variant.suits.length)
+      }
+      // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
+      // cards they played instead, as on the classic screen.
+      maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
+      minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
+      onClassicView={onSwitchToClassic}
+      onEfficiencyClick={askForEfficiency}
+      onLobby={backToLobby}
+      onTurnClick={replay.promptTurn}
+      pace={formatPace(
+        visibleState.stats.pace,
+        visibleState.stats.finalRoundEffectivelyStarted,
+        options.allOrNothing,
+      )}
+      // As on the classic screen, the pace takes a color by how risky it would be to discard,
+      // except when it shows no number.
+      paceColor={
+        visibleState.stats.pace === undefined
+        || visibleState.stats.finalRoundEffectivelyStarted
+        || options.allOrNothing
+          ? undefined
+          : getPaceRiskColor(visibleState.stats.paceRisk)
+      }
+      phoneLayout={stacked}
+      // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
+      // the height of the screen.
+      replayControls={
+        hasReplayControls(state) ? (
+          <ReplayControls
+            editingCards={editingCards}
+            hypotheticalHint={hypotheticalHint}
+            onToggleEditCards={() => {
+              setEditingCards(!editingCards);
+            }}
+            state={state}
+          />
+        ) : undefined
+      }
+      replayToggle={
+        state.finished
+          ? undefined
+          : {
+              inReplay,
+              currentName:
+                ongoingGame.turn.currentPlayerIndex === undefined
+                  ? undefined
+                  : metadata.playerNames[ongoingGame.turn.currentPlayerIndex],
+              ourTurn:
+                state.playing
+                && ongoingGame.turn.currentPlayerIndex
+                  === metadata.ourPlayerIndex,
+              reducedMotion: settings.reducedMotion,
+              onToggle: toggleReplay,
+            }
+      }
+      score={
+        scoreHidden
+          ? visibleState.stats.numAttemptedCardsPlayed
+          : visibleState.score
+      }
+      scoreLabel={scoreHidden ? "Plays" : "Score"}
+      tableMenu={
+        state.playing && !state.finished ? (
+          <EndGameMenu numPlayers={metadata.options.numPlayers} votes={votes} />
+        ) : (
+          state.replay.shared?.canPlayAgain === true && (
+            <PlayAgain
+              ourUsername={metadata.ourUsername}
+              playerNames={metadata.playerNames}
+              shared={state.replay.shared}
+              speedrun={metadata.options.speedrun}
+            />
+          )
+        )
+      }
+      turn={visibleState.turn.turnNum + 1}
+      turnTooltip={getMaxTurnsTooltip(
+        getMaxTurns(
+          visibleState.stats,
+          visibleState.score,
+          visibleState.turn.turnNum,
+          visibleState.turn.endTurnNum,
+          options.numPlayers,
+        ),
+        visibleState.turn.turnNum,
+      )}
+      variantName={currentVariant().name}
+      viewAsMenu={
+        canChooseSeat() && (
+          <ViewAsMenu
+            finished={state.finished}
+            onViewAs={viewAs}
+            playerNames={metadata.playerNames}
+            viewedSeat={getViewedSeat()}
+          />
+        )
+      }
+    />
+  );
+
   return (
     <div
       // A browser draws a button in its own font, with normal letter spacing. Here, a button takes
@@ -1402,6 +1535,7 @@ export function GameScreen({
                 onShowClue={showClue}
                 shownSegment={shownClue?.segment}
               />
+              {!stacked && statusStrip}
             </div>
           </div>
         </main>
@@ -1431,139 +1565,7 @@ export function GameScreen({
         />
       </div>
 
-      <StatusStrip
-        chatButton={
-          <ChatButton
-            className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
-            open={chatOpen}
-            poppedOut={chatPoppedOut}
-            unread={zen ? 0 : chatUnread}
-            zen={zen}
-            zenAvailable={!state.finished}
-          />
-        }
-        colorblindMode={settings.colorblindMode}
-        efficiencyModified={efficiencyStats.modified}
-        efficiencyStats={efficiencyStats}
-        futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
-        // The game's length changes as the clock ticks, and the screen draws again with it.
-        gameInfoTooltip={getGameInfoTooltip()}
-        hardVariant={metadata.hardVariant && settings.hGroupConventions}
-        // The replay controls have no turn, so the turn here says how far into the game it is. A
-        // spoiler-free replay hides how long the game lasts.
-        lastTurn={
-          (state.replay.segment !== undefined || state.finished)
-          && state.replay.hypothetical === undefined
-          && state.replay.shared?.spoilerFree !== true
-            ? state.ongoingGame.turn.turnNum + 1
-            : undefined
-        }
-        lowScorePhase={
-          settings.hGroupConventions
-          && isLowScorePhase(visibleState.score, variant.suits.length)
-        }
-        // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
-        // cards they played instead, as on the classic screen.
-        maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
-        minEfficiency={metadata.minEfficiency.toFixed(
-          EFFICIENCY_DECIMAL_PLACES,
-        )}
-        onClassicView={onSwitchToClassic}
-        onEfficiencyClick={askForEfficiency}
-        onLobby={backToLobby}
-        onTurnClick={replay.promptTurn}
-        pace={formatPace(
-          visibleState.stats.pace,
-          visibleState.stats.finalRoundEffectivelyStarted,
-          options.allOrNothing,
-        )}
-        // As on the classic screen, the pace takes a color by how risky it would be to discard,
-        // except when it shows no number.
-        paceColor={
-          visibleState.stats.pace === undefined
-          || visibleState.stats.finalRoundEffectivelyStarted
-          || options.allOrNothing
-            ? undefined
-            : getPaceRiskColor(visibleState.stats.paceRisk)
-        }
-        phoneLayout={stacked}
-        // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
-        // the height of the screen.
-        replayControls={
-          hasReplayControls(state) ? (
-            <ReplayControls
-              editingCards={editingCards}
-              hypotheticalHint={hypotheticalHint}
-              onToggleEditCards={() => {
-                setEditingCards(!editingCards);
-              }}
-              state={state}
-            />
-          ) : undefined
-        }
-        replayToggle={
-          state.finished
-            ? undefined
-            : {
-                inReplay,
-                currentName:
-                  ongoingGame.turn.currentPlayerIndex === undefined
-                    ? undefined
-                    : metadata.playerNames[ongoingGame.turn.currentPlayerIndex],
-                ourTurn:
-                  state.playing
-                  && ongoingGame.turn.currentPlayerIndex
-                    === metadata.ourPlayerIndex,
-                reducedMotion: settings.reducedMotion,
-                onToggle: toggleReplay,
-              }
-        }
-        score={
-          scoreHidden
-            ? visibleState.stats.numAttemptedCardsPlayed
-            : visibleState.score
-        }
-        scoreLabel={scoreHidden ? "Plays" : "Score"}
-        tableMenu={
-          state.playing && !state.finished ? (
-            <EndGameMenu
-              numPlayers={metadata.options.numPlayers}
-              votes={votes}
-            />
-          ) : (
-            state.replay.shared?.canPlayAgain === true && (
-              <PlayAgain
-                ourUsername={metadata.ourUsername}
-                playerNames={metadata.playerNames}
-                shared={state.replay.shared}
-                speedrun={metadata.options.speedrun}
-              />
-            )
-          )
-        }
-        turn={visibleState.turn.turnNum + 1}
-        turnTooltip={getMaxTurnsTooltip(
-          getMaxTurns(
-            visibleState.stats,
-            visibleState.score,
-            visibleState.turn.turnNum,
-            visibleState.turn.endTurnNum,
-            options.numPlayers,
-          ),
-          visibleState.turn.turnNum,
-        )}
-        variantName={currentVariant().name}
-        viewAsMenu={
-          canChooseSeat() && (
-            <ViewAsMenu
-              finished={state.finished}
-              onViewAs={viewAs}
-              playerNames={metadata.playerNames}
-              viewedSeat={getViewedSeat()}
-            />
-          )
-        }
-      />
+      {stacked && statusStrip}
 
       {shownArrow !== undefined && (
         <HighlightArrow
