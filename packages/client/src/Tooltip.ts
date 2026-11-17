@@ -16,13 +16,13 @@ export const ARROW_SIZE_IN_PIXELS = 6;
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 
 /** How long a tooltip takes to fade in. */
-const OPEN_DURATION_IN_MILLISECONDS = 120;
+export const OPEN_DURATION_IN_MILLISECONDS = 120;
 
 /** How long a tooltip takes to fade out. It is quicker than opening, to get out of the way. */
-const CLOSE_DURATION_IN_MILLISECONDS = 80;
+export const CLOSE_DURATION_IN_MILLISECONDS = 80;
 
 /** How far a tooltip slides toward its anchor as it opens. */
-const SLIDE_IN_PIXELS = 4;
+export const SLIDE_IN_PIXELS = 4;
 
 /** The element in the popped-out chat window of the New UI that holds the chat box. */
 export const CHAT_WINDOW_ID = "game-chat-window";

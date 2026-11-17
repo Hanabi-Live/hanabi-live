@@ -17,7 +17,12 @@ import {
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
-import { ARROW_SIZE_IN_PIXELS } from "../../Tooltip.ts";
+import {
+  ARROW_SIZE_IN_PIXELS,
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+  SLIDE_IN_PIXELS,
+} from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getVisibleEdge } from "../../visibleEdge.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
@@ -1510,28 +1515,72 @@ function ImpossibleCard({
   );
 }
 
-/**
- * Every card that a card can be, in a bubble beside it while the viewer holds the pointer down on
- * it or holds Space over it. It is a grid with a row for each suit that the card can be and a
- * column for every rank of the variant, so that each rank is always in the same column. A card that
- * this card cannot be leaves an empty place.
- */
-export function PossibleCardsBubble({
-  variant,
-  colorblindMode,
-  bubble,
-  anchor,
-  cardWidth,
-}: {
+interface PossibleCardsBubbleProps {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly bubble: PossibleCardsView;
-  readonly anchor: HTMLElement;
   /**
    * The width of a card that the bubble is sized for, in the game screen's pixels, when it is not
    * the width of the anchor. The deck is smaller than a card in a hand, but its bubble is as large.
    */
   readonly cardWidth?: number;
+}
+
+/**
+ * Every card that a card can be, in a bubble beside it while the viewer holds the pointer down on
+ * it or holds Space over it. It is a grid with a row for each suit that the card can be and a
+ * column for every rank of the variant, so that each rank is always in the same column. A card that
+ * this card cannot be leaves an empty place.
+ *
+ * Like a tooltip, the bubble fades in as it slides toward the card, and it fades out when it
+ * closes.
+ */
+export function PossibleCardsBubble({
+  open,
+  anchor,
+  ...props
+}: PossibleCardsBubbleProps & {
+  readonly open: boolean;
+  /** The element that the bubble points at. It stays set while the bubble fades out. */
+  readonly anchor: HTMLElement | null | undefined;
+}): React.ReactNode {
+  // The bubble stays on the page while it fades out.
+  const [closing, setClosing] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    setClosing(!open);
+  }
+  useEffect(() => {
+    if (!closing) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      setClosing(false);
+    }, CLOSE_DURATION_IN_MILLISECONDS);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [closing]);
+
+  return anchor === null || anchor === undefined || (!open && !closing)
+    ? null
+    : createPortal(
+        <PossibleCardsGrid anchor={anchor} closing={closing} {...props} />,
+        document.body,
+      );
+}
+
+function PossibleCardsGrid({
+  variant,
+  colorblindMode,
+  bubble,
+  cardWidth,
+  anchor,
+  closing,
+}: PossibleCardsBubbleProps & {
+  readonly anchor: HTMLElement;
+  readonly closing: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{
@@ -1628,6 +1677,37 @@ export function PossibleCardsBubble({
     unit,
   ]);
 
+  // The bubble sits a little away from the card while it is closed, as a tooltip does. It slides in
+  // from there when it first shows, and back out when it closes.
+  const side = position?.side;
+  const closedOffset = `0 ${side === "above" ? -SLIDE_IN_PIXELS : SLIDE_IN_PIXELS}px`;
+  const fadedIn = useRef(false);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    // A bubble that closes before it shows, such as on a card that missed the pointer leaving it,
+    // stays hidden.
+    if (closing || side === undefined || element === null || fadedIn.current) {
+      return;
+    }
+    fadedIn.current = true;
+    element.animate(
+      [
+        {
+          opacity: 0,
+          translate: closedOffset,
+        },
+        {
+          opacity: 1,
+          translate: "0 0",
+        },
+      ],
+      {
+        duration: OPEN_DURATION_IN_MILLISECONDS,
+        easing: "ease-out",
+      },
+    );
+  }, [side, closedOffset, closing]);
+
   const ranks = variant.ranks.toSorted(
     (a, b) => rankColumnOrder(a) - rankColumnOrder(b),
   );
@@ -1660,6 +1740,12 @@ export function PossibleCardsBubble({
           }),
         visibility: position === undefined ? "hidden" : undefined,
         filter: POSSIBLE_CARDS_SHADOW,
+        opacity: closing ? 0 : 1,
+        translate: closing ? closedOffset : "0 0",
+        // When the viewer opens it again while it fades out, it fades back in from where it is.
+        transition: closing
+          ? `opacity ${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in, translate ${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`
+          : `opacity ${OPEN_DURATION_IN_MILLISECONDS}ms ease-out, translate ${OPEN_DURATION_IN_MILLISECONDS}ms ease-out`,
       }}
     >
       <div
@@ -2579,19 +2665,15 @@ export function CardFace({
         <NoteMarkIcons marks={noteMarks} width={width} />
       )}
 
-      {bubble !== undefined
-        && showPossibleCards
-        && hovered
-        && faceElement !== null
-        && createPortal(
-          <PossibleCardsBubble
-            anchor={faceElement}
-            bubble={bubble}
-            colorblindMode={colorblindMode}
-            variant={variant}
-          />,
-          document.body,
-        )}
+      {bubble !== undefined && (
+        <PossibleCardsBubble
+          anchor={faceElement}
+          bubble={bubble}
+          colorblindMode={colorblindMode}
+          open={showPossibleCards && hovered}
+          variant={variant}
+        />
+      )}
     </div>
   );
 

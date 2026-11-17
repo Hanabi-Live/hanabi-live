@@ -4,6 +4,7 @@ import type { Rank, SuitIndex } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 import { CardFace } from "./Card.tsx";
 import type { CardPipsView } from "./tableView.ts";
 
@@ -52,8 +53,21 @@ class NoResizeObserver {
   readonly disconnect = vi.fn();
 }
 
+const animate = vi.fn<Element["animate"]>();
+
+/** Waits for the bubble of possible cards to fade out. */
+function waitForBubbleToClose() {
+  act(() => {
+    vi.advanceTimersByTime(CLOSE_DURATION_IN_MILLISECONDS);
+  });
+}
+
 beforeEach(() => {
+  vi.useFakeTimers();
   vi.stubGlobal("ResizeObserver", NoResizeObserver);
+  // The "jsdom" library has no animations.
+  animate.mockClear();
+  Element.prototype.animate = animate;
   // An element that is on the page is where the card is. One that is not measures as nothing at the
   // top left, as it does in a browser.
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
@@ -74,6 +88,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 test("the bubble follows the card when the card stops being trash", () => {
@@ -94,6 +109,7 @@ test("the bubble follows the card when the card stops being trash", () => {
     `${CARD_RECT.left + CARD_RECT.width / 2}px`,
   );
   fireEvent.pointerLeave(face!);
+  waitForBubbleToClose();
   expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
 
@@ -108,6 +124,8 @@ test("the bubble stays closed when the card missed the pointer leaving it", () =
     rerender(renderCard(false));
   });
 
+  expect(animate).not.toHaveBeenCalled();
+  waitForBubbleToClose();
   expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
 

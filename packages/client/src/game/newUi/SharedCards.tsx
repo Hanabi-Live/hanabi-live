@@ -15,7 +15,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { createPortal } from "react-dom";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
 import type { GameEnd } from "../gameEnd.ts";
@@ -903,10 +902,11 @@ function Deck({
   const finalRound = empty && turnsLeft !== undefined;
   const turns = turnsLeft === 1 ? "turn" : "turns";
   const showEmpathy = empathy !== undefined && !empty;
-  // The top card of the deck, while the pointer is over it, so that the bubble of possible cards
-  // points at it. The deck tracks the pointer even without a bubble, so that the bubble opens when
-  // the viewer holds Space over it, as over a card in a hand.
-  const [hoveredTop, setHoveredTop] = useState<HTMLElement>();
+  // The top card of the deck, which the bubble of possible cards points at while the pointer is
+  // over it. The deck tracks the pointer even without a bubble, so that the bubble opens when the
+  // viewer holds Space over it, as over a card in a hand.
+  const [top, setTop] = useState<HTMLElement>();
+  const [hovered, setHovered] = useState(false);
   const held = play?.held === true;
 
   // A tap anywhere else closes the menu.
@@ -932,29 +932,30 @@ function Deck({
   }
 
   function onPointerEnter(event: React.PointerEvent<HTMLElement>) {
-    setHoveredTop(event.currentTarget);
+    setTop(event.currentTarget);
+    setHovered(true);
   }
 
   function onPointerLeave() {
-    setHoveredTop(undefined);
+    setHovered(false);
     onHoldEmpathy(false);
   }
 
-  const bubble =
-    showEmpathy
-    && showPossibleCards
-    && hoveredTop !== undefined
-    && empathy.possibleCards.suits.length > 0
-    && createPortal(
-      <PossibleCardsBubble
-        anchor={hoveredTop}
-        bubble={empathy.possibleCards}
-        cardWidth={handCardWidth}
-        colorblindMode={colorblindMode}
-        variant={variant}
-      />,
-      document.body,
-    );
+  const bubble = empathy !== undefined && (
+    <PossibleCardsBubble
+      anchor={top}
+      bubble={empathy.possibleCards}
+      cardWidth={handCardWidth}
+      colorblindMode={colorblindMode}
+      open={
+        showEmpathy
+        && showPossibleCards
+        && hovered
+        && empathy.possibleCards.suits.length > 0
+      }
+      variant={variant}
+    />
+  );
 
   let face: React.ReactNode;
   if (showEmpathy) {
