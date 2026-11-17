@@ -16,7 +16,15 @@ import type { Listener, Subscription } from "./ui/reactive/observeStore.ts";
 import { observeStore, SKIP } from "./ui/reactive/observeStore.ts";
 import * as replay from "./ui/replay.ts";
 
+/**
+ * Browsers limit how often a page can change its address. (Safari throws after 100 changes in 10
+ * seconds.) A replay that moves fast changes the turn more often than that, so the address bar gets
+ * only the last turn of each burst.
+ */
+const ADDRESS_BAR_TURN_DELAY_MS = 250;
+
 let unsubscribe: (() => void) | undefined;
+let addressBarTurnTimeout: ReturnType<typeof setTimeout> | undefined;
 
 /**
  * Starts observing a new game's state. Call it before the classic screen's observers start, so that
@@ -30,6 +38,8 @@ export function registerGameObservers(): void {
 export function releaseGameObservers(): void {
   unsubscribe?.();
   unsubscribe = undefined;
+  clearTimeout(addressBarTurnTimeout);
+  addressBarTurnTimeout = undefined;
 }
 
 /** Observes a part of the state once the game has a visible state. */
@@ -133,8 +143,12 @@ function onSharedSegmentChanged(
  * The turns of a hypothetical do not map onto the game's turns, so they stay out of it.
  */
 function onShownTurnChanged(turnNum: number) {
-  // The first turn is 0 in the state, and the players see it as turn 1.
-  setBrowserAddressBarPath(globalThis.location.pathname, `#${turnNum + 1}`);
+  clearTimeout(addressBarTurnTimeout);
+  addressBarTurnTimeout = setTimeout(() => {
+    addressBarTurnTimeout = undefined;
+    // The first turn is 0 in the state, and the players see it as turn 1.
+    setBrowserAddressBarPath(globalThis.location.pathname, `#${turnNum + 1}`);
+  }, ADDRESS_BAR_TURN_DELAY_MS);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
