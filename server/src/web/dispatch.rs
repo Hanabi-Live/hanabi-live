@@ -1,7 +1,7 @@
 //! Runs a connection's commands: it routes each one, runs lobby commands, and tells the player
 //! about failures.
 
-use super::{App, protocol, socket::load_lobby, user};
+use super::{App, client_errors, protocol, socket::load_lobby, user};
 use crate::{
     accounts,
     actors::{HubCommand, request},
@@ -237,6 +237,12 @@ pub(super) async fn dispatch(
     session: Arc<Session>,
     message: ClientRequest,
 ) -> CommandResult<Option<ReplyData>> {
+    let route = crate::routing::route(&message);
+    // A client error is reported even while the server drains, and the player never sees a reply.
+    if let ClientRequest::ClientError(request) = &message {
+        client_errors::record(app, &session, request);
+        return Ok(None);
+    }
     let _admission = match app.lifecycle.admit().await {
         Ok(admission) => admission,
         Err(Refusal::Unavailable) => {
@@ -258,7 +264,6 @@ pub(super) async fn dispatch(
         "This session was replaced or disconnected. Reconnect before sending commands."
     );
     let mut measurement = crate::metrics::COMMAND_METRICS.start(message.name());
-    let route = crate::routing::route(&message);
     if route == Route::Connection {
         session.emit(&frame(
             hanabi_protocol::event::LOBBY_STATUS,

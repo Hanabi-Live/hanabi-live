@@ -79,6 +79,10 @@ impl Integrations {
         self.alerts.report(report);
     }
 
+    pub fn client_error(&self, location: &str, message: &str, diagnostic_id: &str) {
+        self.alerts.client_error(location, message, diagnostic_id);
+    }
+
     /// The Discord bridge's status.
     pub fn discord_status(&self) -> &'static str {
         self.discord.as_ref().map_or(

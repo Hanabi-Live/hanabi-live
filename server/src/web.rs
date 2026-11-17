@@ -1,5 +1,6 @@
 //! Native browser routes and bounded WebSocket transport. Database work runs
 //! behind the drain barrier; the hub owns session-generation publication.
+mod client_errors;
 mod dispatch;
 #[cfg(test)]
 mod integration_tests;
@@ -65,6 +66,7 @@ pub struct App {
     /// Each connected user's lobby task.
     users: user::Users,
     lobby_chat_limit: crate::lobby::LobbyChatLimit,
+    client_error_limit: client_errors::ClientErrorLimit,
 }
 
 impl App {
@@ -123,6 +125,7 @@ impl App {
             integration_started: AtomicBool::new(false),
             users: user::Users::default(),
             lobby_chat_limit: crate::lobby::LobbyChatLimit::default(),
+            client_error_limit: client_errors::ClientErrorLimit::default(),
         })
     }
 

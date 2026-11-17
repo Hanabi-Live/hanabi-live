@@ -12,6 +12,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands.ts";
 import { Connection } from "./Connection.ts";
 import { HTTP_STATUS } from "./constants.ts";
+import { sendErrorReports } from "./errors.ts";
 import { gameCommands } from "./game/gameCommands.ts";
 import * as gameSession from "./game/gameSession.ts";
 import * as gameMain from "./game/main.ts";
@@ -238,6 +239,7 @@ function openConnection(isReconnect: boolean) {
     }
     clearConnectTimer();
     console.log("WebSocket connection established.");
+    sendErrorReports(conn);
     // Even an open socket can be stuck before the server sends "welcome".
     clearWelcomeTimer();
     welcomeTimer = setTimeout(() => {

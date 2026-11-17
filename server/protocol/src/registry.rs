@@ -53,6 +53,7 @@ macro_rules! request_contracts {
             GameLoaded "gameLoaded" => TableRef;
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
+            ClientError "clientError" => ClientErrorRequest;
             GameHistory "gameHistory" => PageRequest, reply GAME_HISTORY: GamePage;
             SeedGames "seedGames" => SeedGamesRequest, reply SEED_GAMES: GamePage;
             TagSearch "tagSearch" => TagSearchRequest;

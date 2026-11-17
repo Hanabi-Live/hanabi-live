@@ -292,6 +292,11 @@ impl fmt::Display for Fault {
 }
 impl std::error::Error for Fault {}
 
+/// A new diagnostic ID, which finds a failure's details in the logs.
+pub fn diagnostic_id() -> String {
+    format!("{:016x}", rand::random::<u64>())
+}
+
 #[derive(Clone, Debug)]
 pub struct Report {
     pub operation: String,
@@ -312,7 +317,7 @@ impl Report {
             operation: operation.into(),
             code,
             description: description.into(),
-            diagnostic_id: format!("{:016x}", rand::random::<u64>()),
+            diagnostic_id: diagnostic_id(),
             status,
         }
     }

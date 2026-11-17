@@ -52,6 +52,9 @@ export const WEBSITE_CHAT_COMMANDS = [
   "w",
   "whisper",
 ] as const;
+export const MAX_CLIENT_ERROR_MESSAGE_LENGTH = 1000;
+export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
+export const SCRIPTS_PATH = "/public/js/bundles/";
 export const MAX_TABLE_NAME_LENGTH = 45;
 export const SECONDS_PER_MINUTE = 60;
 export const TYPING_TIMEOUT_MS = 2000;
@@ -260,6 +263,23 @@ export const chatTypingSchema = z
     tableId: tableIdSchema,
     typing: z.boolean(),
     username: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * An error that the website did not catch. The server logs it and alerts its developers.
+ */
+export const clientErrorRequestSchema = z
+  .strictObject({
+    /**
+     * At most `MAX_CLIENT_ERROR_MESSAGE_LENGTH` characters.
+     */
+    message: z.string(),
+    /**
+     * The stack trace, which names the script, line, and column of each call. At most
+     * `MAX_CLIENT_ERROR_STACK_LENGTH` characters.
+     */
+    stack: z.string(),
   })
   .readonly();
 
@@ -2080,6 +2100,7 @@ export const CLIENT_REQUEST_SCHEMAS = {
   chatPmHistory: chatPmHistoryRequestSchema,
   chatRead: tableRefSchema,
   chatTyping: tableRefSchema,
+  clientError: clientErrorRequestSchema,
   friendAdd: relationshipRequestSchema,
   friendRemove: relationshipRequestSchema,
   gameHistory: pageRequestSchema,

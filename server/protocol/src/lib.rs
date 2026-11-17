@@ -215,6 +215,13 @@ constants! {
         "w",
         "whisper",
     ];
+    /// The longest message of a client error report, in characters. The server cuts a longer one.
+    @data pub const MAX_CLIENT_ERROR_MESSAGE_LENGTH: usize = 1000;
+    /// The longest stack trace of a client error report, in characters. The server cuts a longer
+    /// one.
+    @data pub const MAX_CLIENT_ERROR_STACK_LENGTH: usize = 4000;
+    /// The URL path of the website's scripts. A client error report must come from one of them.
+    @data pub const SCRIPTS_PATH: &str = "/public/js/bundles/";
     /// The longest game tag, in characters.
     pub const MAX_TAG_LENGTH: usize = 100;
     /// The most tags that one player can add to one game.

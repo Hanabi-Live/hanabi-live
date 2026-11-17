@@ -16,12 +16,15 @@ pub enum Route {
     Hub,
     /// The table with this ID runs the command.
     Table(TableId),
+    /// The connection logs a client error and alerts about it.
+    ClientError,
 }
 
 pub fn route(message: &ClientRequest) -> Route {
     use ClientRequest as M;
     let id = match message {
         M::LobbyLoad(_) => return Route::Connection,
+        M::ClientError(_) => return Route::ClientError,
         M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Settings(_)
         | M::UserInactive(_)

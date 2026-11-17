@@ -129,6 +129,17 @@ pub struct UserInactiveRequest {
     pub inactive: bool,
 }
 
+/// An error that the website did not catch. The server logs it and alerts its developers.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ClientErrorRequest {
+    /// At most `MAX_CLIENT_ERROR_MESSAGE_LENGTH` characters.
+    pub message: String,
+    /// The stack trace, which names the script, line, and column of each call. At most
+    /// `MAX_CLIENT_ERROR_STACK_LENGTH` characters.
+    pub stack: String,
+}
+
 /// A page of a list of games: in `gameHistory`, the player's own games, newest first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

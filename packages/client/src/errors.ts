@@ -1,4 +1,10 @@
-import { PROJECT_NAME } from "@hanabi-live/data";
+import {
+  MAX_CLIENT_ERROR_MESSAGE_LENGTH,
+  MAX_CLIENT_ERROR_STACK_LENGTH,
+  PROJECT_NAME,
+  SCRIPTS_PATH,
+} from "@hanabi-live/data";
+import type { Connection } from "./Connection.ts";
 import { showError } from "./modals.ts";
 import { escapeHtml } from "./utils.ts";
 
@@ -11,7 +17,73 @@ const INJECTED_ERROR_LOCATION = {
   colno: 16,
 } as const;
 
-/** Initialize a global error handler that will show errors to the end-user. */
+/** The most errors that a page reports to the server. */
+const MAX_REPORTS = 5;
+
+interface ErrorReport {
+  readonly message: string;
+  readonly stack: string;
+}
+
+/** The errors that this page reported, as their message and stack trace. */
+const reported = new Set<string>();
+
+/** The reports that wait for the connection to open. */
+const unsent: ErrorReport[] = [];
+
+/** The connection that the reports go to. */
+let reportConnection: Connection | undefined;
+
+/**
+ * Sends the error reports to a connection that just opened, and the next reports as they happen.
+ */
+export function sendErrorReports(connection: Connection): void {
+  reportConnection = connection;
+  for (const report of unsent.splice(0)) {
+    connection.send("clientError", report);
+  }
+}
+
+/**
+ * Reports an error to the server, which alerts the developers. It skips an error that did not come
+ * from the website's scripts, such as one in a browser extension.
+ */
+function reportError(message: string, stack: string | undefined) {
+  if (stack?.includes(SCRIPTS_PATH) !== true) {
+    return;
+  }
+  const key = `${message}\n${stack}`;
+  if (reported.has(key) || reported.size >= MAX_REPORTS) {
+    return;
+  }
+  reported.add(key);
+
+  const report = {
+    message: truncate(message, MAX_CLIENT_ERROR_MESSAGE_LENGTH),
+    stack: truncate(stack, MAX_CLIENT_ERROR_STACK_LENGTH),
+  };
+  if (reportConnection?.ws.readyState === WebSocket.OPEN) {
+    reportConnection.send("clientError", report);
+  } else {
+    unsent.push(report);
+  }
+}
+
+/**
+ * The first characters of a text, without splitting a character in two. The server cuts a report
+ * that is still too long.
+ */
+function truncate(text: string, maxLength: number): string {
+  return [...new Intl.Segmenter().segment(text)]
+    .slice(0, maxLength)
+    .map(({ segment }) => segment)
+    .join("");
+}
+
+/**
+ * Initialize a global error handler that will show errors to the end-user and report them to the
+ * server.
+ */
 export function initErrorListener(): void {
   globalThis.addEventListener("error", (errorEvent) => {
     if (!(errorEvent instanceof ErrorEvent)) {
@@ -24,13 +96,15 @@ export function initErrorListener(): void {
         && errorEvent.error === null)
       || (errorEvent.lineno === INJECTED_ERROR_LOCATION.lineno
         && errorEvent.colno === INJECTED_ERROR_LOCATION.colno
-        && !errorEvent.filename.endsWith("/main.min.js"))
+        && !errorEvent.filename.includes(SCRIPTS_PATH))
     ) {
       // Some buggy code that the browser injected is causing an error. Safe to ignore.
       return;
     }
 
-    const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
+    const errorStackTrace = getErrorStackTrace(errorEvent);
+    reportError(errorEvent.message, errorStackTrace);
+    const stackTrace = errorStackTrace ?? errorEvent.message;
     const formattedStackTrace = `<pre>${escapeHtml(stackTrace)}</pre>`;
 
     const reportInstructions = `
@@ -48,6 +122,14 @@ export function initErrorListener(): void {
 
     const messageSuffix = isIoS() ? iosText : reportInstructions;
     showError(formattedStackTrace + messageSuffix);
+  });
+
+  // A rejected promise that nothing handled is only reported, since the page may still work.
+  globalThis.addEventListener("unhandledrejection", (event) => {
+    const reason: unknown = "reason" in event ? event.reason : undefined;
+    if (reason instanceof Error) {
+      reportError(`Unhandled rejection: ${reason.message}`, reason.stack);
+    }
   });
 }
 

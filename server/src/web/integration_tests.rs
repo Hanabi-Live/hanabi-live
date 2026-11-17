@@ -1119,3 +1119,47 @@ async fn lobby_chat_and_private_messages_share_a_rate_limit_postgres() {
     );
     fixture.close().await;
 }
+
+#[tokio::test]
+async fn client_errors_are_answered_without_a_warning_even_over_the_limit_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "Reporter").await;
+    let mut socket = connect(&fixture, &cookie).await;
+    receive(&mut socket, "welcome").await;
+    let report = json!({
+        "message": "Uncaught TypeError: x is undefined",
+        "stack": "TypeError: x is undefined\n    at https://hanab.live/public/js/bundles/main.abc.min.js:1:2",
+    });
+    let extension = json!({
+        "message": "Uncaught Error",
+        "stack": "Error\n    at chrome-extension://abc/inject.js:1:2",
+    });
+    let reports = std::iter::repeat_n(&report, client_errors::REPORT_LIMIT + 1).chain([&extension]);
+    for (id, data) in (1..).zip(reports) {
+        send(&mut socket, id, "clientError", data.clone()).await;
+        let frame = reply(&mut socket, id).await;
+        assert!(frame.get("error").is_none(), "{frame}");
+    }
+    // The reports used up the user's limit.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that reads the fixture account"
+    )]
+    let user: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'Reporter'")
+        .fetch_one(&fixture.app.store.primary)
+        .await
+        .unwrap();
+    assert!(
+        fixture
+            .app
+            .client_error_limit
+            .0
+            .lock()
+            .unwrap()
+            .charge(user, std::time::Instant::now())
+            .is_err()
+    );
+    fixture.close().await;
+}
