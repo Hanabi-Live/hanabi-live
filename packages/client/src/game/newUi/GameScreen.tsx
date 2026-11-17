@@ -101,7 +101,6 @@ import {
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
   TABLE_TOP_PADDING,
-  WIDE_HANDS_MAX_WIDTH,
 } from "./cardSizes.ts";
 import {
   getCardsTouchedBefore,
@@ -1014,8 +1013,9 @@ export function GameScreen({
       // the font and the letter spacing of the page instead, so that it matches the text around it,
       // and a name measured outside a button fits in one. A button's own classes still win. No text
       // on the screen can be selected, so that clicks and drags never highlight it. The text boxes,
-      // such as the chat input, still let the player select what they type.
-      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:select-none tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
+      // such as the chat input, still let the player select what they type. The text has one size
+      // in each layout (see "tailwind.css").
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:text-game-screen tw:select-none tw:phone:text-game-screen-compact tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       {...cardInputHandlers}
       // The "phone" variant of the styles follows it (see "tailwind.css").
       data-phone-layout={stacked ? "" : undefined}
@@ -1157,7 +1157,7 @@ export function GameScreen({
               className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:order-first tw:phone:ml-(--clue-rail-margin) tw:phone:flex-none"
               style={
                 {
-                  maxWidth: stacked ? undefined : WIDE_HANDS_MAX_WIDTH,
+                  maxWidth: stacked ? undefined : wideRoom.handsColumnMaxWidth,
                   "--clue-rail-margin": `calc(${PHONE_CLUE_RAIL_SPACE}px - var(--phone-side-padding))`,
                 } as React.CSSProperties
               }

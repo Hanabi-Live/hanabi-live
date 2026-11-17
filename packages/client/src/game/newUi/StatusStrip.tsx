@@ -610,7 +610,7 @@ export function StatusStrip({
   // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:[--strip-height:76px] ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:text-game-screen-compact tw:[--strip-height:76px] ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
     >

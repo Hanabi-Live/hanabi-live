@@ -127,11 +127,13 @@ export function namesFitBesideCards(
 
 /**
  * The width of the wide layout's right column, with the discard pile and the clue log, in CSS
- * pixels.
+ * pixels. The column is `NORMAL` wide. It gets narrower when the hands need room, and wider when
+ * the hands do not use all of theirs.
  */
 const DISCARD_COLUMN_WIDTH = {
   MIN: 240,
-  MAX: 300,
+  NORMAL: 300,
+  MAX: 420,
 } as const;
 
 /** The space on each side of the wide layout's table, in CSS pixels. */
@@ -152,11 +154,18 @@ const TABLE_SPACING_ROOM =
   + 2 * (TABLE_COLUMN_GAP.MAX - TABLE_COLUMN_GAP.MIN);
 
 /** The widest that the wide layout's hands get, in CSS pixels. */
-export const WIDE_HANDS_MAX_WIDTH = 760;
+const WIDE_HANDS_MAX_WIDTH = 760;
 
 /** The sizes of the wide layout's parts beside the hands, as `getWideLayoutRoom` sets them. */
 export interface WideLayoutRoom {
   readonly discardColumnWidth: number;
+
+  /**
+   * The width of the hands' column. It is no wider than the hands, so that the table has the width
+   * that they do not use on its sides, not between its columns.
+   */
+  readonly handsColumnMaxWidth: number;
+
   readonly nameColumnMaxWidth: number;
   readonly tableSidePadding: number;
   readonly tableColumnGap: number;
@@ -172,11 +181,12 @@ export interface WideLayoutRoom {
 
 /**
  * Returns the sizes of the wide layout's parts beside the hands. Each part is as large as it can
- * be, unless the width makes the hand cards smaller than their height allows. Then the parts give
- * up room to the hands, in this order, and only as much as the hands need: the right column, the
- * column of names, and the padding and the gaps of the table. `rowWidth` is the width of the
- * table's row without the play stacks' column. `nameWidth` is the width of the widest name, and
- * `nameExtraWidth` is the width beside the names, such as for the eye buttons.
+ * be, and the right column also takes the width that the hands do not use, up to its maximum. When
+ * the width makes the hand cards smaller than their height allows, the parts give up room to the
+ * hands, in this order, and only as much as the hands need: the right column, the column of names,
+ * and the padding and the gaps of the table. `rowWidth` is the width of the table's row without the
+ * play stacks' column. `nameWidth` is the width of the widest name, and `nameExtraWidth` is the
+ * width beside the names, such as for the eye buttons.
  */
 export function getWideLayoutRoom(
   rowWidth: number,
@@ -187,7 +197,8 @@ export function getWideLayoutRoom(
   nameExtraWidth: number,
 ): WideLayoutRoom {
   const widest: WideLayoutRoom = {
-    discardColumnWidth: DISCARD_COLUMN_WIDTH.MAX,
+    discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL,
+    handsColumnMaxWidth: WIDE_HANDS_MAX_WIDTH,
     nameColumnMaxWidth: NAME_COLUMN_MAX_WIDTH.MAX,
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
@@ -197,13 +208,12 @@ export function getWideLayoutRoom(
     return widest;
   }
 
-  const handsWidth = Math.min(
+  const roomForHands =
     rowWidth
-      - DISCARD_COLUMN_WIDTH.MAX
-      - 2 * TABLE_SIDE_PADDING.MAX
-      - 2 * TABLE_COLUMN_GAP.MAX,
-    WIDE_HANDS_MAX_WIDTH,
-  );
+    - DISCARD_COLUMN_WIDTH.NORMAL
+    - 2 * TABLE_SIDE_PADDING.MAX
+    - 2 * TABLE_COLUMN_GAP.MAX;
+  const handsWidth = Math.min(roomForHands, WIDE_HANDS_MAX_WIDTH);
   const cardWidth = getHandCardWidth(
     Infinity,
     handsHeight,
@@ -223,12 +233,27 @@ export function getWideLayoutRoom(
     + cardWidth * cardsPerHand;
   let missing = neededWidth - handsWidth;
   if (missing <= 0) {
-    return widest;
+    // The right column takes the width that the hands do not use, so that the hands do not have
+    // empty space beside them.
+    return {
+      ...widest,
+      handsColumnMaxWidth: Math.min(
+        Math.ceil(neededWidth),
+        WIDE_HANDS_MAX_WIDTH,
+      ),
+      discardColumnWidth:
+        DISCARD_COLUMN_WIDTH.NORMAL
+        + clamp(
+          Math.floor(roomForHands - neededWidth),
+          0,
+          DISCARD_COLUMN_WIDTH.MAX - DISCARD_COLUMN_WIDTH.NORMAL,
+        ),
+    };
   }
 
   const discardRoom = Math.min(
     missing,
-    DISCARD_COLUMN_WIDTH.MAX - DISCARD_COLUMN_WIDTH.MIN,
+    DISCARD_COLUMN_WIDTH.NORMAL - DISCARD_COLUMN_WIDTH.MIN,
   );
   missing -= discardRoom;
 
@@ -243,7 +268,8 @@ export function getWideLayoutRoom(
   missing -= spacingShare * TABLE_SPACING_ROOM;
 
   return {
-    discardColumnWidth: DISCARD_COLUMN_WIDTH.MAX - discardRoom,
+    discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL - discardRoom,
+    handsColumnMaxWidth: WIDE_HANDS_MAX_WIDTH,
     nameColumnMaxWidth,
     tableSidePadding:
       TABLE_SIDE_PADDING.MAX

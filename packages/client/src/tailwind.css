@@ -16,6 +16,13 @@
     "public/css/defaults.css"). Spacing utilities do too, so that "tw:p-2" is "0.5em".
   */
   --spacing: 0.25em;
+  /*
+    The game screen does not follow the site's font size, which changes at 1440px. Its text has one
+    size in the wide layout, and a smaller one in the phone layout and in the bar at the bottom,
+    which has to fit on a narrow window.
+  */
+  --text-game-screen: 13pt;
+  --text-game-screen-compact: 11pt;
   --color-*: initial;
   --color-black: #000;
   --color-white: #fff;
