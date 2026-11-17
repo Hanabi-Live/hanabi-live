@@ -80,6 +80,12 @@ export interface CluePreview {
 }
 
 /**
+ * The cards of each hand that `getSeats` made from a state, by the options that change them.
+ * Holding the pointer down on a hand changes only that hand, so the other hands keep their cards.
+ */
+const handCardsCache = new WeakMap<State, Map<string, readonly CardView[]>>();
+
+/**
  * Returns the seats in the order that the screen shows them. The hands of the players in
  * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. The
  * viewer's own hand always applies the viewer's notes. With `cluePreview`, a hand shows its
@@ -129,39 +135,69 @@ export function getSeats(
       || (hypo !== undefined
         && !hypo.showDrawnCards
         && playerIndex === hypo.startingPlayerIndex);
-    const hand = visibleState.hands[playerIndex] ?? [];
-    const cards: CardView[] = [];
-    for (const order of getHandDisplayOrder(hand, settings.reverseHands)) {
-      const cardState = (previewDeck ?? visibleState.deck)[order];
-      if (cardState === undefined) {
-        continue;
-      }
-      // The preview of a clue shows only what the clues tell the player, as on the classic screen.
-      const includesNotes =
-        previewDeck === undefined && you && !empathyPlayers.has(playerIndex);
+    // The preview of a clue shows only what the clues tell the player, as on the classic screen.
+    const includesNotes =
+      previewDeck === undefined && you && !empathyPlayers.has(playerIndex);
+    function getCards(): readonly CardView[] {
+      const hand = visibleState.hands[playerIndex] ?? [];
+      const cards: CardView[] = [];
+      for (const order of getHandDisplayOrder(hand, settings.reverseHands)) {
+        const cardState = (previewDeck ?? visibleState.deck)[order];
+        if (cardState === undefined) {
+          continue;
+        }
 
-      cards.push(
-        getCardView({
-          gameState: visibleState,
-          cardState,
-          cardIdentity: identities[order] ?? {
-            suitIndex: undefined,
-            rank: undefined,
-          },
-          note: state.notes.ourNotes[order] ?? BLANK_NOTE,
-          variant,
-          empathy,
-          // Our own notes apply to our own hand, as on the classic screen: a note can show a card's
-          // identity and remove possibilities. Holding the pointer down on the hand shows it
-          // without them.
-          empathyIncludesNotes: includesNotes,
-          showsRevealedIdentity: includesNotes,
-          finished: state.finished,
-          realLifeMode: settings.realLifeMode,
-          hGroupConventions:
-            settings.hGroupConventions && !metadata.hardVariant,
-        }),
-      );
+        cards.push(
+          getCardView({
+            gameState: visibleState,
+            cardState,
+            cardIdentity: identities[order] ?? {
+              suitIndex: undefined,
+              rank: undefined,
+            },
+            note: state.notes.ourNotes[order] ?? BLANK_NOTE,
+            variant,
+            empathy,
+            // Our own notes apply to our own hand, as on the classic screen: a note can show a
+            // card's identity and remove possibilities. Holding the pointer down on the hand shows
+            // it without them.
+            empathyIncludesNotes: includesNotes,
+            showsRevealedIdentity: includesNotes,
+            finished: state.finished,
+            realLifeMode: settings.realLifeMode,
+            hGroupConventions:
+              settings.hGroupConventions && !metadata.hardVariant,
+          }),
+        );
+      }
+      return cards;
+    }
+
+    // A preview's cards are new each time, so they are not kept.
+    let cards: readonly CardView[];
+    if (previewDeck === undefined) {
+      const key = [
+        playerIndex,
+        empathy,
+        includesNotes,
+        settings.reverseHands,
+        settings.realLifeMode,
+        settings.hGroupConventions,
+      ].join(",");
+      let stateCache = handCardsCache.get(state);
+      if (stateCache === undefined) {
+        stateCache = new Map();
+        handCardsCache.set(state, stateCache);
+      }
+      const cached = stateCache.get(key);
+      if (cached === undefined) {
+        cards = getCards();
+        stateCache.set(key, cards);
+      } else {
+        cards = cached;
+      }
+    } else {
+      cards = getCards();
     }
 
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
