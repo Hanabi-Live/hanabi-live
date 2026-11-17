@@ -59,7 +59,7 @@ function Controls({
 }): React.JSX.Element {
   return (
     <div
-      className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3"
+      className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3 tw:group-data-panel/strip:gap-x-1.5"
       role="status"
     >
       {children}
@@ -72,9 +72,12 @@ function Controls({
  * when there are leader's controls. Otherwise, it shares its row with the right of the controls, as
  * on a wide window, so that the buttons on the right do not take a row of their own. It starts from
  * no width there, so that the timeline gets shorter before the buttons wrap. On the narrowest
- * screens, the gaps get smaller too, so that the buttons on the right still fit.
+ * screens, the gaps get smaller too, so that the buttons on the right still fit. In the narrow
+ * panel of the wide layout (see "StatusStrip.tsx"), the middle's parts wrap with the rest of the
+ * controls, so that the buttons on the right share the row of the steps. The timeline has the last
+ * row to itself.
  */
-const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS}`;
+const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS} tw:group-data-panel/strip:contents`;
 
 /**
  * The right of the controls. On a narrow window, it shares the first row with the leader's
@@ -175,7 +178,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
+      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:order-last tw:group-data-panel/strip:basis-full tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -699,7 +702,7 @@ function LeaderControls({
   const { shared } = state.replay;
   return (
     <div
-      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0"
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:basis-full"
       data-leader-controls
     >
       {shared !== undefined && (

@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import type { EfficiencyStats } from "../efficiency.ts";
 import {
@@ -132,6 +132,13 @@ interface StatusStripProps {
   readonly onLobby: () => void;
   /** Whether the game screen uses the phone layout (see "GameScreen.tsx"). */
   readonly phoneLayout: boolean;
+  /**
+   * Whether the bar is a panel at the bottom of the right column instead of a bar along the bottom
+   * of the screen (see "GameScreen.tsx").
+   */
+  readonly panel: boolean;
+  /** Holds the bar's element, so that the game screen can measure it. */
+  readonly footerRef: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -444,6 +451,16 @@ function ReplayToggle({
   );
 }
 
+/** The height of the bar along the bottom of the screen. */
+const BAR_HEIGHT = 76;
+
+/**
+ * The height of the bar along the bottom of the screen when the replay controls have a row of their
+ * own: the controls (`tw:h-11`), the padding above them (`tw:pt-2.5`), and the row under them,
+ * which keeps the bar's height.
+ */
+export const REPLAY_BAR_HEIGHT = 44 + 10 + BAR_HEIGHT;
+
 /**
  * The attribute that gives the replay controls a row of their own. The bar's styles for that layout
  * depend on it (as "data-own-row"), so that the bar can try the one-row layout without drawing it.
@@ -594,10 +611,19 @@ export function StatusStrip({
   onClassicView,
   onLobby,
   phoneLayout,
+  panel,
+  footerRef,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
   const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
-  const [footer, setFooter] = useState<HTMLElement | null>(null);
+  const [footer, setFooterState] = useState<HTMLElement | null>(null);
+  const setFooter = useCallback(
+    (element: HTMLElement | null) => {
+      setFooterState(element);
+      footerRef.current = element;
+    },
+    [footerRef],
+  );
   const inReplay = replayControls !== undefined;
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
@@ -619,194 +645,276 @@ export function StatusStrip({
       "tw:bg-game-mode-panel tw:[box-shadow:inset_0_2px_0_var(--game-screen-mode)]";
   }
 
-  // When the replay controls have a row of their own, the row under them keeps the height of the
-  // bar, so that the numbers and the buttons stay where they were.
-  return (
-    <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:text-game-screen-compact tw:[--strip-height:76px] ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
-      data-own-row={ownRow ? "" : undefined}
-      ref={setFooter}
-    >
-      {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
-          and what game this is. */}
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
-        <Stat
-          label={
-            <>
-              Turn
-              <HelpIcon
-                icon="fa-info-circle"
-                label="About the turns: how many turns and rounds are left at most."
-                tooltip={valueTooltip(turnTooltip)}
-              />
-            </>
-          }
+  // The panel has a line all around it instead.
+  const panelColorClass = inReplay
+    ? "tw:bg-game-mode-panel tw:[box-shadow:inset_0_0_0_2px_var(--game-screen-mode)]"
+    : "tw:bg-game-panel tw:[box-shadow:inset_0_0_0_1px_var(--game-screen-raised)]";
+
+  // Three groups: the game's progress, the numbers that help to plan, and what game this is.
+  const progress = (
+    <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
+      <Stat
+        label={
+          <>
+            Turn
+            <HelpIcon
+              icon="fa-info-circle"
+              label="About the turns: how many turns and rounds are left at most."
+              tooltip={valueTooltip(turnTooltip)}
+            />
+          </>
+        }
+      >
+        {/* An invisible "10 / 10" holds the space (or the real turn, if it is wider). Then the bar
+            does not move when a replay adds " / 21" to the turn, or when the turn reaches 10. */}
+        <button
+          aria-label={`Turn ${turn}. Go to another turn.`}
+          className={`${VALUE_BUTTON_CLASS} tw:inline-grid tw:tabular-nums`}
+          onClick={onTurnClick}
+          type="button"
         >
-          {/* An invisible "10 / 10" holds the space (or the real turn, if it is wider). Then the bar
-              does not move when a replay adds " / 21" to the turn, or when the turn reaches 10. */}
-          <button
-            aria-label={`Turn ${turn}. Go to another turn.`}
-            className={`${VALUE_BUTTON_CLASS} tw:inline-grid tw:tabular-nums`}
-            onClick={onTurnClick}
-            type="button"
+          <span
+            aria-hidden="true"
+            className="tw:invisible tw:col-start-1 tw:row-start-1"
           >
+            <OutOf max={reservedTurn} value={reservedTurn} />
+          </span>
+          <span className="tw:col-start-1 tw:row-start-1" data-turn>
+            <span className={VALUE_LINE_CLASS}>
+              {lastTurn === undefined ? (
+                turn
+              ) : (
+                <OutOf max={lastTurn} value={turn} />
+              )}
+            </span>
+          </span>
+        </button>
+      </Stat>
+      <Stat
+        label={
+          <>
+            {scoreLabel}
+            {lowScorePhase && (
+              <HelpIcon
+                label={LOW_SCORE_PHASE_HELP_LABEL}
+                tooltip={LOW_SCORE_PHASE_HELP}
+              />
+            )}
+          </>
+        }
+        size="large"
+        truncate={false}
+      >
+        {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
+        <span
+          className="tw:inline-block"
+          data-score
+          style={markedStyle(
+            LOW_SCORE_PHASE_COLOR,
+            lowScorePhase,
+            colorblindMode,
+          )}
+        >
+          {/* Like the turn, an invisible "10 / 25" holds the space, so that the bar does not
+              move when the score reaches 10. The score starts at the left, under its label. */}
+          <span className="tw:inline-grid tw:tabular-nums">
             <span
               aria-hidden="true"
               className="tw:invisible tw:col-start-1 tw:row-start-1"
             >
-              <OutOf max={reservedTurn} value={reservedTurn} />
-            </span>
-            <span className="tw:col-start-1 tw:row-start-1" data-turn>
-              <span className={VALUE_LINE_CLASS}>
-                {lastTurn === undefined ? (
-                  turn
-                ) : (
-                  <OutOf max={lastTurn} value={turn} />
-                )}
-              </span>
-            </span>
-          </button>
-        </Stat>
-        <Stat
-          label={
-            <>
-              {scoreLabel}
-              {lowScorePhase && (
-                <HelpIcon
-                  label={LOW_SCORE_PHASE_HELP_LABEL}
-                  tooltip={LOW_SCORE_PHASE_HELP}
-                />
+              {maxScore === undefined ? (
+                reservedScore
+              ) : (
+                <OutOf max={maxScore} value={reservedScore} />
               )}
-            </>
-          }
-          size="large"
-          truncate={false}
-        >
-          {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
-          <span
-            className="tw:inline-block"
-            data-score
-            style={markedStyle(
-              LOW_SCORE_PHASE_COLOR,
-              lowScorePhase,
+            </span>
+            <span className="tw:col-start-1 tw:row-start-1">
+              {maxScore === undefined ? (
+                score
+              ) : (
+                <OutOf max={maxScore} value={score} />
+              )}
+            </span>
+          </span>
+        </span>
+      </Stat>
+    </div>
+  );
+  const planning = (
+    <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
+      <Stat
+        label={
+          <>
+            Pace
+            <HelpIcon label={PACE_HELP_LABEL} tooltip={PACE_HELP} />
+          </>
+        }
+        size="small"
+      >
+        <span data-pace style={{ color: paceColor }}>
+          {pace}
+        </span>
+      </Stat>
+      <Stat
+        label={
+          <>
+            Efficiency
+            <HelpIcon
+              icon="fa-info-circle"
+              label={EFFICIENCY_HELP_LABEL}
+              tooltip={valueTooltip(
+                getEfficiencyTooltip(
+                  efficiencyStats,
+                  futureEfficiency,
+                  minEfficiency,
+                ),
+              )}
+            />
+          </>
+        }
+        size="small"
+      >
+        <span data-efficiency>
+          <OutOf
+            max={minEfficiency}
+            maxStyle={markedStyle(
+              HARD_VARIANT_EFFICIENCY_COLOR,
+              hardVariant,
               colorblindMode,
             )}
-          >
-            {/* Like the turn, an invisible "10 / 25" holds the space, so that the bar does not
-                move when the score reaches 10. The score starts at the left, under its label. */}
-            <span className="tw:inline-grid tw:tabular-nums">
-              <span
-                aria-hidden="true"
-                className="tw:invisible tw:col-start-1 tw:row-start-1"
+            value={
+              <button
+                aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
+                className={VALUE_BUTTON_CLASS}
+                onClick={onEfficiencyClick}
+                style={markedStyle(
+                  MODIFIED_EFFICIENCY_COLOR,
+                  efficiencyModified,
+                  colorblindMode,
+                )}
+                type="button"
               >
-                {maxScore === undefined ? (
-                  reservedScore
-                ) : (
-                  <OutOf max={maxScore} value={reservedScore} />
-                )}
-              </span>
-              <span className="tw:col-start-1 tw:row-start-1">
-                {maxScore === undefined ? (
-                  score
-                ) : (
-                  <OutOf max={maxScore} value={score} />
-                )}
-              </span>
-            </span>
-          </span>
-        </Stat>
-      </div>
-      <GroupDivider />
-      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:phone:gap-5 tw:narrow-530:gap-4">
-        <Stat
-          label={
-            <>
-              Pace
-              <HelpIcon label={PACE_HELP_LABEL} tooltip={PACE_HELP} />
-            </>
-          }
-          size="small"
-        >
-          <span data-pace style={{ color: paceColor }}>
-            {pace}
-          </span>
-        </Stat>
-        <Stat
-          label={
-            <>
-              Efficiency
-              <HelpIcon
-                icon="fa-info-circle"
-                label={EFFICIENCY_HELP_LABEL}
-                tooltip={valueTooltip(
-                  getEfficiencyTooltip(
-                    efficiencyStats,
-                    futureEfficiency,
-                    minEfficiency,
-                  ),
-                )}
-              />
-            </>
-          }
-          size="small"
-        >
-          <span data-efficiency>
-            <OutOf
-              max={minEfficiency}
-              maxStyle={markedStyle(
-                HARD_VARIANT_EFFICIENCY_COLOR,
-                hardVariant,
-                colorblindMode,
-              )}
-              value={
-                <button
-                  aria-label={`Future efficiency ${futureEfficiency}. Add a modifier.`}
-                  className={VALUE_BUTTON_CLASS}
-                  onClick={onEfficiencyClick}
-                  style={markedStyle(
-                    MODIFIED_EFFICIENCY_COLOR,
-                    efficiencyModified,
-                    colorblindMode,
-                  )}
-                  type="button"
-                >
-                  <span className={VALUE_LINE_CLASS}>{futureEfficiency}</span>
-                </button>
-              }
-            />
-          </span>
-        </Stat>
-      </div>
-      <GroupDivider />
-      {/* The variant opens the game's information: its seed, options, and table. Its name gives up
-          its room first, so that the replay controls keep theirs. On a narrow window, it fills the
-          rest of the row. The buttons go to a second row when the name would get less than its
-          minimum width. On a phone, that minimum is zero, so that the name stays in the row of the
-          numbers, and the bar takes only two rows. When the replay controls have a row of their
-          own on a wide window, the name shares the next row with the buttons. Then it starts from
-          no width, and its minimum is the width of its label, so that the name gets shorter before
-          the buttons get short labels, and the buttons get short labels before they go to a row
-          of their own. */}
-      <div
-        className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
-        ref={variantRef}
-      >
-        <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
-          Variant
-          <HelpIcon
-            icon="fa-info-circle"
-            label={"Show the game's information: its table, options, and seed"}
-            tooltip={valueTooltip(gameInfoTooltip)}
+                <span className={VALUE_LINE_CLASS}>{futureEfficiency}</span>
+              </button>
+            }
           />
         </span>
-        <span
-          // When the variant shares a row with the buttons, the name takes no width of its own, so
-          // that only the label sets the variant's minimum width.
-          className="tw:block tw:max-w-full tw:truncate tw:not-phone:group-data-own-row/strip:w-0 tw:not-phone:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:phone:leading-[24px]"
-        >
-          {variantName}
+      </Stat>
+    </div>
+  );
+  // The variant opens the game's information: its seed, options, and table. Its name gives up its
+  // room first, so that the replay controls keep theirs. On a narrow window, it fills the rest of
+  // the row. The buttons go to a second row when the name would get less than its minimum width. On
+  // a phone, that minimum is zero, so that the name stays in the row of the numbers, and the bar
+  // takes only two rows. When the replay controls have a row of their own on a wide window, the
+  // name shares the next row with the buttons. Then it starts from no width, and its minimum is the
+  // width of its label, so that the name gets shorter before the buttons get short labels, and the
+  // buttons get short labels before they go to a row of their own.
+  const variant = (
+    <div
+      className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
+      ref={variantRef}
+    >
+      <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
+        Variant
+        <HelpIcon
+          icon="fa-info-circle"
+          label={"Show the game's information: its table, options, and seed"}
+          tooltip={valueTooltip(gameInfoTooltip)}
+        />
+      </span>
+      <span
+        // When the variant shares a row with the buttons, the name takes no width of its own, so
+        // that only the label sets the variant's minimum width.
+        className="tw:block tw:max-w-full tw:truncate tw:not-phone:group-data-own-row/strip:w-0 tw:not-phone:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:phone:leading-[24px]"
+      >
+        {variantName}
+      </span>
+    </div>
+  );
+  // In the panel, the buttons wrap, and each grows to fill its row. A menu's button or the replay
+  // toggle is in a box of its own, with its menu or its ring.
+  const buttons = (
+    <div
+      className={
+        panel
+          ? "tw:group/buttons tw:flex tw:flex-wrap tw:gap-2 tw:*:grow tw:*:justify-center tw:[&>*>button]:w-full tw:[&>*>button]:justify-center"
+          : "tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
+      }
+      // The panel has room for the buttons in more than one row, so they keep their long labels.
+      data-short-labels={shortLabels && !panel ? "" : undefined}
+      ref={buttonsRef}
+    >
+      {!panel && (
+        <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
+      )}
+      <button className={buttonClass} onClick={onClassicView} type="button">
+        {/* One box, so that the button's gap does not split the words. */}
+        <span>
+          Classic
+          <span className="tw:group-data-short-labels/buttons:hidden"> UI</span>
         </span>
-      </div>
+      </button>
+      {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
+      {viewAsMenu}
+      {tableMenu}
+      {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}
+      <button
+        aria-label="Lobby"
+        className={buttonClass}
+        onClick={onLobby}
+        type="button"
+      >
+        <i
+          aria-hidden="true"
+          className="fas fa-door-open tw:hidden tw:group-data-short-labels/buttons:inline"
+        />
+        <span className="tw:group-data-short-labels/buttons:hidden">Lobby</span>
+      </button>
+    </div>
+  );
+
+  // The panel at the bottom of the right column gives the hands the whole height of the screen. The
+  // panel is as narrow as a phone, so it takes the styles of the phone layout: the smaller text and
+  // buttons, and the replay controls that wrap.
+  if (panel) {
+    return (
+      <footer
+        className={`tw:group/strip tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+        data-panel=""
+        data-phone-layout=""
+        ref={setFooter}
+      >
+        {/* The four numbers share a row when it has room for them. */}
+        <div className="tw:flex tw:flex-wrap tw:gap-x-6 tw:gap-y-3">
+          {progress}
+          {planning}
+        </div>
+        <div>{variant}</div>
+        {inReplay && (
+          <div className="tw:flex" ref={controlsRef}>
+            {replayControls}
+          </div>
+        )}
+        {buttons}
+      </footer>
+    );
+  }
+
+  // When the replay controls have a row of their own, the row under them keeps the height of the
+  // bar, so that the numbers and the buttons stay where they were.
+  return (
+    <footer
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
+      data-own-row={ownRow ? "" : undefined}
+      ref={setFooter}
+      style={{ "--strip-height": `${BAR_HEIGHT}px` } as React.CSSProperties}
+    >
+      {progress}
+      <GroupDivider />
+      {planning}
+      <GroupDivider />
+      {variant}
       {inReplay && (
         <GroupDivider className="tw:group-data-own-row/strip:hidden" />
       )}
@@ -820,41 +928,7 @@ export function StatusStrip({
         </div>
       )}
       {/* When the buttons have no room in one line, they have short labels. */}
-      <div
-        className="tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
-        data-short-labels={shortLabels ? "" : undefined}
-        ref={buttonsRef}
-      >
-        <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
-        <button className={buttonClass} onClick={onClassicView} type="button">
-          {/* One box, so that the button's gap does not split the words. */}
-          <span>
-            Classic
-            <span className="tw:group-data-short-labels/buttons:hidden">
-              {" "}
-              UI
-            </span>
-          </span>
-        </button>
-        {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
-        {viewAsMenu}
-        {tableMenu}
-        {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}
-        <button
-          aria-label="Lobby"
-          className={buttonClass}
-          onClick={onLobby}
-          type="button"
-        >
-          <i
-            aria-hidden="true"
-            className="fas fa-door-open tw:hidden tw:group-data-short-labels/buttons:inline"
-          />
-          <span className="tw:group-data-short-labels/buttons:hidden">
-            Lobby
-          </span>
-        </button>
-      </div>
+      {buttons}
     </footer>
   );
 }

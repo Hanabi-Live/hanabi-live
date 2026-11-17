@@ -78,7 +78,7 @@ import {
   PlayArea,
   TableTokens,
 } from "./SharedCards.tsx";
-import { StatusStrip } from "./StatusStrip.tsx";
+import { REPLAY_BAR_HEIGHT, StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
   canDrawArrowNow,
@@ -101,6 +101,7 @@ import {
   getTableCardWidth,
   getWideHandsWidth,
   getWideLayoutRoom,
+  HAND_CARD_WIDTH,
   NAMES_BESIDE_CARDS_MIN_CARD_WIDTH,
   namesFitBesideCards,
   TABLE_TOP_PADDING,
@@ -165,6 +166,9 @@ import { useQueuedMove } from "./useQueuedMove.ts";
 /** The space on each side of the table in the phone layout. */
 const PHONE_SIDE_PADDING = "0.75em";
 
+/** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
+const CLUE_LOG_MIN_HEIGHT = 60;
+
 /** A screen whose main pointer is a finger, which has no cursor to hover with. */
 const TOUCH_QUERY = "(pointer: coarse)";
 
@@ -227,6 +231,9 @@ export function GameScreen({
   const [handsTooNarrow, setHandsTooNarrow] = useState(false);
   // The phone layout: the columns stack, and the page scrolls.
   const stacked = narrowWindow || handsTooNarrow;
+  // Whether the wide layout's bar is a panel in the right column (see "barRef").
+  const [sidePanel, setSidePanel] = useState(false);
+  const panel = !stacked && sidePanel;
   const touch = useMediaQuery(TOUCH_QUERY);
   // On a touch screen or a narrow window, the play stacks and the discard pile can be off the
   // screen, so the viewer taps a card and then "Play" or "Discard" instead of dragging it. Only one
@@ -398,6 +405,17 @@ export function GameScreen({
   }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
+  // In the wide layout, the bar is along the bottom of the screen while the cards have their
+  // largest size. When the cards would get smaller with it, it moves to a panel at the bottom of
+  // the right column, so that the hands get the whole height of the screen. The check counts the
+  // taller bar of a replay, so that a replay in an ongoing game does not move the bar. The panel
+  // needs room below the discard pile for itself and a few lines of the clue log. The clue log
+  // gives up its height first, so the panel has room while the clue log keeps its smallest height.
+  // When it has no room, the bar goes back along the bottom, until the window, the chat, or the
+  // panel's controls change.
+  const barRef = useRef<HTMLElement>(null);
+  /** What the panel had no room with, as "panelKey" in the effect below. */
+  const panelMissedRoom = useRef<string>(undefined);
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
@@ -465,7 +483,52 @@ export function GameScreen({
           beside,
         };
         setHandsTooNarrow(true);
+        return;
       }
+
+      const bar = barRef.current;
+      if (bar === null) {
+        return;
+      }
+      // What changes the room for the panel: the size of the window, the chat beside the table, and
+      // the controls in the panel.
+      const panelKey = [
+        root.clientWidth,
+        root.clientHeight,
+        beside,
+        hasReplayControls(state),
+        state.replay.hypothetical !== undefined,
+        state.replay.shared?.amLeader,
+      ].join(",");
+      const clueLog = bar.previousElementSibling;
+      if (
+        sidePanel
+        && clueLog instanceof HTMLElement
+        && clueLog.offsetHeight < CLUE_LOG_MIN_HEIGHT
+      ) {
+        panelMissedRoom.current = panelKey;
+        setSidePanel(false);
+        return;
+      }
+
+      const barHeight = sidePanel ? 0 : bar.offsetHeight;
+      const room = getRoom(
+        rowWidth,
+        handsHeight + barHeight - REPLAY_BAR_HEIGHT,
+      );
+      const cardWidth = getHandCardWidth(
+        getWideHandsWidth(rowWidth, room),
+        handsHeight + barHeight - REPLAY_BAR_HEIGHT,
+        options.numPlayers,
+        getCardsPerHand(options),
+        Math.min(nameWidth, room.nameColumnMaxWidth)
+          + (touch ? EMPATHY_TOGGLE_SPACE : 0),
+        nameHeight,
+        false,
+      );
+      setSidePanel(
+        panelMissedRoom.current !== panelKey && cardWidth < HAND_CARD_WIDTH.MAX,
+      );
       return;
     }
 
@@ -1065,6 +1128,141 @@ export function GameScreen({
     />
   );
 
+  // The bar is along the bottom of the screen, or in a panel at the bottom of the right column (see
+  // "barRef").
+  const statusStrip = (
+    <StatusStrip
+      chatButton={
+        <ChatButton
+          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
+          open={chatOpen}
+          poppedOut={chatPoppedOut}
+          unread={zen ? 0 : chatUnread}
+          zen={zen}
+          zenAvailable={!state.finished}
+        />
+      }
+      colorblindMode={settings.colorblindMode}
+      efficiencyModified={efficiencyStats.modified}
+      efficiencyStats={efficiencyStats}
+      footerRef={barRef}
+      futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
+      // The game's length changes as the clock ticks, and the screen draws again with it.
+      gameInfoTooltip={getGameInfoTooltip()}
+      hardVariant={metadata.hardVariant && settings.hGroupConventions}
+      // The replay controls have no turn, so the turn here says how far into the game it is. A
+      // spoiler-free replay hides how long the game lasts.
+      lastTurn={
+        (state.replay.segment !== undefined || state.finished)
+        && state.replay.hypothetical === undefined
+        && state.replay.shared?.spoilerFree !== true
+          ? state.ongoingGame.turn.turnNum + 1
+          : undefined
+      }
+      lowScorePhase={
+        settings.hGroupConventions
+        && isLowScorePhase(visibleState.score, variant.suits.length)
+      }
+      // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
+      // cards they played instead, as on the classic screen.
+      maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
+      minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
+      onClassicView={onSwitchToClassic}
+      onEfficiencyClick={askForEfficiency}
+      onLobby={backToLobby}
+      onTurnClick={replay.promptTurn}
+      pace={formatPace(
+        visibleState.stats.pace,
+        visibleState.stats.finalRoundEffectivelyStarted,
+        options.allOrNothing,
+      )}
+      // As on the classic screen, the pace takes a color by how risky it would be to discard,
+      // except when it shows no number.
+      paceColor={
+        visibleState.stats.pace === undefined
+        || visibleState.stats.finalRoundEffectivelyStarted
+        || options.allOrNothing
+          ? undefined
+          : getPaceRiskColor(visibleState.stats.paceRisk)
+      }
+      panel={panel}
+      phoneLayout={stacked}
+      // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
+      // the height of the screen.
+      replayControls={
+        hasReplayControls(state) ? (
+          <ReplayControls
+            editingCards={editingCards}
+            hypotheticalHint={hypotheticalHint}
+            onToggleEditCards={() => {
+              setEditingCards(!editingCards);
+            }}
+            state={state}
+          />
+        ) : undefined
+      }
+      replayToggle={
+        state.finished
+          ? undefined
+          : {
+              inReplay,
+              currentName:
+                ongoingGame.turn.currentPlayerIndex === undefined
+                  ? undefined
+                  : metadata.playerNames[ongoingGame.turn.currentPlayerIndex],
+              ourTurn:
+                state.playing
+                && ongoingGame.turn.currentPlayerIndex
+                  === metadata.ourPlayerIndex,
+              reducedMotion: settings.reducedMotion,
+              onToggle: toggleReplay,
+            }
+      }
+      score={
+        scoreHidden
+          ? visibleState.stats.numAttemptedCardsPlayed
+          : visibleState.score
+      }
+      scoreLabel={scoreHidden ? "Plays" : "Score"}
+      tableMenu={
+        state.playing && !state.finished ? (
+          <EndGameMenu numPlayers={metadata.options.numPlayers} votes={votes} />
+        ) : (
+          state.replay.shared?.canPlayAgain === true && (
+            <PlayAgain
+              ourUsername={metadata.ourUsername}
+              playerNames={metadata.playerNames}
+              shared={state.replay.shared}
+              speedrun={metadata.options.speedrun}
+            />
+          )
+        )
+      }
+      turn={visibleState.turn.turnNum + 1}
+      turnTooltip={getMaxTurnsTooltip(
+        getMaxTurns(
+          visibleState.stats,
+          visibleState.score,
+          visibleState.turn.turnNum,
+          visibleState.turn.endTurnNum,
+          options.numPlayers,
+        ),
+        visibleState.turn.turnNum,
+      )}
+      variantName={currentVariant().name}
+      viewAsMenu={
+        canChooseSeat() && (
+          <ViewAsMenu
+            finished={state.finished}
+            onViewAs={viewAs}
+            playerNames={metadata.playerNames}
+            viewedSeat={getViewedSeat()}
+          />
+        )
+      }
+    />
+  );
+
   return (
     <div
       // A browser draws a button in its own font, with normal letter spacing. Here, a button takes
@@ -1437,6 +1635,7 @@ export function GameScreen({
                 onShowClue={showClue}
                 shownSegment={shownClue?.segment}
               />
+              {panel && statusStrip}
             </div>
           </div>
         </main>
@@ -1466,139 +1665,7 @@ export function GameScreen({
         />
       </div>
 
-      <StatusStrip
-        chatButton={
-          <ChatButton
-            className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
-            open={chatOpen}
-            poppedOut={chatPoppedOut}
-            unread={zen ? 0 : chatUnread}
-            zen={zen}
-            zenAvailable={!state.finished}
-          />
-        }
-        colorblindMode={settings.colorblindMode}
-        efficiencyModified={efficiencyStats.modified}
-        efficiencyStats={efficiencyStats}
-        futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
-        // The game's length changes as the clock ticks, and the screen draws again with it.
-        gameInfoTooltip={getGameInfoTooltip()}
-        hardVariant={metadata.hardVariant && settings.hGroupConventions}
-        // The replay controls have no turn, so the turn here says how far into the game it is. A
-        // spoiler-free replay hides how long the game lasts.
-        lastTurn={
-          (state.replay.segment !== undefined || state.finished)
-          && state.replay.hypothetical === undefined
-          && state.replay.shared?.spoilerFree !== true
-            ? state.ongoingGame.turn.turnNum + 1
-            : undefined
-        }
-        lowScorePhase={
-          settings.hGroupConventions
-          && isLowScorePhase(visibleState.score, variant.suits.length)
-        }
-        // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
-        // cards they played instead, as on the classic screen.
-        maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
-        minEfficiency={metadata.minEfficiency.toFixed(
-          EFFICIENCY_DECIMAL_PLACES,
-        )}
-        onClassicView={onSwitchToClassic}
-        onEfficiencyClick={askForEfficiency}
-        onLobby={backToLobby}
-        onTurnClick={replay.promptTurn}
-        pace={formatPace(
-          visibleState.stats.pace,
-          visibleState.stats.finalRoundEffectivelyStarted,
-          options.allOrNothing,
-        )}
-        // As on the classic screen, the pace takes a color by how risky it would be to discard,
-        // except when it shows no number.
-        paceColor={
-          visibleState.stats.pace === undefined
-          || visibleState.stats.finalRoundEffectivelyStarted
-          || options.allOrNothing
-            ? undefined
-            : getPaceRiskColor(visibleState.stats.paceRisk)
-        }
-        phoneLayout={stacked}
-        // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
-        // the height of the screen.
-        replayControls={
-          hasReplayControls(state) ? (
-            <ReplayControls
-              editingCards={editingCards}
-              hypotheticalHint={hypotheticalHint}
-              onToggleEditCards={() => {
-                setEditingCards(!editingCards);
-              }}
-              state={state}
-            />
-          ) : undefined
-        }
-        replayToggle={
-          state.finished
-            ? undefined
-            : {
-                inReplay,
-                currentName:
-                  ongoingGame.turn.currentPlayerIndex === undefined
-                    ? undefined
-                    : metadata.playerNames[ongoingGame.turn.currentPlayerIndex],
-                ourTurn:
-                  state.playing
-                  && ongoingGame.turn.currentPlayerIndex
-                    === metadata.ourPlayerIndex,
-                reducedMotion: settings.reducedMotion,
-                onToggle: toggleReplay,
-              }
-        }
-        score={
-          scoreHidden
-            ? visibleState.stats.numAttemptedCardsPlayed
-            : visibleState.score
-        }
-        scoreLabel={scoreHidden ? "Plays" : "Score"}
-        tableMenu={
-          state.playing && !state.finished ? (
-            <EndGameMenu
-              numPlayers={metadata.options.numPlayers}
-              votes={votes}
-            />
-          ) : (
-            state.replay.shared?.canPlayAgain === true && (
-              <PlayAgain
-                ourUsername={metadata.ourUsername}
-                playerNames={metadata.playerNames}
-                shared={state.replay.shared}
-                speedrun={metadata.options.speedrun}
-              />
-            )
-          )
-        }
-        turn={visibleState.turn.turnNum + 1}
-        turnTooltip={getMaxTurnsTooltip(
-          getMaxTurns(
-            visibleState.stats,
-            visibleState.score,
-            visibleState.turn.turnNum,
-            visibleState.turn.endTurnNum,
-            options.numPlayers,
-          ),
-          visibleState.turn.turnNum,
-        )}
-        variantName={currentVariant().name}
-        viewAsMenu={
-          canChooseSeat() && (
-            <ViewAsMenu
-              finished={state.finished}
-              onViewAs={viewAs}
-              playerNames={metadata.playerNames}
-              viewedSeat={getViewedSeat()}
-            />
-          )
-        }
-      />
+      {!panel && statusStrip}
 
       {shownArrow !== undefined && (
         <HighlightArrow

@@ -304,6 +304,16 @@ interface State {
 }
 
 /**
+ * Opens the menu of a button, unless it is open. The New UI's bar moves between the bottom of the
+ * screen and the right column when the window changes its size, and that closes its menus.
+ */
+async function openMenu(button: Locator) {
+  if ((await button.getAttribute("aria-expanded")) !== "true") {
+    await button.click();
+  }
+}
+
+/**
  * Runs in the page. Waits until no animation runs that ends on its own, including the fireworks
  * that the New UI draws on a canvas over the page. Two frames first let a change of style start its
  * transitions.
@@ -1314,13 +1324,13 @@ function getStates(): readonly State[] {
       setup: async (cast) => {
         await cast.startBobsGame();
       },
-      prepare: async (page) => {
-        await page
-          .getByRole("button", {
+      hover: async (page) => {
+        await openMenu(
+          page.getByRole("button", {
             name: "End game",
             exact: true,
-          })
-          .click();
+          }),
+        );
       },
     },
     // The tooltip of a card on a play stack of the classic screen, in a shared replay: the notes of
@@ -1556,10 +1566,9 @@ function getStates(): readonly State[] {
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
-        await page.getByRole("button", { name: /^Viewing as /u }).click();
-        await page.getByRole("menu").waitFor();
       },
       hover: async (page) => {
+        await openMenu(page.getByRole("button", { name: /^Viewing as /u }));
         await page.getByRole("menu").locator("button").first().hover();
       },
     },
@@ -1582,7 +1591,9 @@ function getStates(): readonly State[] {
         // Bob's table is a speedrun, where "Play again" restarts the game at once when everyone is
         // ready. Bob is not, so that the button opens its menu instead.
         await game.setReady(false);
-        await page.getByRole("button", { name: "Play again" }).click();
+      },
+      hover: async (page) => {
+        await openMenu(page.getByRole("button", { name: "Play again" }));
         await page.getByText(/^Not ready: Bob/u).waitFor();
       },
     },
@@ -1600,11 +1611,11 @@ function getStates(): readonly State[] {
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
-        await page.getByRole("button", { name: "Leader: You" }).click();
-        await page.getByRole("menu").waitFor();
+        await page.getByRole("button", { name: "Leader: You" }).waitFor();
       },
       // The pointer is on the first person, to show that the names can be pressed.
       hover: async (page) => {
+        await openMenu(page.getByRole("button", { name: "Leader: You" }));
         await page.getByRole("menuitem").first().hover();
       },
     },
