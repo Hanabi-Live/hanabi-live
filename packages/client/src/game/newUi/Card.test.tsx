@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import { getDefaultVariant } from "@hanabi-live/game";
+import type { Rank, SuitIndex } from "@hanabi-live/game";
+import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { CardFace } from "./Card.tsx";
@@ -109,3 +110,42 @@ test("the bubble stays closed when the card missed the pointer leaving it", () =
 
   expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
+
+test.each(["3 Suits", "4 Suits", "No Variant", "6 Suits"])(
+  "the suit pips of a card in %s take at most two rows",
+  (variantName) => {
+    // Every suit and every rank is still possible, which is the most pips that a card shows.
+    const variant = getVariant(variantName);
+    const pips = {
+      suits: variant.suits.map((_suit, i) => ({
+        suitIndex: i as SuitIndex,
+        eliminated: false,
+        positive: false,
+      })),
+      ranks: variant.ranks.map((rank: Rank) => ({
+        rank,
+        eliminated: false,
+        positive: false,
+      })),
+      bubble: undefined,
+    } as const satisfies CardPipsView;
+    const { container } = render(
+      <CardFace
+        colorblindMode={false}
+        pips={pips}
+        rank={undefined}
+        showPossibleCards={false}
+        suitIndex={undefined}
+        variant={variant}
+        width={CARD_RECT.width}
+      />,
+    );
+
+    const rows = [...container.querySelectorAll("[data-suit-row]")];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThanOrEqual(2);
+    expect(rows.reduce((count, row) => count + row.children.length, 0)).toBe(
+      variant.suits.length,
+    );
+  },
+);

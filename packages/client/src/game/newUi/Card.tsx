@@ -1185,6 +1185,16 @@ function Possibilities({
     pipCell = cell;
     suitColumns = columns;
   }
+  const suitRows = Array.from(
+    { length: Math.ceil(suitSlots.length / suitColumns) },
+    (_row, rowIndex) =>
+      suitSlots
+        .slice(rowIndex * suitColumns, (rowIndex + 1) * suitColumns)
+        .map((pip, i) => ({
+          pip,
+          slot: rowIndex * suitColumns + i,
+        })),
+  );
 
   return (
     <div
@@ -1200,31 +1210,34 @@ function Possibilities({
       }}
     >
       {suits.length > 0 && (
-        // The rows wrap from the middle, so that a short last row is centered under the others.
-        <div
-          className="tw:flex tw:flex-wrap tw:justify-center"
-          style={{ width: suitColumns * pipCell }}
-        >
-          {suitSlots.map((pip, i) =>
-            pip === undefined ? (
-              <span
-                className="tw:shrink-0"
-                key={i}
-                style={{
-                  width: pipCell,
-                  height: pipCell,
-                }}
-              />
-            ) : (
-              <SuitChip
-                cell={pipCell}
-                key={pip.suitIndex}
-                pip={pip}
-                variant={variant}
-                width={width}
-              />
-            ),
-          )}
+        // Each row is its own element, rather than one row that wraps. The browser rounds the
+        // widths of the row and its pips, so a row exactly as wide as its pips could wrap one pip
+        // early and make a third row. A short last row is centered under the others.
+        <div className="tw:flex tw:flex-col tw:items-center">
+          {suitRows.map((row, rowIndex) => (
+            <div className="tw:flex" data-suit-row key={rowIndex}>
+              {row.map(({ pip, slot }) =>
+                pip === undefined ? (
+                  <span
+                    className="tw:shrink-0"
+                    key={slot}
+                    style={{
+                      width: pipCell,
+                      height: pipCell,
+                    }}
+                  />
+                ) : (
+                  <SuitChip
+                    cell={pipCell}
+                    key={pip.suitIndex}
+                    pip={pip}
+                    variant={variant}
+                    width={width}
+                  />
+                ),
+              )}
+            </div>
+          ))}
         </div>
       )}
       {ranks.length > 0 && (
