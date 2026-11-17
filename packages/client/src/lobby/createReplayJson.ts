@@ -1,3 +1,4 @@
+import type { TableId } from "@hanabi-live/data";
 import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
@@ -31,7 +32,7 @@ const DISCARD_REGEX =
 const CLUE_REGEX =
   /^.+ tells (?<playerName>.*) about \w+ (?<clueWord>[A-Za-z]+|\d)s?$/u;
 
-export function createJsonFromReplay(room: string): void {
+export function createJsonFromReplay(tableId: TableId | undefined): void {
   const { segment } = currentState().replay;
   if (
     segment === undefined
@@ -44,7 +45,7 @@ export function createJsonFromReplay(room: string): void {
         { code: "/copy" },
         " command during the review of a game.",
       ],
-      room,
+      tableId,
       SelfChatMessageType.Error,
     );
     return;
@@ -68,7 +69,7 @@ export function createJsonFromReplay(room: string): void {
     ) {
       sendSelfPmFromServer(
         "The deck is still loading. Please try again after it loads.",
-        room,
+        tableId,
         SelfChatMessageType.Error,
       );
       return;
@@ -128,7 +129,7 @@ export function createJsonFromReplay(room: string): void {
   if (UrlData === undefined || UrlData === "") {
     sendSelfPmFromServer(
       "Failed to compress the JSON data.",
-      room,
+      tableId,
       SelfChatMessageType.Error,
     );
     return;
@@ -140,7 +141,7 @@ export function createJsonFromReplay(room: string): void {
     .then(() => {
       sendSelfPmFromServer(
         "The URL for this hypothetical is copied to your clipboard.",
-        room,
+        tableId,
         SelfChatMessageType.Info,
       );
       sendSelfPmFromServer(
@@ -152,17 +153,17 @@ export function createJsonFromReplay(room: string): void {
           },
           " to copy the raw JSON data to your clipboard.",
         ],
-        room,
+        tableId,
         SelfChatMessageType.Info,
       );
     })
     .catch((error: unknown) => {
       sendSelfPmFromServer(
         `Failed to copy the URL to your clipboard: ${error}`,
-        room,
+        tableId,
         SelfChatMessageType.Error,
       );
-      sendSelfPmFromServer(URL, room);
+      sendSelfPmFromServer(URL, tableId);
     });
 }
 

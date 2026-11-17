@@ -2,7 +2,7 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { ReplyData, ServerEventData } from "@hanabi-live/data";
+import type { ReplyData, ServerEventData, TableId } from "@hanabi-live/data";
 import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
 import {
   getCardsPerHand,
@@ -467,7 +467,7 @@ gameCommands.set("tableSuggestion", (data) => {
     return;
   }
 
-  suggestTurn(data.username, `table${data.tableId}`, data.turn);
+  suggestTurn(data.username, data.tableId, data.turn);
 });
 
 // This is used to update the names of the people currently spectating the game.
@@ -498,7 +498,7 @@ function canFollowSuggestion(): boolean {
   );
 }
 
-function suggestTurn(who: string, room: string, segment: number) {
+function suggestTurn(who: string, tableId: TableId, segment: number) {
   if (!canFollowSuggestion()) {
     return;
   }
@@ -532,7 +532,7 @@ function suggestTurn(who: string, room: string, segment: number) {
         { code: "/suggest" },
         " command.",
       ],
-      room,
+      tableId,
     );
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { openEmojiPicker } from "../../EmojiPicker.tsx";
 import { LengthCounter } from "../../LengthCounter.tsx";
+import type { ChatRoom } from "../../chat.ts";
 import { CHAT_LENGTH_LIMIT, onChatInput, onChatKeyDown } from "../../chat.ts";
 import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatSegment, ChatTextOptions } from "../../chatText.ts";
@@ -385,7 +386,7 @@ export function ChatInput({
   emojiPicker = true,
 }: {
   readonly id: string;
-  readonly room: "lobby" | "table";
+  readonly room: ChatRoom;
   readonly ref: React.RefObject<HTMLInputElement | null>;
 
   /** Whether the input has the button. The picker opens only in the page's own window. */

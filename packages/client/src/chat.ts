@@ -7,7 +7,6 @@ import {
   CHAT_EMOTES as emotes,
   MAX_CHAT_LENGTH,
   PROJECT_NAME,
-  tableIdSchema,
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
@@ -43,13 +42,8 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
 
 type ChatData = ServerEventData["chat"];
 
-/** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
-function roomTableId(room: string): TableId | undefined {
-  const tableId = /^table(?<tableId>\d+)$/u.exec(room)?.groups?.["tableId"];
-  return tableId === undefined
-    ? undefined
-    : tableIdSchema.parse(Number(tableId));
-}
+/** The chat of a chat input: the lobby's, or that of the table that we are at. */
+export type ChatRoom = "lobby" | "table";
 
 export enum SelfChatMessageType {
   Normal = "Normal",
@@ -139,10 +133,7 @@ export function init(): void {
 }
 
 /** Handles a change to a chat input's text. */
-export function onChatInput(
-  element: HTMLInputElement,
-  room: "lobby" | "table",
-): void {
+export function onChatInput(element: HTMLInputElement, room: ChatRoom): void {
   // We have typed something new, so reset the tab-complete variables.
   tabResetAutoCompleteList();
   typedChatHistoryBrowse = undefined;
@@ -152,7 +143,7 @@ export function onChatInput(
 /** Handles a key in a chat input: Enter sends, and the arrows and Tab browse and complete. */
 export function onChatKeyDown(
   element: HTMLInputElement,
-  room: "lobby" | "table",
+  room: ChatRoom,
   event: KeyboardEvent,
 ): void {
   // Enter also ends the composition of an input method, which must not send the message.
@@ -166,13 +157,13 @@ export function onChatKeyDown(
   keydown(element, event);
 }
 
-function input(element: HTMLInputElement, room: "lobby" | "table") {
+function input(element: HTMLInputElement, room: ChatRoom) {
   const text = element.value;
 
   // If this is a pregame or game input, report to the server that we are typing. (But do not spam
   // the server with more than one message per interval.) The input of a table that we left can
   // still have the focus while it is hidden.
-  if (room !== "lobby" && globals.tableId !== undefined) {
+  if (room === "table" && globals.tableId !== undefined) {
     const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
@@ -204,9 +195,9 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   }
 }
 
-function send(room: string, element: HTMLInputElement) {
+function send(room: ChatRoom, element: HTMLInputElement) {
   // A hidden input of a table that we left can still have the focus.
-  if (room.startsWith("table") && globals.tableId === undefined) {
+  if (room === "table" && globals.tableId === undefined) {
     return;
   }
 
@@ -231,7 +222,7 @@ function send(room: string, element: HTMLInputElement) {
   sendText(room, msg);
 }
 
-function sendText(room: string, msgRaw: string) {
+function sendText(room: ChatRoom, msgRaw: string) {
   // Validate that they did not send an empty message.
   if (msgRaw === "") {
     return;
@@ -247,12 +238,7 @@ function sendText(room: string, msgRaw: string) {
   // will be sent over the wire. Replace any non-replaced emoji before that happens.
   const msg = fillEmojis(msgRaw);
 
-  // Use "startsWith" instead of "===" to work around an bug where the room can already have the
-  // table number appended (e.g. "table123").
-  let roomId = room;
-  if (roomId.startsWith("table")) {
-    roomId = `table${globals.joinedTableId}`;
-  }
+  const tableId = room === "table" ? globals.joinedTableId : undefined;
 
   // Add the chat message to the start of the typed history so that we can use the up arrow later,
   // and remove its older copy. Keep the history at its maximum length.
@@ -277,13 +263,12 @@ function sendText(room: string, msgRaw: string) {
 
     const chatCommandFunction = chatCommands.get(command);
     if (chatCommandFunction !== undefined) {
-      chatCommandFunction(roomId, args);
+      chatCommandFunction(tableId, args);
       return;
     }
   }
 
   // This is not a command, so send a the chat message to the server.
-  const tableId = roomTableId(roomId);
   globals.connection.send("chat", {
     text: msg,
     ...(tableId !== undefined && { tableId }),
@@ -547,7 +532,7 @@ export function showPmHistory(messages: readonly ChatData[]): void {
     // A private notice outside of a table shows in the chat that the user has open.
     sendSelfPmFromServer(
       "No private messages found.",
-      "lobby",
+      undefined,
       SelfChatMessageType.Info,
     );
     return;
@@ -706,7 +691,7 @@ export function substituteEmoji(text: string): string | undefined {
 /** Shows a private notice that the client writes itself, as if the server sent it. */
 export function sendSelfPmFromServer(
   msg: string | readonly LocalPart[],
-  room: string,
+  tableId: TableId | undefined,
   type = SelfChatMessageType.Normal,
 ): void {
   addInternal(
@@ -714,7 +699,7 @@ export function sendSelfPmFromServer(
       // The line shows the parts instead.
       text: "",
       sentAt: new Date().toISOString(),
-      ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
+      ...(tableId !== undefined && { tableId }),
       kind: {
         type: "private",
         author: {
