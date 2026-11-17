@@ -349,7 +349,8 @@ export function getHandCardWidth(
 /**
  * Returns the width of the cards on the play stacks and in the discard pile, before the discard
  * pile's limit. The play stacks and the deck are one column of cards, or one row when the columns
- * stack.
+ * stack. The width is not rounded to whole pixels. Otherwise, as the hands' top padding shrinks,
+ * the deck would move up, and then jump down when the cards grow by a pixel.
  */
 export function getTableCardWidth(
   playAreaWidth: number,
@@ -362,5 +363,5 @@ export function getTableCardWidth(
     ? (playAreaWidth - STACKED_PLAY_AREA_OTHER_WIDTH - gaps) / (numSuits + 1)
     : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps)
       / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH);
-  return clamp(Math.floor(width), STACK_CARD_WIDTH.MIN, STACK_CARD_WIDTH.MAX);
+  return clamp(width, STACK_CARD_WIDTH.MIN, STACK_CARD_WIDTH.MAX);
 }
