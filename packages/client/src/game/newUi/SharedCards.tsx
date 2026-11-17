@@ -1401,7 +1401,9 @@ export function DiscardPile({
       className="tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4"
       // A right-click beside the cards points the arrow at the pile (see "arrowAnchor.ts").
       data-discard-pile
-      ref={tooltipRef(getDiscardPileTooltip(zoneState, showDoubleDiscard))}
+      ref={tooltipRefHtml(
+        getDiscardPileTooltipHtml(zoneState, showNoDiscard, showDoubleDiscard),
+      )}
     >
       {/* While the player drags a card, the well of the pile fades out, so that the pile is part of
           the dark box of the discard column behind it (see "DropZones.tsx"). */}
@@ -1503,17 +1505,26 @@ export function DiscardPile({
   );
 }
 
-/** The tooltip of the discard pile. It has none while the player drags a card. */
-function getDiscardPileTooltip(
+/**
+ * The tooltip of the discard pile, in HTML. It has none while the player drags a card. At max
+ * clues, a second line explains why no one can discard, like the tooltip of the clue tokens.
+ */
+function getDiscardPileTooltipHtml(
   zoneState: ZoneState,
+  noDiscard: boolean,
   doubleDiscard: boolean,
 ): string | undefined {
   if (zoneState !== "idle") {
     return undefined;
   }
-  return doubleDiscard
-    ? "Discard pile. Double Discard: the card just discarded is still needed, so the chop of the player whose turn it is could be its last copy."
-    : "Discard pile";
+  let text = "Discard pile";
+  if (noDiscard) {
+    text += `<br>The team has all ${MAX_CLUES} clue tokens, so no one can discard.`;
+  } else if (doubleDiscard) {
+    text +=
+      ". Double Discard: the card just discarded is still needed, so the chop of the player whose turn it is could be its last copy.";
+  }
+  return `<span class="small-tooltip-text">${text}</span>`;
 }
 
 /** How long the discard pile pulses when the team gets to max clues, in milliseconds. */
