@@ -1,8 +1,11 @@
 // A tooltip that opens beside an anchor element. The bubble is a manual popover, so it is drawn in
 // the top layer above every other element, including modals.
 
-/** The height of the arrow that points from the tooltip to its anchor. */
-const ARROW_SIZE_IN_PIXELS = 6;
+/**
+ * The height of the arrow that points from the tooltip to its anchor. The arrow is twice as wide as
+ * it is high.
+ */
+export const ARROW_SIZE_IN_PIXELS = 6;
 
 /**
  * How long the pointer rests on an element that people click, such as a button, before its tooltip

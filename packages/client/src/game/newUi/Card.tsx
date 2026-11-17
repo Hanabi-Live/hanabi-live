@@ -17,6 +17,7 @@ import {
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import { ARROW_SIZE_IN_PIXELS } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
 import {
@@ -1290,14 +1291,20 @@ const POSSIBLE_CARDS = {
     seen: 0.09,
     note: 0.1,
   },
-  /** The pointer that points from the bubble at the card. */
-  pointerWidth: 0.26,
-  pointerHeight: 0.13,
   /**
    * The space between the card and the tip of the pointer. It leaves room for the border of a clued
    * card, which is outside of the card.
    */
   pointerGap: 0.08,
+} as const;
+
+/**
+ * The pointer that points from the bubble of possible cards at the card, in the window's pixels. It
+ * is the same size as the arrow of a tooltip, such as a card's note, at every card size.
+ */
+const POSSIBLE_CARDS_POINTER = {
+  width: 2 * ARROW_SIZE_IN_PIXELS,
+  height: ARROW_SIZE_IN_PIXELS,
 } as const;
 
 /** The outline of the bubble of possible cards and of its pointer, in pixels. */
@@ -1548,8 +1555,6 @@ export function PossibleCardsBubble({
     cardWidth === undefined ? anchorRect.width : cardWidth * getScreenScale(),
     POSSIBLE_CARDS_MIN_UNIT,
   );
-  const pointerWidth = unit * POSSIBLE_CARDS.pointerWidth;
-  const pointerHeight = unit * POSSIBLE_CARDS.pointerHeight;
 
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
@@ -1564,7 +1569,9 @@ export function PossibleCardsBubble({
     // The sizes before the bubble is scaled.
     const { offsetHeight: height, offsetWidth: width } = element;
     const offset =
-      unit * POSSIBLE_CARDS.pointerGap + pointerHeight + POSSIBLE_CARDS_OUTLINE;
+      unit * POSSIBLE_CARDS.pointerGap
+      + POSSIBLE_CARDS_POINTER.height
+      + POSSIBLE_CARDS_OUTLINE;
     const below = anchorRect.bottom + offset;
     const roomBelow = window.innerHeight - POSSIBLE_CARDS_WINDOW_MARGIN - below;
     const roomAbove = anchorRect.top - offset - POSSIBLE_CARDS_WINDOW_MARGIN;
@@ -1582,14 +1589,15 @@ export function PossibleCardsBubble({
       window.innerWidth - width * scale - POSSIBLE_CARDS_WINDOW_MARGIN,
     );
     const radius = unit * CARD_CORNER_PER_WIDTH * 2;
+    const halfPointer = POSSIBLE_CARDS_POINTER.width / 2 / scale;
     setPosition({
       left,
       // The bubble is scaled from the edge that faces the card, so that edge stays in place.
       top: side === "below" ? below : anchorRect.top - offset - height,
       side,
       pointerX: Math.min(
-        Math.max((middle - left) / scale, radius + pointerWidth / 2),
-        width - radius - pointerWidth / 2,
+        Math.max((middle - left) / scale, radius + halfPointer),
+        width - radius - halfPointer,
       ),
       scale,
     });
@@ -1598,8 +1606,6 @@ export function PossibleCardsBubble({
     anchorRect.left,
     anchorRect.top,
     anchorRect.width,
-    pointerHeight,
-    pointerWidth,
     unit,
   ]);
 
@@ -1608,7 +1614,11 @@ export function PossibleCardsBubble({
   );
 
   // The pointer's shape, pointing up from the top edge of the bubble. It starts above the bubble's
-  // outline, and reaches into the bubble to cover the outline.
+  // outline, and reaches into the bubble to cover the outline. It is drawn larger by as much as the
+  // bubble is drawn smaller, so that it keeps its size.
+  const pointerScale = position?.scale ?? 1;
+  const pointerWidth = POSSIBLE_CARDS_POINTER.width / pointerScale;
+  const pointerHeight = POSSIBLE_CARDS_POINTER.height / pointerScale;
   const pointerBase = pointerHeight;
   const pointerBottom =
     pointerBase + POSSIBLE_CARDS_OUTLINE + POSSIBLE_CARDS_POINTER_OVERLAP;
