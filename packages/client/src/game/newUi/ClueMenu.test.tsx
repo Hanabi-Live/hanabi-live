@@ -15,13 +15,13 @@ afterEach(() => {
 });
 
 test.each([
-  [false, "above"],
+  [false, "right"],
   [true, "below"],
 ])(
-  "the page scrolls only after the drawer is in its place (always below: %s)",
-  async (alwaysBelow, place) => {
-    // The hand is at the bottom of the table, so the drawer fits only above it. In the phone
-    // layout, it opens below anyway, and the page scrolls to show it.
+  "the page scrolls only after the drawer is in its place (below: %s)",
+  async (below, place) => {
+    // The hand is at the bottom of the table, so the drawer to its right moves up to fit. In the
+    // phone layout, it opens below anyway, and the page scrolls to show it.
     vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
       function getRect(this: Element) {
         if (this.tagName === "MAIN") {
@@ -58,7 +58,7 @@ test.each([
       <main>
         <div>
           <ClueMenu
-            alwaysBelow={alwaysBelow}
+            below={below}
             canGive={false}
             clue={undefined}
             cluePreview={false}
