@@ -188,9 +188,10 @@ interface HandsProps {
 
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
-   * player. A hand shows it while the viewer holds the pointer down on it, or while its eye button
-   * or the "Empathy" button in a card's menu is on. In tap-to-move mode, holding the pointer down
-   * does nothing, and the eye buttons and the "Empathy" buttons show instead (`onToggleEmpathy`).
+   * player. A hand shows it while the viewer holds the pointer down on it, or while its brain
+   * button or the "Empathy" button in a card's menu is on. In tap-to-move mode, holding the pointer
+   * down does nothing, and the brain buttons and the "Empathy" buttons show instead
+   * (`onToggleEmpathy`).
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
@@ -451,20 +452,20 @@ function ClueRail({
   );
 }
 
-/** The width that the eye button takes beside a name, with its gap, in CSS pixels. */
+/** The width that the brain button takes beside a name, with its gap, in CSS pixels. */
 export const EMPATHY_TOGGLE_SPACE = 34;
 
 /**
  * The cursor over another player's cards, where holding the mouse button down shows their view of
- * them: a white eye with a dark outline, which shows on any card. It points with its center.
+ * them: a white brain with a dark outline, which shows on any card. It points with its center.
  */
 const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1.5 12C4.5 6.5 8 4.5 12 4.5s7.5 2 10.5 7.5c-3 5.5-6.5 7.5-10.5 7.5S4.5 17.5 1.5 12z' fill='white' stroke='black' stroke-width='1.5'/><circle cx='12' cy='12' r='4' fill='black'/><circle cx='13.5' cy='10.5' r='1.25' fill='white'/></svg>",
+  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 4.5C10.5 3 7.5 3 6.5 5C4 5 2.8 7.2 3.5 9C2 10.5 2.2 13.5 4 14.5C3.8 17 6 19 8.5 18.5C9.5 20 11.2 20 12 19C12.8 20 14.5 20 15.5 18.5C18 19 20.2 17 20 14.5C21.8 13.5 22 10.5 20.5 9C21.2 7.2 20 5 17.5 5C16.5 3 13.5 3 12 4.5Z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/><path d='M12 4.5V19M6.8 8.8C8.4 8.8 9.4 9.8 9.4 11.4M17.2 8.8C15.6 8.8 14.6 9.8 14.6 11.4M6.4 14.6C7.9 14 9.4 14.4 10 15.6M17.6 14.6C16.1 14 14.6 14.4 14 15.6' fill='none' stroke='black' stroke-width='1.25' stroke-linecap='round'/></svg>",
 )}") 12 12, pointer`;
 
 /**
  * The cursor over a card while editing cards, where a click changes the card: a white pencil with a
- * dark outline, like the eye. It points with its tip.
+ * dark outline, like the brain. It points with its tip.
  */
 const EDIT_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M2 22 3.4 16.3 18.3 1.5 22.5 5.7 7.7 20.6z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/><path d='M3.4 16.3 7.7 20.6M14.7 5 19 9.3' fill='none' stroke='black' stroke-width='1.5'/></svg>",
@@ -1116,7 +1117,7 @@ function MenuCard({
               role="menuitemcheckbox"
               type="button"
             >
-              <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-eye`} />
+              <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-brain`} />
               Empathy
               <i
                 aria-hidden="true"
@@ -1317,7 +1318,7 @@ function Hand({
   // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
   // classic screen. On the viewer's own hand, it shows the hand without the viewer's notes. While
   // editing cards, a press picks the card to change instead. In tap-to-move mode, "Empathy" in a
-  // card's menu and the eye buttons show the view instead, so that a touch on a hand does nothing
+  // card's menu and the brain buttons show the view instead, so that a touch on a hand does nothing
   // until it ends as a tap.
   const empathyAvailable = !editing && !props.speedrunClicks;
   const empathyHold = empathyAvailable && !props.tapToMove;
@@ -1411,7 +1412,7 @@ function Hand({
               ref={tooltipRef(`Show ${seat.name}'s hand as they see it.`)}
               type="button"
             >
-              <i aria-hidden="true" className="fas fa-eye" />
+              <i aria-hidden="true" className="fas fa-brain" />
             </button>
           )}
         </div>

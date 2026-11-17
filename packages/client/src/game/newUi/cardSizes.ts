@@ -186,7 +186,7 @@ export interface WideLayoutRoom {
  * hands, in this order, and only as much as the hands need: the right column, the column of names,
  * and the padding and the gaps of the table. `rowWidth` is the width of the table's row without the
  * play stacks' column. `nameWidth` is the width of the widest name, and `nameExtraWidth` is the
- * width beside the names, such as for the eye buttons.
+ * width beside the names, such as for the brain buttons.
  */
 export function getWideLayoutRoom(
   rowWidth: number,

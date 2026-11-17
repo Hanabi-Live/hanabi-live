@@ -279,8 +279,8 @@ export function GameScreen({
     setNameHeight(height);
   }, []);
 
-  // The hands that show their player's view of them: those whose eye button is on, and the one that
-  // the viewer holds the pointer down on.
+  // The hands that show their player's view of them: those whose brain button is on, and the one
+  // that the viewer holds the pointer down on.
   const [empathyToggled, setEmpathyToggled] = useState<
     ReadonlySet<PlayerIndex>
   >(new Set());
@@ -520,7 +520,8 @@ export function GameScreen({
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
   }
-  // With the eye in the clue menu on, the target's hand shows what the chosen clue would tell them.
+  // With the flashlight in the clue menu on, the target's hand shows what the chosen clue would
+  // tell them.
   const previewTarget = cluePreview ? menuTarget : undefined;
   const previewHand =
     previewTarget === undefined ? undefined : visibleState.hands[previewTarget];
@@ -811,7 +812,7 @@ export function GameScreen({
     nameWidth,
     tapToMove ? EMPATHY_TOGGLE_SPACE : 0,
   );
-  // In tap-to-move mode, the name column also holds the eye button that shows a player's view of
+  // In tap-to-move mode, the name column also holds the brain button that shows a player's view of
   // their hand.
   let nameColumnWidth: number | undefined =
     Math.min(
