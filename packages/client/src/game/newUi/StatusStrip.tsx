@@ -2,7 +2,10 @@ import type { RefObject } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import type { EfficiencyStats } from "../efficiency.ts";
-import { formatEfficiency } from "../efficiency.ts";
+import {
+  formatEfficiency,
+  LOW_SCORE_PHASE_CARDS_PER_SUIT,
+} from "../efficiency.ts";
 import {
   HARD_VARIANT_EFFICIENCY_COLOR,
   LOW_SCORE_PHASE_COLOR,
@@ -26,6 +29,18 @@ const PACE_HELP = `
 /** The plain text of `PACE_HELP`, for screen readers. */
 const PACE_HELP_LABEL =
   "About pace: pace is a measure of how many discards can happen while still having a chance to get the maximum score.";
+
+/** The plain text of `LOW_SCORE_PHASE_HELP`, for screen readers. */
+const LOW_SCORE_PHASE_HELP_LABEL = `About the score's color: it is the Low Score Phase of the H-Group's conventions. It lasts until the score reaches ${LOW_SCORE_PHASE_CARDS_PER_SUIT} cards for each suit.`;
+
+/** Explains why the score has another color in the H-Group's "Low Score Phase". */
+const LOW_SCORE_PHASE_HELP = `
+  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
+    It is the <strong>Low Score Phase</strong> of the H-Group's conventions. It
+    lasts until the score reaches ${LOW_SCORE_PHASE_CARDS_PER_SUIT} cards for
+    each suit.
+  </p>
+`;
 
 interface StatusStripProps {
   readonly turn: number;
@@ -647,7 +662,21 @@ export function StatusStrip({
             </span>
           </button>
         </Stat>
-        <Stat label={scoreLabel} size="large" truncate={false}>
+        <Stat
+          label={
+            <>
+              {scoreLabel}
+              {lowScorePhase && (
+                <HelpIcon
+                  label={LOW_SCORE_PHASE_HELP_LABEL}
+                  tooltip={LOW_SCORE_PHASE_HELP}
+                />
+              )}
+            </>
+          }
+          size="large"
+          truncate={false}
+        >
           {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span
             className="tw:inline-block"

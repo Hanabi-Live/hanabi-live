@@ -7,7 +7,7 @@ import type { State } from "./types/State.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "./ui/constants.ts";
 
 /** The H-Group's "Low Score Phase" lasts until the score reaches this many cards for each suit. */
-const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;
+export const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;
 
 /** Whether the score is in the H-Group's "Low Score Phase". */
 export function isLowScorePhase(score: number, numSuits: number): boolean {
