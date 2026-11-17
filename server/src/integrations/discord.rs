@@ -9,7 +9,6 @@ use crate::{
     lobby::{self, ExternalReply, SavedChat},
 };
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use std::{
     collections::{HashMap, HashSet},
@@ -21,6 +20,7 @@ use std::{
     },
     time::Duration,
 };
+use time::OffsetDateTime;
 use tokio::sync::{Mutex, mpsc};
 use twilight_gateway::{
     CloseFrame, Event, EventTypeFlags, Intents, Shard, ShardId, StreamExt as _,
@@ -540,7 +540,7 @@ impl Bridge {
         self.announce(
             &format!(
                 "{RESTART_PREFIX} {} ({}) - Uptime: {}{}",
-                Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+                crate::clock::in_words(OffsetDateTime::now_utc()),
                 crate::restart::version(),
                 crate::lifecycle::duration(uptime.as_secs()),
                 downtime_reason(message),
@@ -554,7 +554,7 @@ impl Bridge {
         self.announce(
             &format!(
                 "{STOP_PREFIX} {} ({}) - Uptime: {}{}",
-                Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+                crate::clock::in_words(OffsetDateTime::now_utc()),
                 crate::restart::version(),
                 crate::lifecycle::duration(uptime.as_secs()),
                 downtime_reason(message),
@@ -571,10 +571,10 @@ impl Bridge {
             Event::Ready(_) | Event::Resumed => {
                 self.set_status(Status::Ready);
                 if !self.announced.swap(true, Ordering::AcqRel) {
-                    let now = Utc::now();
+                    let now = OffsetDateTime::now_utc();
                     let mut message = format!(
                         "The server has successfully started at: {} ({})",
-                        now.format("%a %b %d %H:%M:%S UTC %Y"),
+                        crate::clock::in_words(now),
                         crate::restart::version(),
                     );
                     // A restart without a reason was not announced in the lobby, so neither is
@@ -585,7 +585,7 @@ impl Bridge {
                         None => last_shutdown(&self.pool).await?,
                     };
                     if let Some(down) = down {
-                        let seconds = (now - down).num_seconds().max(0).unsigned_abs();
+                        let seconds = (now - down).whole_seconds().max(0).unsigned_abs();
                         write!(
                             message,
                             " - Downtime: {}",
@@ -758,7 +758,7 @@ async fn roles(http: &Client, guild: Id<GuildMarker>) -> Result<HashMap<Id<RoleM
 }
 
 /// When the most recent server announcement is a graceful shutdown, returns when it was sent.
-async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
+async fn last_shutdown(pool: &PgPool) -> Result<Option<OffsetDateTime>> {
     let row = sqlx::query!(
         "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'
          ORDER BY datetime_sent DESC,id DESC LIMIT 1"
@@ -777,7 +777,7 @@ pub async fn insert_message(
     name: Option<&str>,
     text: &str,
     message_id: Option<&str>,
-) -> Result<Option<(i32, DateTime<Utc>)>> {
+) -> Result<Option<(i32, OffsetDateTime)>> {
     let mut tx = pool.begin().await?;
     if let Some(id) = message_id {
         sqlx::query!("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id)

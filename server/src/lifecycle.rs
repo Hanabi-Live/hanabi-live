@@ -199,7 +199,7 @@ pub struct Control {
     pub pool: PgPool,
     pub root: PathBuf,
     pub version: String,
-    pub started: chrono::DateTime<chrono::Utc>,
+    pub started: time::OffsetDateTime,
     pub monotonic_started: Instant,
     runtime: Option<Runtime>,
     stops: mpsc::Sender<StopReason>,
@@ -221,7 +221,7 @@ impl Control {
             root,
             version,
             stops,
-            started: chrono::Utc::now(),
+            started: time::OffsetDateTime::now_utc(),
             monotonic_started: Instant::now(),
             runtime,
         })

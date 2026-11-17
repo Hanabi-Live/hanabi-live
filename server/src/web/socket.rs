@@ -18,7 +18,6 @@ use axum::{
     http::{HeaderMap, StatusCode, Uri},
     response::Response,
 };
-use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
 use hanabi_protocol::{ClientKind, UserId, WebSocketQuery};
 use std::{
@@ -28,13 +27,14 @@ use std::{
     task::Poll,
     time::{Duration, Instant},
 };
+use time::OffsetDateTime;
 use tokio::sync::mpsc;
 use tracing::Instrument;
 
 /// How long loading a connecting user's lobby statistics may take.
 const LOBBY_LOAD_DEADLINE: Duration = Duration::from_secs(10);
 /// How long after creating an account a user is still welcomed as a first-time user.
-const FIRST_TIME_USER_WINDOW: chrono::TimeDelta = chrono::TimeDelta::seconds(10);
+const FIRST_TIME_USER_WINDOW: time::Duration = time::Duration::seconds(10);
 /// The lobby chat messages sent to a user who connects.
 const LOBBY_HISTORY_MESSAGES: i64 = 50;
 /// How long sending an error to a rejected or failed connection may take.
@@ -87,7 +87,7 @@ pub(super) struct Account {
     pub(super) id: UserId,
     pub(super) name: String,
     pub(super) normalized_name: String,
-    pub(super) created: DateTime<Utc>,
+    pub(super) created: OffsetDateTime,
     pub(super) bot: bool,
     /// Sessions signed with another version have ended.
     pub(super) session_version: i32,
@@ -146,7 +146,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
             username: name.clone().into(),
         },
         muted,
-        first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
+        first_time_user: OffsetDateTime::now_utc() - created < FIRST_TIME_USER_WINDOW,
         settings,
         friends,
         blocked,
@@ -186,7 +186,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         hanabi_protocol::event::CHAT,
         hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::server(
             "Find teammates and discuss strategy in the Discord chat: https://discord.gg/FADvkJp",
-            hanabi_protocol::Timestamp::from(Utc::now()),
+            hanabi_protocol::Timestamp::from(OffsetDateTime::now_utc()),
         )),
     ));
     let motd = app.public.root.join("motd.txt");
@@ -195,7 +195,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
             hanabi_protocol::event::CHAT,
             hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage::server(
                 format!("[Server Notice] {}", text.trim()),
-                hanabi_protocol::Timestamp::from(Utc::now()),
+                hanabi_protocol::Timestamp::from(OffsetDateTime::now_utc()),
             )),
         )),
         Ok(_) => {}

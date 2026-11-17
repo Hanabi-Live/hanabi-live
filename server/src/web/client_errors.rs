@@ -51,7 +51,7 @@ pub(super) fn record(app: &App, session: &Session, request: &ClientErrorRequest)
     tracing::error!(
         "Client failure: {}",
         json!({
-            "timestamp": chrono::Utc::now().to_rfc3339(),
+            "timestamp": crate::clock::rfc3339(time::OffsetDateTime::now_utc()),
             "revision": crate::restart::version(),
             "userId": session.user,
             "location": location,

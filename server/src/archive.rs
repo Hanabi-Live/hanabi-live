@@ -6,7 +6,6 @@ use crate::{
     stats::zero_stats,
 };
 use anyhow::{Context, Result, anyhow, ensure};
-use chrono::{DateTime, Utc};
 use hanabi_engine::{
     AssignedCharacter, EndCondition, GameSetup, Interpretation, RecordedAction, RecordedActionType,
     recorded_action_type,
@@ -18,6 +17,7 @@ use hanabi_protocol::{
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};
+use time::OffsetDateTime;
 #[cfg(test)]
 #[path = "archive_tests.rs"]
 mod tests;
@@ -169,8 +169,10 @@ pub struct GameRecord {
     pub score: i16,
     pub num_turns: i16,
     pub end_condition: i16,
-    pub datetime_started: DateTime<Utc>,
-    pub datetime_finished: DateTime<Utc>,
+    #[serde(with = "time::serde::rfc3339")]
+    pub datetime_started: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
+    pub datetime_finished: OffsetDateTime,
 }
 
 impl GameRecord {

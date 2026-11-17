@@ -11,11 +11,11 @@ categories = ["api-bindings", "data-structures"]
 
 [dependencies]
 anyhow = "1"
-chrono = "0.4"
 jsonschema = { version = "0.61", default-features = false }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
+time = { version = "0.3", features = ["formatting", "macros"] }
 
 [lints]
 workspace = true

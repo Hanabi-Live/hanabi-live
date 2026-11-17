@@ -404,7 +404,7 @@ async fn native_accounts_http_and_identity_postgres() {
         cookie::decode(
             cookie.split_once('=').unwrap().1,
             &config().secret,
-            Utc::now().timestamp()
+            OffsetDateTime::now_utc().unix_timestamp()
         )
         .unwrap(),
         cookie::Session { id, version: 0 }
@@ -623,7 +623,7 @@ fn set_cookies(headers: &HeaderMap) -> Vec<String> {
 #[test]
 fn tabs_choose_among_signed_in_accounts() {
     let secret = &config().secret;
-    let now = Utc::now().timestamp();
+    let now = OffsetDateTime::now_utc().unix_timestamp();
     let alice = cookie::Session { id: 1, version: 0 };
     let bob = cookie::Session { id: 2, version: 1 };
     let old_bob = cookie::Session { id: 2, version: 0 };
@@ -660,7 +660,12 @@ async fn cookie_for_a_missing_account_is_not_a_session_postgres() {
         id: i32::MAX,
         version: 0,
     };
-    let value = cookie::encode(session, &config().secret, Utc::now().timestamp()).unwrap();
+    let value = cookie::encode(
+        session,
+        &config().secret,
+        OffsetDateTime::now_utc().unix_timestamp(),
+    )
+    .unwrap();
     let cookie = format!("hanabi.sid={value}");
     let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
     assert_eq!(status, StatusCode::NO_CONTENT);

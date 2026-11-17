@@ -19,7 +19,6 @@ use crate::{
     transport::{Outgoing, Session, frame},
 };
 use anyhow::{Context, Result};
-use chrono::Utc;
 use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::PlayerIndex;
@@ -33,6 +32,7 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
+use time::OffsetDateTime;
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc};
 
 /// How long a table waits before retrying timed work that failed.
@@ -627,7 +627,7 @@ impl TableActor {
         let finished = next.settle(
             &self.table,
             self.audience().map(|a| a.session.user),
-            Utc::now(),
+            OffsetDateTime::now_utc(),
         )?;
         if finished {
             // The players receive the leader with the replay.

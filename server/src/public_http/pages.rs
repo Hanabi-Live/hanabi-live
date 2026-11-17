@@ -371,11 +371,11 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
 }
 
 /// A player's game counts, time played, and the date they joined. The date is also returned as a
-/// `DateTime`, so that the profile can show it in words.
+/// time, so that the profile can show it in words.
 async fn player_statistics(
     state: &PublicState,
     user: i32,
-) -> Result<(PlayerStatistics, chrono::DateTime<chrono::Utc>)> {
+) -> Result<(PlayerStatistics, time::OffsetDateTime)> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
@@ -419,8 +419,7 @@ async fn player_statistics(
 }
 
 /// A player's statistics as their profile shows them, with durations and the joined date in words.
-fn statistics_value(statistics: &PlayerStatistics, date: chrono::DateTime<chrono::Utc>) -> Value {
-    use chrono::Datelike;
+fn statistics_value(statistics: &PlayerStatistics, date: time::OffsetDateTime) -> Value {
     let suffix = match date.day() {
         1 | 21 | 31 => "st",
         2 | 22 => "nd",
@@ -436,7 +435,7 @@ fn statistics_value(statistics: &PlayerStatistics, date: chrono::DateTime<chrono
         "timePlayedSpeedrun": duration(statistics.time_played_speedrun_seconds.get()),
         "timeReviewed": duration(statistics.time_reviewed_seconds.get()),
         "timeTotal": duration(statistics.time_total_seconds.get()),
-        "dateJoined": format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year()),
+        "dateJoined": format!("{} {}{}, {}", date.month(), date.day(), suffix, date.year()),
     })
 }
 

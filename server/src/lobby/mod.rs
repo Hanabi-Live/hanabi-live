@@ -134,7 +134,7 @@ pub(crate) fn notice_publication(recipient: &str, message: &str) -> Publication 
             message,
             hanabi_protocol::ChatAuthor::Server {},
             recipient,
-            hanabi_protocol::Timestamp::from(chrono::Utc::now()),
+            hanabi_protocol::Timestamp::from(time::OffsetDateTime::now_utc()),
         )),
     ))
 }

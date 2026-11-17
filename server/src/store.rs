@@ -748,9 +748,9 @@ mod tests {
         model::{FORMAT, IDLE_TIMEOUT_MS},
         stats::zero_stats,
     };
-    use chrono::Utc;
     use hanabi_engine::{EndCondition, GameSetup, Interpretation};
     use std::collections::BTreeMap;
+    use time::OffsetDateTime;
     use tokio::sync::oneshot;
 
     fn pregame(id: TableId) -> TableSnapshot {
@@ -767,7 +767,7 @@ mod tests {
             max_players: 6,
             password_hash: None,
             extra: ExtraOptions::default(),
-            created: Utc::now(),
+            created: OffsetDateTime::now_utc(),
             phase: Phase::Pregame {
                 players: vec![Player {
                     id: Some(UserId::new(1).unwrap()),
@@ -833,8 +833,8 @@ mod tests {
                 players,
                 seed: Some("p2v0s1".into()),
                 created: table.created,
-                started: Utc::now(),
-                finished: Some(Utc::now()),
+                started: OffsetDateTime::now_utc(),
+                finished: Some(OffsetDateTime::now_utc()),
                 game,
                 clocks: vec![0, 0],
                 duration: 123,
@@ -879,7 +879,7 @@ mod tests {
                 hanabi_protocol::ChatAuthor::User {
                     username: "Alice".into(),
                 },
-                hanabi_protocol::Timestamp::from(Utc::now()),
+                hanabi_protocol::Timestamp::from(OffsetDateTime::now_utc()),
             )
             .into(),
         });
@@ -961,7 +961,7 @@ mod tests {
                 hanabi_protocol::ChatAuthor::User {
                     username: "Alice".into(),
                 },
-                hanabi_protocol::Timestamp::from(Utc::now()),
+                hanabi_protocol::Timestamp::from(OffsetDateTime::now_utc()),
             )
             .into(),
         };

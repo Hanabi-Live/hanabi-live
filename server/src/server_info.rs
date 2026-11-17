@@ -1,29 +1,29 @@
 use crate::lobby::RuntimeCommand;
-use chrono::{DateTime, Utc};
 #[cfg(test)]
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use time::OffsetDateTime;
 
 /// Facts about the running server that chat commands report, shared by the lobby and tables.
 pub struct ServerInfo {
     base_url: String,
-    came_online: DateTime<Utc>,
+    came_online: OffsetDateTime,
     started: Instant,
-    quiet_restart: Option<DateTime<Utc>>,
+    quiet_restart: Option<OffsetDateTime>,
 }
 
 impl ServerInfo {
-    pub fn new(use_tls: bool, domain: &str, quiet_restart: Option<DateTime<Utc>>) -> Self {
+    pub fn new(use_tls: bool, domain: &str, quiet_restart: Option<OffsetDateTime>) -> Self {
         Self {
             base_url: format!("{}://{domain}", if use_tls { "https" } else { "http" }),
-            came_online: Utc::now(),
+            came_online: OffsetDateTime::now_utc(),
             started: Instant::now(),
             quiet_restart,
         }
     }
 
     /// When the previous process restarted into this one without a reason.
-    pub const fn quiet_restart(&self) -> Option<DateTime<Utc>> {
+    pub const fn quiet_restart(&self) -> Option<OffsetDateTime> {
         self.quiet_restart
     }
 
@@ -41,7 +41,7 @@ impl ServerInfo {
             RuntimeCommand::Uptime => vec![
                 format!(
                     "The server came online at: {}",
-                    self.came_online.format("%a %b %d %H:%M:%S UTC %Y")
+                    crate::clock::in_words(self.came_online)
                 ),
                 format!(
                     "Uptime: {}",

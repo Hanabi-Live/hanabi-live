@@ -72,6 +72,7 @@ mod accounts;
 mod actors;
 mod archive;
 mod checkpoint;
+mod clock;
 mod config;
 mod cookie;
 mod database;

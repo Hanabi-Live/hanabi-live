@@ -2,7 +2,6 @@ use super::{Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, r
 use crate::accounts::{is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
-use chrono::SecondsFormat;
 use hanabi_protocol::{
     Chat, ChatAuthor, ChatMessage, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId,
 };
@@ -13,6 +12,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// When an identity token expires, in UTC, such as "2026-11-18T05:33:33Z".
+const TOKEN_EXPIRY_FORMAT: &[time::format_description::FormatItem<'_>] =
+    time::macros::format_description!("[year]-[month]-[day]T[hour]:[minute]:[second]Z");
 /// The most lobby chat and private messages that one user can send per `LOBBY_CHAT_WINDOW`.
 pub const LOBBY_CHAT_LIMIT: usize = 30;
 const LOBBY_CHAT_WINDOW: Duration = Duration::from_mins(1);
@@ -484,7 +486,10 @@ pub async fn lobby_chat(
                 let token = regenerate_token(pool, secret, caller.user.get(), &caller.ip).await?;
                 format!(
                     "Identity token (valid until {} UTC): {}",
-                    token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
+                    token
+                        .expires_at
+                        .to_offset(time::UtcOffset::UTC)
+                        .format(TOKEN_EXPIRY_FORMAT)?,
                     token.token
                 )
             } else {

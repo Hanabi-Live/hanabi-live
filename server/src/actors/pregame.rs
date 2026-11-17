@@ -16,13 +16,13 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
-use chrono::Utc;
 use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientRequest;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableJoined, TableStage};
 use std::{collections::HashSet, sync::Arc};
+use time::OffsetDateTime;
 
 /// Appended to the name of a table that a split creates.
 const SPLIT_SUFFIX: &str = " (split)";
@@ -477,7 +477,7 @@ impl TableActor {
             )
         );
         destination.owner = selected[0].user_ref()?;
-        destination.created = Utc::now();
+        destination.created = OffsetDateTime::now_utc();
         destination.phase = Phase::Pregame {
             players: selected,
             kicked: vec![],

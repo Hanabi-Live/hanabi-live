@@ -13,7 +13,6 @@ use crate::{
     transport::{Outgoing, Session, frame},
 };
 use anyhow::Context;
-use chrono::Utc;
 use hanabi_protocol::ClientRequest;
 use hanabi_protocol::MAX_TABLE_NAME_LENGTH;
 use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
@@ -21,6 +20,7 @@ use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
 };
+use time::OffsetDateTime;
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
@@ -491,7 +491,7 @@ impl TableActor {
         let seated = players.iter().filter_map(|p| p.id).collect::<HashSet<_>>();
         let mut next = self.candidate();
         // The table keeps its ID and audience, but plays a new game, which its name counts.
-        next.created = Utc::now();
+        next.created = OffsetDateTime::now_utc();
         next.name = {
             let (base, count) =
                 if let Some(m) = regex!(r"^(.*) \(#(\d+)\)$").captures(&self.table.name) {

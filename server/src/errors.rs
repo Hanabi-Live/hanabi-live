@@ -501,7 +501,7 @@ impl Report {
         tracing::error!(
             "Server failure: {}",
             json!({
-                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "timestamp": crate::clock::rfc3339(time::OffsetDateTime::now_utc()),
                 "revision": crate::restart::version(),
                 "operation": self.operation,
                 "code": self.code,

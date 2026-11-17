@@ -464,9 +464,18 @@ impl Timestamp {
     }
 }
 
-impl From<chrono::DateTime<chrono::Utc>> for Timestamp {
-    fn from(time: chrono::DateTime<chrono::Utc>) -> Self {
-        Self(time.to_rfc3339_opts(chrono::SecondsFormat::Millis, true))
+/// The form of a wire timestamp, which ends with "Z" for UTC.
+const TIMESTAMP_FORMAT: &[time::format_description::FormatItem<'_>] = time::macros::format_description!(
+    "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond digits:3]Z"
+);
+
+impl From<time::OffsetDateTime> for Timestamp {
+    fn from(time: time::OffsetDateTime) -> Self {
+        Self(
+            time.to_offset(time::UtcOffset::UTC)
+                .format(TIMESTAMP_FORMAT)
+                .expect("A UTC time with a four-digit year formats as a timestamp"),
+        )
     }
 }
 
@@ -534,9 +543,10 @@ mod tests {
 
     #[test]
     fn timestamps_are_utc_with_milliseconds() {
-        let time = chrono::DateTime::from_timestamp(1_767_268_800, 123_456_789).unwrap();
+        let time =
+            time::OffsetDateTime::from_unix_timestamp_nanos(1_767_268_800_123_456_789).unwrap();
         assert_eq!(Timestamp::from(time).as_str(), "2026-01-01T12:00:00.123Z");
-        let whole = chrono::DateTime::from_timestamp(1_767_268_800, 0).unwrap();
+        let whole = time::OffsetDateTime::from_unix_timestamp(1_767_268_800).unwrap();
         assert_eq!(Timestamp::from(whole).as_str(), "2026-01-01T12:00:00.000Z");
     }
 

@@ -12,7 +12,6 @@ use crate::{
     web::{App, router},
 };
 use anyhow::{Context, Result, bail, ensure};
-use chrono::Utc;
 use http_body_util::BodyExt;
 use std::{
     net::{SocketAddr, TcpListener},
@@ -20,6 +19,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
+use time::OffsetDateTime;
 use tokio::{sync::mpsc, task::JoinSet};
 use tokio_util::task::TaskTracker;
 
@@ -297,7 +297,7 @@ async fn run(config: Config, version: String) -> Result<Option<restart::Replacem
         tracing::info!("Localhost operations listening at http://{operations_address}");
         tracing::info!(
             "The server has successfully started at: {} ({})",
-            control.started.to_rfc3339(),
+            crate::clock::rfc3339(control.started),
             control.version
         );
         Ok(())
@@ -317,7 +317,7 @@ async fn run(config: Config, version: String) -> Result<Option<restart::Replacem
     };
     // Players are turned away from now on, so a restart's downtime starts here.
     let replace = match &reason {
-        StopReason::Restart(None) => Some(restart::Replacement::Quiet(Utc::now())),
+        StopReason::Restart(None) => Some(restart::Replacement::Quiet(OffsetDateTime::now_utc())),
         StopReason::Restart(Some(_)) => Some(restart::Replacement::Announced),
         _ => None,
     };

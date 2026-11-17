@@ -10,13 +10,13 @@ use crate::{
     store::{Saved, Store},
     transport::Session,
 };
-use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
     Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableSettingsSuggestion, Turn,
 };
 use std::{collections::BTreeMap, fmt::Write as _};
+use time::OffsetDateTime;
 
 /// The longest table password, in bytes.
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
@@ -316,7 +316,7 @@ pub(super) fn replay_table(
             custom_seed: snapshot.seed.clone(),
             ..ExtraOptions::default()
         },
-        created: Utc::now(),
+        created: OffsetDateTime::now_utc(),
         options,
         phase: Phase::Replay {
             snapshot: Box::new(snapshot),
@@ -420,7 +420,7 @@ pub(super) async fn prepare_table(
             max_players,
             password_hash,
             extra,
-            created: Utc::now(),
+            created: OffsetDateTime::now_utc(),
             phase: Phase::Pregame {
                 players: vec![player],
                 kicked: vec![],

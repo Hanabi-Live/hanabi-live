@@ -1,6 +1,5 @@
 use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
 use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
@@ -17,6 +16,7 @@ use std::{
     collections::{BTreeMap, HashMap, HashSet},
     time::Instant,
 };
+use time::OffsetDateTime;
 
 pub const FORMAT: &str = "hanabi-live-21";
 
@@ -89,9 +89,12 @@ pub struct Snapshot {
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
-    pub created: DateTime<Utc>,
-    pub started: DateTime<Utc>,
-    pub finished: Option<DateTime<Utc>>,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
+    pub started: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub finished: Option<OffsetDateTime>,
     pub game: Game,
     /// Each player's clock in milliseconds: the time left in a timed game, or the time taken in an
     /// untimed one.
@@ -228,7 +231,8 @@ pub struct TableSnapshot {
     pub max_players: usize,
     pub password_hash: Option<String>,
     pub extra: ExtraOptions,
-    pub created: DateTime<Utc>,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created: OffsetDateTime,
     pub phase: Phase,
     /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
@@ -266,12 +270,9 @@ pub struct TableChat {
 }
 impl TableChat {
     /// When the message was sent.
-    pub fn sent(&self) -> Result<DateTime<Utc>> {
-        Ok(
-            DateTime::parse_from_rfc3339(self.message.message.sent_at.as_str())
-                .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
-                .with_timezone(&Utc),
-        )
+    pub fn sent(&self) -> Result<OffsetDateTime> {
+        crate::clock::parse_rfc3339(self.message.message.sent_at.as_str())
+            .ok_or_else(|| anyhow::anyhow!("Invalid checkpoint chat timestamp"))
     }
     /// The message as the wire carries it. Checkpoints keep each message's timestamp as it was
     /// archived, which messages from before timestamps had one form may write with microseconds.
@@ -374,7 +375,7 @@ impl TableSnapshot {
         &mut self,
         before: &Self,
         audience: impl IntoIterator<Item = UserId>,
-        now: DateTime<Utc>,
+        now: OffsetDateTime,
     ) -> Result<bool> {
         if self.visible
             && self
@@ -508,7 +509,7 @@ impl Snapshot {
         players: Vec<Player>,
         game: Game,
     ) -> Self {
-        let now = Utc::now();
+        let now = OffsetDateTime::now_utc();
         let n = players.len();
         let size = game.deck.len() + game.stacks.len();
         Self {

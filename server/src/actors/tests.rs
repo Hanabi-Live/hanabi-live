@@ -19,7 +19,6 @@ use crate::{
     transport::Session,
 };
 use anyhow::{Context, Result, bail, ensure};
-use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::MAX_SEED_LENGTH;
@@ -29,6 +28,7 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
+use time::{Duration as TimeDuration, OffsetDateTime};
 use tokio::sync::{Notify, Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
@@ -326,7 +326,7 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
         max_players: 6,
         password_hash: None,
         extra: ExtraOptions::default(),
-        created: Utc::now(),
+        created: OffsetDateTime::now_utc(),
         phase: Phase::Pregame {
             players: vec![Player {
                 id: Some(UserId::new(1).unwrap()),
@@ -1010,7 +1010,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
     };
     let id = store.allocate_table().await?;
     let mut table = pregame(id);
-    table.created = Utc::now() - ChronoDuration::days(1);
+    table.created = OffsetDateTime::now_utc() - TimeDuration::days(1);
     let revision = store.save_at(&table, 0).await?;
     let (hub, _notifications) = mpsc::channel(32);
     let capacity = Arc::new(Semaphore::new(1));

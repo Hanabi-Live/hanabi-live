@@ -1,7 +1,6 @@
 use anyhow::{Result, anyhow, ensure};
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-use chrono::{DateTime, Duration, Utc};
 use hmac::{Hmac, KeyInit, Mac};
 use rand::TryRng;
 use sha2::{Digest, Sha256};
@@ -11,6 +10,7 @@ use std::{
     sync::{Arc, LazyLock},
     time::Duration as WaitDuration,
 };
+use time::{Duration, OffsetDateTime};
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 const HASH_WAIT: WaitDuration = WaitDuration::from_secs(10);
@@ -175,7 +175,7 @@ pub fn token_lookup_hash(secret: &str, token: &str) -> Result<String> {
 
 pub struct IdentityToken {
     pub token: String,
-    pub expires_at: DateTime<Utc>,
+    pub expires_at: OffsetDateTime,
 }
 
 pub async fn regenerate_token(
@@ -189,7 +189,7 @@ pub async fn regenerate_token(
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(ip, token.clone()).await?;
-    let expires_at = Utc::now() + IDENTITY_TOKEN_LIFETIME;
+    let expires_at = OffsetDateTime::now_utc() + IDENTITY_TOKEN_LIFETIME;
     sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)
          VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET

@@ -381,7 +381,7 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     server.info = Arc::new(crate::server_info::ServerInfo::new(
         false,
         "localhost",
-        Some(chrono::Utc::now() - chrono::Duration::seconds(150)),
+        Some(time::OffsetDateTime::now_utc() - time::Duration::seconds(150)),
     ));
     let quiet_mock = Arc::new(MockDiscord::default());
     let quiet = Bridge::start(server, configuration(), Some(quiet_mock.serve().await))

@@ -34,13 +34,13 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use chrono::{DateTime, Utc};
 use hanabi_protocol::{
     ClientKind, IdentityRequest, IdentityTokenResponse, LoginRequest, Notice, PasswordHashRequest,
     PasswordHashResponse,
 };
 use sqlx::PgPool;
 use std::{net::SocketAddr, sync::Arc};
+use time::OffsetDateTime;
 use tokio::sync::mpsc;
 
 #[derive(Clone)]
@@ -97,7 +97,7 @@ pub fn session(
     requested: Option<i32>,
 ) -> Option<cookie::Session> {
     let account_name = requested.map(cookie::account_name);
-    let now = Utc::now().timestamp();
+    let now = OffsetDateTime::now_utc().unix_timestamp();
     let mut sessions = headers
         .get_all(header::COOKIE)
         .iter()
@@ -454,7 +454,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     let signed = cookie::encode(
         cookie::Session { id, version },
         &state.config.secret,
-        Utc::now().timestamp(),
+        OffsetDateTime::now_utc().unix_timestamp(),
     )?;
     Ok(with_cookies(
         Json(hanabi_protocol::UserRef {
@@ -726,9 +726,11 @@ async fn identity(
         .fetch_optional(&state.pool)
         .await?;
         if let Some(row) = row {
-            let expiry: DateTime<Utc> = row.expires_at;
+            let expiry: OffsetDateTime = row.expires_at;
             let ip = address.ip().to_string();
-            if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
+            if expiry > OffsetDateTime::now_utc()
+                && verify_password(&ip, token, row.token_hash.clone()).await?
+            {
                 tracing::info!("Verified identity token from IP: {ip}");
                 return Ok(Json(hanabi_protocol::UserRef {
                     user_id: hanabi_protocol::UserId::try_from(row.id)?,

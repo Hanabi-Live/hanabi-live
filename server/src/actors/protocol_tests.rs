@@ -1283,8 +1283,8 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             .await?;
         let created = table.created;
         let game = table.game_mut().context("Missing replay game")?;
-        game.started = created - chrono::TimeDelta::days(2);
-        game.finished = Some(created - chrono::TimeDelta::days(1));
+        game.started = created - time::Duration::days(2);
+        game.finished = Some(created - time::Duration::days(1));
         h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(

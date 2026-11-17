@@ -7,7 +7,6 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::{Context, Result};
-use chrono::Utc;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, ChatAuthor, ChatMessage, MAX_PLAYERS, MIN_PLAYERS, TableId};
 use std::{
@@ -15,6 +14,7 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
+use time::OffsetDateTime;
 
 /// How long a typing indicator lasts without another keystroke.
 const TYPING_TIMEOUT: Duration =
@@ -51,7 +51,7 @@ const fn table_chat(id: TableId, message: ChatMessage) -> Chat {
     }
 }
 pub(super) fn chat_time() -> hanabi_protocol::Timestamp {
-    hanabi_protocol::Timestamp::from(Utc::now())
+    hanabi_protocol::Timestamp::from(OffsetDateTime::now_utc())
 }
 
 /// The most table chat messages one player can send per `TABLE_CHAT_WINDOW`.

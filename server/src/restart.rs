@@ -1,10 +1,10 @@
 use crate::{config::Config, tls};
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, Utc};
 use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use time::OffsetDateTime;
 
 pub fn validate_assets(config: &Config) -> Result<String> {
     tls::validate_static_roots(config)?;
@@ -49,11 +49,9 @@ pub async fn prepare(root: &Path) -> Result<()> {
 const QUIET_RESTART_VARIABLE: &str = "HANABI_QUIET_RESTART_AT";
 
 /// When the previous process restarted into this one without a reason.
-pub fn quiet_restart() -> Option<DateTime<Utc>> {
+pub fn quiet_restart() -> Option<OffsetDateTime> {
     let value = std::env::var(QUIET_RESTART_VARIABLE).ok()?;
-    DateTime::parse_from_rfc3339(&value)
-        .ok()
-        .map(|time| time.with_timezone(&Utc))
+    crate::clock::parse_rfc3339(&value)
 }
 
 /// A restart that replaces this process.
@@ -61,7 +59,7 @@ pub enum Replacement {
     /// A restart with a reason. The lobby chat records when it began.
     Announced,
     /// A restart without a reason, which began to turn players away at this time.
-    Quiet(DateTime<Utc>),
+    Quiet(OffsetDateTime),
 }
 
 /// Replaces this process with the installed executable.
@@ -72,7 +70,7 @@ pub fn replace(root: &Path, replacement: &Replacement) -> Result<()> {
     command.current_dir(root);
     match replacement {
         Replacement::Quiet(down) => {
-            command.env(QUIET_RESTART_VARIABLE, down.to_rfc3339());
+            command.env(QUIET_RESTART_VARIABLE, crate::clock::rfc3339(*down));
         }
         Replacement::Announced => {
             command.env_remove(QUIET_RESTART_VARIABLE);

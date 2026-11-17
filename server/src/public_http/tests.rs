@@ -775,7 +775,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let cookie = crate::cookie::encode(
         session,
         "public-test-secret",
-        chrono::Utc::now().timestamp(),
+        time::OffsetDateTime::now_utc().unix_timestamp(),
     )
     .unwrap();
     let req = Request::builder()
