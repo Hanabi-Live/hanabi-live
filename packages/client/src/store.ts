@@ -36,14 +36,17 @@ export const store = configureStore({
   },
   // In development, these checks walk the state after every action. The game's state keeps a whole
   // game state for each turn of a replay, so they skip it. Its reducers use Immer, which freezes
-  // it.
+  // it. They do not warn about their own run time: it depends on the speed of the machine, and the
+  // browser tests fail on every warning.
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       immutableCheck: {
         ignoredPaths: ["game"],
+        warnAfter: Infinity,
       },
       serializableCheck: {
         ignoredPaths: ["game"],
+        warnAfter: Infinity,
         ignoredActions: [gameStarted.type, gameUpdated.type],
       },
     }),
