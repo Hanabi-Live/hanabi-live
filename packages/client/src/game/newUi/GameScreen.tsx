@@ -74,6 +74,7 @@ import {
   CardBack,
   DiscardPile,
   getNotedStackBase,
+  PLAY_STACKS_PADDING,
   PlayArea,
   TableTokens,
 } from "./SharedCards.tsx";
@@ -1068,10 +1069,16 @@ export function GameScreen({
               } as React.CSSProperties
             }
           >
+            {/* The play stacks' box shows no outline. It moves up by its padding, so that the top
+                of the stacks lines up with the tops of the hands and the discard pile. The
+                "ui-screenshots" command checks it. */}
             <div
               className="tw:relative tw:flex tw:shrink-0 tw:phone:justify-center"
               ref={setPlayAreaElement}
-              style={{ paddingTop: columnTopPadding }}
+              style={{
+                paddingTop: columnTopPadding,
+                marginTop: stacked ? undefined : -PLAY_STACKS_PADDING,
+              }}
             >
               <PlayArea
                 cardWidth={tableCardWidth}

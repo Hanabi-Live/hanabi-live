@@ -2,7 +2,8 @@
 // checkout's server with a disposable database and seeds it through the client protocol, so that
 // every run sees the same pages. Run it through "runTests.ts", which provides the database and
 // builds the server and a development client: `bun run ui-screenshots [options]`. An error or
-// warning in a page fails the run.
+// warning in a page, or a New UI game screen whose hands, play stacks, and discard pile do not line
+// up at the top, fails the run.
 
 // Options:
 // - `--state <name>`: Only this state. Repeat it for more than one.
@@ -3124,7 +3125,10 @@ function parseOptions(): Options {
 interface Results {
   /** The lines of the comparison report. */
   readonly comparison: string[];
-  /** The errors and warnings of the pages, which fail the run. */
+  /**
+   * The errors and warnings of the pages, and the screens whose columns do not line up. They fail
+   * the run.
+   */
   readonly errors: string[];
 }
 
@@ -3185,6 +3189,37 @@ async function capture(
   await page.close();
 }
 
+/**
+ * Runs in the page. In the wide layout of the New UI, returns the tops of the hands, the play
+ * stacks, and the discard pile, which must line up. Returns `undefined` on any other screen.
+ */
+function getColumnTops():
+  | {
+      readonly hands: number;
+      readonly stacks: number;
+      readonly discardPile: number;
+    }
+  | undefined {
+  if (document.querySelector("[data-phone-layout]") !== null) {
+    return undefined;
+  }
+  const hand = document.querySelector("[data-hand]");
+  // The first child of the stacks' box holds the stacks. The box itself has no outline.
+  const stacks = document.querySelector("[data-play-stacks] > div");
+  const discardPile = document.querySelector("[data-discard-pile]");
+  if (hand === null || stacks === null || discardPile === null) {
+    return undefined;
+  }
+  return {
+    hands: hand.getBoundingClientRect().top,
+    stacks: stacks.getBoundingClientRect().top,
+    discardPile: discardPile.getBoundingClientRect().top,
+  };
+}
+
+/** How far apart, in CSS pixels, the tops of the New UI's columns can be and still line up. */
+const COLUMN_TOP_TOLERANCE = 1;
+
 /** Takes the screenshots of a state. */
 async function captureState(
   page: Page,
@@ -3244,6 +3279,17 @@ async function captureState(
           path: `${file}.png`,
           animations: "disabled",
         });
+        const tops = await page.evaluate(getColumnTops);
+        if (
+          tops !== undefined
+          && Math.max(tops.hands, tops.stacks, tops.discardPile)
+            - Math.min(tops.hands, tops.stacks, tops.discardPile)
+            > COLUMN_TOP_TOLERANCE
+        ) {
+          results.errors.push(
+            `${state.name} ${size.width} ${theme}: The tops of the hands (${tops.hands.toFixed(1)}px), the play stacks (${tops.stacks.toFixed(1)}px), and the discard pile (${tops.discardPile.toFixed(1)}px) do not line up.`,
+          );
+        }
         if (openedWindow !== undefined) {
           await settle(openedWindow);
           await openedWindow.screenshot({
@@ -3314,9 +3360,7 @@ async function writeReports(options: Options, results: Results) {
   if (results.errors.length === 0) {
     return;
   }
-  console.error(
-    `Errors and warnings in the pages:\n${results.errors.join("\n")}`,
-  );
+  console.error(`Errors in the pages:\n${results.errors.join("\n")}`);
   process.exitCode = 1;
 }
 

@@ -247,7 +247,34 @@ async function runInherited(
  * The suites this runner can run. Turborepo caches each one separately, except "ui-screenshots",
  * which is not a test.
  */
-const SUITES = ["rust", "bun", "critical-css", "ui-screenshots"] as const;
+const SUITES = [
+  "rust",
+  "bun",
+  "critical-css",
+  "ui-layout",
+  "ui-screenshots",
+] as const;
+
+/**
+ * The "ui-screenshots" options of the "ui-layout" suite: New UI games in the wide layout, where
+ * "ui-screenshots" checks that the hands, the play stacks, and the discard pile line up at the top.
+ * The games have two and five players, and one is a replay. One theme is enough, since the themes
+ * have the same layout.
+ */
+const UI_LAYOUT_ARGS = [
+  "--state",
+  "new-ui-game",
+  "--state",
+  "new-ui-five-players",
+  "--state",
+  "new-ui-replay",
+  "--width",
+  "1600",
+  "--width",
+  "1200",
+  "--theme",
+  "light",
+] as const;
 type Suite = (typeof SUITES)[number];
 
 function isSuite(value: string | undefined): value is Suite {
@@ -295,6 +322,7 @@ async function runSuite(
       );
     }
 
+    case "ui-layout":
     case "ui-screenshots": {
       await buildServer();
       // The pages load the client, which must be from the same revision as the server. A
@@ -315,7 +343,10 @@ async function runSuite(
       }
       return await runInherited(
         process.execPath,
-        ["packages/testing/src/uiScreenshots.ts", ...args],
+        [
+          "packages/testing/src/uiScreenshots.ts",
+          ...(suite === "ui-layout" ? UI_LAYOUT_ARGS : args),
+        ],
         {
           cwd: ROOT,
           env,

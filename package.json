@@ -80,11 +80,12 @@
     "lint-package-json": "bun ./packages/scripts/src/lintPackageJson.ts",
     "lint-rust": "bash scripts/lint/check-rust.sh",
     "prepare": "husky",
-    "test": "bunx --bun --no-install turbo run test-client test-rust test-bun test-critical-css --cache=local:rw --output-logs=new-only --concurrency=1",
+    "test": "bunx --bun --no-install turbo run test-client test-rust test-bun test-critical-css test-ui-layout --cache=local:rw --output-logs=new-only --concurrency=1",
     "test-bun": "bun packages/testing/src/runTests.ts bun",
     "test-client": "bun run --cwd packages/client test",
     "test-critical-css": "bun packages/testing/src/runTests.ts critical-css",
     "test-rust": "bun packages/testing/src/runTests.ts rust",
+    "test-ui-layout": "bun packages/testing/src/runTests.ts ui-layout",
     "ui-screenshots": "bun packages/testing/src/runTests.ts ui-screenshots",
     "update": "bun ./packages/scripts/src/update.ts"
   },

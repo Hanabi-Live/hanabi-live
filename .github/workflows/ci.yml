@@ -110,7 +110,7 @@ jobs:
           - suite: rust
             tasks: test-rust
           - suite: bun
-            tasks: test-bun test-critical-css
+            tasks: test-bun test-critical-css test-ui-layout
     # The test runner starts its own PostgreSQL server from the runner image's binaries.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
