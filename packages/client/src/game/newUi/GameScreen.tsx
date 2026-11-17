@@ -377,12 +377,15 @@ export function GameScreen({
   // hands are too narrow, even after the parts beside them gave up their room (see
   // "getWideLayoutRoom"). How large the hands are depends on the players, the names, the chat, and
   // the size of the window, so it is measured, not a breakpoint. The phone layout cannot measure
-  // the wide layout. So when it starts, it keeps the size of the rest of the wide layout, and it
-  // ends when the hands would fit beside it again. A change to what is beside the hands (the chat
-  // or the variant's play stacks) tries the wide layout again.
+  // the wide layout. So when it starts, it keeps the size of the rest of the wide layout and the
+  // width of its names, and it ends when the hands would fit beside it again. The names are
+  // narrower in the phone layout, so a check with their width there would end the phone layout at
+  // once, and the screen would switch between the layouts on every frame. A change to what is
+  // beside the hands (the chat or the variant's play stacks) tries the wide layout again.
   const wideOther = useRef<{
     readonly width: number;
     readonly height: number;
+    readonly nameWidth: number;
     readonly beside: string;
   }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
@@ -406,19 +409,27 @@ export function GameScreen({
     }
 
     const { options } = state.metadata;
-    function getRoom(rowWidth: number, handsHeight: number) {
+    function getRoom(
+      rowWidth: number,
+      handsHeight: number,
+      wideNameWidth = nameWidth,
+    ) {
       return getWideLayoutRoom(
         rowWidth,
         handsHeight,
         options.numPlayers,
         getCardsPerHand(options),
-        nameWidth,
+        wideNameWidth,
         touch ? EMPATHY_TOGGLE_SPACE : 0,
       );
     }
 
-    function tooNarrow(rowWidth: number, handsHeight: number) {
-      return getRoom(rowWidth, handsHeight).handsTooNarrow;
+    function tooNarrow(
+      rowWidth: number,
+      handsHeight: number,
+      wideNameWidth = nameWidth,
+    ) {
+      return getRoom(rowWidth, handsHeight, wideNameWidth).handsTooNarrow;
     }
 
     if (!handsTooNarrow) {
@@ -442,6 +453,7 @@ export function GameScreen({
         wideOther.current = {
           width: root.clientWidth - rowWidth,
           height: root.clientHeight - handsHeight,
+          nameWidth,
           beside,
         };
         setHandsTooNarrow(true);
@@ -456,6 +468,7 @@ export function GameScreen({
       || !tooNarrow(
         root.clientWidth - other.width,
         root.clientHeight - other.height,
+        other.nameWidth,
       )
     ) {
       setHandsTooNarrow(false);
