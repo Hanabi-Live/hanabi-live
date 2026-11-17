@@ -187,8 +187,9 @@ that have not been played yet and have only one copy remaining.)
 - The leader can right-click on a card to highlight it with an arrow (to point
   out things to the other players).
   - In a solo replay, right-clicking on a card draws an arrow too.
-  - The leader can also right-click on a player's name, or on the discard pile
-    beside its cards.
+  - Besides cards, the arrow can point at a player's name, the deck, the discard
+    pile, the turn, the score, the maximum score, the clue count, each strike,
+    the pace, the efficiency, and the needed efficiency.
   - During a game, players can create "local" arrows by Ctrl + right-clicking.
     These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom
