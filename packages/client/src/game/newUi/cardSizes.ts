@@ -231,20 +231,20 @@ export function getWideLayoutRoom(
     + HAND_BOX_HORIZONTAL_PADDING
     + CARD_GAP * (cardsPerHand - 1)
     + cardWidth * cardsPerHand;
-  let missing = neededWidth - handsWidth;
+  // The hands cannot use more than their maximum width, so the parts beside them give up no room
+  // for more than that.
+  const usableWidth = Math.min(neededWidth, WIDE_HANDS_MAX_WIDTH);
+  let missing = usableWidth - handsWidth;
   if (missing <= 0) {
     // The right column takes the width that the hands do not use, so that the hands do not have
     // empty space beside them.
     return {
       ...widest,
-      handsColumnMaxWidth: Math.min(
-        Math.ceil(neededWidth),
-        WIDE_HANDS_MAX_WIDTH,
-      ),
+      handsColumnMaxWidth: Math.ceil(usableWidth),
       discardColumnWidth:
         DISCARD_COLUMN_WIDTH.NORMAL
         + clamp(
-          Math.floor(roomForHands - neededWidth),
+          Math.floor(roomForHands - usableWidth),
           0,
           DISCARD_COLUMN_WIDTH.MAX - DISCARD_COLUMN_WIDTH.NORMAL,
         ),
