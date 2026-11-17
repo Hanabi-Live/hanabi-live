@@ -1697,30 +1697,47 @@ const TOKENS_BOX_CLASS = `tw:relative tw:flex tw:flex-col tw:items-center tw:jus
  */
 export const TABLE_TOKENS_HEIGHT = PLAY_AREA_GAP + 8 + 34 + 8 + 28 + 8;
 
-/**
- * The color of the clue count: it stands out only at the limits, and with one clue left, as on the
- * classic screen. "Real life mode" leaves the colors out.
- */
-function getClueCountClass(
+/** The states of the clue count that change what the team can do, or warn before they do. */
+type ClueLimit = "max" | "one" | "none";
+
+function getClueLimit(
   atMaxClues: boolean,
   outOfClues: boolean,
   oneClueLeft: boolean,
   realLifeMode: boolean,
-): string {
+): ClueLimit | undefined {
   if (realLifeMode) {
-    return "tw:text-game-text";
+    return undefined;
   }
   if (atMaxClues) {
-    return "tw:text-clue";
+    return "max";
   }
   if (outOfClues) {
-    return "tw:text-game-muted";
+    return "none";
   }
   if (oneClueLeft) {
-    return "tw:text-game-caution";
+    return "one";
   }
-  return "tw:text-game-text";
+  return undefined;
 }
+
+/**
+ * The badge behind the clue count. It is filled only at a limit, so that a limit shows as a solid
+ * shape and not only as a color of the number: the color of clues at the maximum, yellow with one
+ * clue left, and red with none.
+ */
+const CLUE_BADGE_CLASSES = {
+  max: "tw:bg-clue tw:text-card-ink",
+  one: "tw:bg-game-caution tw:text-card-ink",
+  none: "tw:bg-critical tw:text-white",
+} as const satisfies Record<ClueLimit, string>;
+
+/** The badge pops when the clue count reaches a limit. */
+const CLUE_BADGE_POP_MILLISECONDS = 300;
+const CLUE_BADGE_POP_SCALE = 1.3;
+
+/** An ease that goes a little past its end and comes back, so that the pop settles. */
+const OVERSHOOT_EASING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 /**
  * The tooltip of the clue tokens, in HTML. It gives the count out of the maximum. Under it, a
@@ -1785,6 +1802,7 @@ export function TableTokens({
   outOfClues,
   oneClueLeft,
   realLifeMode,
+  reducedMotion,
   strikes,
   strikesHidden,
   strikeSegments,
@@ -1806,6 +1824,9 @@ export function TableTokens({
    * Whether the "Real life mode" setting is on, which leaves out the warnings of the clue count.
    */
   readonly realLifeMode: boolean;
+
+  /** Whether the "Reduced motion" setting is on, which leaves out the pop of the clue count. */
+  readonly reducedMotion: boolean;
   readonly strikes: number;
 
   /**
@@ -1824,6 +1845,25 @@ export function TableTokens({
   /** Where the box sits in its column or row. */
   readonly placementClass: string;
 }): React.JSX.Element {
+  const limit = getClueLimit(atMaxClues, outOfClues, oneClueLeft, realLifeMode);
+
+  // The badge pops when the count reaches a limit, but not when the screen opens.
+  const badgeRef = useRef<HTMLSpanElement>(null);
+  const shownLimit = useRef(limit);
+  useEffect(() => {
+    if (limit === shownLimit.current) {
+      return;
+    }
+    shownLimit.current = limit;
+    if (limit === undefined || reducedMotion) {
+      return;
+    }
+    badgeRef.current?.animate([{ scale: CLUE_BADGE_POP_SCALE }, { scale: 1 }], {
+      duration: CLUE_BADGE_POP_MILLISECONDS,
+      easing: OVERSHOOT_EASING,
+    });
+  }, [limit, reducedMotion]);
+
   return (
     <div className={`tw:shrink-0 ${placementClass} ${TOKENS_BOX_CLASS}`}>
       <section
@@ -1840,17 +1880,21 @@ export function TableTokens({
         )}
       >
         {/* One large number: the count that players check most. It stands out only at the
-            limits, where the rules change what the team can do: in the color of clues at the
-            maximum, when someone must clue, and gray with none, when no one can. It is yellow
-            with one clue left, as a warning before the limit. */}
-        <ClueTokenIcon className="tw:size-[24px]" />
+            limits, where the rules change what the team can do, and with one clue left, as a
+            warning before the limit (see "CLUE_BADGE_CLASSES"). */}
+        <ClueTokenIcon className="tw:size-[24px]" empty={limit === "none"} />
         <span
-          className={`tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues, oneClueLeft, realLifeMode)}`}
-          // A spark flies to the count when a completed stack gives a clue back (see
-          // "scoreMotion.ts").
-          data-clue-count
+          className={`tw:flex tw:h-[34px] tw:min-w-[34px] tw:items-center tw:justify-center tw:rounded-game-control tw:px-1.5 ${limit === undefined ? "tw:text-game-text" : CLUE_BADGE_CLASSES[limit]}`}
+          ref={badgeRef}
         >
-          {clues}
+          <span
+            className="tw:text-[34px] tw:leading-none tw:font-extrabold"
+            // A spark flies to the count when a completed stack gives a clue back (see
+            // "scoreMotion.ts").
+            data-clue-count
+          >
+            {clues}
+          </span>
         </span>
       </section>
       <section aria-label="Strikes">
@@ -1926,15 +1970,6 @@ export function TableTokens({
           })}
         </div>
       </section>
-      {/* With no clues, a white dashed border around the box shows that no one can give a clue, as
-          the discard pile has one at the maximum to show that no one can discard. It is last, so
-          that the well does not darken it. "Real life mode" leaves it out. */}
-      {outOfClues && !realLifeMode && (
-        <div
-          aria-hidden="true"
-          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:outline-2 tw:-outline-offset-2 tw:outline-game-text tw:outline-dashed"
-        />
-      )}
     </div>
   );
 }

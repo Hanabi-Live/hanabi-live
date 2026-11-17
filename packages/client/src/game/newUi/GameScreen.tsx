@@ -1041,6 +1041,7 @@ export function GameScreen({
     onShowStrike: showStrike,
     outOfClues: visibleState.clueTokens < getClueCost(variant),
     realLifeMode: settings.realLifeMode,
+    reducedMotion: settings.reducedMotion,
     strikes: visibleState.strikes.length,
     strikeSegments: getStrikeSegments(state),
     strikesHidden: scoreHidden,

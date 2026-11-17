@@ -34,17 +34,20 @@ const RAYS_PATH = Array.from({ length: RAY_COUNT }, (_, index) => {
 
 /**
  * A clue token, as in the physical game: a dark disc with a burst of rays in the color of clues. A
- * thin rim in the color of clues shows the disc's edge on the dark table.
+ * thin rim in the color of clues shows the disc's edge on the dark table. An empty token has no
+ * rays and a gray rim, so that the shape shows that the team has no clues, not only the color.
  */
 export function ClueTokenIcon({
   className,
+  empty = false,
 }: {
   readonly className: string;
+  readonly empty?: boolean;
 }): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"
-      className={`tw:shrink-0 tw:text-clue ${className}`}
+      className={`tw:shrink-0 ${empty ? "tw:text-game-muted" : "tw:text-clue"} ${className}`}
       viewBox="0 0 24 24"
     >
       <circle
@@ -55,7 +58,7 @@ export function ClueTokenIcon({
         stroke="currentColor"
         strokeWidth={0.8}
       />
-      <path d={RAYS_PATH} fill="currentColor" />
+      {!empty && <path d={RAYS_PATH} fill="currentColor" />}
     </svg>
   );
 }
