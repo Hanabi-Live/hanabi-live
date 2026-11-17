@@ -384,9 +384,13 @@ export function GameScreen({
   }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
   const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
+  /** The width of the screen at the last render, to tell when the window gets narrower. */
+  const screenWidth = useRef<number | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
+    const previousScreenWidth = screenWidth.current;
+    screenWidth.current = root?.clientWidth;
     if (
       narrowWindow
       || root === null
@@ -399,7 +403,7 @@ export function GameScreen({
     }
 
     const { options } = state.metadata;
-    function tooNarrow(rowWidth: number, handsHeight: number) {
+    function getRoom(rowWidth: number, handsHeight: number) {
       return getWideLayoutRoom(
         rowWidth,
         handsHeight,
@@ -407,7 +411,11 @@ export function GameScreen({
         getCardsPerHand(options),
         nameWidth,
         touch ? EMPATHY_TOGGLE_SPACE : 0,
-      ).handsTooNarrow;
+      );
+    }
+
+    function tooNarrow(rowWidth: number, handsHeight: number) {
+      return getRoom(rowWidth, handsHeight).handsTooNarrow;
     }
 
     if (!handsTooNarrow) {
@@ -415,6 +423,18 @@ export function GameScreen({
       // their sizes were observed.
       const rowWidth = tableElement.clientWidth - playAreaElement.clientWidth;
       const handsHeight = handsElement.clientHeight;
+      // When the window gets narrower, the chat beside the table collapses before the hands get
+      // smaller. The screen's scale does not count, since the layout does not change with it. A
+      // player who opens the chat again keeps it open until the window gets narrower again.
+      if (
+        chatBeside
+        && previousScreenWidth !== undefined
+        && root.clientWidth < previousScreenWidth
+        && getRoom(rowWidth, handsHeight).handsNarrowed
+      ) {
+        gameChat.hide();
+        return;
+      }
       if (tooNarrow(rowWidth, handsHeight)) {
         wideOther.current = {
           width: root.clientWidth - rowWidth,

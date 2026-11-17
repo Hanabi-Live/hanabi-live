@@ -171,6 +171,12 @@ export interface WideLayoutRoom {
   readonly tableColumnGap: number;
 
   /**
+   * Whether the hands are narrower than they can use when everything beside them has given up its
+   * room, so that their cards get smaller.
+   */
+  readonly handsNarrowed: boolean;
+
+  /**
    * Whether the hands are still too narrow when everything beside them has given up its room: the
    * width makes the cards smaller than their height allows. Then the game screen uses the phone
    * layout. When even the largest cards do not take all of the height, such as with two players,
@@ -202,6 +208,7 @@ export function getWideLayoutRoom(
     nameColumnMaxWidth: NAME_COLUMN_MAX_WIDTH.MAX,
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
+    handsNarrowed: false,
     handsTooNarrow: false,
   };
   if (rowWidth <= 0 || handsHeight <= 0) {
@@ -277,6 +284,7 @@ export function getWideLayoutRoom(
     tableColumnGap:
       TABLE_COLUMN_GAP.MAX
       - spacingShare * (TABLE_COLUMN_GAP.MAX - TABLE_COLUMN_GAP.MIN),
+    handsNarrowed: missing > 0,
     handsTooNarrow: cardWidth < HAND_CARD_WIDTH.MAX && missing > 0,
   };
 }
