@@ -351,10 +351,11 @@ export function ClueMenu({
     >
       {!opensBelow && measured !== undefined && (
         // It covers the outline where the drawer joins the hand, but not the ends of the hand's own
-        // outline.
+        // outline. It reaches 1px to each side of the outline, because a zoomed screen does not
+        // draw the outline and this line on the same pixels.
         <span
           aria-hidden="true"
-          className="tw:absolute tw:left-0 tw:w-px tw:bg-game-panel"
+          className="tw:absolute tw:-left-px tw:w-[3px] tw:bg-game-panel"
           style={{
             ...(alignBottom ? { bottom: 1 } : { top: 1 }),
             height: measured.handHeight - 2,
