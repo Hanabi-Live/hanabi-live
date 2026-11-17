@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Publish approved CI bundles for unauthenticated production downloads."""
+"""Publish a deployed release, which new installations download without signing in."""
 
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -21,7 +20,7 @@ def optional_release(github, path):
         raise
 
 
-def publish(directory, revision, run_url):
+def publish(directory, revision):
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid release revision.")
     archive = directory / f"hanabi-live-{revision}-linux-amd64.tar.gz"
     checksum = archive.with_name(archive.name + ".sha256").read_text()
@@ -61,7 +60,7 @@ def publish(directory, revision, run_url):
             require(existing["target_commitish"] == revision, "Existing draft identity differs.")
         else:
             gh("create", tag, "--draft", "--target", revision,
-               "--title", f"Server {revision[:9]}", "--notes", f"Approved CI build: {run_url}")
+               "--title", f"Server {revision[:9]}", "--notes", "The release that runs on hanab.live.")
         gh("upload", tag, str(archive), str(sums), "--clobber")
         gh("edit", tag, "--draft=false", f"--latest={str(promote).lower()}")
         return
@@ -70,14 +69,8 @@ def publish(directory, revision, run_url):
 
 
 def main():
-    require(os.environ.get("GITHUB_EVENT_NAME") == "push"
-            and os.environ.get("GITHUB_REF") == "refs/heads/main"
-            and os.environ.get("GITHUB_REPOSITORY") == REPOSITORY,
-            "Public releases must be published by approved main CI.")
-    require(len(sys.argv) == 2, "Usage: publish_release.py ARTIFACT_DIRECTORY")
-    run_url = (f"https://github.com/{REPOSITORY}/actions/runs/"
-               f"{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ['GITHUB_RUN_ATTEMPT']}")
-    publish(Path(sys.argv[1]), os.environ["GITHUB_SHA"], run_url)
+    require(len(sys.argv) == 3, "Usage: publish_release.py RELEASE_DIRECTORY REVISION")
+    publish(Path(sys.argv[1]), sys.argv[2])
 
 
 if __name__ == "__main__":

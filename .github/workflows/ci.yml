@@ -192,73 +192,6 @@ jobs:
       - name: Check SQLx metadata against a disposable schema
         run: python3 sqlx_schema.py
 
-  native-release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/workflows/setup-bun
-      - uses: ./.github/workflows/setup-rust
-        id: setup-rust
-      - name: Add the static Rust target
-        working-directory: server
-        run: rustup target add x86_64-unknown-linux-musl
-      # Only "ring" compiles C, and the cache already holds it on an exact match.
-      - name: Install the musl C compiler
-        if: steps.setup-rust.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y musl-tools
-      - name: Build and verify immutable native release
-        run: bash install/build-release.sh dist/native
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: candidate-hanabi-live-${{ github.sha }}-linux-amd64
-          path: |
-            dist/native/*.tar.gz
-            dist/native/*.sha256
-          if-no-files-found: error
-          overwrite: true
-          retention-days: 7
-
-  publish-native-release:
-    # Installed deployment tooling identifies this job by its API-visible name.
-    name: publish_native_release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-    concurrency:
-      group: native-release-publication
-      cancel-in-progress: false
-    timeout-minutes: 5
-    needs: [client-build, server-build, lint, test, native-release]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: candidate-hanabi-live-${{ github.sha }}-linux-amd64
-          path: dist/native
-      - name: Verify candidate checksums before publication
-        working-directory: dist/native
-        run: sha256sum --check ./*.sha256
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: hanabi-live-${{ github.sha }}-linux-amd64
-          path: |
-            dist/native/*.tar.gz
-            dist/native/*.sha256
-          if-no-files-found: error
-          overwrite: true
-      - name: Publish anonymous release downloads
-        run: python3 install/publish_release.py dist/native
-        env:
-          GH_TOKEN: ${{ github.token }}
-
   deploy-docs-website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint]
@@ -309,16 +242,7 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs:
-      [
-        client-build,
-        server-build,
-        lint,
-        test,
-        native-release,
-        publish-native-release,
-        deploy-docs-website,
-      ]
+    needs: [client-build, server-build, lint, test, deploy-docs-website]
     if: failure() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:

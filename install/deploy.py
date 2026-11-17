@@ -1,4 +1,4 @@
-"""Deploy approved CI bundles to an already-running source-layout installation."""
+"""Deploy a release built from approved main to an already-running source-layout installation."""
 
 import argparse
 import fcntl
@@ -14,7 +14,6 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-import zipfile
 
 import release
 from release import GitHub, REPOSITORY
@@ -22,6 +21,8 @@ from release import GitHub, REPOSITORY
 
 RESERVE_BYTES = 256 * 1024 * 1024
 KEEP_DEPLOYMENTS = 5  # Replaced files from recent deployments are kept for manual rollback.
+# The CI jobs that must pass before a revision is deployed. A matrix job is named "lint (rust)".
+GATE_JOBS = ("client-build", "server-build", "lint", "test")
 
 
 def require(condition, message):
@@ -44,26 +45,25 @@ def matching_runs(runs, revision):
     ]
 
 
-def publication_job(github, run):
-    matches = []
+def gate_jobs(github, run):
+    """The jobs of the run that the deployment waits for."""
+    jobs = []
     page = 1
     while True:
         response = github.json(
             f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100&page={page}"
         )
-        matches.extend(job for job in response["jobs"]
-                       if job["name"] in ("publish-native-release", "publish_native_release"))
+        jobs.extend(job for job in response["jobs"]
+                    if any(job["name"] == name or job["name"].startswith(f"{name} (")
+                           for name in GATE_JOBS))
         if page * 100 >= response["total_count"]:
             break
         page += 1
-    require(len(matches) <= 1, "Ambiguous native release publication jobs; refusing deployment.")
-    if not matches:
-        return None
-    job = matches[0]
-    require(job["run_id"] == run["id"] and job["run_attempt"] == run["run_attempt"]
-            and job["head_sha"] == run["head_sha"],
-            "Publication job belongs to a different CI run, attempt, or revision.")
-    return job
+    for job in jobs:
+        require(job["run_id"] == run["id"] and job["run_attempt"] == run["run_attempt"]
+                and job["head_sha"] == run["head_sha"],
+                "A CI job belongs to a different run, attempt, or revision.")
+    return jobs
 
 
 def await_approved_run(github, revision):
@@ -87,15 +87,19 @@ def await_approved_run(github, revision):
                 run = max(matches, key=lambda run: run["id"])
                 detail = (f"CI for main {revision}: https://github.com/{REPOSITORY}"
                           f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}")
-                job = publication_job(github, run)
-                if job is not None:
+                jobs = gate_jobs(github, run)
+                for job in jobs:
                     detail += f"\n{job['name']}: {job['conclusion'] or job['status']}"
-                    if job["status"] == "completed":
-                        require(job["conclusion"] == "success",
-                                f"Release publication did not succeed; no deployment performed.\n{detail}")
-                        return run
+                failed = [job["name"] for job in jobs
+                          if job["status"] == "completed" and job["conclusion"] != "success"]
+                require(not failed, f"CI checks failed; no deployment performed.\n{detail}")
+                missing = [name for name in GATE_JOBS
+                           if not any(job["name"] == name or job["name"].startswith(f"{name} (")
+                                      for job in jobs)]
+                if not missing and all(job["status"] == "completed" for job in jobs):
+                    return run
                 require(run["status"] != "completed",
-                        f"CI finished without successful release publication; no deployment performed.\n{detail}")
+                        f"CI finished without the jobs: {', '.join(missing)}\n{detail}")
             else:
                 detail = (f"No CI run found for main {revision}; no older release was selected. Check "
                           f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
@@ -108,29 +112,15 @@ def await_approved_run(github, revision):
         signal.signal(signal.SIGALRM, previous_handler)
 
 
-def download(github, run, revision, work):
-    name = f"hanabi-live-{revision}-linux-amd64"
-    artifacts = github.json(f"/actions/runs/{run['id']}/artifacts?per_page=100")
-    matches = [item for item in artifacts["artifacts"] if item["name"] == name and not item["expired"]]
-    require(len(matches) == 1, "The approved Rust release artifact is missing or ambiguous.")
-    artifact = matches[0]
-    require(shutil.disk_usage(work).free > artifact["size_in_bytes"] * 4 + RESERVE_BYTES,
+def stage_upload(archive, revision, work):
+    """Verifies the uploaded release of the revision and stages it."""
+    name = f"hanabi-live-{revision}-linux-amd64.tar.gz"
+    require(archive.name == name, f"The uploaded release is not for main {revision}: {archive.name}")
+    checksum = archive.with_name(name + ".sha256").read_text().split()
+    require(len(checksum) == 2 and re.fullmatch(r"[a-f0-9]{64}", checksum[0])
+            and checksum[1] == name, "Invalid release checksum file.")
+    require(shutil.disk_usage(work).free > archive.stat().st_size * 4 + RESERVE_BYTES,
             "Insufficient disk headroom for staging and backups.")
-    archive = work / f"{name}.tar.gz"
-    checksum_file = archive.name + ".sha256"
-    zip_path = work / "artifact.zip"
-    with github.open(f"/actions/artifacts/{artifact['id']}/zip") as response, zip_path.open("wb") as output:
-        shutil.copyfileobj(response, output)
-    with zipfile.ZipFile(zip_path) as bundle:
-        require(sorted(bundle.namelist()) == sorted([archive.name, checksum_file]),
-                "Unexpected release artifact contents.")
-        require(sum(info.file_size for info in bundle.infolist()) + RESERVE_BYTES
-                < shutil.disk_usage(work).free, "Insufficient disk space to unpack the artifact.")
-        checksum = bundle.read(checksum_file).decode().split()
-        require(len(checksum) == 2 and re.fullmatch(r"[a-f0-9]{64}", checksum[0])
-                and checksum[1] == archive.name, "Invalid release checksum file.")
-        with bundle.open(archive.name) as source, archive.open("wb") as output:
-            shutil.copyfileobj(source, output)
     store = work / "staging"
     release.init_root(str(store))
     release.stage(store, archive, checksum[0])
@@ -138,10 +128,6 @@ def download(github, run, revision, work):
     metadata = release.verify(staged)
     require(metadata["revision"] == revision
             and metadata.get("dirty") is False, "Release identity or clean-build provenance differs.")
-    require(re.fullmatch(
-        re.escape(f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}/attempts/") + r"[1-9][0-9]*",
-        metadata.get("workflowRun", ""),
-    ), "Release was built by a different workflow run.")
     return staged, metadata
 
 
@@ -232,7 +218,7 @@ def publish(root, staged, metadata):
 
 
 def prune(backups):
-    """Keep records of finished deployments, but only recent replaced files and no downloads.
+    """Keep records of finished deployments, but only recent replaced files and no staged releases.
 
     Deployments that failed after changing production are evidence, so they are left as they are.
     One that stopped while staging changed nothing, so only its record is kept.
@@ -297,7 +283,7 @@ def await_restart(port, revision, timeout=180):
     raise ValueError(f"Restart was not verified within {timeout} seconds. {last}")
 
 
-def deploy(root, check, apply_migrations):
+def deploy(root, archive, check, apply_migrations):
     require(not (root / "release.json").exists(),
             "This script is for the running source-layout installation, not the opt-in release store.")
     require((root / ".env").is_file(), "Missing production .env.")
@@ -341,11 +327,11 @@ def deploy(root, check, apply_migrations):
             save()
             print(value, flush=True)
 
-        # Record the deployment before downloading, so that pruning can find a failed download.
+        # Record the deployment before staging, so that pruning can find a failed one.
         save()
 
         try:
-            staged, metadata = download(github, run, revision, work)
+            staged, metadata = stage_upload(archive, revision, work)
             pending = prepare(root, staged)
             if check:
                 print(f"Preflight passed; pending migrations: {pending}. No deployment or restart performed.")
@@ -363,7 +349,7 @@ def deploy(root, check, apply_migrations):
                 phase("migrating")
                 subprocess.run([str(staged / "hanabi-live"), "migrate", "apply"], check=True)
             phase("publishing")
-            # CI supplied built artifacts; post-merge dependency/build hooks must not run on production.
+            # The release holds the built files; post-merge dependency/build hooks must not run here.
             subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "merge", "--ff-only", revision],
                            cwd=root, check=True)
             publish(root, staged, metadata)
@@ -377,7 +363,7 @@ def deploy(root, check, apply_migrations):
             print(f"Deployed {revision}; running revision, paired files, and recovery health verified.")
             print("Review fresh server logs.")
             prune(backups)
-        except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile):
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError):
             print(f"Deployment stopped in phase {record['phase']}. Preserve {work}; "
                   "no automatic rollback, forced restart, or state deletion was attempted.", file=sys.stderr)
             raise
@@ -386,15 +372,17 @@ def deploy(root, check, apply_migrations):
 def main():
     require(sys.version_info >= (3, 12), "Python 3.12+ is required.")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="Download and verify without publication or restart")
+    parser.add_argument("--archive", type=Path, required=True,
+                        help="The release of main, with its .sha256 file beside it")
+    parser.add_argument("--check", action="store_true", help="Stage and verify without publication or restart")
     parser.add_argument("--apply-migrations", action="store_true", help="Approve pending forward migrations")
     args = parser.parse_args()
     os.umask(0o077)
-    deploy(Path.cwd().resolve(), args.check, args.apply_migrations)
+    deploy(Path.cwd().resolve(), args.archive.resolve(), args.check, args.apply_migrations)
 
 
 if __name__ == "__main__":
     try:
         main()
-    except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile) as error:
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         sys.exit(f"Deployment refused: {error}")

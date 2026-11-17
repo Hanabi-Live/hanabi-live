@@ -127,12 +127,6 @@ def manifest(directory):
         "revision": revision,
         "clientVersion": (directory / "public/js/bundles/version.txt").read_text().strip(),
         "dirty": dirty,
-        "workflowRun": (
-            f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
-            f"{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ['GITHUB_RUN_ATTEMPT']}"
-            if os.environ.get("GITHUB_ACTIONS") == "true"
-            else "local-untrusted"
-        ),
         "bunVersion": subprocess.check_output(["bun", "--version"], text=True).strip(),
         "files": files_in(directory),
         "rustTarget": "x86_64-unknown-linux-musl",
@@ -140,10 +134,6 @@ def manifest(directory):
             ["rustc", "--version"], cwd="server", text=True
         ).strip(),
     }
-    require(
-        os.environ.get("GITHUB_ACTIONS") != "true" or metadata["dirty"] is False,
-        "CI releases require a verified clean source checkout",
-    )
     (directory / "release.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
 

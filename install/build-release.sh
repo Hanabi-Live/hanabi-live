@@ -8,13 +8,6 @@ if (($# != 1)) || [[ -e "$1" ]]; then
   echo "Usage: $0 NEW_OUTPUT_DIRECTORY" >&2
   exit 1
 fi
-if [[ ${GITHUB_ACTIONS:-false} == true ]]; then
-  git diff --exit-code HEAD
-  if [[ -n $(git ls-files --others --exclude-standard) ]]; then
-    echo "CI releases require a clean checkout." >&2
-    exit 1
-  fi
-fi
 revision=$(bash scripts/dev/get-version.sh)
 mkdir -p "$1"
 output=$(cd -- "$1" && pwd)

@@ -13,7 +13,7 @@ for argument in "$@"; do
     --apply-migrations) ;;
     -h | --help)
       echo "Usage: $0 [--check] [--apply-migrations]"
-      echo "Deploy approved main to root@hanab.live:/home/hanabi/hanabi-live over SSH."
+      echo "Build main, then deploy it to root@hanab.live:/home/hanabi/hanabi-live over SSH once CI passes."
       echo "--check verifies without deploying; --apply-migrations approves pending migrations."
       exit 0
       ;;
@@ -27,20 +27,47 @@ done
 # How long the replacement server must run without logging a failure after the restart.
 FAILURE_SCAN_SECONDS=60
 
+# Build the pushed main from a clean copy, so that local changes cannot reach production. The build
+# cache outlives the copy, so that later builds are faster.
+git -C "$DIR" fetch --quiet origin main
+revision=$(git -C "$DIR" rev-parse FETCH_HEAD)
+build=$(mktemp --directory)
+cleanup() {
+  git -C "$DIR" worktree remove --force "$build/source" 2> /dev/null || true
+  rm -rf -- "$build"
+}
+trap cleanup EXIT
+echo "Building main $revision."
+git -C "$DIR" worktree add --quiet --detach "$build/source" "$revision"
+(
+  cd "$build/source"
+  bun install --frozen-lockfile
+  CARGO_TARGET_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hanabi-live/release-target" \
+    bash install/build-release.sh "$build/release"
+)
+archive="hanabi-live-$revision-linux-amd64.tar.gz"
+
 echo "Deployment target: root@hanab.live:/home/hanabi/hanabi-live"
 started=$(date +%s)
+# Upload the release as the account that owns the installation.
+upload=$(ssh -T root@hanab.live \
+  'sudo --user=hanabi mktemp --directory /home/hanabi/hanabi-live/backups/upload-XXXXXXXX')
+for file in "$archive" "$archive.sha256"; do
+  ssh -T root@hanab.live "sudo --user=hanabi tee $upload/$file > /dev/null" < "$build/release/$file"
+done
+token=${GH_TOKEN:-${GITHUB_TOKEN_PERSONAL_CLASSIC:-${GITHUB_TOKEN:-}}}
 # Send credentials on encrypted stdin, never in SSH command-line arguments.
 if {
-  token=${GH_TOKEN:-${GITHUB_TOKEN_PERSONAL_CLASSIC:-${GITHUB_TOKEN:-}}}
   if [[ -n $token ]]; then
     printf 'export GH_TOKEN=%q\n' "$token"
   fi
+  printf 'UPLOAD=%q ARCHIVE=%q\n' "$upload" "$archive"
   cat << 'REMOTE'
 set -o errexit -o nounset -o pipefail
 cd /home/hanabi/hanabi-live
 tools=$(mktemp -d)
 chmod 755 "$tools"
-trap 'rm -f "$tools/deploy.py" "$tools/release.py"; rmdir "$tools"' EXIT
+trap 'rm -f "$tools/deploy.py" "$tools/release.py"; rmdir "$tools"; rm -rf -- "$UPLOAD"' EXIT
 REMOTE
   # Run this checkout's deployment tools, which may be newer than the production checkout.
   for name in deploy release; do
@@ -50,7 +77,7 @@ REMOTE
   done
   cat << 'REMOTE'
 # Deploy as the account that owns the installation, so it can read what is published.
-sudo --user=hanabi --preserve-env=GH_TOKEN python3 -B "$tools/deploy.py" "$@"
+sudo --user=hanabi --preserve-env=GH_TOKEN python3 -B "$tools/deploy.py" --archive "$UPLOAD/$ARCHIVE" "$@"
 REMOTE
 } | ssh -T root@hanab.live "bash -l -s -- $*"; then
   if [[ $check == false ]]; then
@@ -83,6 +110,9 @@ REMOTE
       exit 1
     fi
     echo "The server logged no failures."
+    # New installations download the latest release.
+    GH_TOKEN=$token python3 "$DIR/install/publish_release.py" "$build/release" "$revision"
+    echo "Published the release on GitHub."
   fi
 else
   status=$?

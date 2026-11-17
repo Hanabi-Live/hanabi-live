@@ -68,19 +68,22 @@ nullable outer-join columns.
 
 ## Immutable releases
 
-CI publishes `hanabi-live-<revision>-linux-amd64`. It contains the statically
-linked Rust binary named `hanabi-live` (which embeds the schema and migrations),
-paired client assets, and the word list. No Node, Cargo, or compiler is needed
-on the deployment host; installation uses Python, Bash, and PostgreSQL.
+A release, `hanabi-live-<revision>-linux-amd64`, contains the statically linked
+Rust binary named `hanabi-live` (which embeds the schema and migrations), paired
+client assets, and the word list. No Node, Cargo, or compiler is needed on the
+deployment host; installation uses Python, Bash, and PostgreSQL.
 
-To build locally on Linux amd64, install `musl-tools`, add Rust's
-`x86_64-unknown-linux-musl` target, and run:
+Building a release needs Linux amd64, `musl-tools`, and Rust's
+`x86_64-unknown-linux-musl` target. To build one, run:
 
 ```sh
 bash install/build-release.sh dist/release
 ```
 
-Deploy releases with `./deploy.sh` from the repository root.
+Deploy with `./deploy.sh` from the repository root. It builds the release of
+`main` on your computer, waits for CI to pass, and uploads the release over SSH.
+After the deployment, it publishes the release on GitHub, where new
+installations download it.
 
 ## Storage and ownership
 
