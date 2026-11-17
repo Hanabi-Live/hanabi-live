@@ -170,8 +170,9 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   const text = element.value;
 
   // If this is a pregame or game input, report to the server that we are typing. (But do not spam
-  // the server with more than one message per interval.)
-  if (room !== "lobby") {
+  // the server with more than one message per interval.) The input of a table that we left can
+  // still have the focus while it is hidden.
+  if (room !== "lobby" && globals.tableId !== undefined) {
     const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
@@ -204,6 +205,11 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
 }
 
 function send(room: string, element: HTMLInputElement) {
+  // A hidden input of a table that we left can still have the focus.
+  if (room.startsWith("table") && globals.tableId === undefined) {
+    return;
+  }
+
   const msg = element.value.trim();
 
   // Validate that they are accidentally broadcasting a private message reply.

@@ -62,11 +62,15 @@ export function Lobby(): React.JSX.Element {
   const inPregame = screen === Screen.PreGame;
 
   // The pre-game chat takes room from the lobby chat, which keeps it scrolled to the bottom.
-  // Joining a table moves the focus to its chat.
+  // Joining a table moves the focus to its chat, and leaving it takes the focus away, since the
+  // hidden chat would still receive what the player types.
   useEffect(() => {
     scrollLobbyChatToBottom();
+    const input = getHtmlInputElement(`#${PREGAME_CHAT_INPUT_ID}`);
     if (inPregame) {
-      getHtmlInputElement(`#${PREGAME_CHAT_INPUT_ID}`).focus();
+      input.focus();
+    } else if (document.activeElement === input) {
+      input.blur();
     }
   }, [inPregame]);
 

@@ -6,7 +6,12 @@ import { defaultOptions } from "@hanabi-live/game";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { add, addSettingsSuggestion } from "../../chat.ts";
+import {
+  add,
+  addSettingsSuggestion,
+  onChatInput,
+  onChatKeyDown,
+} from "../../chat.ts";
 import { screenChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
@@ -130,5 +135,20 @@ describe("PregameChat", () => {
     expect(acceptOptionsFromGuest).toHaveBeenCalledWith(suggestion);
     expect(button.textContent).toBe("sent");
     expect(button.disabled).toBe(true);
+  });
+
+  // The hidden input can keep the focus after we leave the table.
+  test("ignores what is typed after we leave the table", () => {
+    const input = screen.getByPlaceholderText<HTMLInputElement>("Chat");
+    input.value = "hello";
+    expect(() => {
+      onChatInput(input, "table");
+      onChatKeyDown(
+        input,
+        "table",
+        new KeyboardEvent("keydown", { key: "Enter" }),
+      );
+    }).not.toThrow();
+    expect(input.value).toBe("hello");
   });
 });
