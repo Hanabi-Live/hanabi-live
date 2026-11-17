@@ -826,25 +826,39 @@ function TurnsControls({
         )}
       </div>
       <div className={RIGHT_CLASS}>
-        {/* On a turn after the game ended, the button is disabled instead of hidden, so that the
-            bar does not change its shape on the last turn. */}
-        {mayEnterHypothetical && (
-          <IconButton
-            disabled={afterGameEnd}
-            icon="fa-flask"
-            iconClassName="tw:text-game-hypothetical"
-            label="Enter hypothetical"
-            onClick={hypothetical.startHypothetical}
-            tooltip={
-              afterGameEnd
-                ? "The game is over on this turn. Go back a turn to enter a hypothetical."
-                : "Enter hypothetical: try out other moves from this turn."
-            }
-          />
-        )}
+        {/* The button is disabled instead of hidden while we follow the leader, and on a turn
+            after the game ended, so that the timeline does not change its width when we stop
+            following or reach the last turn. */}
+        <IconButton
+          disabled={!mayEnterHypothetical || afterGameEnd}
+          icon="fa-flask"
+          iconClassName="tw:text-game-hypothetical"
+          label="Enter hypothetical"
+          onClick={hypothetical.startHypothetical}
+          tooltip={enterHypotheticalTooltip(
+            mayEnterHypothetical ? undefined : shared?.leader,
+            afterGameEnd,
+          )}
+        />
       </div>
     </Controls>
   );
+}
+
+/**
+ * @param followedLeader The shared replay leader, if we follow them.
+ * @param afterGameEnd Whether the turn on screen is after the game ended.
+ */
+function enterHypotheticalTooltip(
+  followedLeader: string | undefined,
+  afterGameEnd: boolean,
+): string {
+  if (followedLeader !== undefined) {
+    return `You follow ${followedLeader}. Stop following them to enter a hypothetical.`;
+  }
+  return afterGameEnd
+    ? "The game is over on this turn. Go back a turn to enter a hypothetical."
+    : "Enter hypothetical: try out other moves from this turn.";
 }
 
 /** A move of the shared replay leader, to a later turn or an earlier one. */
