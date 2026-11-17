@@ -8,7 +8,13 @@ import type {
 } from "@hanabi-live/game";
 import { getTotalCardsInDeck, MAX_CLUES, MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
@@ -1406,15 +1412,20 @@ export function DiscardPile({
         } ${zoneState === "idle" ? "" : "tw:opacity-0"}`}
         style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       />
-      {/* A faint trash can behind the cards names the pile without a heading. */}
-      <i
-        aria-hidden="true"
-        className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
-          isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
-        }`}
-        data-discard-pile-icon
-        style={{ fontSize: cardWidth * 1.125 }}
-      />
+      {/* A faint trash can behind the cards names the pile without a heading. At max clues, a
+          sign in the color of clues takes its place, to show that no one can discard. */}
+      {showNoDiscard ? (
+        <NoDiscardSign reducedMotion={reducedMotion} size={cardWidth * 1.5} />
+      ) : (
+        <i
+          aria-hidden="true"
+          className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
+            isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
+          }`}
+          data-discard-pile-icon
+          style={{ fontSize: cardWidth * 1.125 }}
+        />
+      )}
       <div
         className={`tw:relative tw:flex tw:flex-col ${
           isRefusing(zoneState) ? "tw:opacity-60" : ""
@@ -1474,15 +1485,11 @@ export function DiscardPile({
         text="Discard"
         unavailableText="No discarding at max clues"
       />
-      {/* At max clues, a white dashed border shows that no one can discard, before anyone picks up
-          a card and while they drag one. The clue tokens have the same border with no clues. It is
-          last, so that the well does not darken it. "Real life mode" leaves it out. */}
-      {showNoDiscard && (
-        <div
-          aria-hidden="true"
-          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:outline-2 tw:-outline-offset-2 tw:outline-game-text tw:outline-dashed"
-        />
-      )}
+      {/* At max clues, a dashed border in the color of clues shows that no one can discard,
+          before anyone picks up a card and while they drag one. It has the color of the clue
+          count, which is the reason. It is last, so that the well does not darken it. "Real life
+          mode" leaves it out. */}
+      {showNoDiscard && <NoDiscardOutline reducedMotion={reducedMotion} />}
       {/* In a "Double Discard" situation, a yellow border warns the next player before they
           discard. */}
       {showDoubleDiscard && (
@@ -1509,6 +1516,139 @@ function getDiscardPileTooltip(
     : "Discard pile";
 }
 
+/** How long the discard pile pulses when the team gets to max clues, in milliseconds. */
+const NO_DISCARD_PULSE_MILLISECONDS = 900;
+
+/**
+ * The border and tint of the discard pile at max clues. When it shows, it pulses once in the color
+ * of clues, so that the players notice that no one can discard. "Reduced motion" leaves out the
+ * pulse.
+ */
+function NoDiscardOutline({
+  reducedMotion,
+}: {
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const outline = ref.current;
+    if (outline === null || reducedMotion) {
+      return undefined;
+    }
+
+    const animation = outline.animate(
+      [
+        { boxShadow: "inset 0 0 0 12px var(--clue-border)" },
+        { boxShadow: "inset 0 0 0 0 transparent" },
+      ],
+      {
+        duration: NO_DISCARD_PULSE_MILLISECONDS,
+        easing: "ease-out",
+      },
+    );
+    return () => {
+      animation.cancel();
+    };
+  }, [reducedMotion]);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-clue/8 tw:outline-2 tw:-outline-offset-2 tw:outline-clue tw:outline-dashed"
+      data-no-discard
+      ref={ref}
+    />
+  );
+}
+
+/**
+ * The faint sign behind the cards of the discard pile at max clues. It is the sign that shows over
+ * the pile when a player tries to discard then. When it shows, it pops in, except with "Reduced
+ * motion".
+ */
+function NoDiscardSign({
+  size,
+  reducedMotion,
+}: {
+  readonly size: number;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const sign = ref.current;
+    if (sign === null || reducedMotion) {
+      return undefined;
+    }
+
+    const animation = sign.animate(
+      [
+        {
+          opacity: 0,
+          scale: 0.6,
+        },
+        {
+          opacity: 1,
+          scale: 1.12,
+          offset: 0.6,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+        },
+      ],
+      {
+        duration: NO_DISCARD_PULSE_MILLISECONDS / 2,
+        easing: "ease-out",
+      },
+    );
+    return () => {
+      animation.cancel();
+    };
+  }, [reducedMotion]);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:opacity-40"
+      data-discard-pile-icon
+      style={{
+        width: size,
+        height: size,
+      }}
+    >
+      <NoEntrySvg className="tw:size-full tw:text-clue" ref={ref} />
+    </div>
+  );
+}
+
+/** A circle with a slash. */
+function NoEntrySvg({
+  className,
+  ref,
+}: {
+  readonly className: string;
+  readonly ref?: React.Ref<SVGSVGElement>;
+}): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      ref={ref}
+      viewBox="0 0 100 100"
+    >
+      <circle
+        cx={50}
+        cy={50}
+        fill="none"
+        r={45}
+        stroke="currentColor"
+        strokeWidth={8}
+      />
+      <path d="M18.2 18.2 81.8 81.8" stroke="currentColor" strokeWidth={8} />
+    </svg>
+  );
+}
+
 /**
  * The sign over the discard pile while the player holds a card over it and the team cannot discard.
  * It is a circle with a slash, not an X, because an X on this screen is a strike. It is in the
@@ -1518,21 +1658,7 @@ function getDiscardPileTooltip(
 function NoEntrySign(): React.JSX.Element {
   return (
     <div className="tw:pointer-events-none tw:absolute tw:inset-3 tw:z-10">
-      <svg
-        aria-hidden="true"
-        className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]"
-        viewBox="0 0 100 100"
-      >
-        <circle
-          cx={50}
-          cy={50}
-          fill="none"
-          r={45}
-          stroke="currentColor"
-          strokeWidth={8}
-        />
-        <path d="M18.2 18.2 81.8 81.8" stroke="currentColor" strokeWidth={8} />
-      </svg>
+      <NoEntrySvg className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]" />
     </div>
   );
 }

@@ -1035,6 +1035,18 @@ function getStates(): readonly State[] {
         await game.spendClues();
       },
     },
+    // It is the account's turn and the team has every clue token, so that the discard pile shows
+    // that no one can discard.
+    {
+      name: "new-ui-max-clues",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.returnToMaxClues();
+      },
+    },
     // The deck is empty, so that it shows the turns left in the final round.
     {
       name: "new-ui-empty-deck",
@@ -1815,6 +1827,11 @@ interface BobsGame {
    */
   readonly spendClues: () => Promise<void>;
   /**
+   * The players clue and discard in turn until it is the account's turn, the team has every clue
+   * token, and the discard pile has cards.
+   */
+  readonly returnToMaxClues: () => Promise<void>;
+  /**
    * The players take turns until the deck is empty: each plays a card if they can, or else discards
    * a card that the team can lose, or else gives a clue.
    */
@@ -2582,6 +2599,24 @@ async function createCast(
       }
     }
 
+    async function returnToMaxClues() {
+      for (;;) {
+        const events = await loadEvents(viewer, tableId);
+        const { player } = readTurn(events);
+        const clues =
+          MAX_CLUES
+          - events.filter((event) => event.type === "clue").length
+          + events.filter((event) => event.type === "discard").length;
+        const discards = events.filter(
+          (event) => event.type === "discard",
+        ).length;
+        if (clues === MAX_CLUES && discards > 0 && player === seat("account")) {
+          return;
+        }
+        await discardTurns(1);
+      }
+    }
+
     async function spendClues() {
       for (;;) {
         const events = await loadEvents(viewer, tableId);
@@ -2847,6 +2882,7 @@ async function createCast(
       },
       discardTurns,
       spendClues,
+      returnToMaxClues,
       discardUntilAccountsTurn,
       emptyDeck,
       clueAgain,
