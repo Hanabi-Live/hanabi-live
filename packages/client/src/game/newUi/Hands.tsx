@@ -457,15 +457,16 @@ export const EMPATHY_TOGGLE_SPACE = 34;
 
 /**
  * The cursor over another player's cards, where holding the mouse button down shows their view of
- * them: a white brain with a dark outline, which shows on any card. It points with its center.
+ * them: a pink brain with folds and a dark outline, which shows on any card. It points with its
+ * center.
  */
 const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 4.5C10.5 3 7.5 3 6.5 5C4 5 2.8 7.2 3.5 9C2 10.5 2.2 13.5 4 14.5C3.8 17 6 19 8.5 18.5C9.5 20 11.2 20 12 19C12.8 20 14.5 20 15.5 18.5C18 19 20.2 17 20 14.5C21.8 13.5 22 10.5 20.5 9C21.2 7.2 20 5 17.5 5C16.5 3 13.5 3 12 4.5Z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/><path d='M12 4.5V19M6.8 8.8C8.4 8.8 9.4 9.8 9.4 11.4M17.2 8.8C15.6 8.8 14.6 9.8 14.6 11.4M6.4 14.6C7.9 14 9.4 14.4 10 15.6M17.6 14.6C16.1 14 14.6 14.4 14 15.6' fill='none' stroke='black' stroke-width='1.25' stroke-linecap='round'/></svg>",
+  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='-24 -24 560 560'><path d='M184 0c30.9 0 56 25.1 56 56V456c0 30.9-25.1 56-56 56c-28.9 0-52.7-21.9-55.7-50.1c-5.2 1.4-10.7 2.1-16.3 2.1c-35.3 0-64-28.7-64-64c0-7.4 1.3-14.6 3.6-21.2C21.4 367.4 0 338.2 0 304c0-31.9 18.7-59.5 45.8-72.3C37.1 220.8 32 207 32 192c0-30.7 21.6-56.3 50.4-62.6C80.8 123.9 80 118 80 112c0-29.9 20.6-55.1 48.3-62.1C131.3 21.9 155.1 0 184 0zM328 0c28.9 0 52.6 21.9 55.7 49.9c27.8 7 48.3 32.1 48.3 62.1c0 6-.8 11.9-2.4 17.4c28.8 6.2 50.4 31.9 50.4 62.6c0 15-5.1 28.8-13.8 39.7C493.3 244.5 512 272.1 512 304c0 34.2-21.4 63.4-51.6 74.8c2.3 6.6 3.6 13.8 3.6 21.2c0 35.3-28.7 64-64 64c-5.6 0-11.1-.7-16.3-2.1c-3 28.2-26.8 50.1-55.7 50.1c-30.9 0-56-25.1-56-56V56c0-30.9 25.1-56 56-56z' fill='#f7a1bd' stroke='black' stroke-width='36' stroke-linejoin='round'/><path d='M70 200c30-20 60 10 90-10s50 10 60 30M60 330c30 10 50-20 80 0s50 20 80 0M110 110c20 10 40 0 60 20M442 200c-30-20-60 10-90-10s-50 10-60 30M452 330c-30 10-50-20-80 0s-50 20-80 0M402 110c-20 10-40 0-60 20' fill='none' stroke='#9c2f55' stroke-width='28' stroke-linecap='round'/></svg>",
 )}") 12 12, pointer`;
 
 /**
  * The cursor over a card while editing cards, where a click changes the card: a white pencil with a
- * dark outline, like the brain. It points with its tip.
+ * dark outline. It points with its tip.
  */
 const EDIT_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M2 22 3.4 16.3 18.3 1.5 22.5 5.7 7.7 20.6z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='round'/><path d='M3.4 16.3 7.7 20.6M14.7 5 19 9.3' fill='none' stroke='black' stroke-width='1.5'/></svg>",
