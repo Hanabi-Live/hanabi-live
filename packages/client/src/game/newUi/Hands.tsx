@@ -771,7 +771,8 @@ function TurnWarningTag({
   const { label, icon, colorClass, tooltip } = TURN_WARNING[warning];
   return (
     <span
-      className={`tw:flex tw:items-center tw:gap-1.5 tw:text-[13px] tw:font-semibold ${colorClass} ${underName ? "tw:pl-3.5" : ""}`}
+      // When the label wraps in a narrow name column, the icon stays beside its first line.
+      className={`tw:flex tw:items-baseline tw:gap-1.5 tw:text-[13px] tw:leading-tight tw:font-semibold ${colorClass} ${underName ? "tw:pl-3.5" : ""}`}
       data-turn-warning={warning}
       ref={tooltipRef(tooltip)}
     >
