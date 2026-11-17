@@ -448,13 +448,15 @@ pub(crate) async fn insert(
     )
     .execute(&mut **tx)
     .await?;
-    if !o.speedrun {
+    // Pregame statistics compare this count with the player's total, which `users.num_normal_games`
+    // holds, so it counts the same games.
+    if !o.speedrun && end.condition == EndCondition::Normal {
         count_game(tx, variant, users).await?;
     }
     Ok(())
 }
 
-/// Adds a game to its players' game counts on its variant. It runs in the transaction that saves the
+/// Adds a game that ended normally to its players' game counts on its variant. It runs in the transaction that saves the
 /// game, so each game is counted once. `stats::refresh` updates the best scores later.
 async fn count_game(
     tx: &mut Transaction<'static, Postgres>,

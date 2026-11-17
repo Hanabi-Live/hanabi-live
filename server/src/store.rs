@@ -1493,9 +1493,10 @@ mod tests {
             )
             .fetch_all(&pool)
             .await?;
+            // The game was terminated, and the variant counts hold only games that ended normally.
             ensure!(
-                users == [1, 1],
-                "The game was not counted once: players {users:?}"
+                users == [0, 0],
+                "A terminated game was counted: players {users:?}"
             );
             let restored = store.load().await?;
             ensure!(

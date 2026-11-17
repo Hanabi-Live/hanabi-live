@@ -76,6 +76,7 @@ DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
     user_id          INTEGER   NOT NULL,
     variant_id       SMALLINT  NOT NULL,
+    /* Their games on this variant that ended normally, without speedruns. */
     num_games        INTEGER   NOT NULL  DEFAULT 0,
     /* Their best score for 2-player games on this variant. NULL when they have played none. */
     best_score2      SMALLINT  NULL,
