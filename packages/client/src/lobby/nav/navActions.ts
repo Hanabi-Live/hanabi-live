@@ -1,6 +1,7 @@
 // What the buttons of the navigation bar do, which their hotkeys also do.
 
 import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
+import { createSelector } from "@reduxjs/toolkit";
 import { globals } from "../../Globals.ts";
 import { showWarning } from "../../modals.ts";
 import type { RootState } from "../../store.ts";
@@ -24,31 +25,37 @@ export function selectCanStartGame(state: RootState): boolean {
 }
 
 /** A spectator can join the game, and a player can spectate it instead. */
-export function selectJoinButton(state: RootState): {
-  readonly type: "join" | "spectate";
-  readonly enabled: boolean;
-} {
-  const { game } = state.pregame;
-  if (game === undefined) {
-    return {
-      type: "join",
-      enabled: false,
-    };
-  }
-
-  const seated = game.players.some(
-    (player) => player.username === state.session.username,
-  );
-  return seated
-    ? {
-        type: "spectate",
-        enabled: game.players.length >= MIN_PLAYERS,
-      }
-    : {
+export const selectJoinButton = createSelector(
+  [
+    (state: RootState) => state.pregame.game,
+    (state: RootState) => state.session.username,
+  ],
+  (
+    game,
+    username,
+  ): {
+    readonly type: "join" | "spectate";
+    readonly enabled: boolean;
+  } => {
+    if (game === undefined) {
+      return {
         type: "join",
-        enabled: game.players.length < game.settings.maxPlayers,
+        enabled: false,
       };
-}
+    }
+
+    const seated = game.players.some((player) => player.username === username);
+    return seated
+      ? {
+          type: "spectate",
+          enabled: game.players.length >= MIN_PLAYERS,
+        }
+      : {
+          type: "join",
+          enabled: game.players.length < game.settings.maxPlayers,
+        };
+  },
+);
 
 export function startGame(): void {
   store.dispatch(startGameSentChanged(true));
