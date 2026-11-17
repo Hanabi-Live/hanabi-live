@@ -16,8 +16,8 @@ import {
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
 import { MenuPointer } from "./Menu.tsx";
+import { useWindowSize } from "./hooks.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
-import { toScreenPixels } from "./screenScale.ts";
 
 /** The width of the box to type a note in, in CSS pixels. */
 const NOTE_EDITOR_WIDTH = 260;
@@ -180,19 +180,29 @@ function NoteEditor({
   const boxRef = useRef<HTMLDivElement>(null);
 
   // The box is centered below its card, but moves sideways to stay in the window, such as for a
-  // play stack at the edge of the screen.
+  // play stack at the edge of the screen. It moves again when the window changes size.
+  const windowSize = useWindowSize();
   const [shift, setShift] = useState(0);
   useLayoutEffect(() => {
     const rect = boxRef.current!.getBoundingClientRect();
-    const tooFarLeft = NOTE_EDITOR_WINDOW_MARGIN - rect.left;
-    const tooFarRight =
-      rect.right - (globalThis.innerWidth - NOTE_EDITOR_WINDOW_MARGIN);
+    // The screen's scale comes from the box itself. The scale that "screenScale.ts" keeps is set
+    // after this runs when the window changes size.
+    const scale = rect.width / NOTE_EDITOR_WIDTH;
+    // Where the box is without its shift, in the window's pixels.
+    const left = rect.left - shift * scale;
+    const right = rect.right - shift * scale;
+    const tooFarLeft = NOTE_EDITOR_WINDOW_MARGIN - left;
+    const tooFarRight = right - (windowSize.width - NOTE_EDITOR_WINDOW_MARGIN);
+    let next = 0;
     if (tooFarLeft > 0) {
-      setShift(toScreenPixels(tooFarLeft));
+      next = tooFarLeft / scale;
     } else if (tooFarRight > 0) {
-      setShift(-toScreenPixels(tooFarRight));
+      next = -tooFarRight / scale;
     }
-  }, []);
+    if (Math.abs(next - shift) >= 1) {
+      setShift(next);
+    }
+  }, [windowSize, shift]);
   // The note when the box opened. The box adds a separator after it, so that the player can add to
   // it, until a key that edits the note itself (such as Backspace) or a click removes the
   // separator.
