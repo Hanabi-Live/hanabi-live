@@ -1204,6 +1204,7 @@ export function GameScreen({
       }
       panel={panel}
       phoneLayout={stacked}
+      reducedMotion={settings.reducedMotion}
       // In a replay, its controls are in the bar along the bottom, so that the hands keep most of
       // the height of the screen.
       replayControls={

@@ -11,6 +11,7 @@ import {
   LOW_SCORE_PHASE_COLOR,
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
+import { DRAWER_SLIDE } from "./ClueMenu.tsx";
 import { useElementSize } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
@@ -132,6 +133,7 @@ interface StatusStripProps {
   readonly onLobby: () => void;
   /** Whether the game screen uses the phone layout (see "GameScreen.tsx"). */
   readonly phoneLayout: boolean;
+  readonly reducedMotion: boolean;
   /**
    * Whether the bar is a panel at the bottom of the right column instead of a bar along the bottom
    * of the screen (see "GameScreen.tsx").
@@ -458,6 +460,64 @@ function ReplayToggle({
   );
 }
 
+/**
+ * In the panel, the replay controls slide out of the top of the panel when a replay starts, as the
+ * clue menu slides out of the hand (see "ClueMenu.tsx"), and the panel's top edge rises with them.
+ * Only the drawing moves: the panel takes its new size at once, so that nothing below the controls
+ * moves, and the game screen measures the panel's real size. The sliding only decorates.
+ */
+function useReplayDrawer(
+  footer: HTMLElement | null,
+  controls: RefObject<HTMLDivElement | null>,
+  open: boolean,
+  reducedMotion: boolean,
+) {
+  const wasOpen = useRef(open);
+  useLayoutEffect(() => {
+    const opened = open && !wasOpen.current;
+    wasOpen.current = open;
+    const group = controls.current;
+    if (!opened || reducedMotion || footer === null || group === null) {
+      return undefined;
+    }
+
+    // The controls and the gap below them, up to the numbers.
+    const next = group.nextElementSibling;
+    if (!(next instanceof HTMLElement)) {
+      return undefined;
+    }
+    const rise = next.offsetTop - group.offsetTop;
+    const radius = getComputedStyle(footer).borderTopLeftRadius;
+    const animations = [
+      footer.animate(
+        [
+          { clipPath: `inset(${rise}px 0 0 0 round ${radius})` },
+          { clipPath: `inset(0 0 0 0 round ${radius})` },
+        ],
+        DRAWER_SLIDE,
+      ),
+      group.animate(
+        [
+          {
+            transform: `translateY(${rise}px)`,
+            clipPath: `inset(0 0 ${rise}px 0)`,
+          },
+          {
+            transform: "none",
+            clipPath: "inset(0 0 0 0)",
+          },
+        ],
+        DRAWER_SLIDE,
+      ),
+    ];
+    return () => {
+      for (const animation of animations) {
+        animation.cancel();
+      }
+    };
+  }, [open, reducedMotion, footer, controls]);
+}
+
 /** The height of the bar along the bottom of the screen. */
 const BAR_HEIGHT = 76;
 
@@ -618,6 +678,7 @@ export function StatusStrip({
   onClassicView,
   onLobby,
   phoneLayout,
+  reducedMotion,
   panel,
   footerRef,
 }: StatusStripProps): React.JSX.Element {
@@ -634,6 +695,7 @@ export function StatusStrip({
   const inReplay = replayControls !== undefined;
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
+  useReplayDrawer(footer, controlsRef, inReplay && panel, reducedMotion);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const variantRef = useRef<HTMLDivElement>(null);
   const shortLabels = useShortLabels(
@@ -858,13 +920,19 @@ export function StatusStrip({
       {!panel && (
         <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
       )}
-      <button className={buttonClass} onClick={onClassicView} type="button">
-        {/* One box, so that the button's gap does not split the words. */}
-        <span>
-          Classic
-          <span className="tw:group-data-short-labels/buttons:hidden"> UI</span>
-        </span>
-      </button>
+      {/* The panel has no room to spare for a button that players seldom need. */}
+      {!panel && (
+        <button className={buttonClass} onClick={onClassicView} type="button">
+          {/* One box, so that the button's gap does not split the words. */}
+          <span>
+            Classic
+            <span className="tw:group-data-short-labels/buttons:hidden">
+              {" "}
+              UI
+            </span>
+          </span>
+        </button>
+      )}
       {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
       {viewAsMenu}
       {tableMenu}
@@ -895,6 +963,13 @@ export function StatusStrip({
         data-phone-layout=""
         ref={setFooter}
       >
+        {/* The replay controls are at the top, so that the rest of the panel stays where it was
+            when a replay starts. The panel grows up into the clue log's space. */}
+        {inReplay && (
+          <div className="tw:flex" ref={controlsRef}>
+            {replayControls}
+          </div>
+        )}
         {/* The four numbers spread across one row when it has room for them, or two rows of two.
             The chat button ends the first row, since the chat's rail is hidden (see
             "ChatPanel.tsx"). */}
@@ -913,11 +988,6 @@ export function StatusStrip({
           <span className="tw:truncate">{variantName}</span>
           {gameInfoButton}
         </div>
-        {inReplay && (
-          <div className="tw:flex" ref={controlsRef}>
-            {replayControls}
-          </div>
-        )}
         {buttons}
       </footer>
     );

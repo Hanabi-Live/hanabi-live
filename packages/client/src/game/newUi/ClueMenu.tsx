@@ -54,6 +54,12 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
  * has the menu's color, and one outline goes around both. The hand has no outline and no round
  * corners on the side where the menu opens.
  */
+/** How a drawer slides out, such as this menu or the replay controls in the status panel. */
+export const DRAWER_SLIDE = {
+  duration: 200,
+  easing: "cubic-bezier(0.33, 1, 0.68, 1)",
+} as const;
+
 export const CLUE_DRAWER_HAND_CLASS =
   "tw:bg-game-panel tw:rounded-b-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=right]]:rounded-r-none tw:has-[>[data-clue-drawer=right]]:rounded-l-game-panel tw:has-[>[data-clue-drawer=right]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
 
@@ -261,10 +267,7 @@ export function ClueMenu({
           clipPath: "inset(0 0 0 0)",
         },
       ],
-      {
-        duration: 200,
-        easing: "cubic-bezier(0.33, 1, 0.68, 1)",
-      },
+      DRAWER_SLIDE,
     );
     return () => {
       animation.cancel();

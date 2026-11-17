@@ -57,6 +57,7 @@ function renderStrip(score: number, maxScore: number) {
       paceColor={undefined}
       panel={false}
       phoneLayout={false}
+      reducedMotion={false}
       replayControls={undefined}
       replayToggle={undefined}
       score={score}
