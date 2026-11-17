@@ -32,6 +32,11 @@ export interface HeldCard {
    * The card keeps this point under the pointer, and tilts and grows around it.
    */
   readonly grab: { readonly x: number; readonly y: number };
+  /**
+   * Whether the pointer has moved the card away from where the player pressed it. Until then, the
+   * player may only hold the pointer down to see the cards that it can be.
+   */
+  readonly moved: boolean;
 
   /**
    * Whether the card is the last card of the deck, which the player plays from the deck when the
@@ -57,6 +62,11 @@ export interface HeldCard {
  * goes back to the hand.
  */
 const DROP_WAIT_MILLISECONDS = 3000;
+
+/**
+ * How far the pointer moves a pressed card, in the screen's CSS pixels, before it counts as moved.
+ */
+const MOVE_DISTANCE = 4;
 
 function isInside(element: HTMLElement | null, x: number, y: number): boolean {
   if (element === null) {
@@ -175,10 +185,17 @@ export function useCardDrag(): CardDrag {
       // The card renders again only when the target under it changes. It follows the pointer by
       // itself (see "HeldCardGhost.tsx").
       const zone = zoneAt(current, event.clientX, event.clientY);
-      if (zone !== current.zone) {
+      const moved =
+        current.moved
+        || Math.hypot(
+          pointerRef.current.x - current.start.left - current.grab.x,
+          pointerRef.current.y - current.start.top - current.grab.y,
+        ) > MOVE_DISTANCE;
+      if (zone !== current.zone || moved !== current.moved) {
         updateHeld({
           ...current,
           zone,
+          moved,
         });
       }
     }
@@ -296,6 +313,7 @@ export function useCardDrag(): CardDrag {
           x: pointer.x - start.left,
           y: pointer.y - start.top,
         },
+        moved: false,
         fromDeck: fromDeck !== undefined,
         discardAllowed: fromDeck?.discardAllowed ?? true,
       });

@@ -344,6 +344,9 @@ export function GameScreen({
     playZoneRef,
     discardZoneRef,
   } = useCardDrag();
+  // A card that the player drags hides the bubbles of possible cards, so that they do not cover the
+  // places to drop it.
+  const draggingCard = held?.moved === true;
   const cardInput = useRef<CardInput>(undefined);
   const cardInputHandlers = useCardInput(cardInput);
   const queued = useQueuedMove(state);
@@ -1163,6 +1166,7 @@ export function GameScreen({
                       ? getDeckEmpathy(state)
                       : undefined,
                   onHoldEmpathy: setDeckEmpathy,
+                  showPossibleCards: !draggingCard,
                   handCardWidth,
                   colorblindMode: settings.colorblindMode,
                   variant,
@@ -1350,7 +1354,10 @@ export function GameScreen({
                           ),
                         }
                   }
-                  showPossibleCards={heldEmpathy !== undefined || globalEmpathy}
+                  showPossibleCards={
+                    (heldEmpathy !== undefined || globalEmpathy)
+                    && !draggingCard
+                  }
                   speedrunClicks={speedrunClicks}
                   stacked={stacked}
                   tapToMove={tapToMove}

@@ -819,6 +819,9 @@ export interface DeckProps {
    */
   readonly onHoldEmpathy: (held: boolean) => void;
 
+  /** Whether the deck shows its bubble of possible cards while it shows them. */
+  readonly showPossibleCards: boolean;
+
   /** The width of a card in a hand, so that the deck's bubble of possible cards is as large. */
   readonly handCardWidth: number;
   readonly colorblindMode: boolean;
@@ -885,6 +888,7 @@ function Deck({
   play,
   empathy,
   onHoldEmpathy,
+  showPossibleCards,
   handCardWidth,
   colorblindMode,
   variant,
@@ -938,6 +942,7 @@ function Deck({
 
   const bubble =
     showEmpathy
+    && showPossibleCards
     && hoveredTop !== undefined
     && empathy.possibleCards.suits.length > 0
     && createPortal(
