@@ -132,6 +132,7 @@
     "istory",
     "istyping",
     "ITIMER",
+    "jitless",
     "journalctl",
     "jscoverage",
     "jsonschema",

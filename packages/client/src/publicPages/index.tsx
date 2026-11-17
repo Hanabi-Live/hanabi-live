@@ -2,6 +2,8 @@
 // whose data the server puts in the page, with the controls and the chart that go with it, or the
 // form of the password reset page.
 
+import "../zodConfig.ts"; // eslint-disable-line import-x/no-unassigned-import
+
 import { publicPageTableSchema } from "@hanabi-live/data";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

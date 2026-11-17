@@ -1,6 +1,8 @@
 // This is the main entry point for the client code. The client code is split up into multiple files
 // and then bundled together as a single JavaScript file to serve to end-users.
 
+import "./zodConfig.ts"; // eslint-disable-line import-x/no-unassigned-import
+
 import { DOMAIN, OLD_DOMAIN } from "@hanabi-live/data";
 import { mountApp } from "./App.tsx";
 import { globals } from "./Globals.ts";
