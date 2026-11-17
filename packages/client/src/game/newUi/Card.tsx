@@ -1538,18 +1538,41 @@ interface PossibleCardsBubbleProps {
 export function PossibleCardsBubble({
   open,
   anchor,
+  bubble,
   ...props
-}: PossibleCardsBubbleProps & {
+}: Omit<PossibleCardsBubbleProps, "bubble"> & {
   readonly open: boolean;
-  /** The element that the bubble points at. It stays set while the bubble fades out. */
+  /** The element that the bubble points at. */
   readonly anchor: HTMLElement | null | undefined;
+  /**
+   * The cards to show. A card loses them when it stops showing its holder's view, such as when the
+   * viewer lets go of Space.
+   */
+  readonly bubble: PossibleCardsView | undefined;
 }): React.ReactNode {
-  // The bubble stays on the page while it fades out.
+  const shownNow =
+    open && bubble !== undefined && anchor !== null && anchor !== undefined
+      ? {
+          bubble,
+          anchor,
+        }
+      : undefined;
+
+  // The bubble stays on the page while it fades out, with what it showed last.
+  const [lastShown, setLastShown] = useState(shownNow);
   const [closing, setClosing] = useState(false);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    setClosing(!open);
+  if (
+    shownNow !== undefined
+    && (shownNow.bubble !== lastShown?.bubble
+      || shownNow.anchor !== lastShown.anchor)
+  ) {
+    setLastShown(shownNow);
+  }
+  const isShown = shownNow !== undefined;
+  const [wasShown, setWasShown] = useState(isShown);
+  if (isShown !== wasShown) {
+    setWasShown(isShown);
+    setClosing(!isShown);
   }
   useEffect(() => {
     if (!closing) {
@@ -1563,10 +1586,16 @@ export function PossibleCardsBubble({
     };
   }, [closing]);
 
-  return anchor === null || anchor === undefined || (!open && !closing)
+  const shown = shownNow ?? (closing ? lastShown : undefined);
+  return shown === undefined
     ? null
     : createPortal(
-        <PossibleCardsGrid anchor={anchor} closing={closing} {...props} />,
+        <PossibleCardsGrid
+          anchor={shown.anchor}
+          bubble={shown.bubble}
+          closing={shownNow === undefined}
+          {...props}
+        />,
         document.body,
       );
 }
@@ -2665,15 +2694,13 @@ export function CardFace({
         <NoteMarkIcons marks={noteMarks} width={width} />
       )}
 
-      {bubble !== undefined && (
-        <PossibleCardsBubble
-          anchor={faceElement}
-          bubble={bubble}
-          colorblindMode={colorblindMode}
-          open={showPossibleCards && hovered}
-          variant={variant}
-        />
-      )}
+      <PossibleCardsBubble
+        anchor={faceElement}
+        bubble={bubble}
+        colorblindMode={colorblindMode}
+        open={showPossibleCards && hovered}
+        variant={variant}
+      />
     </div>
   );
 

@@ -941,10 +941,10 @@ function Deck({
     onHoldEmpathy(false);
   }
 
-  const bubble = empathy !== undefined && (
+  const bubble = (
     <PossibleCardsBubble
       anchor={top}
-      bubble={empathy.possibleCards}
+      bubble={empathy?.possibleCards}
       cardWidth={handCardWidth}
       colorblindMode={colorblindMode}
       open={

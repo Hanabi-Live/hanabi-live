@@ -129,6 +129,33 @@ test("the bubble stays closed when the card missed the pointer leaving it", () =
   expect(document.querySelector("[data-possible-cards]")).toBeNull();
 });
 
+test("the bubble fades out when the card stops showing its holder's view", () => {
+  // Holding the pointer down on another player's hand shows what they know about their cards. When
+  // the button comes up, each card shows its face again and has no bubble.
+  const { container, rerender } = render(renderCard(false));
+  const face = container.querySelector("[data-card-face]");
+  expect(face).not.toBeNull();
+  fireEvent.pointerEnter(face!);
+  expect(document.querySelector("[data-possible-cards]")).not.toBeNull();
+
+  act(() => {
+    rerender(
+      <CardFace
+        colorblindMode={false}
+        pips={undefined}
+        rank={1}
+        showPossibleCards={false}
+        suitIndex={0}
+        variant={getDefaultVariant()}
+        width={CARD_RECT.width}
+      />,
+    );
+  });
+  expect(document.querySelector("[data-possible-cards]")).not.toBeNull();
+  waitForBubbleToClose();
+  expect(document.querySelector("[data-possible-cards]")).toBeNull();
+});
+
 test.each(["3 Suits", "4 Suits", "No Variant", "6 Suits"])(
   "the suit pips of a card in %s take at most two rows",
   (variantName) => {
