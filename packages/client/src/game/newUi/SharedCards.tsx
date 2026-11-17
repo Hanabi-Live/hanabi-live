@@ -1528,7 +1528,8 @@ function getDiscardPileTooltipHtml(
       "Double Discard: the card just discarded is still needed, so the chop of the player whose turn it is could be its last copy.",
     );
   }
-  return `<span class="small-tooltip-text">${lines.join("<br>")}</span>`;
+  // The tooltip is narrow, so that the long Double Discard warning wraps as in a paragraph.
+  return `<div class="small-tooltip-text tw:max-w-80">${lines.join("<br>")}</div>`;
 }
 
 /** How long the discard pile pulses when the team gets to max clues, in milliseconds. */
