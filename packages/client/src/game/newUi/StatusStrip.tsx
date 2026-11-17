@@ -481,6 +481,10 @@ function useOwnRow(
       return;
     }
     const hadOwnRow = footer.hasAttribute(OWN_ROW_ATTRIBUTE);
+    // The bar keeps its height while it tries the one-row layout. Otherwise, the screen above it
+    // would get taller for the measurement. Firefox then keeps the chat's scroll limit from that
+    // taller layout, so that the chat can no longer scroll down to its last lines.
+    footer.style.height = getComputedStyle(footer).height;
     footer.removeAttribute(OWN_ROW_ATTRIBUTE);
     const overflows =
       footer.scrollWidth > footer.clientWidth
@@ -488,6 +492,7 @@ function useOwnRow(
     if (hadOwnRow) {
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
+    footer.style.removeProperty("height");
     if (overflows) {
       ownRowWidth.current = footer.clientWidth;
     } else if (ownRowWidth.current !== footer.clientWidth) {
