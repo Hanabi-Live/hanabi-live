@@ -317,6 +317,14 @@ export function GameScreen({
     setCluePreview(false);
   }, [turnNum]);
 
+  // In a 2-player game, the clue menu opens again when the viewer leaves the in-game replay.
+  const replaying = state?.replay.segment !== undefined;
+  useEffect(() => {
+    if (!replaying) {
+      setClueMenuClosed(false);
+    }
+  }, [replaying]);
+
   // The arrow goes away when the screen shows another turn, so that it does not come back with the
   // turn.
   const arrowView = state === undefined ? undefined : getArrowView(state);
