@@ -1,6 +1,8 @@
 // A tooltip that opens beside an anchor element. The bubble is a manual popover, so it is drawn in
 // the top layer above every other element, including modals.
 
+import { getVisibleEdge, pixels } from "./visibleEdge.ts";
+
 /**
  * The height of the arrow that points from the tooltip to its anchor. The arrow is twice as wide as
  * it is high.
@@ -52,10 +54,18 @@ interface TooltipOptions {
   readonly interactive?: boolean;
 
   readonly centered?: boolean;
+
+  /**
+   * A selector of the element inside the anchor that the arrow points at, such as a card in its
+   * slot. The arrow ends at the element's visible edge, which includes its ring and its outline. By
+   * default, it points at the anchor.
+   */
+  readonly target?: string;
 }
 
 export class Tooltip {
   private readonly anchor: HTMLElement;
+  private readonly target: string | undefined;
   private readonly bubble = document.createElement("div");
   private readonly box = document.createElement("div");
   private content: Node | string = "";
@@ -63,6 +73,8 @@ export class Tooltip {
   private contentPending = false;
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
   private openingTimeout: ReturnType<typeof setTimeout> | undefined;
+  /** The next frame in which the tooltip follows its target (see `followTarget`). */
+  private followFrame: number | undefined;
   private readonly hoverListeners = new AbortController();
   /** Whether the tooltip waits for the pointer to rest on its anchor (see `openOnHover`). */
   private openOnHoverDelayed = false;
@@ -79,6 +91,7 @@ export class Tooltip {
 
   constructor(anchor: HTMLElement, options: TooltipOptions) {
     this.anchor = anchor;
+    this.target = options.target;
 
     this.bubble.className = "tooltip-bubble";
     this.bubble.popover = "manual";
@@ -120,8 +133,26 @@ export class Tooltip {
     this.bubble.style.left = "0px";
     this.bubble.style.top = "0px";
     this.bubble.style.removeProperty("--tooltip-room");
-    const anchor = this.anchor.getBoundingClientRect();
     const anchorWindow = this.anchor.ownerDocument.defaultView ?? globalThis;
+    const target =
+      this.target === undefined
+        ? undefined
+        : (this.anchor.querySelector(this.target) ?? undefined);
+    const targetRect = (target ?? this.anchor).getBoundingClientRect();
+    // The tip of the arrow, with the tooltip's border around it, ends at the target's visible edge.
+    const gap =
+      (target === undefined ? 0 : getVisibleEdge(target))
+      + pixels(
+        anchorWindow
+          .getComputedStyle(this.bubble)
+          .getPropertyValue("--tooltip-border-width"),
+      );
+    const anchor = {
+      top: targetRect.top - gap,
+      bottom: targetRect.bottom + gap,
+      left: targetRect.left,
+      width: targetRect.width,
+    };
     const { offsetWidth: width } = this.bubble;
     let { offsetHeight: height } = this.bubble;
 
@@ -165,6 +196,37 @@ export class Tooltip {
     } else {
       this.open();
     }
+  }
+
+  /**
+   * Moves the tooltip with its target while a transition in the anchor plays, such as a card that
+   * lifts under the pointer, so that the arrow stays on it.
+   */
+  private followTarget() {
+    if (this.target === undefined || this.followFrame !== undefined) {
+      return;
+    }
+
+    const anchorWindow = this.anchor.ownerDocument.defaultView ?? globalThis;
+    const follow = () => {
+      this.followFrame = undefined;
+      if (!this.isOpen) {
+        return;
+      }
+      this.position();
+      // Only transitions end. An animation can repeat forever.
+      const moving = this.anchor
+        .getAnimations({ subtree: true })
+        .some(
+          (animation) =>
+            "transitionProperty" in animation
+            && animation.playState === "running",
+        );
+      if (moving) {
+        this.followFrame = anchorWindow.requestAnimationFrame(follow);
+      }
+    };
+    this.followFrame = anchorWindow.requestAnimationFrame(follow);
   }
 
   /** Puts the content in the box, if it changed since the box last showed it. */
@@ -274,6 +336,7 @@ export class Tooltip {
     // "data-tooltip-open").
     this.anchor.dataset["tooltipOpen"] = "";
     this.position();
+    this.followTarget();
   }
 
   /** Opens the tooltip until the next click outside of the anchor and the tooltip. */
@@ -295,6 +358,12 @@ export class Tooltip {
       { capture: true },
     );
     unwatchAnchor(this);
+    if (this.followFrame !== undefined) {
+      (
+        this.anchor.ownerDocument.defaultView ?? globalThis
+      ).cancelAnimationFrame(this.followFrame);
+      this.followFrame = undefined;
+    }
     delete this.anchor.dataset["tooltipOpen"];
     if (!this.isOpen) {
       return;

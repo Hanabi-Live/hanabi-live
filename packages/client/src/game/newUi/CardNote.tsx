@@ -155,7 +155,11 @@ export function CardNote({
       // screen, so that players can read the notes by moving the pointer along a hand.
       ref={tooltipRefHtml(
         editing || possibleCards ? "" : (cardNotes.notesHtml.get(order) ?? ""),
-        { instant: true },
+        // The arrow points at the card, which can be raised in its slot, such as when it is clued.
+        {
+          instant: true,
+          target: "[data-card-face]",
+        },
       )}
       style={style}
     >

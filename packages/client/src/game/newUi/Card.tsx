@@ -19,6 +19,7 @@ import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { ARROW_SIZE_IN_PIXELS } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { getVisibleEdge } from "../../visibleEdge.ts";
 import { getDeceptiveRank, getRankLabelFill } from "../rankLabelColors.ts";
 import {
   ARROW_COLOR,
@@ -1294,44 +1295,6 @@ const POSSIBLE_CARDS = {
 } as const;
 
 /**
- * Returns how far the visible edge of an element on the game screen is outside of its box, in the
- * window's pixels. A card draws its border outside of its box, as a ring (a `box-shadow` without an
- * offset or a blur) and as an outline. The pointer of the bubble of possible cards touches this
- * edge, as the arrow of a tooltip touches its anchor.
- */
-function getVisibleEdge(element: HTMLElement): number {
-  const style = getComputedStyle(element);
-  let edge = 0;
-  // The browser writes each shadow as its color and then its lengths, such as "rgb(255, 159, 28)
-  // 0px 0px 0px 4px". Only a comma before a color starts the next shadow.
-  for (const shadow of style.boxShadow.split(/, (?=[a-z])/u)) {
-    const lengths = shadow
-      .split(" ")
-      .filter((word) => word.endsWith("px"))
-      .map((word) => pixels(word));
-    if (shadow.includes("inset") || lengths.length !== 4) {
-      continue;
-    }
-    const [x, y, blur, spread] = lengths as [number, number, number, number];
-    if (x === 0 && y === 0 && blur === 0) {
-      edge = Math.max(edge, spread);
-    }
-  }
-  if (style.outlineStyle !== "none") {
-    edge = Math.max(
-      edge,
-      pixels(style.outlineOffset) + pixels(style.outlineWidth),
-    );
-  }
-  return edge * getScreenScale();
-}
-
-/** Returns the number in a length in pixels that the browser computed, such as "4px". */
-function pixels(length: string): number {
-  return Number(length.replace("px", ""));
-}
-
-/**
  * The pointer that points from the bubble of possible cards at the card, in the window's pixels. It
  * is the same size as the arrow of a tooltip, such as a card's note, at every card size.
  */
@@ -1339,13 +1302,6 @@ const POSSIBLE_CARDS_POINTER = {
   width: 2 * ARROW_SIZE_IN_PIXELS,
   height: ARROW_SIZE_IN_PIXELS,
 } as const;
-
-/**
- * How far the tip of the pointer of the bubble of possible cards reaches over the visible edge of
- * the card, in pixels. The thin point of the tip is lighter, so without it a gap shows between the
- * pointer and the card.
- */
-const POSSIBLE_CARDS_POINTER_REACH = 2;
 
 /** The outline of the bubble of possible cards and of its pointer, in pixels. */
 const POSSIBLE_CARDS_OUTLINE = 1;
@@ -1632,7 +1588,6 @@ export function PossibleCardsBubble({
     const { offsetHeight: height, offsetWidth: width } = element;
     const offset =
       getVisibleEdge(anchor)
-      - POSSIBLE_CARDS_POINTER_REACH
       + POSSIBLE_CARDS_POINTER.height
       + POSSIBLE_CARDS_OUTLINE;
     const below = anchorRect.bottom + offset;
