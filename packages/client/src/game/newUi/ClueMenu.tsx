@@ -60,10 +60,36 @@ export const CLUE_DRAWER_HAND_CLASS =
 const DRAWER_RADIUS = 8;
 
 /**
- * The least distance, in CSS pixels, that the drawer reaches past the hand when it is taller than
- * the hand. A smaller step would look like a mistake, so the drawer grows instead.
+ * The spaces in the drawer to the right of the hand, in CSS pixels: around its content, below its
+ * title, and above the button to give the clue. When the drawer is only a little taller than the
+ * hand, it uses the compact spaces, so that it is as tall as the hand. A small step between them
+ * would look like a mistake.
  */
-const MIN_STEP = 2 * DRAWER_RADIUS;
+const SPACING = {
+  NORMAL: {
+    padding: 12,
+    title: 8,
+    button: 16,
+    className: "tw:p-3",
+    titleClassName: "tw:gap-2",
+    buttonClassName: "tw:gap-4",
+  },
+  COMPACT: {
+    padding: 8,
+    title: 4,
+    button: 8,
+    className: "tw:px-3 tw:py-2",
+    titleClassName: "tw:gap-1",
+    buttonClassName: "tw:gap-2",
+  },
+} as const;
+
+function getSpaces(spacing: (typeof SPACING)[keyof typeof SPACING]): number {
+  return 2 * spacing.padding + spacing.title + spacing.button;
+}
+
+/** How much shorter the compact spaces make the drawer, in CSS pixels. */
+const COMPACT_SAVING = getSpaces(SPACING.NORMAL) - getSpaces(SPACING.COMPACT);
 
 /**
  * The menu below the hand. It has no outline on its top, where it joins the hand, and its shadow
@@ -114,6 +140,7 @@ export function ClueMenu({
   below,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
   // Where the drawer is for the player whose menu this is, in this layout: whether it is below the
@@ -124,6 +151,7 @@ export function ClueMenu({
     readonly phoneLayout: boolean;
     readonly below: boolean;
     readonly alignBottom: boolean;
+    readonly compact: boolean;
     readonly height: number;
     readonly handHeight: number;
   }>();
@@ -131,47 +159,91 @@ export function ClueMenu({
     placement?.name === name && placement.phoneLayout === below
       ? placement
       : undefined;
-  const opensBelow = below || measured?.below === true;
+  const measuredBelow = measured?.below;
+  const opensBelow = below || measuredBelow === true;
 
   // It measures the drawer to the right of the hand. When the window is too narrow for that, the
-  // drawer opens below the hand instead.
+  // drawer opens below the hand instead. It measures again when the window, the hand, or the
+  // drawer's content changes size, such as when the cards grow after the menu opens.
   useLayoutEffect(() => {
     const menu = ref.current!;
+    const content = contentRef.current!;
     const hand = menu.parentElement!;
     // It stays beside the hands, so that it does not cover the bar below the table.
     const room = hand.parentElement!;
-    const handRect = hand.getBoundingClientRect();
-    const roomRect = room.getBoundingClientRect();
-    const { height, width } = menu.getBoundingClientRect();
-    const fitsRight =
-      handRect.right + width <= document.documentElement.clientWidth;
-    // The drawer is at least as tall as the hand, so that the hand's side is not left without an
-    // outline. When it is taller, it reaches past the hand by at least `MIN_STEP`.
-    const drawerHeight =
-      height <= handRect.height
-        ? handRect.height
-        : Math.max(height, handRect.height + MIN_STEP);
-    setPlacement({
-      name,
-      phoneLayout: below,
-      below: below || !fitsRight,
-      alignBottom: handRect.top + drawerHeight > roomRect.bottom,
-      height: drawerHeight,
-      handHeight: handRect.height,
-    });
+    // The width of the drawer to the right of the hand. It is measured while the drawer is there,
+    // and kept for when the drawer is below the hand.
+    let rightWidth = 0;
+
+    function measure() {
+      if (menu.dataset["clueDrawer"] === "right") {
+        rightWidth = menu.getBoundingClientRect().width;
+      }
+      const handRect = hand.getBoundingClientRect();
+      const fitsRight =
+        handRect.right + rightWidth <= document.documentElement.clientWidth;
+      const roomRect = room.getBoundingClientRect();
+      // The height of the drawer with the normal spaces. The content has the spaces that it has
+      // now, so they are swapped for the normal ones.
+      const spacing =
+        menu.dataset["compact"] === undefined
+          ? SPACING.NORMAL
+          : SPACING.COMPACT;
+      const height =
+        content.getBoundingClientRect().height
+        - spacing.title
+        - spacing.button
+        + getSpaces(SPACING.NORMAL);
+      // The drawer is at least as tall as the hand, so that the hand's side is not left without an
+      // outline. When it is taller by less than the compact spaces save, it uses them and is as
+      // tall as the hand.
+      const compact =
+        height > handRect.height && height - COMPACT_SAVING <= handRect.height;
+      const drawerHeight = Math.max(height, handRect.height);
+      const next = {
+        name,
+        phoneLayout: below,
+        below: below || !fitsRight,
+        alignBottom: handRect.top + drawerHeight > roomRect.bottom,
+        compact,
+        height: compact ? handRect.height : drawerHeight,
+        handHeight: handRect.height,
+      };
+      setPlacement((previous) =>
+        previous !== undefined
+        && previous.name === next.name
+        && previous.phoneLayout === next.phoneLayout
+        && previous.below === next.below
+        && previous.alignBottom === next.alignBottom
+        && previous.compact === next.compact
+        && previous.height === next.height
+        && previous.handHeight === next.handHeight
+          ? previous
+          : next,
+      );
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(hand);
+    observer.observe(content);
+    observer.observe(document.documentElement);
+    return () => {
+      observer.disconnect();
+    };
   }, [name, below]);
 
   // The drawer slides out from behind the edge of the hand, and the part that is still behind the
   // hand is cut off. The sliding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current;
-    if (measured === undefined || reducedMotion || menu === null) {
+    if (measuredBelow === undefined || reducedMotion || menu === null) {
       return undefined;
     }
     const { height, width } = menu.getBoundingClientRect();
     const animation = menu.animate(
       [
-        measured.below
+        measuredBelow
           ? {
               transform: `translateY(${-height}px)`,
               clipPath: `inset(${height}px 0 0 0)`,
@@ -193,14 +265,15 @@ export function ClueMenu({
     return () => {
       animation.cancel();
     };
-  }, [measured, reducedMotion]);
+    // It slides only when the drawer opens, not when it is measured again.
+  }, [name, measuredBelow, reducedMotion]);
 
   // On a narrow window, the page scrolls, so it scrolls to show all of the menu. It waits until the
   // drawer is in its place, and until the drawer has slid out, because the drawer is not in its
   // place while it slides, and the page would not scroll far enough.
   useEffect(() => {
     const menu = ref.current;
-    if (measured === undefined || openedItself || menu === null) {
+    if (measuredBelow === undefined || openedItself || menu === null) {
       return undefined;
     }
 
@@ -216,7 +289,7 @@ export function ClueMenu({
     return () => {
       unfolding.removeEventListener("finish", scroll);
     };
-  }, [measured, openedItself]);
+  }, [name, measuredBelow, openedItself]);
 
   useEffect(() => {
     if (!openedItself) {
@@ -248,6 +321,8 @@ export function ClueMenu({
   // leave a step between them. The corners where the drawer joins the hand are square. A corner of
   // the drawer that reaches past the hand is round.
   const alignBottom = measured?.alignBottom === true;
+  const compact = !opensBelow && measured?.compact === true;
+  const spacing = compact ? SPACING.COMPACT : SPACING.NORMAL;
   const reachesPast =
     measured !== undefined && measured.height > measured.handHeight;
   const rightStyle: React.CSSProperties = {
@@ -260,10 +335,11 @@ export function ClueMenu({
   return (
     <div
       aria-label={`Give ${name} a clue`}
-      className={`tw:absolute tw:z-30 tw:flex tw:flex-col tw:gap-2 tw:bg-game-panel tw:p-3 tw:outline-none ${
+      className={`tw:absolute tw:z-30 tw:bg-game-panel tw:outline-none ${spacing.className} ${
         opensBelow ? BELOW_CLASS : RIGHT_CLASS
       }`}
       data-clue-drawer={opensBelow ? "below" : "right"}
+      data-compact={compact ? true : undefined}
       ref={ref}
       role="dialog"
       style={opensBelow ? undefined : rightStyle}
@@ -281,115 +357,120 @@ export function ClueMenu({
           }}
         />
       )}
-      <div className="tw:flex tw:items-center tw:gap-2">
-        <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:pl-0.5 tw:text-[14px] tw:font-semibold tw:text-game-muted">
-          Clue {name}
-        </span>
-        {/* The classic screen's flashlight. The brain beside a name already shows a hand as its player sees it now. */}
-        <button
-          aria-label={`Show ${name}'s view of their hand after the clue`}
-          aria-pressed={cluePreview}
-          className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[13px] ${
-            cluePreview
-              ? "tw:bg-game-text tw:text-card-ink"
-              : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
-          }`}
-          data-clue-preview
-          onClick={onToggleCluePreview}
-          ref={tooltipRef(
-            `Show ${name}'s hand as they would see it after the clue that you pick`,
-          )}
-          type="button"
-        >
-          {/* The image is a white shape, so it masks the text color to follow the button's state. */}
-          <span
-            aria-hidden="true"
-            className="tw:size-4 tw:shrink-0 tw:bg-current tw:mask-[url(/public/img/flashlight.png)] tw:mask-contain tw:mask-center tw:mask-no-repeat"
-          />
-        </button>
-        <button
-          aria-label={`Show ${name}'s actions`}
-          className="tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
-          onClick={onShowActions}
-          ref={tooltipRef(`Show ${name}'s actions`)}
-          type="button"
-        >
-          <i aria-hidden="true" className="fas fa-history" />
-        </button>
-      </div>
-      {/* The button to give the clue sits to the right of the clues, in the room that they leave.
+      <div
+        className={`tw:flex tw:flex-col ${spacing.titleClassName}`}
+        ref={contentRef}
+      >
+        <div className="tw:flex tw:items-center tw:gap-2">
+          <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:pl-0.5 tw:text-[14px] tw:font-semibold tw:text-game-muted">
+            Clue {name}
+          </span>
+          {/* The classic screen's flashlight. The brain beside a name already shows a hand as its player sees it now. */}
+          <button
+            aria-label={`Show ${name}'s view of their hand after the clue`}
+            aria-pressed={cluePreview}
+            className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+              cluePreview
+                ? "tw:bg-game-text tw:text-card-ink"
+                : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+            }`}
+            data-clue-preview
+            onClick={onToggleCluePreview}
+            ref={tooltipRef(
+              `Show ${name}'s hand as they would see it after the clue that you pick`,
+            )}
+            type="button"
+          >
+            {/* The image is a white shape, so it masks the text color to follow the button's state. */}
+            <span
+              aria-hidden="true"
+              className="tw:size-4 tw:shrink-0 tw:bg-current tw:mask-[url(/public/img/flashlight.png)] tw:mask-contain tw:mask-center tw:mask-no-repeat"
+            />
+          </button>
+          <button
+            aria-label={`Show ${name}'s actions`}
+            className="tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+            onClick={onShowActions}
+            ref={tooltipRef(`Show ${name}'s actions`)}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-history" />
+          </button>
+        </div>
+        {/* The button to give the clue sits to the right of the clues, in the room that they leave.
           When there is not enough room, or when the drawer is to the right of the hand, it goes
           below them. A wide gap and a line keep a click on a
           clue from landing on the button. When the button goes below the clues, the line is at the
           left of the row, where the row clips it. The row reaches 8px into the padding, so that it
           does not clip the rings and shadows of the buttons. */}
-      <div
-        className={`tw:-mx-2 tw:flex tw:gap-6 tw:overflow-x-clip tw:px-2 ${opensBelow ? "tw:flex-wrap" : "tw:flex-col tw:gap-4"}`}
-      >
-        <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
-          <ClueRow>
-            {colorClues.map((colorClue) => {
-              const color = colorClue.value;
-              if (!isAllowed(colorClue)) {
-                return <EmptySlot key={color.name} />;
-              }
-              const pressed = isSameClue(clue, colorClue);
-              const symbol = getColorSymbol(variant, color, colorblindMode);
-              return (
-                <button
-                  aria-label={color.name}
-                  aria-pressed={pressed}
-                  className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
-                  key={color.name}
-                  onClick={() => {
-                    onChooseClue(pressed ? undefined : colorClue);
-                  }}
-                  style={{
-                    background: colorblindMode
-                      ? color.fillColorblind
-                      : color.fill,
-                  }}
-                  type="button"
-                >
-                  {symbol !== undefined && (
-                    <ColorSymbolView size={CHOICE_SIZE} symbol={symbol} />
-                  )}
-                </button>
-              );
-            })}
-          </ClueRow>
-          <ClueRow>
-            {rankClues.map((rankClue) => {
-              const rank = rankClue.value;
-              if (!isAllowed(rankClue)) {
-                return <EmptySlot key={rank} />;
-              }
-              const pressed = isSameClue(clue, rankClue);
-              return (
-                <button
-                  aria-pressed={pressed}
-                  className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
-                  key={rank}
-                  onClick={() => {
-                    onChooseClue(pressed ? undefined : rankClue);
-                  }}
-                  type="button"
-                >
-                  {getRankClueLabel(variant, rank)}
-                </button>
-              );
-            })}
-          </ClueRow>
-        </div>
-        <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
-          <button
-            className={`tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
-            disabled={!canGive}
-            onClick={onGive}
-            type="button"
-          >
-            {clue === undefined ? "Pick a color or number" : "Give clue"}
-          </button>
+        <div
+          className={`tw:-mx-2 tw:flex tw:overflow-x-clip tw:px-2 ${opensBelow ? "tw:flex-wrap tw:gap-6" : `tw:flex-col ${spacing.buttonClassName}`}`}
+        >
+          <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
+            <ClueRow>
+              {colorClues.map((colorClue) => {
+                const color = colorClue.value;
+                if (!isAllowed(colorClue)) {
+                  return <EmptySlot key={color.name} />;
+                }
+                const pressed = isSameClue(clue, colorClue);
+                const symbol = getColorSymbol(variant, color, colorblindMode);
+                return (
+                  <button
+                    aria-label={color.name}
+                    aria-pressed={pressed}
+                    className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
+                    key={color.name}
+                    onClick={() => {
+                      onChooseClue(pressed ? undefined : colorClue);
+                    }}
+                    style={{
+                      background: colorblindMode
+                        ? color.fillColorblind
+                        : color.fill,
+                    }}
+                    type="button"
+                  >
+                    {symbol !== undefined && (
+                      <ColorSymbolView size={CHOICE_SIZE} symbol={symbol} />
+                    )}
+                  </button>
+                );
+              })}
+            </ClueRow>
+            <ClueRow>
+              {rankClues.map((rankClue) => {
+                const rank = rankClue.value;
+                if (!isAllowed(rankClue)) {
+                  return <EmptySlot key={rank} />;
+                }
+                const pressed = isSameClue(clue, rankClue);
+                return (
+                  <button
+                    aria-pressed={pressed}
+                    className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+                    key={rank}
+                    onClick={() => {
+                      onChooseClue(pressed ? undefined : rankClue);
+                    }}
+                    type="button"
+                  >
+                    {getRankClueLabel(variant, rank)}
+                  </button>
+                );
+              })}
+            </ClueRow>
+          </div>
+          <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
+            <button
+              className={`tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+              disabled={!canGive}
+              onClick={onGive}
+              type="button"
+            >
+              {clue === undefined ? "Pick a color or number" : "Give clue"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

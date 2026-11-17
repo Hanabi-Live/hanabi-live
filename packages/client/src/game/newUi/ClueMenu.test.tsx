@@ -2,12 +2,22 @@
 
 import { getVariant } from "@hanabi-live/game";
 import { cleanup, render } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("../../modals.ts", () => ({
   isModalVisible: () => false,
 }));
 const { ClueMenu } = await import("./ClueMenu.tsx");
+
+/** A stand-in for jsdom, which has no layout. So nothing changes size. */
+class NoResizeObserver {
+  readonly observe = vi.fn();
+  readonly disconnect = vi.fn();
+}
+
+beforeEach(() => {
+  vi.stubGlobal("ResizeObserver", NoResizeObserver);
+});
 
 afterEach(() => {
   cleanup();
