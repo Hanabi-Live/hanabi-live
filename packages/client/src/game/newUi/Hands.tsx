@@ -133,6 +133,8 @@ interface HandsProps {
 
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
+  /** The cards in the acting player's hand now, which are the only ones that can move. */
+  readonly movableCards: ReadonlySet<CardOrder>;
   readonly draggedCard: CardOrder | undefined;
 
   /**
@@ -1190,7 +1192,11 @@ function HandCard({
       <OwnCard
         card={card}
 
-        movable={props.canMoveCards && seat.acting}
+        movable={
+          props.canMoveCards
+          && seat.acting
+          && props.movableCards.has(card.order)
+        }
         place={place}
         props={props}
         slot={slot}

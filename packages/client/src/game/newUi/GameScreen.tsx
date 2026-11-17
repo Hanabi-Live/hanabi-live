@@ -516,24 +516,29 @@ export function GameScreen({
   // The move that the player sent on this turn, while it waits for the server. Until it arrives,
   // the player cannot make another move.
   const sendingMove =
-    hypo === undefined
-    && !inReplay
-    && sentMove?.turnNum === ongoingGame.turn.turnNum
+    hypo === undefined && sentMove?.turnNum === ongoingGame.turn.turnNum
       ? sentMove.move
       : undefined;
   // Speedruns use clicks instead of dragging.
   const speedrunClicks = usesSpeedrunClicks(state, settings.speedrunFeatures);
-  // A queued move must be canceled before another card moves.
+  // A queued move must be canceled before another card moves. In the in-game replay, the player can
+  // still play or discard a card from their hand, as on the classic screen. The move ends the
+  // replay.
   const canMoveCards =
     hypo === undefined
       ? state.playing
-        && !inReplay
         && !speedrunClicks
         && state.premove === undefined
         && sendingMove === undefined
         && !reconnecting
-        && (ourTurn || settings.preplay)
+        && (ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex
+          || settings.preplay)
       : ourTurn && !editingCards;
+  // The cards that can move: those in the acting player's hand now. A replay shows cards that have
+  // since left the hand.
+  const movableCards = new Set(
+    actingPlayerIndex === undefined ? [] : actionState.hands[actingPlayerIndex],
+  );
   const canDiscard = canDiscardNow();
   const clueAvailable = actionState.clueTokens >= getClueCost(variant);
   const pausedBy =
@@ -1287,6 +1292,7 @@ export function GameScreen({
                   // The panel of a paused game covers the hands.
                   hidden={paused && !inReplay}
                   menuCard={menuCard}
+                  movableCards={movableCards}
                   nameColumnWidth={nameColumnWidth}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {

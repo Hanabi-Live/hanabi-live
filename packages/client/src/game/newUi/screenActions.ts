@@ -72,7 +72,8 @@ export function moveCard(
     }
   }
 
-  const cardState = state.visibleState?.deck[order];
+  // A replay shows a past turn, but the move is made on the turn that is played now.
+  const cardState = getActionState(state).deck[order];
   if (type === "play" && cardState !== undefined) {
     confirmPlay(cardState, send, onCancel);
     return;
