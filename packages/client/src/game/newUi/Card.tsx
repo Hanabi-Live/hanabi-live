@@ -14,7 +14,7 @@ import {
   getSuitAbbreviationForVariant,
   hasReversedSuits,
 } from "@hanabi-live/game";
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { ARROW_SIZE_IN_PIXELS } from "../../Tooltip.ts";
@@ -1291,12 +1291,45 @@ const POSSIBLE_CARDS = {
     seen: 0.09,
     note: 0.1,
   },
-  /**
-   * The space between the card and the tip of the pointer. It leaves room for the border of a clued
-   * card, which is outside of the card.
-   */
-  pointerGap: 0.08,
 } as const;
+
+/**
+ * Returns how far the visible edge of an element on the game screen is outside of its box, in the
+ * window's pixels. A card draws its border outside of its box, as a ring (a `box-shadow` without an
+ * offset or a blur) and as an outline. The pointer of the bubble of possible cards touches this
+ * edge, as the arrow of a tooltip touches its anchor.
+ */
+function getVisibleEdge(element: HTMLElement): number {
+  const style = getComputedStyle(element);
+  let edge = 0;
+  // The browser writes each shadow as its color and then its lengths, such as "rgb(255, 159, 28)
+  // 0px 0px 0px 4px". Only a comma before a color starts the next shadow.
+  for (const shadow of style.boxShadow.split(/, (?=[a-z])/u)) {
+    const lengths = shadow
+      .split(" ")
+      .filter((word) => word.endsWith("px"))
+      .map((word) => pixels(word));
+    if (shadow.includes("inset") || lengths.length !== 4) {
+      continue;
+    }
+    const [x, y, blur, spread] = lengths as [number, number, number, number];
+    if (x === 0 && y === 0 && blur === 0) {
+      edge = Math.max(edge, spread);
+    }
+  }
+  if (style.outlineStyle !== "none") {
+    edge = Math.max(
+      edge,
+      pixels(style.outlineOffset) + pixels(style.outlineWidth),
+    );
+  }
+  return edge * getScreenScale();
+}
+
+/** Returns the number in a length in pixels that the browser computed, such as "4px". */
+function pixels(length: string): number {
+  return Number(length.replace("px", ""));
+}
 
 /**
  * The pointer that points from the bubble of possible cards at the card, in the window's pixels. It
@@ -1306,6 +1339,13 @@ const POSSIBLE_CARDS_POINTER = {
   width: 2 * ARROW_SIZE_IN_PIXELS,
   height: ARROW_SIZE_IN_PIXELS,
 } as const;
+
+/**
+ * How far the tip of the pointer of the bubble of possible cards reaches over the visible edge of
+ * the card, in pixels. The thin point of the tip is lighter, so without it a gap shows between the
+ * pointer and the card.
+ */
+const POSSIBLE_CARDS_POINTER_REACH = 2;
 
 /** The outline of the bubble of possible cards and of its pointer, in pixels. */
 const POSSIBLE_CARDS_OUTLINE = 1;
@@ -1551,6 +1591,28 @@ export function PossibleCardsBubble({
 
   // The bubble is outside of the zoomed game screen, so it is measured in the window's pixels.
   const anchorRect = anchor.getBoundingClientRect();
+
+  // The card can still move after the bubble opens, such as when it lifts under the pointer. The
+  // bubble follows it, so that the pointer stays on the card.
+  const [, setAnchorMoves] = useState(0);
+  useEffect(() => {
+    let last = anchor.getBoundingClientRect();
+    let frame = requestAnimationFrame(function follow() {
+      const rect = anchor.getBoundingClientRect();
+      if (
+        rect.top !== last.top
+        || rect.left !== last.left
+        || rect.width !== last.width
+      ) {
+        last = rect;
+        setAnchorMoves((moves) => moves + 1);
+      }
+      frame = requestAnimationFrame(follow);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [anchor]);
   const unit = Math.max(
     cardWidth === undefined ? anchorRect.width : cardWidth * getScreenScale(),
     POSSIBLE_CARDS_MIN_UNIT,
@@ -1569,7 +1631,8 @@ export function PossibleCardsBubble({
     // The sizes before the bubble is scaled.
     const { offsetHeight: height, offsetWidth: width } = element;
     const offset =
-      unit * POSSIBLE_CARDS.pointerGap
+      getVisibleEdge(anchor)
+      - POSSIBLE_CARDS_POINTER_REACH
       + POSSIBLE_CARDS_POINTER.height
       + POSSIBLE_CARDS_OUTLINE;
     const below = anchorRect.bottom + offset;
@@ -1602,6 +1665,7 @@ export function PossibleCardsBubble({
       scale,
     });
   }, [
+    anchor,
     anchorRect.bottom,
     anchorRect.left,
     anchorRect.top,
