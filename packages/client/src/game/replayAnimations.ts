@@ -7,7 +7,7 @@ import { LOCAL_STORAGE_KEY } from "../constants.ts";
 /** The value of the `localStorage` key while the command is on. */
 const ON = "true";
 
-/** Whether a replay shows misplays, completed stacks, and the finale in full. */
+/** Whether a replay shows misplays, completed stacks, lost cards, and the finale in full. */
 export function areReplayAnimationsOn(): boolean {
   return localStorage.getItem(LOCAL_STORAGE_KEY.REPLAY_ANIMATIONS) === ON;
 }
@@ -25,12 +25,12 @@ window.animations = () => {
   if (areReplayAnimationsOn()) {
     localStorage.removeItem(LOCAL_STORAGE_KEY.REPLAY_ANIMATIONS);
     console.log(
-      "Replays now show misplays, completed stacks, and the finale as usual.",
+      "Replays now show misplays, completed stacks, lost cards, and the finale as usual.",
     );
   } else {
     localStorage.setItem(LOCAL_STORAGE_KEY.REPLAY_ANIMATIONS, ON);
     console.log(
-      "Replays now show misplays, completed stacks, and the finale in full, also after the page reloads. Run animations() again to turn this off.",
+      "Replays now show misplays, completed stacks, lost cards, and the finale in full, also after the page reloads. Run animations() again to turn this off.",
     );
   }
 };

@@ -156,11 +156,13 @@ export function onMaxScoreOrDiscardStacksChanged(
   }
 
   stopMaxScoreDropAnimation();
-  // Skip the animation when jumping through a replay, when going backwards, or with reduced motion.
+  // Show it only in a game in progress, not in a replay (unless the `animations()` console command
+  // is on). Skip it when going backwards or with reduced motion.
   if (
     globals.animateFast
     || data.maxScore > previousData.maxScore
     || store.getState().session.settings.reducedMotion
+    || (globals.state.replay.segment !== undefined && !areReplayAnimationsOn())
   ) {
     return;
   }

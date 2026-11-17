@@ -72,48 +72,50 @@ function getMoveEffects(
 /**
  * Shows the changes of the score on a move, as the classic screen does.
  *
- * - In a game in progress, a play that completes a stack celebrates it, and a play that gives the
- *   team a perfect score sets off the finale instead.
- * - A lost card that lowers the maximum score shows it, also in a replay, but not when the replay
- *   goes back.
+ * They show only in a game in progress, not in a replay.
+ *
+ * - A play that completes a stack celebrates it, and a play that gives the team a perfect score
+ *   sets off the finale instead.
+ * - A lost card that lowers the maximum score shows it.
  */
 function animateScoreChanges(
   root: HTMLElement,
   before: GameState,
   after: GameState,
   live: boolean,
-  segmentChange: number,
 ) {
-  const variant = currentVariant();
-  if (live) {
-    // Each player has one more turn once the last card leaves the deck.
-    if (
-      after.cardsRemainingInTheDeck === 0
-      && before.cardsRemainingInTheDeck > 0
-    ) {
-      animateEmptyDeck(root);
-    }
-
-    const completed = after.playStacks.findIndex(
-      (stack, suitIndex) =>
-        stack.length === variant.stackSize
-        && before.playStacks[suitIndex]?.length === variant.stackSize - 1,
-    );
-    const playedCard = getLastPlayedCard(root, before, after);
-    if (after.score === variant.maxScore && before.score < variant.maxScore) {
-      animateFinale(root, variant.suits, playedCard);
-    } else if (completed !== -1) {
-      animateStackComplete(
-        root,
-        variant.suits,
-        completed,
-        playedCard,
-        after.clueTokens > before.clueTokens ? before.clueTokens : undefined,
-      );
-    }
+  if (!live) {
+    return;
   }
 
-  if (segmentChange < 0 || after.stats.maxScore >= before.stats.maxScore) {
+  const variant = currentVariant();
+  // Each player has one more turn once the last card leaves the deck.
+  if (
+    after.cardsRemainingInTheDeck === 0
+    && before.cardsRemainingInTheDeck > 0
+  ) {
+    animateEmptyDeck(root);
+  }
+
+  const completed = after.playStacks.findIndex(
+    (stack, suitIndex) =>
+      stack.length === variant.stackSize
+      && before.playStacks[suitIndex]?.length === variant.stackSize - 1,
+  );
+  const playedCard = getLastPlayedCard(root, before, after);
+  if (after.score === variant.maxScore && before.score < variant.maxScore) {
+    animateFinale(root, variant.suits, playedCard);
+  } else if (completed !== -1) {
+    animateStackComplete(
+      root,
+      variant.suits,
+      completed,
+      playedCard,
+      after.clueTokens > before.clueTokens ? before.clueTokens : undefined,
+    );
+  }
+
+  if (after.stats.maxScore >= before.stats.maxScore) {
     return;
   }
 
@@ -301,7 +303,6 @@ export function useCardMotion(
           previous.shownState,
           shownState,
           effects.live,
-          segmentChange,
         );
       }
     }
