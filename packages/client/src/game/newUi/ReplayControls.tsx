@@ -609,7 +609,7 @@ function OwnHypotheticalControls({
       <div className={RIGHT_CLASS}>
         <IconToggle
           disabled={!canToggleDrawnCards(state)}
-          icon="fa-eye"
+          icon="fa-magic"
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo?.showDrawnCards === true}
