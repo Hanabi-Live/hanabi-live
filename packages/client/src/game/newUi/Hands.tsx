@@ -455,14 +455,43 @@ function ClueRail({
 /** The width that the brain button takes beside a name, with its gap, in CSS pixels. */
 export const EMPATHY_TOGGLE_SPACE = 34;
 
+/** A brain seen from the side, in a 32 by 32 box: its outline, and the folds on it. */
+const BRAIN_OUTLINE =
+  "M8.5 23.5C5 23.5 2.5 21 2.5 18C2.5 16 3.5 14.5 4.5 13.8C4 10.5 6.5 7.8 9.5 8C10.5 5.5 13.5 4.2 16 5.2C18 3.5 21.5 3.8 23 6C26 6 28.5 8.5 28.3 11.5C30 12.8 30.5 15.5 29.3 17.5C29.8 20.5 27.5 23 24.5 22.8C23.5 25 20.5 25.8 18.5 24.5L17.5 28.5H14.5L15 24C13 25 10 24.8 8.5 23.5Z";
+const BRAIN_FOLDS =
+  "M9.5 8C10 10 12 11 13.5 10.5M16 5.2C16 7.5 18 9 20 8.5M23 6C22.5 8 23.5 10 25.5 10.5M4.5 13.8C6.5 14.5 8.5 13.5 9 12M28.3 11.5C26.5 12.5 25.5 14.5 26.5 16.5M11 14.5C12.5 13 15.5 13 16.5 15C17.5 17 20 17.5 22 16M7 19C8.5 17.5 10.5 18 11.5 19.5M14 19C15 21 17.5 21.5 19 20.5M24.5 22.8C24.5 21 23 19.5 21.5 19.5";
+const BRAIN_FILL = "#f7a1bd";
+const BRAIN_FOLD_COLOR = "#9c2f55";
+
+/** The brain on the buttons that show a player's view of their hand: pink, with a dark outline. */
+function BrainIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" className="tw:size-6" viewBox="0 0 32 32">
+      <path
+        d={BRAIN_OUTLINE}
+        fill={BRAIN_FILL}
+        stroke="black"
+        strokeLinejoin="round"
+        strokeWidth={1.6}
+      />
+      <path
+        d={BRAIN_FOLDS}
+        fill="none"
+        stroke={BRAIN_FOLD_COLOR}
+        strokeLinecap="round"
+        strokeWidth={1.3}
+      />
+    </svg>
+  );
+}
+
 /**
  * The cursor over another player's cards, where holding the mouse button down shows their view of
- * them: a pink brain with folds and a dark outline, which shows on any card. It points with its
- * center.
+ * them: the same brain, which shows on any card. It points with its center.
  */
 const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='-24 -24 560 560'><path d='M184 0c30.9 0 56 25.1 56 56V456c0 30.9-25.1 56-56 56c-28.9 0-52.7-21.9-55.7-50.1c-5.2 1.4-10.7 2.1-16.3 2.1c-35.3 0-64-28.7-64-64c0-7.4 1.3-14.6 3.6-21.2C21.4 367.4 0 338.2 0 304c0-31.9 18.7-59.5 45.8-72.3C37.1 220.8 32 207 32 192c0-30.7 21.6-56.3 50.4-62.6C80.8 123.9 80 118 80 112c0-29.9 20.6-55.1 48.3-62.1C131.3 21.9 155.1 0 184 0zM328 0c28.9 0 52.6 21.9 55.7 49.9c27.8 7 48.3 32.1 48.3 62.1c0 6-.8 11.9-2.4 17.4c28.8 6.2 50.4 31.9 50.4 62.6c0 15-5.1 28.8-13.8 39.7C493.3 244.5 512 272.1 512 304c0 34.2-21.4 63.4-51.6 74.8c2.3 6.6 3.6 13.8 3.6 21.2c0 35.3-28.7 64-64 64c-5.6 0-11.1-.7-16.3-2.1c-3 28.2-26.8 50.1-55.7 50.1c-30.9 0-56-25.1-56-56V56c0-30.9 25.1-56 56-56z' fill='#f7a1bd' stroke='black' stroke-width='36' stroke-linejoin='round'/><path d='M70 200c30-20 60 10 90-10s50 10 60 30M60 330c30 10 50-20 80 0s50 20 80 0M110 110c20 10 40 0 60 20M442 200c-30-20-60 10-90-10s-50 10-60 30M452 330c-30 10-50-20-80 0s-50 20-80 0M402 110c-20 10-40 0-60 20' fill='none' stroke='#9c2f55' stroke-width='28' stroke-linecap='round'/></svg>",
-)}") 12 12, pointer`;
+  `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='${BRAIN_OUTLINE}' fill='${BRAIN_FILL}' stroke='black' stroke-width='1.6' stroke-linejoin='round'/><path d='${BRAIN_FOLDS}' fill='none' stroke='${BRAIN_FOLD_COLOR}' stroke-width='1.3' stroke-linecap='round'/></svg>`,
+)}") 16 16, pointer`;
 
 /**
  * The cursor over a card while editing cards, where a click changes the card: a white pencil with a
@@ -1324,10 +1353,10 @@ function Hand({
             <button
               aria-label={`Show ${seat.name}'s view of their hand`}
               aria-pressed={props.empathyToggled.has(seat.playerIndex)}
-              className={`tw:ml-1.5 tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:self-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+              className={`tw:ml-1.5 tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:self-center tw:rounded-full tw:border-0 ${
                 props.empathyToggled.has(seat.playerIndex)
                   ? "tw:bg-game-text tw:text-card-ink"
-                  : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+                  : "tw:bg-transparent tw:hover:bg-white/10"
               }`}
               onClick={() => {
                 props.onToggleEmpathy?.(seat.playerIndex);
@@ -1335,7 +1364,7 @@ function Hand({
               ref={tooltipRef(`Show ${seat.name}'s hand as they see it.`)}
               type="button"
             >
-              <i aria-hidden="true" className="fas fa-brain" />
+              <BrainIcon />
             </button>
           )}
         </div>
