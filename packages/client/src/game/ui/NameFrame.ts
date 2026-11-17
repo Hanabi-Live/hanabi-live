@@ -1,5 +1,4 @@
 import type { PlayerIndex } from "@hanabi-live/game";
-import { isValidPlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { store } from "../../store.ts";
@@ -21,7 +20,6 @@ import {
 } from "./constants.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
 import { globals } from "./UiGlobals.ts";
-import { viewAs } from "./viewAs.ts";
 
 const NAME_SHADOW_OPACITY = 0.9;
 const ACTIVE_SHADOW_OPACITY = 0.6;
@@ -89,16 +87,14 @@ export class NameFrame extends Konva.Group {
         if (event.evt.button === LEFT_MOUSE_BUTTON) {
           // Left-click
           this.leftClick();
-        } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
-          // Ctrl + right-click highlights the name with an arrow, when we can draw one. A
-          // right-click alone views the game as the player.
-          if (event.evt.ctrlKey && canDrawArrow(globals.state, event.evt)) {
-            arrows.toggle({
-              playerIndex: this.playerIndex,
-            });
-          } else {
-            this.rightClick();
-          }
+        } else if (
+          event.evt.button === RIGHT_MOUSE_BUTTON
+          && canDrawArrow(globals.state, event.evt)
+        ) {
+          // Right-click highlights the name with an arrow.
+          arrows.toggle({
+            playerIndex: this.playerIndex,
+          });
         }
       },
     );
@@ -193,18 +189,5 @@ export class NameFrame extends Konva.Group {
   leftClick(): void {
     const username = this.playerName.text();
     globals.elements.fullActionLog!.showPlayerActions(username);
-  }
-
-  /** Right-clicking a name frame views the game from that player's seat (see "viewAs.ts"). */
-  rightClick(): void {
-    const playerName = this.playerName.text();
-    const playerIndex = globals.metadata.playerNames.indexOf(playerName);
-    if (!isValidPlayerIndex(playerIndex)) {
-      throw new Error(
-        `Failed to find the index corresponding to player: ${playerName}`,
-      );
-    }
-
-    viewAs(playerIndex);
   }
 }

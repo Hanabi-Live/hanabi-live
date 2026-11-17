@@ -31,8 +31,7 @@ export function canChooseSeat(): boolean {
 
 /**
  * Views the game from a player's seat, or, in an ongoing game, with no seat when the index is
- * `undefined`. The page reloads the game, so this happens after the current event ends. (Otherwise,
- * a right-click would also open the browser's menu, which the lobby allows again.)
+ * `undefined`. The page reloads the game, so this happens after the current event ends.
  */
 export function viewAs(playerIndex: PlayerIndex | undefined): void {
   if (!canChooseSeat()) {

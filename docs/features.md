@@ -125,8 +125,8 @@ that have not been played yet and have only one copy remaining.)
 - Spectators will see all of the hands.
 - The list of current spectators can be seen by hovering over the "👀" icon in
   the bottom-right-hand corner.
-- Spectators can right-click on a player's name to view the game from their
-  perspective. In ongoing games, this is indicated with a "🕵️" icon.
+- Spectators can view the game from a player's perspective. In ongoing games,
+  this is indicated with a "🕵️" icon.
 - Anyone can left-click on a player's name to see only that player's actions in
   the action log.
 
@@ -187,8 +187,8 @@ that have not been played yet and have only one copy remaining.)
 - The leader can right-click on a card to highlight it with an arrow (to point
   out things to the other players).
   - In a solo replay, right-clicking on a card draws an arrow too.
-  - The leader can also point at a player's name with Ctrl + right-click, or at
-    the discard pile with a right-click beside its cards.
+  - The leader can also right-click on a player's name, or on the discard pile
+    beside its cards.
   - During a game, players can create "local" arrows by Ctrl + right-clicking.
     These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom
