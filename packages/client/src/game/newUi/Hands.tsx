@@ -19,6 +19,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
+import { logInputTiming } from "./devTiming.ts";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
@@ -1454,6 +1455,7 @@ function Hand({
           }
           heldRef.current = true;
           props.onHoldEmpathy(seat.playerIndex);
+          logInputTiming("Empathy", event.nativeEvent);
         }}
         onPointerLeave={endHold}
         onPointerUp={endHold}
