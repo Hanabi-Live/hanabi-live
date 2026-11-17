@@ -54,6 +54,10 @@ test("errors from the website's scripts are reported once each, up to a limit", 
   throwError("Before the connection");
   throwError("In an extension", "chrome-extension://abc/inject.js");
   listeners.get("unhandledrejection")?.({ reason: scriptError("Rejected") });
+  // Chrome leaves out the message of some errors, such as a `DOMException`.
+  const domError = scriptError("Not a child");
+  domError.name = "NotFoundError";
+  listeners.get("error")?.(new FakeErrorEvent("Uncaught ", domError));
 
   // The reports wait for the connection to open.
   const sent: unknown[] = [];
@@ -69,6 +73,7 @@ test("errors from the website's scripts are reported once each, up to a limit", 
   expect(sent).toEqual([
     ["clientError", "Uncaught Error: Before the connection"],
     ["clientError", "Unhandled rejection: Rejected"],
+    ["clientError", "Uncaught NotFoundError: Not a child"],
   ]);
 
   throwError("Before the connection");

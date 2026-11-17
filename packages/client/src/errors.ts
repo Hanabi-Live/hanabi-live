@@ -17,6 +17,12 @@ const INJECTED_ERROR_LOCATION = {
   colno: 16,
 } as const;
 
+/**
+ * The most calls that a stack trace names. Chrome names only 10 by default, which can leave out the
+ * code that caused the error. The server cuts a stack trace that is too long.
+ */
+const STACK_TRACE_LIMIT = 50;
+
 /** The most errors that a page reports to the server. */
 const MAX_REPORTS = 5;
 
@@ -85,6 +91,9 @@ function truncate(text: string, maxLength: number): string {
  * server.
  */
 export function initErrorListener(): void {
+  // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- Chromium is the only supported browser.
+  Error.stackTraceLimit = STACK_TRACE_LIMIT;
+
   globalThis.addEventListener("error", (errorEvent) => {
     if (!(errorEvent instanceof ErrorEvent)) {
       return;
@@ -103,7 +112,7 @@ export function initErrorListener(): void {
     }
 
     const errorStackTrace = getErrorStackTrace(errorEvent);
-    reportError(errorEvent.message, errorStackTrace);
+    reportError(getErrorMessage(errorEvent), errorStackTrace);
     const stackTrace = errorStackTrace ?? errorEvent.message;
     const formattedStackTrace = `<pre>${escapeHtml(stackTrace)}</pre>`;
 
@@ -131,6 +140,23 @@ export function initErrorListener(): void {
       reportError(`Unhandled rejection: ${reason.message}`, reason.stack);
     }
   });
+}
+
+/**
+ * The message of an uncaught error, in the form "Uncaught TypeError: ...". Chrome leaves the
+ * event's message empty for some errors, such as a `DOMException`, so it is made from the error
+ * itself.
+ */
+function getErrorMessage(errorEvent: ErrorEvent): string {
+  const error: unknown = errorEvent.error; // Cast from `any` to `unknown`.
+  return typeof error === "object"
+    && error !== null
+    && "name" in error
+    && typeof error.name === "string"
+    && "message" in error
+    && typeof error.message === "string"
+    ? `Uncaught ${error.name}: ${error.message}`
+    : errorEvent.message;
 }
 
 function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
