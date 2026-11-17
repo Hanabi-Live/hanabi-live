@@ -34,6 +34,12 @@ const HAND_CARD_WIDTH = {
  */
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
+/**
+ * The wide layout keeps the hand cards at least this wide, when the height allows it. Otherwise,
+ * the game screen uses the phone layout, which scrolls.
+ */
+const WIDE_LAYOUT_MIN_CARD_WIDTH = 100;
+
 /** The smallest and largest card on the play stacks. */
 const STACK_CARD_WIDTH = {
   MIN: 30,
@@ -116,11 +122,7 @@ export function namesFitBesideCards(
   nameColumnWidth: number,
 ): boolean {
   return (
-    nameColumnWidth
-      + NAME_GAP
-      + HAND_BOX_HORIZONTAL_PADDING
-      + CARD_GAP * (cardsPerHand - 1)
-      + HAND_CARD_WIDTH.MIN * cardsPerHand
+    getHandsWidthForCards(HAND_CARD_WIDTH.MIN, cardsPerHand, nameColumnWidth)
     <= handsWidth
   );
 }
@@ -153,8 +155,23 @@ const TABLE_SPACING_ROOM =
   2 * (TABLE_SIDE_PADDING.MAX - TABLE_SIDE_PADDING.MIN)
   + 2 * (TABLE_COLUMN_GAP.MAX - TABLE_COLUMN_GAP.MIN);
 
-/** The widest that the wide layout's hands get, in CSS pixels. */
-const WIDE_HANDS_MAX_WIDTH = 760;
+/**
+ * Returns the width of the hands with cards `cardWidth` wide and the names beside them in a column
+ * `nameColumnWidth` wide.
+ */
+function getHandsWidthForCards(
+  cardWidth: number,
+  cardsPerHand: number,
+  nameColumnWidth: number,
+): number {
+  return (
+    nameColumnWidth
+    + NAME_GAP
+    + HAND_BOX_HORIZONTAL_PADDING
+    + CARD_GAP * (cardsPerHand - 1)
+    + cardWidth * cardsPerHand
+  );
+}
 
 /** The sizes of the wide layout's parts beside the hands, as `getWideLayoutRoom` sets them. */
 export interface WideLayoutRoom {
@@ -178,9 +195,9 @@ export interface WideLayoutRoom {
 
   /**
    * Whether the hands are still too narrow when everything beside them has given up its room: the
-   * width makes the cards smaller than their height allows. Then the game screen uses the phone
-   * layout. When even the largest cards do not take all of the height, such as with two players,
-   * the hands are never too narrow.
+   * width makes the cards smaller than their height allows, and smaller than
+   * `WIDE_LAYOUT_MIN_CARD_WIDTH`. Then the game screen uses the phone layout. When even the largest
+   * cards do not take all of the height, such as with two players, the hands are never too narrow.
    */
   readonly handsTooNarrow: boolean;
 }
@@ -204,7 +221,11 @@ export function getWideLayoutRoom(
 ): WideLayoutRoom {
   const widest: WideLayoutRoom = {
     discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL,
-    handsColumnMaxWidth: WIDE_HANDS_MAX_WIDTH,
+    handsColumnMaxWidth: getHandsWidthForCards(
+      HAND_CARD_WIDTH.MAX,
+      cardsPerHand,
+      NAME_COLUMN_MAX_WIDTH.MAX + nameExtraWidth,
+    ),
     nameColumnMaxWidth: NAME_COLUMN_MAX_WIDTH.MAX,
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
@@ -220,7 +241,6 @@ export function getWideLayoutRoom(
     - DISCARD_COLUMN_WIDTH.NORMAL
     - 2 * TABLE_SIDE_PADDING.MAX
     - 2 * TABLE_COLUMN_GAP.MAX;
-  const handsWidth = Math.min(roomForHands, WIDE_HANDS_MAX_WIDTH);
   const cardWidth = getHandCardWidth(
     Infinity,
     handsHeight,
@@ -231,27 +251,25 @@ export function getWideLayoutRoom(
     false,
   );
   const widestNameColumn = Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.MAX);
-  const neededWidth =
-    widestNameColumn
-    + nameExtraWidth
-    + NAME_GAP
-    + HAND_BOX_HORIZONTAL_PADDING
-    + CARD_GAP * (cardsPerHand - 1)
-    + cardWidth * cardsPerHand;
-  // The hands cannot use more than their maximum width, so the parts beside them give up no room
-  // for more than that.
-  const usableWidth = Math.min(neededWidth, WIDE_HANDS_MAX_WIDTH);
-  let missing = usableWidth - handsWidth;
+  // The hands use no more width than their cards need. Then the cards are as large as the height
+  // allows.
+  const neededWidth = getHandsWidthForCards(
+    cardWidth,
+    cardsPerHand,
+    widestNameColumn + nameExtraWidth,
+  );
+  const handsColumnMaxWidth = Math.ceil(neededWidth);
+  let missing = neededWidth - roomForHands;
   if (missing <= 0) {
     // The right column takes the width that the hands do not use, so that the hands do not have
     // empty space beside them.
     return {
       ...widest,
-      handsColumnMaxWidth: Math.ceil(usableWidth),
+      handsColumnMaxWidth,
       discardColumnWidth:
         DISCARD_COLUMN_WIDTH.NORMAL
         + clamp(
-          Math.floor(roomForHands - usableWidth),
+          Math.floor(roomForHands - neededWidth),
           0,
           DISCARD_COLUMN_WIDTH.MAX - DISCARD_COLUMN_WIDTH.NORMAL,
         ),
@@ -276,7 +294,7 @@ export function getWideLayoutRoom(
 
   return {
     discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL - discardRoom,
-    handsColumnMaxWidth: WIDE_HANDS_MAX_WIDTH,
+    handsColumnMaxWidth,
     nameColumnMaxWidth,
     tableSidePadding:
       TABLE_SIDE_PADDING.MAX
@@ -285,7 +303,12 @@ export function getWideLayoutRoom(
       TABLE_COLUMN_GAP.MAX
       - spacingShare * (TABLE_COLUMN_GAP.MAX - TABLE_COLUMN_GAP.MIN),
     handsNarrowed: missing > 0,
-    handsTooNarrow: cardWidth < HAND_CARD_WIDTH.MAX && missing > 0,
+    // Each pixel that the cards lose gives the hands `cardsPerHand` pixels.
+    handsTooNarrow:
+      cardWidth < HAND_CARD_WIDTH.MAX
+      && missing
+        > cardsPerHand
+          * (cardWidth - Math.min(cardWidth, WIDE_LAYOUT_MIN_CARD_WIDTH)),
   };
 }
 
