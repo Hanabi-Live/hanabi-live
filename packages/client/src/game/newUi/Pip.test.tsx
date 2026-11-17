@@ -39,5 +39,5 @@ test("a pip shows in a browser without display-pixel sizes", () => {
 
   const { container } = render(<Pip size={20} suit={suit} variant={variant} />);
 
-  expect(container.querySelector("canvas")).not.toBeNull();
+  expect(container.querySelector("img")).not.toBeNull();
 });
