@@ -73,7 +73,7 @@ export const PLAY_AREA_GAP = 8;
  * The width of the label to the left of each play stack that names its suit, in CSS pixels. When
  * the columns stack, the label is under the stack instead, as tall as this.
  */
-const SUIT_LABEL_SIZE = 14;
+const SUIT_LABEL_SIZE = 20;
 
 /** The space between a suit label and its play stack, in CSS pixels. */
 const SUIT_LABEL_GAP = 4;
@@ -90,7 +90,7 @@ const SUIT_LABEL_SWATCH_SIZE = {
   normal: 12,
 
   /** It is larger in colorblind mode to hold the color's letter. */
-  colorblind: SUIT_LABEL_SIZE,
+  colorblind: 14,
 } as const;
 
 /**
@@ -158,7 +158,7 @@ function SuitLabel({
       )}
       role="note"
     >
-      <span className="tw:text-[13px] tw:leading-none tw:font-bold tw:text-game-text">
+      <span className="tw:text-[19.5px] tw:leading-none tw:font-bold tw:text-game-text">
         {abbreviation}
       </span>
       {suit.clueColors.length >= 2
