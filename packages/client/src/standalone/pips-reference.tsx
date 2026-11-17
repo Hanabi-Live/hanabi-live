@@ -15,7 +15,7 @@ const DEFAULT_PIP_FILL = "#cccccc";
 
 interface PipInfo {
   readonly pip: Pip;
-  /** The name of the first suit with the pip, or the pip itself if no suit has it. */
+  /** The name of the first suit with the pip, or the pip itself and a note if no suit has it. */
   readonly name: string;
   readonly fill: SuitFill | undefined;
 }
@@ -50,10 +50,9 @@ function getUniquePips(): readonly PipInfo[] {
 
     uniquePips.set(pip, {
       pip,
-      name: pip,
+      name: `${pip} (no suit)`,
       fill: undefined,
     });
-    console.warn(`The "${pip}" pip is not assigned a suit.`);
   }
 
   return [...uniquePips.values()];

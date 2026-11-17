@@ -1,7 +1,8 @@
 // Takes screenshots of the site's screens at several widths in both themes. It starts this
 // checkout's server with a disposable database and seeds it through the client protocol, so that
 // every run sees the same pages. Run it through "runTests.ts", which provides the database and
-// builds the server and the client: `bun run ui-screenshots [options]`.
+// builds the server and a development client: `bun run ui-screenshots [options]`. An error or
+// warning in a page fails the run.
 
 // Options:
 // - `--state <name>`: Only this state. Repeat it for more than one.
@@ -3039,6 +3040,7 @@ function parseOptions(): Options {
 interface Results {
   /** The lines of the comparison report. */
   readonly comparison: string[];
+  /** The errors and warnings of the pages, which fail the run. */
   readonly errors: string[];
 }
 
@@ -3054,13 +3056,15 @@ async function capture(
 ) {
   const page = await context.newPage();
   page.setDefaultTimeout(STEP_TIMEOUT_MILLISECONDS);
+  let stateName = "";
   page.on("pageerror", (error) => {
-    results.errors.push(error.message);
+    results.errors.push(`${stateName}: ${error.message}`);
   });
-  // Such as a script or image that the content security policy blocked.
+  // Such as a script or image that the content security policy blocked, or a React warning.
   page.on("console", (message) => {
-    if (message.type() === "error") {
-      results.errors.push(message.text());
+    const type = message.type();
+    if (type === "error" || type === "warning") {
+      results.errors.push(`${stateName}: ${type}: ${message.text()}`);
     }
   });
   if (compareBundle !== undefined) {
@@ -3073,6 +3077,7 @@ async function capture(
   }
 
   for (const state of states) {
+    stateName = state.name;
     try {
       await captureState(
         page,
@@ -3222,9 +3227,13 @@ async function writeReports(options: Options, results: Results) {
     );
   }
 
-  if (results.errors.length > 0) {
-    console.warn(`Errors in the pages:\n${results.errors.join("\n")}`);
+  if (results.errors.length === 0) {
+    return;
   }
+  console.error(
+    `Errors and warnings in the pages:\n${results.errors.join("\n")}`,
+  );
+  process.exitCode = 1;
 }
 
 async function main() {

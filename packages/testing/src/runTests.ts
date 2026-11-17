@@ -297,13 +297,17 @@ async function runSuite(
 
     case "ui-screenshots": {
       await buildServer();
-      // The pages load the client, which must be from the same revision as the server.
+      // The pages load the client, which must be from the same revision as the server. A
+      // development build keeps the warnings of React and React-Redux, which fail the run.
       const code = await runInherited(
         "bash",
         [path.join(ROOT, "scripts/dev/build-client.sh")],
         {
           cwd: ROOT,
-          env,
+          env: {
+            ...env,
+            NODE_ENV: "development",
+          },
         },
       );
       if (code !== 0) {
