@@ -57,11 +57,12 @@ pub(super) fn record(app: &App, session: &Session, request: &ClientErrorRequest)
             "location": location,
             "message": message,
             "stack": stack,
+            "translated": request.translated,
             "diagnosticId": diagnostic_id
         })
     );
     if let Some(integrations) = app.integrations.get() {
-        integrations.client_error(&location, message, &diagnostic_id);
+        integrations.client_error(&location, message, request.translated, &diagnostic_id);
     }
 }
 

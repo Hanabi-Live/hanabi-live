@@ -138,6 +138,9 @@ pub struct ClientErrorRequest {
     /// The stack trace, which names the script, line, and column of each call. At most
     /// `MAX_CLIENT_ERROR_STACK_LENGTH` characters.
     pub stack: String,
+    /// Whether a translator, such as the browser's, changed the page's text. It replaces nodes
+    /// that React manages, which can break React.
+    pub translated: bool,
 }
 
 /// A page of a list of games: in `gameHistory`, the player's own games, newest first.

@@ -1,3 +1,4 @@
+import type { ClientRequestData } from "@hanabi-live/data";
 import {
   MAX_CLIENT_ERROR_MESSAGE_LENGTH,
   MAX_CLIENT_ERROR_STACK_LENGTH,
@@ -26,10 +27,13 @@ const STACK_TRACE_LIMIT = 50;
 /** The most errors that a page reports to the server. */
 const MAX_REPORTS = 5;
 
-interface ErrorReport {
-  readonly message: string;
-  readonly stack: string;
-}
+type ErrorReport = ClientRequestData["clientError"];
+
+/**
+ * The classes that Google Translate adds to the page's root element. Other translators, such as
+ * Microsoft's, wrap the text that they change in `<font>` elements, which the website does not use.
+ */
+const TRANSLATED_CLASSES = ["translated-ltr", "translated-rtl"] as const;
 
 /** The errors that this page reported, as their message and stack trace. */
 const reported = new Set<string>();
@@ -64,15 +68,25 @@ function reportError(message: string, stack: string | undefined) {
   }
   reported.add(key);
 
-  const report = {
+  const report: ErrorReport = {
     message: truncate(message, MAX_CLIENT_ERROR_MESSAGE_LENGTH),
     stack: truncate(stack, MAX_CLIENT_ERROR_STACK_LENGTH),
+    translated: isTranslated(),
   };
   if (reportConnection?.ws.readyState === WebSocket.OPEN) {
     reportConnection.send("clientError", report);
   } else {
     unsent.push(report);
   }
+}
+
+/** Whether a translator changed the page's text, which can break React. */
+function isTranslated(): boolean {
+  return (
+    TRANSLATED_CLASSES.some((className) =>
+      document.documentElement.classList.contains(className),
+    ) || document.querySelector("font") !== null
+  );
 }
 
 /**

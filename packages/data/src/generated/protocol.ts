@@ -280,6 +280,11 @@ export const clientErrorRequestSchema = z
      * `MAX_CLIENT_ERROR_STACK_LENGTH` characters.
      */
     stack: z.string(),
+    /**
+     * Whether a translator, such as the browser's, changed the page's text. It replaces nodes
+     * that React manages, which can break React.
+     */
+    translated: z.boolean(),
   })
   .readonly();
 

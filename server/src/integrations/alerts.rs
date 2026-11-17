@@ -128,10 +128,17 @@ impl Alerts {
 
     /// Posts an error that a client did not catch, at `location` in one of the website's scripts.
     /// The client wrote the message, so the alert leaves it out.
-    pub fn client_error(&self, location: &str, message: &str, diagnostic_id: &str) {
+    pub fn client_error(
+        &self,
+        location: &str,
+        message: &str,
+        translated: bool,
+        diagnostic_id: &str,
+    ) {
         self.send(client_alert(
             location,
             message,
+            translated,
             diagnostic_id,
             &self.release,
         ));
@@ -164,11 +171,23 @@ fn server_alert(report: &Report, release: &str) -> Alert {
     }
 }
 
-fn client_alert(location: &str, message: &str, diagnostic_id: &str, release: &str) -> Alert {
+fn client_alert(
+    location: &str,
+    message: &str,
+    translated: bool,
+    diagnostic_id: &str,
+    release: &str,
+) -> Alert {
+    let translated = if translated {
+        " A translator had changed the page."
+    } else {
+        ""
+    };
     Alert {
         group: format!("client {location} {message}"),
         summary: format!(
-            "Client error at `{location}` (release `{release}`, diagnostic ID `{diagnostic_id}`)."
+            "Client error at `{location}` (release `{release}`, diagnostic ID `{diagnostic_id}`).\
+             {translated}"
         ),
         diagnostic_id: diagnostic_id.to_owned(),
     }
@@ -250,18 +269,19 @@ mod tests {
         let location = "main.abc.min.js:880:251";
         let message = throttle
             .message(
-                &client_alert(location, "@everyone private text", "d1", "v1"),
+                &client_alert(location, "@everyone private text", true, "d1", "v1"),
                 start,
             )
             .unwrap();
         assert!(message.contains(&format!("Client error at `{location}`")));
         assert!(message.contains("`d1`"));
+        assert!(message.contains("A translator had changed the page."));
         assert!(!message.contains("@everyone") && !message.contains("private text"));
 
         let later = start + Duration::from_secs(1);
-        let repeat = client_alert(location, "@everyone private text", "d2", "v1");
+        let repeat = client_alert(location, "@everyone private text", false, "d2", "v1");
         assert!(throttle.message(&repeat, later).is_none());
-        let other = client_alert(location, "Another message", "d3", "v1");
+        let other = client_alert(location, "Another message", false, "d3", "v1");
         assert!(throttle.message(&other, later).is_some());
     }
 
@@ -269,7 +289,8 @@ mod tests {
     fn new_groups_are_dropped_while_too_many_are_recent() {
         let mut throttle = Throttle::default();
         let start = Instant::now();
-        let alert = |index: usize| client_alert("main.js:1:1", &index.to_string(), "d", "v1");
+        let alert =
+            |index: usize| client_alert("main.js:1:1", &index.to_string(), false, "d", "v1");
         for index in 0..MAX_GROUPS {
             assert!(throttle.message(&alert(index), start).is_some());
         }

@@ -1131,10 +1131,12 @@ async fn client_errors_are_answered_without_a_warning_even_over_the_limit_postgr
     let report = json!({
         "message": "Uncaught TypeError: x is undefined",
         "stack": "TypeError: x is undefined\n    at https://hanab.live/public/js/bundles/main.abc.min.js:1:2",
+        "translated": false,
     });
     let extension = json!({
         "message": "Uncaught Error",
         "stack": "Error\n    at chrome-extension://abc/inject.js:1:2",
+        "translated": false,
     });
     let reports = std::iter::repeat_n(&report, client_errors::REPORT_LIMIT + 1).chain([&extension]);
     for (id, data) in (1..).zip(reports) {

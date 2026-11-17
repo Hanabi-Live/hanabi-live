@@ -107,7 +107,9 @@ mod tests {
             let value = match command {
                 "settings" => json!({"settings":{"volume":50}}),
                 "userInactive" => json!({"inactive":true}),
-                "clientError" => json!({"message":"Error","stack":"Error\n    at main.js:1:2"}),
+                "clientError" => {
+                    json!({"message":"Error","stack":"Error\n    at main.js:1:2","translated":false})
+                }
                 "seedGames" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),

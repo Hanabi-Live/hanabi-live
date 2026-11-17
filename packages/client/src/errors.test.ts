@@ -18,6 +18,17 @@ class FakeErrorEvent {
   }
 }
 vi.stubGlobal("ErrorEvent", FakeErrorEvent);
+/** Whether the page has a `<font>` element, which a translator adds. */
+let translated = false;
+vi.stubGlobal("document", {
+  documentElement: {
+    classList: {
+      contains: () => false,
+    },
+  },
+  querySelector: (selector: string) =>
+    selector === "font" && translated ? {} : null,
+});
 const listeners = new Map<string, (event: unknown) => void>();
 vi.stubGlobal(
   "addEventListener",
@@ -54,10 +65,13 @@ test("errors from the website's scripts are reported once each, up to a limit", 
   throwError("Before the connection");
   throwError("In an extension", "chrome-extension://abc/inject.js");
   listeners.get("unhandledrejection")?.({ reason: scriptError("Rejected") });
-  // Chrome leaves out the message of some errors, such as a `DOMException`.
+  // Chrome leaves out the message of some errors, such as a `DOMException`. A translator that
+  // changes the page's text can cause them.
   const domError = scriptError("Not a child");
   domError.name = "NotFoundError";
+  translated = true;
   listeners.get("error")?.(new FakeErrorEvent("Uncaught ", domError));
+  translated = false;
 
   // The reports wait for the connection to open.
   const sent: unknown[] = [];
@@ -65,15 +79,15 @@ test("errors from the website's scripts are reported once each, up to a limit", 
     ws: {
       readyState: WebSocket.OPEN,
     },
-    send: (command: string, data: { message: string }) => {
-      sent.push([command, data.message]);
+    send: (command: string, data: { message: string; translated: boolean }) => {
+      sent.push([command, data.message, data.translated]);
     },
   } as unknown as Connection;
   sendErrorReports(connection);
   expect(sent).toEqual([
-    ["clientError", "Uncaught Error: Before the connection"],
-    ["clientError", "Unhandled rejection: Rejected"],
-    ["clientError", "Uncaught NotFoundError: Not a child"],
+    ["clientError", "Uncaught Error: Before the connection", false],
+    ["clientError", "Unhandled rejection: Rejected", false],
+    ["clientError", "Uncaught NotFoundError: Not a child", true],
   ]);
 
   throwError("Before the connection");
