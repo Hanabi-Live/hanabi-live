@@ -46,11 +46,14 @@ export function ViewAsMenu({
   }
 
   return (
-    <div className="tw:relative" ref={containerRef}>
+    <div className="tw:relative tw:max-w-full tw:min-w-0" ref={containerRef}>
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} ${
+        aria-label={
+          viewedName === undefined ? undefined : `Viewing as ${viewedName}`
+        }
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:max-w-full tw:min-w-0 ${
           shadowing
             ? "tw:bg-white/20 tw:ring-2 tw:ring-game-text tw:hover:bg-white/30"
             : BOTTOM_BAR_BUTTON_COLOR_CLASS
@@ -63,7 +66,11 @@ export function ViewAsMenu({
         type="button"
       >
         <i aria-hidden="true" className="fas fa-eye" />
-        {viewedName === undefined ? "View as" : `Viewing as ${viewedName}`}
+        {/* The eye says what the name is for, so that a long name has room. A name that is still
+            too long is cut short. */}
+        <span className="tw:min-w-0 tw:truncate">
+          {viewedName ?? "View as"}
+        </span>
         <MenuCaret open={open} />
       </button>
       {open && (
