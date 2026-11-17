@@ -32,7 +32,10 @@ cp LICENSE "$release/"
   fi
   cargo build --release --locked --target x86_64-unknown-linux-musl
 )
-cp server/target/x86_64-unknown-linux-musl/release/hanabi-live "$release/hanabi-live"
+# CARGO_TARGET_DIR can move the build out of "server/target".
+target=$(cd server && cargo metadata --format-version 1 --no-deps \
+  | python3 -c 'import json, sys; print(json.load(sys.stdin)["target_directory"])')
+cp "$target/x86_64-unknown-linux-musl/release/hanabi-live" "$release/hanabi-live"
 if readelf -l "$release/hanabi-live" | grep -q INTERP; then
   echo "Rust releases must not depend on the build host's dynamic loader." >&2
   exit 1
