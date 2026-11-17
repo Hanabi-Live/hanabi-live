@@ -228,10 +228,17 @@ function OutOf({
   value,
   max,
   maxStyle,
+  reserve = false,
 }: {
   readonly value: React.ReactNode;
   readonly max: number | string;
   readonly maxStyle?: React.CSSProperties;
+
+  /**
+   * Whether this is an invisible copy that holds the space of the value. The animations and the
+   * arrows do not find its maximum.
+   */
+  readonly reserve?: boolean;
 }): React.JSX.Element {
   return (
     <>
@@ -239,7 +246,7 @@ function OutOf({
       {/* The maximum score pops when it drops (see "scoreMotion.ts"). A transform needs a box. */}
       <span
         className="tw:inline-block tw:font-medium tw:text-game-muted"
-        data-out-of-max
+        data-out-of-max={reserve ? undefined : ""}
         style={maxStyle}
       >
         / {max}
@@ -677,7 +684,7 @@ export function StatusStrip({
             aria-hidden="true"
             className="tw:invisible tw:col-start-1 tw:row-start-1"
           >
-            <OutOf max={reservedTurn} value={reservedTurn} />
+            <OutOf max={reservedTurn} reserve value={reservedTurn} />
           </span>
           <span className="tw:col-start-1 tw:row-start-1" data-turn>
             <span className={VALUE_LINE_CLASS}>
@@ -725,7 +732,7 @@ export function StatusStrip({
               {maxScore === undefined ? (
                 reservedScore
               ) : (
-                <OutOf max={maxScore} value={reservedScore} />
+                <OutOf max={maxScore} reserve value={reservedScore} />
               )}
             </span>
             <span className="tw:col-start-1 tw:row-start-1">
