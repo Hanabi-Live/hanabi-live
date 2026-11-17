@@ -30,7 +30,8 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
 
 /** The height of a step to the next or the previous turn, which is the height of the controls. */
-const STEP_HEIGHT_CLASS = "tw:h-11 tw:text-[20px]";
+const STEP_HEIGHT_CLASS =
+  "tw:h-11 tw:text-[20px] tw:group-data-panel/strip:text-[16px]";
 
 /**
  * The sizes of an icon button. Spacing is in "em", so a larger font also makes a larger button. A
@@ -63,6 +64,12 @@ function Controls({
       role="status"
     >
       {children}
+      {/* In a wide panel, the leader's controls share their row with the buttons on the right, and
+          the rest of the controls start a new row. A narrow panel has no room for that. */}
+      <span
+        aria-hidden="true"
+        className="tw:hidden tw:h-0 tw:basis-full tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:block tw:group-data-panel/strip:@min-[22rem]/panel:order-[-1]"
+      />
     </div>
   );
 }
@@ -72,19 +79,25 @@ function Controls({
  * when there are leader's controls. Otherwise, it shares its row with the right of the controls, as
  * on a wide window, so that the buttons on the right do not take a row of their own. It starts from
  * no width there, so that the timeline gets shorter before the buttons wrap. On the narrowest
- * screens, the gaps get smaller too, so that the buttons on the right still fit. In the narrow
- * panel of the wide layout (see "StatusStrip.tsx"), the middle's parts wrap with the rest of the
- * controls, so that the buttons on the right share the row of the steps. The timeline has the last
- * row to itself.
+ * screens, the gaps get smaller too, so that the buttons on the right still fit. In the panel of
+ * the wide layout (see "StatusStrip.tsx"), the middle's parts wrap with the rest of the controls,
+ * so that the buttons on the right share their row (see `AFTER_TIMELINE_CLASS`).
  */
 const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS} tw:group-data-panel/strip:contents`;
 
 /**
- * The right of the controls. On a narrow window, it shares the first row with the leader's
- * controls, if there are any.
+ * The steps forward. In the panel (see "StatusStrip.tsx"), they come after the timeline, so that it
+ * is between the steps back and the steps forward, as on a media player. A narrow panel has no room
+ * for the timeline there, so it has the next row, with the buttons on the right.
+ */
+const AFTER_TIMELINE_CLASS = "tw:group-data-panel/strip:order-1";
+
+/**
+ * The right of the controls. On a narrow window and in a wide panel, it shares the first row with
+ * the leader's controls, if there are any.
  */
 const RIGHT_CLASS =
-  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden";
+  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden tw:group-data-panel/strip:order-2 tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2]";
 
 /**
  * The mode's icon and name. The turn on screen is in the bar, with the other numbers about the
@@ -178,7 +191,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:order-last tw:group-data-panel/strip:basis-full tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
+      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:min-w-[96px] tw:group-data-panel/strip:@max-[22rem]/panel:order-1 tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -276,6 +289,7 @@ function IconButton({
   disabled = false,
   tooltip = label,
   iconClassName = "",
+  className = "",
   onClick,
 }: {
   readonly label: string;
@@ -286,12 +300,14 @@ function IconButton({
   readonly tooltip?: string;
   /** Classes for the icon, such as its color. */
   readonly iconClassName?: string;
+  /** Classes for the button's place among the controls. */
+  readonly className?: string;
   readonly onClick: () => void;
 }): React.JSX.Element {
   return (
     <button
       aria-label={label}
-      className={`${ICON_BUTTON_CLASS} ${ICON_BUTTON_SIZE_CLASS[size]}`}
+      className={`${ICON_BUTTON_CLASS} ${ICON_BUTTON_SIZE_CLASS[size]} ${className}`}
       disabled={disabled}
       onClick={onClick}
       ref={tooltipRef(tooltip)}
@@ -702,7 +718,7 @@ function LeaderControls({
   const { shared } = state.replay;
   return (
     <div
-      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:basis-full"
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:@max-[22rem]/panel:basis-full tw:group-data-panel/strip:@min-[22rem]/panel:order-[-3]"
       data-leader-controls
     >
       {shared !== undefined && (
@@ -800,6 +816,7 @@ function TurnsControls({
           </span>
         )}
         <IconButton
+          className={AFTER_TIMELINE_CLASS}
           disabled={atEnd}
           icon="fa-chevron-right"
           label="Next turn"
@@ -808,6 +825,7 @@ function TurnsControls({
         />
         {!spoilerFree && (
           <IconButton
+            className={AFTER_TIMELINE_CLASS}
             disabled={atEnd}
             icon="fa-step-forward"
             label="Last turn"

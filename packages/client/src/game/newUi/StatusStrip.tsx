@@ -817,6 +817,13 @@ export function StatusStrip({
   // name shares the next row with the buttons. Then it starts from no width, and its minimum is the
   // width of its label, so that the name gets shorter before the buttons get short labels, and the
   // buttons get short labels before they go to a row of their own.
+  const gameInfoButton = (
+    <HelpIcon
+      icon="fa-info-circle"
+      label={"Show the game's information: its table, options, and seed"}
+      tooltip={valueTooltip(gameInfoTooltip)}
+    />
+  );
   const variant = (
     <div
       className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
@@ -824,11 +831,7 @@ export function StatusStrip({
     >
       <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
         Variant
-        <HelpIcon
-          icon="fa-info-circle"
-          label={"Show the game's information: its table, options, and seed"}
-          tooltip={valueTooltip(gameInfoTooltip)}
-        />
+        {gameInfoButton}
       </span>
       <span
         // When the variant shares a row with the buttons, the name takes no width of its own, so
@@ -887,21 +890,29 @@ export function StatusStrip({
   if (panel) {
     return (
       <footer
-        className={`tw:group/strip tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+        className={`tw:group/strip tw:@container/panel tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
         data-panel=""
         data-phone-layout=""
         ref={setFooter}
       >
-        {/* The four numbers share a row when it has room for them. The chat button is in the top
-            right corner, since the chat's rail is hidden (see "ChatPanel.tsx"). */}
-        <div className="tw:flex tw:items-start tw:gap-3">
-          <div className="tw:flex tw:flex-1 tw:flex-wrap tw:gap-x-6 tw:gap-y-3">
-            {progress}
-            {planning}
+        {/* The four numbers spread across one row when it has room for them, or two rows of two.
+            The chat button ends the first row, since the chat's rail is hidden (see
+            "ChatPanel.tsx"). */}
+        <div className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents">
+          {progress}
+          {planning}
+          <div
+            className="tw:col-start-3 tw:row-start-1 tw:justify-self-end tw:@min-[22rem]/panel:col-start-5"
+            data-chat
+          >
+            {chatButton}
           </div>
-          {chatButton}
         </div>
-        <div>{variant}</div>
+        {/* The name says what it is, so it needs no label. */}
+        <div className="tw:flex tw:min-w-0 tw:items-center tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted">
+          <span className="tw:truncate">{variantName}</span>
+          {gameInfoButton}
+        </div>
         {inReplay && (
           <div className="tw:flex" ref={controlsRef}>
             {replayControls}
