@@ -48,7 +48,7 @@ import type { CardClueMarker } from "./Card.tsx";
 import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
-import { ChatButton, ChatPanel } from "./ChatPanel.tsx";
+import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 import { ClueMenu } from "./ClueMenu.tsx";
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
@@ -512,12 +512,17 @@ export function GameScreen({
       }
 
       const barHeight = sidePanel ? 0 : bar.offsetHeight;
+      // The panel also hides the rail of the collapsed chat, which gives the table its width. The
+      // check counts the rail, so that its width does not move the bar back.
+      const railShown = !chatOpen || chatPoppedOut;
+      const rowWidthWithRail =
+        rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
       const room = getRoom(
-        rowWidth,
+        rowWidthWithRail,
         handsHeight + barHeight - REPLAY_BAR_HEIGHT,
       );
       const cardWidth = getHandCardWidth(
-        getWideHandsWidth(rowWidth, room),
+        getWideHandsWidth(rowWidthWithRail, room),
         handsHeight + barHeight - REPLAY_BAR_HEIGHT,
         options.numPlayers,
         getCardsPerHand(options),
@@ -1644,6 +1649,7 @@ export function GameScreen({
           open={chatOpen}
           overlay={chatOverlay}
           poppedOut={chatPoppedOut}
+          railHidden={panel}
           // Zen mode hides who is watching and the unread messages, as on the classic screen.
           spectators={
             zen

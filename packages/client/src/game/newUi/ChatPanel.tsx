@@ -141,6 +141,9 @@ function setUpChatWindow(chatWindow: Window): () => void {
   };
 }
 
+/** The width of the thin rail of the collapsed chat. */
+export const CHAT_RAIL_WIDTH = 56;
+
 /**
  * The in-game chat, along the right edge of the screen. It shows the same chat box as the classic
  * screen's chat window, which keeps its emoji, commands, typing indicator, and history. When it is
@@ -149,6 +152,7 @@ function setUpChatWindow(chatWindow: Window): () => void {
  */
 export function ChatPanel({
   open,
+  railHidden,
   zen,
   zenAvailable,
   poppedOut,
@@ -158,6 +162,12 @@ export function ChatPanel({
   spectatorsTooltip,
 }: {
   readonly open: boolean;
+
+  /**
+   * Whether the collapsed chat has no rail, because its button is in the panel of the right column
+   * (see "StatusStrip.tsx").
+   */
+  readonly railHidden: boolean;
 
   /**
    * Whether zen mode is on. The chat button then shows a yin-yang, and the screen passes no unread
@@ -226,12 +236,13 @@ export function ChatPanel({
 
   if (!open || poppedOut) {
     // In the phone layout, the chat button is on the bottom bar instead (see "StatusStrip.tsx"),
-    // and the rail is hidden, so that the table gets its width. The open panel's header still names
-    // the people watching.
+    // and the rail is hidden, so that the table gets its width. The same happens when the bar is a
+    // panel in the right column. The open panel's header still names the people watching.
     return (
       <aside
         aria-label="Chat, collapsed"
-        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5 tw:phone:hidden"
+        className={`tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5 ${railHidden ? "tw:hidden" : "tw:flex tw:phone:hidden"}`}
+        style={{ width: CHAT_RAIL_WIDTH }}
       >
         <ChatButton
           className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}

@@ -124,8 +124,8 @@ interface StatusStripProps {
   readonly tableMenu: React.ReactNode;
 
   /**
-   * The button that opens and collapses the chat. The bar shows it only in the phone layout, where
-   * the chat's rail is hidden, so that the table gets its width.
+   * The button that opens and collapses the chat. The bar shows it only in the phone layout, and
+   * the panel always shows it. Then the chat's rail is hidden, so that the table gets its width.
    */
   readonly chatButton: React.ReactNode;
   readonly onClassicView: () => void;
@@ -892,10 +892,14 @@ export function StatusStrip({
         data-phone-layout=""
         ref={setFooter}
       >
-        {/* The four numbers share a row when it has room for them. */}
-        <div className="tw:flex tw:flex-wrap tw:gap-x-6 tw:gap-y-3">
-          {progress}
-          {planning}
+        {/* The four numbers share a row when it has room for them. The chat button is in the top
+            right corner, since the chat's rail is hidden (see "ChatPanel.tsx"). */}
+        <div className="tw:flex tw:items-start tw:gap-3">
+          <div className="tw:flex tw:flex-1 tw:flex-wrap tw:gap-x-6 tw:gap-y-3">
+            {progress}
+            {planning}
+          </div>
+          {chatButton}
         </div>
         <div>{variant}</div>
         {inReplay && (
