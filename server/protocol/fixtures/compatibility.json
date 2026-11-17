@@ -1524,6 +1524,22 @@
     "valid": true
   },
   {
+    "name": "replay arrows point at a player's name by seat",
+    "direction": "request",
+    "command": "replayAction",
+    "input": {
+      "tableId": 4,
+      "action": {
+        "type": "arrow",
+        "target": {
+          "type": "player",
+          "playerIndex": 2
+        }
+      }
+    },
+    "valid": true
+  },
+  {
     "name": "a replay arrow without a target clears the arrow",
     "direction": "request",
     "command": "replayAction",

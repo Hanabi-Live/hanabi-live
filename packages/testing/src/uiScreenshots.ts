@@ -1414,7 +1414,29 @@ function getStates(): readonly State[] {
         const order = await page
           .locator(NEXT_HAND_FIRST_CARD_SELECTOR)
           .getAttribute("data-card-order");
-        cast.bobsGame().showArrow(Number(order) as CardOrder);
+        cast.bobsGame().showArrow({
+          type: "card",
+          order: Number(order) as CardOrder,
+        });
+        await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
+        await settle(page);
+      },
+    },
+    // Bob points the arrow at the name of the second player instead.
+    {
+      name: "new-ui-name-arrow",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().showArrow({
+          type: "player",
+          playerIndex: 1 as PlayerIndex,
+        });
         await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
         await settle(page);
       },
@@ -1762,8 +1784,15 @@ interface BobsGame {
   readonly passLeader: () => void;
   /** Bob, who leads the shared replay, starts a hypothetical that everyone watches. */
   readonly startHypothetical: () => void;
-  /** Bob, who leads the shared replay, points an arrow at a card for everyone who follows him. */
-  readonly showArrow: (order: CardOrder) => void;
+  /**
+   * Bob, who leads the shared replay, points an arrow at a card or at a player's name for everyone
+   * who follows him.
+   */
+  readonly showArrow: (
+    target:
+      | { type: "card"; order: CardOrder }
+      | { type: "player"; playerIndex: PlayerIndex },
+  ) => void;
   /**
    * Tells the leader of the shared replay whether Bob will play again. It returns once the server
    * has told the others.
@@ -2818,15 +2847,12 @@ async function createCast(
           },
         });
       },
-      showArrow: (order) => {
+      showArrow: (target) => {
         bob.send("replayAction", {
           tableId,
           action: {
             type: "arrow",
-            target: {
-              type: "card",
-              order,
-            },
+            target,
           },
         });
       },

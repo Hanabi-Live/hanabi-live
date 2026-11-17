@@ -1,7 +1,7 @@
 // Where the highlight arrow points on the redesigned game screen: which element stands for each
 // target, and which target a right-click lands on.
 
-import type { CardOrder, CardState } from "@hanabi-live/game";
+import type { CardOrder, CardState, PlayerIndex } from "@hanabi-live/game";
 import { isCardPlayed } from "@hanabi-live/game";
 import type { ArrowTarget, ReplayBoardElement } from "../highlightArrow.ts";
 
@@ -41,9 +41,14 @@ function getStackBaseSelector(order: CardOrder): string {
   return `[data-stack-base-arrow="${order}"]`;
 }
 
+function getNameChipSelector(playerIndex: PlayerIndex): string {
+  return `[data-name-chip="${playerIndex}"]`;
+}
+
 /**
  * What a right-click on an element points the arrow at, if anything. A right-click on a play stack
- * lands on its top card, or on its stack base when the stack is empty.
+ * lands on its top card, or on its stack base when the stack is empty. A right-click on a player's
+ * name lands on the name.
  */
 export function getArrowTargetAt(element: Element): ArrowTarget | undefined {
   const card = element.closest<HTMLElement>(
@@ -52,6 +57,12 @@ export function getArrowTargetAt(element: Element): ArrowTarget | undefined {
   const order = card?.dataset["cardOrder"] ?? card?.dataset["stackBaseArrow"];
   if (order !== undefined && order !== "") {
     return Number(order) as CardOrder;
+  }
+
+  const nameChip = element.closest<HTMLElement>("[data-name-chip]");
+  const playerIndex = nameChip?.dataset["nameChip"];
+  if (playerIndex !== undefined && playerIndex !== "") {
+    return { playerIndex: Number(playerIndex) as PlayerIndex };
   }
 
   for (const [target, selector] of BOARD_ELEMENT_SELECTORS) {
@@ -91,6 +102,12 @@ export function findArrowAnchor(
     return root.querySelector(stackSelector) ?? undefined;
   }
 
+  if (typeof target === "object") {
+    return (
+      root.querySelector(getNameChipSelector(target.playerIndex)) ?? undefined
+    );
+  }
+
   const entry = BOARD_ELEMENT_SELECTORS.find(
     ([boardElement]) => boardElement === target,
   );
@@ -109,7 +126,7 @@ export function measureArrowAnchor(
   const first = anchor.firstChild;
   if (
     first === null
-    || typeof target === "number"
+    || typeof target !== "string"
     || !FIRST_NUMBER_ELEMENTS.has(target)
   ) {
     return anchor.getBoundingClientRect();

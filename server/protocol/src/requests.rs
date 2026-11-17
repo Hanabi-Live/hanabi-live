@@ -290,7 +290,7 @@ pub enum ReplayLeaderAction {
     Turn {
         turn: Turn,
     },
-    /// Points at a card or a part of the board.
+    /// Points at a card, a player's name, or a part of the board.
     Arrow {
         /// Absent to clear the arrow.
         #[serde(skip_serializing_if = "Option::is_none")]

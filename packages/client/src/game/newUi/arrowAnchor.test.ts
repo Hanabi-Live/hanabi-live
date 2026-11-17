@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { CardOrder, CardState } from "@hanabi-live/game";
+import type { CardOrder, CardState, PlayerIndex } from "@hanabi-live/game";
 import { beforeEach, expect, test } from "vitest";
 import { findArrowAnchor, getArrowTargetAt } from "./arrowAnchor.ts";
 
@@ -44,6 +44,7 @@ beforeEach(() => {
     id: "strike",
     "data-strike-box": "1",
   });
+  add(add(document.body, { "data-name-chip": "1" }), { id: "name" });
 });
 
 function byId(id: string): Element {
@@ -76,4 +77,17 @@ test("a played card under the top of its stack points at the stack", () => {
     document.querySelector('[data-stack-slot="3"]'),
   );
   expect(findArrowAnchor(document, "maxScore", deck)).toBe(byId("max"));
+});
+
+test("a right-click on a player's name points at the name", () => {
+  const target = getArrowTargetAt(byId("name"));
+  expect(target).toStrictEqual({
+    playerIndex: 1,
+  });
+  expect(findArrowAnchor(document, target!, [])).toBe(
+    document.querySelector('[data-name-chip="1"]'),
+  );
+  expect(
+    findArrowAnchor(document, { playerIndex: 2 as PlayerIndex }, []),
+  ).toBeUndefined();
 });

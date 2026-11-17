@@ -351,9 +351,14 @@ function getPos(element: Konva.Node, rot: number) {
       }
 
       default: {
-        const textElement = element as Konva.Text;
-        const { width } = textElement.measureSize(textElement.text());
-        pos.x += width / 2;
+        // A text label is as wide as its text. Anything else, such as a player's name frame, points
+        // at its middle.
+        if (element instanceof Konva.Text) {
+          const { width } = element.measureSize(element.text());
+          pos.x += width / 2;
+        } else {
+          pos.x += element.width() / 2;
+        }
 
         break;
       }
@@ -445,6 +450,10 @@ function getElementFromTarget(
 ): NodeWithTooltip | undefined {
   if (typeof target === "number") {
     return getCardOrStackBase(target);
+  }
+
+  if (typeof target === "object") {
+    return globals.elements.nameFrames[target.playerIndex];
   }
 
   switch (target) {

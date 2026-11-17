@@ -1380,11 +1380,14 @@ export const replayBoardElementSchema = z.enum([
 ]);
 
 /**
- * What a shared-replay arrow points at: a card, or a part of the board.
+ * What a shared-replay arrow points at: a card, a player's name, or a part of the board.
  */
 const replayArrowTargetSchema = z.discriminatedUnion("type", [
   z
     .strictObject({ order: cardOrderSchema, type: z.literal("card") })
+    .readonly(),
+  z
+    .strictObject({ playerIndex: playerIndexSchema, type: z.literal("player") })
     .readonly(),
   z
     .strictObject({

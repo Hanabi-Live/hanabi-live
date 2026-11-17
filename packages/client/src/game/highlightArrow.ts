@@ -1,12 +1,13 @@
-// The highlight arrow points at a card or at a part of the board. In a replay, a right-click draws
-// it. The leader of a shared replay shows it to everyone who follows the shared turns. During a
-// game, Ctrl + right-click draws one that only the player sees. Both game screens draw it.
+// The highlight arrow points at a card, at a player's name, or at a part of the board. In a replay,
+// a right-click draws it. The leader of a shared replay shows it to everyone who follows the shared
+// turns. During a game, Ctrl + right-click draws one that only the player sees. Both game screens
+// draw it.
 
 import type {
   replayBoardElementSchema,
   ServerEventData,
 } from "@hanabi-live/data";
-import type { CardOrder } from "@hanabi-live/game";
+import type { CardOrder, PlayerIndex } from "@hanabi-live/game";
 import type { z } from "zod";
 import { globals as lobbyGlobals } from "../Globals.ts";
 import type { ModifierKeys } from "./noteShortcuts.ts";
@@ -15,8 +16,29 @@ import type { State } from "./types/State.ts";
 /** A part of the board that a highlight arrow can point at, besides cards. */
 export type ReplayBoardElement = z.infer<typeof replayBoardElementSchema>;
 
-/** What a highlight arrow points at: a card, or a part of the board. */
-export type ArrowTarget = CardOrder | ReplayBoardElement;
+/** A player's name, which a highlight arrow can point at. */
+interface PlayerArrowTarget {
+  readonly playerIndex: PlayerIndex;
+}
+
+/** What a highlight arrow points at: a card, a player's name, or a part of the board. */
+export type ArrowTarget = CardOrder | PlayerArrowTarget | ReplayBoardElement;
+
+function isSameArrowTarget(
+  a: ArrowTarget | undefined,
+  b: ArrowTarget | undefined,
+): boolean {
+  return typeof a === "object" && typeof b === "object"
+    ? a.playerIndex === b.playerIndex
+    : a === b;
+}
+
+/** A string that names the target, such as for a React key. */
+export function getArrowTargetKey(target: ArrowTarget): string {
+  return typeof target === "object"
+    ? `player-${target.playerIndex}`
+    : target.toString();
+}
 
 /**
  * What the shared replay's leader points at, as the server sends it. `undefined` hides the arrow.
@@ -53,7 +75,7 @@ export function getToggledArrow(
   target: ArrowTarget,
   alwaysShow = false,
 ): ArrowTarget | undefined {
-  return alwaysShow || shown !== target ? target : undefined;
+  return alwaysShow || !isSameArrowTarget(shown, target) ? target : undefined;
 }
 
 export function fromWireArrowTarget(
@@ -63,7 +85,40 @@ export function fromWireArrowTarget(
     return undefined;
   }
 
-  return target.type === "card" ? target.order : target.element;
+  switch (target.type) {
+    case "card": {
+      return target.order;
+    }
+
+    case "player": {
+      return { playerIndex: target.playerIndex };
+    }
+
+    case "board": {
+      return target.element;
+    }
+  }
+}
+
+function toWireArrowTarget(target: ArrowTarget): NonNullable<WireArrowTarget> {
+  if (typeof target === "number") {
+    return {
+      type: "card",
+      order: target,
+    };
+  }
+
+  if (typeof target === "object") {
+    return {
+      type: "player",
+      playerIndex: target.playerIndex,
+    };
+  }
+
+  return {
+    type: "board",
+    element: target,
+  };
 }
 
 /** Shows the arrow to the followers, if we lead a shared replay and follow its shared turns. */
@@ -73,24 +128,13 @@ export function sendArrow(state: State, target: ArrowTarget | undefined): void {
     return;
   }
 
-  let action: { type: "arrow"; target?: NonNullable<WireArrowTarget> } = {
-    type: "arrow",
-  };
-  if (target !== undefined) {
-    action = {
-      type: "arrow",
-      target:
-        typeof target === "number"
-          ? {
-              type: "card",
-              order: target,
-            }
-          : {
-              type: "board",
-              element: target,
-            },
-    };
-  }
+  const action: { type: "arrow"; target?: NonNullable<WireArrowTarget> } =
+    target === undefined
+      ? { type: "arrow" }
+      : {
+          type: "arrow",
+          target: toWireArrowTarget(target),
+        };
   lobbyGlobals.connection.send("replayAction", {
     tableId: lobbyGlobals.joinedTableId,
     action,

@@ -31,6 +31,7 @@ import {
 import { askForEfficiency } from "../efficiencyModifier.ts";
 import { getShownGameEnd } from "../gameEnd.ts";
 import { currentVariant } from "../gameSession.ts";
+import { getArrowTargetKey } from "../highlightArrow.ts";
 import { isClueAllowed } from "../isClueAllowed.ts";
 import { getPauseAction, pause, unpause } from "../pause.ts";
 import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
@@ -1019,7 +1020,8 @@ export function GameScreen({
       {...cardInputHandlers}
       // The "phone" variant of the styles follows it (see "tailwind.css").
       data-phone-layout={stacked ? "" : undefined}
-      // A right-click on a card or a number draws an arrow on it, when the viewer can draw one.
+      // A right-click on a card, a player's name, or a number draws an arrow on it, when the viewer
+      // can draw one.
       onContextMenu={(event) => {
         const target = getArrowTargetAt(event.target as Element);
         if (target === undefined || !canDrawArrowNow(event)) {
@@ -1534,7 +1536,7 @@ export function GameScreen({
         <HighlightArrow
           deck={visibleState.deck}
           // A new arrow drops in, even on a card that had one before.
-          key={shownArrow}
+          key={getArrowTargetKey(shownArrow)}
           reducedMotion={settings.reducedMotion}
           root={rootRef}
           target={shownArrow}

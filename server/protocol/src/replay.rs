@@ -115,7 +115,7 @@ impl From<PlayerAction> for ReplayGameAction {
     }
 }
 
-/// What a shared-replay arrow points at: a card, or a part of the board.
+/// What a shared-replay arrow points at: a card, a player's name, or a part of the board.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -125,6 +125,7 @@ impl From<PlayerAction> for ReplayGameAction {
 )]
 pub enum ReplayArrowTarget {
     Card { order: CardOrder },
+    Player { player_index: PlayerIndex },
     Board { element: ReplayBoardElement },
 }
 
