@@ -458,11 +458,20 @@ export function GameScreen({
   const barOneRowWidths = useRef(new Map<string, number>());
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
+  /** Whether the game was ongoing at the last render, to tell when it ends. */
+  const gameOngoing = useRef(false);
+  /**
+   * The size of the screen when the game ended with the bar along the bottom, as "sizeKey" in the
+   * effect below. The bar stays there while the size is the same (see "barRef").
+   */
+  const barKeptAtEnd = useRef<string>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
     const previousScreenWidth = screenWidth.current;
     screenWidth.current = root?.clientWidth;
+    const wasOngoing = gameOngoing.current;
+    gameOngoing.current = state !== undefined && !state.finished;
     if (
       narrowWindow
       || root === null
@@ -519,6 +528,18 @@ export function GameScreen({
     if (sidePanel && !panelHasRoom(bar)) {
       panelMissedRoom.current = panelKey;
       setSidePanel(false);
+      return;
+    }
+
+    // The bar of the finished game has more buttons, so it can need two rows where the bar of the
+    // game had one. When the game ends with the bar along the bottom, the bar stays there, so that
+    // the screen does not move under the players. It can move again when the window or the chat
+    // changes.
+    const sizeKey = [root.clientWidth, root.clientHeight, chatBeside].join(",");
+    if (!sidePanel && wasOngoing && state.finished) {
+      barKeptAtEnd.current = sizeKey;
+    }
+    if (!sidePanel && barKeptAtEnd.current === sizeKey) {
       return;
     }
 
