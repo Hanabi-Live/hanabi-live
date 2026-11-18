@@ -380,8 +380,15 @@ export function GameScreen({
     }
   }, [arrow, arrowView]);
 
-  // Editing cards ends with the hypothetical.
+  // In a 2-player game, the clue menu also opens again when a hypothetical starts or ends. Its
+  // first turn can be the turn on which the viewer closed the menu, such as with a click on
+  // "Replay".
   const inHypothetical = state?.replay.hypothetical !== undefined;
+  useEffect(() => {
+    setClueMenuClosed(false);
+  }, [inHypothetical]);
+
+  // Editing cards ends with the hypothetical.
   useEffect(() => {
     if (!inHypothetical) {
       setEditingCards(false);
