@@ -42,7 +42,6 @@ function renderStrip(score: number, maxScore: number) {
         futureEfficiency: undefined,
         spareClues: undefined,
       }}
-      footerRef={{ current: null }}
       futureEfficiency="-"
       gameInfoTooltip=""
       hardVariant={false}
@@ -52,6 +51,7 @@ function renderStrip(score: number, maxScore: number) {
       minEfficiency="1.00"
       onClassicView={vi.fn<() => void>()}
       onEfficiencyClick={vi.fn<() => void>()}
+      onFooter={vi.fn<(element: HTMLElement | null) => void>()}
       onLobby={vi.fn<() => void>()}
       onTurnClick={vi.fn<() => void>()}
       pace="-"

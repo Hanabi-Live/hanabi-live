@@ -140,12 +140,12 @@ interface StatusStripProps {
    * of the screen (see "GameScreen.tsx").
    */
   readonly panel: boolean;
-  /** Holds the bar's element, so that the game screen can measure it. */
-  readonly footerRef: RefObject<HTMLElement | null>;
+  /** Receives the bar's element, so that the game screen can measure it. */
+  readonly onFooter: (element: HTMLElement | null) => void;
 
   /**
-   * The clue log, which is above the panel. When the panel wraps onto more rows, the two share one
-   * box with tabs instead (see `usePanelTabs`).
+   * The clue log, which is above the panel. When the column is short, the two share one box with
+   * tabs instead (see `usePanelTabs`).
    */
   readonly clueLog: React.ReactNode;
 }
@@ -634,15 +634,19 @@ const PANEL_TAB_IDS = {
 } as const satisfies Record<PanelTab, string>;
 
 /**
- * The number of columns of the panel's numbers when they are in one row: the four numbers and the
- * chat button.
+ * The attribute of the panel when the column is too short for it, even with tabs (see
+ * "GameScreen.tsx").
  */
-const ONE_ROW_STATS_COLUMNS = 5;
+export const PANEL_SHORT_ATTRIBUTE = "data-panel-short";
+
+/** The rows of clues that the clue log keeps above the panel, before the two share tabs. */
+const STACKED_CLUE_LOG_ROWS = 4;
 
 /**
- * The rows of clues that the clue log keeps above a panel that wraps, before the two share tabs.
+ * The height of the tallest replay controls in the panel: those of the leader of a shared replay,
+ * in three rows. It is what they need, measured.
  */
-const STACKED_CLUE_LOG_ROWS = 4;
+const PANEL_REPLAY_CONTROLS_HEIGHT = 144;
 
 /** Reads a length in pixels from a computed style, such as "12px". */
 function getPixels(value: string): number {
@@ -682,78 +686,64 @@ function useSteadyControlsHeight(
 }
 
 /**
- * Whether the panel and the clue log share one box with tabs. That happens when the panel wraps
- * onto more rows than it has when it is wide (its numbers take two rows, and so does the replay's
- * timeline, which wraps at the same width, or its buttons do), and the panel below the clue log
- * would leave the log fewer than `STACKED_CLUE_LOG_ROWS` rows. A tall column keeps both in view,
- * and only a short one needs tabs. The panel has the same width and contents with tabs and without
- * them, and the two take the same part of the column, so the answer stays the same.
+ * Whether the panel and the clue log share one box with tabs. That happens when the panel below the
+ * clue log would leave the log fewer than `STACKED_CLUE_LOG_ROWS` rows. A tall column keeps both in
+ * view, and only a short one needs tabs. The panel counts the replay controls with at least
+ * `PANEL_REPLAY_CONTROLS_HEIGHT`, even when it does not show them. So the answer stays the same
+ * when a replay starts or the game ends, and only the size of the column changes it. The panel has
+ * the same width and contents with tabs and without them, and the two take the same part of the
+ * column.
+ *
+ * When even its tab is too short for the panel, the panel has `PANEL_SHORT_ATTRIBUTE`, so that the
+ * game screen can move the bar back along the bottom.
  */
 function usePanelTabs(
   footer: HTMLElement | null,
   panel: boolean,
   status: RefObject<HTMLDivElement | null>,
-  stats: RefObject<HTMLDivElement | null>,
-  buttons: RefObject<HTMLDivElement | null>,
+  controls: RefObject<HTMLDivElement | null>,
 ): boolean {
   const [tabs, setTabs] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const content = status.current;
-    const grid = stats.current;
-    const row = buttons.current;
     // The panel with tabs is another element than the panel without them, so the one that was drawn
     // last might be gone.
-    if (
-      !panel
-      || content === null
-      || grid === null
-      || row === null
-      || footer?.isConnected !== true
-    ) {
+    if (!panel || content === null || footer?.isConnected !== true) {
       return;
     }
-    const columns =
-      getComputedStyle(grid).gridTemplateColumns.split(" ").length;
-    const tallestButton = Math.max(
-      0,
-      ...[...row.children].map((child) =>
-        child instanceof HTMLElement ? child.offsetHeight : 0,
-      ),
-    );
-    const wraps =
-      columns < ONE_ROW_STATS_COLUMNS || row.offsetHeight > tallestButton;
 
     // The panel's height without tabs: its contents and the gaps between them, which fills its tab
     // when it has tabs. Its part of the column starts at the clue log above it without tabs, and at
     // the panel with them. The panel and the log share the column's offset parent.
+    const group = controls.current;
     const parts = [...content.children].filter(
-      (child): child is HTMLElement => child instanceof HTMLElement,
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child !== group,
+    );
+    const contentHeight =
+      parts.reduce((sum, part) => sum + part.offsetHeight, 0)
+      + Math.max(group?.offsetHeight ?? 0, PANEL_REPLAY_CONTROLS_HEIGHT)
+      + parts.length * getPixels(getComputedStyle(content).rowGap);
+    const tabbed = Object.hasOwn(footer.dataset, "tabbed");
+    // With tabs, the contents fill their tab.
+    footer.toggleAttribute(
+      PANEL_SHORT_ATTRIBUTE,
+      tabbed && content.clientHeight < contentHeight,
     );
     const footerStyle = getComputedStyle(footer);
     const panelHeight =
-      parts.reduce((sum, part) => sum + part.offsetHeight, 0)
-      + Math.max(0, parts.length - 1)
-        * getPixels(getComputedStyle(content).rowGap)
+      contentHeight
       + getPixels(footerStyle.paddingTop)
       + getPixels(footerStyle.paddingBottom);
-    const clueLog = Object.hasOwn(footer.dataset, "tabbed")
-      ? null
-      : footer.previousElementSibling;
+    const clueLog = tabbed ? null : footer.previousElementSibling;
     const top = clueLog instanceof HTMLElement ? clueLog : footer;
     const room = footer.offsetTop + footer.offsetHeight - top.offsetTop;
     const gap =
       footer.parentElement === null
         ? 0
         : getPixels(getComputedStyle(footer.parentElement).rowGap);
-    const tabsNow =
-      wraps
-      && room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS);
-
-    // The game screen checks the panel's room before the panel draws again with tabs (see
-    // "panelHasRoom" in "GameScreen.tsx").
-    footer.toggleAttribute("data-needs-tabs", tabsNow);
-    setTabs(tabsNow);
+    setTabs(room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS));
   });
   return panel && tabs;
 }
@@ -854,13 +844,6 @@ function getPaddingOverlap(footer: HTMLElement): number {
 }
 
 /**
- * The attribute that says how much wider the bar would need to be to fit its replay controls in one
- * row, in CSS pixels: 0 when they fit. The game screen reads it to move the bar into the panel
- * instead of giving it two rows (see "GameScreen.tsx").
- */
-export const ONE_ROW_MISSING_ATTRIBUTE = "data-one-row-missing";
-
-/**
  * Whether the replay controls need a row of their own, because the bar has no room for them in one
  * row with the numbers and the buttons. In one row, nothing in the bar wraps, so the bar or the
  * controls overflow when they have no room. After each render and resize, the bar takes away the
@@ -886,7 +869,6 @@ function useOwnRow(
   useLayoutEffect(() => {
     const group = controls.current;
     if (footer === null || group === null) {
-      footer?.removeAttribute(ONE_ROW_MISSING_ATTRIBUTE);
       ownRowWidth.current = undefined;
       setOwnRow(false);
       return;
@@ -908,9 +890,7 @@ function useOwnRow(
     const overlap =
       Math.max(getPaddingOverlap(footer), group.scrollWidth - group.clientWidth)
       + cutOff;
-    const missing = overlap < 1 ? 0 : Math.ceil(overlap);
-    const overflows = missing > 0;
-    footer.setAttribute(ONE_ROW_MISSING_ATTRIBUTE, String(missing));
+    const overflows = overlap >= 1;
     if (hadOwnRow) {
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
@@ -1018,7 +998,7 @@ export function StatusStrip({
   phoneLayout,
   reducedMotion,
   panel,
-  footerRef,
+  onFooter,
   clueLog,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
@@ -1027,9 +1007,9 @@ export function StatusStrip({
   const setFooter = useCallback(
     (element: HTMLElement | null) => {
       setFooterState(element);
-      footerRef.current = element;
+      onFooter(element);
     },
-    [footerRef],
+    [onFooter],
   );
   const inReplay = replayControls !== undefined;
   const [closingControls, closeControls] = useClosingControls(
@@ -1039,11 +1019,10 @@ export function StatusStrip({
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   // The panel measures its height after the controls take theirs.
   useSteadyControlsHeight(footer, controlsRef, panel);
-  const tabbed = usePanelTabs(footer, panel, statusRef, statsRef, buttonsRef);
+  const tabbed = usePanelTabs(footer, panel, statusRef, controlsRef);
   const [tab, setTab] = useState<PanelTab>("status");
   useReplayDrawer(
     footer,
@@ -1336,10 +1315,7 @@ export function StatusStrip({
         {/* The four numbers spread across one row when it has room for them, or two rows of two.
             The chat button ends the first row, since the chat's rail is hidden (see
             "ChatPanel.tsx"). */}
-        <div
-          className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents"
-          ref={statsRef}
-        >
+        <div className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents">
           {progress}
           {planning}
           <div

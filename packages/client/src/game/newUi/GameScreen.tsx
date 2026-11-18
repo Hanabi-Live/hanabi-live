@@ -81,7 +81,7 @@ import {
   TableTokens,
 } from "./SharedCards.tsx";
 import {
-  ONE_ROW_MISSING_ATTRIBUTE,
+  PANEL_SHORT_ATTRIBUTE,
   REPLAY_BAR_HEIGHT,
   StatusStrip,
 } from "./StatusStrip.tsx";
@@ -176,46 +176,10 @@ const PHONE_TABLE_GAP = 16;
 
 /**
  * The bar moves into the panel of the right column when the hand cards would be narrower than this
- * with the bar (see "barRef"). It is the width that the check finds for a five-player game on a
+ * with the bar (see "barElement"). It is the width that the check finds for a five-player game on a
  * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
  */
 const PANEL_CARD_WIDTH = 82;
-
-/** The width of the window from which the bar stays along the bottom, even in two rows. */
-const WIDE_WINDOW_WIDTH = 1920;
-
-/**
- * The width that the bar of an ongoing game needs for one row with its replay's controls, until a
- * replay measures it (see "barRef"). It is what a player's bar needs, measured.
- */
-const ONGOING_REPLAY_BAR_WIDTH = 1550;
-
-/** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
-const CLUE_LOG_MIN_HEIGHT = 60;
-
-/**
- * Whether the status panel has room in the right column. Below the clue log, the log keeps its
- * smallest height. When the two share a box with tabs, the panel's tab fits all of the panel.
- */
-function panelHasRoom(panel: HTMLElement): boolean {
-  if (!Object.hasOwn(panel.dataset, "tabbed")) {
-    // A panel that needs tabs is about to draw again with them, and then it has room.
-    if (Object.hasOwn(panel.dataset, "needsTabs")) {
-      return true;
-    }
-    const clueLog = panel.previousElementSibling;
-    // While the replay controls slide, the log reaches down behind the panel with a negative margin
-    // (see "useReplayDrawer" in "StatusStrip.tsx"), which does not count.
-    return (
-      !(clueLog instanceof HTMLElement)
-      || clueLog.offsetHeight
-        + Number(getComputedStyle(clueLog).marginBottom.replace(/px$/u, ""))
-        >= CLUE_LOG_MIN_HEIGHT
-    );
-  }
-  const status = panel.querySelector<HTMLElement>("[data-panel-status]");
-  return status === null || status.scrollHeight <= status.clientHeight;
-}
 
 /** A screen whose main pointer is a finger, which has no cursor to hover with. */
 const TOUCH_QUERY = "(pointer: coarse)";
@@ -274,7 +238,7 @@ export function GameScreen({
   const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
   // The phone layout: the columns stack, and the page scrolls.
   const stacked = narrowWindow;
-  // Whether the wide layout's bar is a panel in the right column (see "barRef").
+  // Whether the wide layout's bar is a panel in the right column (see "barElement").
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
   const touch = useMediaQuery(TOUCH_QUERY);
@@ -455,36 +419,23 @@ export function GameScreen({
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
   // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
   // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
-  // the bottom of the right column, so that the hands get the whole height of the screen. It also
-  // moves when it would need two rows. The check counts the taller bar of a replay, so that a
-  // replay in an ongoing game does not move the bar. The panel needs room below the discard pile
-  // for itself and a few lines of the clue log. The clue log gives up its height first, so the
-  // panel has room while the clue log keeps its smallest height. When it has no room, the bar goes
-  // back along the bottom, until the window, the chat, or the panel's controls change.
-  const barRef = useRef<HTMLElement>(null);
-  /** What the panel had no room with, as "panelKey" in the effect below. */
-  const panelMissedRoom = useRef<string>(undefined);
-  /**
-   * The width that the bar needs for one row, for the game before and after it ends (see `barKey`
-   * below).
-   */
-  const barOneRowWidths = useRef(new Map<string, number>());
+  // the bottom of the right column, so that the hands get the whole height of the screen. Only the
+  // size of the window, the players, and the chat decide where the bar is, not what the bar holds.
+  // So the bar does not move when a replay starts, a hypothetical starts, or the game ends. Along
+  // the bottom, the bar keeps the height of its tallest layout, with the replay controls in a row
+  // of their own (see `REPLAY_BAR_HEIGHT`). In the panel, the panel and the clue log share one box
+  // with tabs when the column is short (see "StatusStrip.tsx"). When even the panel's tab is too
+  // short for it, the bar goes back along the bottom, until the window or the chat changes.
+  const [barElement, setBarElement] = useState<HTMLElement | null>(null);
+  /** The size of the screen at which the panel was too short, as "sizeKey" in the effect below. */
+  const panelShortAt = useRef<string>(undefined);
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
-  /** Whether the game was ongoing at the last render, to tell when it ends. */
-  const gameOngoing = useRef(false);
-  /**
-   * The size of the screen when the game ended with the bar along the bottom, as "sizeKey" in the
-   * effect below. The bar stays there while the size is the same (see "barRef").
-   */
-  const barKeptAtEnd = useRef<string>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
     const previousScreenWidth = screenWidth.current;
     screenWidth.current = root?.clientWidth;
-    const wasOngoing = gameOngoing.current;
-    gameOngoing.current = state !== undefined && !state.finished;
     if (
       narrowWindow
       || root === null
@@ -524,51 +475,34 @@ export function GameScreen({
       gameChat.hide();
       return;
     }
-    const bar = barRef.current;
-    if (bar === null) {
-      return;
-    }
-    // What changes the room for the panel: the size of the window, the chat beside the table, and
-    // the controls in the panel.
-    const panelKey = [
-      root.clientWidth,
-      root.clientHeight,
-      chatBeside,
-      hasReplayControls(state),
-      state.replay.hypothetical !== undefined,
-      state.replay.shared?.amLeader,
-    ].join(",");
-    if (sidePanel && !panelHasRoom(bar)) {
-      panelMissedRoom.current = panelKey;
+
+    // The panel is too short only when the sizes that the screen drew it with are its real sizes.
+    // Right after the bar moves, they are the sizes of the layout before.
+    const sizeKey = [root.clientWidth, root.clientHeight, chatBeside].join(",");
+    if (
+      sidePanel
+      && barElement?.hasAttribute(PANEL_SHORT_ATTRIBUTE) === true
+      && tableSize.width === tableElement.clientWidth
+      && tableSize.height === tableElement.clientHeight
+      && playAreaSize.width === playAreaElement.clientWidth
+      && handsSize.height === handsHeight
+    ) {
+      panelShortAt.current = sizeKey;
       setSidePanel(false);
       return;
     }
 
-    // The bar of the finished game has more buttons, so it can need two rows where the bar of the
-    // game had one. When the game ends with the bar along the bottom, the bar stays there, so that
-    // the screen does not move under the players. It can move again when the window or the chat
-    // changes.
-    const sizeKey = [root.clientWidth, root.clientHeight, chatBeside].join(",");
-    if (!sidePanel && wasOngoing && state.finished) {
-      barKeptAtEnd.current = sizeKey;
-    }
-    if (!sidePanel && barKeptAtEnd.current === sizeKey) {
-      return;
-    }
-
-    const barHeight = sidePanel ? 0 : bar.offsetHeight;
-    // The panel also hides the rail of the collapsed chat, which gives the table its width. The
+    // The size of the hands with the bar along the bottom. The panel gives the hands the height of
+    // the bar. It also hides the rail of the collapsed chat, which gives the table its width. The
     // check counts the rail, so that its width does not move the bar back.
     const railShown = !chatOpen || chatPoppedOut;
-    const rowWidthWithRail =
+    const barRowWidth =
       rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
-    const room = getRoom(
-      rowWidthWithRail,
-      handsHeight + barHeight - REPLAY_BAR_HEIGHT,
-    );
+    const barHandsHeight = handsHeight - (sidePanel ? REPLAY_BAR_HEIGHT : 0);
+    const room = getRoom(barRowWidth, barHandsHeight);
     const cardWidth = getHandCardWidth(
-      getWideHandsWidth(rowWidthWithRail, room),
-      handsHeight + barHeight - REPLAY_BAR_HEIGHT,
+      getWideHandsWidth(barRowWidth, room),
+      barHandsHeight,
       options.numPlayers,
       getCardsPerHand(options),
       Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE)
@@ -576,35 +510,29 @@ export function GameScreen({
       nameHeight,
       false,
     );
-    // The bar also moves when it would need two rows for its replay controls, except on a window
-    // that is at least `WIDE_WINDOW_WIDTH` wide. The bar measures how much width it misses for one
-    // row, and the screen remembers the width that the bar needs, so that the panel can tell when
-    // the bar would fit again. An ongoing game counts the bar of its replay (see "barRef"), which
-    // it can measure only during a replay. The width is for the game, not for what the bar holds
-    // now, so that entering a hypothetical, leaving it, or passing the lead does not move the bar.
-    // It is the most that any of the game's bars has needed.
-    const barKey = [state.finished, state.playing].join(",");
-    const missing = Number(bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE));
-    if (!sidePanel && missing > 0 && hasReplayControls(state)) {
-      barOneRowWidths.current.set(
-        barKey,
-        Math.max(
-          barOneRowWidths.current.get(barKey) ?? 0,
-          root.clientWidth + missing,
-        ),
-      );
-    }
-    const barOneRowWidth =
-      barOneRowWidths.current.get(barKey)
-      ?? (state.finished ? 0 : ONGOING_REPLAY_BAR_WIDTH);
-    const barWraps =
-      window.innerWidth < WIDE_WINDOW_WIDTH
-      && root.clientWidth < barOneRowWidth;
     setSidePanel(
-      panelMissedRoom.current !== panelKey
-        && (cardWidth < PANEL_CARD_WIDTH || barWraps),
+      panelShortAt.current !== sizeKey && cardWidth < PANEL_CARD_WIDTH,
     );
   });
+
+  // Below the table, the bar along the bottom keeps the room of its tallest layout. When the bar is
+  // shorter, the felt fills the rest. The observer runs before the browser draws the new size, so
+  // the table never shows at another size.
+  const mainRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    if (main === null || barElement === null || panel || stacked) {
+      return undefined;
+    }
+    const observer = new ResizeObserver(() => {
+      main.style.paddingBottom = `${Math.max(0, REPLAY_BAR_HEIGHT - barElement.offsetHeight)}px`;
+    });
+    observer.observe(barElement);
+    return () => {
+      observer.disconnect();
+      main.style.removeProperty("padding-bottom");
+    };
+  }, [barElement, panel, stacked]);
 
   if (state?.visibleState === undefined) {
     return (
@@ -1243,7 +1171,7 @@ export function GameScreen({
   );
 
   // The bar is along the bottom of the screen, or in a panel at the bottom of the right column (see
-  // "barRef").
+  // "barElement").
   const statusStrip = (
     <StatusStrip
       chatButton={
@@ -1260,7 +1188,6 @@ export function GameScreen({
       colorblindMode={settings.colorblindMode}
       efficiencyModified={efficiencyStats.modified}
       efficiencyStats={efficiencyStats}
-      footerRef={barRef}
       futureEfficiency={formatEfficiency(efficiencyStats.futureEfficiency)}
       // The game's length changes as the clock ticks, and the screen draws again with it.
       gameInfoTooltip={getGameInfoTooltip()}
@@ -1284,6 +1211,7 @@ export function GameScreen({
       minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
       onClassicView={onSwitchToClassic}
       onEfficiencyClick={askForEfficiency}
+      onFooter={setBarElement}
       onLobby={backToLobby}
       onTurnClick={replay.promptTurn}
       pace={formatPace(
@@ -1421,7 +1349,10 @@ export function GameScreen({
           playZoneRef={playZoneRef}
           reducedMotion={settings.reducedMotion}
         />
-        <main className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
+        <main
+          className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
+          ref={mainRef}
+        >
           <div
             className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
