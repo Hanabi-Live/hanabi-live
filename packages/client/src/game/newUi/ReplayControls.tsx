@@ -755,7 +755,6 @@ function TurnsControls({
   }
   const { shared } = replayState;
   const spoilerFree = shared?.spoilerFree === true;
-  const turn = visibleState.turn.turnNum + 1;
   const segment = visibleState.turn.segment ?? 0;
   const lastSegment = replay.getLastSegment(state, true);
   // The buttons and the timeline step through segments, as the classic screen's do.
@@ -763,10 +762,9 @@ function TurnsControls({
   const atEnd = segment >= lastSegment;
   const afterGameEnd = hypothetical.isAfterGameEnd(state);
 
-  // While we follow someone else's lead, the turn moves without us, so the controls show which way.
+  // While we follow someone else's lead, the turn moves without us, so the timeline slides.
   const following =
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
-  const move = useLeaderMove(following, segment, turn);
 
   // The states are indexed by segment, and their turn numbers start at 0.
   const sharedTurnNum =
@@ -814,13 +812,6 @@ function TurnsControls({
           }}
           size="step"
         />
-        {/* Spoiler-free reviews hide how long the game lasts, so they have no timeline to show the
-            leader's moves. They flash between these buttons instead. */}
-        {spoilerFree && following && (
-          <span className="tw:flex tw:w-6 tw:justify-center">
-            <DirectionFlash move={move} />
-          </span>
-        )}
         <IconButton
           className={AFTER_TIMELINE_CLASS}
           disabled={atEnd}
@@ -881,108 +872,4 @@ function enterHypotheticalTooltip(
   return followedLeader === undefined
     ? "Enter hypothetical: try out other moves from this turn."
     : `Enter hypothetical: stop following ${followedLeader}, and try out other moves from this turn.`;
-}
-
-/** A move of the shared replay leader, to a later turn or an earlier one. */
-interface LeaderMove {
-  readonly direction: 1 | -1;
-
-  /** Counts the moves, so that each one shows the icon, even to the same turn as the last. */
-  readonly key: number;
-}
-
-/**
- * The shared replay leader's last move, while we follow them, so that the direction icon shows its
- * way. Moving on our own, or going back to the leader's turn, is not a leader's move.
- */
-function useLeaderMove(
-  following: boolean,
-  segment: number,
-  turn: number,
-): LeaderMove | undefined {
-  const [previous, setPrevious] = useState({
-    following,
-    segment,
-    turn,
-  });
-  const [move, setMove] = useState<LeaderMove>();
-  if (
-    previous.following !== following
-    || previous.segment !== segment
-    || previous.turn !== turn
-  ) {
-    setPrevious({
-      following,
-      segment,
-      turn,
-    });
-    if (following && previous.following && previous.segment !== segment) {
-      setMove({
-        direction: segment > previous.segment ? 1 : -1,
-        key: (move?.key ?? 0) + 1,
-      });
-    } else if (move !== undefined) {
-      setMove(undefined);
-    }
-  }
-  return move;
-}
-
-/** How long the leader's direction icon shows, from popping in to fading out, in milliseconds. */
-const DIRECTION_FLASH_MILLISECONDS = 1000;
-
-/** An overshoot, so that the icon pops in. */
-const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
-
-/**
- * A forward or back icon between the step buttons of a spoiler-free review, which pops in on each
- * of the leader's moves and fades out, as the classic screen's arrow does over the board.
- */
-function DirectionFlash({
-  move,
-}: {
-  readonly move: LeaderMove | undefined;
-}): React.JSX.Element {
-  const ref = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    const icon = ref.current;
-    if (icon === null || move === undefined) {
-      return undefined;
-    }
-    const pop = icon.animate(
-      [
-        {
-          opacity: 0,
-          transform: "scale(0.4)",
-        },
-        {
-          opacity: 1,
-          transform: "scale(1)",
-        },
-      ],
-      {
-        duration: 180,
-        easing: EASE_OUT_BACK,
-      },
-    );
-    const fade = icon.animate([{ opacity: 1 }, { opacity: 0 }], {
-      delay: 400,
-      duration: DIRECTION_FLASH_MILLISECONDS - 400,
-      easing: "ease-in",
-      fill: "forwards",
-    });
-    return () => {
-      pop.cancel();
-      fade.cancel();
-    };
-  }, [move]);
-
-  return (
-    <i
-      aria-hidden="true"
-      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:inline-block tw:text-[15px] tw:text-game-mode tw:opacity-0`}
-      key={move?.key}
-      ref={ref}
-    />
-  );
 }

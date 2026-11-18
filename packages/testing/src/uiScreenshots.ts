@@ -1543,6 +1543,29 @@ function getStates(): readonly State[] {
           .waitFor();
       },
     },
+    // Bob, who leads a five-player shared replay, goes back to the first turn. The account follows
+    // him, so a large "<<" flashes over the table. The flash is held at its peak.
+    {
+      name: "new-ui-leader-direction",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page, cast) => {
+        await endBobsGame(page, cast);
+        cast.bobsGame().showSegment(0);
+        const arrows = page.locator("#game-new-ui [data-leader-direction]");
+        await arrows.waitFor();
+        await arrows.evaluate((element) => {
+          for (const animation of element.getAnimations()) {
+            animation.cancel();
+          }
+          (element as SVGElement).style.setProperty("opacity", "1");
+        });
+      },
+    },
     // Bob, who leads a five-player shared replay, starts a hypothetical that the account follows.
     {
       name: "new-ui-spectator-hypothetical",
@@ -1885,6 +1908,8 @@ interface BobsGame {
   readonly passLeader: () => void;
   /** Bob, who leads the shared replay, starts a hypothetical that everyone watches. */
   readonly startHypothetical: () => void;
+  /** Bob, who leads the shared replay, takes everyone who follows him to a segment. */
+  readonly showSegment: (segment: number) => void;
   /**
    * Bob, who leads the shared replay, points an arrow at a card, a player's name, or the discard
    * pile for everyone who follows him.
@@ -2965,6 +2990,15 @@ async function createCast(
             control: {
               type: "start",
             },
+          },
+        });
+      },
+      showSegment: (segment) => {
+        bob.send("replayAction", {
+          tableId,
+          action: {
+            type: "turn",
+            turn: segment,
           },
         });
       },

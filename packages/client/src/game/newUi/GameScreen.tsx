@@ -63,6 +63,7 @@ import {
 } from "./Hands.tsx";
 import { HeldCardGhost } from "./HeldCardGhost.tsx";
 import { HighlightArrow } from "./HighlightArrow.tsx";
+import { LeaderDirection } from "./LeaderDirection.tsx";
 import { PausePanel } from "./PausePanel.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
 import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
@@ -1392,7 +1393,7 @@ export function GameScreen({
           playZoneRef={playZoneRef}
           reducedMotion={settings.reducedMotion}
         />
-        <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
+        <main className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
             className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
@@ -1720,6 +1721,7 @@ export function GameScreen({
               {panel ? statusStrip : clueLog}
             </div>
           </div>
+          <LeaderDirection state={state} />
         </main>
 
         <ChatPanel
