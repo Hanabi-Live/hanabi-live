@@ -11,8 +11,8 @@ of the repository.
 
 - A lost card that lowers the maximum score no longer flashes in red in a
   replay.
-- The lobby has the green felt table of the New UI, and its buttons look like
-  the buttons of the New UI. The dark theme uses the dark green of the New UI.
+- The lobby has the green felt table of the new UI, and its buttons look like
+  the buttons of the new UI. The dark theme uses the dark green of the new UI.
 
 ## November 16th, 2026
 
