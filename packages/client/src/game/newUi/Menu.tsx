@@ -9,6 +9,7 @@ import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
+import { fadeOutCopy } from "./fadeOutCopy.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /**
@@ -231,21 +232,10 @@ function useMenuFade(
       },
     );
 
+    // The menu is still on the page when the cleanup runs: React removes it after that.
     return () => {
-      // The menu is still on the page here: React removes it after this.
-      const parent = layer.parentElement;
-      if (parent === null || !layer.isConnected) {
-        return;
-      }
-      const copy = layer.cloneNode(true) as HTMLDivElement;
-      copy.setAttribute("aria-hidden", "true");
-      copy.setAttribute("inert", "");
-      copy.classList.remove("tw:*:pointer-events-auto");
-      for (const element of copy.querySelectorAll("[role]")) {
-        element.removeAttribute("role");
-      }
-      parent.append(copy);
-      const fade = copy.animate(
+      fadeOutCopy(
+        layer,
         [
           { opacity: Number(getComputedStyle(layer).opacity) },
           {
@@ -256,14 +246,8 @@ function useMenuFade(
         {
           duration: CLOSE_DURATION_IN_MILLISECONDS,
           easing: "ease-in",
-          fill: "forwards",
         },
       );
-      function remove() {
-        copy.remove();
-      }
-      fade.addEventListener("finish", remove);
-      fade.addEventListener("cancel", remove);
     };
   }, [layerRef, side]);
 }

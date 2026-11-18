@@ -1759,6 +1759,7 @@ export function GameScreen({
             closePlayerLog();
             showReplayTurn(turn);
           }}
+          reducedMotion={settings.reducedMotion}
           variant={variant}
         />
       )}

@@ -10,10 +10,15 @@ import type {
 import { getCardName, getGoesFirstText } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueDisc, getClueText } from "./ClueLog.tsx";
 import { onEscapeKey } from "./escapeKey.ts";
+import { fadeOutCopy } from "./fadeOutCopy.ts";
 
 /** The width of the card at the start of a row, in CSS pixels. */
 const ROW_CARD_WIDTH = 30;
@@ -243,6 +248,9 @@ function getTally(entries: readonly PlayerActionEntry[]): string {
     .join(", ");
 }
 
+/** How large the list of a player's actions starts as it fades in, before it grows to its size. */
+const OPENING_SCALE = 0.97;
+
 /**
  * A list of every action that one player took up to the turn that shows. Clicking a player's name
  * opens it. Each row shows the card that the player played or discarded, or the clue that they
@@ -256,6 +264,7 @@ export function PlayerLog({
   colorblindMode,
   onShowTurn,
   onClose,
+  reducedMotion,
 }: {
   readonly name: string;
   readonly entries: readonly PlayerActionEntry[];
@@ -264,7 +273,9 @@ export function PlayerLog({
   /** Shows the state of the game after the action of a turn. */
   readonly onShowTurn: (turn: number) => void;
   readonly onClose: () => void;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
+  const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
 
@@ -284,6 +295,39 @@ export function PlayerLog({
     }
   }, [entries.length]);
 
+  // The list fades in over the table and grows a little, as fast as a tooltip opens. When it
+  // closes, a copy of it fades out, as fast as a tooltip closes. The "Reduced motion" setting
+  // leaves out both. The list takes the focus at once, without waiting for the fade.
+  useLayoutEffect(() => {
+    const backdrop = backdropRef.current;
+    const panel = panelRef.current;
+    if (backdrop === null || panel === null || reducedMotion) {
+      return undefined;
+    }
+    const opening = {
+      duration: OPEN_DURATION_IN_MILLISECONDS,
+      easing: "ease-out",
+    };
+    backdrop.animate([{ opacity: 0 }, { opacity: 1 }], opening);
+    panel.animate(
+      [{ transform: `scale(${OPENING_SCALE})` }, { transform: "none" }],
+      opening,
+    );
+    return () => {
+      fadeOutCopy(
+        backdrop,
+        [
+          { opacity: Number(getComputedStyle(backdrop).opacity) },
+          { opacity: 0 },
+        ],
+        {
+          duration: CLOSE_DURATION_IN_MILLISECONDS,
+          easing: "ease-in",
+        },
+      );
+    };
+  }, [reducedMotion]);
+
   const tally = getTally(entries);
 
   return (
@@ -294,6 +338,7 @@ export function PlayerLog({
           onClose();
         }
       }}
+      ref={backdropRef}
     >
       <div
         aria-label={`${name}'s actions`}
