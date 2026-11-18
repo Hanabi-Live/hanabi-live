@@ -68,6 +68,12 @@ const DROP_WAIT_MILLISECONDS = 3000;
  */
 const MOVE_DISTANCE = 4;
 
+/**
+ * How far a finger can move a pressed card, in the screen's CSS pixels, and still tap it. A finger
+ * moves a little more than a mouse does while it taps.
+ */
+const TAP_DISTANCE = 10;
+
 function isInside(element: HTMLElement | null, x: number, y: number): boolean {
   if (element === null) {
     return false;
@@ -97,9 +103,7 @@ interface CardDrag {
    */
   readonly pressCard: (
     order: CardOrder,
-    x: number,
-    y: number,
-    element: Element,
+    event: React.PointerEvent,
     fromDeck?: { readonly discardAllowed: boolean },
   ) => void;
   readonly playZoneRef: RefObject<HTMLElement | null>;
@@ -108,9 +112,19 @@ interface CardDrag {
 
 /**
  * Moves a card with the pointer, and plays or discards it where the player drops it. The drop
- * targets are the boxes that show while the player drags a card (see "DropZones.tsx").
+ * targets are the boxes that show while the player drags a card (see "DropZones.tsx"). A touch that
+ * lets go of the card where it pressed it taps the card instead (`onTap`), which opens the card's
+ * menu. A mouse has a click for that.
  */
-export function useCardDrag(): CardDrag {
+export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
+  const onTapRef = useRef(onTap);
+  onTapRef.current = onTap;
+  // The pointer that pressed the card, and where it pressed it, in the screen's CSS pixels.
+  const pressRef = useRef({
+    pointerType: "mouse",
+    x: 0,
+    y: 0,
+  });
   const [held, setHeld] = useState<HeldCard>();
   const heldRef = useRef<HeldCard>(undefined);
   function updateHeld(next: HeldCard | undefined) {
@@ -246,6 +260,17 @@ export function useCardDrag(): CardDrag {
           phase: "return",
           zone: undefined,
         });
+        const press = pressRef.current;
+        if (
+          event !== undefined
+          && press.pointerType !== "mouse"
+          && Math.hypot(
+            toScreenPixels(event.clientX) - press.x,
+            toScreenPixels(event.clientY) - press.y,
+          ) <= TAP_DISTANCE
+        ) {
+          onTapRef.current(current.order);
+        }
       }
     }
 
@@ -290,7 +315,7 @@ export function useCardDrag(): CardDrag {
         updateHeld(undefined);
       }
     },
-    pressCard: (order, x, y, element, fromDeck) => {
+    pressCard: (order, event, fromDeck) => {
       // A dropped card that waits for its move keeps its place in the hand.
       if (heldRef.current?.phase === "drop") {
         return;
@@ -298,12 +323,16 @@ export function useCardDrag(): CardDrag {
       // The card lifts off the table as soon as it is pressed, so that the player feels that they
       // hold it before they move it. Moving it does not change it. Released in place, it settles
       // back into the hand.
-      const start = measure(element);
+      const start = measure(event.currentTarget);
       const pointer = {
-        x: toScreenPixels(x),
-        y: toScreenPixels(y),
+        x: toScreenPixels(event.clientX),
+        y: toScreenPixels(event.clientY),
       };
       pointerRef.current = pointer;
+      pressRef.current = {
+        pointerType: event.pointerType,
+        ...pointer,
+      };
       updateHeld({
         order,
         phase: "drag",

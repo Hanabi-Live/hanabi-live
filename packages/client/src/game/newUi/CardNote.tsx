@@ -7,7 +7,7 @@ import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
 import { FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS } from "../../Tooltip.ts";
 import * as chat from "../../chat.ts";
 import { store } from "../../store.ts";
-import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { openTooltip, tooltipRefHtml } from "../../tooltipRef.ts";
 import { pixels } from "../../visibleEdge.ts";
 import { currentState, currentVariant, getLastNote } from "../gameSession.ts";
 import {
@@ -104,6 +104,14 @@ export interface CardNotes {
   readonly onCloseNote: () => void;
 }
 
+/** Shows the notes of the card that an element is part of, until the next tap elsewhere. */
+export function openCardNote(element: Element): void {
+  const anchor = element.closest<HTMLElement>("[data-card-note]");
+  if (anchor !== null) {
+    openTooltip(anchor);
+  }
+}
+
 /**
  * Wraps a card. It shows the card's notes on hover, and the box to type the viewer's note in while
  * the viewer edits it.
@@ -112,6 +120,7 @@ export function CardNote({
   order,
   notes: cardNotes,
   possibleCards = false,
+  tapOpens = true,
   className = "",
   style,
   children,
@@ -123,6 +132,11 @@ export function CardNote({
    * bubble takes the place of the note's tooltip while it shows.
    */
   readonly possibleCards?: boolean;
+  /**
+   * Whether a tap on a touch screen shows the notes. A card in a hand opens its menu instead, which
+   * shows them with `openCardNote`.
+   */
+  readonly tapOpens?: boolean;
   readonly className?: string;
   readonly style?: React.CSSProperties;
   readonly children: React.ReactNode;
@@ -132,6 +146,7 @@ export function CardNote({
   return (
     <div
       className={`tw:relative ${editing ? "tw:z-20" : ""} ${className}`}
+      data-card-note
       onContextMenu={
         onRightClickCard === undefined
           ? undefined
@@ -172,6 +187,7 @@ export function CardNote({
         {
           instant: true,
           target: "[data-card-face]",
+          tapOpens,
         },
       )}
       style={style}

@@ -398,15 +398,14 @@ interface CardFaceProps {
 
   /**
    * Whether the bubble of possible cards opens while the pointer is over the card. The hands turn
-   * it on while the viewer holds the pointer down on a hand or holds Space, and on a hand whose
-   * brain button is on.
+   * it on while the viewer holds the pointer down on a hand or holds Space.
    */
   readonly showPossibleCards?: boolean;
 
   /**
    * Whether a tap on a touch screen opens the bubble of possible cards, when `showPossibleCards` is
-   * on. It stays open until the next tap elsewhere. A card that a tap plays or discards leaves it
-   * off, since the tap opens its menu.
+   * on. It stays open until the next tap elsewhere. A card in a hand leaves it off, since a tap
+   * opens the card's menu, which opens the bubble.
    */
   readonly tapOpensPossibleCards?: boolean;
 

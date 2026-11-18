@@ -44,7 +44,12 @@ function getCardAt(target: EventTarget | null): CardOrder | undefined {
 }
 
 function getHoveredCardAt(target: EventTarget | null): HoveredCard | undefined {
-  if (!(target instanceof Element)) {
+  // A card's menu is inside the card's element, but a tap on it is not a tap on the card. Two quick
+  // taps, on the card and then on the menu, would otherwise edit the note.
+  if (
+    !(target instanceof Element)
+    || target.closest('[role="menu"]') !== null
+  ) {
     return undefined;
   }
   const element = target.closest<HTMLElement>(CARD_SELECTOR);
@@ -136,6 +141,10 @@ export function useCardInput(
   return {
     onPointerDownCapture: (event) => {
       pointerTypeRef.current = event.pointerType;
+      // A press on anything else, such as an item of the card's menu, ends a double tap.
+      if (getCardAt(event.target) !== lastTapRef.current?.order) {
+        lastTapRef.current = undefined;
+      }
     },
 
     onMouseDownCapture: (event) => {

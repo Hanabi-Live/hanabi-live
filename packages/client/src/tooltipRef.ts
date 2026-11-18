@@ -27,6 +27,12 @@ interface TooltipRefOptions {
 
   /** A selector of the element inside this one that the arrow points at (see `TooltipOptions`). */
   readonly target?: string;
+
+  /**
+   * Whether a tap on a touch screen opens the tooltip. Turn it off where a tap does something else,
+   * and open the tooltip with `openTooltip` instead.
+   */
+  readonly tapOpens?: boolean;
 }
 
 /** The tooltip of each element, which lasts while the element has a tooltip ref. */
@@ -56,7 +62,7 @@ export function tooltipRefHtml(
         content: "",
         target: options.target,
       });
-      tooltip.openOnHover(options.instant !== true);
+      tooltip.openOnHover(options.instant !== true, options.tapOpens !== false);
       entry = {
         tooltip,
         content: "",
@@ -105,4 +111,15 @@ export function tooltipRef(
       : `<span class="small-tooltip-text">${escapeHtml(text)}</span>`,
     options,
   );
+}
+
+/**
+ * Opens the tooltip that a tooltip ref gave an element, until the next tap or click elsewhere. It
+ * does nothing when the element has no tooltip.
+ */
+export function openTooltip(element: HTMLElement): void {
+  const entry = elementTooltips.get(element);
+  if (entry !== undefined && entry.content !== "") {
+    entry.tooltip.openUntilClickElsewhere();
+  }
 }

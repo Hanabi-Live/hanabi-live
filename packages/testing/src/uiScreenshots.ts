@@ -181,6 +181,26 @@ function ownCard(page: Page, index: number): Locator {
     .nth(index);
 }
 
+/**
+ * Taps the middle of an element as a finger does. The browser has no touch screen, so it sends the
+ * events of a tap that the page reads: a touch pointer goes down and up, and then clicks.
+ */
+async function tap(locator: Locator) {
+  await locator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      pointerType: "touch",
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    };
+    for (const type of ["pointerdown", "pointerup", "click"]) {
+      element.dispatchEvent(new PointerEvent(type, init));
+    }
+  });
+}
+
 /** Notes whose keywords draw a mark or a border on a card, by the place of the card. */
 const KEYWORD_NOTES = [
   ["hand-1-1", "f"],
@@ -1098,9 +1118,8 @@ function getStates(): readonly State[] {
       },
       prepare: chooseClueForNextPlayer,
     },
-    // In the phone layout, the account taps its last card on its turn in a five-player game, which
-    // opens the card's menu at the edge of the window. Wider windows drag cards instead, so they
-    // have no menu.
+    // The account taps its last card on its turn in a five-player game, which opens the card's
+    // menu. In the phone layout, the menu is at the edge of the window.
     {
       name: "new-ui-card-menu",
       path: "/",
@@ -1116,8 +1135,39 @@ function getStates(): readonly State[] {
           return;
         }
 
-        await card.click();
+        await tap(card);
         await page.getByRole("menu").waitFor();
+      },
+    },
+    // In a five-player game, the account taps a card of the next player's hand and shows that
+    // player's view of it from the card's menu. Then it taps the card again, so that the menu
+    // offers to hide the view.
+    {
+      name: "new-ui-card-menu-view",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
+      },
+      prepare: async (page) => {
+        const card = page.locator(NEXT_HAND_FIRST_CARD_SELECTOR);
+        await tap(card);
+        await page.getByRole("menuitem", { name: /^Show .*'s view$/u }).click();
+        await page.locator("[data-empathy-shown]").waitFor();
+      },
+      // The menu opens again at each width, so that it scrolls into view in the phone layout. A tap
+      // on the hand's box closes it.
+      hover: async (page) => {
+        const card = page.locator(NEXT_HAND_FIRST_CARD_SELECTOR);
+        const menu = page.getByRole("menu");
+        if ((await menu.count()) > 0) {
+          await tap(page.locator("#game-new-ui [data-hand]").nth(1));
+          await menu.waitFor({ state: "detached" });
+        }
+
+        await tap(card);
+        await menu.waitFor();
       },
     },
     // After the account plays a card that it does not know.

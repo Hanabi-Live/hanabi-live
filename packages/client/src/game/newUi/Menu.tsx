@@ -81,6 +81,7 @@ const POINTER_SIDE_MARGIN = 8 + 20 / 2;
 export function Menu({
   align,
   side = "above",
+  scrollIntoView = false,
   className,
   children,
 }: {
@@ -91,6 +92,11 @@ export function Menu({
    */
   readonly align: "left" | "right" | "center";
   readonly side?: "above" | "below";
+  /**
+   * Whether the menu scrolls into view when it opens. Use it for a menu in an area that scrolls,
+   * such as that of a card in the hands on a phone, where the menu can open past the area's edge.
+   */
+  readonly scrollIntoView?: boolean;
   /** The width of the menu. */
   readonly className: string;
   readonly children: React.ReactNode;
@@ -139,6 +145,15 @@ export function Menu({
       setShift(next);
     }
   });
+
+  useLayoutEffect(() => {
+    if (scrollIntoView) {
+      ref.current?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }, [scrollIntoView]);
 
   return (
     <>

@@ -430,8 +430,10 @@ export class Tooltip {
    * @param delayed Whether the tooltip waits for the pointer to rest on the anchor before it opens.
    *                Use it for an anchor that people click, such as a button. A tooltip that only
    *                explains something, such as that of an info icon, opens at once.
+   * @param tapOpens Whether a tap opens the tooltip. Turn it off for an anchor where a tap does
+   *                 something else, such as a card that opens a menu.
    */
-  openOnHover(delayed: boolean): void {
+  openOnHover(delayed: boolean, tapOpens = true): void {
     const { signal } = this.hoverListeners;
     this.anchor.addEventListener(
       "pointerenter",
@@ -468,7 +470,7 @@ export class Tooltip {
     this.anchor.addEventListener(
       "click",
       (event) => {
-        if (event.pointerType !== "touch") {
+        if (!tapOpens || event.pointerType !== "touch") {
           return;
         }
         if (this.isOpen) {

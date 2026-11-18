@@ -55,7 +55,6 @@ import { ClueMenu, getClueDrawerWidth } from "./ClueMenu.tsx";
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import {
-  EMPATHY_TOGGLE_SPACE,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
@@ -182,9 +181,6 @@ const PHONE_TABLE_GAP = 16;
  */
 const PANEL_CARD_WIDTH = 82;
 
-/** A screen whose main pointer is a finger, which has no cursor to hover with. */
-const TOUCH_QUERY = "(pointer: coarse)";
-
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
 
@@ -242,15 +238,33 @@ export function GameScreen({
   // Whether the wide layout's bar is a panel in the right column (see "barElement").
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
-  const touch = useMediaQuery(TOUCH_QUERY);
-  // The mouse drags a card to play or discard it, and a tap opens its menu instead. A touch cannot
-  // hold a hand to show its player's view, since it opens a card's menu, so on a touch screen and
-  // in the phone layout, each hand has a brain button that shows the view.
-  const empathyButtons = touch || stacked;
+  // A tap on a card opens its menu, since a touch screen has no hover and cannot hold a hand down
+  // to show its player's view. The mouse drags a card to play or discard it.
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const closeCardMenu = useCallback(() => {
     setMenuCard(undefined);
   }, []);
+  const toggleCardMenu = useCallback((order: CardOrder) => {
+    setMenuCard((current) => (current === order ? undefined : order));
+  }, []);
+  // The card whose bubble of possible cards the viewer opened from its menu, until the next tap.
+  // The hand of another player shows their view of it meanwhile, as when the mouse holds it down.
+  const [possibleCardsCard, setPossibleCardsCard] = useState<{
+    readonly order: CardOrder;
+    readonly holder: PlayerIndex | undefined;
+  }>();
+  useEffect(() => {
+    if (possibleCardsCard === undefined) {
+      return undefined;
+    }
+    function close() {
+      setPossibleCardsCard(undefined);
+    }
+    document.addEventListener("pointerdown", close, { capture: true });
+    return () => {
+      document.removeEventListener("pointerdown", close, { capture: true });
+    };
+  }, [possibleCardsCard]);
 
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
@@ -300,8 +314,8 @@ export function GameScreen({
     setNameHeight(height);
   }, []);
 
-  // The hands that show their player's view of them: those whose brain button is on, and the one
-  // that the viewer holds the pointer down on.
+  // The hands that show their player's view of them: those that the viewer turned on from a card's
+  // menu, and the one that the viewer holds the pointer down on.
   const [empathyToggled, setEmpathyToggled] = useState<
     ReadonlySet<PlayerIndex>
   >(new Set());
@@ -376,7 +390,7 @@ export function GameScreen({
     pressCard,
     playZoneRef,
     discardZoneRef,
-  } = useCardDrag();
+  } = useCardDrag(toggleCardMenu);
   // A card that the player drags hides the bubbles of possible cards, so that they do not cover the
   // places to drop it.
   const draggingCard = held?.moved === true;
@@ -456,7 +470,6 @@ export function GameScreen({
         options.numPlayers,
         getCardsPerHand(options),
         nameWidth,
-        touch ? EMPATHY_TOGGLE_SPACE : 0,
         getClueDrawerWidth(currentVariant()),
       );
     }
@@ -507,8 +520,7 @@ export function GameScreen({
       barHandsHeight,
       options.numPlayers,
       getCardsPerHand(options),
-      Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE)
-        + (touch ? EMPATHY_TOGGLE_SPACE : 0),
+      Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE),
       nameHeight,
       false,
     );
@@ -625,6 +637,9 @@ export function GameScreen({
   );
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
+  }
+  if (possibleCardsCard?.holder !== undefined) {
+    empathyPlayers.add(possibleCardsCard.holder);
   }
   // With the flashlight in the clue menu on, the target's hand shows what the chosen clue would
   // tell them.
@@ -942,16 +957,12 @@ export function GameScreen({
     options.numPlayers,
     getCardsPerHand(options),
     nameWidth,
-    empathyButtons ? EMPATHY_TOGGLE_SPACE : 0,
     getClueDrawerWidth(variant),
   );
-  // With brain buttons, the name column also holds the brain button that shows a player's view of
-  // their hand.
-  let nameColumnWidth: number | undefined =
-    Math.min(
-      nameWidth,
-      stacked ? NAME_COLUMN_MAX_WIDTH.PHONE : NAME_COLUMN_MAX_WIDTH.WIDE,
-    ) + (empathyButtons ? EMPATHY_TOGGLE_SPACE : 0);
+  let nameColumnWidth: number | undefined = Math.min(
+    nameWidth,
+    stacked ? NAME_COLUMN_MAX_WIDTH.PHONE : NAME_COLUMN_MAX_WIDTH.WIDE,
+  );
   // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
   // rest of the height of the table on the screen, with the same space below them as above the
   // stacks.
@@ -1409,13 +1420,9 @@ export function GameScreen({
                             isDragPointer(event.pointerType, stacked)
                             && event.button === 0
                           ) {
-                            pressCard(
-                              deckOrder,
-                              event.clientX,
-                              event.clientY,
-                              event.currentTarget,
-                              { discardAllowed: variant.hasInverted },
-                            );
+                            pressCard(deckOrder, event, {
+                              discardAllowed: variant.hasInverted,
+                            });
                           }
                         },
                         onTap: () => {
@@ -1571,18 +1578,9 @@ export function GameScreen({
                     ) {
                       showArrow(undefined);
                     }
-                    pressCard(
-                      order,
-                      event.clientX,
-                      event.clientY,
-                      event.currentTarget,
-                    );
+                    pressCard(order, event);
                   }}
-                  onCardTap={(order) => {
-                    setMenuCard((current) =>
-                      current === order ? undefined : order,
-                    );
-                  }}
+                  onCardTap={toggleCardMenu}
                   onChooseClueTarget={openClueMenu}
                   onCloseCardMenu={closeCardMenu}
                   onDiscard={(order) => {
@@ -1599,23 +1597,28 @@ export function GameScreen({
                     moveCard("play", order);
                   }}
                   onShowPlayerLog={setLogSeat}
-                  onToggleEmpathy={
-                    empathyButtons
-                      ? (playerIndex) => {
-                          setEmpathyToggled((current) => {
-                            const next = new Set(current);
-                            if (next.has(playerIndex)) {
-                              next.delete(playerIndex);
-                            } else {
-                              next.add(playerIndex);
-                            }
-                            return next;
-                          });
-                        }
-                      : undefined
-                  }
+                  onShowPossibleCards={(order, holder) => {
+                    setMenuCard(undefined);
+                    setPossibleCardsCard({
+                      order,
+                      holder,
+                    });
+                  }}
+                  onToggleEmpathy={(playerIndex) => {
+                    setMenuCard(undefined);
+                    setEmpathyToggled((current) => {
+                      const next = new Set(current);
+                      if (next.has(playerIndex)) {
+                        next.delete(playerIndex);
+                      } else {
+                        next.add(playerIndex);
+                      }
+                      return next;
+                    });
+                  }}
                   outOfClues={outOfCluesOnTurn}
                   pauseAction={getPauseAction(state)}
+                  possibleCardsCard={possibleCardsCard?.order}
                   queuedCard={queuedCard}
                   reducedMotion={settings.reducedMotion}
                   seats={seats}

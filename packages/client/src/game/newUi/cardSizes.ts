@@ -198,8 +198,7 @@ export interface WideLayoutRoom {
  * the width makes the hand cards smaller than their height allows, the parts give up room to the
  * hands, in this order, and only as much as the hands need: the right column, and then the padding
  * and the gaps of the table. The column of names does not give up room. `rowWidth` is the width of
- * the table's row without the play stacks' column. `nameWidth` is the width of the widest name, and
- * `nameExtraWidth` is the width beside the names, such as for the brain buttons.
+ * the table's row without the play stacks' column. `nameWidth` is the width of the widest name.
  *
  * The clue menu slides out to the right of a hand, over the right column, and it is
  * `clueDrawerWidth` wide. So the width to the right of the hands (the gap, the right column, and
@@ -212,7 +211,6 @@ export function getWideLayoutRoom(
   numPlayers: number,
   cardsPerHand: number,
   nameWidth: number,
-  nameExtraWidth: number,
   clueDrawerWidth: number,
 ): WideLayoutRoom {
   const widest: WideLayoutRoom = {
@@ -220,7 +218,7 @@ export function getWideLayoutRoom(
     handsColumnMaxWidth: getHandsWidthForCards(
       HAND_CARD_WIDTH.MAX,
       cardsPerHand,
-      NAME_COLUMN_MAX_WIDTH.WIDE + nameExtraWidth,
+      NAME_COLUMN_MAX_WIDTH.WIDE,
     ),
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
@@ -250,7 +248,7 @@ export function getWideLayoutRoom(
   const neededWidth = getHandsWidthForCards(
     cardWidth,
     cardsPerHand,
-    nameColumnWidth + nameExtraWidth,
+    nameColumnWidth,
   );
   const handsColumnMaxWidth = Math.ceil(neededWidth);
   let missing = neededWidth - roomForHands;

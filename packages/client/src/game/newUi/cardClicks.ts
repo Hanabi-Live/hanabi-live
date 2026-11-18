@@ -303,7 +303,7 @@ export function isDragPointer(
 }
 
 /** The pointer of a click, or an empty string for a key. */
-function getPointerType(event: React.MouseEvent): string {
+export function getPointerType(event: React.MouseEvent): string {
   const { nativeEvent } = event;
   return "pointerType" in nativeEvent
     && typeof nativeEvent.pointerType === "string"
