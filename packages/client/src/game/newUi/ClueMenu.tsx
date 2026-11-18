@@ -717,10 +717,12 @@ function ChoiceRing({
 }
 
 /**
- * Plays a slide of the clue tab and of its hand forward when `open` turns on, and backward when it
- * turns off, from where the slide is. The slide holds its look at either end. When it ends after it
- * played backward, it calls `onClosed`. The tab and its hand use the same slide, so that they fade
- * together in both directions. The slides only decorate.
+ * Slides the clue tab and fades its hand's color in when `open` turns on, and out when it turns
+ * off, from where they are. Each look holds when its animation ends. When the tab has closed, it
+ * calls `onClosed`. The slide closes on `SLIDE_BACK`, but the fade closes at an even pace, so that
+ * the tab starts to fade as soon as it closes. With `SLIDE_BACK`'s curve, it would barely change
+ * for half of the close, and then vanish in a few frames. The tab and its hand use the same timing,
+ * so that they fade together in both directions. The animations only decorate.
  */
 function useTabSlide(
   ref: React.RefObject<HTMLElement | null>,
@@ -730,7 +732,7 @@ function useTabSlide(
   layoutKey: unknown,
   onClosed?: () => void,
 ) {
-  const animationRef = useRef<Animation>(undefined);
+  const animationsRef = useRef<readonly Animation[]>([]);
   const openRef = useRef(open);
   openRef.current = open;
   const keyframesRef = useRef(getKeyframes);
@@ -738,23 +740,21 @@ function useTabSlide(
   const onClosedRef = useRef(onClosed);
   onClosedRef.current = onClosed;
 
-  // A slide that starts closed waits at its start.
+  // An element that appears open slides out. One that appears closed stays hidden.
   useLayoutEffect(() => {
     const element = ref.current;
     if (reducedMotion || element === null) {
       return undefined;
     }
-    const animation = element.animate([...keyframesRef.current(element)], {
-      ...SLIDE,
-      fill: "both",
-    });
-    if (!openRef.current) {
-      animation.pause();
-    }
-    animationRef.current = animation;
+    const [hidden] = keyframesRef.current(element);
+    animationsRef.current = openRef.current
+      ? playTabSlide(element, keyframesRef.current(element), true, hidden)
+      : [element.animate([hidden ?? {}], { fill: "forwards" })];
     return () => {
-      animationRef.current = undefined;
-      animation.cancel();
+      for (const animation of animationsRef.current) {
+        animation.cancel();
+      }
+      animationsRef.current = [];
     };
   }, [ref, reducedMotion, layoutKey]);
 
@@ -764,26 +764,91 @@ function useTabSlide(
       startedRef.current = true;
       return undefined;
     }
-    const animation = animationRef.current;
-    if (animation === undefined) {
+    const element = ref.current;
+    if (reducedMotion || element === null) {
       if (!open) {
         onClosedRef.current?.();
       }
       return undefined;
     }
-    animation.playbackRate = open ? 1 : -1;
-    animation.play();
+
+    // It reads where the element is before it stops the animations that put it there.
+    const animations = playTabSlide(
+      element,
+      keyframesRef.current(element),
+      open,
+    );
+    for (const animation of animationsRef.current) {
+      animation.cancel();
+    }
+    animationsRef.current = animations;
     if (open) {
       return undefined;
     }
-    function finish() {
-      onClosedRef.current?.();
-    }
-    animation.addEventListener("finish", finish);
+    let stopped = false;
+    Promise.all(animations.map(async (animation) => await animation.finished))
+      .then(() => {
+        if (!stopped) {
+          onClosedRef.current?.();
+        }
+      })
+      .catch(() => {
+        // An animation that is canceled does not close the tab.
+      });
     return () => {
-      animation.removeEventListener("finish", finish);
+      stopped = true;
     };
-  }, [open]);
+  }, [ref, open, reducedMotion]);
+}
+
+/**
+ * Plays the slide and the fade of `useTabSlide` from where the element is, or from `from`, to its
+ * open or closed look in `keyframes` (closed, then open).
+ */
+function playTabSlide(
+  element: HTMLElement,
+  keyframes: readonly Keyframe[],
+  open: boolean,
+  from?: Keyframe,
+): readonly Animation[] {
+  const [hidden, shown] = keyframes;
+  const { opacity, ...motion } = (open ? shown : hidden) ?? {};
+  const style = getComputedStyle(element);
+  function startOf(property: string): string | number | null | undefined {
+    const value = from?.[property];
+    return value === undefined || typeof value === "object"
+      ? style.getPropertyValue(
+          property.replaceAll(
+            /[A-Z]/gu,
+            (letter) => `-${letter.toLowerCase()}`,
+          ),
+        )
+      : value;
+  }
+
+  const animations: Animation[] = [];
+  const motionProperties = Object.keys(motion);
+  if (motionProperties.length > 0) {
+    const motionStart = Object.fromEntries(
+      motionProperties.map((property) => [property, startOf(property)]),
+    );
+    animations.push(
+      element.animate([motionStart, motion], {
+        ...(open ? SLIDE : SLIDE_BACK),
+        fill: "forwards",
+      }),
+    );
+  }
+  if (opacity !== undefined) {
+    animations.push(
+      element.animate([{ opacity: startOf("opacity") }, { opacity }], {
+        duration: SLIDE.duration,
+        easing: open ? SLIDE.easing : "linear",
+        fill: "forwards",
+      }),
+    );
+  }
+  return animations;
 }
 
 function getLayerKeyframes(): readonly Keyframe[] {
