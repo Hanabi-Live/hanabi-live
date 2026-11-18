@@ -30,9 +30,9 @@ function replayReducerFunction(
       );
     }
 
-    if (typeof action.segment !== "number") {
+    if (!Number.isSafeInteger(action.segment)) {
       throw new TypeError(
-        `The "${action.type}" action segment was not a number.`,
+        `The "${action.type}" action segment was not an integer.`,
       );
     }
     if (action.segment < 0) {
@@ -62,9 +62,9 @@ function replayReducerFunction(
     }
 
     case "replaySegment": {
-      if (typeof action.segment !== "number") {
+      if (!Number.isSafeInteger(action.segment)) {
         throw new TypeError(
-          `The "${action.type}" action segment was not a number.`,
+          `The "${action.type}" action segment was not an integer.`,
         );
       }
       if (action.segment < 0) {
@@ -81,9 +81,9 @@ function replayReducerFunction(
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
 
-      if (typeof action.segment !== "number") {
+      if (!Number.isSafeInteger(action.segment)) {
         throw new TypeError(
-          `The "${action.type}" action segment was not a number.`,
+          `The "${action.type}" action segment was not an integer.`,
         );
       }
 

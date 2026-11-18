@@ -94,6 +94,12 @@ export function goToSegment(
   breakFree = false,
   force = false,
 ): void {
+  // A replay control can be used before the game's state arrives. Then there is no current segment,
+  // and a target computed from it is NaN.
+  if (!Number.isSafeInteger(segment)) {
+    return;
+  }
+
   const finalSegment = getLastSegment();
   const currentSegment = getCurrentReplaySegment();
 

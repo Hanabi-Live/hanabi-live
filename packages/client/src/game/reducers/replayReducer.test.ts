@@ -384,4 +384,17 @@ describe("replayReducer", () => {
       expect(state.hypothetical).toBeUndefined();
     });
   });
+
+  test("rejects a segment that is not an integer", () => {
+    expect(() =>
+      replayReducer(
+        testState.replay,
+        {
+          type: "replaySegment",
+          segment: NaN,
+        },
+        metadata,
+      ),
+    ).toThrow("not an integer");
+  });
 });
