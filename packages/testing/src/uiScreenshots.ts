@@ -1749,7 +1749,7 @@ function getStates(): readonly State[] {
           page,
           page
             .locator(
-              '#game-new-ui button[aria-label$="the play stacks or the discard pile"]',
+              '#game-new-ui button[aria-label*="to the play stacks or the discard pile"]',
             )
             .first(),
         );
