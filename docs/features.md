@@ -709,8 +709,8 @@ move for the current situation.
   - Fast-forward one turn: `Right`
   - Rewind one full rotation: `[`
   - Fast-forward one full rotation: `]`
-  - Go to the beginning: `Home` or `Ctrl + Left`
-  - Go to the end: `End` or `Ctrl + Right`
+  - Go to the beginning: `Home`
+  - Go to the end: `End`
   - Enter a hypothetical: `Page Up`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`

@@ -15,8 +15,6 @@ of the repository.
 ## November 16th, 2026
 
 - Removed Ctrl + Space, which showed every hand narrowed by notes.
-- Added Ctrl + Left and Ctrl + Right, which go to the beginning and the end of a
-  replay.
 - Replay arrows can point at a player's name or at the discard pile.
 - On the classic screen, a right-click on a player's name draws an arrow. It no
   longer views the game from the player's seat.
