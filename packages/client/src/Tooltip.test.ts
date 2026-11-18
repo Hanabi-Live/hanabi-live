@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { Tooltip } from "./Tooltip.ts";
+import { pauseHoverTooltips, Tooltip } from "./Tooltip.ts";
 
 const WINDOW_HEIGHT = 600;
 const WINDOW_MARGIN = 8;
@@ -204,6 +204,26 @@ test("a tooltip keeps its content while it fades out", () => {
   expect(box?.textContent).toBe("Note");
   tooltip.open();
   expect(box?.textContent).toBe("Other note");
+  tooltip.destroy();
+  anchor.remove();
+});
+
+test("hover tooltips stay shut while paused and open again after", () => {
+  const anchor = dom.window.document.createElement("div");
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, { content: "Text" });
+  tooltip.openOnHover(false);
+  anchor.dispatchEvent(pointerEvent("pointerenter"));
+  expect(tooltip.isOpen).toBe(true);
+
+  const resume = pauseHoverTooltips();
+  expect(tooltip.isOpen).toBe(false);
+  anchor.dispatchEvent(pointerEvent("pointerleave"));
+  anchor.dispatchEvent(pointerEvent("pointerenter"));
+  expect(tooltip.isOpen).toBe(false);
+
+  resume();
+  expect(tooltip.isOpen).toBe(true);
   tooltip.destroy();
   anchor.remove();
 });

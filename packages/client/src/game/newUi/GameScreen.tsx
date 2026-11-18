@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { pauseHoverTooltips } from "../../Tooltip.ts";
 import * as sounds from "../../sounds.ts";
 import { store, useAppSelector } from "../../store.ts";
 import * as gameChat from "../chat.ts";
@@ -413,6 +414,13 @@ export function GameScreen({
   // A card that the player drags hides the bubbles of possible cards, so that they do not cover the
   // places to drop it.
   const draggingCard = held?.moved === true;
+  // No tooltip opens while the player drags a card, so that none covers the card or the places to
+  // drop it.
+  const cardInHand = held?.phase === "drag";
+  useEffect(
+    () => (cardInHand ? pauseHoverTooltips() : undefined),
+    [cardInHand],
+  );
   const cardInput = useRef<CardInput>(undefined);
   const cardInputHandlers = useCardInput(cardInput);
   const queued = useQueuedMove(state);

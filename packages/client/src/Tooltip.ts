@@ -43,6 +43,39 @@ const openTooltips = new Set<Tooltip>();
  */
 const hoveredTooltips = new Set<Tooltip>();
 
+/**
+ * How many callers keep the tooltips of hovered elements shut, such as while the player drags a
+ * card over the screen.
+ */
+let hoverPauses = 0;
+
+/**
+ * Closes the tooltips that the pointer opened, and keeps them shut until the returned function
+ * runs. Then the tooltip under the pointer opens, as if the pointer had just moved onto it.
+ * Tooltips that open on a click, such as a note that the player edits, are not affected.
+ */
+export function pauseHoverTooltips(): () => void {
+  hoverPauses++;
+  for (const tooltip of hoveredTooltips) {
+    tooltip.close();
+  }
+
+  let resumed = false;
+  return () => {
+    if (resumed) {
+      return;
+    }
+
+    resumed = true;
+    hoverPauses--;
+    if (hoverPauses === 0) {
+      for (const tooltip of hoveredTooltips) {
+        tooltip.openForHover();
+      }
+    }
+  };
+}
+
 /** Watches the page for removed anchors while any tooltip is open. */
 let anchorObserver: MutationObserver | undefined;
 
@@ -184,20 +217,6 @@ export class Tooltip {
     this.bubble.style.setProperty("--tooltip-arrow-x", `${center - left}px`);
   }
 
-  /** Opens the tooltip for the pointer over its anchor, after the wait if it has one. */
-  private openForHover() {
-    clearTimeout(this.openingTimeout);
-    this.openingTimeout = undefined;
-    if (this.openOnHoverDelayed) {
-      this.openingTimeout = setTimeout(() => {
-        this.openingTimeout = undefined;
-        this.open();
-      }, TOOLTIP_DELAY_IN_MILLISECONDS);
-    } else {
-      this.open();
-    }
-  }
-
   /**
    * Moves the tooltip with its target while a transition in the anchor plays, such as a card that
    * lifts under the pointer, so that the arrow stays on it.
@@ -246,6 +265,25 @@ export class Tooltip {
     }
   }
 
+  /** Opens the tooltip for the pointer over its anchor, after the wait if it has one. */
+  openForHover(): void {
+    clearTimeout(this.openingTimeout);
+    this.openingTimeout = undefined;
+    if (hoverPauses > 0) {
+      return;
+    }
+    if (this.openOnHoverDelayed) {
+      this.openingTimeout = setTimeout(() => {
+        this.openingTimeout = undefined;
+        if (hoverPauses === 0) {
+          this.open();
+        }
+      }, TOOLTIP_DELAY_IN_MILLISECONDS);
+    } else {
+      this.open();
+    }
+  }
+
   get isOpen(): boolean {
     return this.bubble.matches(":popover-open");
   }
@@ -281,7 +319,8 @@ export class Tooltip {
     if (this.isOpen) {
       this.position();
     } else if (
-      wasEmpty
+      hoverPauses === 0
+      && wasEmpty
       && hoveredTooltips.has(this)
       // A tooltip that waits for the pointer to rest on its anchor opens when the wait ends.
       && this.openingTimeout === undefined
