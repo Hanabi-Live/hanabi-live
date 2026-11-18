@@ -720,8 +720,9 @@ function ChoiceRing({
  * Slides the clue tab and fades its hand's color in when `open` turns on, and out when it turns
  * off, from where they are. Each look holds when its animation ends. When the tab has closed, it
  * calls `onClosed`. The slide closes on `SLIDE_BACK`, and the fade closes at an even pace, so that
- * the tab starts to fade as soon as it closes. The tab and its hand use the same timing, so that
- * they fade together in both directions. The animations only decorate.
+ * the tab starts to fade as soon as it closes. On `SLIDE_BACK`'s curve, the fade would barely
+ * change for half of the close, and then the tab would seem to vanish. The tab and its hand use the
+ * same timing, so that they fade together in both directions. The animations only decorate.
  */
 function useTabSlide(
   ref: React.RefObject<HTMLElement | null>,
@@ -873,14 +874,32 @@ export function ClueHandLayer({
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  useTabSlide(ref, getLayerKeyframes, shown, reducedMotion, undefined);
+  // Whether the layer shows, or still fades out.
+  const [visible, setVisible] = useState(shown);
+  if (shown && !visible) {
+    setVisible(true);
+  }
+  useTabSlide(ref, getLayerKeyframes, shown, reducedMotion, undefined, () => {
+    setVisible(false);
+  });
   return (
-    <div
-      aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)] tw:[:has(>[data-clue-drawer=below])>&]:rounded-tr-game-panel tw:[:has(>[data-clue-drawer=below])>&]:rounded-bl-none tw:[:has(>[data-clue-drawer=below])>&]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)]"
-      ref={ref}
-      style={{ opacity: shown ? 1 : 0 }}
-    />
+    <>
+      {/* While the layer shows or fades, a line in the panel's color covers the hand's own outline
+          where the tab or the menu joins the hand. It does not fade. Otherwise, the outline would
+          show as a light line next to the solid tab or menu, until the layer covers it. */}
+      {visible && (
+        <span
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-y-px tw:right-0 tw:w-px tw:bg-game-panel tw:[:has(>[data-clue-drawer=below])>&]:inset-x-px tw:[:has(>[data-clue-drawer=below])>&]:top-auto tw:[:has(>[data-clue-drawer=below])>&]:bottom-0 tw:[:has(>[data-clue-drawer=below])>&]:h-px tw:[:has(>[data-clue-drawer=below])>&]:w-auto"
+        />
+      )}
+      <div
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)] tw:[:has(>[data-clue-drawer=below])>&]:rounded-tr-game-panel tw:[:has(>[data-clue-drawer=below])>&]:rounded-bl-none tw:[:has(>[data-clue-drawer=below])>&]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)]"
+        ref={ref}
+        style={{ opacity: shown ? 1 : 0 }}
+      />
+    </>
   );
 }
 

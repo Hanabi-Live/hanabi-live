@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, expect, test, vi } from "vitest";
-import { fadeOutCopy } from "./motion.ts";
+import { fadeOutCopy, SLIDE, SLIDE_BACK } from "./motion.ts";
 
 beforeEach(() => {
   document.body.replaceChildren();
@@ -60,4 +60,22 @@ test("a copy of a card is not found as a card", () => {
   // The cards that move are found by their order (see "cardMotion.ts").
   expect(document.querySelectorAll("[data-card-order]")).toHaveLength(0);
   expect(document.querySelectorAll("[data-card-place]")).toHaveLength(0);
+});
+
+function getControlPoints(easing: string): readonly number[] {
+  const match = /^cubic-bezier\((?<points>[^)]+)\)$/u.exec(easing);
+  return (match?.groups?.["points"] ?? "").split(",").map(Number);
+}
+
+// A drawer that closes on another curve looks about twice as fast as it opens. This regressed
+// twice.
+test("SLIDE_BACK is SLIDE played backward", () => {
+  const [x1, y1, x2, y2] = getControlPoints(SLIDE.easing);
+  const mirrored = [1 - x2!, 1 - y2!, 1 - x1!, 1 - y1!];
+  const back = getControlPoints(SLIDE_BACK.easing);
+  expect(back).toHaveLength(4);
+  for (const [i, point] of mirrored.entries()) {
+    expect(back[i]).toBeCloseTo(point, 3);
+  }
+  expect(SLIDE_BACK.duration).toBe(SLIDE.duration);
 });

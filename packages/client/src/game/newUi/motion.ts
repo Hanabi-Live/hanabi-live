@@ -4,6 +4,21 @@ import {
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
 
+/** The control points of the cubic Bezier curve of `SLIDE`. */
+const SLIDE_CURVE = [0.33, 1, 0.68, 1] as const;
+
+/**
+ * Returns the CSS easing of a cubic Bezier curve from its control points. It rounds them, so that a
+ * curve that is computed from another one does not get floating-point noise, such as
+ * 0.31999999999999995.
+ */
+function getCubicBezier(
+  points: readonly [number, number, number, number],
+): string {
+  const rounded = points.map((point) => Math.round(point * 1000) / 1000);
+  return `cubic-bezier(${rounded.join(", ")})`;
+}
+
 /**
  * How a part of the screen slides to its place: a drawer out of its box, such as the clue menu, the
  * chat that covers the table, or the replay controls in the status panel, the timeline's knob to
@@ -11,18 +26,25 @@ import {
  */
 export const SLIDE = {
   duration: 200,
-  easing: "cubic-bezier(0.33, 1, 0.68, 1)",
+  easing: getCubicBezier(SLIDE_CURVE),
 } as const;
 
 /**
- * How a part of the screen slides back out of view, such as a drawer that closes. It starts and
- * ends gently, and moves evenly in between. With `SLIDE`'s curve, most of the slide would happen at
- * the start, and the close would look twice as fast as the open. With `SLIDE`'s curve played
- * backward, most of it would happen in the last few frames, and the close would look like a jump.
+ * How a part of the screen slides back out of view, such as a drawer that closes. It is `SLIDE`
+ * played backward: its curve is the mirror of `SLIDE`'s, so that a drawer closes as slowly as it
+ * opens. It starts slowly and speeds up as it goes. Do not give it another curve. With `SLIDE`'s
+ * own curve, or with a curve that moves evenly, the close looks about twice as fast as the open
+ * (this regressed twice). An element that also fades as it closes should fade on its own, faster
+ * curve, so that it starts to change at once (see `useTabSlide` in "ClueMenu.tsx").
  */
 export const SLIDE_BACK = {
   duration: SLIDE.duration,
-  easing: "cubic-bezier(0.37, 0, 0.63, 1)",
+  easing: getCubicBezier([
+    1 - SLIDE_CURVE[2],
+    1 - SLIDE_CURVE[3],
+    1 - SLIDE_CURVE[0],
+    1 - SLIDE_CURVE[1],
+  ]),
 } as const;
 
 /**
