@@ -55,6 +55,13 @@ moving. Do not read the operating system's reduced-motion preference
 `tw:motion-reduce:`). Players turn it on to make their system faster, but they
 still want to see the animations in the game.
 
+Never animate `background-color`, with a transition or with `animate()`. Chrome
+157 runs such an animation on the compositor and can crash the tab (see commit
+94a93b8bd). This includes Tailwind's `tw:transition` and `tw:transition-colors`.
+To fade an element to a new color, put the color on a layer and fade the layer's
+opacity. In the New UI, use `FadeLayer` from
+`packages/client/src/game/newUi/FadeLayer.tsx`. A text color may animate.
+
 ## Writing style
 
 Write prose for people (replies, commit messages, pull request descriptions,
