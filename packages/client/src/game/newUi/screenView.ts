@@ -44,6 +44,7 @@ import type {
   DeckEmpathy,
   DiscardView,
   HoleView,
+  MovedCardLabel,
   StackView,
 } from "./SharedCards.tsx";
 import { getNotedStackBase, getStackBase } from "./SharedCards.tsx";
@@ -473,8 +474,12 @@ export interface ShownMove {
   /** The card's slot in their hand, where slot 1 is the newest card. */
   readonly slot: number | undefined;
 
-  /** Whether the card was played or misplayed without a clue on it, as the action log says. */
-  readonly blind: boolean;
+  /**
+   * What the tab on the card adds after the slot: "blind" for a card that was played or misplayed
+   * without a clue on it, and "clued" for a discarded card that had a clue on it. Playing a clued
+   * card and discarding an unclued card are the normal moves, so they add nothing.
+   */
+  readonly label: MovedCardLabel | undefined;
 }
 
 /**
@@ -514,7 +519,7 @@ export function getMoveForTurn(state: State): ShownMove | undefined {
       order: card.order,
       player: undefined,
       slot: undefined,
-      blind: false,
+      label: undefined,
     };
   }
 
@@ -523,10 +528,21 @@ export function getMoveForTurn(state: State): ShownMove | undefined {
     order: card.order,
     player,
     slot: getCardSlot(card.order, hand),
-    blind:
-      (card.segmentPlayed === lastSegment || card.isMisplayed)
-      && !isCardClued(previousCard),
+    label: getMovedCardLabel(
+      card.segmentPlayed === lastSegment || card.isMisplayed,
+      isCardClued(previousCard),
+    ),
   };
+}
+
+function getMovedCardLabel(
+  played: boolean,
+  clued: boolean,
+): MovedCardLabel | undefined {
+  if (played) {
+    return clued ? undefined : "blind";
+  }
+  return clued ? "clued" : undefined;
 }
 
 /** The clues of the game so far, for the clue log. */

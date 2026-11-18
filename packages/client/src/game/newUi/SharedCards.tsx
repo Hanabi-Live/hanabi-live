@@ -428,9 +428,15 @@ export interface MovedCard {
   /** The card's slot in its holder's hand, where slot 1 is the newest card. */
   readonly slot: number | undefined;
 
-  /** Whether the card was played or misplayed without a clue on it. */
-  readonly blind: boolean;
+  /** What the tab adds after the slot (see `MovedCardLabel`). */
+  readonly label: MovedCardLabel | undefined;
 }
+
+/**
+ * The note after the slot on a moved card's tab, as in the action log: "blind" for a card that was
+ * played or misplayed without a clue, and "clued" for a discarded card that had a clue.
+ */
+export type MovedCardLabel = "blind" | "clued";
 
 /** The height of the tab on a moved card, for each CSS pixel of the card's width. */
 const SLOT_TAB_HEIGHT_PER_WIDTH = 0.3;
@@ -443,16 +449,16 @@ const SLOT_TAB_WINDOW_MARGIN = 2;
 
 /**
  * The tab on the top edge of a moved card's outline, which names the slot that the card left, and
- * says "(blind)" for a blind play, as the action log does. It is white like the outline, so that
- * the two read as one shape.
+ * says "(blind)" or "(clued)" when the move was unusual, as the action log does. It is white like
+ * the outline, so that the two read as one shape.
  */
 function SlotTab({
   slot,
-  blind,
+  label,
   cardWidth,
 }: {
   readonly slot: number;
-  readonly blind: boolean;
+  readonly label: MovedCardLabel | undefined;
   readonly cardWidth: number;
 }): React.JSX.Element {
   const height = Math.max(
@@ -501,7 +507,7 @@ function SlotTab({
       }}
     >
       <span>Slot {slot}</span>
-      {blind && <span>(blind)</span>}
+      {label !== undefined && <span>({label})</span>}
     </span>
   );
 }
@@ -787,8 +793,8 @@ export function PlayArea({
                           && movedCard.order === stack.topOrder
                           && movedCard.slot !== undefined && (
                             <SlotTab
-                              blind={movedCard.blind}
                               cardWidth={cardWidth}
+                              label={movedCard.label}
                               slot={movedCard.slot}
                             />
                           )}
@@ -1670,8 +1676,8 @@ export function DiscardPile({
                     />
                     {moved && movedCard.slot !== undefined && (
                       <SlotTab
-                        blind={movedCard.blind}
                         cardWidth={cardWidth}
+                        label={movedCard.label}
                         slot={movedCard.slot}
                       />
                     )}
