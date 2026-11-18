@@ -72,7 +72,8 @@ function isScrolledAway(
 
 /**
  * Places the arrow over its target, where the target is now. The arrow points down at the top of
- * the target. When there is no room above it, the arrow points up at its bottom instead.
+ * the target. At a card in a hand that has a clue token, or when there is no room above the target,
+ * it points up at its bottom instead.
  */
 function placeArrow(
   arrow: HTMLElement,
@@ -100,7 +101,14 @@ function placeArrow(
   const width = rect.width / scale;
   const height = rect.height / scale;
   const inset = typeof target === "number" ? height * CARD_TIP_INSET : -TIP_GAP;
-  const down = top + inset - ARROW_TIP.y >= SCREEN_EDGE_MARGIN;
+
+  // Clue tokens sit on the top edge of the cards, so the arrow points up at a card in a hand with a
+  // token, instead of covering the token. It also points up when there is no room above the target.
+  const hand = anchor.closest("[data-hand]");
+  const handHasClueMarker =
+    hand !== null && hand.querySelector("[data-clue-marker]") !== null;
+  const down =
+    !handHasClueMarker && top + inset - ARROW_TIP.y >= SCREEN_EDGE_MARGIN;
   const tipX = left + width / 2;
   const tipY = down ? top + inset : top + height - inset;
   arrow.style.visibility = "visible";

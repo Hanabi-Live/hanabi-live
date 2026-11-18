@@ -1539,26 +1539,39 @@ function getStates(): readonly State[] {
         await hoverForTooltip(page, page.locator("[data-result]"));
       },
     },
-    // Bob, who leads a five-player shared replay, points an arrow at the first card of the next
-    // player's hand. The account follows him, so it sees the arrow.
+    // Bob, who leads a five-player shared replay, points an arrow at a card that a clue touched, so
+    // that the arrow points up at it from below. The account follows him, so it sees the arrow.
     {
       name: "new-ui-arrow",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame(5);
+        const game = await cast.startBobsGame(5);
+        await game.clueAgain();
       },
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
+        // The tokens show only on the turn of the last clue.
+        cast.bobsGame().showSegment(2);
+        await page
+          .locator("#game-new-ui [data-turn]", { hasText: /^3/u })
+          .waitFor();
+        await settle(page);
         const order = await page
-          .locator(NEXT_HAND_FIRST_CARD_SELECTOR)
+          .locator("#game-new-ui [data-hand] [data-card-order]", {
+            has: page.locator("[data-clue-marker]"),
+          })
+          .first()
           .getAttribute("data-card-order");
         cast.bobsGame().showArrow({
           type: "card",
           order: Number(order) as CardOrder,
         });
-        await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
+        // A copy of the arrow can still be fading out.
+        await page
+          .locator("#game-new-ui [data-highlight-arrow]:not([inert])")
+          .waitFor();
         await settle(page);
       },
     },
