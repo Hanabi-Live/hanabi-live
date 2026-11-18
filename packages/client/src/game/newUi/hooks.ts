@@ -75,7 +75,7 @@ export function useWindowSize(): { width: number; height: number } {
  * "getWideLayoutRoom"). The first is a breakpoint from "public/css/tokens.css".
  */
 export const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
-export const STACKED_WIDTH_QUERY = "(max-width: 959px)";
+export const STACKED_WIDTH_QUERY = "(max-width: 957px)";
 
 /** Whether a media query, such as a window width, matches. It updates as the window changes. */
 export function useMediaQuery(query: string): boolean {

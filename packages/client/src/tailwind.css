@@ -131,7 +131,7 @@
 @custom-variant narrow-1280 (@media screen and (max-width: 1280px));
 @custom-variant narrow-980 (@media screen and (max-width: 980px));
 /*
-  The New UI's phone layout, which the game screen uses on windows at most 959px wide (see
+  The New UI's phone layout, which the game screen uses on windows at most 957px wide (see
   "STACKED_WIDTH_QUERY" in "hooks.ts"). It is an attribute, not a breakpoint, so that the screen's
   panels that are as narrow as a phone can use it too. It sits with the 980px breakpoint, so that
   the narrower breakpoints still win over it.
