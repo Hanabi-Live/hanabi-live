@@ -4,6 +4,11 @@
  */
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { store } from "../../store.ts";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /**
@@ -68,6 +73,19 @@ const POINTER_INSIDE_CLASS = {
     "tw:absolute tw:inset-0 tw:[clip-path:polygon(1.4px_100%,calc(100%_-_1.4px)_100%,calc(100%_-_1.4px)_calc(100%_-_2px),50%_1.4px,1.4px_calc(100%_-_2px))]",
 } as const;
 
+/**
+ * How far a menu moves toward its button as it fades out, and away from it as it fades in, in CSS
+ * pixels.
+ */
+const MENU_SLIDE = 4;
+
+/**
+ * The box that holds a menu and its pointer, as large as the container of the button. They fade
+ * together in it, so that their outline stays one line where they meet.
+ */
+const MENU_LAYER_CLASS =
+  "tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:*:pointer-events-auto";
+
 /** The least space between a centered menu and the edges of the window, in CSS pixels. */
 const MENU_WINDOW_MARGIN = 8;
 
@@ -102,6 +120,7 @@ export function Menu({
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
   // How far the menu and its pointer move sideways from the middle of the button, in CSS pixels.
   const [shift, setShift] = useState({
     menu: 0,
@@ -155,8 +174,10 @@ export function Menu({
     }
   }, [scrollIntoView]);
 
+  useMenuFade(layerRef, side);
+
   return (
-    <>
+    <div className={MENU_LAYER_CLASS} ref={layerRef}>
       <div
         className={`${MENU_CLASS} ${MENU_SIDE_CLASS[side]} ${MENU_ALIGN_CLASS[align]} ${className}`}
         ref={ref}
@@ -171,8 +192,80 @@ export function Menu({
         shift={shift.pointer}
         side={side}
       />
-    </>
+    </div>
   );
+}
+
+/**
+ * A menu fades in as it opens, as fast as a tooltip, and moves a little away from its button. When
+ * it closes, a copy of it stays on the page and fades out the other way, so that the menu that the
+ * page draws can go at once. The copy shows what the menu showed last, cannot be clicked, and is
+ * hidden from screen readers. The "Reduced motion" setting leaves out both fades.
+ */
+function useMenuFade(
+  layerRef: React.RefObject<HTMLDivElement | null>,
+  side: "above" | "below",
+) {
+  useLayoutEffect(() => {
+    const layer = layerRef.current;
+    if (layer === null || store.getState().session.settings.reducedMotion) {
+      return undefined;
+    }
+    // A menu above its button moves up as it opens, and a menu below it moves down.
+    const away = side === "above" ? -MENU_SLIDE : MENU_SLIDE;
+    const near = `translateY(${-away}px)`;
+    layer.animate(
+      [
+        {
+          opacity: 0,
+          transform: near,
+        },
+        {
+          opacity: 1,
+          transform: "none",
+        },
+      ],
+      {
+        duration: OPEN_DURATION_IN_MILLISECONDS,
+        easing: "ease-out",
+      },
+    );
+
+    return () => {
+      // The menu is still on the page here: React removes it after this.
+      const parent = layer.parentElement;
+      if (parent === null || !layer.isConnected) {
+        return;
+      }
+      const copy = layer.cloneNode(true) as HTMLDivElement;
+      copy.setAttribute("aria-hidden", "true");
+      copy.setAttribute("inert", "");
+      copy.classList.remove("tw:*:pointer-events-auto");
+      for (const element of copy.querySelectorAll("[role]")) {
+        element.removeAttribute("role");
+      }
+      parent.append(copy);
+      const fade = copy.animate(
+        [
+          { opacity: Number(getComputedStyle(layer).opacity) },
+          {
+            opacity: 0,
+            transform: near,
+          },
+        ],
+        {
+          duration: CLOSE_DURATION_IN_MILLISECONDS,
+          easing: "ease-in",
+          fill: "forwards",
+        },
+      );
+      function remove() {
+        copy.remove();
+      }
+      fade.addEventListener("finish", remove);
+      fade.addEventListener("cancel", remove);
+    };
+  }, [layerRef, side]);
 }
 
 /**

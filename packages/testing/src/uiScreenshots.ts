@@ -1696,7 +1696,11 @@ function getStates(): readonly State[] {
       },
       hover: async (page) => {
         await openMenu(page.getByRole("button", { name: "Play again" }));
-        await page.getByText(/^Not ready: Bob/u).waitFor();
+        // A copy of the menu can still fade out where it was before the window's new size.
+        await page
+          .getByRole("menu")
+          .getByText(/^Not ready: Bob/u)
+          .waitFor();
       },
     },
     // The leader of the shared replay opens the menu that passes the lead to someone else, and
