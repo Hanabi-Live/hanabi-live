@@ -270,21 +270,28 @@ export function ClueMenu({
   }, [name, below]);
 
   // When the drawer closes, a copy of it slides back behind the hand from where it is (see
-  // `fadeOutCopy`), while the hand loses the drawer's color (see `ClueHandLayer`). This runs before
-  // the cleanup below, which stops the drawer's slide out.
+  // `fadeOutCopy`), and its content fades out (see `CONTENT_FADE_OUT`), while the hand loses the
+  // drawer's color (see `ClueHandLayer`). This runs before the cleanup below, which stops the
+  // drawer's slide out and its content's fade in.
   const closingSideRef = useRef<DrawerSide>(undefined);
   useLayoutEffect(() => {
     closingSideRef.current = reducedMotion ? undefined : measuredSide;
   }, [measuredSide, reducedMotion]);
   useLayoutEffect(() => {
     const menu = ref.current;
+    const content = contentRef.current;
     return () => {
       const closingSide = closingSideRef.current;
       if (menu === null || closingSide === undefined) {
         return;
       }
       const { clipPath, transform } = getComputedStyle(menu);
-      fadeOutCopy(
+      const contentIndex = [...menu.children].findIndex(
+        (child) => child === content,
+      );
+      const contentOpacity =
+        content === null ? 1 : Number(getComputedStyle(content).opacity);
+      const copy = fadeOutCopy(
         menu,
         [
           {
@@ -295,11 +302,20 @@ export function ClueMenu({
         ],
         SLIDE_BACK,
       );
+      // A drawer that closes while it opens fades out from where its fade in was.
+      copy?.children[contentIndex]?.animate(
+        [{ opacity: contentOpacity }, ...CONTENT_FADE_OUT.slice(1)],
+        {
+          duration: SLIDE_BACK.duration,
+          easing: "linear",
+          fill: "forwards",
+        },
+      );
     };
   }, []);
 
   // The drawer slides out from behind the edge of the hand, and the part that is still behind the
-  // hand is cut off. The sliding only decorates.
+  // hand is cut off. Its content fades in (see `CONTENT_FADE_IN`). The sliding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current;
     if (measuredSide === undefined || reducedMotion || menu === null) {
@@ -315,8 +331,13 @@ export function ClueMenu({
       ],
       SLIDE,
     );
+    const contentAnimation = contentRef.current?.animate([...CONTENT_FADE_IN], {
+      duration: SLIDE.duration,
+      easing: "linear",
+    });
     return () => {
       animation.cancel();
+      contentAnimation?.cancel();
     };
     // It slides only when the drawer opens, not when it is measured again.
   }, [name, measuredSide, reducedMotion]);
@@ -592,6 +613,30 @@ function EmptySlot(): React.JSX.Element {
     />
   );
 }
+
+/**
+ * How the content of the clue menu fades in as the menu slides out (`SLIDE`). It stays hidden while
+ * the menu starts to move, so that its text does not slide past the hand's edge, and it is fully
+ * shown when the menu stops.
+ */
+const CONTENT_FADE_IN = [
+  { opacity: 0 },
+  {
+    opacity: 0,
+    offset: 0.25,
+  },
+  { opacity: 1 },
+] as const;
+
+/** `CONTENT_FADE_IN` played backward, as the menu slides back (`SLIDE_BACK`). */
+const CONTENT_FADE_OUT = [
+  { opacity: 1 },
+  {
+    opacity: 0,
+    offset: 0.75,
+  },
+  { opacity: 0 },
+] as const;
 
 /** How the clue menu looks before it slides out of the hand, behind the hand's edge. */
 function getHiddenDrawer(menu: HTMLElement, side: DrawerSide): Keyframe {

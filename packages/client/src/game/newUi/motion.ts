@@ -58,15 +58,16 @@ const COPY_HIDDEN_ATTRIBUTES = [
  * such as a fade-out. The copy goes when the animation finishes or is canceled. Then the element
  * itself can go at once, and the copy shows what it showed last. The copy cannot be clicked or
  * focused, and screen readers skip it. Call it while the element is still on the page, such as in
- * the cleanup of a layout effect. If the element stays on the page, the copy goes at once.
+ * the cleanup of a layout effect. If the element stays on the page, the copy goes at once. It
+ * returns the copy, so that its parts can play their own animations.
  */
 export function fadeOutCopy(
   element: HTMLElement,
   keyframes: readonly Keyframe[],
   options: KeyframeAnimationOptions,
-): void {
+): HTMLElement | undefined {
   if (!element.isConnected) {
-    return;
+    return undefined;
   }
 
   const copy = element.cloneNode(true) as HTMLElement;
@@ -123,6 +124,8 @@ export function fadeOutCopy(
       animation.cancel();
     }
   });
+
+  return copy;
 }
 
 /**
