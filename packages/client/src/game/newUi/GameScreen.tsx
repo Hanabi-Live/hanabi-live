@@ -183,7 +183,7 @@ const WIDE_WINDOW_WIDTH = 1920;
  * The width that the bar of an ongoing game needs for one row with its replay's controls, until a
  * replay measures it (see "barRef"). It is what a player's bar needs, measured.
  */
-const ONGOING_REPLAY_BAR_WIDTH = 1540;
+const ONGOING_REPLAY_BAR_WIDTH = 1550;
 
 /** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
 const CLUE_LOG_MIN_HEIGHT = 60;

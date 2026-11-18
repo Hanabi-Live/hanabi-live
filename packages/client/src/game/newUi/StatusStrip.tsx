@@ -661,6 +661,34 @@ export const REPLAY_BAR_HEIGHT = 55 + 9 + BAR_HEIGHT;
 const OWN_ROW_ATTRIBUTE = "data-own-row";
 
 /**
+ * How far the bar's contents reach past the start of its right padding, in CSS pixels. Contents
+ * that fill the padding do not overflow the bar, but they leave the last button flush with the edge
+ * of the screen, with less room on its right than the bar has on its left.
+ */
+function getPaddingOverlap(footer: HTMLElement): number {
+  const box = footer.getBoundingClientRect();
+  if (footer.offsetWidth === 0) {
+    return 0;
+  }
+  // The rectangles are in the window's pixels, which the zoomed screen makes larger.
+  const scale = box.width / footer.offsetWidth;
+  const style = getComputedStyle(footer);
+  const contentRight =
+    box.right
+    - (Number(style.paddingRight.replace("px", ""))
+      + Number(style.borderRightWidth.replace("px", "")))
+      * scale;
+  const reach = Math.max(
+    box.left,
+    ...[...footer.children].map((child) => child.getBoundingClientRect().right),
+  );
+  return Math.max(
+    footer.scrollWidth - footer.clientWidth,
+    (reach - contentRight) / scale,
+  );
+}
+
+/**
  * The attribute that says how much wider the bar would need to be to fit its replay controls in one
  * row, in CSS pixels: 0 when they fit. The game screen reads it to move the bar into the panel
  * instead of giving it two rows (see "GameScreen.tsx").
@@ -704,11 +732,12 @@ function useOwnRow(
     // taller layout, so that the chat can no longer scroll down to its last lines.
     footer.style.height = getComputedStyle(footer).height;
     footer.removeAttribute(OWN_ROW_ATTRIBUTE);
-    const missing = Math.max(
-      0,
-      footer.scrollWidth - footer.clientWidth,
+    // Less than a pixel is a rounding error of the measurement.
+    const overlap = Math.max(
+      getPaddingOverlap(footer),
       group.scrollWidth - group.clientWidth,
     );
+    const missing = overlap < 1 ? 0 : Math.ceil(overlap);
     const overflows = missing > 0;
     footer.setAttribute(ONE_ROW_MISSING_ATTRIBUTE, String(missing));
     if (hadOwnRow) {
