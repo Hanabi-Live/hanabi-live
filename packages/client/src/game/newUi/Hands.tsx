@@ -31,10 +31,15 @@ import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
 import { ClueHandLayer, ClueTab } from "./ClueMenu.tsx";
+import {
+  FADE_LAYER_PARENT_CLASS,
+  FadeLayer,
+  KEY_WITH_TEXT_COLOR_STYLE,
+} from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
-import { useFade } from "./motion.ts";
+import { getVisibilityTransition, useFade } from "./motion.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
@@ -145,6 +150,15 @@ interface HandsProps {
 
   /** The cards that the clue on the turn that shows touched, with the clue to mark them with. */
   readonly clueMarkers: ReadonlyMap<CardOrder, CardClueMarker>;
+
+  /** The cards that the clue being chosen in the menu would touch, with its token. */
+  readonly previewMarkers: ReadonlyMap<CardOrder, CardClueMarker>;
+
+  /**
+   * Whether the viewer is choosing a clue in the menu. The clue on the turn that shows then fades
+   * out: its tokens, its rail, the ring around its giver, and the note that it touched no cards.
+   */
+  readonly previewing: boolean;
 
   /** The player who got the clue on the turn that shows, when it touched no cards. */
   readonly emptyClueTarget: PlayerIndex | undefined;
@@ -312,16 +326,33 @@ const CLUE_RAIL_HEAD = {
  * table, it shows who clued whom at a glance. A clue token in the middle of the rail shows which
  * clue it was. It draws itself from the giver when the clue is given (see "cardMotion.ts").
  */
+/**
+ * The opacity of a part of the clue on the turn that shows, which fades out while the viewer
+ * chooses a clue in the menu, and back in after.
+ */
+function getPreviewFadeStyle(props: HandsProps): React.CSSProperties {
+  return {
+    opacity: props.previewing ? 0 : 1,
+    transition: props.reducedMotion
+      ? undefined
+      : getVisibilityTransition(!props.previewing),
+  };
+}
+
 function ClueRail({
   giver,
   target,
   marker,
   tokenSize,
+  fadeStyle,
 }: {
   readonly giver: PlayerIndex;
   readonly target: PlayerIndex;
   readonly marker: ClueMarkerView;
   readonly tokenSize: number;
+
+  /** How the rail and its token fade out while the viewer chooses a clue. */
+  readonly fadeStyle: React.CSSProperties;
 }): React.JSX.Element {
   const ref = useRef<SVGSVGElement>(null);
   const tokenRef = useRef<HTMLSpanElement>(null);
@@ -436,6 +467,7 @@ function ClueRail({
       aria-hidden="true"
       className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:size-full tw:overflow-visible"
       ref={ref}
+      style={fadeStyle}
     >
       {/* The rail is white for every clue, since its token shows the clue. The dark edge keeps it
           visible on the table. */}
@@ -477,6 +509,7 @@ function ClueRail({
         data-clue-rail-token
         ref={tokenRef}
         style={{
+          ...fadeStyle,
           width: tokenSize,
           height: tokenSize,
         }}
@@ -672,7 +705,11 @@ function PlayerClock({
         <span className="tw:relative">{seat.clock}</span>
       </span>
       {pauseAction !== undefined && (
-        <PauseButton action={pauseAction} onPause={onPause} />
+        <PauseButton
+          action={pauseAction}
+          onPause={onPause}
+          reducedMotion={reducedMotion}
+        />
       )}
     </span>
   );
@@ -734,25 +771,32 @@ const PAUSE_BUTTON_TOOLTIP = {
 function PauseButton({
   action,
   onPause,
+  reducedMotion,
 }: {
   readonly action: PauseAction;
   readonly onPause: () => void;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const queued = action === "unqueue";
   return (
     <button
       aria-label={queued ? "Cancel the queued pause" : "Pause the game"}
       aria-pressed={action === "pause" ? undefined : queued}
-      className={`tw:flex tw:size-6 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[10px] ${KEY_CLASS} ${
-        queued
-          ? "tw:bg-game-turn tw:text-card-ink tw:hover:brightness-110"
-          : "tw:bg-white/15 tw:text-game-text tw:hover:bg-white/25"
+      className={`tw:flex tw:size-6 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-white/15 tw:text-[10px] tw:hover:bg-white/25 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS} ${
+        queued ? "tw:text-card-ink" : "tw:text-game-text"
       }`}
       data-pause-button
       onClick={onPause}
       ref={tooltipRef(PAUSE_BUTTON_TOOLTIP[action])}
+      style={KEY_WITH_TEXT_COLOR_STYLE}
       type="button"
     >
+      {/* The color of the turn fades in while the pause is queued. */}
+      <FadeLayer
+        className="tw:bg-game-turn tw:group-hover/layer:brightness-110"
+        reducedMotion={reducedMotion}
+        shown={queued}
+      />
       <i aria-hidden="true" className="fas fa-pause" />
     </button>
   );
@@ -945,6 +989,7 @@ function OwnCard({
       blank={card.blank}
       clued={card.clued}
       clueMarker={props.clueMarkers.get(card.order)}
+      clueMarkerHidden={props.previewing}
       colorblindMode={colorblindMode}
       critical={card.critical}
       doubleDiscard={card.doubleDiscard}
@@ -955,6 +1000,7 @@ function OwnCard({
       noteUnread={props.notes.unreadNotes.has(card.order)}
       openPossibleCards={props.possibleCardsCard === card.order}
       pips={card.pips}
+      previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
       rank={card.rank}
       reducedMotion={props.reducedMotion}
@@ -972,6 +1018,7 @@ function OwnCard({
     <ViewFade
       drawnCardsShown={drawnCardsShown}
       face={face}
+      note={props.notes.notesHtml.get(card.order)}
       reducedMotion={props.reducedMotion}
       view={view}
     />
@@ -1342,6 +1389,7 @@ function EditableCard({
         blank={card.blank}
         clued={card.clued}
         clueMarker={props.clueMarkers.get(card.order)}
+        clueMarkerHidden={props.previewing}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         doubleDiscard={card.doubleDiscard}
@@ -1351,6 +1399,7 @@ function EditableCard({
         noteMarks={card.noteMarks}
         noteUnread={props.notes.unreadNotes.has(card.order)}
         pips={card.pips}
+        previewMarker={props.previewMarkers.get(card.order)}
         raiseClued
         rank={card.rank}
         reducedMotion={props.reducedMotion}
@@ -1417,6 +1466,7 @@ function HandCard({
       blank={card.blank}
       clued={card.clued}
       clueMarker={props.clueMarkers.get(card.order)}
+      clueMarkerHidden={props.previewing}
       colorblindMode={props.colorblindMode}
       critical={card.critical}
       doubleDiscard={card.doubleDiscard}
@@ -1428,6 +1478,7 @@ function HandCard({
       noteUnread={props.notes.unreadNotes.has(card.order)}
       openPossibleCards={props.possibleCardsCard === card.order}
       pips={card.pips}
+      previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
       rank={card.rank}
       reducedMotion={props.reducedMotion}
@@ -1454,6 +1505,7 @@ function HandCard({
         <ViewFade
           drawnCardsShown={seat.drawnCardsShown}
           face={face}
+          note={props.notes.notesHtml.get(card.order)}
           reducedMotion={props.reducedMotion}
           view={seat.view}
         />
@@ -1466,6 +1518,21 @@ function HandCard({
   );
 }
 
+/** Whether the change that `ViewFade` plays fades as a tooltip opens, instead of as it closes. */
+function getFadeOpens(
+  previous: { readonly view: HandView; readonly drawnCardsShown: boolean },
+  view: HandView,
+  drawnCardsShown: boolean,
+): boolean {
+  if (previous.view !== view) {
+    return view === "player";
+  }
+  if (previous.drawnCardsShown !== drawnCardsShown) {
+    return drawnCardsShown;
+  }
+  return true;
+}
+
 /** A face that fades out over a card, and the opacity that it starts from. */
 interface FadingFace {
   readonly face: React.ReactElement<CardFaceProps>;
@@ -1476,27 +1543,32 @@ interface FadingFace {
 }
 
 /**
- * When a hand changes how it shows its cards (see `HandView`), or a hypothetical shows or hides the
- * cards that its players draw, each card changes in place: its face from before covers the new face
- * and fades out, as fast as a tooltip opens or closes. A new turn changes the cards at once, since
- * it shows what happened. When the view changes back during the fade, the new fade starts from the
- * image on the screen, so that the card does not jump.
+ * When a hand changes how it shows its cards (see `HandView`), a hypothetical shows or hides the
+ * cards that its players draw, or a card's note changes, each card changes in place: its face from
+ * before covers the new face and fades out, as fast as a tooltip opens or closes. A new turn
+ * changes the cards at once, since it shows what happened. When the view changes back during the
+ * fade, the new fade starts from the image on the screen, so that the card does not jump.
  */
 function ViewFade({
   face,
   view,
   drawnCardsShown,
+  note,
   reducedMotion,
 }: {
   readonly face: React.ReactElement<CardFaceProps>;
   readonly view: HandView;
   readonly drawnCardsShown: boolean;
+
+  /** The card's note, which can change how the card looks, such as a "blank" note. */
+  readonly note: string | undefined;
   readonly reducedMotion: boolean;
 }): React.JSX.Element | undefined {
   const last = useRef({
     face,
     view,
     drawnCardsShown,
+    note,
   });
   const [fading, setFading] = useState<FadingFace>();
   const fadeRef = useRef<HTMLDivElement>(null);
@@ -1507,10 +1579,12 @@ function ViewFade({
       face,
       view,
       drawnCardsShown,
+      note,
     };
     if (
       previous.view === view
       && previous.drawnCardsShown === drawnCardsShown
+      && previous.note === note
     ) {
       return;
     }
@@ -1526,10 +1600,11 @@ function ViewFade({
     setFading({
       face: previous.face,
       from: 1 - shown,
-      // Showing the drawn cards fades as a tooltip opens, and hiding them as it closes.
-      opening: previous.view === view ? drawnCardsShown : view === "player",
+      // Showing the drawn cards fades as a tooltip opens, and hiding them as it closes. A new note
+      // fades in as a tooltip opens.
+      opening: getFadeOpens(previous, view, drawnCardsShown),
     });
-  }, [face, view, drawnCardsShown, reducedMotion]);
+  }, [face, view, drawnCardsShown, note, reducedMotion]);
 
   useLayoutEffect(() => {
     const element = fadeRef.current;
@@ -1700,17 +1775,23 @@ function Hand({
             onClick={() => {
               props.onShowPlayerLog(seat.playerIndex);
             }}
-            style={
-              isRinged
-                ? {
-                    boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
-                      CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
-                    }px ${CLUE_EDGE_COLOR}`,
-                  }
-                : undefined
-            }
             type="button"
           >
+            {isRinged && (
+              // The ring is a layer of its own, so that it fades out with the clue's rail while the
+              // viewer chooses a clue.
+              <span
+                aria-hidden="true"
+                className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit]"
+                style={{
+                  boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
+                    CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
+                  }px ${CLUE_EDGE_COLOR}`,
+                  ...(props.shownClue?.giver === seat.playerIndex
+                    && getPreviewFadeStyle(props)),
+                }}
+              />
+            )}
             <NameChip seat={seat} />
           </button>
         </div>
@@ -1783,8 +1864,10 @@ function Hand({
       {props.emptyClueTarget === seat.playerIndex && (
         // A badge on the top edge of the hand, where the markers would be.
         <span
-          className="tw:absolute tw:top-0 tw:left-1/2 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-game-control tw:bg-clue tw:px-2.5 tw:py-1 tw:text-sm tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink"
+          aria-hidden={props.previewing ? true : undefined}
+          className={`tw:absolute tw:top-0 tw:left-1/2 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-game-control tw:bg-clue tw:px-2.5 tw:py-1 tw:text-sm tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink ${props.previewing ? "tw:invisible" : ""}`}
           data-clue-empty
+          style={getPreviewFadeStyle(props)}
         >
           The clue touched no cards
         </span>
@@ -1911,6 +1994,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
       ))}
       {props.shownClue !== undefined && (
         <ClueRail
+          fadeStyle={getPreviewFadeStyle(props)}
           giver={props.shownClue.giver}
           marker={props.shownClue.marker}
           target={props.shownClue.target}

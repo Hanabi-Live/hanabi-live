@@ -1,11 +1,12 @@
 import type { ServerEventData } from "@hanabi-live/data";
 import { useRef, useState } from "react";
+import { store } from "../../store.ts";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
+import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
-  BOTTOM_BAR_BUTTON_COLOR_CLASS,
   MENU_ITEM_CLASS,
   MENU_ITEM_COLOR_CLASS,
 } from "./surfaces.ts";
@@ -35,22 +36,32 @@ export function EndGameMenu({
   useCloseOnOutsideClick(open, containerRef, setOpen);
 
   const voted = votes?.voted === true;
+  const { reducedMotion } = store.getState().session.settings;
 
   return (
     <div className="tw:relative" ref={containerRef}>
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} ${
-          voted
-            ? "tw:bg-critical/20 tw:ring-2 tw:ring-critical tw:hover:bg-critical/30"
-            : BOTTOM_BAR_BUTTON_COLOR_CLASS
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:bg-transparent ${FADE_LAYER_PARENT_CLASS} ${
+          voted ? "tw:ring-2 tw:ring-critical" : ""
         }`}
         onClick={() => {
           setOpen(!open);
         }}
         type="button"
       >
+        {/* The button's color is two layers that fade into each other (see `FadeLayer`). */}
+        <FadeLayer
+          className="tw:bg-white/8 tw:group-hover/layer:bg-white/15"
+          reducedMotion={reducedMotion}
+          shown={!voted}
+        />
+        <FadeLayer
+          className="tw:bg-critical/20 tw:group-hover/layer:bg-critical/30"
+          reducedMotion={reducedMotion}
+          shown={voted}
+        />
         <i aria-hidden="true" className="fas fa-skull" />
         {voted ? "Voted to end" : "End game"}
         <MenuCaret open={open} />

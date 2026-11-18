@@ -197,7 +197,8 @@ export function ClueLog({
           {entries.map((entry) => {
             const match = getMatch(entry, hoveredCard);
             const shown = entry.segment === shownSegment;
-            const background = `${dragging || match !== "none" ? "" : "tw:hover:bg-white/18"} ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`;
+            const hoverLights = !dragging && match === "none";
+            const background = `tw:bg-transparent ${hoverLights ? "tw:hover:bg-white/18" : ""}`;
             return (
               <li
                 className="tw:col-span-full tw:grid tw:grid-cols-subgrid"
@@ -215,6 +216,17 @@ export function ClueLog({
                   style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
                   type="button"
                 >
+                  {/* The row of the turn on screen is raised. The raised color is a layer that fades
+                      in and out as the turn changes, and it makes way for the hover color. */}
+                  <span
+                    aria-hidden="true"
+                    className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-game-raised ${shown ? "tw:opacity-100" : "tw:opacity-0"} ${hoverLights ? "tw:group-hover/row:opacity-0" : ""}`}
+                    style={{
+                      transition: reducedMotion
+                        ? undefined
+                        : getOpacityTransition(shown),
+                    }}
+                  />
                   {(["positive", "negative"] as const).map((layer) => (
                     <span
                       aria-hidden="true"

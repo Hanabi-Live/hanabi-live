@@ -191,6 +191,9 @@ const PANEL_CARD_WIDTH = 82;
  */
 const BAR_ONE_ROW_WIDTH = 1650;
 
+/** The tokens of no clue. */
+const NO_CLUE_MARKERS: ReadonlyMap<CardOrder, CardClueMarker> = new Map();
+
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
 
@@ -813,7 +816,6 @@ export function GameScreen(): React.JSX.Element {
           marker,
           touchedBefore: touchedBefore.has(order),
           chopMoved: chopMoved.has(order),
-          preview: true,
         },
       ]),
     );
@@ -1208,9 +1210,10 @@ export function GameScreen(): React.JSX.Element {
     <StatusStrip
       chatButton={
         <ChatButton
-          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:bg-game-text tw:aria-pressed:text-card-ink tw:aria-pressed:hover:bg-white ${KEY_CLASS}`}
+          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:text-card-ink ${KEY_CLASS}`}
           open={chatOpen}
           poppedOut={chatPoppedOut}
+          pressedClassName="tw:bg-game-text tw:group-hover/layer:bg-white"
           unread={zen ? 0 : chatUnread}
           zen={zen}
           zenAvailable={!state.finished}
@@ -1522,16 +1525,12 @@ export function GameScreen(): React.JSX.Element {
                   canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
-                  clueMarkers={
-                    previewing
-                      ? getPreviewMarkers()
-                      : getClueMarkers(
-                          shownClue,
-                          visibleState.clues,
-                          settings.colorblindMode,
-                          chopMoved,
-                        )
-                  }
+                  clueMarkers={getClueMarkers(
+                    shownClue,
+                    visibleState.clues,
+                    settings.colorblindMode,
+                    chopMoved,
+                  )}
                   clueMenu={
                     menuTarget === undefined ? undefined : (
                       <ClueMenu
@@ -1563,9 +1562,7 @@ export function GameScreen(): React.JSX.Element {
                   draggedCard={held?.order}
                   empathyToggled={empathyToggled}
                   emptyClueTarget={
-                    !previewing
-                    && shownClue !== undefined
-                    && shownClue.list.length === 0
+                    shownClue !== undefined && shownClue.list.length === 0
                       ? shownClue.target
                       : undefined
                   }
@@ -1634,6 +1631,10 @@ export function GameScreen(): React.JSX.Element {
                   }}
                   pauseAction={getPauseAction(state)}
                   possibleCardsCard={possibleCardsCard?.order}
+                  previewing={previewing}
+                  previewMarkers={
+                    previewing ? getPreviewMarkers() : NO_CLUE_MARKERS
+                  }
                   queuedCard={queuedCard}
                   reducedMotion={settings.reducedMotion}
                   seats={seats}
@@ -1649,7 +1650,7 @@ export function GameScreen(): React.JSX.Element {
                       : undefined
                   }
                   shownClue={
-                    previewing || shownClue === undefined
+                    shownClue === undefined
                       ? undefined
                       : {
                           giver: shownClue.giver,

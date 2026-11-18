@@ -300,10 +300,21 @@ export function MenuCaret({
 }: {
   readonly open: boolean;
 }): React.JSX.Element {
+  // It turns over as fast as the menu opens and closes.
+  let transition: string | undefined;
+  if (!store.getState().session.settings.reducedMotion) {
+    transition = open
+      ? `rotate ${OPEN_DURATION_IN_MILLISECONDS}ms ease-out`
+      : `rotate ${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`;
+  }
   return (
     <i
       aria-hidden="true"
-      className={`fas ${open ? "fa-caret-down" : "fa-caret-up"} tw:text-[12px]`}
+      className="fas fa-caret-up tw:text-[12px]"
+      style={{
+        rotate: open ? "180deg" : "none",
+        transition,
+      }}
     />
   );
 }

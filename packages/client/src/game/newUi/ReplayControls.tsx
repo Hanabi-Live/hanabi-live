@@ -9,6 +9,7 @@
 
 import { clamp } from "complete-common";
 import { useLayoutEffect, useRef, useState } from "react";
+import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import {
   canToggleDrawnCards,
@@ -19,8 +20,13 @@ import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { ChainIcon } from "./ChainIcon.tsx";
+import {
+  FADE_LAYER_PARENT_CLASS,
+  FadeLayer,
+  KEY_WITH_TEXT_COLOR_STYLE,
+} from "./FadeLayer.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
-import { SLIDE } from "./motion.ts";
+import { getOpacityTransition, SLIDE } from "./motion.ts";
 import { HOVER_CLASS, HOVER_MILLISECONDS, KEY_CLASS } from "./surfaces.ts";
 
 const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
@@ -329,22 +335,44 @@ export function Checkbox({
 }: {
   readonly checked: boolean;
 }): React.JSX.Element {
+  const { reducedMotion } = store.getState().session.settings;
+  // The checked box is a layer over the empty one, with the check. It fades in and out. Only its
+  // opacity animates, never a color.
   return (
     <span
       aria-hidden="true"
-      className={`tw:box-border tw:flex tw:size-4 tw:items-center tw:justify-center tw:rounded tw:border-2 tw:border-solid ${
-        checked
-          ? "tw:border-game-text tw:bg-game-text tw:text-card-ink"
-          : "tw:border-game-muted"
-      }`}
+      className="tw:relative tw:box-border tw:flex tw:size-4 tw:rounded tw:border-2 tw:border-solid tw:border-game-muted"
     >
-      {checked && <i className="fas fa-check tw:text-[9px]" />}
+      <span
+        className="tw:absolute tw:-inset-[2px] tw:flex tw:items-center tw:justify-center tw:rounded tw:bg-game-text tw:text-card-ink"
+        style={{
+          opacity: checked ? 1 : 0,
+          transition: reducedMotion ? undefined : getOpacityTransition(checked),
+        }}
+      >
+        <i className="fas fa-check tw:text-[9px]" />
+      </span>
     </span>
   );
 }
 
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${KEY_CLASS}`;
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS}`;
+
+/** The light color of a pressed switch, which fades in over the switch (see `FadeLayer`). */
+function PressedLayer({
+  pressed,
+}: {
+  readonly pressed: boolean;
+}): React.JSX.Element {
+  return (
+    <FadeLayer
+      className="tw:bg-game-text tw:group-hover/layer:bg-white"
+      reducedMotion={store.getState().session.settings.reducedMotion}
+      shown={pressed}
+    />
+  );
+}
 
 /**
  * A spectator's switch to follow the shared replay leader, or to move through the turns on their
@@ -387,14 +415,14 @@ function FollowToggle({
       aria-label={`Follow ${shared.leader}`}
       aria-pressed={following}
       className={`${FOLLOW_BUTTON_SHAPE_CLASS} ${
-        following
-          ? "tw:bg-game-text tw:text-card-ink tw:hover:bg-white"
-          : "tw:bg-white/8 tw:text-game-mode tw:hover:bg-white/15"
+        following ? "tw:text-card-ink" : "tw:text-game-mode"
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
+      style={KEY_WITH_TEXT_COLOR_STYLE}
       type="button"
     >
+      <PressedLayer pressed={following} />
       <ChainIcon linked={following} />
     </button>
   );
@@ -442,14 +470,14 @@ function ShareTurnsToggle({
       aria-label="Share your turns"
       aria-pressed={sharing}
       className={`${FOLLOW_BUTTON_SHAPE_CLASS} ${
-        sharing
-          ? "tw:bg-game-text tw:text-card-ink tw:hover:bg-white"
-          : "tw:bg-white/8 tw:text-game-mode tw:hover:bg-white/15"
+        sharing ? "tw:text-card-ink" : "tw:text-game-mode"
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
+      style={KEY_WITH_TEXT_COLOR_STYLE}
       type="button"
     >
+      <PressedLayer pressed={sharing} />
       <ChainIcon linked={sharing} />
     </button>
   );
@@ -501,16 +529,16 @@ function IconToggle({
     <button
       aria-label={label}
       aria-pressed={pressed}
-      className={
-        pressed
-          ? `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-game-text tw:text-card-ink tw:hover:bg-white`
-          : HYPOTHETICAL_BUTTON_CLASS
-      }
+      className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:hover:bg-white/8 ${FADE_LAYER_PARENT_CLASS} ${
+        pressed ? "tw:text-card-ink" : "tw:text-game-text"
+      }`}
       disabled={disabled}
       onClick={onClick}
       ref={tooltipRef(`${label}: ${tooltip}`)}
+      style={KEY_WITH_TEXT_COLOR_STYLE}
       type="button"
     >
+      <PressedLayer pressed={pressed} />
       <i aria-hidden="true" className={`fas ${icon}`} />
     </button>
   );

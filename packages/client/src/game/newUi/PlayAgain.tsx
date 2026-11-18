@@ -1,10 +1,12 @@
 import { useRef, useState, useSyncExternalStore } from "react";
+import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import * as gameSession from "../gameSession.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
 import * as restart from "../ui/restart.ts";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
+import { getOpacityTransition } from "./motion.ts";
 import { Checkbox } from "./ReplayControls.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
@@ -97,6 +99,7 @@ function PlayAgainMenu({
   );
 
   if (pending) {
+    const { reducedMotion } = store.getState().session.settings;
     // It is not "disabled", so that its tooltip still shows.
     return (
       <button
@@ -105,8 +108,16 @@ function PlayAgainMenu({
         ref={tooltipRef("Waiting for the server to answer.")}
         type="button"
       >
-        <i aria-hidden="true" className="fas fa-hourglass-half" />
-        Waiting...
+        {/* The new label fades in. */}
+        <span
+          className={`tw:flex tw:items-center tw:gap-2 ${reducedMotion ? "" : "tw:starting:opacity-0"}`}
+          style={{
+            transition: reducedMotion ? undefined : getOpacityTransition(true),
+          }}
+        >
+          <i aria-hidden="true" className="fas fa-hourglass-half" />
+          Waiting...
+        </span>
       </button>
     );
   }

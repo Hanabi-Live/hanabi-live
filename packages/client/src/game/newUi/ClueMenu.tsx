@@ -3,10 +3,11 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { ColorSymbolView, getRankClueLabel } from "./Card.tsx";
-import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { getColorSymbol } from "./clueMarkers.ts";
+import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { onEscapeKey } from "./escapeKey.ts";
-import { fadeOutCopy, SLIDE } from "./motion.ts";
+import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
+import { fadeOutCopy, getOpacityTransition, SLIDE } from "./motion.ts";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
@@ -410,10 +411,10 @@ export function ClueMenu({
           <button
             aria-label={`Show ${name}'s view of their hand after the clue`}
             aria-pressed={cluePreview}
-            className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+            className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] ${FADE_LAYER_PARENT_CLASS} ${
               cluePreview
-                ? "tw:bg-game-text tw:text-card-ink"
-                : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+                ? "tw:text-card-ink"
+                : "tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
             }`}
             data-clue-preview
             onClick={onToggleCluePreview}
@@ -422,6 +423,11 @@ export function ClueMenu({
             )}
             type="button"
           >
+            <FadeLayer
+              className="tw:bg-game-text"
+              reducedMotion={reducedMotion}
+              shown={cluePreview}
+            />
             {/* The image is a white shape, so it masks the text color to follow the button's state. */}
             <span
               aria-hidden="true"
@@ -504,17 +510,33 @@ export function ClueMenu({
           </div>
           <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
             <button
-              className={`tw:flex tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+              className={`tw:flex tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-transparent tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS}`}
               disabled={!canGive}
               onClick={onGive}
               type="button"
             >
+              {/* The color of clues fades in when the player can give the clue. */}
+              <FadeLayer
+                className="tw:bg-clue"
+                reducedMotion={reducedMotion}
+                shown={canGive}
+              />
               {/* The token shows what the button does and what it spends, as on the name of a
                   player who can take a clue. A prompt to pick a clue is not an action, so it has
-                  none. */}
-              {clue !== undefined && <ClueTokenIcon className="tw:size-5" />}
-              <span>
-                {clue === undefined ? "Pick a color or number" : "Give clue"}
+                  none. The new label fades in. */}
+              <span
+                className={`tw:flex tw:items-center tw:justify-center tw:gap-2 ${reducedMotion ? "" : "tw:starting:opacity-0"}`}
+                key={clue === undefined ? "pick" : "give"}
+                style={{
+                  transition: reducedMotion
+                    ? undefined
+                    : getOpacityTransition(true),
+                }}
+              >
+                {clue !== undefined && <ClueTokenIcon className="tw:size-5" />}
+                <span>
+                  {clue === undefined ? "Pick a color or number" : "Give clue"}
+                </span>
               </span>
             </button>
           </div>

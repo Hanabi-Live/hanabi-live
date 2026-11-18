@@ -4,9 +4,10 @@
 import type { CardState } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 import type { ArrowTarget } from "../highlightArrow.ts";
 import { findArrowAnchor, measureArrowAnchor } from "./arrowAnchor.ts";
-import { SLIDE } from "./motion.ts";
+import { fadeOutCopy, SLIDE } from "./motion.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /** The size of the arrow's box, in the screen's CSS pixels. Its outline fits inside it. */
@@ -148,11 +149,13 @@ export function HighlightArrow({
   }, [root, target]);
 
   useLayoutEffect(() => {
+    const arrow = arrowRef.current;
     const shape = shapeRef.current;
-    if (shape === null || reducedMotion) {
+    if (arrow === null || shape === null || reducedMotion) {
       return undefined;
     }
-    // It drops toward the target, overshoots a little, and settles.
+    // It drops toward the target, overshoots a little, and settles. When it goes, such as when the
+    // leader moves it, a copy of it fades out where it was (see `fadeOutCopy`).
     const drop = shape.animate(
       [
         {
@@ -173,6 +176,10 @@ export function HighlightArrow({
     );
     return () => {
       drop.cancel();
+      fadeOutCopy(arrow, [{ opacity: 1 }, { opacity: 0 }], {
+        duration: CLOSE_DURATION_IN_MILLISECONDS,
+        easing: "ease-in",
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- The arrow appears once. A later change to the motion setting does not play it again.
   }, []);

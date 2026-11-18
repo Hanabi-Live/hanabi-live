@@ -35,7 +35,7 @@ import {
   CARD_W,
 } from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
-import { getOpacityTransition } from "./motion.ts";
+import { getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import { getScreenScale } from "./screenScale.ts";
 import type {
@@ -289,9 +289,6 @@ export interface CardClueMarker {
    * gray, so that the viewer sees that the clue may only confirm the chop move.
    */
   readonly chopMoved?: boolean;
-
-  /** Whether the token shows what a clue that the viewer chooses in the menu would touch. */
-  readonly preview?: boolean;
 }
 
 /**
@@ -426,6 +423,15 @@ export interface CardFaceProps {
   /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
   readonly clueMarker?: CardClueMarker;
 
+  /**
+   * Whether `clueMarker` fades out, such as while the viewer chooses a clue in the menu. It fades
+   * back in after.
+   */
+  readonly clueMarkerHidden?: boolean;
+
+  /** The clue that the viewer chooses in the menu, if it would touch the card. */
+  readonly previewMarker?: CardClueMarker;
+
   /** Whether the "Reduced motion" setting leaves out the fades of the clue being chosen. */
   readonly reducedMotion?: boolean;
 }
@@ -521,14 +527,29 @@ const PIN_OUTLINE_WIDTH = 2;
  * attributes let it land on the card when the clue is given (see "cardMotion.ts").
  */
 function ClueMarker({
-  marker: { marker, touchedBefore, chopMoved = false, preview = false },
+  marker: { marker, touchedBefore, chopMoved = false },
   width,
+  hidden = false,
+  preview = false,
   reducedMotion,
 }: {
   readonly marker: CardClueMarker;
   readonly width: number;
+
+  /** Whether the token fades out, as the real token does while the viewer chooses a clue. */
+  readonly hidden?: boolean;
+
+  /**
+   * Whether the token shows what a clue that the viewer chooses in the menu would touch. It fades
+   * in and out, and it does not land when a clue arrives.
+   */
+  readonly preview?: boolean;
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+  // Only the token of a clue being chosen fades in and out. A real token comes and goes with the
+  // turn that shows.
+  useFade(ref, reducedMotion || !preview);
   const fullSize = getClueTokenSize(width);
   const size = touchedBefore ? Math.round(fullSize * CLUE_DOT_SCALE) : fullSize;
   const partAboveCard = touchedBefore
@@ -538,19 +559,17 @@ function ClueMarker({
   return (
     <span
       aria-hidden="true"
-      // The token of a clue that the viewer chooses fades in, as fast as a tooltip opens. The token
-      // of another clue is a new element (see "CardFace"), so it fades in too.
-      className={`tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10 ${preview && !reducedMotion ? "tw:transition-opacity tw:duration-(--fade) tw:ease-out tw:starting:opacity-0" : ""}`}
-      data-clue-marker
-      style={
-        {
-          top: -size * partAboveCard,
-          marginLeft: -size / 2,
-          width: size,
-          height: size,
-          "--fade": `${OPEN_DURATION_IN_MILLISECONDS}ms`,
-        } as React.CSSProperties
-      }
+      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
+      data-clue-marker={preview ? undefined : true}
+      ref={ref}
+      style={{
+        top: -size * partAboveCard,
+        marginLeft: -size / 2,
+        width: size,
+        height: size,
+        opacity: hidden ? 0 : 1,
+        transition: reducedMotion ? undefined : getOpacityTransition(!hidden),
+      }}
     >
       <ClueToken
         marker={marker}
@@ -2557,6 +2576,8 @@ export function CardFace({
   doubleDiscard = false,
   stackDirection,
   clueMarker,
+  clueMarkerHidden = false,
+  previewMarker,
   reducedMotion = false,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
@@ -2697,12 +2718,19 @@ export function CardFace({
       />
       {clueMarker !== undefined && (
         <ClueMarker
-          key={
-            clueMarker.preview === true
-              ? `preview ${getClueMarkerLabel(clueMarker.marker)}`
-              : "clue"
-          }
+          hidden={clueMarkerHidden}
           marker={clueMarker}
+          reducedMotion={reducedMotion}
+          width={width}
+        />
+      )}
+      {previewMarker !== undefined && (
+        // The token of another clue is a new element, so that it fades in and the old one fades
+        // out.
+        <ClueMarker
+          key={getClueMarkerLabel(previewMarker.marker)}
+          marker={previewMarker}
+          preview
           reducedMotion={reducedMotion}
           width={width}
         />

@@ -1,13 +1,15 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
-import {
-  CHAT_WINDOW_ID,
-  CLOSE_DURATION_IN_MILLISECONDS,
-  OPEN_DURATION_IN_MILLISECONDS,
-} from "../../Tooltip.ts";
+import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
+import { store } from "../../store.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
 import { toggleZen } from "../zen.ts";
+import {
+  FADE_LAYER_PARENT_CLASS,
+  FadeLayer,
+  KEY_WITH_TEXT_COLOR_STYLE,
+} from "./FadeLayer.tsx";
 import {
   chatWindowClosed,
   dockChat,
@@ -15,7 +17,7 @@ import {
   getChatWindow,
   popOutChat,
 } from "./chatWindow.ts";
-import { fadeOutCopy } from "./motion.ts";
+import { fadeOutCopy, SLIDE, useFade } from "./motion.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /**
@@ -381,10 +383,7 @@ function OpenChat({
     }
     const outside = { transform: "translateX(100%)" };
     if (slidesRef.current) {
-      aside.animate([outside, { transform: "none" }], {
-        duration: OPEN_DURATION_IN_MILLISECONDS,
-        easing: "ease-out",
-      });
+      aside.animate([outside, { transform: "none" }], SLIDE);
     }
 
     // The chat is still on the page when the cleanup runs: React removes it after that.
@@ -393,10 +392,7 @@ function OpenChat({
         fadeOutCopy(
           aside,
           [{ transform: getComputedStyle(aside).transform }, outside],
-          {
-            duration: CLOSE_DURATION_IN_MILLISECONDS,
-            easing: "ease-in",
-          },
+          SLIDE,
         );
       }
     };
@@ -429,6 +425,7 @@ export function ChatButton({
   poppedOut,
   unread,
   className,
+  pressedClassName,
 }: {
   readonly zen: boolean;
 
@@ -440,10 +437,17 @@ export function ChatButton({
   readonly poppedOut: boolean;
   readonly unread: number;
 
-  /** The button's size and colors. While it collapses the chat, it is lit, as a pressed toggle. */
+  /** The button's size and colors. */
   readonly className: string;
+
+  /**
+   * The color that lights the button while it collapses the chat, as a pressed toggle, such as
+   * `tw:bg-game-text`. It fades in and out (see `FadeLayer`).
+   */
+  readonly pressedClassName?: string;
 }): React.JSX.Element {
   const collapses = open && !poppedOut;
+  const { reducedMotion } = store.getState().session.settings;
   let action = "Open chat";
   if (poppedOut) {
     action = "Show chat window";
@@ -468,7 +472,7 @@ export function ChatButton({
     <button
       aria-label={label}
       aria-pressed={collapses ? true : undefined}
-      className={`tw:relative tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${className}`}
+      className={`tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${FADE_LAYER_PARENT_CLASS} ${className}`}
       onClick={() => {
         if (poppedOut) {
           focusChatWindow(true);
@@ -483,15 +487,41 @@ export function ChatButton({
         toggleZen();
       }}
       ref={tooltipRef(tooltip)}
+      style={KEY_WITH_TEXT_COLOR_STYLE}
       type="button"
     >
+      {pressedClassName !== undefined && (
+        <FadeLayer
+          className={pressedClassName}
+          reducedMotion={reducedMotion}
+          shown={collapses}
+        />
+      )}
       <i aria-hidden="true" className={`fas ${icon}`} />
       {unread > 0 && !collapses && (
-        <span className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink">
-          {unread}
-        </span>
+        <UnreadBadge reducedMotion={reducedMotion} unread={unread} />
       )}
     </button>
+  );
+}
+
+/** The count of unread messages on the chat button. It fades in and out. */
+function UnreadBadge({
+  unread,
+  reducedMotion,
+}: {
+  readonly unread: number;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+  useFade(ref, reducedMotion);
+  return (
+    <span
+      className="tw:absolute tw:-top-1 tw:-right-1 tw:flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-full tw:bg-clue tw:px-1.5 tw:text-xs tw:font-bold tw:text-card-ink"
+      ref={ref}
+    >
+      {unread}
+    </span>
   );
 }
 

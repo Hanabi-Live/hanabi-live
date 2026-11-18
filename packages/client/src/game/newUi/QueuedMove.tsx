@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { fadeOutCopy } from "./motion.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
@@ -11,7 +14,7 @@ const SETTLE_MILLISECONDS = 220;
  * the queued card over the play stacks or the discard pile, or a clue over the hands. It stays
  * there until the player's turn, as on the classic screen, with a button that cancels it. The ring
  * in the color of clues and the slight tilt tell it apart from the cards on the table. Once the
- * move is sent, the button goes, and the card moves from here when the move arrives.
+ * move is sent, the button fades out, and the card moves from here when the move arrives.
  */
 export function QueuedMove({
   text,
@@ -32,6 +35,43 @@ export function QueuedMove({
 }): React.JSX.Element {
   const cardRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // The box fades in when the player queues the move. When the move is sent, the screen draws the
+  // box again at once (see "useQueuedMove.ts"). The box then stays, and only its button fades out.
+  // The button keeps its place, so that the box keeps its size.
+  const sentAtFirstRef = useRef(sent);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const cancel = cancelRef.current;
+    if (box === null || cancel === null || reducedMotion) {
+      return undefined;
+    }
+    const animation = sentAtFirstRef.current
+      ? cancel.animate(
+          [
+            {
+              opacity: 1,
+              visibility: "visible",
+            },
+            {
+              opacity: 0,
+              visibility: "visible",
+            },
+          ],
+          {
+            duration: CLOSE_DURATION_IN_MILLISECONDS,
+            easing: "ease-in",
+          },
+        )
+      : box.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: OPEN_DURATION_IN_MILLISECONDS,
+          easing: "ease-out",
+        });
+    return () => {
+      animation.cancel();
+    };
+  }, [reducedMotion]);
 
   // When the player cancels the move, a copy of it fades out (see `fadeOutCopy`). A move that is
   // sent goes at once, since its card moves from here to where it lands.
@@ -51,7 +91,7 @@ export function QueuedMove({
   // The card settles in from a little above, as if the player had just set it down.
   useEffect(() => {
     const card = cardRef.current;
-    if (card === null || reducedMotion) {
+    if (card === null || reducedMotion || sentAtFirstRef.current) {
       return undefined;
     }
     const animation = card.animate(
@@ -91,19 +131,20 @@ export function QueuedMove({
       <span className="tw:text-[13px] tw:font-semibold tw:whitespace-nowrap tw:text-game-text">
         {text}
       </span>
-      {!sent && (
-        <button
-          aria-label={cancelLabel}
-          className={`tw:min-h-8 tw:w-full tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:px-3 tw:text-[14px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`}
-          onClick={() => {
-            canceledRef.current = !reducedMotion;
-            onCancel();
-          }}
-          type="button"
-        >
-          Cancel
-        </button>
-      )}
+      <button
+        aria-hidden={sent ? true : undefined}
+        aria-label={cancelLabel}
+        className={`tw:min-h-8 tw:w-full tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:px-3 tw:text-[14px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS} ${sent ? "tw:invisible" : ""}`}
+        disabled={sent}
+        onClick={() => {
+          canceledRef.current = !reducedMotion;
+          onCancel();
+        }}
+        ref={cancelRef}
+        type="button"
+      >
+        Cancel
+      </button>
     </div>
   );
 }

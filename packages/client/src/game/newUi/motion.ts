@@ -5,9 +5,9 @@ import {
 } from "../../Tooltip.ts";
 
 /**
- * How a part of the screen slides to its place: a drawer out of its box, such as the clue menu or
- * the replay controls in the status panel, the timeline's knob to the leader's turn, or an arrow as
- * it drops in.
+ * How a part of the screen slides to its place: a drawer out of its box, such as the clue menu, the
+ * chat that covers the table, or the replay controls in the status panel, the timeline's knob to
+ * the leader's turn, or an arrow as it drops in.
  */
 export const SLIDE = {
   duration: 200,

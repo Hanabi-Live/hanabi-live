@@ -18,7 +18,11 @@ import {
 import { getClueLogHeight } from "./ClueLog.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
-import { getVisibilityTransition, SLIDE } from "./motion.ts";
+import {
+  getOpacityTransition,
+  getVisibilityTransition,
+  SLIDE,
+} from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
@@ -247,11 +251,15 @@ function OutOf({
   value,
   max,
   maxStyle,
+  fadesIn = false,
   reserve = false,
 }: {
   readonly value: React.ReactNode;
   readonly max: number | string;
   readonly maxStyle?: React.CSSProperties;
+
+  /** Whether the maximum fades in when it appears, such as the last turn when a replay starts. */
+  readonly fadesIn?: boolean;
 
   /**
    * Whether this is an invisible copy that holds the space of the value. The animations and the
@@ -264,9 +272,12 @@ function OutOf({
       {value}{" "}
       {/* The maximum score pops when it drops (see "scoreMotion.ts"). A transform needs a box. */}
       <span
-        className="tw:inline-block tw:font-medium tw:text-game-muted"
+        className={`tw:inline-block tw:font-medium tw:text-game-muted ${fadesIn ? "tw:starting:opacity-0" : ""}`}
         data-out-of-max={reserve ? undefined : ""}
-        style={maxStyle}
+        style={{
+          ...maxStyle,
+          ...(fadesIn && { transition: getOpacityTransition(true) }),
+        }}
       >
         / {max}
       </span>
@@ -904,6 +915,13 @@ function PanelTabs({
             onTab(name);
           }}
           role="tab"
+          // The text's color changes as the highlight slides to the tab. A text color is not a
+          // background color, so it may animate.
+          style={{
+            transition: reducedMotion
+              ? undefined
+              : `color ${SLIDE.duration}ms ${SLIDE.easing}`,
+          }}
           type="button"
         >
           {label}
@@ -1255,7 +1273,7 @@ export function StatusStrip({
               {lastTurn === undefined ? (
                 turn
               ) : (
-                <OutOf max={lastTurn} value={turn} />
+                <OutOf fadesIn={!reducedMotion} max={lastTurn} value={turn} />
               )}
             </span>
           </span>

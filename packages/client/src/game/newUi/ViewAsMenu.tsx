@@ -1,12 +1,13 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
+import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
   BOTTOM_BAR_BUTTON_CLASS,
-  BOTTOM_BAR_BUTTON_COLOR_CLASS,
   MENU_ICON_ITEM_CLASS,
   MENU_LABEL_CLASS,
 } from "./surfaces.ts";
@@ -40,6 +41,7 @@ export function ViewAsMenu({
   const viewedName =
     viewedSeat === undefined ? undefined : playerNames[viewedSeat];
   const shadowing = !finished && viewedName !== undefined;
+  const { reducedMotion } = store.getState().session.settings;
 
   function choose(playerIndex: PlayerIndex | undefined) {
     setOpen(false);
@@ -54,10 +56,8 @@ export function ViewAsMenu({
         aria-label={
           viewedName === undefined ? undefined : `Viewing as ${viewedName}`
         }
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:max-w-full tw:min-w-0 ${
-          shadowing
-            ? "tw:bg-white/20 tw:ring-2 tw:ring-game-text tw:hover:bg-white/30"
-            : BOTTOM_BAR_BUTTON_COLOR_CLASS
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:max-w-full tw:min-w-0 tw:bg-transparent ${FADE_LAYER_PARENT_CLASS} ${
+          shadowing ? "tw:ring-2 tw:ring-game-text" : ""
         }`}
         onClick={() => {
           setOpen(!open);
@@ -66,6 +66,17 @@ export function ViewAsMenu({
         ref={tooltipRef(open ? undefined : VIEW_AS_TOOLTIP)}
         type="button"
       >
+        {/* The button's color is two layers that fade into each other (see `FadeLayer`). */}
+        <FadeLayer
+          className="tw:bg-white/8 tw:group-hover/layer:bg-white/15"
+          reducedMotion={reducedMotion}
+          shown={!shadowing}
+        />
+        <FadeLayer
+          className="tw:bg-white/20 tw:group-hover/layer:bg-white/30"
+          reducedMotion={reducedMotion}
+          shown={shadowing}
+        />
         <i aria-hidden="true" className="fas fa-eye" />
         {/* The eye says what the name is for, so that a long name has room. A name that is still
             too long gets smaller text, so that the bar along the bottom keeps one row. */}
