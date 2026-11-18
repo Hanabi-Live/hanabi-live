@@ -293,6 +293,9 @@ export function GameScreen({
   // closes it.
   const [clueMenuClosed, setClueMenuClosed] = useState(false);
   const [clue, setClue] = useState<Clue>();
+  // The player that the viewer last gave a clue to. As on the classic screen, a clue key opens
+  // their menu again on a later turn.
+  const [lastClueTarget, setLastClueTarget] = useState<PlayerIndex>();
   // Whether the target's hand shows what the chosen clue would tell them. It turns off on each new
   // turn, as on the classic screen.
   const [cluePreview, setCluePreview] = useState(false);
@@ -867,6 +870,7 @@ export function GameScreen({
       return;
     }
     const receiverIndex = menuTarget;
+    setLastClueTarget(receiverIndex);
     closeClueMenu();
     sendAction(getClueAction(receiverIndex, clue, variant));
   }
@@ -942,26 +946,50 @@ export function GameScreen({
         },
   };
 
+  // Opens a player's clue menu, or closes it. The chosen clue stays when that player can get it.
+  function openClueMenu(playerIndex: PlayerIndex | undefined) {
+    chooseClueTarget(playerIndex);
+    if (
+      playerIndex !== undefined
+      && clue !== undefined
+      && !isAllowed(playerIndex, clue)
+    ) {
+      setClue(undefined);
+    }
+  }
+
   clueHotkeys.current = {
     canClue,
     variant,
     clueTargets,
     clueTarget: menuTarget,
-    onChooseTarget: chooseClueTarget,
-    // A key chooses a clue in the open menu. With only one other player, such as in a 2-player
-    // game, it opens their menu.
+    onChooseTarget: openClueMenu,
+    // A key chooses a clue in the open menu. With no menu open, it opens the menu of the only other
+    // player, or of the player that the viewer last gave a clue to. Otherwise, the clue waits for
+    // Tab to choose a player, as on the classic screen.
     onChooseClue: (choice) => {
-      const target =
-        menuTarget
-        ?? (otherPlayers.length === 1
-          ? otherPlayers[0]?.playerIndex
-          : undefined);
-      if (target === undefined || !isAllowed(target, choice)) {
+      if (menuTarget !== undefined) {
+        if (isAllowed(menuTarget, choice)) {
+          setClueTarget(menuTarget);
+          setClue(choice);
+        }
         return;
       }
 
-      setClueTarget(target);
-      setClue(choice);
+      const rememberedTarget = otherPlayers.find(
+        (seat) => seat.playerIndex === lastClueTarget,
+      )?.playerIndex;
+      const target =
+        otherPlayers.length === 1
+          ? otherPlayers[0]?.playerIndex
+          : rememberedTarget;
+      if (target !== undefined && isAllowed(target, choice)) {
+        setClueTarget(target);
+        setClueMenuClosed(false);
+        setClue(choice);
+      } else if (otherPlayers.length > 1) {
+        setClue(choice);
+      }
     },
     onGive: giveClue,
   };
@@ -1616,7 +1644,7 @@ export function GameScreen({
                       current === order ? undefined : order,
                     );
                   }}
-                  onChooseClueTarget={chooseClueTarget}
+                  onChooseClueTarget={openClueMenu}
                   onCloseCardMenu={closeCardMenu}
                   onDiscard={(order) => {
                     setMenuCard(undefined);
