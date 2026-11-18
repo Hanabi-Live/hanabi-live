@@ -1937,6 +1937,8 @@ export function TableTokens({
             oneClueLeft,
             realLifeMode,
           ),
+          // The arrow points at the count, even when the pointer is over the icon.
+          { target: "[data-clue-badge]" },
         )}
       >
         {/* One large number: the count that players check most. It stands out only at the
@@ -1945,6 +1947,7 @@ export function TableTokens({
         <ClueTokenIcon className="tw:size-[24px]" empty={limit === "none"} />
         <span
           className={`tw:flex tw:h-[34px] tw:min-w-[34px] tw:items-center tw:justify-center tw:rounded-game-control tw:px-1.5 ${limit === undefined ? "tw:text-game-text" : CLUE_BADGE_CLASSES[limit]}`}
+          data-clue-badge
           ref={badgeRef}
         >
           <span
