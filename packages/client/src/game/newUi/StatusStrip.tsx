@@ -445,21 +445,25 @@ function ReplayToggle({
           Replay
         </span>
         <span
-          className={`tw:flex tw:flex-col tw:items-center tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
+          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
         >
-          {/* On a narrow window, the button says only "Back", which is easy to read and lets all
-              of the buttons fit in one row on a phone. */}
-          <span className="tw:phone:hidden">Back to the game</span>
-          <span className="tw:hidden tw:phone:inline">Back</span>
-          {/* The name does not widen the button. A long one is cut off. */}
-          {currentName !== undefined && (
-            <span
-              className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:phone:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
-              data-live-turn
-            >
-              {ourTurn ? "Your turn" : `${currentName}'s turn`}
-            </span>
-          )}
+          {/* The arrow sits beside both lines, as on the lobby's "Return" buttons. */}
+          <i aria-hidden="true" className="fas fa-arrow-left" />
+          <span className="tw:flex tw:flex-col tw:items-center">
+            {/* On a narrow window, the button says only "Back", which is easy to read and lets
+                all of the buttons fit in one row on a phone. */}
+            <span className="tw:phone:hidden">Back to the game</span>
+            <span className="tw:hidden tw:phone:inline">Back</span>
+            {/* The name does not widen the button. A long one is cut off. */}
+            {currentName !== undefined && (
+              <span
+                className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:phone:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
+                data-live-turn
+              >
+                {ourTurn ? "Your turn" : `${currentName}'s turn`}
+              </span>
+            )}
+          </span>
         </span>
       </button>
     </div>
