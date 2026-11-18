@@ -432,7 +432,9 @@ export function getDiscardRows(
 
 /**
  * The notes that the tooltip of each card shows, for the cards that have notes. The lines are
- * closer together than the site's body text, so that the notes of many players stay compact.
+ * closer together than the site's body text, so that the notes of many players stay compact. A long
+ * note wraps as in a paragraph. A word that is too long for the line breaks, because the tooltip
+ * closes when the pointer leaves the card, so it cannot be scrolled.
  */
 export function getNotesHtml(
   orders: Iterable<CardOrder>,
@@ -441,7 +443,10 @@ export function getNotesHtml(
   for (const order of orders) {
     const html = notes.getShownNoteHtml(order);
     if (html !== "") {
-      notesHtml.set(order, `<div class="tw:leading-tight">${html}</div>`);
+      notesHtml.set(
+        order,
+        `<div class="tw:max-w-[30em] tw:leading-tight tw:wrap-break-word">${html}</div>`,
+      );
     }
   }
   return notesHtml;
