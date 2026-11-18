@@ -865,7 +865,8 @@ export function PlayArea({
                           && movedCard.order === stack.topOrder && (
                             <span
                               aria-hidden="true"
-                              className="tw:pointer-events-none tw:absolute tw:inset-0 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
+                              // The outline goes over the stacks next to it.
+                              className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
                               data-moved-card-marker
                               style={{
                                 borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
