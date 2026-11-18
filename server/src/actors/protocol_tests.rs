@@ -2786,7 +2786,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
 }
 
 #[tokio::test]
-async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
+async fn table_chat_is_rate_limited_and_drops_its_oldest_messages() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
     };
@@ -2804,17 +2804,20 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
             .expect_err("A proposal past the chat limit was accepted");
         ensure!(refused.to_string().contains("too quickly"), "{refused:#}");
 
-        // Fill the chat to its limit. Restarting also resets the rate limit.
+        // Fill the chat to what a table keeps. Restarting also resets the rate limit.
         h.stop_hub().await?;
         let (mut table, revision) = h.snapshot(id).await?;
         let filler = chat::server_chat(id, "Filler");
-        table
-            .chat
-            .resize_with(crate::model::MAX_TABLE_CHAT, || crate::model::TableChat {
-                id: None,
+        // IDs from the top do not collide with the messages that `chat_log` holds.
+        let archived = (0..)
+            .map(|n| crate::model::TableChat {
+                id: Some(i32::MAX - n),
                 user: None,
                 message: filler.clone(),
-            });
+            })
+            .take(chat::MAX_KEPT_CHAT_MESSAGES - table.chat.len());
+        table.chat.extend(archived);
+        let oldest = table.chat[0].id;
         h.store.save_at(&table, revision).await?;
         h.start_hub().await?;
         for index in 0..2 {
@@ -2822,31 +2825,19 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
                 .await?;
         }
 
-        for (command, data) in [
-            ("chat", json!({"tableId":id,"text":"Hello"})),
-            ("tableUpdate", proposal.clone()),
-        ] {
-            let refused = h
-                .send(1, command, data)
-                .await
-                .expect_err("A player added to a full chat");
-            ensure!(
-                refused.to_string() == "Chat history is full.",
-                "{refused:#}"
-            );
-        }
-        // The owner's changes still apply, without their notices.
-        h.send(
-            0,
-            "tableUpdate",
-            json!({"tableId":id,"settings":{"name":"Changed"}}),
-        )
-        .await?;
-        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
+        // A message past the limit drops the oldest messages, which `chat_log` holds.
+        h.send(1, "chat", json!({"tableId":id,"text":"Hello"}))
             .await?;
         let table = h.snapshot(id).await?.0;
-        ensure!(table.name == "Changed" && table.owner.user_id == h.users[1].user);
-        ensure!(table.chat.len() == crate::model::MAX_TABLE_CHAT);
+        ensure!(table.chat.len() == chat::TRIMMED_CHAT_MESSAGES);
+        ensure!(table.chat.iter().all(|chat| chat.id != oldest));
+        ensure!(
+            table
+                .chat
+                .last()
+                .map(|chat| chat.message.message.text.as_str())
+                == Some("Hello")
+        );
         Ok::<(), anyhow::Error>(())
     }
     .await;

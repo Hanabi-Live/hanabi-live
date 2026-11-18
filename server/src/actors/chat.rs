@@ -57,10 +57,14 @@ pub(super) fn chat_time() -> hanabi_protocol::Timestamp {
 /// The most table chat messages one player can send per `TABLE_CHAT_WINDOW`.
 pub(super) const TABLE_CHAT_LIMIT: usize = 30;
 pub(super) const TABLE_CHAT_WINDOW: Duration = Duration::from_mins(1);
-/// Players can fill only part of a table's chat, so server notices and the game still fit in its
-/// checkpoint.
-pub(super) const MAX_PLAYER_CHAT_MESSAGES: usize = crate::model::MAX_TABLE_CHAT / 2;
-pub(super) const MAX_PLAYER_CHAT_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 2;
+/// A table keeps only its newest chat, within these limits, so that its chat and its game fit in
+/// its checkpoint. Older messages stay in `chat_log`.
+pub(super) const MAX_KEPT_CHAT_MESSAGES: usize = crate::model::MAX_TABLE_CHAT / 2;
+pub(super) const MAX_KEPT_CHAT_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 2;
+/// What a table keeps when its chat goes past the limits. Dropping messages rewrites every saved
+/// chat message, so a table drops many at once.
+pub(super) const TRIMMED_CHAT_MESSAGES: usize = MAX_KEPT_CHAT_MESSAGES / 4 * 3;
+const TRIMMED_CHAT_BYTES: usize = MAX_KEPT_CHAT_BYTES / 4 * 3;
 
 /// The serialized size of a table's chat. Messages are only added at the end of the chat, so this
 /// measures each message once, instead of the whole chat for every new message.
@@ -84,9 +88,29 @@ impl ChatBytes {
         self.counted = chat.len();
         Ok(self.bytes)
     }
-    /// Whether players can add to `chat`. One message or command can go past the budget.
-    pub(super) fn player_room(&mut self, chat: &[TableChat]) -> Result<bool> {
-        Ok(chat.len() < MAX_PLAYER_CHAT_MESSAGES && self.of(chat)? < MAX_PLAYER_CHAT_BYTES)
+    /// Drops the oldest messages of `chat` when it is past `MAX_KEPT_CHAT_MESSAGES` or
+    /// `MAX_KEPT_CHAT_BYTES`, until it is within `TRIMMED_CHAT_MESSAGES` and `TRIMMED_CHAT_BYTES`.
+    /// Keeps messages that `chat_log` does not hold yet. Returns how many messages it dropped.
+    pub(super) fn trim(&mut self, chat: &mut Vec<TableChat>) -> Result<usize> {
+        let mut bytes = self.of(chat)?;
+        if chat.len() <= MAX_KEPT_CHAT_MESSAGES && bytes <= MAX_KEPT_CHAT_BYTES {
+            return Ok(0);
+        }
+        let mut dropped = 0;
+        while chat[dropped..]
+            .first()
+            .is_some_and(|chat| chat.id.is_some())
+            && (chat.len() - dropped > TRIMMED_CHAT_MESSAGES || bytes > TRIMMED_CHAT_BYTES)
+        {
+            bytes -= serde_json::to_vec(&chat[dropped])?.len();
+            dropped += 1;
+        }
+        chat.drain(..dropped);
+        *self = Self {
+            counted: chat.len(),
+            bytes,
+        };
+        Ok(dropped)
     }
 }
 
@@ -149,16 +173,6 @@ impl TableActor {
         }
         Ok(())
     }
-    /// Admits a message that a player adds to the table's chat: charges the player, and checks
-    /// that players' messages still have room.
-    pub(super) fn admit_player_chat(&mut self, user: UserId) -> CommandResult<()> {
-        self.charge_chat(user)?;
-        ensure_or_reject!(
-            self.chat_bytes.player_room(&self.table.chat)?,
-            "Chat history is full."
-        );
-        Ok(())
-    }
     /// The reply to `/seed` or `/id`.
     fn game_detail(&self, command: TableChatCommand) -> String {
         let Some(game) = self.table.game() else {
@@ -218,7 +232,7 @@ impl TableActor {
             "You are not at an available table."
         );
         let participants = self.score_participants()?;
-        self.admit_player_chat(requester.user)?;
+        self.charge_chat(requester.user)?;
         let count = participants.len();
         let ids = participants
             .iter()
@@ -335,7 +349,7 @@ impl TableActor {
     pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending.");
         let text = crate::accounts::normalize_chat(msg).map_err(CommandError::rejected)?;
-        self.admit_player_chat(session.user)?;
+        self.charge_chat(session.user)?;
         let command = ChatCommand::parse(&text);
         if let Some(response) = command.as_ref().and_then(ChatCommand::general_response) {
             let responses = match response {

@@ -1,7 +1,7 @@
 use super::*;
 use super::{
     Status,
-    chat::{ChatBytes, authored_chat, server_chat},
+    chat::{MAX_KEPT_CHAT_BYTES, MAX_KEPT_CHAT_MESSAGES, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, table_name},
     wire::{game_event_message, game_events},
@@ -1397,10 +1397,10 @@ fn a_table_that_players_and_spectators_filled_still_fits_in_a_checkpoint() -> Re
         .map_err(anyhow::Error::msg)?;
     // Checking after each batch instead of each message overshoots the budget, which only makes
     // the table larger.
-    let mut bytes = ChatBytes::default();
-    while bytes.player_room(&table.chat)? {
+    let mut bytes = 0;
+    while table.chat.len() < MAX_KEPT_CHAT_MESSAGES && bytes < MAX_KEPT_CHAT_BYTES {
         for _ in 0..CHAT_BATCH {
-            table.chat.push(TableChat {
+            let chat = TableChat {
                 id: None,
                 user: Some(UserId::new(1).unwrap()),
                 message: authored_chat(
@@ -1408,7 +1408,9 @@ fn a_table_that_players_and_spectators_filled_still_fits_in_a_checkpoint() -> Re
                     &name,
                     &text,
                 ),
-            });
+            };
+            bytes += serde_json::to_vec(&chat)?.len();
+            table.chat.push(chat);
         }
     }
     let notice = format!("{name} left the game.");

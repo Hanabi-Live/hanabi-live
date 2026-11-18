@@ -636,7 +636,18 @@ impl TableActor {
         work.archive = finished && !next.extra.no_write_to_database;
         work.count_seed = finished && next.game().is_some_and(|s| s.game_id.is_some());
         let archived = work.archive;
-        let outcome = self.store.commit(&mut next, &mut self.saved, work).await?;
+        let dropped = self.chat_bytes.trim(&mut next.chat)?;
+        let outcome = match self.store.commit(&mut next, &mut self.saved, work).await {
+            Ok(outcome) => outcome,
+            Err(error) => {
+                // The table keeps its earlier chat, which the trim did not measure.
+                self.chat_bytes = super::chat::ChatBytes::default();
+                return Err(error.into());
+            }
+        };
+        for read in self.chat_read.values_mut() {
+            *read = read.saturating_sub(dropped);
+        }
         if archived && let Some(s) = next.game() {
             self.store.refresh_background(s.clone());
         }

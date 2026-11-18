@@ -694,7 +694,8 @@ impl ScoreModifier {
     }
 }
 
-/// The most messages a table's chat keeps.
+/// The most messages a table's chat can hold. A table drops its oldest messages long before this,
+/// once `chat_log` holds them.
 pub const MAX_TABLE_CHAT: usize = 4096;
 /// The most moves a shared replay's hypothetical can hold.
 pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;

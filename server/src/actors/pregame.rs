@@ -132,7 +132,7 @@ impl TableActor {
         if session.user != self.table.owner.user_id {
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
             // A proposal is a message from its player, so it counts like one.
-            self.admit_player_chat(session.user)?;
+            self.charge_chat(session.user)?;
             let message = server_chat(
                 self.table.id,
                 &format!("{} proposes the following options:{changes}", session.name),
