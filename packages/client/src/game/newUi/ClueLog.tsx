@@ -113,11 +113,15 @@ export function getClueText(entry: ClueLogEntry): string {
  * other clues stay, so that the log does not jump as the mouse passes over the hands. A clue that
  * did not touch the card is also struck through, since it says what the card is not, so that the
  * match does not depend on color alone.
+ *
+ * While the player drags a card, the rows do not light up under the pointer, since a click on them
+ * does nothing then.
  */
 export function ClueLog({
   entries,
   shownSegment,
   hoveredCard,
+  dragging,
   onShowClue,
 }: {
   readonly entries: readonly ClueLogEntry[];
@@ -125,6 +129,8 @@ export function ClueLog({
   readonly shownSegment: number | undefined;
   /** The card in a hand that the mouse is over, if any. */
   readonly hoveredCard: CardOrder | undefined;
+  /** Whether the player holds a card. Then the rows do not light up under the pointer. */
+  readonly dragging: boolean;
   readonly onShowClue: (segment: number) => void;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
@@ -185,7 +191,7 @@ export function ClueLog({
             const shown = entry.segment === shownSegment;
             const background =
               match === "none"
-                ? `tw:hover:bg-white/18 ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
+                ? `${dragging ? "" : "tw:hover:bg-white/18"} ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
                 : MATCH_BACKGROUND[match];
             return (
               <li

@@ -1195,6 +1195,7 @@ export function GameScreen({
 
   const clueLog = (
     <ClueLog
+      dragging={held !== undefined}
       entries={getClueLogEntries(state)}
       // No card counts while the player holds a card: the held card is under the pointer, not the
       // card below it.

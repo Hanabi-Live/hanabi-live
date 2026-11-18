@@ -32,6 +32,7 @@ const HOVERED_CARD = 2 as CardOrder;
 function renderLog(entries: readonly ClueLogEntry[]) {
   render(
     <ClueLog
+      dragging={false}
       entries={entries}
       hoveredCard={HOVERED_CARD}
       onShowClue={onShowClue}
