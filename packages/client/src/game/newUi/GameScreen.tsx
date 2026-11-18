@@ -78,7 +78,11 @@ import {
   PlayArea,
   TableTokens,
 } from "./SharedCards.tsx";
-import { REPLAY_BAR_HEIGHT, StatusStrip } from "./StatusStrip.tsx";
+import {
+  ONE_ROW_MISSING_ATTRIBUTE,
+  REPLAY_BAR_HEIGHT,
+  StatusStrip,
+} from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
   canDrawArrowNow,
@@ -134,7 +138,7 @@ import {
   toggleReplay,
 } from "./screenActions.ts";
 import { getScreenModeStyle } from "./screenMode.ts";
-import { measure, REFERENCE_SIZE } from "./screenScale.ts";
+import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
   getClueLogEntries,
@@ -171,6 +175,15 @@ const PHONE_SIDE_PADDING = "0.75em";
  * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
  */
 const PANEL_CARD_WIDTH = 82;
+
+/** The width of the window from which the bar stays along the bottom, even in two rows. */
+const WIDE_WINDOW_WIDTH = 1920;
+
+/**
+ * The width that the bar of an ongoing game needs for one row with its replay's controls, until a
+ * replay measures it (see "barRef"). It is what a player's bar needs, measured.
+ */
+const ONGOING_REPLAY_BAR_WIDTH = 1540;
 
 /** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
 const CLUE_LOG_MIN_HEIGHT = 60;
@@ -434,15 +447,16 @@ export function GameScreen({
   // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
   // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
   // the bottom of the right column, so that the hands get the whole height of the screen. It also
-  // moves on a screen narrower than its reference layout, where the bar would need two rows. The
-  // check counts the taller bar of a replay, so that a replay in an ongoing game does not move the
-  // bar. The panel needs room below the discard pile for itself and a few lines of the clue log.
-  // The clue log gives up its height first, so the panel has room while the clue log keeps its
-  // smallest height. When it has no room, the bar goes back along the bottom, until the window, the
-  // chat, or the panel's controls change.
+  // moves when it would need two rows. The check counts the taller bar of a replay, so that a
+  // replay in an ongoing game does not move the bar. The panel needs room below the discard pile
+  // for itself and a few lines of the clue log. The clue log gives up its height first, so the
+  // panel has room while the clue log keeps its smallest height. When it has no room, the bar goes
+  // back along the bottom, until the window, the chat, or the panel's controls change.
   const barRef = useRef<HTMLElement>(null);
   /** What the panel had no room with, as "panelKey" in the effect below. */
   const panelMissedRoom = useRef<string>(undefined);
+  /** The width that the bar needs for one row, for each kind of game (see `barKey` below). */
+  const barOneRowWidths = useRef(new Map<string, number>());
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
@@ -553,13 +567,38 @@ export function GameScreen({
         nameHeight,
         false,
       );
-      // The bar also moves when the screen is narrower than its reference layout. There, the bar of
-      // a shared replay or a hypothetical needs two rows. A window that is 1920px wide is never
-      // that narrow (see "screenScale.ts"), so it keeps the bar.
+      // The bar also moves when it would need two rows for its replay controls, except on a window
+      // that is at least `WIDE_WINDOW_WIDTH` wide. The bar measures how much width it misses for
+      // one row, and the screen remembers the width that the bar needs for what it holds, so that
+      // the panel can tell when the bar would fit again. An ongoing game counts the bar of its
+      // replay (see "barRef"), which it can measure only during a replay.
+      const barKey = [
+        state.finished,
+        state.playing,
+        state.replay.hypothetical !== undefined,
+        state.replay.shared?.amLeader,
+      ].join(",");
+      const missing = bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE);
+      if (!sidePanel && missing !== null && hasReplayControls(state)) {
+        const known = barOneRowWidths.current.get(barKey);
+        if (Number(missing) > 0) {
+          barOneRowWidths.current.set(
+            barKey,
+            root.clientWidth + Number(missing),
+          );
+        } else if (known !== undefined && known > root.clientWidth) {
+          barOneRowWidths.current.set(barKey, root.clientWidth);
+        }
+      }
+      const barOneRowWidth =
+        barOneRowWidths.current.get(barKey)
+        ?? (state.finished ? 0 : ONGOING_REPLAY_BAR_WIDTH);
+      const barWraps =
+        window.innerWidth < WIDE_WINDOW_WIDTH
+        && root.clientWidth < barOneRowWidth;
       setSidePanel(
         panelMissedRoom.current !== panelKey
-          && (cardWidth < PANEL_CARD_WIDTH
-            || root.clientWidth < REFERENCE_SIZE.width),
+          && (cardWidth < PANEL_CARD_WIDTH || barWraps),
       );
       return;
     }

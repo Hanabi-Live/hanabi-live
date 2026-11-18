@@ -1685,9 +1685,20 @@ async function useClassicScreen(cast: Cast) {
   await cast.setNewUi(false);
 }
 
+/**
+ * A window wide enough that the New UI shows its bar along the bottom, which has the "Classic UI"
+ * button. A narrower window can show the status panel instead, which does not.
+ */
+const BAR_SIZE = {
+  width: 1920,
+  height: 1080,
+} as const;
+
 /** Switches the New UI to the classic screen. */
 async function showClassic(page: Page) {
+  await page.setViewportSize(BAR_SIZE);
   await page.getByRole("button", { name: "Classic UI" }).click();
+  await page.setViewportSize(SETUP_SIZE);
   await page.waitForSelector(".konvajs-content");
   await settle(page);
 }

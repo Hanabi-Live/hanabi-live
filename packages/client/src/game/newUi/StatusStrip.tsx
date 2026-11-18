@@ -661,6 +661,13 @@ export const REPLAY_BAR_HEIGHT = 55 + 9 + BAR_HEIGHT;
 const OWN_ROW_ATTRIBUTE = "data-own-row";
 
 /**
+ * The attribute that says how much wider the bar would need to be to fit its replay controls in one
+ * row, in CSS pixels: 0 when they fit. The game screen reads it to move the bar into the panel
+ * instead of giving it two rows (see "GameScreen.tsx").
+ */
+export const ONE_ROW_MISSING_ATTRIBUTE = "data-one-row-missing";
+
+/**
  * Whether the replay controls need a row of their own, because the bar has no room for them in one
  * row with the numbers and the buttons. In one row, nothing in the bar wraps, so the bar or the
  * controls overflow when they have no room. After each render and resize, the bar takes away the
@@ -686,6 +693,7 @@ function useOwnRow(
   useLayoutEffect(() => {
     const group = controls.current;
     if (footer === null || group === null) {
+      footer?.removeAttribute(ONE_ROW_MISSING_ATTRIBUTE);
       ownRowWidth.current = undefined;
       setOwnRow(false);
       return;
@@ -696,9 +704,13 @@ function useOwnRow(
     // taller layout, so that the chat can no longer scroll down to its last lines.
     footer.style.height = getComputedStyle(footer).height;
     footer.removeAttribute(OWN_ROW_ATTRIBUTE);
-    const overflows =
-      footer.scrollWidth > footer.clientWidth
-      || group.scrollWidth > group.clientWidth;
+    const missing = Math.max(
+      0,
+      footer.scrollWidth - footer.clientWidth,
+      group.scrollWidth - group.clientWidth,
+    );
+    const overflows = missing > 0;
+    footer.setAttribute(ONE_ROW_MISSING_ATTRIBUTE, String(missing));
     if (hadOwnRow) {
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
