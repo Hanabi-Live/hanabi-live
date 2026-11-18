@@ -411,6 +411,10 @@ export function GameScreen({
   // A card that the player drags hides the bubbles of possible cards, so that they do not cover the
   // places to drop it.
   const draggingCard = held?.moved === true;
+  // Holding the pointer down on a hand or holding Space opens the bubble of the card under the
+  // pointer, until the player drags a card.
+  const showHandPossibleCards =
+    (heldEmpathy !== undefined || globalEmpathy) && !draggingCard;
   // No tooltip opens while the player drags a card, so that none covers the card or the places to
   // drop it.
   const cardInHand = held?.phase === "drag";
@@ -1664,10 +1668,7 @@ export function GameScreen({
                           ),
                         }
                   }
-                  showPossibleCards={
-                    (heldEmpathy !== undefined || globalEmpathy)
-                    && !draggingCard
-                  }
+                  showPossibleCards={showHandPossibleCards}
                   speedrunClicks={speedrunClicks}
                   stacked={stacked}
                   tapToMove={tapToMove}
@@ -1824,6 +1825,9 @@ export function GameScreen({
             identityFromNote={heldView.identityFromNote}
             noteBorder={heldView.noteBorder}
             noteMarks={heldView.noteMarks}
+            // The card in the hand gives way to the held card, so the held card shows the bubble
+            // that the card in the hand would show, until the player drags it.
+            openPossibleCards={held.phase === "drag" && showHandPossibleCards}
             pips={heldView.pips}
             rank={heldView.rank}
             stackDirection={heldView.stackDirection}

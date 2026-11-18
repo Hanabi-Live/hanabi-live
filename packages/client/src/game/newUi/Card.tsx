@@ -402,6 +402,12 @@ interface CardFaceProps {
    */
   readonly showPossibleCards?: boolean;
 
+  /**
+   * Whether the bubble of possible cards is open without the pointer over the card. A card that the
+   * player holds does not take the pointer, but it shows its bubble until it moves.
+   */
+  readonly openPossibleCards?: boolean;
+
   /** Whether a "blank" note makes the card look like the back of a card. */
   readonly blank?: boolean;
 
@@ -2524,6 +2530,7 @@ export function CardFace({
   highlighted = false,
   pips,
   showPossibleCards = false,
+  openPossibleCards = false,
   blank = false,
   doubleDiscard = false,
   stackDirection,
@@ -2703,7 +2710,7 @@ export function CardFace({
         anchor={faceElement}
         bubble={bubble}
         colorblindMode={colorblindMode}
-        open={showPossibleCards && hovered}
+        open={(showPossibleCards && hovered) || openPossibleCards}
         variant={variant}
       />
     </div>
