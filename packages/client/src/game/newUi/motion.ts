@@ -15,6 +15,17 @@ export const SLIDE = {
 } as const;
 
 /**
+ * How a part of the screen slides back out of view, such as a drawer that closes. It is `SLIDE`
+ * played backward: its curve is the mirror of `SLIDE`'s, so that it starts slowly and speeds up as
+ * it goes. With `SLIDE`'s own curve, most of the slide would happen at the start, and the close
+ * would look twice as fast as the open.
+ */
+export const SLIDE_BACK = {
+  duration: SLIDE.duration,
+  easing: "cubic-bezier(0.32, 0, 0.67, 0)",
+} as const;
+
+/**
  * The CSS transition of the opacity of an element that shows or hides, as fast as a tooltip opens
  * or closes. Only the opacity changes, never a color (see `useModeFade` in "StatusStrip.tsx").
  */

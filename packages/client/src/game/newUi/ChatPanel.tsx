@@ -17,7 +17,7 @@ import {
   getChatWindow,
   popOutChat,
 } from "./chatWindow.ts";
-import { fadeOutCopy, SLIDE, useFade } from "./motion.ts";
+import { fadeOutCopy, SLIDE, SLIDE_BACK, useFade } from "./motion.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /**
@@ -392,7 +392,7 @@ function OpenChat({
         fadeOutCopy(
           aside,
           [{ transform: getComputedStyle(aside).transform }, outside],
-          SLIDE,
+          SLIDE_BACK,
         );
       }
     };

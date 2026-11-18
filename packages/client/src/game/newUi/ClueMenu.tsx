@@ -7,7 +7,12 @@ import { getColorSymbol } from "./clueMarkers.ts";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { onEscapeKey } from "./escapeKey.ts";
 import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
-import { fadeOutCopy, getOpacityTransition, SLIDE } from "./motion.ts";
+import {
+  fadeOutCopy,
+  getOpacityTransition,
+  SLIDE,
+  SLIDE_BACK,
+} from "./motion.ts";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
@@ -288,7 +293,7 @@ export function ClueMenu({
           },
           getHiddenDrawer(menu, closingSide),
         ],
-        SLIDE,
+        SLIDE_BACK,
       );
     };
   }, []);

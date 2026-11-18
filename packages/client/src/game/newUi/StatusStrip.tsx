@@ -22,6 +22,7 @@ import {
   getOpacityTransition,
   getVisibilityTransition,
   SLIDE,
+  SLIDE_BACK,
 } from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
@@ -577,7 +578,7 @@ function useReplayDrawer(
         opened
           ? SLIDE
           : {
-              ...SLIDE,
+              ...SLIDE_BACK,
               fill: "forwards",
             },
       );
