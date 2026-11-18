@@ -26,21 +26,24 @@
   display: flex;
 }
 
+/* The backdrop keeps its color and fades its opacity. Chrome can crash on an animation of a
+   background color (see "AGENTS.md"). */
 #modal-dialog::backdrop {
-  background-color: transparent;
+  background-color: var(--modal-backdrop);
+  opacity: 0;
   transition:
-    background-color var(--modal-fade),
+    opacity var(--modal-fade),
     display var(--modal-fade) allow-discrete,
     overlay var(--modal-fade) allow-discrete;
 }
 
 #modal-dialog[open]::backdrop {
-  background-color: var(--modal-backdrop);
+  opacity: 1;
 }
 
 @starting-style {
   #modal-dialog[open]::backdrop {
-    background-color: transparent;
+    opacity: 0;
   }
 }
 

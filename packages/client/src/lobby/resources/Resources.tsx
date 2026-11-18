@@ -139,7 +139,7 @@ export function Resources(): React.JSX.Element {
 /** One resource. Its title's link covers the whole item. */
 function ResourceItem({ resource }: { readonly resource: Resource }) {
   return (
-    <li className="tw:group tw:relative tw:m-0 tw:flex tw:items-start tw:gap-4 tw:rounded-(--radius) tw:border tw:border-solid tw:border-border-panel tw:bg-surface-panel tw:px-4 tw:py-[0.9em] tw:transition-[background-color,border-color] tw:duration-150 tw:ease-[ease] tw:focus-within:border-green tw:focus-within:bg-surface tw:hover:border-green tw:hover:bg-surface">
+    <li className="tw:group tw:relative tw:m-0 tw:flex tw:items-start tw:gap-4 tw:rounded-(--radius) tw:border tw:border-solid tw:border-border-panel tw:bg-surface-panel tw:px-4 tw:py-[0.9em] tw:transition-[border-color] tw:duration-150 tw:ease-[ease] tw:focus-within:border-green tw:focus-within:bg-surface tw:hover:border-green tw:hover:bg-surface">
       <span className="tw:inline-flex tw:size-[2.3em] tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-green-tint tw:text-[1.2em] tw:text-green-text">
         <i className={`fas ${resource.icon}`} />
       </span>

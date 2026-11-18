@@ -598,8 +598,9 @@ input[type="submit"],
 input[type="button"],
 .button {
   appearance: none;
+  /* The background color changes at once. Chrome can crash on an animation of a background color
+     (see "AGENTS.md"). */
   transition:
-    background-color 0.2s ease-in-out,
     color 0.2s ease-in-out,
     translate 75ms ease-out,
     box-shadow 75ms ease-out;

@@ -110,7 +110,6 @@
 /* A row with a checkbox lights up, and a click anywhere on it toggles the box. */
 .lobby-row:has(> .lobby-row-checkbox) {
   position: relative;
-  transition: background-color 0.15s ease;
 }
 
 .lobby-row:has(> .lobby-row-checkbox):hover {
@@ -180,9 +179,9 @@
   margin: 0;
   padding: 0 1.2em;
   text-align: center;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  /* The background color changes at once. Chrome can crash on an animation of a background color
+     (see "AGENTS.md"). */
+  transition: color 0.15s ease;
 }
 
 .lobby-segmented input[type="radio"] + label::before {
