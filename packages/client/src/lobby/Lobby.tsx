@@ -2,7 +2,8 @@
 // page or a history screen replaces both halves. On small screens, buttons at the bottom switch
 // between the halves.
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useFadeInOnChange } from "../fade.ts";
 import { lobbyPanelChanged } from "../sessionSlice.ts";
 import type { RootState } from "../store.ts";
 import { store, useAppSelector } from "../store.ts";
@@ -58,8 +59,23 @@ function selectFullScreen(state: RootState): boolean {
 export function Lobby(): React.JSX.Element {
   const screen = useAppSelector((state) => state.session.screen);
   const panel = useAppSelector((state) => state.session.lobbyPanel);
+  const lobbyPage = useAppSelector((state) => state.session.lobbyPage);
   const full = useAppSelector(selectFullScreen);
   const inPregame = screen === Screen.PreGame;
+
+  // The parts that take the place of others fade in, such as the table that we join in place of the
+  // tables, or a lobby page in place of the halves.
+  const topRef = useRef<HTMLDivElement>(null);
+  const separatorRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+  const fullRef = useRef<HTMLDivElement>(null);
+  const halvesKey = `${full}/${inPregame}`;
+  useFadeInOnChange(topRef, halvesKey);
+  useFadeInOnChange(separatorRef, full);
+  useFadeInOnChange(bottomRef, halvesKey);
+  useFadeInOnChange(buttonsRef, halvesKey);
+  useFadeInOnChange(fullRef, full ? `${screen}/${lobbyPage}` : undefined);
 
   // The pre-game chat takes room from the lobby chat, which keeps it scrolled to the bottom.
   // Joining a table moves the focus to its chat, and leaving it takes the focus away, since the
@@ -86,6 +102,7 @@ export function Lobby(): React.JSX.Element {
           full && "tw:hidden",
         )}
         id="lobby-top-half"
+        ref={topRef}
       >
         <div className="col-12 tw:h-full">
           <section
@@ -109,6 +126,7 @@ export function Lobby(): React.JSX.Element {
           full && "tw:hidden",
         )}
         id="lobby-separator"
+        ref={separatorRef}
       />
 
       <div
@@ -119,6 +137,7 @@ export function Lobby(): React.JSX.Element {
           full && "tw:hidden",
         )}
         id="lobby-bottom-half"
+        ref={bottomRef}
       >
         <div
           className={classes(
@@ -176,6 +195,7 @@ export function Lobby(): React.JSX.Element {
           full ? "tw:hidden" : "tw:mt-4 tw:hidden tw:h-[2em] tw:compact:block"
         }
         id="lobby-small-screen-buttons"
+        ref={buttonsRef}
       >
         <nav id="nav-bottom">
           <ul className="tw:m-0 tw:block tw:list-none tw:pl-0">
@@ -206,6 +226,7 @@ export function Lobby(): React.JSX.Element {
       <div
         className={classes("row", HALF, !full && "tw:hidden")}
         id="lobby-full"
+        ref={fullRef}
       >
         <div className="col-12 tw:h-full">
           <section

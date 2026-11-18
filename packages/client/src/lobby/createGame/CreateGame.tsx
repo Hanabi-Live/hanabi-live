@@ -28,6 +28,11 @@ import {
   DIMMED_OPACITY,
   LOCAL_STORAGE_KEY,
 } from "../../constants.ts";
+import {
+  getFadeStyle,
+  getRevealClassName,
+  useReducedMotion,
+} from "../../fade.ts";
 import { globals } from "../../Globals.ts";
 import type { LengthLimit } from "../../LengthCounter.tsx";
 import {
@@ -264,6 +269,7 @@ export function CreateGame(): React.JSX.Element {
       || Object.values(form.extraOptions).some(Boolean),
   );
   const errors = getErrors(form);
+  const fadeStyle = getFadeStyle(useReducedMotion());
   // Changing or suggesting the options that the table already has would do nothing.
   const unchanged = mode !== "create" && equal(form, initialForm);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -460,67 +466,70 @@ export function CreateGame(): React.JSX.Element {
       </div>
 
       {/* Speedruns are never timed, so this group is hidden for them. */}
-      {!form.extraOptions.speedrun && (
-        <div className="lobby-group">
-          <h3>Timer</h3>
-          <ul className="lobby-rows">
-            <CheckboxRow
-              checked={form.timed}
-              icon="fa-clock"
-              id="createTableTimed"
-              onChange={(checked) => {
-                change({ timed: checked }, true);
-              }}
+      <div
+        className={`lobby-group ${getRevealClassName(!form.extraOptions.speedrun)}`}
+        style={fadeStyle}
+      >
+        <h3>Timer</h3>
+        <ul className="lobby-rows">
+          <CheckboxRow
+            checked={form.timed}
+            icon="fa-clock"
+            id="createTableTimed"
+            onChange={(checked) => {
+              change({ timed: checked }, true);
+            }}
+          >
+            Timed
+          </CheckboxRow>
+          <li
+            className={`lobby-row ${getRevealClassName(timed)}`}
+            style={fadeStyle}
+          >
+            <RowLabel
+              htmlFor="createTableTimeBaseMinutes"
+              icon="fa-hourglass-start"
             >
-              Timed
-            </CheckboxRow>
-            {timed && (
-              <>
-                <li className="lobby-row">
-                  <RowLabel
-                    htmlFor="createTableTimeBaseMinutes"
-                    icon="fa-hourglass-start"
-                  >
-                    Base time (minutes)
-                  </RowLabel>
-                  <CheckedInput
-                    error={errors.timeBaseMinutes}
-                    id="createTableTimeBaseMinutes"
-                    inputMode="decimal"
-                    onBlur={() => {
-                      change({}, true);
-                    }}
-                    onChange={(value) => {
-                      change({ timeBaseMinutes: value }, false);
-                    }}
-                    value={form.timeBaseMinutes}
-                  />
-                </li>
-                <li className="lobby-row">
-                  <RowLabel
-                    htmlFor="createTableTimePerTurnSeconds"
-                    icon="fa-stopwatch"
-                  >
-                    Time per turn (seconds)
-                  </RowLabel>
-                  <CheckedInput
-                    error={errors.timePerTurnSeconds}
-                    id="createTableTimePerTurnSeconds"
-                    inputMode="numeric"
-                    onBlur={() => {
-                      change({}, true);
-                    }}
-                    onChange={(value) => {
-                      change({ timePerTurnSeconds: value }, false);
-                    }}
-                    value={form.timePerTurnSeconds}
-                  />
-                </li>
-              </>
-            )}
-          </ul>
-        </div>
-      )}
+              Base time (minutes)
+            </RowLabel>
+            <CheckedInput
+              error={errors.timeBaseMinutes}
+              id="createTableTimeBaseMinutes"
+              inputMode="decimal"
+              onBlur={() => {
+                change({}, true);
+              }}
+              onChange={(value) => {
+                change({ timeBaseMinutes: value }, false);
+              }}
+              value={form.timeBaseMinutes}
+            />
+          </li>
+          <li
+            className={`lobby-row ${getRevealClassName(timed)}`}
+            style={fadeStyle}
+          >
+            <RowLabel
+              htmlFor="createTableTimePerTurnSeconds"
+              icon="fa-stopwatch"
+            >
+              Time per turn (seconds)
+            </RowLabel>
+            <CheckedInput
+              error={errors.timePerTurnSeconds}
+              id="createTableTimePerTurnSeconds"
+              inputMode="numeric"
+              onBlur={() => {
+                change({}, true);
+              }}
+              onChange={(value) => {
+                change({ timePerTurnSeconds: value }, false);
+              }}
+              value={form.timePerTurnSeconds}
+            />
+          </li>
+        </ul>
+      </div>
 
       {/* Most games do not use the extra options, so they start out hidden behind this button. */}
       <div className="tw:mt-6 tw:text-center">
@@ -543,8 +552,9 @@ export function CreateGame(): React.JSX.Element {
         </button>
       </div>
 
-      {extraOptionsShown && (
-        <div className="lobby-group tw:mt-6" id="create-game-extra-options">
+      {/* The wrapper grows and shrinks, and the space above the group grows and shrinks with it. */}
+      <div className={getRevealClassName(extraOptionsShown)} style={fadeStyle}>
+        <div className="lobby-group tw:pt-6" id="create-game-extra-options">
           <h3>Extra Options</h3>
           <ul className="lobby-rows">
             {EXTRA_OPTION_ROWS.map(({ option, id, icon, label, help }) => {
@@ -582,7 +592,7 @@ export function CreateGame(): React.JSX.Element {
               </div>
               <CheckedInput
                 autoComplete="off"
-                error={errors.seed}
+                error={extraOptionsShown ? errors.seed : undefined}
                 id="create-game-seed"
                 maxLength={MAX_SEED_LENGTH}
                 onChange={(value) => {
@@ -611,7 +621,7 @@ export function CreateGame(): React.JSX.Element {
                   aria-label="Game ID"
                   autoComplete="off"
                   className="tw:min-w-0 tw:flex-1"
-                  error={errors.replayGameId}
+                  error={extraOptionsShown ? errors.replayGameId : undefined}
                   id="create-game-replay-game-id"
                   inputMode="numeric"
                   onChange={(value) => {
@@ -630,7 +640,7 @@ export function CreateGame(): React.JSX.Element {
                     autoComplete="off"
                     className="tw:w-[4em] tw:text-center"
                     disabled={!replaying}
-                    error={errors.replayTurn}
+                    error={extraOptionsShown ? errors.replayTurn : undefined}
                     id="create-game-replay-turn"
                     inputMode="numeric"
                     onChange={(value) => {
@@ -644,7 +654,7 @@ export function CreateGame(): React.JSX.Element {
             </li>
           </ul>
         </div>
-      )}
+      </div>
 
       {/* A disabled button gets no pointer events, so this one only looks disabled, to keep its
           tooltip. */}

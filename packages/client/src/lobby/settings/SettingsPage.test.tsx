@@ -64,11 +64,13 @@ describe("SettingsPage", () => {
   });
 
   test("the H-Group level shows with the H-Group features, and can be cleared", () => {
-    expect(getInput("hGroupLevel")).toBeNull();
+    const row = getInput("hGroupLevel")!.closest("li")!;
+    expect(row.className).toContain("tw:hidden");
 
     act(() => {
       getInput("hGroupConventions")!.click();
     });
+    expect(row.className).not.toContain("tw:hidden");
     act(() => {
       fireEvent.change(getInput("hGroupLevel")!, {
         target: {

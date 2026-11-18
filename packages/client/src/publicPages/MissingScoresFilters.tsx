@@ -6,6 +6,8 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useState } from "react";
 import type * as z from "zod";
+import { getFadeStyle, getRevealClassName } from "../fade.ts";
+import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 
 type Filters = Extract<
@@ -145,89 +147,96 @@ function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
         </button>
       </div>
 
-      <form
-        className="tw:mb-8 tw:rounded-[var(--radius)] tw:border tw:border-border tw:p-6"
-        hidden={!open}
-        id="advanced-filters"
-        onSubmit={apply}
+      {/* The wrapper grows and shrinks, and the space below the form grows and shrinks with it. */}
+      <div
+        className={`${getRevealClassName(open)} ${open ? "tw:flow-root" : ""}`}
+        // A public page reads the setting once, from the browser's cache (see
+        // "reducedMotionCache.ts").
+        style={getFadeStyle(store.getState().session.settings.reducedMotion)}
       >
-        <div className="row gtr-uniform">
-          <div className="col-12">
-            <strong>Players included in the calculation</strong>
-            <ul className="horizontal tw:mt-2 tw:mr-0 tw:mb-0 tw:ml-0">
-              {filters.players.map((player, index) => (
-                <li className="tw:mr-6" key={player.name}>
-                  <input
-                    checked={included.has(player.name)}
-                    id={`include-player-${index}`}
-                    onChange={(event) => {
-                      const next = new Set(included);
-                      if (event.target.checked) {
-                        next.add(player.name);
-                      } else {
-                        next.delete(player.name);
-                      }
-                      setIncluded(next);
-                    }}
-                    type="checkbox"
-                  />
-                  <label htmlFor={`include-player-${index}`}>
-                    {player.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="col-12">
-            <label htmlFor="exclude-variants">
-              Exclude variants (comma-separated, matches any part of the name;
-              &quot;Rainbow (3 Suits), Pink&quot; excludes one Rainbow and all
-              Pink variants)
-            </label>
-            <input
-              id="exclude-variants"
-              onChange={(event) => {
-                setExcludeVariants(event.target.value);
-              }}
-              type="text"
-              value={excludeVariants}
+        <form
+          className="tw:mb-8 tw:rounded-[var(--radius)] tw:border tw:border-border tw:p-6"
+          id="advanced-filters"
+          onSubmit={apply}
+        >
+          <div className="row gtr-uniform">
+            <div className="col-12">
+              <strong>Players included in the calculation</strong>
+              <ul className="horizontal tw:mt-2 tw:mr-0 tw:mb-0 tw:ml-0">
+                {filters.players.map((player, index) => (
+                  <li className="tw:mr-6" key={player.name}>
+                    <input
+                      checked={included.has(player.name)}
+                      id={`include-player-${index}`}
+                      onChange={(event) => {
+                        const next = new Set(included);
+                        if (event.target.checked) {
+                          next.add(player.name);
+                        } else {
+                          next.delete(player.name);
+                        }
+                        setIncluded(next);
+                      }}
+                      type="checkbox"
+                    />
+                    <label htmlFor={`include-player-${index}`}>
+                      {player.name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="col-12">
+              <label htmlFor="exclude-variants">
+                Exclude variants (comma-separated, matches any part of the name;
+                &quot;Rainbow (3 Suits), Pink&quot; excludes one Rainbow and all
+                Pink variants)
+              </label>
+              <input
+                id="exclude-variants"
+                onChange={(event) => {
+                  setExcludeVariants(event.target.value);
+                }}
+                type="text"
+                value={excludeVariants}
+              />
+            </div>
+            <EfficiencyInput
+              id="min-efficiency"
+              label="Min efficiency"
+              onChange={setMinEfficiency}
+              placeholder="e.g. 1.00"
+              value={minEfficiency}
             />
+            <EfficiencyInput
+              id="max-efficiency"
+              label="Max efficiency"
+              onChange={setMaxEfficiency}
+              placeholder="e.g. 1.50"
+              value={maxEfficiency}
+            />
+            <div className="col-12">
+              <p className="red" hidden={problem === undefined} role="alert">
+                {problem}
+              </p>
+              <ul className="actions">
+                <li>
+                  <input className="primary" type="submit" value="Apply" />
+                </li>
+                <li>
+                  <input
+                    onClick={() => {
+                      globalThis.location.assign(globalThis.location.pathname);
+                    }}
+                    type="button"
+                    value="Reset"
+                  />
+                </li>
+              </ul>
+            </div>
           </div>
-          <EfficiencyInput
-            id="min-efficiency"
-            label="Min efficiency"
-            onChange={setMinEfficiency}
-            placeholder="e.g. 1.00"
-            value={minEfficiency}
-          />
-          <EfficiencyInput
-            id="max-efficiency"
-            label="Max efficiency"
-            onChange={setMaxEfficiency}
-            placeholder="e.g. 1.50"
-            value={maxEfficiency}
-          />
-          <div className="col-12">
-            <p className="red" hidden={problem === undefined} role="alert">
-              {problem}
-            </p>
-            <ul className="actions">
-              <li>
-                <input className="primary" type="submit" value="Apply" />
-              </li>
-              <li>
-                <input
-                  onClick={() => {
-                    globalThis.location.assign(globalThis.location.pathname);
-                  }}
-                  type="button"
-                  value="Reset"
-                />
-              </li>
-            </ul>
-          </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </>
   );
 }

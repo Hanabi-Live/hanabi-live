@@ -2,6 +2,7 @@
 
 import { StatusText } from "@hanabi-live/data";
 import { DIMMED_OPACITY } from "../../constants.ts";
+import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { TAB_CLASS_NAME } from "../../tabClassName.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
@@ -111,15 +112,27 @@ function UserRowView({
   const { user, kind } = row;
   const nameLink = <UserLink row={row} />;
   const statusText = StatusText[user.activity.type];
+  // A player who goes idle fades to dim, and one who comes back fades back.
+  const fadeStyle = getFadeStyle(useReducedMotion());
 
   return (
     <tr>
       <td>
         <UserIcon user={user} />
         {"\u{A0} "}
-        <span style={user.inactive ? { opacity: DIMMED_OPACITY } : undefined}>
+        <span
+          className="tw:transition-opacity"
+          style={{
+            ...fadeStyle,
+            opacity: user.inactive ? DIMMED_OPACITY : undefined,
+          }}
+        >
           {kind === "self" ? <strong>{nameLink}</strong> : nameLink}
-          {user.inactive && ` \u{A0}${SLEEPING_EMOJI}`}
+          {user.inactive && (
+            <span className={FADE_IN_CLASS} style={fadeStyle}>
+              {` \u{A0}${SLEEPING_EMOJI}`}
+            </span>
+          )}
         </span>
       </td>
       <td>

@@ -2,6 +2,7 @@
 
 import { Children } from "react";
 import { PATH } from "../../constants.ts";
+import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { globals } from "../../Globals.ts";
 import type { RootState } from "../../store.ts";
 import { useAppSelector } from "../../store.ts";
@@ -361,10 +362,15 @@ function OtherScoresNav() {
 }
 
 /** A space separates the items, which are inline blocks, as in the classic markup. */
+/** The buttons of a nav bar, which fade in when they take the place of another bar's. */
 function NavList({ children }: { readonly children: React.ReactNode }) {
   const items = Children.toArray(children);
+  const reducedMotion = useReducedMotion();
   return (
-    <ul className="tw:m-0 tw:list-none tw:pl-0">
+    <ul
+      className={`tw:m-0 tw:list-none tw:pl-0 ${FADE_IN_CLASS}`}
+      style={getFadeStyle(reducedMotion)}
+    >
       {items.flatMap((item, i) => (i === 0 ? [item] : [" ", item]))}
     </ul>
   );

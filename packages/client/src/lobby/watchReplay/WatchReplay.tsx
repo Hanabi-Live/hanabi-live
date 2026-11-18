@@ -3,6 +3,12 @@
 import { parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "../../constants.ts";
+import {
+  FADE_IN_CLASS,
+  getFadeStyle,
+  getRevealClassName,
+  useReducedMotion,
+} from "../../fade.ts";
 import { globals } from "../../Globals.ts";
 import { DOCS_URL, HelpLink } from "../createGame/CreateGame.tsx";
 import type { GameJson } from "../gameJson.ts";
@@ -39,6 +45,7 @@ export function WatchReplay(): React.JSX.Element {
       === "true",
   );
   const [error, setError] = useState<string>();
+  const fadeStyle = getFadeStyle(useReducedMotion());
   const gameIdRef = useRef<HTMLInputElement>(null);
   const jsonRef = useRef<HTMLTextAreaElement>(null);
 
@@ -193,36 +200,44 @@ export function WatchReplay(): React.JSX.Element {
               value={visibility}
             />
           </li>
-          {visibility === "shared" && (
-            <li className="lobby-row">
-              <div className="lobby-row-label">
-                <label htmlFor="replay-spoiler-free">
-                  <i className="fas fa-eye-slash fa-fw" />
-                  Spoiler-free review
-                </label>
-                <HelpLink
-                  href={`${DOCS_URL}/features.md#replays`}
-                  text="About spoiler-free reviews"
-                />
-              </div>
-              <span className="lobby-row-checkbox">
-                <input
-                  checked={spoilerFree}
-                  id="replay-spoiler-free"
-                  onChange={(event) => {
-                    setSpoilerFree(event.target.checked);
-                  }}
-                  type="checkbox"
-                />
-                <label htmlFor="replay-spoiler-free" />
-              </span>
-            </li>
-          )}
+          <li
+            className={`lobby-row ${getRevealClassName(visibility === "shared")}`}
+            style={fadeStyle}
+          >
+            <div className="lobby-row-label">
+              <label htmlFor="replay-spoiler-free">
+                <i className="fas fa-eye-slash fa-fw" />
+                Spoiler-free review
+              </label>
+              <HelpLink
+                href={`${DOCS_URL}/features.md#replays`}
+                text="About spoiler-free reviews"
+              />
+            </div>
+            <span className="lobby-row-checkbox">
+              <input
+                checked={spoilerFree}
+                id="replay-spoiler-free"
+                onChange={(event) => {
+                  setSpoilerFree(event.target.checked);
+                }}
+                type="checkbox"
+              />
+              <label htmlFor="replay-spoiler-free" />
+            </span>
+          </li>
         </ul>
       </div>
 
       {error !== undefined && (
-        <p className="tw:mx-0 tw:mt-4 tw:mb-0 tw:text-(--error)">{error}</p>
+        <p
+          className={`tw:mx-0 tw:mt-4 tw:mb-0 tw:text-(--error) ${FADE_IN_CLASS}`}
+          // A new error fades in again.
+          key={error}
+          style={fadeStyle}
+        >
+          {error}
+        </p>
       )}
 
       <button

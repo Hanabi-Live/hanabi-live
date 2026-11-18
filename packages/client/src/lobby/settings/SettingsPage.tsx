@@ -9,6 +9,11 @@ import {
 import { iRange, parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { globals } from "../../Globals.ts";
+import {
+  getFadeStyle,
+  getRevealClassName,
+  useReducedMotion,
+} from "../../fade.ts";
 import { SoundType } from "../../game/types/SoundType.ts";
 import * as notifications from "../../notifications.ts";
 import { settingsChanged } from "../../sessionSlice.ts";
@@ -94,7 +99,7 @@ export function SettingsPage(): React.JSX.Element {
             features
           </CheckboxRow>
           {/* The level only matters to people who use the H-Group features. */}
-          {hGroupConventions && <HGroupLevelRow />}
+          <HGroupLevelRow shown={hGroupConventions} />
           <CheckboxRow icon="fa-forward" setting="preplay">
             Enable pre-playing cards
           </CheckboxRow>
@@ -236,14 +241,18 @@ function VolumeRow() {
   );
 }
 
-function HGroupLevelRow() {
+function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
   const hGroupLevel = useAppSelector(
     (state) => state.session.settings.hGroupLevel,
   );
+  const reducedMotion = useReducedMotion();
   const [status, showSaved] = useSavedStatus();
 
   return (
-    <li className="lobby-row">
+    <li
+      className={`lobby-row ${getRevealClassName(shown)}`}
+      style={getFadeStyle(reducedMotion)}
+    >
       <RowLabel htmlFor="hGroupLevel" icon="fa-signal">
         My highest{" "}
         <a

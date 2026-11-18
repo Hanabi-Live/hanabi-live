@@ -18,6 +18,8 @@ import { iRange } from "complete-common";
 import { useEffect, useMemo, useState } from "react";
 import type * as z from "zod";
 import { PATH } from "../constants.ts";
+import { getFadeStyle } from "../fade.ts";
+import { store } from "../store.ts";
 import type { Column, Filters, Sort } from "./DataTable.tsx";
 import {
   DataTable,
@@ -277,7 +279,7 @@ function GameList({
         ))}
       </DataTable>
       {pager}
-      {loading && <Spinner />}
+      <Spinner shown={loading} />
       <ErrorMessage error={error} />
     </>
   );
@@ -363,10 +365,19 @@ function ErrorMessage({ error }: { readonly error: string | undefined }) {
   );
 }
 
-/** Covers the page while a page of games loads. */
-function Spinner() {
+/**
+ * Covers the page while a page of games loads. It fades in and out, and the page can be clicked
+ * while it fades out.
+ */
+function Spinner({ shown }: { readonly shown: boolean }) {
+  // A public page reads the setting once, from the browser's cache (see "reducedMotionCache.ts").
+  const { reducedMotion } = store.getState().session.settings;
   return (
-    <div className="tw:fixed tw:inset-0 tw:z-[var(--z-spinner)] tw:flex tw:items-center tw:justify-center tw:bg-spinner-backdrop">
+    <div
+      aria-hidden={!shown}
+      className={`tw:fixed tw:inset-0 tw:z-[var(--z-spinner)] tw:flex tw:items-center tw:justify-center tw:bg-spinner-backdrop tw:transition-[opacity,visibility] ${shown ? "tw:visible tw:opacity-100" : "tw:pointer-events-none tw:invisible tw:opacity-0"}`}
+      style={getFadeStyle(reducedMotion)}
+    >
       <span className="tw:relative tw:box-border tw:inline-block tw:h-[48px] tw:w-[48px] tw:animate-spin tw:rounded-full tw:border-x-2 tw:border-y-[3px] tw:border-t-spinner-red tw:border-r-spinner-white/30 tw:border-b-spinner-white tw:border-l-spinner-brown tw:[border-style:solid_dotted] tw:before:absolute tw:before:top-0 tw:before:left-0 tw:before:border-[10px] tw:before:border-transparent tw:before:border-b-spinner-white tw:before:[transform:translate(-10px,19px)_rotate(-35deg)] tw:before:content-[''] tw:after:absolute tw:after:top-0 tw:after:left-0 tw:after:border-[10px] tw:after:border-transparent tw:after:border-t-spinner-red tw:after:[transform:translate(32px,3px)_rotate(-35deg)] tw:after:content-['']" />
     </div>
   );

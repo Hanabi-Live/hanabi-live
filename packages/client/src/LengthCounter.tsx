@@ -5,6 +5,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { useEffect, useRef, useState } from "react";
 import type { Root } from "react-dom/client";
 import { Tooltip } from "./Tooltip.ts";
+import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "./fade.ts";
 import { renderRoot } from "./renderRoot.tsx";
 
 /** A limit on the text of an input, and how to count the text as the server counts it. */
@@ -95,6 +96,7 @@ export function LengthCounter({
 }): React.JSX.Element | null {
   const [left, setLeft] = useState(limit.max);
   const ref = useRef<HTMLSpanElement>(null);
+  const reducedMotion = useReducedMotion();
   const shown = left <= limit.max * SHOWN_FRACTION;
   const tooLong = left < 0;
 
@@ -161,8 +163,9 @@ export function LengthCounter({
 
   return (
     <span
-      className={`tw:absolute tw:top-1/2 tw:-translate-y-1/2 tw:text-[0.875em] tw:tabular-nums ${besideButton ? "tw:right-13" : "tw:right-2"} ${tooLong ? "tw:text-(--error)" : "tw:text-text"}`}
+      className={`tw:absolute tw:top-1/2 tw:-translate-y-1/2 tw:text-[0.875em] tw:tabular-nums ${besideButton ? "tw:right-13" : "tw:right-2"} ${tooLong ? "tw:text-(--error)" : "tw:text-text"} ${FADE_IN_CLASS}`}
       ref={ref}
+      style={getFadeStyle(reducedMotion)}
     >
       {left}
     </span>

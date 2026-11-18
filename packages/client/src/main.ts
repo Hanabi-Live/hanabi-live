@@ -21,6 +21,10 @@ import * as lobbyLogin from "./lobby/login.ts";
 import * as lobbyPregame from "./lobby/pregame/pregame.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
+import {
+  cacheReducedMotion,
+  loadCachedReducedMotion,
+} from "./reducedMotionCache.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as tooltips from "./tooltips.ts";
@@ -40,6 +44,8 @@ if (
 
 initErrorListener();
 allowTranslators();
+loadCachedReducedMotion();
+cacheReducedMotion();
 
 /** Starts the client once the page has loaded. */
 function init() {

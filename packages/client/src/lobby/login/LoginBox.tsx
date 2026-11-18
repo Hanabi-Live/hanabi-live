@@ -4,7 +4,12 @@
 
 import { PROJECT_NAME } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
-import { FADE_TIME_MS } from "../../constants.ts";
+import {
+  FADE_IN_CLASS,
+  getFadeStyle,
+  getRevealClassName,
+  useReducedMotion,
+} from "../../fade.ts";
 import { outdatedClientHtml } from "../../notice.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { acceptFirefoxWarning, retryAutomaticLogin, signIn } from "../login.ts";
@@ -123,6 +128,7 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const reducedMotion = useReducedMotion();
   const usernameRef = useRef<HTMLInputElement>(null);
 
   let buttonLabel = "Sign In";
@@ -219,13 +225,9 @@ function SignIn() {
         </InputRow>
         <div className="padding0p75" />
         <div
-          className={
-            changingPassword
-              ? "tw:h-auto tw:overflow-clip tw:transition-[height,display] tw:transition-discrete tw:[interpolate-size:allow-keywords] tw:[overflow-clip-margin:0.25em] tw:starting:h-0"
-              : "tw:hidden tw:h-0 tw:overflow-clip tw:transition-[height,display] tw:transition-discrete tw:[interpolate-size:allow-keywords]"
-          }
+          className={getRevealClassName(changingPassword)}
           id="change-password-container"
-          style={{ transitionDuration: `${CHANGE_PASSWORD_TRANSITION_MS}ms` }}
+          style={getFadeStyle(reducedMotion, CHANGE_PASSWORD_TRANSITION_MS)}
         >
           <InputRow icon="fa-sync">
             <input
@@ -262,7 +264,11 @@ function SignIn() {
           <div className="col-7 off-3">
             <LoginAlert />
             {confirmingUsername !== undefined && (
-              <p id="login-no-account">
+              <p
+                className={FADE_IN_CLASS}
+                id="login-no-account"
+                style={getFadeStyle(reducedMotion)}
+              >
                 There is no account named <strong>{confirmingUsername}</strong>.
                 Check the spelling, or click &quot;Create Account&quot; to
                 create it.
@@ -313,6 +319,7 @@ function InputRow({
 function LoginAlert() {
   const alert = useAppSelector((state) => state.login.alert);
   const ref = useRef<HTMLParagraphElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     ref.current?.scrollIntoView({
@@ -327,11 +334,11 @@ function LoginAlert() {
 
   return (
     <p
-      className="tw:mb-4 tw:whitespace-pre-line tw:rounded-(--radius) tw:border tw:border-solid tw:border-(--login-alert-border) tw:bg-(--login-alert-bg) tw:p-[0.9em] tw:text-(--login-alert-text) tw:transition-opacity tw:starting:opacity-0"
+      className={`tw:mb-4 tw:whitespace-pre-line tw:rounded-(--radius) tw:border tw:border-solid tw:border-(--login-alert-border) tw:bg-(--login-alert-bg) tw:p-[0.9em] tw:text-(--login-alert-text) ${FADE_IN_CLASS}`}
       id="login-alert"
       key={alert.count}
       ref={ref}
-      style={{ transitionDuration: `${FADE_TIME_MS}ms` }}
+      style={getFadeStyle(reducedMotion)}
     >
       {alert.latestVersion === undefined ? (
         alert.message

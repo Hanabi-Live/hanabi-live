@@ -11,6 +11,7 @@ import {
 import { iRange } from "complete-common";
 import { globals } from "../../Globals.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
+import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
@@ -37,9 +38,13 @@ export function Pregame(): React.JSX.Element | undefined {
   const table = useAppSelector((state) =>
     game === undefined ? undefined : selectTable(state, game.tableId),
   );
+  const reducedMotion = useReducedMotion();
   if (game === undefined) {
     return undefined;
   }
+
+  // The people who come to the table fade in.
+  const fadeStyle = getFadeStyle(reducedMotion);
 
   const isSpectator = game.players.every(
     (player) => player.username !== username,
@@ -107,7 +112,11 @@ export function Pregame(): React.JSX.Element | undefined {
           </h4>
         )}
         {spectators.length > 0 && (
-          <h4 className="tw:pb-2" id="lobby-pregame-spectators-container">
+          <h4
+            className={`tw:pb-2 ${FADE_IN_CLASS}`}
+            id="lobby-pregame-spectators-container"
+            style={fadeStyle}
+          >
             <strong>
               <i className="fas fa-glasses tw:mr-[0.4em]" />
               Spectators:
@@ -118,7 +127,11 @@ export function Pregame(): React.JSX.Element | undefined {
               id="lobby-pregame-spectators"
             >
               {spectators.map((spectator) => (
-                <li key={spectator.username}>
+                <li
+                  className={FADE_IN_CLASS}
+                  key={spectator.username}
+                  style={fadeStyle}
+                >
                   &bull; <Name name={spectator.username} />
                   {spectator.shadowingPlayerIndex !== undefined && (
                     <>
@@ -169,15 +182,17 @@ function PlayerBox({
   // The "numPlayers" in the options is not set yet.
   const numPlayers = game.players.length;
   const variantStats = player.stats.variant;
+  const fadeStyle = getFadeStyle(useReducedMotion());
 
   return (
     <div
       className={[
         "tw:mr-2 tw:mb-2 tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
         "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--pregame-player-border)",
-        "tw:p-[0.8em] tw:narrow-980:max-w-[200px]",
+        `tw:p-[0.8em] tw:narrow-980:max-w-[200px] ${FADE_IN_CLASS}`,
       ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}
+      style={fadeStyle}
     >
       <p className="tw:m-0 tw:pb-2">
         <strong>
@@ -213,7 +228,7 @@ function PlayerBox({
         }
       />
       {!player.present && (
-        <p className="tw:mt-4 tw:mb-0">
+        <p className={`tw:mt-4 tw:mb-0 ${FADE_IN_CLASS}`} style={fadeStyle}>
           <strong>AWAY</strong>
         </p>
       )}

@@ -8,6 +8,7 @@ import { publicPageTableSchema } from "@hanabi-live/data";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import type * as z from "zod";
+import { loadCachedReducedMotion } from "../reducedMotionCache.ts";
 import "../tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 import { allowTranslators } from "../translators.ts";
 import { GamesTable } from "./GamesTable.tsx";
@@ -15,6 +16,7 @@ import { PasswordReset } from "./PasswordReset.tsx";
 import { MissingScoresTable, ScoresTable } from "./ScoreTables.tsx";
 
 allowTranslators();
+loadCachedReducedMotion();
 
 const passwordReset = document.querySelector("#password-reset");
 if (passwordReset === null) {

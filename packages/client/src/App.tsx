@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { EmojiPicker } from "./EmojiPicker.tsx";
 import { MessageModal } from "./MessageModal.tsx";
 import { PromptModal } from "./PromptModal.tsx";
-import { fadeIn, hideElement } from "./elementVisibility.ts";
+import { fadeIn, hideElement, playFadeIn } from "./elementVisibility.ts";
 import { GameChatBox } from "./game/GameChatBox.tsx";
 import { GameScreen } from "./game/newUi/GameScreen.tsx";
 import { LOBBY_CLASS_NAME, Lobby } from "./lobby/Lobby.tsx";
@@ -113,7 +113,10 @@ function showLoginPage(page: LoginPage, targets: Targets) {
   document.body.scrollTop = 0;
   document.body.style.overflow = "hidden";
 
+  // The lobby is a flex box only while it is shown (see `LOBBY_CLASS_NAME`), so it shows by its
+  // class and then fades in.
   targets.lobby.classList.remove("hidden");
+  playFadeIn(targets.lobby);
   document.querySelector<HTMLElement>("#lobby-chat-input")?.focus();
 
   // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the
