@@ -1,9 +1,20 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  cloneElement,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { store } from "../../store.ts";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import type { PauseAction } from "../pause.ts";
-import type { CardClueMarker, ClueMarkerView } from "./Card.tsx";
+import type { CardClueMarker, CardFaceProps, ClueMarkerView } from "./Card.tsx";
 import {
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
@@ -55,6 +66,12 @@ export interface Seat {
   readonly acting: boolean;
 
   readonly cards: readonly CardView[];
+
+  /**
+   * Whether the hand shows its player's view of the cards ("empathy"): only what the clues have
+   * told the player.
+   */
+  readonly empathy: boolean;
 
   /**
    * The time on the player's clock, if the clocks show. In a timed game, it is the time left. In an
@@ -1451,11 +1468,115 @@ function HandCard({
       }}
       label={label}
       order={card.order}
+      overlay={
+        <ViewFade
+          empathy={seat.empathy}
+          face={face}
+          reducedMotion={props.reducedMotion}
+        />
+      }
       place={place}
       props={props}
     >
       {face}
     </TappableCard>
+  );
+}
+
+/** A face that fades out over a card, and the opacity that it starts from. */
+interface FadingFace {
+  readonly face: React.ReactElement<CardFaceProps>;
+  readonly from: number;
+  readonly toEmpathy: boolean;
+}
+
+/**
+ * When a hand starts or stops showing its player's view, each card changes in place: its face from
+ * before covers the new face and fades out, as fast as a tooltip opens or closes. A new turn
+ * changes the cards at once, since it shows what happened. When the view changes back during the
+ * fade, the new fade starts from the image on the screen, so that the card does not jump.
+ */
+function ViewFade({
+  face,
+  empathy,
+  reducedMotion,
+}: {
+  readonly face: React.ReactElement<CardFaceProps>;
+  readonly empathy: boolean;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element | undefined {
+  const last = useRef({
+    face,
+    empathy,
+  });
+  const [fading, setFading] = useState<FadingFace>();
+  const fadeRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const previous = last.current;
+    last.current = {
+      face,
+      empathy,
+    };
+    if (previous.empathy === empathy) {
+      return;
+    }
+    if (reducedMotion) {
+      setFading(undefined);
+      return;
+    }
+    // The old fade covers the face that now shows again with what is left of its opacity, so the
+    // new fade covers the other face with the rest.
+    const element = fadeRef.current;
+    const shown =
+      element === null ? 0 : Number(getComputedStyle(element).opacity);
+    setFading({
+      face: previous.face,
+      from: 1 - shown,
+      toEmpathy: empathy,
+    });
+  }, [face, empathy, reducedMotion]);
+
+  useLayoutEffect(() => {
+    const element = fadeRef.current;
+    if (fading === undefined || element === null) {
+      return undefined;
+    }
+    const animation = element.animate(
+      [{ opacity: fading.from }, { opacity: 0 }],
+      {
+        duration: fading.toEmpathy
+          ? OPEN_DURATION_IN_MILLISECONDS
+          : CLOSE_DURATION_IN_MILLISECONDS,
+        easing: fading.toEmpathy ? "ease-out" : "ease-in",
+        fill: "forwards",
+      },
+    );
+    animation.onfinish = () => {
+      setFading(undefined);
+    };
+    return () => {
+      animation.cancel();
+    };
+  }, [fading]);
+
+  if (fading === undefined) {
+    return undefined;
+  }
+
+  // The copy has no bubble of possible cards, so that the card does not open a second one.
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0"
+      inert
+      ref={fadeRef}
+    >
+      {cloneElement(fading.face, {
+        openPossibleCards: false,
+        showPossibleCards: false,
+      })}
+    </div>
   );
 }
 

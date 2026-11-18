@@ -247,6 +247,7 @@ export function getSeats(
       you,
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
+      empathy,
       clock,
       clockRunning,
       clockTooltip,

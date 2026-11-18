@@ -357,7 +357,7 @@ const FACE_TINT_PERCENT = 32;
 /** How much of a suit's color is in the rank and the possible ranks. The rest is black. */
 const INK_PERCENT = 72;
 
-interface CardFaceProps {
+export interface CardFaceProps {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly suitIndex: SuitIndex | undefined;
