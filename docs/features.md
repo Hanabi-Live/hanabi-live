@@ -612,7 +612,7 @@ move for the current situation.
 - Note that the calculation will automatically account for clued cards that are
   globally known to be trash. Such cards will not be included in the
   `cards gotten` term.
-- In-game, Hanabi Live shows you two different efficiency numbers.
+- In-game, Hanab Live shows you two different efficiency numbers.
 
 #### 1) Future Required Efficiency
 
