@@ -48,6 +48,12 @@ import {
 } from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
 
+/**
+ * How a hand shows its cards: as the viewer sees them, as their player sees them ("empathy"), or as
+ * their player sees them with the viewer's notes, as the viewer's own hand does.
+ */
+export type HandView = "viewer" | "player" | "notes";
+
 export interface Seat {
   readonly playerIndex: PlayerIndex;
   readonly name: string;
@@ -66,11 +72,8 @@ export interface Seat {
 
   readonly cards: readonly CardView[];
 
-  /**
-   * Whether the hand shows its player's view of the cards ("empathy"): only what the clues have
-   * told the player.
-   */
-  readonly empathy: boolean;
+  /** How the hand shows its cards. */
+  readonly view: HandView;
 
   /**
    * The time on the player's clock, if the clocks show. In a timed game, it is the time left. In an
@@ -884,6 +887,7 @@ function OwnCard({
   place,
   movable,
   props,
+  view,
 }: {
   readonly card: CardView;
   readonly slot: number;
@@ -894,6 +898,7 @@ function OwnCard({
   /** Whether the viewer can play or discard the card now. */
   readonly movable: boolean;
   readonly props: HandsProps;
+  readonly view: HandView;
 }): React.JSX.Element {
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -959,6 +964,9 @@ function OwnCard({
     />
   );
   const label = `Slot ${slot}: ${describeCard(variant, card.suitIndex, card.rank)}`;
+  const fade = (
+    <ViewFade face={face} reducedMotion={props.reducedMotion} view={view} />
+  );
 
   const sendingMark = props.sendingCard === card.order && (
     <SendingMark
@@ -979,7 +987,12 @@ function OwnCard({
         items={items}
         label={label}
         order={card.order}
-        overlay={sendingMark}
+        overlay={
+          <>
+            {fade}
+            {sendingMark}
+          </>
+        }
         place={place}
         props={props}
       >
@@ -988,9 +1001,15 @@ function OwnCard({
     );
   }
 
+  // The fade is on the button with the face, so that it rises with the face under the pointer.
   return (
     <MovableCard
-      face={face}
+      face={
+        <>
+          {face}
+          {fade}
+        </>
+      }
       items={items}
       label={label}
       order={card.order}
@@ -1200,7 +1219,7 @@ function MovableCard({
         // it up. Pressed, it is picked up (see "HeldCardGhost.tsx"). The shadow is a filter, so
         // that it follows a clued card, which is drawn raised. A touch that lets go of the card
         // where it pressed it opens the menu (see "useCardDrag.ts").
-        className="tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
+        className="tw:relative tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
         onClick={(event) => {
           if (!isDragClick(event, props.stacked)) {
             props.onCardTap(order);
@@ -1377,6 +1396,7 @@ function HandCard({
         place={place}
         props={props}
         slot={slot}
+        view={seat.view}
       />
     );
   }
@@ -1421,9 +1441,9 @@ function HandCard({
       order={card.order}
       overlay={
         <ViewFade
-          empathy={seat.empathy}
           face={face}
           reducedMotion={props.reducedMotion}
+          view={seat.view}
         />
       }
       place={place}
@@ -1438,27 +1458,29 @@ function HandCard({
 interface FadingFace {
   readonly face: React.ReactElement<CardFaceProps>;
   readonly from: number;
-  readonly toEmpathy: boolean;
+
+  /** Whether the hand starts to show only its player's view, which fades as a tooltip opens. */
+  readonly opening: boolean;
 }
 
 /**
- * When a hand starts or stops showing its player's view, each card changes in place: its face from
- * before covers the new face and fades out, as fast as a tooltip opens or closes. A new turn
+ * When a hand changes how it shows its cards (see `HandView`), each card changes in place: its face
+ * from before covers the new face and fades out, as fast as a tooltip opens or closes. A new turn
  * changes the cards at once, since it shows what happened. When the view changes back during the
  * fade, the new fade starts from the image on the screen, so that the card does not jump.
  */
 function ViewFade({
   face,
-  empathy,
+  view,
   reducedMotion,
 }: {
   readonly face: React.ReactElement<CardFaceProps>;
-  readonly empathy: boolean;
+  readonly view: HandView;
   readonly reducedMotion: boolean;
 }): React.JSX.Element | undefined {
   const last = useRef({
     face,
-    empathy,
+    view,
   });
   const [fading, setFading] = useState<FadingFace>();
   const fadeRef = useRef<HTMLDivElement>(null);
@@ -1467,9 +1489,9 @@ function ViewFade({
     const previous = last.current;
     last.current = {
       face,
-      empathy,
+      view,
     };
-    if (previous.empathy === empathy) {
+    if (previous.view === view) {
       return;
     }
     if (reducedMotion) {
@@ -1484,9 +1506,9 @@ function ViewFade({
     setFading({
       face: previous.face,
       from: 1 - shown,
-      toEmpathy: empathy,
+      opening: view === "player",
     });
-  }, [face, empathy, reducedMotion]);
+  }, [face, view, reducedMotion]);
 
   useLayoutEffect(() => {
     const element = fadeRef.current;
@@ -1496,10 +1518,10 @@ function ViewFade({
     const animation = element.animate(
       [{ opacity: fading.from }, { opacity: 0 }],
       {
-        duration: fading.toEmpathy
+        duration: fading.opening
           ? OPEN_DURATION_IN_MILLISECONDS
           : CLOSE_DURATION_IN_MILLISECONDS,
-        easing: fading.toEmpathy ? "ease-out" : "ease-in",
+        easing: fading.opening ? "ease-out" : "ease-in",
         fill: "forwards",
       },
     );

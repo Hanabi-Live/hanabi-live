@@ -39,7 +39,7 @@ import type { State } from "../types/State.ts";
 import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
 import type { ClueLogEntry } from "./ClueLog.tsx";
-import type { Seat } from "./Hands.tsx";
+import type { HandView, Seat } from "./Hands.tsx";
 import type {
   DeckEmpathy,
   DiscardView,
@@ -247,7 +247,7 @@ export function getSeats(
       you,
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
-      empathy,
+      view: getHandView(empathy, includesNotes),
       clock,
       clockRunning,
       clockTooltip,
@@ -585,4 +585,11 @@ export function getStrikeSegments(
     ? state.visibleState!
     : state.ongoingGame;
   return strikes.map((strike) => strike.segment);
+}
+
+function getHandView(empathy: boolean, includesNotes: boolean): HandView {
+  if (!empathy) {
+    return "viewer";
+  }
+  return includesNotes ? "notes" : "player";
 }
