@@ -115,10 +115,10 @@ export function getSeats(
   const identities = getShownIdentities(state);
   // As on the classic screen, the H-Group warnings show only to players who follow the conventions,
   // and real-life mode leaves them out, as it leaves out what the clue tokens allow.
-  const turnWarning =
-    settings.hGroupConventions && !settings.realLifeMode
-      ? getTurnWarning(visibleState, variant)
-      : undefined;
+  const turnWarnings = settings.hGroupConventions && !settings.realLifeMode;
+  const turnWarning = turnWarnings
+    ? getTurnWarning(visibleState, variant)
+    : undefined;
 
   const seats: Seat[] = [];
   for (let i = 0; i < numPlayers; i++) {
@@ -257,6 +257,7 @@ export function getSeats(
         && playerTime !== undefined
         && state.pause.pausingPlayerIndex === undefined
         && isLowOnTime(playerTime),
+      turnWarnings,
       turnWarning: active ? turnWarning : undefined,
     });
   }

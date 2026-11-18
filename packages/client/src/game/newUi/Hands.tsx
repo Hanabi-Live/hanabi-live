@@ -71,6 +71,12 @@ export interface Seat {
   /** Whether the clock runs and is almost out of time, in a timed game. */
   readonly lowTime: boolean;
 
+  /**
+   * Whether the screen shows the H-Group warnings. Then the hand always keeps room for one, so that
+   * the hands do not move when a warning comes or goes.
+   */
+  readonly turnWarnings: boolean;
+
   /** A warning for the current player, from the H-Group conventions. */
   readonly turnWarning: TurnWarning | undefined;
 }
@@ -779,9 +785,14 @@ const TURN_WARNING = {
   }
 >;
 
+/** Every H-Group warning, so that a hand can keep room for the widest. */
+const TURN_WARNINGS = Object.keys(TURN_WARNING) as readonly TurnWarning[];
+
 /**
  * The H-Group warning for the current player, under their clock. The player sets "Use H-Group
- * conventions" to see it.
+ * conventions" to see it. Every hand keeps room for the widest warning, with all of the warnings
+ * drawn in one cell and only the current one visible. A warning that comes or goes then does not
+ * change the size of the hand, which would move the cards.
  */
 function TurnWarningTag({
   warning,
@@ -789,21 +800,28 @@ function TurnWarningTag({
 }: {
   readonly warning: TurnWarning | undefined;
   readonly underName: boolean;
-}): React.JSX.Element | undefined {
-  if (warning === undefined) {
-    return undefined;
-  }
-
-  const { label, icon, colorClass, tooltip } = TURN_WARNING[warning];
+}): React.JSX.Element {
   return (
     <span
-      // When the label wraps in a narrow name column, the icon stays beside its first line.
-      className={`tw:flex tw:items-baseline tw:gap-1.5 tw:text-[13px] tw:leading-tight tw:font-semibold ${colorClass} ${underName ? "tw:pl-3.5" : ""}`}
-      data-turn-warning={warning}
-      ref={tooltipRef(tooltip)}
+      className={`tw:grid tw:text-[13px] tw:leading-tight tw:font-semibold ${underName ? "tw:pl-3.5" : ""}`}
     >
-      <i aria-hidden="true" className={`fas ${icon}`} />
-      {label}
+      {TURN_WARNINGS.map((key) => {
+        const { label, icon, colorClass, tooltip } = TURN_WARNING[key];
+        const shown = key === warning;
+        return (
+          <span
+            aria-hidden={shown ? undefined : true}
+            // When the label wraps in a narrow name column, the icon stays beside its first line.
+            className={`tw:col-start-1 tw:row-start-1 tw:flex tw:items-baseline tw:gap-1.5 ${colorClass} ${shown ? "" : "tw:invisible"}`}
+            data-turn-warning={shown ? key : undefined}
+            key={key}
+            ref={shown ? tooltipRef(tooltip) : undefined}
+          >
+            <i aria-hidden="true" className={`fas ${icon}`} />
+            {label}
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -1361,10 +1379,12 @@ function Hand({
           seat={seat}
           underName={props.nameColumnWidth !== undefined}
         />
-        <TurnWarningTag
-          underName={props.nameColumnWidth !== undefined}
-          warning={seat.turnWarning}
-        />
+        {seat.turnWarnings && (
+          <TurnWarningTag
+            underName={props.nameColumnWidth !== undefined}
+            warning={seat.turnWarning}
+          />
+        )}
       </div>
       <div
         className="tw:flex"
