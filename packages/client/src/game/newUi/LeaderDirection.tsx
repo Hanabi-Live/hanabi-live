@@ -2,7 +2,10 @@
 // leader, as on the classic screen. A spectator who follows the leader sees which way they went.
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { store } from "../../store.ts";
+import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 import type { State } from "../types/State.ts";
+import { fadeOutCopy } from "./motion.ts";
 
 /** How long the arrows show, from popping in to fading out, in milliseconds. */
 const FLASH_MILLISECONDS = 1000;
@@ -76,41 +79,56 @@ export function LeaderDirection({
         fill: "forwards",
       },
     );
+    // Arrows that go during their flash, such as when the viewer stops following the leader, fade
+    // out from where they are (see `fadeOutCopy`).
     return () => {
+      const shown = Number(getComputedStyle(arrows).opacity);
+      const { transform } = getComputedStyle(arrows);
       animation.cancel();
+      if (!(shown > 0) || store.getState().session.settings.reducedMotion) {
+        return;
+      }
+
+      arrows.style.opacity = String(shown);
+      arrows.style.transform = transform;
+      fadeOutCopy(arrows, [{ opacity: shown }, { opacity: 0 }], {
+        duration: CLOSE_DURATION_IN_MILLISECONDS,
+        easing: "ease-in",
+      });
+      arrows.style.opacity = "";
+      arrows.style.transform = "";
     };
   }, [move]);
-
-  if (move === undefined) {
-    return null;
-  }
 
   // Two separate triangles, so that each one has its own outline. The back arrows are the same
   // shape, turned around.
   return (
+    // The box stays without arrows, so that arrows that go can fade out in it.
     <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center">
-      <svg
-        aria-hidden="true"
-        className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
-        data-leader-direction
-        key={move.key}
-        ref={ref}
-        viewBox="0 0 100 80"
-      >
-        <g
-          fill="white"
-          paintOrder="stroke"
-          stroke="rgb(0 0 0 / 0.6)"
-          strokeLinejoin="round"
-          strokeWidth={6}
-          transform={
-            move.direction === -1 ? "translate(100 0) scale(-1 1)" : undefined
-          }
+      {move !== undefined && (
+        <svg
+          aria-hidden="true"
+          className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
+          data-leader-direction
+          key={move.key}
+          ref={ref}
+          viewBox="0 0 100 80"
         >
-          <path d="M8 8 L46 40 L8 72 Z" />
-          <path d="M54 8 L92 40 L54 72 Z" />
-        </g>
-      </svg>
+          <g
+            fill="white"
+            paintOrder="stroke"
+            stroke="rgb(0 0 0 / 0.6)"
+            strokeLinejoin="round"
+            strokeWidth={6}
+            transform={
+              move.direction === -1 ? "translate(100 0) scale(-1 1)" : undefined
+            }
+          >
+            <path d="M8 8 L46 40 L8 72 Z" />
+            <path d="M54 8 L92 40 L54 72 Z" />
+          </g>
+        </svg>
+      )}
     </div>
   );
 }

@@ -98,8 +98,14 @@ function PlayAgainMenu({
     gameSession.isRestartPending,
   );
 
+  const { reducedMotion } = store.getState().session.settings;
+  // When the button goes back from the wait to its label, the label fades in, as the wait did.
+  const [waited, setWaited] = useState(false);
+  if (pending && !waited) {
+    setWaited(true);
+  }
+
   if (pending) {
-    const { reducedMotion } = store.getState().session.settings;
     // It is not "disabled", so that its tooltip still shows.
     return (
       <button
@@ -141,8 +147,16 @@ function PlayAgainMenu({
         }}
         type="button"
       >
-        <i aria-hidden="true" className="fas fa-redo" />
-        Play again
+        <span
+          className={`tw:flex tw:items-center tw:gap-2 ${waited && !reducedMotion ? "tw:starting:opacity-0" : ""}`}
+          style={{
+            transition:
+              waited && !reducedMotion ? getOpacityTransition(true) : undefined,
+          }}
+        >
+          <i aria-hidden="true" className="fas fa-redo" />
+          Play again
+        </span>
         <MenuCaret open={open} />
       </button>
       {open && (

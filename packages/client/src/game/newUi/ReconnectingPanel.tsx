@@ -5,7 +5,11 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { OPEN_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
+import { fadeOutCopy } from "./motion.ts";
 
 /**
  * How long the connection must stay down before the panel shows, in milliseconds. Most drops
@@ -53,7 +57,8 @@ export function ReconnectingPanel({
     };
   }, []);
 
-  // The panel fades in, and the icon breathes while the client tries again. Both only decorate.
+  // The panel fades in, and the icon breathes while the client tries again. When the connection
+  // comes back, a copy of the panel fades out (see `fadeOutCopy`). All of it only decorates.
   useLayoutEffect(() => {
     const panel = panelRef.current;
     const icon = iconRef.current;
@@ -74,8 +79,13 @@ export function ReconnectingPanel({
       },
     );
     return () => {
+      const opacity = Number(getComputedStyle(panel).opacity);
       appear.cancel();
       breathe.cancel();
+      fadeOutCopy(panel, [{ opacity }, { opacity: 0 }], {
+        duration: CLOSE_DURATION_IN_MILLISECONDS,
+        easing: "ease-in",
+      });
     };
   }, [shown, reducedMotion]);
 

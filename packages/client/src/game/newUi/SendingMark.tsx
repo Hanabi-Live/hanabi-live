@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
+import { fadeOutCopy } from "./motion.ts";
 
 /**
  * How long the mark waits before it shows. Most moves arrive sooner, so that the mark does not
@@ -57,6 +59,24 @@ export function SendingMark({
     });
     return () => {
       animation.cancel();
+    };
+  }, [reducedMotion]);
+
+  // When the move arrives, or the server refuses it, a copy of the mark fades out (see
+  // `fadeOutCopy`). A mark that has not shown yet goes at once.
+  useLayoutEffect(() => {
+    const mark = markRef.current;
+    if (mark === null || reducedMotion) {
+      return undefined;
+    }
+    return () => {
+      const shown = Number(getComputedStyle(mark).opacity);
+      if (shown > 0) {
+        fadeOutCopy(mark, [{ opacity: shown }, { opacity: 0 }], {
+          duration: CLOSE_DURATION_IN_MILLISECONDS,
+          easing: "ease-in",
+        });
+      }
     };
   }, [reducedMotion]);
 

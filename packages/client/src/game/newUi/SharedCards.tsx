@@ -20,6 +20,10 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
 import type { GameEnd } from "../gameEnd.ts";
@@ -45,10 +49,11 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
+import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
-import { getOpacityTransition, useFade } from "./motion.ts";
+import { getColorTransition, getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import {
   HOVER_CLASS,
@@ -1357,20 +1362,31 @@ function Deck({
             />
           );
         })}
-        {play !== undefined && !held && (
+        {play !== undefined && (
           // The glow around the last card says that the player can play it. It pulses, except with
-          // "Reduced motion".
+          // "Reduced motion". It fades out while the player holds the card, and back in when they
+          // put it back.
           <div
             aria-hidden="true"
-            className={`tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:outline-3 tw:outline-offset-2 tw:outline-game-turn tw:outline-solid tw:shadow-[0_0_14px_4px_var(--game-screen-turn)] ${
-              reducedMotion ? "" : "tw:animate-pulse"
-            }`}
+            className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0"
             style={{
-              width: cardWidth,
-              height,
-              borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+              opacity: held ? 0 : 1,
+              transition: reducedMotion
+                ? undefined
+                : getOpacityTransition(!held),
             }}
-          />
+          >
+            <div
+              className={`tw:outline-3 tw:outline-offset-2 tw:outline-game-turn tw:outline-solid tw:shadow-[0_0_14px_4px_var(--game-screen-turn)] ${
+                reducedMotion ? "" : "tw:animate-pulse"
+              }`}
+              style={{
+                width: cardWidth,
+                height,
+                borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+              }}
+            />
+          </div>
         )}
         {play === undefined ? (
           <div
@@ -1834,14 +1850,8 @@ export function DiscardPile({
           count, which is the reason. It is last, so that the well does not darken it. "Real life
           mode" leaves it out. */}
       {showNoDiscard && <NoDiscardOutline reducedMotion={reducedMotion} />}
-      {/* In a "Double Discard" situation, a yellow border warns the next player before they
-          discard. */}
       {showDoubleDiscard && (
-        <div
-          aria-hidden="true"
-          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:outline-2 tw:-outline-offset-2 tw:outline-game-caution/80 tw:outline-solid"
-          data-double-discard
-        />
+        <DoubleDiscardOutline reducedMotion={reducedMotion} />
       )}
     </section>
   );
@@ -1878,6 +1888,27 @@ function getDiscardPileTooltipHtml(
 const NO_DISCARD_PULSE_MILLISECONDS = 900;
 
 /**
+ * In a "Double Discard" situation, a yellow border warns the next player before they discard. It
+ * fades in and out.
+ */
+function DoubleDiscardOutline({
+  reducedMotion,
+}: {
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  useFade(ref, reducedMotion);
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:outline-2 tw:-outline-offset-2 tw:outline-game-caution/80 tw:outline-solid"
+      data-double-discard
+      ref={ref}
+    />
+  );
+}
+
+/**
  * The border and tint of the discard pile at max clues. When it shows, it pulses once in the color
  * of clues, so that the players notice that no one can discard. "Reduced motion" leaves out the
  * pulse.
@@ -1888,6 +1919,8 @@ function NoDiscardOutline({
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  // It fades out when the team can discard again.
+  useFade(ref, reducedMotion);
   useEffect(() => {
     const outline = ref.current;
     if (outline === null || reducedMotion) {
@@ -2074,10 +2107,29 @@ function getClueLimit(
  * clue left, and red with none.
  */
 const CLUE_BADGE_CLASSES = {
-  max: "tw:bg-clue tw:text-card-ink",
-  one: "tw:bg-game-caution tw:text-card-ink",
-  none: "tw:bg-critical tw:text-white",
-} as const satisfies Record<ClueLimit, string>;
+  max: {
+    background: "tw:bg-clue",
+    text: "tw:text-card-ink",
+  },
+  one: {
+    background: "tw:bg-game-caution",
+    text: "tw:text-card-ink",
+  },
+  none: {
+    background: "tw:bg-critical",
+    text: "tw:text-white",
+  },
+} as const satisfies Record<
+  ClueLimit,
+  { readonly background: string; readonly text: string }
+>;
+
+/** The limits of the clue count, each with a color of the badge (see `CLUE_BADGE_CLASSES`). */
+const CLUE_LIMITS = [
+  "max",
+  "one",
+  "none",
+] as const satisfies readonly ClueLimit[];
 
 /** The badge pops when the clue count reaches a limit. */
 const CLUE_BADGE_POP_MILLISECONDS = 300;
@@ -2233,10 +2285,24 @@ export function TableTokens({
             warning before the limit (see "CLUE_BADGE_CLASSES"). */}
         <ClueTokenIcon className="tw:size-[24px]" empty={limit === "none"} />
         <span
-          className={`tw:flex tw:h-[34px] tw:min-w-[34px] tw:items-center tw:justify-center tw:rounded-game-control tw:px-1.5 ${limit === undefined ? "tw:text-game-text" : CLUE_BADGE_CLASSES[limit]}`}
+          className={`tw:flex tw:h-[34px] tw:min-w-[34px] tw:items-center tw:justify-center tw:rounded-game-control tw:px-1.5 ${FADE_LAYER_PARENT_CLASS} ${limit === undefined ? "tw:text-game-text" : CLUE_BADGE_CLASSES[limit].text}`}
           data-clue-badge
           ref={badgeRef}
+          style={{
+            transition: reducedMotion
+              ? undefined
+              : getColorTransition(limit !== undefined),
+          }}
         >
+          {/* Each limit's color is a layer that fades in and out (see `FadeLayer`). */}
+          {CLUE_LIMITS.map((layer) => (
+            <FadeLayer
+              className={CLUE_BADGE_CLASSES[layer].background}
+              key={layer}
+              reducedMotion={reducedMotion}
+              shown={limit === layer}
+            />
+          ))}
           <span
             className="tw:text-[34px] tw:leading-none tw:font-extrabold"
             // A spark flies to the count when a completed stack gives a clue back (see
@@ -2265,10 +2331,21 @@ export function TableTokens({
           role="group"
         >
           {/* The row has one tooltip. While it is open, a frame around the whole row shows what
-              it explains. A box with a strike to show has its own tooltip, which shows instead. */}
+              it explains. A box with a strike to show has its own tooltip, which shows instead. The
+              frame fades in and out with the tooltip. */}
           <span
             aria-hidden="true"
-            className="tw:pointer-events-none tw:absolute tw:-inset-[4px] tw:-z-1 tw:rounded-game-control tw:bg-game-text/8 tw:opacity-0 tw:outline-2 tw:outline-game-line tw:outline-solid tw:group-data-tooltip-open:opacity-100"
+            className={`tw:pointer-events-none tw:absolute tw:-inset-[4px] tw:-z-1 tw:rounded-game-control tw:bg-game-text/8 tw:opacity-0 tw:outline-2 tw:outline-game-line tw:outline-solid tw:group-data-tooltip-open:opacity-100 ${
+              reducedMotion
+                ? ""
+                : "tw:transition-opacity tw:duration-(--close) tw:ease-in tw:group-data-tooltip-open:duration-(--open) tw:group-data-tooltip-open:ease-out"
+            }`}
+            style={
+              {
+                "--open": `${OPEN_DURATION_IN_MILLISECONDS}ms`,
+                "--close": `${CLOSE_DURATION_IN_MILLISECONDS}ms`,
+              } as React.CSSProperties
+            }
           />
           {[...eRange(MAX_STRIKES)].map((i) => {
             const segment = strikeSegments[i];

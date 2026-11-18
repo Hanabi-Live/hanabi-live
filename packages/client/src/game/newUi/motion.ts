@@ -36,6 +36,16 @@ export function getOpacityTransition(shown: boolean): string {
 }
 
 /**
+ * The CSS transition of the color of a text that changes with a color behind it that fades in or
+ * out (see `FadeLayer`), as fast. A text color is not a background color, so it may animate.
+ */
+export function getColorTransition(shown: boolean): string {
+  return shown
+    ? `color ${OPEN_DURATION_IN_MILLISECONDS}ms ease-out`
+    : `color ${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`;
+}
+
+/**
  * The CSS transition of an element that shows or hides with the class `tw:invisible`: its opacity
  * fades as in `getOpacityTransition`, and it becomes invisible only when it has faded out. Give it
  * an opacity of 0 while it is hidden.
@@ -62,16 +72,16 @@ const COPY_HIDDEN_ATTRIBUTES = [
  * the cleanup of a layout effect. If the element stays on the page, the copy goes at once. It
  * returns the copy, so that its parts can play their own animations.
  */
-export function fadeOutCopy(
-  element: HTMLElement,
+export function fadeOutCopy<Copied extends HTMLElement | SVGElement>(
+  element: Copied,
   keyframes: readonly Keyframe[],
   options: KeyframeAnimationOptions,
-): HTMLElement | undefined {
+): Copied | undefined {
   if (!element.isConnected) {
     return undefined;
   }
 
-  const copy = element.cloneNode(true) as HTMLElement;
+  const copy = element.cloneNode(true) as Copied;
   copy.setAttribute("aria-hidden", "true");
   copy.setAttribute("inert", "");
   copy.style.pointerEvents = "none";
