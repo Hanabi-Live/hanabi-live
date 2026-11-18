@@ -344,7 +344,7 @@ export function Checkbox({
 }
 
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${KEY_CLASS}`;
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${KEY_CLASS}`;
 
 /**
  * A spectator's switch to follow the shared replay leader, or to move through the turns on their
