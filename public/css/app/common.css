@@ -116,10 +116,12 @@ body,
   padding-top: var(--header-height);
 }
 
+/* The felt table of the New UI, in both themes. */
 body {
-  background-color: var(--page-bg);
-  background-image: url("/public/img/dark-wood.png");
-  background-repeat: repeat;
+  background-color: var(--game-screen-bg);
+  background-image: var(--game-screen-table);
+  background-size: 512px, auto, auto;
+  background-blend-mode: overlay, normal, normal;
   background-attachment: fixed;
 }
 

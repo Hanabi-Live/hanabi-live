@@ -1,6 +1,6 @@
 #header {
   background: var(--header-bg);
-  border-bottom: var(--header-border);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
   color: var(--header-text);
   cursor: default;
   height: var(--header-height);

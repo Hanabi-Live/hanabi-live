@@ -14,4 +14,7 @@
   color: var(--button-disabled-text);
   cursor: not-allowed;
   opacity: 0.25;
+  /* A disabled button lies flat. */
+  box-shadow: none;
+  translate: none;
 }

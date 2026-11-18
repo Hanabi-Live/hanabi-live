@@ -27,13 +27,13 @@ const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 
 const BUTTON_CLASS_NAME = [
   "button tw:relative tw:ml-2 tw:inline-block tw:h-[2em] tw:rounded-(--radius) tw:px-4",
-  "tw:leading-[2em] tw:[box-shadow:inset_0_0_0_2px_var(--header-button-border)]",
+  "tw:leading-[2em]",
   "tw:narrow-1280:px-2",
 ].join(" ");
 
 /** A disabled button takes its colors from the ".disabled" rule instead. */
 const ENABLED_COLOR_CLASS_NAME =
-  "tw:bg-transparent tw:hover:bg-(--header-button-hover-bg) tw:active:bg-(--header-button-active-bg)";
+  "tw:bg-white/8 tw:hover:bg-white/15 tw:active:bg-white/8";
 
 const HELP_COLOR_CLASS_NAME =
   "tw:bg-(--button-green) tw:hover:bg-(--button-green-hover)";
@@ -406,7 +406,7 @@ function NavButton({
 /** The letter of a keyboard shortcut. */
 function Hotkey({ children }: { readonly children: React.ReactNode }) {
   return (
-    <span className="tw:[border-bottom:1px_solid_var(--header-button-border)]">
+    <span className="tw:[border-bottom:1px_solid_var(--header-hotkey-line)]">
       {children}
     </span>
   );
