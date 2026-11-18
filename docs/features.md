@@ -576,8 +576,8 @@ There are different sounds for:
 
 ## Pace & Efficiency
 
-_Pace_ and _Efficiency_ are shown the current game. Good players will often use
-these numbers to make the best move for the current situation.
+_Pace_ and _Efficiency_ are shown for the current game. Good players will often
+use these numbers to make the best move for the current situation.
 
 ### Pace
 
