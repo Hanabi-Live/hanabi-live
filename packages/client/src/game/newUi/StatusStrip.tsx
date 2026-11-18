@@ -141,6 +141,12 @@ interface StatusStripProps {
   readonly panel: boolean;
   /** Holds the bar's element, so that the game screen can measure it. */
   readonly footerRef: RefObject<HTMLElement | null>;
+
+  /**
+   * The clue log, which is above the panel. When the panel wraps onto more rows, the two share one
+   * box with tabs instead (see `usePanelWraps`).
+   */
+  readonly clueLog: React.ReactNode;
 }
 
 /**
@@ -463,13 +469,15 @@ function ReplayToggle({
 /**
  * In the panel, the replay controls slide out of the top of the panel when a replay starts, as the
  * clue menu slides out of the hand (see "ClueMenu.tsx"), and the panel's top edge rises with them.
- * Only the drawing moves: the panel takes its new size at once, so that nothing below the controls
- * moves, and the game screen measures the panel's real size. The sliding only decorates.
+ * With tabs, the panel's edge stays, and the controls slide down from behind the variant instead.
+ * Only the drawing moves: the panel takes its new size at once, so that nothing else moves, and the
+ * game screen measures the panel's real size. The sliding only decorates.
  */
 function useReplayDrawer(
   footer: HTMLElement | null,
   controls: RefObject<HTMLDivElement | null>,
   open: boolean,
+  edgeRises: boolean,
   reducedMotion: boolean,
 ) {
   const wasOpen = useRef(open);
@@ -481,26 +489,42 @@ function useReplayDrawer(
       return undefined;
     }
 
-    // The controls and the gap below them, up to the numbers.
-    const next = group.nextElementSibling;
-    if (!(next instanceof HTMLElement)) {
+    // Without tabs, the controls slide up from behind the numbers below them. With tabs, they slide
+    // down from behind the variant above them. They move by their height and the gap beside them.
+    const beside = edgeRises
+      ? group.nextElementSibling
+      : group.previousElementSibling;
+    if (!(beside instanceof HTMLElement)) {
       return undefined;
     }
-    const rise = next.offsetTop - group.offsetTop;
+    const rise = edgeRises
+      ? beside.offsetTop - group.offsetTop
+      : group.offsetTop
+        + group.offsetHeight
+        - beside.offsetTop
+        - beside.offsetHeight;
+    const shift = edgeRises ? rise : -rise;
     const radius = getComputedStyle(footer).borderTopLeftRadius;
+    // With tabs, the panel fills its place, so its edge stays where it is.
     const animations = [
-      footer.animate(
-        [
-          { clipPath: `inset(${rise}px 0 0 0 round ${radius})` },
-          { clipPath: `inset(0 0 0 0 round ${radius})` },
-        ],
-        DRAWER_SLIDE,
-      ),
+      ...(edgeRises
+        ? [
+            footer.animate(
+              [
+                { clipPath: `inset(${rise}px 0 0 0 round ${radius})` },
+                { clipPath: `inset(0 0 0 0 round ${radius})` },
+              ],
+              DRAWER_SLIDE,
+            ),
+          ]
+        : []),
       group.animate(
         [
           {
-            transform: `translateY(${rise}px)`,
-            clipPath: `inset(0 0 ${rise}px 0)`,
+            transform: `translateY(${shift}px)`,
+            clipPath: edgeRises
+              ? `inset(0 0 ${rise}px 0)`
+              : `inset(${rise}px 0 0 0)`,
           },
           {
             transform: "none",
@@ -515,7 +539,109 @@ function useReplayDrawer(
         animation.cancel();
       }
     };
-  }, [open, reducedMotion, footer, controls]);
+  }, [open, edgeRises, reducedMotion, footer, controls]);
+}
+
+type PanelTab = "status" | "clues";
+
+const PANEL_TAB_IDS = {
+  status: "status-panel-tab",
+  clues: "clue-log-tab",
+} as const satisfies Record<PanelTab, string>;
+
+/**
+ * The number of columns of the panel's numbers when they are in one row: the four numbers and the
+ * chat button.
+ */
+const ONE_ROW_STATS_COLUMNS = 5;
+
+/**
+ * Whether the panel wraps onto more rows than it has when it is wide: its numbers take two rows
+ * (and so does the replay's timeline, which wraps at the same width), or its buttons do. Then the
+ * panel and the clue log share one box with tabs, so that the panel has the height that it needs.
+ * The panel has the same width with tabs and without them, so the answer stays the same.
+ */
+function usePanelWraps(
+  footer: HTMLElement | null,
+  panel: boolean,
+  stats: RefObject<HTMLDivElement | null>,
+  buttons: RefObject<HTMLDivElement | null>,
+): boolean {
+  const [wraps, setWraps] = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
+  useLayoutEffect(() => {
+    const grid = stats.current;
+    const row = buttons.current;
+    if (!panel || footer === null || grid === null || row === null) {
+      return;
+    }
+    const columns =
+      getComputedStyle(grid).gridTemplateColumns.split(" ").length;
+    const tallestButton = Math.max(
+      0,
+      ...[...row.children].map((child) =>
+        child instanceof HTMLElement ? child.offsetHeight : 0,
+      ),
+    );
+    const wrapsNow =
+      columns < ONE_ROW_STATS_COLUMNS || row.offsetHeight > tallestButton;
+    // The game screen checks the panel's room before the panel draws again with tabs (see
+    // "panelHasRoom" in "GameScreen.tsx").
+    footer.toggleAttribute("data-wraps", wrapsNow);
+    setWraps(wrapsNow);
+  });
+  return panel && wraps;
+}
+
+/**
+ * The tabs that switch between the panel and the clue log when they share one box. A highlight
+ * slides to the chosen tab.
+ */
+function PanelTabs({
+  tab,
+  onTab,
+  reducedMotion,
+}: {
+  readonly tab: PanelTab;
+  readonly onTab: (tab: PanelTab) => void;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const tabs = [
+    ["status", "Status"],
+    ["clues", "Clues"],
+  ] as const;
+  return (
+    <div
+      aria-label="Status and clue log"
+      className="tw:relative tw:grid tw:grid-cols-2 tw:rounded-game-control tw:bg-black/25 tw:p-1"
+      role="tablist"
+    >
+      <span
+        aria-hidden="true"
+        className={`tw:absolute tw:inset-y-1 tw:left-1 tw:w-[calc(50%-4px)] tw:rounded-game-control tw:bg-white/15 ${tab === "clues" ? "tw:translate-x-full" : ""}`}
+        style={{
+          transition: reducedMotion
+            ? undefined
+            : `translate ${DRAWER_SLIDE.duration}ms ${DRAWER_SLIDE.easing}`,
+        }}
+      />
+      {tabs.map(([name, label]) => (
+        <button
+          aria-controls={PANEL_TAB_IDS[name]}
+          aria-selected={tab === name}
+          className={`tw:relative tw:cursor-pointer tw:border-0 tw:bg-transparent tw:px-4 tw:py-1.5 tw:text-[15px] tw:font-semibold ${tab === name ? "tw:text-game-text" : "tw:text-game-muted tw:hover:text-game-text"}`}
+          key={name}
+          onClick={() => {
+            onTab(name);
+          }}
+          role="tab"
+          type="button"
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 /** The height of the bar along the bottom of the screen. */
@@ -681,6 +807,7 @@ export function StatusStrip({
   reducedMotion,
   panel,
   footerRef,
+  clueLog,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
   const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
@@ -695,8 +822,17 @@ export function StatusStrip({
   const inReplay = replayControls !== undefined;
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
-  useReplayDrawer(footer, controlsRef, inReplay && panel, reducedMotion);
   const buttonsRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const tabbed = usePanelWraps(footer, panel, statsRef, buttonsRef);
+  const [tab, setTab] = useState<PanelTab>("status");
+  useReplayDrawer(
+    footer,
+    controlsRef,
+    inReplay && panel,
+    !tabbed,
+    reducedMotion,
+  );
   const variantRef = useRef<HTMLDivElement>(null);
   const shortLabels = useShortLabels(
     footer,
@@ -910,7 +1046,7 @@ export function StatusStrip({
     <div
       className={
         panel
-          ? "tw:group/buttons tw:flex tw:flex-wrap tw:gap-2 tw:*:grow tw:*:justify-center tw:[&>*>button]:w-full tw:[&>*>button]:justify-center"
+          ? `tw:group/buttons tw:flex tw:flex-wrap tw:gap-2 tw:*:grow tw:*:justify-center tw:[&>*>button]:w-full tw:[&>*>button]:justify-center ${tabbed ? "tw:mt-auto" : ""}`
           : "tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
       }
       // The panel has room for the buttons in more than one row, so they keep their long labels.
@@ -956,31 +1092,37 @@ export function StatusStrip({
   // panel is as narrow as a phone, so it takes the styles of the phone layout: the smaller text and
   // buttons, and the replay controls that wrap.
   if (panel) {
-    return (
-      <footer
-        className={`tw:group/strip tw:@container/panel tw:flex tw:shrink-0 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
-        data-panel=""
-        data-phone-layout=""
-        ref={setFooter}
+    const controls = inReplay && (
+      <div className="tw:flex" ref={controlsRef}>
+        {replayControls}
+      </div>
+    );
+    // When a replay starts, its controls go where the rest of the panel stays where it was. Without
+    // tabs, they are at the top, and the panel grows up into the clue log's space. With tabs, the
+    // panel fills its tab, with the numbers at the top and the buttons at the bottom, and the
+    // controls go between them.
+    const status = (
+      <div
+        className={`tw:flex tw:flex-col tw:gap-3 ${tabbed ? "tw:h-full" : ""}`}
+        data-panel-status
       >
-        {/* The replay controls are at the top, so that the rest of the panel stays where it was
-            when a replay starts. The panel grows up into the clue log's space. */}
-        {inReplay && (
-          <div className="tw:flex" ref={controlsRef}>
-            {replayControls}
-          </div>
-        )}
+        {!tabbed && controls}
         {/* The four numbers spread across one row when it has room for them, or two rows of two.
             The chat button ends the first row, since the chat's rail is hidden (see
             "ChatPanel.tsx"). */}
-        <div className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents">
+        <div
+          className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents"
+          ref={statsRef}
+        >
           {progress}
           {planning}
           <div
             className="tw:col-start-3 tw:row-start-1 tw:justify-self-end tw:@min-[22rem]/panel:col-start-5"
             data-chat
           >
-            {chatButton}
+            {/* With tabs, the chat button is beside them, so that the clue log's tab shows it
+                too. */}
+            {!tabbed && chatButton}
           </div>
         </div>
         {/* The name says what it is, so it needs no label. */}
@@ -988,7 +1130,58 @@ export function StatusStrip({
           <span className="tw:truncate">{variantName}</span>
           {gameInfoButton}
         </div>
+        {tabbed && controls}
         {buttons}
+      </div>
+    );
+
+    if (!tabbed) {
+      return (
+        <>
+          {clueLog}
+          <footer
+            className={`tw:group/strip tw:@container/panel tw:flex tw:shrink-0 tw:flex-col tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+            data-panel=""
+            data-phone-layout=""
+            ref={setFooter}
+          >
+            {status}
+          </footer>
+        </>
+      );
+    }
+
+    // The panel and the clue log share the rest of the column, one tab at a time. Both stay drawn,
+    // and the hidden one is invisible, so that switching tabs keeps open menus and the log's
+    // scrolling.
+    return (
+      <footer
+        className={`tw:group/strip tw:@container/panel tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+        data-panel=""
+        data-phone-layout=""
+        data-tabbed=""
+        ref={setFooter}
+      >
+        <div className="tw:flex tw:items-center tw:gap-3">
+          <PanelTabs onTab={setTab} reducedMotion={reducedMotion} tab={tab} />
+          <div className="tw:ml-auto">{chatButton}</div>
+        </div>
+        <div className="tw:grid tw:min-h-0 tw:flex-1 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)]">
+          <div
+            className={`tw:col-start-1 tw:row-start-1 ${tab === "status" ? "" : "tw:invisible"}`}
+            id={PANEL_TAB_IDS.status}
+            role="tabpanel"
+          >
+            {status}
+          </div>
+          <div
+            className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${tab === "clues" ? "" : "tw:invisible"}`}
+            id={PANEL_TAB_IDS.clues}
+            role="tabpanel"
+          >
+            {clueLog}
+          </div>
+        </div>
       </footer>
     );
   }

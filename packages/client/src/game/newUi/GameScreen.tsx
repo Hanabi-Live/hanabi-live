@@ -175,6 +175,26 @@ const PANEL_CARD_WIDTH = 82;
 /** The height that the clue log keeps when the bar is a panel below it (see "barRef"). */
 const CLUE_LOG_MIN_HEIGHT = 60;
 
+/**
+ * Whether the status panel has room in the right column. Below the clue log, the log keeps its
+ * smallest height. When the two share a box with tabs, the panel's tab fits all of the panel.
+ */
+function panelHasRoom(panel: HTMLElement): boolean {
+  if (!Object.hasOwn(panel.dataset, "tabbed")) {
+    // A panel that wraps is about to draw again with tabs, and then it has room.
+    if (Object.hasOwn(panel.dataset, "wraps")) {
+      return true;
+    }
+    const clueLog = panel.previousElementSibling;
+    return (
+      !(clueLog instanceof HTMLElement)
+      || clueLog.offsetHeight >= CLUE_LOG_MIN_HEIGHT
+    );
+  }
+  const status = panel.querySelector<HTMLElement>("[data-panel-status]");
+  return status === null || status.scrollHeight <= status.clientHeight;
+}
+
 /** A screen whose main pointer is a finger, which has no cursor to hover with. */
 const TOUCH_QUERY = "(pointer: coarse)";
 
@@ -507,12 +527,7 @@ export function GameScreen({
         state.replay.hypothetical !== undefined,
         state.replay.shared?.amLeader,
       ].join(",");
-      const clueLog = bar.previousElementSibling;
-      if (
-        sidePanel
-        && clueLog instanceof HTMLElement
-        && clueLog.offsetHeight < CLUE_LOG_MIN_HEIGHT
-      ) {
+      if (sidePanel && !panelHasRoom(bar)) {
         panelMissedRoom.current = panelKey;
         setSidePanel(false);
         return;
@@ -1145,6 +1160,17 @@ export function GameScreen({
     />
   );
 
+  const clueLog = (
+    <ClueLog
+      entries={getClueLogEntries(state)}
+      // No card counts while the player holds a card: the held card is under the pointer, not the
+      // card below it.
+      hoveredCard={held === undefined ? getHoveredCardInPlace() : undefined}
+      onShowClue={showClue}
+      shownSegment={shownClue?.segment}
+    />
+  );
+
   // The bar is along the bottom of the screen, or in a panel at the bottom of the right column (see
   // "barRef").
   const statusStrip = (
@@ -1159,6 +1185,7 @@ export function GameScreen({
           zenAvailable={!state.finished}
         />
       }
+      clueLog={clueLog}
       colorblindMode={settings.colorblindMode}
       efficiencyModified={efficiencyStats.modified}
       efficiencyStats={efficiencyStats}
@@ -1643,17 +1670,9 @@ export function GameScreen({
                 discardPile
               )}
               {queuedMove?.type === "discard" && queuedMoveElement}
-              <ClueLog
-                entries={getClueLogEntries(state)}
-                // No card counts while the player holds a card: the held card is under the pointer,
-                // not the card below it.
-                hoveredCard={
-                  held === undefined ? getHoveredCardInPlace() : undefined
-                }
-                onShowClue={showClue}
-                shownSegment={shownClue?.segment}
-              />
-              {panel && statusStrip}
+              {/* The status panel draws the clue log, since the two can share one box (see
+                  "StatusStrip.tsx"). */}
+              {panel ? statusStrip : clueLog}
             </div>
           </div>
         </main>

@@ -27,6 +27,7 @@ function renderStrip(score: number, maxScore: number) {
   return render(
     <StatusStrip
       chatButton={undefined}
+      clueLog={undefined}
       colorblindMode={false}
       efficiencyModified={false}
       efficiencyStats={{
