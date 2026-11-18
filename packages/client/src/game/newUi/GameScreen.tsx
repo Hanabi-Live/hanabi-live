@@ -1319,8 +1319,9 @@ export function GameScreen({
       // and a name measured outside a button fits in one. A button's own classes still win. No text
       // on the screen can be selected, so that clicks and drags never highlight it. The text boxes,
       // such as the chat input, still let the player select what they type. The text has one size
-      // in each layout (see "tailwind.css").
-      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:text-game-screen tw:select-none tw:phone:text-game-screen-compact tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
+      // in each layout (see "tailwind.css"). A touch does not draw the browser's tap highlight, a
+      // dark box over the element that it touched; the screen shows its own response to a tap.
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:text-game-screen tw:select-none tw:[-webkit-tap-highlight-color:transparent] tw:phone:text-game-screen-compact tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:[background-size:512px,auto,auto] tw:[background-blend-mode:overlay,normal,normal] tw:text-game-text tw:[:where(&)_button]:[font-family:inherit] tw:[:where(&)_button]:[letter-spacing:inherit]"
       {...cardInputHandlers}
       // The "phone" variant of the styles follows it (see "tailwind.css").
       data-phone-layout={stacked ? "" : undefined}
