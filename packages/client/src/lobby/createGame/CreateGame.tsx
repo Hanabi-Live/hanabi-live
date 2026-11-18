@@ -21,6 +21,7 @@ import {
   getRandomArrayElement,
   parseIntSafe,
 } from "complete-common";
+import equal from "fast-deep-equal";
 import { memo, useEffect, useRef, useState } from "react";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
@@ -253,7 +254,8 @@ function getMode(): Mode {
 
 export function CreateGame(): React.JSX.Element {
   const [mode] = useState(getMode);
-  const [form, setForm] = useState(() => getInitialForm(mode));
+  const [initialForm] = useState(() => getInitialForm(mode));
+  const [form, setForm] = useState(initialForm);
   // Only show the extra options when one of them is chosen or when the user asks for them.
   const [extraOptionsShown, setExtraOptionsShown] = useState(
     () =>
@@ -348,7 +350,8 @@ export function CreateGame(): React.JSX.Element {
           store.dispatch(creatingTableChanged(false));
         },
       );
-    } else {
+    } else if (!equal(form, initialForm)) {
+      // A submit that changes nothing does not tell the server anything.
       globals.connection.send("tableUpdate", {
         tableId: globals.joinedTableId,
         settings,

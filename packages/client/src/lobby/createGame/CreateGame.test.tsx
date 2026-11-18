@@ -214,11 +214,20 @@ describe("CreateGame", () => {
     expect(document.querySelector("#createTablePassword")).toBeNull();
     expect(getInput("create-game-replay-turn").value).toBe("3");
 
+    // Submitting the options unchanged does not propose anything.
+    click("create-game-submit");
+    expect(send).not.toHaveBeenCalledWith("tableUpdate", expect.anything());
+
+    fireEvent.change(getInput("createTableName"), {
+      target: {
+        value: "Bob's other game",
+      },
+    });
     click("create-game-submit");
     expect(send).toHaveBeenCalledWith("tableUpdate", {
       tableId: TABLE_ID,
       settings: {
-        name: "Bob's game",
+        name: "Bob's other game",
         maxPlayers: 4,
         options: defaultSettings.createTable.options,
         deal: {
