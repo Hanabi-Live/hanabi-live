@@ -207,13 +207,16 @@ function Stat({
 /** A thin line between two groups of the bar. On a narrow screen, the groups wrap instead. */
 function GroupDivider({
   className = "",
+  ref,
 }: {
   readonly className?: string;
+  readonly ref?: React.Ref<HTMLSpanElement>;
 }): React.JSX.Element {
   return (
     <span
       aria-hidden="true"
       className={`tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:phone:hidden ${className}`}
+      ref={ref}
     />
   );
 }
@@ -604,6 +607,95 @@ function useReplayDrawer(
       }
     };
   }, [open, closing, onClosed, edgeRises, reducedMotion, footer, controls]);
+}
+
+/** How far the replay controls in the bar along the bottom rise as they fade in, in CSS pixels. */
+const BAR_CONTROLS_RISE = 6;
+
+/**
+ * In the bar along the bottom, the replay controls fade in and rise a little when a replay starts,
+ * as fast as a tooltip opens, and the divider before them fades in with them. Their place in the
+ * bar is empty without them, so nothing has to make room, as in the panel (see "useReplayDrawer").
+ * When the replay ends, they fade out and sink back, as fast as a tooltip closes (see
+ * "useClosingControls"). When a hypothetical starts or ends, the controls of the other mode fade in
+ * where the others were. Only the drawing moves, and the fades only decorate.
+ */
+function useBarControlsFade(
+  controls: RefObject<HTMLDivElement | null>,
+  divider: RefObject<HTMLSpanElement | null>,
+  open: boolean,
+  closing: boolean,
+  onClosed: () => void,
+  mode: ScreenMode | undefined,
+  reducedMotion: boolean,
+) {
+  const last = useRef({
+    open,
+    mode,
+  });
+
+  useLayoutEffect(() => {
+    const previous = last.current;
+    last.current = {
+      open,
+      mode,
+    };
+    const group = controls.current;
+    if (group === null) {
+      return undefined;
+    }
+    if (reducedMotion) {
+      if (closing) {
+        onClosed();
+      }
+      return undefined;
+    }
+    const elements = [group, divider.current].filter(
+      (element): element is HTMLElement => element !== null,
+    );
+
+    const hidden = {
+      opacity: 0,
+      transform: `translateY(${BAR_CONTROLS_RISE}px)`,
+    };
+    const shown = {
+      opacity: 1,
+      transform: "none",
+    };
+    let animations: Animation[] = [];
+    if (closing) {
+      animations = elements.map((element) =>
+        element.animate([shown, hidden], {
+          duration: CLOSE_DURATION_IN_MILLISECONDS,
+          easing: "ease-in",
+          fill: "forwards",
+        }),
+      );
+      // A canceled animation means that the controls are already gone, or open again.
+      Promise.all(animations.map(async (animation) => await animation.finished))
+        .then(onClosed)
+        .catch(() => undefined);
+    } else if (open && !previous.open) {
+      animations = elements.map((element) =>
+        element.animate([hidden, shown], {
+          duration: OPEN_DURATION_IN_MILLISECONDS,
+          easing: "ease-out",
+        }),
+      );
+    } else if (open && previous.mode !== mode) {
+      animations = [
+        group.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: OPEN_DURATION_IN_MILLISECONDS,
+          easing: "ease-out",
+        }),
+      ];
+    }
+    return () => {
+      for (const animation of animations) {
+        animation.cancel();
+      }
+    };
+  }, [controls, divider, open, closing, onClosed, mode, reducedMotion]);
 }
 
 /**
@@ -1127,9 +1219,10 @@ export function StatusStrip({
   useModeFade(footer, mode, reducedMotion);
   const [closingControls, closeControls] = useClosingControls(
     replayControls,
-    panel && !reducedMotion,
+    !reducedMotion,
   );
   const controlsRef = useRef<HTMLDivElement>(null);
+  const dividerRef = useRef<HTMLSpanElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -1141,9 +1234,18 @@ export function StatusStrip({
     footer,
     controlsRef,
     inReplay && panel,
-    closingControls !== undefined,
+    panel && closingControls !== undefined,
     closeControls,
     !tabbed,
+    reducedMotion,
+  );
+  useBarControlsFade(
+    controlsRef,
+    dividerRef,
+    inReplay && !panel,
+    !panel && closingControls !== undefined,
+    closeControls,
+    mode,
     reducedMotion,
   );
   const variantRef = useRef<HTMLDivElement>(null);
@@ -1511,6 +1613,7 @@ export function StatusStrip({
 
   // When the replay controls have a row of their own, the row under them keeps the height of the
   // bar, so that the numbers and the buttons stay where they were.
+  const barControls = replayControls ?? closingControls;
   return (
     <footer
       className={`tw:group/strip tw:relative tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-7 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
@@ -1523,16 +1626,21 @@ export function StatusStrip({
       {planning}
       <GroupDivider />
       {variant}
-      {inReplay && (
-        <GroupDivider className="tw:group-data-own-row/strip:hidden" />
+      {barControls !== undefined && (
+        <GroupDivider
+          className="tw:group-data-own-row/strip:hidden"
+          ref={dividerRef}
+        />
       )}
-      {inReplay && (
+      {barControls !== undefined && (
         <div
           // When the controls have a row of their own, and on a narrow window, they are on top.
           className="tw:flex tw:shrink-0 tw:grow tw:basis-0 tw:group-data-own-row/strip:order-first tw:group-data-own-row/strip:basis-full tw:phone:order-first tw:phone:basis-full"
+          // The controls of a replay that has ended only fade away.
+          inert={!inReplay}
           ref={controlsRef}
         >
-          {replayControls}
+          {barControls}
         </div>
       )}
       {/* When the buttons have no room in one line, they have short labels. */}
