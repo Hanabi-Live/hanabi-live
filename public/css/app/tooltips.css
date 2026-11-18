@@ -118,7 +118,7 @@
   border: var(--tooltip-border-width) solid transparent;
   background: var(--tooltip-background) padding-box;
   color: var(--text);
-  font-size: 1.5em;
+  font-size: var(--tooltip-font-size);
   line-height: 1.5;
 }
 

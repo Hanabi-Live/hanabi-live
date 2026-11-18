@@ -9,6 +9,9 @@ import { getVisibleEdge, pixels } from "./visibleEdge.ts";
  */
 export const ARROW_SIZE_IN_PIXELS = 6;
 
+/** The size of the text in a tooltip, relative to the page's text. */
+export const FONT_SIZE_IN_EMS = 1.5;
+
 /**
  * How long the pointer rests on an element that people click, such as a button, before its tooltip
  * opens. Without it, tooltips would pop up as the pointer passes over a row of buttons.
@@ -144,6 +147,10 @@ export class Tooltip {
     this.bubble.style.setProperty(
       "--tooltip-arrow-size",
       `${ARROW_SIZE_IN_PIXELS}px`,
+    );
+    this.bubble.style.setProperty(
+      "--tooltip-font-size",
+      `${FONT_SIZE_IN_EMS}em`,
     );
     this.bubble.style.setProperty(
       "--tooltip-window-margin",

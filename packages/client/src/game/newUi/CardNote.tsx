@@ -4,9 +4,11 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
+import { FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS } from "../../Tooltip.ts";
 import * as chat from "../../chat.ts";
 import { store } from "../../store.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { pixels } from "../../visibleEdge.ts";
 import { currentState, currentVariant, getLastNote } from "../gameSession.ts";
 import {
   appendToNote,
@@ -18,6 +20,7 @@ import * as notes from "../ui/notes.ts";
 import { MenuPointer } from "./Menu.tsx";
 import { useWindowSize } from "./hooks.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
+import { getScreenScaleForWindow } from "./screenScale.ts";
 
 /** The width of the box to type a note in, in CSS pixels. */
 const NOTE_EDITOR_WIDTH = 260;
@@ -224,6 +227,10 @@ function NoteEditor({
   // The box is centered below its card, but moves sideways to stay in the window, such as for a
   // play stack at the edge of the screen. It moves again when the window changes size.
   const windowSize = useWindowSize();
+  const screenScale = getScreenScaleForWindow(
+    windowSize.width,
+    windowSize.height,
+  );
   const [shift, setShift] = useState(0);
   const [side, setSide] = useState<"above" | "below">("below");
   useLayoutEffect(() => {
@@ -303,7 +310,7 @@ function NoteEditor({
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
-            className="tw:box-border tw:block tw:w-full tw:rounded-game-control tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-base tw:text-card-ink tw:outline-none"
+            className="tw:box-border tw:block tw:w-full tw:rounded-game-control tw:border-0 tw:bg-white tw:px-2.5 tw:py-1.5 tw:text-card-ink tw:outline-none"
             onBlur={() => {
               chat.tabResetAutoCompleteList();
               onClose();
@@ -362,6 +369,14 @@ function NoteEditor({
             }}
             ref={inputRef}
             spellCheck={false}
+            // The text is the size of the note's tooltip. The tooltip is outside the zoomed screen,
+            // and its size comes from the page's text, which is smaller in a smaller window.
+            style={{
+              fontSize:
+                (pixels(getComputedStyle(document.body).fontSize)
+                  * TOOLTIP_FONT_SIZE_IN_EMS)
+                / screenScale,
+            }}
             type="text"
           />
           <LengthCounter input={inputRef} limit={notes.NOTE_LENGTH_LIMIT} />
