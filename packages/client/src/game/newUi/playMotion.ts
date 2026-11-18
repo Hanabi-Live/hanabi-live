@@ -79,6 +79,9 @@ export const CARD_MOVE_ANIMATION_ID = "card-move";
  */
 export const PLAY_EFFECT_ANIMATION_ID = "play-effect";
 
+/** Shows a strike box as empty, until the misplayed card explodes on it. */
+const STRIKE_PENDING_ATTRIBUTE = "data-strike-pending";
+
 /** An ease that overshoots its end and settles back, for things that pop. */
 export const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
@@ -450,11 +453,6 @@ function addFlash(
   );
 }
 
-/** The value of a color variable of the page, so that an animation can use it. */
-function cssColor(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name);
-}
-
 /**
  * Animates a card that was just misplayed: the "dud rocket" of the classic screen.
  *
@@ -794,15 +792,21 @@ export function animateMisplay(
 
   // The strike appears in its box, with a pop, when the card explodes on it. Until then, the box
   // looks empty, without its cross. After that, it has its own look of a strike.
+
+  // An attribute gives the box its empty look. Do not animate its background color instead: Chrome
+  // 157 runs such an animation on the compositor, and then sometimes crashes the tab when the box's
+  // style changes.
   const explosionMilliseconds = explosion * 1000;
-  const empty = {
-    backgroundColor: "transparent",
-    borderColor: cssColor("--game-screen-line"),
-  };
-  strikeBox.animate([empty, empty], {
-    id: PLAY_EFFECT_ANIMATION_ID,
-    duration: explosionMilliseconds,
-  });
+  strikeBox.toggleAttribute(STRIKE_PENDING_ATTRIBUTE, true);
+  onEnd(
+    strikeBox.animate([], {
+      id: PLAY_EFFECT_ANIMATION_ID,
+      duration: explosionMilliseconds,
+    }),
+    () => {
+      strikeBox.toggleAttribute(STRIKE_PENDING_ATTRIBUTE, false);
+    },
+  );
   const hidden = { opacity: 0 };
   for (const mark of strikeBox.children) {
     mark.animate([hidden, hidden], {

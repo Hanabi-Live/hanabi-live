@@ -1993,7 +1993,7 @@ export function TableTokens({
               struck
                 ? "tw:border-critical tw:bg-critical/15"
                 : "tw:border-game-line tw:bg-transparent"
-            }`;
+            } tw:data-strike-pending:border-game-line tw:data-strike-pending:bg-transparent`;
             let mark: React.ReactNode;
             if (strikesHidden) {
               mark = (
