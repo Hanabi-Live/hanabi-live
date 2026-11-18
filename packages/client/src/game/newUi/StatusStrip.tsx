@@ -755,9 +755,9 @@ function useOwnRow(
 }
 
 /**
- * The attribute that gives the bar's buttons their short labels, such as a door icon for "Lobby".
- * The labels depend on it (as "data-short-labels"), so that the bar can try the long labels without
- * drawing them.
+ * The attribute that gives the bar's buttons their short labels, such as only a door icon for
+ * "Lobby". The labels depend on it (as "data-short-labels"), so that the bar can try the long
+ * labels without drawing them.
  */
 const SHORT_LABELS_ATTRIBUTE = "data-short-labels";
 
@@ -1120,10 +1120,7 @@ export function StatusStrip({
         onClick={onLobby}
         type="button"
       >
-        <i
-          aria-hidden="true"
-          className="fas fa-door-open tw:hidden tw:group-data-short-labels/buttons:inline"
-        />
+        <i aria-hidden="true" className="fas fa-door-open" />
         <span className="tw:group-data-short-labels/buttons:hidden">Lobby</span>
       </button>
     </div>
