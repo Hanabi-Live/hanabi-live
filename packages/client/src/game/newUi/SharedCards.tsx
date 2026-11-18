@@ -6,7 +6,12 @@ import type {
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
-import { getTotalCardsInDeck, MAX_CLUES, MAX_STRIKES } from "@hanabi-live/game";
+import {
+  getNumCopiesOfCard,
+  getTotalCardsInDeck,
+  MAX_CLUES,
+  MAX_STRIKES,
+} from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import {
   useCallback,
@@ -268,14 +273,25 @@ export interface DiscardView {
 
 /**
  * The column of each discarded card, so that cards of the same rank line up in every row. Each rank
- * gets as many columns as the row with the most cards of that rank. The rows are already in order
- * of rank, with cards of unknown rank last.
+ * of the variant gets a column for each copy that a suit can have of it, so that no card moves when
+ * another card is discarded. Cards of unknown rank go last. The rows are already in order of rank.
  */
-function getDiscardColumns(rows: ReadonlyArray<readonly DiscardView[]>): {
+function getDiscardColumns(
+  rows: ReadonlyArray<readonly DiscardView[]>,
+  variant: Variant,
+): {
   readonly columns: ReadonlyMap<CardOrder, number>;
   readonly numColumns: number;
 } {
-  const widths = new Map<Rank | undefined, number>();
+  const widths = new Map<Rank | undefined, number>(
+    variant.ranks.map((rank) => [
+      rank,
+      Math.max(
+        ...variant.suits.map((suit) => getNumCopiesOfCard(suit, rank, variant)),
+      ),
+    ]),
+  );
+  // A row can show more cards of a rank than a suit has, such as cards of unknown rank.
   for (const row of rows) {
     const counts = new Map<Rank | undefined, number>();
     for (const card of row) {
@@ -286,9 +302,7 @@ function getDiscardColumns(rows: ReadonlyArray<readonly DiscardView[]>): {
     }
   }
 
-  const ranks = [
-    ...new Set(rows.flatMap((row) => row.map((card) => card.rank))),
-  ].toSorted(
+  const ranks = [...widths.keys()].toSorted(
     (a, b) => (a ?? Number.MAX_SAFE_INTEGER) - (b ?? Number.MAX_SAFE_INTEGER),
   );
   const firstColumns = new Map<Rank | undefined, number>();
@@ -1441,7 +1455,7 @@ export function DiscardPile({
   const rowsHeight = height + (variant.suits.length - 1) * rowStep;
   const [rowsElement, setRowsElement] = useState<HTMLDivElement | null>(null);
   const rowsWidth = useElementSize(rowsElement).width;
-  const { columns, numColumns } = getDiscardColumns(rows);
+  const { columns, numColumns } = getDiscardColumns(rows, variant);
   const maxCardStep = cardWidth * (1 - DISCARD_OVERLAP_PER_WIDTH);
   // Before the rows are measured, their width is 0.
   const cardStep =
