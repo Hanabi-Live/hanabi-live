@@ -651,6 +651,37 @@ function getPixels(value: string): number {
 }
 
 /**
+ * In the panel, the replay controls keep the largest height that they have had, so that the panel
+ * keeps its size when a hypothetical starts or ends. The controls of each mode wrap onto rows of
+ * other heights, or onto fewer rows. The height starts again when the controls go away, or when the
+ * panel gets another width, which wraps them again.
+ */
+function useSteadyControlsHeight(
+  footer: HTMLElement | null,
+  controls: RefObject<HTMLDivElement | null>,
+  panel: boolean,
+) {
+  const tallest = useRef(0);
+  const width = useRef<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const group = controls.current;
+    if (!panel || footer === null || group === null) {
+      tallest.current = 0;
+      width.current = undefined;
+      return;
+    }
+    if (footer.clientWidth !== width.current) {
+      width.current = footer.clientWidth;
+      tallest.current = 0;
+    }
+    group.style.minHeight = "";
+    tallest.current = Math.max(tallest.current, group.offsetHeight);
+    group.style.minHeight = `${tallest.current}px`;
+  });
+}
+
+/**
  * Whether the panel and the clue log share one box with tabs. That happens when the panel wraps
  * onto more rows than it has when it is wide (its numbers take two rows, and so does the replay's
  * timeline, which wraps at the same width, or its buttons do), and the panel below the clue log
@@ -1010,6 +1041,8 @@ export function StatusStrip({
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
+  // The panel measures its height after the controls take theirs.
+  useSteadyControlsHeight(footer, controlsRef, panel);
   const tabbed = usePanelTabs(footer, panel, statusRef, statsRef, buttonsRef);
   const [tab, setTab] = useState<PanelTab>("status");
   useReplayDrawer(
@@ -1280,7 +1313,8 @@ export function StatusStrip({
     const shownControls = replayControls ?? closingControls;
     const controls = shownControls !== undefined && (
       <div
-        className="tw:flex"
+        // The controls stay at the top when they are shorter than their largest height.
+        className="tw:flex tw:items-start"
         // The controls of a replay that has ended only slide away.
         inert={!inReplay}
         ref={controlsRef}
