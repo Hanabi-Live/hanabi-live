@@ -552,18 +552,18 @@ function EmptySlot(): React.JSX.Element {
 
 /**
  * A hand that shows its clue tab to its right. The hand has the color of the tab, and one outline
- * goes around both.
+ * goes around both. The hand has no outline and no round corners on its right, where the tab joins
+ * it.
  */
 export const CLUE_TAB_HAND_CLASS =
-  "tw:bg-game-panel tw:inset-ring-1 tw:inset-ring-game-line";
+  "tw:bg-game-panel tw:rounded-r-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
 
 /**
- * The tab to the right of the hand, halfway down it. It has an outline on its top, right, and
- * bottom. The hand's own outline runs along its left (see `ClueTab`). It moves up with `translate`,
- * so that the slide's `transform` does not undo it.
+ * The tab to the right of the hand, as tall as the hand, with its key halfway down. It has an
+ * outline on its top, right, and bottom, which go on from the hand's outline.
  */
 const TAB_RIGHT_CLASS =
-  "tw:top-1/2 tw:left-full tw:-translate-y-1/2 tw:rounded-r-game-panel tw:bg-game-panel tw:p-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+  "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:rounded-r-game-panel tw:bg-game-panel tw:px-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
 
 /**
  * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
@@ -628,15 +628,6 @@ export function ClueTab({
       ref={ref}
       style={below ? { top } : undefined}
     >
-      {!below && (
-        // It covers the hand's outline where the tab joins the hand, but not the ends of the tab's
-        // own outline. It is 2px wide, because a zoomed screen does not draw the outline and this
-        // line on the same pixels.
-        <span
-          aria-hidden="true"
-          className="tw:absolute tw:inset-y-px tw:-left-0.5 tw:w-0.5 tw:bg-game-panel"
-        />
-      )}
       <button
         aria-label={`Give ${name} a clue`}
         className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
