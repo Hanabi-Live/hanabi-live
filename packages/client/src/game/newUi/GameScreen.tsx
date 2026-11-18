@@ -645,8 +645,6 @@ export function GameScreen({
   const menuTarget = canClue
     ? (clueTarget ?? (clueMenuClosed ? undefined : onlyOtherPlayer))
     : undefined;
-  const outOfCluesOnTurn =
-    ourTurn && !clueAvailable && !editingCards && !paused;
 
   const empathyPlayers = new Set<PlayerIndex>(
     globalEmpathy
@@ -958,7 +956,8 @@ export function GameScreen({
     onGive: giveClue,
   };
 
-  let hypotheticalHint = "Click a player's name to give them a clue.";
+  let hypotheticalHint =
+    "Hover over or tap a player's hand to give them a clue.";
   if (editingCards) {
     hypotheticalHint = "Click a card in a hand to change it into another card.";
   } else if (actingPlayerIndex === undefined) {
@@ -1634,7 +1633,6 @@ export function GameScreen({
                       return next;
                     });
                   }}
-                  outOfClues={outOfCluesOnTurn}
                   pauseAction={getPauseAction(state)}
                   possibleCardsCard={possibleCardsCard?.order}
                   queuedCard={queuedCard}

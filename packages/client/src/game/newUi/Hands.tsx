@@ -30,8 +30,11 @@ import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
-import { CLUE_DRAWER_HAND_CLASS } from "./ClueMenu.tsx";
-import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
+import {
+  CLUE_DRAWER_HAND_CLASS,
+  CLUE_TAB_HAND_CLASS,
+  ClueTab,
+} from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
@@ -123,16 +126,10 @@ interface HandsProps {
   readonly nameColumnWidth: number | undefined;
 
   /**
-   * Whether the viewer can give a clue. Then, clicking another player's name opens the clues that
-   * they can get (`clueMenu`) on their hand, instead of the list of their actions.
+   * Whether the viewer can give a clue. Then, the pointer over another player's hand shows their
+   * clue tab, which opens the clues that they can get (`clueMenu`) on their hand.
    */
   readonly canChooseClueTarget: boolean;
-
-  /**
-   * Whether the viewer could give a clue but the team has no clue tokens. Then the other players'
-   * names look like keys that are turned off.
-   */
-  readonly outOfClues: boolean;
 
   /** The player whose clue menu is open, if any. Their hand stands out. */
   readonly clueTarget: PlayerIndex | undefined;
@@ -574,30 +571,10 @@ export const NAME_COLUMN_MAX_WIDTH = {
 } as const;
 
 /**
- * How a name that is not the current player's looks. Off the viewer's turn, it is a label: a small
- * well, like the other readouts on the table. On the viewer's turn, it is a key in the color of
- * clues, which opens the player's clues. With no clue tokens, it is empty with a dashed border,
- * like the clue tokens.
+ * A player's name. The current player's name stands out. Any other name is a label: a small well,
+ * like the other readouts on the table.
  */
-type NameChipLook = "label" | "key" | "chosen" | "noClues";
-
-const NAME_CHIP_LOOK_CLASS = {
-  label:
-    "tw:bg-game-well tw:font-medium tw:text-game-text tw:inset-shadow-[0_2px_4px_rgb(0_0_0/45%)]",
-  // The key's light top edge is on the name, not on the button under it, which the name covers.
-  key: "tw:bg-clue tw:font-semibold tw:text-card-ink tw:inset-shadow-[0_1px_0_rgb(255_255_255/35%)] tw:group-hover:brightness-110",
-  chosen: "tw:bg-game-text tw:font-semibold tw:text-card-ink",
-  noClues:
-    "tw:bg-transparent tw:font-medium tw:text-game-muted tw:outline-2 tw:-outline-offset-2 tw:outline-game-muted tw:outline-dashed",
-} as const satisfies Record<NameChipLook, string>;
-
-function NameChip({
-  seat,
-  look,
-}: {
-  readonly seat: Seat;
-  readonly look: NameChipLook;
-}): React.JSX.Element {
+function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   // A player who left has a red ring and a broken link on their name, as the classic screen draws
   // their name in red. The badge sits on the ring, so that it does not change the chip's width.
   const disconnectedClass = seat.disconnected
@@ -628,25 +605,10 @@ function NameChip({
     );
   }
 
-  let tooltip: string | undefined;
-  if (look === "key") {
-    tooltip = `Give ${seat.name} a clue`;
-  } else if (look === "noClues") {
-    tooltip = "The team has no clues to give.";
-  }
-
-  // The key has a clue token before the name, so that it shows what the key does. The chosen key
-  // keeps it, so that the name does not move.
-  const hasToken = look === "key" || look === "chosen";
-
   return (
     <span
-      className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:gap-1.5 tw:rounded-full tw:py-1.5 tw:pr-3.5 ${
-        hasToken ? "tw:pl-2" : "tw:pl-3.5"
-      } ${NAME_CHIP_LOOK_CLASS[look]} ${disconnectedClass}`}
-      ref={tooltipRef(tooltip)}
+      className={`tw:relative tw:inline-flex tw:max-w-full tw:items-center tw:rounded-full tw:bg-game-well tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text tw:inset-shadow-[0_2px_4px_rgb(0_0_0/45%)] ${disconnectedClass}`}
     >
-      {hasToken && <ClueTokenIcon className="tw:size-5" />}
       <FitText text={seat.name} />
       {disconnectedBadge}
     </span>
@@ -899,16 +861,13 @@ export function NameColumnSizer({
       {seats.flatMap((seat) => [
         <NameChip
           key={`${seat.playerIndex}-active`}
-          look="label"
           seat={{
             ...seat,
             active: true,
           }}
         />,
-        // A key's name is semibold, which is wider than a label's.
         <NameChip
           key={`${seat.playerIndex}-waiting`}
-          look="key"
           seat={{
             ...seat,
             active: false,
@@ -1575,14 +1534,23 @@ function ViewFade({
 function Hand({
   seat,
   props,
+  pointedAt,
+  onPoint,
 }: {
   readonly seat: Seat;
   readonly props: HandsProps;
+
+  /** Whether the pointer is over the hand, or a touch last tapped it. */
+  readonly pointedAt: boolean;
+  readonly onPoint: (playerIndex: PlayerIndex | undefined) => void;
 }): React.JSX.Element {
   const editing = props.onEditCard !== undefined;
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
-  const noClueSeat = props.outOfClues && !seat.acting && !editing;
+  // A card that the viewer drags hides the tab, so that it does not get in the way.
+  const showsClueTab =
+    canClueSeat && !chosen && pointedAt && props.draggedCard === undefined;
+  const clueTabRight = showsClueTab && !props.stacked;
 
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
@@ -1590,19 +1558,11 @@ function Hand({
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
     boxClass = CLUE_DRAWER_HAND_CLASS;
+  } else if (clueTabRight) {
+    boxClass = CLUE_TAB_HAND_CLASS;
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
-
-  let look: NameChipLook = "label";
-  if (chosen) {
-    look = "chosen";
-  } else if (canClueSeat) {
-    look = "key";
-  } else if (noClueSeat) {
-    look = "noClues";
-  }
-  const chip = <NameChip look={look} seat={seat} />;
 
   // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
   // classic screen. A long touch does it too. On the viewer's own hand, it shows the hand without
@@ -1632,6 +1592,23 @@ function Hand({
           : "tw:items-center"
       } ${boxClass}`}
       data-hand={seat.playerIndex}
+      // A mouse over the hand shows its clue tab. A touch has no hover, so a tap shows it instead,
+      // until a tap somewhere else (see `Hands`).
+      onPointerDown={(event) => {
+        if (event.pointerType === "touch") {
+          onPoint(seat.playerIndex);
+        }
+      }}
+      onPointerEnter={(event) => {
+        if (event.pointerType !== "touch") {
+          onPoint(seat.playerIndex);
+        }
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch") {
+          onPoint(undefined);
+        }
+      }}
       role="group"
       // With the name above the cards, the gap leaves room for the clue tokens, so that they do not
       // cover the name.
@@ -1657,21 +1634,13 @@ function Hand({
       >
         <div className="tw:flex tw:max-w-full">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
-            clue rail starts there. While the viewer can clue a player, the player's name is a key, like
-            every other button on the screen, and opens the clues. */}
+            clue rail starts there. A click on a name lists the player's actions. */}
           <button
-            aria-expanded={canClueSeat ? chosen : undefined}
             aria-haspopup="dialog"
-            className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit ${
-              canClueSeat ? `tw:group ${KEY_CLASS}` : "tw:hover:brightness-110"
-            }`}
+            className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110"
             data-name-chip={seat.playerIndex}
             onClick={() => {
-              if (canClueSeat) {
-                props.onChooseClueTarget(chosen ? undefined : seat.playerIndex);
-              } else {
-                props.onShowPlayerLog(seat.playerIndex);
-              }
+              props.onShowPlayerLog(seat.playerIndex);
             }}
             style={
               isRinged
@@ -1684,7 +1653,7 @@ function Hand({
             }
             type="button"
           >
-            {chip}
+            <NameChip seat={seat} />
           </button>
         </div>
         <PlayerClock
@@ -1787,6 +1756,17 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
+      {showsClueTab && (
+        <ClueTab
+          below={props.stacked}
+          name={seat.name}
+          onOpen={() => {
+            props.onChooseClueTarget(seat.playerIndex);
+          }}
+          reducedMotion={props.reducedMotion}
+          top={getHandBoxTopPadding(props.cardWidth)}
+        />
+      )}
       {chosen && props.clueMenu}
     </div>
   );
@@ -1798,6 +1778,26 @@ function Hand({
  * different numbers of cards, such as after the deck runs out.
  */
 export function Hands(props: HandsProps): React.JSX.Element {
+  // The hand that the pointer is over, or that a touch last tapped.
+  const [pointedSeat, setPointedSeat] = useState<PlayerIndex>();
+
+  // A tap outside of the hands hides the clue tab that a tap showed.
+  useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      const { target } = event;
+      if (
+        event.pointerType === "touch"
+        && !(target instanceof Element && target.closest("[data-hand]"))
+      ) {
+        setPointedSeat(undefined);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
+
   return (
     <section
       aria-hidden={props.hidden === true ? true : undefined}
@@ -1805,7 +1805,13 @@ export function Hands(props: HandsProps): React.JSX.Element {
       className={`tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center ${props.hidden === true ? "tw:invisible" : ""}`}
     >
       {props.seats.map((seat) => (
-        <Hand key={seat.playerIndex} props={props} seat={seat} />
+        <Hand
+          key={seat.playerIndex}
+          onPoint={setPointedSeat}
+          pointedAt={pointedSeat === seat.playerIndex}
+          props={props}
+          seat={seat}
+        />
       ))}
       {props.shownClue !== undefined && (
         <ClueRail

@@ -158,14 +158,14 @@ const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
 const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
- * The clues that the viewer can give a player. Clicking the player's name opens it out of their
- * hand, as a drawer (see `CLUE_DRAWER_HAND_CLASS`). It opens to the right of the hand, so that it
- * does not cover the other hands. The hands always leave room for it there (see
- * `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough room
- * below, its bottom lines up with the bottom of the hand instead. In the phone layout, it opens
- * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
- * no cards, leaves an empty well in its place, so that every clue keeps its position. Clicking
- * outside of it or pressing Escape closes it.
+ * The clues that the viewer can give a player. The key in the player's clue tab (see `ClueTab`)
+ * opens it out of their hand, as a drawer (see `CLUE_DRAWER_HAND_CLASS`). It opens to the right of
+ * the hand, so that it does not cover the other hands. The hands always leave room for it there
+ * (see `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough
+ * room below, its bottom lines up with the bottom of the hand instead. In the phone layout, it
+ * opens below the hand, as wide as the hand. A clue that the rules do not allow, such as one that
+ * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
+ * Clicking outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -332,7 +332,8 @@ export function ClueMenu({
     }
     const stopEscape = onEscapeKey(onClose);
 
-    // A click on a name chooses that player instead, so it does not close the menu.
+    // A click on another player's clue tab chooses that player instead, so it does not close the
+    // menu.
     function onPointerDown(event: PointerEvent) {
       const { target } = event;
       const menu = ref.current;
@@ -340,7 +341,7 @@ export function ClueMenu({
         menu !== null
         && target instanceof Node
         && !menu.contains(target)
-        && !(target instanceof Element && target.closest("[data-name-chip]"))
+        && !(target instanceof Element && target.closest("[data-clue-tab]"))
       ) {
         onClose();
       }
@@ -546,5 +547,104 @@ function EmptySlot(): React.JSX.Element {
       aria-hidden="true"
       className={`tw:translate-y-[2px] ${choiceSizeClass} ${WELL_CLASS}`}
     />
+  );
+}
+
+/**
+ * A hand that shows its clue tab to its right. The hand has the color of the tab, and one outline
+ * goes around both. The hand has no round corner where the tab joins it.
+ */
+export const CLUE_TAB_HAND_CLASS =
+  "tw:bg-game-panel tw:rounded-tr-none tw:inset-ring-1 tw:inset-ring-game-line";
+
+/**
+ * The tab to the right of the hand. It has an outline on its top, right, and bottom. The hand's own
+ * outline runs along its left (see `ClueTab`).
+ */
+const TAB_RIGHT_CLASS =
+  "tw:top-0 tw:left-full tw:rounded-r-game-panel tw:bg-game-panel tw:p-2 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+
+/**
+ * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
+ * their hand while the pointer is over the hand, on the viewer's turn when the team has a clue. On
+ * a touch screen, a tap on the hand shows it. Like the menu, it opens to the right of the hand,
+ * where the hands always leave room (see `getClueDrawerWidth`). In the phone layout, there is no
+ * room there, so it sits in the hand's top right corner, beside the player's name.
+ */
+export function ClueTab({
+  name,
+  below,
+  top,
+  reducedMotion,
+  onOpen,
+}: {
+  readonly name: string;
+  readonly below: boolean;
+
+  /** In the phone layout, the distance from the top of the hand to the top of the name. */
+  readonly top: number;
+  readonly reducedMotion: boolean;
+  readonly onOpen: () => void;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // It slides out from behind the edge of the hand, as the menu does. In the phone layout, it
+  // slides in a little from the right. The sliding only decorates.
+  useLayoutEffect(() => {
+    const tab = ref.current;
+    if (reducedMotion || tab === null) {
+      return undefined;
+    }
+    const { width } = measure(tab);
+    const animation = tab.animate(
+      [
+        below
+          ? {
+              transform: `translateX(${width / 2}px)`,
+              opacity: 0,
+            }
+          : {
+              transform: `translateX(${-width}px)`,
+              clipPath: `inset(0 0 0 ${width}px)`,
+            },
+        {
+          transform: "none",
+          clipPath: "inset(0 0 0 0)",
+          opacity: 1,
+        },
+      ],
+      DRAWER_SLIDE,
+    );
+    return () => {
+      animation.cancel();
+    };
+  }, [below, reducedMotion]);
+
+  return (
+    <div
+      className={`tw:absolute tw:z-20 ${below ? "tw:right-3" : TAB_RIGHT_CLASS}`}
+      data-clue-tab
+      ref={ref}
+      style={below ? { top } : undefined}
+    >
+      {!below && (
+        // It covers the hand's outline where the tab joins the hand, but not the ends of the tab's
+        // own outline. It is 2px wide, because a zoomed screen does not draw the outline and this
+        // line on the same pixels.
+        <span
+          aria-hidden="true"
+          className="tw:absolute tw:inset-y-px tw:-left-0.5 tw:w-0.5 tw:bg-game-panel"
+        />
+      )}
+      <button
+        aria-label={`Give ${name} a clue`}
+        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-9" : "tw:size-11"} ${KEY_CLASS}`}
+        onClick={onOpen}
+        ref={tooltipRef(`Give ${name} a clue`)}
+        type="button"
+      >
+        <ClueTokenIcon className={below ? "tw:size-6" : "tw:size-7"} />
+      </button>
+    </div>
   );
 }

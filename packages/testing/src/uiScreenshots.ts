@@ -221,12 +221,19 @@ const KEYWORD_NOTES = [
 /** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
 
+/** Moves the mouse over the next player's hand in the New UI, which shows their clue tab. */
+async function showClueTabOfNextPlayer(page: Page) {
+  await page.locator("#game-new-ui [data-hand]").nth(1).hover();
+  await page.locator("#game-new-ui [data-clue-tab]").waitFor();
+}
+
 /**
  * Opens the New UI's clue menu on the next player's hand, and chooses the first clue that the rules
  * allow, so that its cards show which ones it would touch.
  */
 async function chooseClueForNextPlayer(page: Page) {
-  await page.locator("#game-new-ui [data-name-chip]").nth(1).click();
+  await showClueTabOfNextPlayer(page);
+  await page.locator("#game-new-ui [data-clue-tab] button").click();
   await page
     .getByRole("dialog", { name: /^Give .* a clue$/u })
     .locator("button[aria-pressed]:enabled:not([data-clue-preview])")
@@ -1059,7 +1066,7 @@ function getStates(): readonly State[] {
         await game.discardTurns(15, { mixClueTypes: true });
       },
     },
-    // It is the account's turn and the team has no clues, so that no name opens the clues.
+    // It is the account's turn and the team has no clues, so that no hand shows a clue tab.
     {
       name: "new-ui-no-clues",
       path: "/",
@@ -1109,6 +1116,19 @@ function getStates(): readonly State[] {
         await page.getByRole("dialog").waitFor();
         await settle(page);
       },
+    },
+    // On the account's turn in a five-player game, the mouse is over the next player's hand, which
+    // shows their clue tab.
+    {
+      name: "new-ui-clue-tab",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.discardUntilAccountsTurn();
+      },
+      hover: showClueTabOfNextPlayer,
     },
     // On the account's turn in a five-player game, it opens the clue menu on the next player's hand
     // and chooses a clue. The clues that would touch no cards are left out.
