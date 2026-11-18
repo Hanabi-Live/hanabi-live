@@ -1770,7 +1770,8 @@ function PossibleCardsGrid({
     const below = anchorRect.bottom + offset;
     const roomBelow = window.innerHeight - POSSIBLE_CARDS_WINDOW_MARGIN - below;
     const roomAbove = anchorRect.top - offset - POSSIBLE_CARDS_WINDOW_MARGIN;
-    const hand = anchor.closest("[data-hand]")?.getBoundingClientRect();
+    const handElement = getHandOf(anchor);
+    const hand = handElement?.getBoundingClientRect();
     const isBelow =
       hand === undefined
         ? height <= roomBelow || (height > roomAbove && roomBelow >= roomAbove)
@@ -1782,7 +1783,7 @@ function PossibleCardsGrid({
       1,
       room / height,
       roomAcross / width,
-      getHandOf(anchor) === undefined ? 1 : getHandsRoom(offset) / height,
+      handElement === undefined ? 1 : getHandsRoom(offset) / height,
     );
 
     const middle = anchorRect.left + anchorRect.width / 2;
