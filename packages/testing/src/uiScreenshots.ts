@@ -1689,7 +1689,9 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
         const game = cast.bobsGame();
         game.passLeader();
-        await page.getByRole("button", { name: "Leader: You" }).waitFor();
+        await page
+          .getByRole("button", { name: `Leader: ${USERNAME}` })
+          .waitFor();
         // Bob's table is a speedrun, where "Play again" restarts the game at once when everyone is
         // ready. Bob is not, so that the button opens its menu instead.
         await game.setReady(false);
@@ -1717,11 +1719,15 @@ function getStates(): readonly State[] {
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
-        await page.getByRole("button", { name: "Leader: You" }).waitFor();
+        await page
+          .getByRole("button", { name: `Leader: ${USERNAME}` })
+          .waitFor();
       },
       // The pointer is on the first person, to show that the names can be pressed.
       hover: async (page) => {
-        await openMenu(page.getByRole("button", { name: "Leader: You" }));
+        await openMenu(
+          page.getByRole("button", { name: `Leader: ${USERNAME}` }),
+        );
         await page.getByRole("menuitem").first().hover();
       },
     },
@@ -1739,7 +1745,9 @@ function getStates(): readonly State[] {
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
-        await page.getByRole("button", { name: "Leader: You" }).waitFor();
+        await page
+          .getByRole("button", { name: `Leader: ${USERNAME}` })
+          .waitFor();
       },
       hover: async (page) => {
         await hoverForTooltip(
@@ -1762,7 +1770,9 @@ function getStates(): readonly State[] {
         await endBobsGame(page, cast);
         cast.bobsGame().passLeader();
         // Only the leader can start a hypothetical, so wait until the lead reaches the account.
-        await page.getByRole("button", { name: "Leader: You" }).waitFor();
+        await page
+          .getByRole("button", { name: `Leader: ${USERNAME}` })
+          .waitFor();
         await page.getByRole("button", { name: "First turn" }).click();
         await page
           .locator('#game-new-ui button[aria-label="First turn"]:disabled')

@@ -728,7 +728,7 @@ function LeaderControls({
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
         // knows the room that it needs.
-        <div className="tw:flex tw:w-max tw:max-w-40 tw:min-w-0 tw:phone:w-auto">
+        <div className="tw:flex tw:w-max tw:max-w-56 tw:min-w-0 tw:phone:w-auto">
           <LeaderMenu
             amLeader={shared.amLeader}
             leader={shared.leader}

@@ -104,7 +104,17 @@ export function LeaderMenu({
         />
         {/* A long name makes the text smaller, so that the button does not push the steps in the
             middle of the bar to the side. */}
-        <FitText text={`Leader: ${amLeader ? "You" : leader}`} />
+        {/* The leader's name is orange when it is ours, as in the list of people watching. */}
+        <FitText
+          text={
+            <span>
+              Leader:{" "}
+              <span className={amLeader ? "tw:text-name-me" : undefined}>
+                {leader}
+              </span>
+            </span>
+          }
+        />
         {/* The caret points the way that the menu opens. */}
         <MenuCaret open={open} />
       </button>

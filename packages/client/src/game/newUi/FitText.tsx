@@ -16,7 +16,7 @@ const SCALE_STEP = 0.01;
 export function FitText({
   text,
 }: {
-  readonly text: string;
+  readonly text: React.ReactNode;
 }): React.JSX.Element {
   const outerRef = useRef<HTMLSpanElement>(null);
   const fullRef = useRef<HTMLSpanElement>(null);
@@ -44,13 +44,14 @@ export function FitText({
 
     fit();
     const observer = new ResizeObserver(fit);
-    // The space can stay the same while the text gets wider, such as when it turns bold.
+    // The space can stay the same while the text gets wider, such as when it turns bold or changes.
+    // The hidden copy then changes its size.
     observer.observe(outer);
     observer.observe(full);
     return () => {
       observer.disconnect();
     };
-  }, [text]);
+  }, []);
 
   return (
     <span
