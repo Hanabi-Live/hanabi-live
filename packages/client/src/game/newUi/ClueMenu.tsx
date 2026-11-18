@@ -923,9 +923,12 @@ export function ClueTab({
   readonly onClosed: () => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  // It slides out from behind the edge of the hand, as the menu does. In the phone layout, it
-  // slides in a little from the right. It fades in with the color of the hand (see
-  // `ClueHandLayer`). When it closes, it slides back, and then it is removed.
+  const keyRef = useRef<HTMLDivElement>(null);
+  // It slides out from behind the edge of the hand, as the menu does, while the hand's color fades
+  // in (see `ClueHandLayer`). Its panel does not fade, so that what is behind it, such as the clue
+  // log, does not show through it. Only its key fades. In the phone layout, it is only a key in the
+  // hand, which slides in a little from the right as it fades in. When it closes, it slides back,
+  // and then it is removed.
   useTabSlide(
     ref,
     (tab) => {
@@ -939,19 +942,29 @@ export function ClueTab({
           : {
               transform: `translateX(${-width}px)`,
               clipPath: `inset(0 0 0 ${width}px)`,
-              opacity: 0,
             },
-        {
-          transform: "none",
-          clipPath: "inset(0 0 0 0)",
-          opacity: 1,
-        },
+        below
+          ? {
+              transform: "none",
+              opacity: 1,
+            }
+          : {
+              transform: "none",
+              clipPath: "inset(0 0 0 0)",
+            },
       ];
     },
     open,
     reducedMotion,
     below,
     onClosed,
+  );
+  useTabSlide(
+    keyRef,
+    () => (below ? [{}, {}] : getLayerKeyframes()),
+    open,
+    reducedMotion,
+    below,
   );
 
   // When its key opens the menu, the tab goes at once, and the menu slides out from where the tab's
@@ -982,18 +995,20 @@ export function ClueTab({
       ref={ref}
       style={below ? { top } : undefined}
     >
-      <button
-        aria-label={`Give ${name} a clue`}
-        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
-        onClick={() => {
-          openedMenuRef.current = true;
-          onOpen();
-        }}
-        ref={tooltipRef(`Give ${name} a clue`)}
-        type="button"
-      >
-        <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
-      </button>
+      <div className="tw:flex" ref={keyRef}>
+        <button
+          aria-label={`Give ${name} a clue`}
+          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
+          onClick={() => {
+            openedMenuRef.current = true;
+            onOpen();
+          }}
+          ref={tooltipRef(`Give ${name} a clue`)}
+          type="button"
+        >
+          <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
+        </button>
+      </div>
     </div>
   );
 }
