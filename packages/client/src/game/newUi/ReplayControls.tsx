@@ -559,6 +559,8 @@ function HypotheticalHint({
     <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
       <p
         className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal"
+        // The bar has room for one row only when the whole hint fits (see "StatusStrip.tsx").
+        data-full-width
         ref={(element) => {
           textRef.current = element;
           return tooltip(element);

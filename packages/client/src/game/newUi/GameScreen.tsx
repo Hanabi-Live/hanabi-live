@@ -466,7 +466,10 @@ export function GameScreen({
   const barRef = useRef<HTMLElement>(null);
   /** What the panel had no room with, as "panelKey" in the effect below. */
   const panelMissedRoom = useRef<string>(undefined);
-  /** The width that the bar needs for one row, for each kind of game (see `barKey` below). */
+  /**
+   * The width that the bar needs for one row, for the game before and after it ends (see `barKey`
+   * below).
+   */
   const barOneRowWidths = useRef(new Map<string, number>());
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
@@ -580,26 +583,21 @@ export function GameScreen({
       );
       // The bar also moves when it would need two rows for its replay controls, except on a window
       // that is at least `WIDE_WINDOW_WIDTH` wide. The bar measures how much width it misses for
-      // one row, and the screen remembers the width that the bar needs for what it holds, so that
-      // the panel can tell when the bar would fit again. An ongoing game counts the bar of its
-      // replay (see "barRef"), which it can measure only during a replay.
-      const barKey = [
-        state.finished,
-        state.playing,
-        state.replay.hypothetical !== undefined,
-        state.replay.shared?.amLeader,
-      ].join(",");
-      const missing = bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE);
-      if (!sidePanel && missing !== null && hasReplayControls(state)) {
-        const known = barOneRowWidths.current.get(barKey);
-        if (Number(missing) > 0) {
-          barOneRowWidths.current.set(
-            barKey,
-            root.clientWidth + Number(missing),
-          );
-        } else if (known !== undefined && known > root.clientWidth) {
-          barOneRowWidths.current.set(barKey, root.clientWidth);
-        }
+      // one row, and the screen remembers the width that the bar needs, so that the panel can tell
+      // when the bar would fit again. An ongoing game counts the bar of its replay (see "barRef"),
+      // which it can measure only during a replay. The width is for the game, not for what the bar
+      // holds now, so that entering a hypothetical, leaving it, or passing the lead does not move
+      // the bar. It is the most that any of the game's bars has needed.
+      const barKey = [state.finished, state.playing].join(",");
+      const missing = Number(bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE));
+      if (!sidePanel && missing > 0 && hasReplayControls(state)) {
+        barOneRowWidths.current.set(
+          barKey,
+          Math.max(
+            barOneRowWidths.current.get(barKey) ?? 0,
+            root.clientWidth + missing,
+          ),
+        );
       }
       const barOneRowWidth =
         barOneRowWidths.current.get(barKey)

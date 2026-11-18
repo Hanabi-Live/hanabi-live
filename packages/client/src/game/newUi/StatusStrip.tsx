@@ -815,11 +815,17 @@ function useOwnRow(
     // taller layout, so that the chat can no longer scroll down to its last lines.
     footer.style.height = getComputedStyle(footer).height;
     footer.removeAttribute(OWN_ROW_ATTRIBUTE);
-    // Less than a pixel is a rounding error of the measurement.
-    const overlap = Math.max(
-      getPaddingOverlap(footer),
-      group.scrollWidth - group.clientWidth,
+    // Less than a pixel is a rounding error of the measurement. Text that may not be cut off counts
+    // with its whole width, such as a hypothetical's hint.
+    const cutOff = Math.max(
+      0,
+      ...[...group.querySelectorAll<HTMLElement>("[data-full-width]")].map(
+        (text) => text.scrollWidth - text.clientWidth,
+      ),
     );
+    const overlap =
+      Math.max(getPaddingOverlap(footer), group.scrollWidth - group.clientWidth)
+      + cutOff;
     const missing = overlap < 1 ? 0 : Math.ceil(overlap);
     const overflows = missing > 0;
     footer.setAttribute(ONE_ROW_MISSING_ATTRIBUTE, String(missing));
