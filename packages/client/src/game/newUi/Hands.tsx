@@ -1572,9 +1572,13 @@ function Hand({
   const editing = props.onEditCard !== undefined;
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
-  // A card that the viewer drags hides the tab, so that it does not get in the way.
+  // A card that the viewer drags hides the tab, so that it does not get in the way. While the clue
+  // menu is open on any hand, no hand shows the tab.
   const showsClueTab =
-    canClueSeat && !chosen && pointedAt && props.draggedCard === undefined;
+    canClueSeat
+    && props.clueTarget === undefined
+    && pointedAt
+    && props.draggedCard === undefined;
   // The tab stays while it slides back after it closes. It goes at once when the clue menu opens or
   // the viewer can no longer give a clue.
   const [clueTabMounted, setClueTabMounted] = useState(false);

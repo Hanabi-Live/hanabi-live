@@ -332,17 +332,10 @@ export function ClueMenu({
     }
     const stopEscape = onEscapeKey(onClose);
 
-    // A click on another player's clue tab chooses that player instead, so it does not close the
-    // menu.
     function onPointerDown(event: PointerEvent) {
       const { target } = event;
       const menu = ref.current;
-      if (
-        menu !== null
-        && target instanceof Node
-        && !menu.contains(target)
-        && !(target instanceof Element && target.closest("[data-clue-tab]"))
-      ) {
+      if (menu !== null && target instanceof Node && !menu.contains(target)) {
         onClose();
       }
     }
