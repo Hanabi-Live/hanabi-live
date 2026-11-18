@@ -34,7 +34,6 @@ import { askForEfficiency } from "../efficiencyModifier.ts";
 import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
-import * as gameMain from "../main.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import { pause, unpause } from "../pause.ts";
 import { ActionLog } from "./ActionLog.ts";
@@ -403,9 +402,6 @@ const DISCARD_STACK_SPACING = {
 
 /** The height of each discard stack, in fractions of the stage height. */
 const DISCARD_STACK_H = 0.15;
-
-/** The rows of buttons in the bottom-left corner: replay (or restart), chat, and lobby. */
-const BOTTOM_LEFT_BUTTON_ROWS = 3;
 
 /**
  * The buttons stacked in the bottom-left corner (replay or restart, chat, and lobby), in fractions
@@ -1202,28 +1198,16 @@ function drawBottomLeftButtons() {
     ...BOTTOM_LEFT_BUTTON,
   };
 
-  // The "New UI" button goes above the column. The Keldon layout has a hand in that place, so there
-  // it goes at the top of the column instead, and the four buttons share the height of three.
-  const { keldonMode, newUi } = store.getState().session.settings;
-  const newUiInColumn = newUi && keldonMode;
-  const columnH =
-    BOTTOM_LEFT_BUTTON.h * BOTTOM_LEFT_BUTTON_ROWS
-    + BOTTOM_LEFT_GAP * (BOTTOM_LEFT_BUTTON_ROWS - 1);
-  const rowH = newUiInColumn
-    ? (columnH - BOTTOM_LEFT_GAP * BOTTOM_LEFT_BUTTON_ROWS)
-      / (BOTTOM_LEFT_BUTTON_ROWS + 1)
-    : BOTTOM_LEFT_BUTTON.h;
-  const firstRow = newUiInColumn ? 1 : 0;
-
   /** The place of a button in the column, counting from the replay button's row. */
   function row(index: number) {
     return {
       x: bottomLeftButtonValues.x * winW,
       y:
-        (BOTTOM_LEFT_BUTTON.y + (firstRow + index) * (rowH + BOTTOM_LEFT_GAP))
+        (BOTTOM_LEFT_BUTTON.y
+          + index * (BOTTOM_LEFT_BUTTON.h + BOTTOM_LEFT_GAP))
         * winH,
       width: BOTTOM_LEFT_BUTTON.w * winW,
-      height: rowH * winH,
+      height: BOTTOM_LEFT_BUTTON.h * winH,
     };
   }
 
@@ -1248,21 +1232,6 @@ function drawBottomLeftButtons() {
     "Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.";
   initKonvaTooltips(replayButton, true, false);
   globals.elements.replayButton = replayButton;
-
-  // The button that switches to the redesigned game screen. It shows only for players who turned on
-  // the "New UI" setting.
-  const newUiButton = new Button({
-    ...row(-1),
-    text: "New UI",
-    visible: newUi,
-  });
-  newUiButton.on("click tap", () => {
-    gameMain.showNewUi();
-  });
-  globals.layers.UI.add(newUiButton);
-  newUiButton.tooltipName = "new-ui";
-  newUiButton.tooltipContent = "Switch to the redesigned game screen.";
-  initKonvaTooltips(newUiButton, true, false);
 
   // The restart button (to bring up the restart menu).
   const restartButton = new Button({

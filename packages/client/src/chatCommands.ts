@@ -8,8 +8,10 @@ import {
   sendSelfPmFromServer,
   showPmHistory,
 } from "./chat.ts";
+import * as gameMain from "./game/main.ts";
 import { rememberVariant } from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
+import { Screen } from "./lobby/types/Screen.ts";
 import { findOnlineUser, getOnlineUserId } from "./onlineUsers.ts";
 import { store } from "./store.ts";
 
@@ -23,6 +25,20 @@ export const chatCommands = new Map<string, Callback>();
 // /copy
 chatCommands.set("copy", (tableId: TableId | undefined) => {
   createJsonFromReplay(tableId);
+});
+
+// `/ui`
+chatCommands.set("ui", (tableId: TableId | undefined) => {
+  if (store.getState().session.screen !== Screen.Game) {
+    sendSelfPmFromServer(
+      "The /ui command works only in a game.",
+      tableId,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+
+  gameMain.swapUi();
 });
 
 // Each command that changes a friend, a linked account, or a blocked user sends one request. The

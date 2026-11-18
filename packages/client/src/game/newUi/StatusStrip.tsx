@@ -136,7 +136,6 @@ interface StatusStripProps {
    * the panel always shows it. Then the chat's rail is hidden, so that the table gets its width.
    */
   readonly chatButton: React.ReactNode;
-  readonly onClassicView: () => void;
   readonly onLobby: () => void;
   /** Whether the game screen uses the phone layout (see "GameScreen.tsx"). */
   readonly phoneLayout: boolean;
@@ -1211,7 +1210,6 @@ export function StatusStrip({
   viewAsMenu,
   tableMenu,
   chatButton,
-  onClassicView,
   onLobby,
   phoneLayout,
   reducedMotion,
@@ -1493,19 +1491,6 @@ export function StatusStrip({
     >
       {!panel && (
         <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
-      )}
-      {/* The panel has no room to spare for a button that players seldom need. */}
-      {!panel && (
-        <button className={buttonClass} onClick={onClassicView} type="button">
-          {/* One box, so that the button's gap does not split the words. */}
-          <span>
-            Classic
-            <span className="tw:group-data-short-labels/buttons:hidden">
-              {" "}
-              UI
-            </span>
-          </span>
-        </button>
       )}
       {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
       {viewAsMenu}

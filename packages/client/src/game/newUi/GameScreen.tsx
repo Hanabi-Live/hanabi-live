@@ -183,12 +183,13 @@ const PHONE_TABLE_GAP = 16;
 const PANEL_CARD_WIDTH = 82;
 
 /**
- * The width of the screen, in CSS pixels, from which the bar along the bottom has room for one row
- * in every game: the widest bar is a shared replay that we lead, with the "Play again" button, and
- * the longest names (see `VARIANT_NAME_MAX_WIDTH` in "StatusStrip.tsx"). On a narrower screen, the
- * bar is a panel in the right column, so that it never needs a second row.
+ * The width of the screen, in its own CSS pixels (see "screenScale.ts"), from which the bar along
+ * the bottom has room for one row in every game: the widest bar is a shared replay that we lead,
+ * with the "Play again" button, and the longest names (see `VARIANT_NAME_MAX_WIDTH` in
+ * "StatusStrip.tsx"). On a narrower screen, the bar is a panel in the right column, so that it
+ * never needs a second row.
  */
-const BAR_ONE_ROW_WIDTH = 1800;
+const BAR_ONE_ROW_WIDTH = 1700;
 
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
@@ -223,11 +224,7 @@ function getClueAction(
   };
 }
 
-export function GameScreen({
-  onSwitchToClassic,
-}: {
-  readonly onSwitchToClassic: () => void;
-}): React.JSX.Element {
+export function GameScreen(): React.JSX.Element {
   useNow(CLOCK_TICK_MILLISECONDS);
   const state = useAppSelector((root) => root.game.current);
   const votes = useAppSelector((root) => root.game.votes);
@@ -1245,7 +1242,6 @@ export function GameScreen({
       maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
       minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
       mode={getScreenMode(state)}
-      onClassicView={onSwitchToClassic}
       onEfficiencyClick={askForEfficiency}
       onFooter={setBarElement}
       onLobby={backToLobby}

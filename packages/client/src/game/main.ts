@@ -109,11 +109,20 @@ export function buildClassicScreen(): void {
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
-export function showNewUi(): void {
+function showNewUi() {
   // The new screen has its own chat panel, which takes the chat box from the classic chat window.
   hideElement(getHtmlElement("#game-chat-modal"));
   hideElement(getHtmlElement("#game"));
   newUi.mount();
+}
+
+/** Swaps the open game between the classic screen and the New UI. */
+export function swapUi(): void {
+  if (store.getState().newUi.shown) {
+    newUi.switchToClassic();
+  } else {
+    showNewUi();
+  }
 }
 
 /**

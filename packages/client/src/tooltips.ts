@@ -25,7 +25,6 @@ const GAME_TOOLTIP_NAMES = [
   "kill",
   "leader",
   "lobby",
-  "new-ui",
   "pace",
   "post-clue-empathy",
   "replay",

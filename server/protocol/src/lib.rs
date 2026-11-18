@@ -207,6 +207,7 @@ constants! {
         "tagsearch",
         "tell",
         "terminate",
+        "ui",
         "unblock",
         "unfriend",
         "unlink",

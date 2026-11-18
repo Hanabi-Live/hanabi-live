@@ -9,7 +9,6 @@ import { PromptModal } from "./PromptModal.tsx";
 import { fadeIn, hideElement } from "./elementVisibility.ts";
 import { GameChatBox } from "./game/GameChatBox.tsx";
 import { GameScreen } from "./game/newUi/GameScreen.tsx";
-import { switchToClassic } from "./game/newUi/newUi.ts";
 import { LOBBY_CLASS_NAME, Lobby } from "./lobby/Lobby.tsx";
 import { scrollLobbyChatToBottom } from "./lobby/chat/LobbyChat.tsx";
 import { LoginBox } from "./lobby/login/LoginBox.tsx";
@@ -85,11 +84,7 @@ function App({ targets }: { readonly targets: Targets }): React.JSX.Element {
           targets.emojiModal,
         )}
       {createPortal(<GameChatBox />, targets.gameChat)}
-      {newUiShown
-        && createPortal(
-          <GameScreen onSwitchToClassic={switchToClassic} />,
-          targets.newUi,
-        )}
+      {newUiShown && createPortal(<GameScreen />, targets.newUi)}
     </>
   );
 }

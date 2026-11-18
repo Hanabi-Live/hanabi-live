@@ -94,7 +94,7 @@ const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
  * shorter than the height breakpoint, so that both sides of it are seen.
  */
 const SIZES = [
-  // The New UI shows the bar along the bottom only from 1800px (see "BAR_ONE_ROW_WIDTH").
+  // The New UI shows the bar along the bottom only from 1700px (see "BAR_ONE_ROW_WIDTH").
   {
     width: 1920,
     height: 900,
@@ -1791,17 +1791,10 @@ async function useClassicScreen(cast: Cast) {
   await cast.setNewUi(false);
 }
 
-/**
- * A window wide enough that the New UI shows its bar along the bottom, which has the "Classic UI"
- * button. A narrower window can show the status panel instead, which does not.
- */
-const BAR_SIZE = SIZES[0];
-
-/** Switches the New UI to the classic screen. */
+/** Switches the New UI to the classic screen with the "/ui" chat command. */
 async function showClassic(page: Page) {
-  await page.setViewportSize(BAR_SIZE);
-  await page.getByRole("button", { name: "Classic UI" }).click();
-  await page.setViewportSize(SETUP_SIZE);
+  await page.locator("#game-chat-input").fill("/ui");
+  await page.press("#game-chat-input", "Enter");
   await page.waitForSelector(".konvajs-content");
   await settle(page);
 }

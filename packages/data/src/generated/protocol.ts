@@ -44,6 +44,7 @@ export const WEBSITE_CHAT_COMMANDS = [
   "tagsearch",
   "tell",
   "terminate",
+  "ui",
   "unblock",
   "unfriend",
   "unlink",
