@@ -49,6 +49,7 @@ function renderStrip(score: number, maxScore: number) {
       lowScorePhase={false}
       maxScore={maxScore}
       minEfficiency="1.00"
+      mode={undefined}
       onClassicView={vi.fn<() => void>()}
       onEfficiencyClick={vi.fn<() => void>()}
       onFooter={vi.fn<(element: HTMLElement | null) => void>()}

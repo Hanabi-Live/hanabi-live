@@ -6,7 +6,7 @@
 
 import type { State } from "../types/State.ts";
 
-type ScreenMode = "inGameReplay" | "finishedReplay" | "hypothetical";
+export type ScreenMode = "inGameReplay" | "finishedReplay" | "hypothetical";
 
 /** The prefix of the mode's colors in "public/css/tokens.css". */
 const MODE_TOKEN = {
@@ -15,7 +15,7 @@ const MODE_TOKEN = {
   hypothetical: "--game-screen-hypothetical",
 } as const satisfies Record<ScreenMode, string>;
 
-function getScreenMode(state: State): ScreenMode | undefined {
+export function getScreenMode(state: State): ScreenMode | undefined {
   if (state.replay.hypothetical !== undefined) {
     return "hypothetical";
   }

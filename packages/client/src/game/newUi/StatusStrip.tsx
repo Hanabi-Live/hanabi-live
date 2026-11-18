@@ -1,5 +1,9 @@
 import type { RefObject } from "react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import type { EfficiencyStats } from "../efficiency.ts";
 import {
@@ -15,6 +19,7 @@ import { getClueLogHeight } from "./ClueLog.tsx";
 import { DRAWER_SLIDE } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
+import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
 /** What the efficiency numbers mean, for screen readers. */
@@ -136,6 +141,8 @@ interface StatusStripProps {
   /** Whether the game screen uses the phone layout (see "GameScreen.tsx"). */
   readonly phoneLayout: boolean;
   readonly reducedMotion: boolean;
+  /** The screen's mode, whose colors the bar takes (see "screenMode.ts"). */
+  readonly mode: ScreenMode | undefined;
   /**
    * Whether the bar is a panel at the bottom of the right column instead of a bar along the bottom
    * of the screen (see "GameScreen.tsx").
@@ -843,7 +850,9 @@ function getPaddingOverlap(footer: HTMLElement): number {
       * scale;
   const reach = Math.max(
     box.left,
-    ...[...footer.children].map((child) => child.getBoundingClientRect().right),
+    ...[...footer.children]
+      .filter((child) => !child.hasAttribute(MODE_FADE_ATTRIBUTE))
+      .map((child) => child.getBoundingClientRect().right),
   );
   return Math.max(
     footer.scrollWidth - footer.clientWidth,
@@ -905,6 +914,106 @@ function useOwnRow(
     setOwnRow(ownRowWidth.current !== undefined);
   });
   return ownRow;
+}
+
+/** The attribute of the layer that fades out the colors of the mode before (see `useModeFade`). */
+const MODE_FADE_ATTRIBUTE = "data-mode-fade";
+
+/** How deep a mode is: the game, a replay of it, or a hypothetical in the replay. */
+function getModeDepth(mode: ScreenMode | undefined): number {
+  switch (mode) {
+    case undefined: {
+      return 0;
+    }
+
+    case "inGameReplay":
+    case "finishedReplay": {
+      return 1;
+    }
+
+    case "hypothetical": {
+      return 2;
+    }
+  }
+}
+
+/**
+ * When the screen's mode changes, the bar's colors fade into those of the new mode: a layer with
+ * the colors from before covers the bar's background, under its contents, and fades out. Going into
+ * a replay or a hypothetical fades as fast as a tooltip opens, and coming back as fast as one
+ * closes.
+ *
+ * Only the layer's opacity animates, never a background color. Chrome 157 runs an animation of a
+ * background color on the compositor, and then sometimes crashes the tab when the element's style
+ * changes (see "playMotion.ts"). While the layer fades, the bar is its own stacking context, so
+ * that the layer can be under the bar's contents but over its background.
+ */
+function useModeFade(
+  footer: HTMLElement | null,
+  mode: ScreenMode | undefined,
+  reducedMotion: boolean,
+) {
+  const last = useRef<{
+    readonly footer: HTMLElement;
+    readonly mode: ScreenMode | undefined;
+    readonly backgroundColor: string;
+    readonly boxShadow: string;
+  }>(undefined);
+
+  useLayoutEffect(() => {
+    if (footer === null) {
+      return undefined;
+    }
+    const previous = last.current;
+    const style = getComputedStyle(footer);
+    last.current = {
+      footer,
+      mode,
+      backgroundColor: style.backgroundColor,
+      boxShadow: style.boxShadow,
+    };
+    // When the bar moves into the panel or back, it is a new element with other colors.
+    if (
+      reducedMotion
+      || previous === undefined
+      || previous.footer !== footer
+      || previous.mode === mode
+    ) {
+      return undefined;
+    }
+
+    const layer = document.createElement("div");
+    layer.setAttribute(MODE_FADE_ATTRIBUTE, "");
+    layer.setAttribute("aria-hidden", "true");
+    Object.assign(layer.style, {
+      position: "absolute",
+      inset: "0",
+      zIndex: "-1",
+      borderRadius: "inherit",
+      pointerEvents: "none",
+      backgroundColor: previous.backgroundColor,
+      boxShadow: previous.boxShadow,
+    });
+    footer.style.isolation = "isolate";
+    footer.append(layer);
+    const opening = getModeDepth(mode) > getModeDepth(previous.mode);
+    const fade = layer.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: opening
+        ? OPEN_DURATION_IN_MILLISECONDS
+        : CLOSE_DURATION_IN_MILLISECONDS,
+      easing: opening ? "ease-out" : "ease-in",
+      fill: "forwards",
+    });
+    function remove() {
+      layer.remove();
+      footer?.style.removeProperty("isolation");
+    }
+    fade.addEventListener("finish", remove);
+    fade.addEventListener("cancel", remove);
+    return () => {
+      fade.cancel();
+    };
+  }, [footer, mode, reducedMotion]);
 }
 
 /**
@@ -999,6 +1108,7 @@ export function StatusStrip({
   onLobby,
   phoneLayout,
   reducedMotion,
+  mode,
   panel,
   onFooter,
   clueLog,
@@ -1014,6 +1124,7 @@ export function StatusStrip({
     [onFooter],
   );
   const inReplay = replayControls !== undefined;
+  useModeFade(footer, mode, reducedMotion);
   const [closingControls, closeControls] = useClosingControls(
     replayControls,
     panel && !reducedMotion,
@@ -1352,7 +1463,7 @@ export function StatusStrip({
         <>
           {clueLog}
           <footer
-            className={`tw:group/strip tw:@container/panel tw:flex tw:shrink-0 tw:flex-col tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+            className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:shrink-0 tw:flex-col tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
             data-panel=""
             data-phone-layout=""
             ref={setFooter}
@@ -1368,7 +1479,7 @@ export function StatusStrip({
     // scrolling.
     return (
       <footer
-        className={`tw:group/strip tw:@container/panel tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+        className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
         data-panel=""
         data-phone-layout=""
         data-tabbed=""
@@ -1402,7 +1513,7 @@ export function StatusStrip({
   // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-7 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
+      className={`tw:group/strip tw:relative tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-7 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
       style={{ "--strip-height": `${BAR_HEIGHT}px` } as React.CSSProperties}

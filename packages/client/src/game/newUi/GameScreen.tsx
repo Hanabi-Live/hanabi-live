@@ -139,7 +139,7 @@ import {
   showTurnAndIndicateCard,
   toggleReplay,
 } from "./screenActions.ts";
-import { getScreenModeStyle } from "./screenMode.ts";
+import { getScreenMode, getScreenModeStyle } from "./screenMode.ts";
 import { measure } from "./screenScale.ts";
 import {
   getClueForTurn,
@@ -1242,6 +1242,7 @@ export function GameScreen({
       // cards they played instead, as on the classic screen.
       maxScore={scoreHidden ? undefined : visibleState.stats.maxScore}
       minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
+      mode={getScreenMode(state)}
       onClassicView={onSwitchToClassic}
       onEfficiencyClick={askForEfficiency}
       onFooter={setBarElement}
