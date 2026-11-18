@@ -51,7 +51,9 @@ const ICON_BUTTON_SIZE_CLASS = {
  * on the left, its main controls in the middle, and its other buttons on the right. Each part is as
  * tall as a step. The timeline has a smallest width, and the hint takes only the room that is left,
  * so that the bar knows the room that the controls need (see "StatusStrip.tsx"). On a narrow
- * window, the middle has a row of its own, under the others, when there are leader's controls.
+ * window, the middle has a row of its own, under the others, when there are leader's controls. The
+ * panel has a fixed width, so there the group can be narrower than its content. Then a long
+ * leader's name makes the leader's menu smaller, and it does not push the buttons out of the panel.
  */
 function Controls({
   children,
@@ -60,7 +62,7 @@ function Controls({
 }): React.JSX.Element {
   return (
     <div
-      className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3 tw:group-data-panel/strip:gap-x-1.5"
+      className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:group-data-panel/strip:min-w-0 tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3 tw:group-data-panel/strip:gap-x-1.5"
       role="status"
     >
       {children}
