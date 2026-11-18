@@ -1672,12 +1672,12 @@ function Hand({
     && props.clueTarget === undefined
     && pointedAt
     && props.draggedCard === undefined;
-  // The tab stays while it slides back after it closes. It goes at once when the clue menu opens or
-  // the viewer can no longer give a clue.
+  // The tab stays while it slides back after it closes, also when the viewer can no longer give a
+  // clue. It goes at once when the clue menu opens, which grows out of it.
   const [clueTabMounted, setClueTabMounted] = useState(false);
   if (showsClueTab && !clueTabMounted) {
     setClueTabMounted(true);
-  } else if (clueTabMounted && (!canClueSeat || chosen)) {
+  } else if (clueTabMounted && chosen) {
     setClueTabMounted(false);
   }
 
@@ -1890,7 +1890,7 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {clueTabMounted && canClueSeat && !chosen && (
+      {clueTabMounted && !chosen && (
         <ClueTab
           below={props.stacked}
           name={seat.name}

@@ -15,14 +15,14 @@ export const SLIDE = {
 } as const;
 
 /**
- * How a part of the screen slides back out of view, such as a drawer that closes. It is `SLIDE`
- * played backward: its curve is the mirror of `SLIDE`'s, so that it starts slowly and speeds up as
- * it goes. With `SLIDE`'s own curve, most of the slide would happen at the start, and the close
- * would look twice as fast as the open.
+ * How a part of the screen slides back out of view, such as a drawer that closes. It starts and
+ * ends gently, and moves evenly in between. With `SLIDE`'s curve, most of the slide would happen at
+ * the start, and the close would look twice as fast as the open. With `SLIDE`'s curve played
+ * backward, most of it would happen in the last few frames, and the close would look like a jump.
  */
 export const SLIDE_BACK = {
   duration: SLIDE.duration,
-  easing: "cubic-bezier(0.32, 0, 0.67, 0)",
+  easing: "cubic-bezier(0.37, 0, 0.63, 1)",
 } as const;
 
 /**

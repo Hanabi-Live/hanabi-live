@@ -719,10 +719,9 @@ function ChoiceRing({
 /**
  * Slides the clue tab and fades its hand's color in when `open` turns on, and out when it turns
  * off, from where they are. Each look holds when its animation ends. When the tab has closed, it
- * calls `onClosed`. The slide closes on `SLIDE_BACK`, but the fade closes at an even pace, so that
- * the tab starts to fade as soon as it closes. With `SLIDE_BACK`'s curve, it would barely change
- * for half of the close, and then vanish in a few frames. The tab and its hand use the same timing,
- * so that they fade together in both directions. The animations only decorate.
+ * calls `onClosed`. The slide closes on `SLIDE_BACK`, and the fade closes at an even pace, so that
+ * the tab starts to fade as soon as it closes. The tab and its hand use the same timing, so that
+ * they fade together in both directions. The animations only decorate.
  */
 function useTabSlide(
   ref: React.RefObject<HTMLElement | null>,
@@ -978,6 +977,8 @@ export function ClueTab({
     <div
       className={`tw:absolute tw:z-20 ${below ? "tw:right-3" : TAB_RIGHT_CLASS}`}
       data-clue-tab
+      // While it slides back, its key cannot be clicked.
+      inert={!open}
       ref={ref}
       style={below ? { top } : undefined}
     >
