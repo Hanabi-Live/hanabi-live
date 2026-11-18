@@ -29,14 +29,8 @@ const DISC_PIP_PER_SIZE = 0.8;
  */
 const BOTTOM_SLOP = 2;
 
-/**
- * The height of a line in a row of the log, in CSS pixels: the disc and its outline. It does not
- * change with the size of a name that is made smaller to fit.
- */
+/** The height of a line in a row of the log, in CSS pixels: the disc and its outline. */
 const ROW_LINE_HEIGHT = CLUE_DISC_SIZE + 1;
-
-/** The size of a name in the log, in CSS pixels, if it fits in its column. */
-const NAME_FONT_SIZE = 14;
 
 /** How a clue relates to the card that the mouse is over. */
 type Match = "none" | "positive" | "negative";
@@ -97,8 +91,8 @@ export function getClueText(entry: ClueLogEntry): string {
 /**
  * The clues of the game so far, newest at the bottom, like the classic screen's clue log. They are
  * in columns: the turn, the giver, an arrow, the receiver, and the clue (a disc and its name). A
- * name that is too long for its column is made smaller to fit, not cut off. Each one is a button
- * that shows the turn after it. The clue of the turn on screen stands out.
+ * name that is too long for its column is cut off. Each one is a button that shows the turn after
+ * it. The clue of the turn on screen stands out.
  *
  * While the mouse is over a card in a hand, the clues about that card stand out, as on the classic
  * screen: the ones that touched it (on green), and the ones to its hand that did not (on red). The
@@ -199,13 +193,13 @@ export function ClueLog({
                   <span className="tw:text-[13px] tw:text-game-muted">
                     #{entry.turn}
                   </span>
-                  <FitName name={entry.giverName} />
+                  <Name name={entry.giverName} />
                   <i
                     aria-label="told"
                     className="fas fa-arrow-right tw:text-[11px] tw:text-game-muted"
                     role="img"
                   />
-                  <FitName name={entry.targetName} />
+                  <Name name={entry.targetName} />
                   <span className="tw:flex tw:items-center tw:gap-1.5">
                     <ClueDisc
                       clueName={entry.clueName}
@@ -232,51 +226,11 @@ export function ClueLog({
 }
 
 /**
- * A name on one line that fills its column. If it is too long for the column, its text is made
- * smaller until it fits, instead of being cut off.
+ * A name on one line that fills its column. If it is too long for the column, its end is cut off.
  */
-function FitName({ name }: { readonly name: string }): React.JSX.Element {
-  const ref = useRef<HTMLSpanElement>(null);
-
-  useLayoutEffect(() => {
-    const span = ref.current;
-    if (span === null) {
-      return undefined;
-    }
-
-    // The width of the span comes from its column, not from its text, and its line height is fixed.
-    // So a new font size does not resize the span and make it fit again.
-    let fittedWidth: number | undefined;
-    function fit() {
-      if (span === null || span.clientWidth === fittedWidth) {
-        return;
-      }
-      fittedWidth = span.clientWidth;
-      span.style.fontSize = `${NAME_FONT_SIZE}px`;
-      if (span.scrollWidth <= span.clientWidth) {
-        return;
-      }
-
-      const fitted = (NAME_FONT_SIZE * span.clientWidth) / span.scrollWidth;
-      span.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
-    }
-
-    fit();
-    const observer = new ResizeObserver(fit);
-    observer.observe(span);
-    return () => {
-      observer.disconnect();
-    };
-  }, [name]);
-
+function Name({ name }: { readonly name: string }): React.JSX.Element {
   return (
-    <span
-      className="tw:overflow-hidden tw:whitespace-nowrap"
-      ref={ref}
-      style={{ fontSize: NAME_FONT_SIZE }}
-    >
-      {name}
-    </span>
+    <span className="tw:overflow-hidden tw:whitespace-nowrap">{name}</span>
   );
 }
 

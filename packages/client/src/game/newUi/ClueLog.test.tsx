@@ -2,7 +2,7 @@
 
 import type { CardOrder } from "@hanabi-live/game";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 
@@ -51,19 +51,8 @@ function getTurns(): readonly string[] {
     .map((button) => /#\d+/u.exec(button.textContent)?.[0] ?? "");
 }
 
-/** A stand-in for jsdom, which has no layout. So the names never need to be made smaller. */
-class NoResizeObserver {
-  readonly observe = vi.fn();
-  readonly disconnect = vi.fn();
-}
-
-beforeEach(() => {
-  vi.stubGlobal("ResizeObserver", NoResizeObserver);
-});
-
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
 });
 
 describe("ClueLog", () => {
