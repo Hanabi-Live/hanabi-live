@@ -3,6 +3,7 @@ import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { ColorSymbolView, getRankClueLabel } from "./Card.tsx";
+import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { getColorSymbol } from "./clueMarkers.ts";
 import { onEscapeKey } from "./escapeKey.ts";
 import { measure } from "./screenScale.ts";
@@ -471,12 +472,18 @@ export function ClueMenu({
           </div>
           <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
             <button
-              className={`tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
+              className={`tw:flex tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-clue tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:bg-transparent tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${KEY_CLASS}`}
               disabled={!canGive}
               onClick={onGive}
               type="button"
             >
-              {clue === undefined ? "Pick a color or number" : "Give clue"}
+              {/* The token shows what the button does and what it spends, as on the name of a
+                  player who can take a clue. A prompt to pick a clue is not an action, so it has
+                  none. */}
+              {clue !== undefined && <ClueTokenIcon className="tw:size-5" />}
+              <span>
+                {clue === undefined ? "Pick a color or number" : "Give clue"}
+              </span>
             </button>
           </div>
         </div>
