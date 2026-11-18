@@ -18,6 +18,9 @@ const BUTTON_CLASS = `${REPLAY_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:w-full 
 /** How long the crown pulses when the leader changes, in milliseconds. */
 const CROWN_PULSE_MILLISECONDS = 1000;
 
+/** The smallest size of the leader's name, as a fraction of its full size. */
+const LEADER_NAME_MIN_SCALE = 0.75;
+
 /** A person to set as the new leader. */
 const ITEM_CLASS = `tw:group tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;
 
@@ -89,6 +92,9 @@ export function LeaderMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
+        // The crown says that the name is the leader's, so the text leaves out "Leader:" to save
+        // room in the bar.
+        aria-label={`Leader: ${leader}`}
         className={BUTTON_CLASS}
         onClick={() => {
           setOpen(!open);
@@ -106,12 +112,12 @@ export function LeaderMenu({
             middle of the bar to the side. */}
         {/* The leader's name is orange when it is ours, as in the list of people watching. */}
         <FitText
+          // Smaller text would be hard to read. A longer name is cut off, and the tooltip names the
+          // leader in full.
+          minScale={LEADER_NAME_MIN_SCALE}
           text={
-            <span>
-              Leader:{" "}
-              <span className={amLeader ? "tw:text-name-me" : undefined}>
-                {leader}
-              </span>
+            <span className={amLeader ? "tw:text-name-me" : undefined}>
+              {leader}
             </span>
           }
         />

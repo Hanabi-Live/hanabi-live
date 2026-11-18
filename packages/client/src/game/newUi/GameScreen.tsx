@@ -187,9 +187,10 @@ const PANEL_CARD_WIDTH = 82;
  * the bottom has room for one row in every game: the widest bar is a shared replay that we lead,
  * with the "Play again" button, and the longest names (see `VARIANT_NAME_MAX_WIDTH` in
  * "StatusStrip.tsx"). On a narrower screen, the bar is a panel in the right column, so that it
- * never needs a second row.
+ * never needs a second row. A full-screen 16:9 window is 1600px wide in these pixels, so it keeps
+ * the bar along the bottom.
  */
-const BAR_ONE_ROW_WIDTH = 1650;
+const BAR_ONE_ROW_WIDTH = 1600;
 
 /** The tokens of no clue. */
 const NO_CLUE_MARKERS: ReadonlyMap<CardOrder, CardClueMarker> = new Map();

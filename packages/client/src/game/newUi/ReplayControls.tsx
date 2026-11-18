@@ -755,8 +755,10 @@ function LeaderControls({
     >
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
-        // knows the room that it needs.
-        <div className="tw:flex tw:w-max tw:max-w-56 tw:min-w-0 tw:phone:w-auto">
+        // knows the room that it needs. In the bar along the bottom, the largest width lets the bar
+        // keep one row on a 16:9 screen (see `BAR_ONE_ROW_WIDTH` in "GameScreen.tsx"). The panel
+        // and the phone layout have room for a longer name.
+        <div className="tw:flex tw:w-max tw:max-w-30 tw:min-w-0 tw:phone:w-auto tw:phone:max-w-56 tw:group-data-panel/strip:max-w-56">
           <LeaderMenu
             amLeader={shared.amLeader}
             leader={shared.leader}

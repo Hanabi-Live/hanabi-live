@@ -94,7 +94,7 @@ const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
  * shorter than the height breakpoint, so that both sides of it are seen.
  */
 const SIZES = [
-  // The New UI shows the bar along the bottom only from 1650px (see "BAR_ONE_ROW_WIDTH").
+  // The New UI shows the bar along the bottom only from 1600px (see "BAR_ONE_ROW_WIDTH").
   {
     width: 1920,
     height: 900,
