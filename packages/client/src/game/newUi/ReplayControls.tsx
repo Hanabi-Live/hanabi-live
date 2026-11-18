@@ -18,6 +18,7 @@ import {
 import * as hypothetical from "../hypothetical.ts";
 import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
+import { ChainIcon } from "./ChainIcon.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { KEY_CLASS } from "./surfaces.ts";
 
@@ -345,16 +346,16 @@ export function Checkbox({
   );
 }
 
+/** The shape of the switch to follow the leader: an icon button that sets no color. */
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 ${KEY_CLASS}`;
+
 /**
  * A spectator's switch to follow the shared replay leader, or to move through the turns on their
  * own. A step through the turns also stops them from following. It is lit while they follow. It is
  * beside the leader's menu in every mode, so that it stays in one place when it is switched on and
  * off, and when the leader starts or ends a hypothetical. The leader has a switch to share their
- * turns in its place.
+ * turns in its place. Its chain is linked while they follow, and apart while they do not.
  */
-/** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] ${KEY_CLASS}`;
-
 function FollowToggle({
   state,
 }: {
@@ -397,7 +398,7 @@ function FollowToggle({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-link" />
+      <ChainIcon linked={following} />
     </button>
   );
 }
@@ -452,7 +453,7 @@ function ShareTurnsToggle({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-link" />
+      <ChainIcon linked={sharing} />
     </button>
   );
 }
