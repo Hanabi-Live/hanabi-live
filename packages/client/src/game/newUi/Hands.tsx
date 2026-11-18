@@ -533,13 +533,13 @@ export const NAME_GAP = 16;
 
 /**
  * The most width that the column with each player's name takes, in CSS pixels. Below it, the column
- * is as wide as the widest name. A longer name is drawn smaller. The wide layout uses the larger
- * limit, unless the hands need the room (see "getWideLayoutRoom"). The phone layout uses the
- * smaller one.
+ * is as wide as the widest name. A longer name is drawn smaller. In the wide layout, the column
+ * does not give up width when the hands need it, since a name drawn much smaller cannot be read.
+ * The cards get smaller instead (see "getWideLayoutRoom").
  */
 export const NAME_COLUMN_MAX_WIDTH = {
-  MIN: 110,
-  MAX: 150,
+  WIDE: 150,
+  PHONE: 110,
 } as const;
 
 /**

@@ -571,7 +571,7 @@ export function GameScreen({
       handsHeight + barHeight - REPLAY_BAR_HEIGHT,
       options.numPlayers,
       getCardsPerHand(options),
-      Math.min(nameWidth, room.nameColumnMaxWidth)
+      Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE)
         + (touch ? EMPATHY_TOGGLE_SPACE : 0),
       nameHeight,
       false,
@@ -1018,7 +1018,7 @@ export function GameScreen({
   let nameColumnWidth: number | undefined =
     Math.min(
       nameWidth,
-      stacked ? NAME_COLUMN_MAX_WIDTH.MIN : wideRoom.nameColumnMaxWidth,
+      stacked ? NAME_COLUMN_MAX_WIDTH.PHONE : NAME_COLUMN_MAX_WIDTH.WIDE,
     ) + (empathyButtons ? EMPATHY_TOGGLE_SPACE : 0);
   // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
   // rest of the height of the table on the screen, with the same space below them as above the

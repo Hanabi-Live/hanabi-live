@@ -177,7 +177,6 @@ export interface WideLayoutRoom {
    */
   readonly handsColumnMaxWidth: number;
 
-  readonly nameColumnMaxWidth: number;
   readonly tableSidePadding: number;
   readonly tableColumnGap: number;
 
@@ -192,10 +191,10 @@ export interface WideLayoutRoom {
  * Returns the sizes of the wide layout's parts beside the hands. Each part is as large as it can
  * be, and the right column also takes the width that the hands do not use, up to its maximum. When
  * the width makes the hand cards smaller than their height allows, the parts give up room to the
- * hands, in this order, and only as much as the hands need: the right column, the column of names,
- * and the padding and the gaps of the table. `rowWidth` is the width of the table's row without the
- * play stacks' column. `nameWidth` is the width of the widest name, and `nameExtraWidth` is the
- * width beside the names, such as for the brain buttons.
+ * hands, in this order, and only as much as the hands need: the right column, and then the padding
+ * and the gaps of the table. The column of names does not give up room. `rowWidth` is the width of
+ * the table's row without the play stacks' column. `nameWidth` is the width of the widest name, and
+ * `nameExtraWidth` is the width beside the names, such as for the brain buttons.
  */
 export function getWideLayoutRoom(
   rowWidth: number,
@@ -210,9 +209,8 @@ export function getWideLayoutRoom(
     handsColumnMaxWidth: getHandsWidthForCards(
       HAND_CARD_WIDTH.MAX,
       cardsPerHand,
-      NAME_COLUMN_MAX_WIDTH.MAX + nameExtraWidth,
+      NAME_COLUMN_MAX_WIDTH.WIDE + nameExtraWidth,
     ),
-    nameColumnMaxWidth: NAME_COLUMN_MAX_WIDTH.MAX,
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
     handsNarrowed: false,
@@ -235,13 +233,13 @@ export function getWideLayoutRoom(
     0,
     false,
   );
-  const widestNameColumn = Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.MAX);
+  const nameColumnWidth = Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE);
   // The hands use no more width than their cards need. Then the cards are as large as the height
   // allows.
   const neededWidth = getHandsWidthForCards(
     cardWidth,
     cardsPerHand,
-    widestNameColumn + nameExtraWidth,
+    nameColumnWidth + nameExtraWidth,
   );
   const handsColumnMaxWidth = Math.ceil(neededWidth);
   let missing = neededWidth - roomForHands;
@@ -267,11 +265,6 @@ export function getWideLayoutRoom(
   );
   missing -= discardRoom;
 
-  const nameColumnMaxWidth =
-    NAME_COLUMN_MAX_WIDTH.MAX
-    - clamp(missing, 0, NAME_COLUMN_MAX_WIDTH.MAX - NAME_COLUMN_MAX_WIDTH.MIN);
-  missing -= widestNameColumn - Math.min(nameWidth, nameColumnMaxWidth);
-
   // The padding and the gaps give up room together, each in proportion to its range.
   const spacingShare =
     clamp(missing, 0, TABLE_SPACING_ROOM) / TABLE_SPACING_ROOM;
@@ -280,7 +273,6 @@ export function getWideLayoutRoom(
   return {
     discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL - discardRoom,
     handsColumnMaxWidth,
-    nameColumnMaxWidth,
     tableSidePadding:
       TABLE_SIDE_PADDING.MAX
       - spacingShare * (TABLE_SIDE_PADDING.MAX - TABLE_SIDE_PADDING.MIN),
