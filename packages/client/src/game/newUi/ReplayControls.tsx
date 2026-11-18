@@ -131,7 +131,9 @@ const KNOB_INSET_PX = 16;
 /**
  * A line from the first turn to the last, with a knob on the turn on screen. Clicking it, dragging
  * along it, or turning the mouse wheel over it shows another turn. On a phone, it gets shorter, so
- * that its row fits beside the four buttons that step through the turns.
+ * that its row fits beside the four buttons that step through the turns. In a narrow panel, it is
+ * on the next row, and it fills that row except for the button on its right. Otherwise, the
+ * timeline fits beside the buttons, and only the button on its right wraps.
  */
 function Timeline({
   segment,
@@ -191,7 +193,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:min-w-[96px] tw:group-data-panel/strip:@max-[22rem]/panel:order-1 tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
+      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:min-w-[96px] tw:group-data-panel/strip:@max-[22rem]/panel:order-1 tw:group-data-panel/strip:@max-[22rem]/panel:min-w-[calc(100%-2.75rem-0.375rem)] tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
