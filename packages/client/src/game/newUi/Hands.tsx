@@ -954,6 +954,7 @@ function OwnCard({
       pips={card.pips}
       raiseClued
       rank={card.rank}
+      reducedMotion={props.reducedMotion}
       showPossibleCards={props.showPossibleCards}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
@@ -1344,6 +1345,7 @@ function EditableCard({
         pips={card.pips}
         raiseClued
         rank={card.rank}
+        reducedMotion={props.reducedMotion}
         showPossibleCards={props.showPossibleCards}
         stackDirection={card.stackDirection}
         suitIndex={card.suitIndex}
@@ -1420,6 +1422,7 @@ function HandCard({
       pips={card.pips}
       raiseClued
       rank={card.rank}
+      reducedMotion={props.reducedMotion}
       showPossibleCards={props.showPossibleCards}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}

@@ -296,6 +296,9 @@ export interface CardClueMarker {
    * gray, so that the viewer sees that the clue may only confirm the chop move.
    */
   readonly chopMoved?: boolean;
+
+  /** Whether the token shows what a clue that the viewer chooses in the menu would touch. */
+  readonly preview?: boolean;
 }
 
 /**
@@ -429,6 +432,9 @@ export interface CardFaceProps {
 
   /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
   readonly clueMarker?: CardClueMarker;
+
+  /** Whether the "Reduced motion" setting leaves out the fades of the clue being chosen. */
+  readonly reducedMotion?: boolean;
 }
 
 /** The color that stands for a clue on the screen: its own color, or white for a rank. */
@@ -522,11 +528,13 @@ const PIN_OUTLINE_WIDTH = 2;
  * attributes let it land on the card when the clue is given (see "cardMotion.ts").
  */
 function ClueMarker({
-  marker: { marker, touchedBefore, chopMoved = false },
+  marker: { marker, touchedBefore, chopMoved = false, preview = false },
   width,
+  reducedMotion,
 }: {
   readonly marker: CardClueMarker;
   readonly width: number;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const fullSize = getClueTokenSize(width);
   const size = touchedBefore ? Math.round(fullSize * CLUE_DOT_SCALE) : fullSize;
@@ -537,14 +545,19 @@ function ClueMarker({
   return (
     <span
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
+      // The token of a clue that the viewer chooses fades in, as fast as a tooltip opens. The token
+      // of another clue is a new element (see "CardFace"), so it fades in too.
+      className={`tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10 ${preview && !reducedMotion ? "tw:transition-opacity tw:duration-(--fade) tw:ease-out tw:starting:opacity-0" : ""}`}
       data-clue-marker
-      style={{
-        top: -size * partAboveCard,
-        marginLeft: -size / 2,
-        width: size,
-        height: size,
-      }}
+      style={
+        {
+          top: -size * partAboveCard,
+          marginLeft: -size / 2,
+          width: size,
+          height: size,
+          "--fade": `${OPEN_DURATION_IN_MILLISECONDS}ms`,
+        } as React.CSSProperties
+      }
     >
       <ClueToken
         marker={marker}
@@ -2543,6 +2556,7 @@ export function CardFace({
   doubleDiscard = false,
   stackDirection,
   clueMarker,
+  reducedMotion = false,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
@@ -2605,16 +2619,13 @@ export function CardFace({
   // Clued cards get a thick border in the clue color, with a dark line inside it so that it stands
   // out against faces of a similar color. Other cards get a dark line and a shadow, so that they
   // stand out against the green felt. Cards that a chosen clue would touch get a white outline
-  // outside of it.
+  // outside of it (see the outline's layer below).
   let border = "tw:ring-1 tw:ring-black/45";
   if (clued) {
     border = "tw:ring-4 tw:ring-clue tw:inset-ring-2 tw:inset-ring-card-ink";
   } else if (noteBorder !== undefined) {
     border = NOTE_BORDER_CLASSES[noteBorder];
   }
-  const outline = highlighted
-    ? "tw:outline-4 tw:outline-offset-4 tw:outline-white"
-    : "";
   // A card with a "blank" note shows its back, as on the classic screen, with a frame inside its
   // edge like the deck's.
   const surface = blank
@@ -2624,7 +2635,7 @@ export function CardFace({
   const face = (
     <div
       // A card that a clue newly touches slides up to its raised place, without a bounce.
-      className={`tw:relative tw:shrink-0 tw:transition-transform tw:duration-200 tw:ease-out ${surface} ${border} ${outline}`}
+      className={`tw:relative tw:shrink-0 tw:transition-transform tw:duration-200 tw:ease-out ${surface} ${border}`}
       data-card-blank={blank ? true : undefined}
       // A played card that its holder did not know turns over on its way to the stack (see
       // "playMotion.ts").
@@ -2669,8 +2680,31 @@ export function CardFace({
         opacity: trash ? TRASH_CARD_OPACITY : 1,
       }}
     >
+      {/* The white outline is a layer of its own, so that it can fade in and out while the viewer
+          changes the clue in the menu, as fast as a tooltip opens and closes. Only its opacity
+          changes. */}
+      <span
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:outline-4 tw:outline-offset-4 tw:outline-white"
+        style={{
+          borderRadius: "inherit",
+          opacity: highlighted ? 1 : 0,
+          transition: reducedMotion
+            ? undefined
+            : `opacity ${highlighted ? `${OPEN_DURATION_IN_MILLISECONDS}ms ease-out` : `${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`}`,
+        }}
+      />
       {clueMarker !== undefined && (
-        <ClueMarker marker={clueMarker} width={width} />
+        <ClueMarker
+          key={
+            clueMarker.preview === true
+              ? `preview ${getClueMarkerLabel(clueMarker.marker)}`
+              : "clue"
+          }
+          marker={clueMarker}
+          reducedMotion={reducedMotion}
+          width={width}
+        />
       )}
       {suit !== undefined && suit.clueColors.length > 1 && (
         <DualColorTriangles

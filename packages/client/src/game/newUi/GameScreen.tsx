@@ -816,6 +816,7 @@ export function GameScreen({
           marker,
           touchedBefore: touchedBefore.has(order),
           chopMoved: chopMoved.has(order),
+          preview: true,
         },
       ]),
     );
