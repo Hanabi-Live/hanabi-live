@@ -576,9 +576,8 @@ There are different sounds for:
 
 ## Pace & Efficiency
 
-In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for
-the current game. Good players will often use these numbers to make the best
-move for the current situation.
+_Pace_ and _Efficiency_ are shown the current game. Good players will often use
+these numbers to make the best move for the current situation.
 
 ### Pace
 
@@ -612,7 +611,6 @@ move for the current situation.
 - Note that the calculation will automatically account for clued cards that are
   globally known to be trash. Such cards will not be included in the
   `cards gotten` term.
-- In-game, Hanab Live shows you two different efficiency numbers.
 
 #### 1) Future Required Efficiency
 
