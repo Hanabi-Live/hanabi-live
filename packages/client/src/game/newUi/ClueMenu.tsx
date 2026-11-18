@@ -73,26 +73,27 @@ const DRAWER_RADIUS = 8;
 
 /**
  * The spaces in the drawer to the right of the hand, in CSS pixels: around its content, below its
- * title, and above the button to give the clue. When the drawer is only a little taller than the
- * hand, it uses the compact spaces, so that it is as tall as the hand. A small step between them
- * would look like a mistake.
+ * title, and above the button to give the clue. The classes are in pixels, not in Tailwind's
+ * spacing, which grows with the font of the game screen. When the drawer is only a little taller
+ * than the hand, it uses the compact spaces, so that it is as tall as the hand. A small step
+ * between them would look like a mistake.
  */
 const SPACING = {
   NORMAL: {
     padding: 12,
     title: 8,
     button: 16,
-    className: "tw:p-3",
-    titleClassName: "tw:gap-2",
-    buttonClassName: "tw:gap-4",
+    className: "tw:p-[12px]",
+    titleClassName: "tw:gap-[8px]",
+    buttonClassName: "tw:gap-[16px]",
   },
   COMPACT: {
     padding: 8,
     title: 4,
     button: 8,
-    className: "tw:px-3 tw:py-2",
-    titleClassName: "tw:gap-1",
-    buttonClassName: "tw:gap-2",
+    className: "tw:px-[12px] tw:py-[8px]",
+    titleClassName: "tw:gap-[4px]",
+    buttonClassName: "tw:gap-[8px]",
   },
 } as const;
 
@@ -123,10 +124,13 @@ const DRAWER_CLASS = {
   below: BELOW_CLASS,
 } as const satisfies Record<DrawerSide, string>;
 
-/** The width and height of a clue choice, in CSS pixels (`tw:size-11`). */
+/**
+ * The width and height of a clue choice, in CSS pixels (`choiceSizeClass`). It is in pixels, not in
+ * Tailwind's spacing, which grows with the font of the game screen and of the choice.
+ */
 const CHOICE_SIZE = 44;
 
-/** The space between the clue choices in a row, in CSS pixels (`tw:gap-2` in `ClueRow`). */
+/** The space between the clue choices in a row, in CSS pixels (`tw:gap-[8px]` in `ClueRow`). */
 const CHOICE_GAP = 8;
 
 /**
@@ -153,7 +157,9 @@ export function getClueDrawerWidth(variant: Variant): number {
   );
 }
 
-const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
+// A choice is never wider than its column (see `ClueRow`).
+const choiceSizeClass =
+  "tw:h-[44px] tw:w-[44px] tw:max-w-full tw:rounded-game-control";
 
 const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
@@ -188,6 +194,7 @@ export function ClueMenu({
   const contentRef = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
+  const columns = Math.max(colorClues.length, rankClues.length);
   // Where the drawer is for the player whose menu this is, in this layout: whether its bottom lines
   // up with the bottom of the hand instead of its top with the top, and the heights of both. It is
   // undefined until it is measured.
@@ -436,7 +443,7 @@ export function ClueMenu({
           className={`tw:-mx-2 tw:flex tw:overflow-x-clip tw:px-2 ${opensRight ? `tw:flex-col ${spacing.buttonClassName}` : "tw:flex-wrap tw:gap-6"}`}
         >
           <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
-            <ClueRow wraps={!opensRight}>
+            <ClueRow columns={columns} wraps={!opensRight}>
               {colorClues.map((colorClue) => {
                 const color = colorClue.value;
                 if (!isAllowed(colorClue)) {
@@ -467,7 +474,7 @@ export function ClueMenu({
                 );
               })}
             </ClueRow>
-            <ClueRow wraps={!opensRight}>
+            <ClueRow columns={columns} wraps={!opensRight}>
               {rankClues.map((rankClue) => {
                 const rank = rankClue.value;
                 if (!isAllowed(rankClue)) {
@@ -514,17 +521,28 @@ export function ClueMenu({
 
 /**
  * A row of clues. Below the hand, it wraps when the hand is narrow. The drawer to the right of the
- * hand is as wide as its longest row (see `getClueDrawerWidth`), so there it does not wrap.
+ * hand is as wide as its longest row (see `getClueDrawerWidth`), so there it does not wrap. There,
+ * both rows have the same equal columns, so that the choices line up. When the drawer is narrower
+ * than it should be, every column narrows by the same amount.
  */
 function ClueRow({
   children,
+  columns,
   wraps,
 }: {
   readonly children: readonly React.JSX.Element[];
+  readonly columns: number;
   readonly wraps: boolean;
 }): React.JSX.Element {
-  return (
-    <div className={`tw:flex tw:gap-2 ${wraps ? "tw:flex-wrap" : ""}`}>
+  return wraps ? (
+    <div className="tw:flex tw:flex-wrap tw:gap-[8px]">{children}</div>
+  ) : (
+    <div
+      className="tw:grid tw:gap-[8px]"
+      style={{
+        gridTemplateColumns: `repeat(${columns}, minmax(0, ${CHOICE_SIZE}px))`,
+      }}
+    >
       {children}
     </div>
   );
