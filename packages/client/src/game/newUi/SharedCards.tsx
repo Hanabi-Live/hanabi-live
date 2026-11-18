@@ -267,6 +267,54 @@ export interface DiscardView {
 }
 
 /**
+ * The column of each discarded card, so that cards of the same rank line up in every row. Each rank
+ * gets as many columns as the row with the most cards of that rank. The rows are already in order
+ * of rank, with cards of unknown rank last.
+ */
+function getDiscardColumns(rows: ReadonlyArray<readonly DiscardView[]>): {
+  readonly columns: ReadonlyMap<CardOrder, number>;
+  readonly numColumns: number;
+} {
+  const widths = new Map<Rank | undefined, number>();
+  for (const row of rows) {
+    const counts = new Map<Rank | undefined, number>();
+    for (const card of row) {
+      counts.set(card.rank, (counts.get(card.rank) ?? 0) + 1);
+    }
+    for (const [rank, count] of counts) {
+      widths.set(rank, Math.max(widths.get(rank) ?? 0, count));
+    }
+  }
+
+  const ranks = [
+    ...new Set(rows.flatMap((row) => row.map((card) => card.rank))),
+  ].toSorted(
+    (a, b) => (a ?? Number.MAX_SAFE_INTEGER) - (b ?? Number.MAX_SAFE_INTEGER),
+  );
+  const firstColumns = new Map<Rank | undefined, number>();
+  let numColumns = 0;
+  for (const rank of ranks) {
+    firstColumns.set(rank, numColumns);
+    numColumns += widths.get(rank) ?? 0;
+  }
+
+  const columns = new Map<CardOrder, number>();
+  for (const row of rows) {
+    const counts = new Map<Rank | undefined, number>();
+    for (const card of row) {
+      const count = counts.get(card.rank) ?? 0;
+      counts.set(card.rank, count + 1);
+      columns.set(card.order, (firstColumns.get(card.rank) ?? 0) + count);
+    }
+  }
+
+  return {
+    columns,
+    numColumns,
+  };
+}
+
+/**
  * The look of a drop target, which changes while the player drags a card. A target that cannot take
  * the card is "unavailable", and "blocked" while the card is over it.
  */
@@ -1393,13 +1441,13 @@ export function DiscardPile({
   const rowsHeight = height + (variant.suits.length - 1) * rowStep;
   const [rowsElement, setRowsElement] = useState<HTMLDivElement | null>(null);
   const rowsWidth = useElementSize(rowsElement).width;
-  const cardStep = cardWidth * (1 - DISCARD_OVERLAP_PER_WIDTH);
-  function getCardStep(cards: number): number {
-    // Before the rows are measured, their width is 0.
-    return rowsWidth === 0 || cards <= 1
-      ? cardStep
-      : Math.min(cardStep, (rowsWidth - cardWidth) / (cards - 1));
-  }
+  const { columns, numColumns } = getDiscardColumns(rows);
+  const maxCardStep = cardWidth * (1 - DISCARD_OVERLAP_PER_WIDTH);
+  // Before the rows are measured, their width is 0.
+  const cardStep =
+    rowsWidth === 0 || numColumns <= 1
+      ? maxCardStep
+      : Math.min(maxCardStep, (rowsWidth - cardWidth) / (numColumns - 1));
 
   return (
     <section
@@ -1449,41 +1497,52 @@ export function DiscardPile({
               marginTop: rowIndex === 0 ? 0 : rowStep - height,
             }}
           >
-            {row.map((card, i) => (
-              <CardNote
-                className="tw:shrink-0"
-                key={card.order}
-                notes={notes}
-                order={card.order}
-                style={{
-                  marginLeft: i === 0 ? 0 : getCardStep(row.length) - cardWidth,
-                }}
-              >
-                <button
-                  aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                  className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5"
-                  data-card-order={card.order}
-                  data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
-                  onClick={() => {
-                    onShowDiscard(card.order);
-                  }}
+            {row.map((card, i) => {
+              const column = columns.get(card.order) ?? 0;
+              const previousCard = row[i - 1];
+              const previousColumn =
+                previousCard === undefined
+                  ? undefined
+                  : (columns.get(previousCard.order) ?? 0);
+              return (
+                <CardNote
+                  className="tw:shrink-0"
+                  key={card.order}
+                  notes={notes}
+                  order={card.order}
                   style={{
-                    borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                    marginLeft:
+                      previousColumn === undefined
+                        ? column * cardStep
+                        : (column - previousColumn) * cardStep - cardWidth,
                   }}
-                  type="button"
                 >
-                  <CardFace
-                    colorblindMode={colorblindMode}
-                    note={notes.notesHtml.has(card.order)}
-                    noteUnread={notes.unreadNotes.has(card.order)}
-                    rank={card.rank}
-                    suitIndex={card.suitIndex}
-                    variant={variant}
-                    width={cardWidth}
-                  />
-                </button>
-              </CardNote>
-            ))}
+                  <button
+                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                    className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5"
+                    data-card-order={card.order}
+                    data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
+                    onClick={() => {
+                      onShowDiscard(card.order);
+                    }}
+                    style={{
+                      borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                    }}
+                    type="button"
+                  >
+                    <CardFace
+                      colorblindMode={colorblindMode}
+                      note={notes.notesHtml.has(card.order)}
+                      noteUnread={notes.unreadNotes.has(card.order)}
+                      rank={card.rank}
+                      suitIndex={card.suitIndex}
+                      variant={variant}
+                      width={cardWidth}
+                    />
+                  </button>
+                </CardNote>
+              );
+            })}
           </div>
         ))}
       </div>
