@@ -1,7 +1,7 @@
 // The menu that opens when we click on the name of an online user.
 
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { globals } from "../../Globals.ts";
 import { Tooltip } from "../../Tooltip.ts";
 import { useAppSelector } from "../../store.ts";
@@ -47,8 +47,21 @@ export function UserLink({
     };
   }, [menu]);
 
+  // The menu keeps its items while it fades out after a click on one. The server can answer the
+  // click before then, such as by making the user a friend.
+  const [closingItems, setClosingItems] = useState<{
+    readonly kind: UserRow["kind"];
+    readonly blocked: boolean;
+  }>();
+  const menuKind = closingItems?.kind ?? kind;
+  const menuBlocked = closingItems?.blocked ?? blocked;
+
   const profileUrl = `/scores/${encodeURIComponent(user.username)}`;
   function closeMenu() {
+    setClosingItems({
+      kind,
+      blocked,
+    });
     tooltipRef.current?.close();
   }
 
@@ -67,6 +80,10 @@ export function UserLink({
           if (tooltip.isOpen) {
             tooltip.close();
           } else {
+            // The tooltip measures the menu as it opens, so the menu must show its items first.
+            flushSync(() => {
+              setClosingItems(undefined);
+            });
             tooltip.openUntilClickElsewhere();
           }
         }}
@@ -90,7 +107,7 @@ export function UserLink({
               Profile
             </a>
           </li>
-          {kind !== "self" && (
+          {menuKind !== "self" && (
             <>
               <li>
                 <MenuButton
@@ -104,7 +121,7 @@ export function UserLink({
                 </MenuButton>
               </li>
               <li>
-                {kind === "friend" ? (
+                {menuKind === "friend" ? (
                   <MenuButton
                     icon="fa-user-minus"
                     onClick={() => {
@@ -132,18 +149,18 @@ export function UserLink({
               </li>
               <li>
                 <MenuButton
-                  icon={blocked ? "fa-check-circle" : "fa-ban"}
+                  icon={menuBlocked ? "fa-check-circle" : "fa-ban"}
                   onClick={() => {
                     closeMenu();
                     globals.connection.send(
-                      blocked ? "blockRemove" : "blockAdd",
+                      menuBlocked ? "blockRemove" : "blockAdd",
                       {
                         username: user.username,
                       },
                     );
                   }}
                 >
-                  {blocked ? "Unblock" : "Block"}
+                  {menuBlocked ? "Unblock" : "Block"}
                 </MenuButton>
               </li>
             </>
