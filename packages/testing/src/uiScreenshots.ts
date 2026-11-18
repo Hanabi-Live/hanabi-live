@@ -1225,18 +1225,22 @@ function getStates(): readonly State[] {
         );
       },
     },
-    // The account types a note on the first card of the next player's hand.
+    // The account types a note on the first card of the last player's hand, which is at the bottom
+    // of the screen.
     {
       name: "new-ui-note-editor",
       path: "/",
       loggedIn: true,
       isolated: true,
       setup: async (cast) => {
-        await cast.startBobsGame(2, undefined, NO_SPEEDRUN);
+        await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
       },
       prepare: async (page) => {
         await page
-          .locator(NEXT_HAND_FIRST_CARD_SELECTOR)
+          .locator("#game-new-ui [data-hand]")
+          .last()
+          .locator("[data-card-place]")
+          .first()
           .click({ button: "right" });
         await page.keyboard.type(NEXT_HAND_NOTE);
       },

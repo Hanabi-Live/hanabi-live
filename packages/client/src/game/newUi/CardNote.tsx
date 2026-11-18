@@ -26,6 +26,16 @@ const NOTE_EDITOR_WIDTH = 260;
 const NOTE_EDITOR_WINDOW_MARGIN = 8;
 
 /**
+ * The gap between the box to type a note in and its card (`tw:mt-3` or `tw:mb-3`), in CSS pixels.
+ */
+const NOTE_EDITOR_GAP = 12;
+
+const NOTE_EDITOR_SIDE_CLASS = {
+  above: "tw:bottom-full tw:mb-3",
+  below: "tw:top-full tw:mt-3",
+} as const;
+
+/**
  * Applies a right-click on a card to its note. It returns whether the viewer now types in the note,
  * as a plain right-click does. The keys held down can instead write a common note at once, such as
  * "f" with Shift.
@@ -170,8 +180,36 @@ export function CardNote({
 }
 
 /**
- * The box to type a note in, below its card, with a pointer at the card. Enter saves the note.
- * Escape, or a click elsewhere, closes the box without saving it, as on the classic screen.
+ * The top and bottom of the area in which an element shows, in the window's pixels: the window, or
+ * a smaller area that scrolls, such as the hands on a phone.
+ */
+function getVisibleArea(element: HTMLElement): { top: number; bottom: number } {
+  let top = 0;
+  let bottom = globalThis.innerHeight;
+  for (
+    let ancestor = element.parentElement;
+    ancestor !== null;
+    ancestor = ancestor.parentElement
+  ) {
+    if (getComputedStyle(ancestor).overflowY === "visible") {
+      continue;
+    }
+
+    const rect = ancestor.getBoundingClientRect();
+    top = Math.max(top, rect.top);
+    bottom = Math.min(bottom, rect.bottom);
+  }
+  return {
+    top,
+    bottom,
+  };
+}
+
+/**
+ * The box to type a note in, below its card, with a pointer at the card. It is above the card when
+ * there is no room below it, such as for the hand at the bottom of the screen, so that the player
+ * can see what they type. Enter saves the note. Escape, or a click elsewhere, closes the box
+ * without saving it, as on the classic screen.
  */
 function NoteEditor({
   order,
@@ -187,11 +225,27 @@ function NoteEditor({
   // play stack at the edge of the screen. It moves again when the window changes size.
   const windowSize = useWindowSize();
   const [shift, setShift] = useState(0);
+  const [side, setSide] = useState<"above" | "below">("below");
   useLayoutEffect(() => {
-    const rect = boxRef.current!.getBoundingClientRect();
+    const box = boxRef.current!;
+    const rect = box.getBoundingClientRect();
     // The screen's scale comes from the box itself. The scale that "screenScale.ts" keeps is set
     // after this runs when the window changes size.
     const scale = rect.width / NOTE_EDITOR_WIDTH;
+
+    // The box goes below the card if it fits there, or else on the side with more room.
+    const card = box.parentElement!.getBoundingClientRect();
+    const area = getVisibleArea(box.parentElement!);
+    const needed =
+      rect.height + (NOTE_EDITOR_GAP + NOTE_EDITOR_WINDOW_MARGIN) * scale;
+    const roomBelow = area.bottom - card.bottom;
+    const roomAbove = card.top - area.top;
+    const nextSide =
+      roomBelow >= needed || roomBelow >= roomAbove ? "below" : "above";
+    if (nextSide !== side) {
+      setSide(nextSide);
+    }
+
     // Where the box is without its shift, in the window's pixels.
     const left = rect.left - shift * scale;
     const right = rect.right - shift * scale;
@@ -206,7 +260,7 @@ function NoteEditor({
     if (Math.abs(next - shift) >= 1) {
       setShift(next);
     }
-  }, [windowSize, shift]);
+  }, [windowSize, shift, side]);
   // The note when the box opened. The box adds a separator after it, so that the player can add to
   // it, until a key that edits the note itself (such as Backspace) or a click removes the
   // separator.
@@ -236,7 +290,7 @@ function NoteEditor({
   return (
     <>
       <div
-        className="tw:absolute tw:top-full tw:left-1/2 tw:mt-3 tw:-translate-x-1/2 tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line"
+        className={`tw:absolute tw:left-1/2 tw:-translate-x-1/2 ${NOTE_EDITOR_SIDE_CLASS[side]} tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line`}
         ref={boxRef}
         style={{
           width: NOTE_EDITOR_WIDTH,
@@ -316,7 +370,7 @@ function NoteEditor({
       <MenuPointer
         insideClassName="tw:bg-white"
         outlineClassName="tw:bg-game-line"
-        side="below"
+        side={side}
       />
     </>
   );
