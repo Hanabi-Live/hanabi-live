@@ -1655,7 +1655,10 @@ function PossibleCardsGrid({
   // The bubble goes below the card. It goes above the card when only that side has room. When
   // neither side has room, it goes on the side with more room, and it is drawn smaller so that it
   // fits. It is also drawn smaller when it is wider than the window. The pointer points at the
-  // middle of the card, even when the edge of the window moves the bubble to one side.
+  // middle of the card, even when the edge of the window moves the bubble to one side. A card in a
+  // hand uses the side of the hand with more room instead. Then the bubbles of all the cards in a
+  // hand are on the same side, so that the viewer knows where to look as they go from one card to
+  // the next.
   useLayoutEffect(() => {
     const element = ref.current;
     if (element === null) {
@@ -1671,10 +1674,12 @@ function PossibleCardsGrid({
     const below = anchorRect.bottom + offset;
     const roomBelow = window.innerHeight - POSSIBLE_CARDS_WINDOW_MARGIN - below;
     const roomAbove = anchorRect.top - offset - POSSIBLE_CARDS_WINDOW_MARGIN;
-    const side =
-      height <= roomBelow || (height > roomAbove && roomBelow >= roomAbove)
-        ? "below"
-        : "above";
+    const hand = anchor.closest("[data-hand]")?.getBoundingClientRect();
+    const isBelow =
+      hand === undefined
+        ? height <= roomBelow || (height > roomAbove && roomBelow >= roomAbove)
+        : window.innerHeight - hand.bottom >= hand.top;
+    const side = isBelow ? "below" : "above";
     const room = side === "below" ? roomBelow : roomAbove;
     const roomAcross = window.innerWidth - 2 * POSSIBLE_CARDS_WINDOW_MARGIN;
     const scale = Math.min(1, room / height, roomAcross / width);
