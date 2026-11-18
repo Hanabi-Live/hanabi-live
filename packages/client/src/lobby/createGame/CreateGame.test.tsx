@@ -214,9 +214,11 @@ describe("CreateGame", () => {
     expect(document.querySelector("#createTablePassword")).toBeNull();
     expect(getInput("create-game-replay-turn").value).toBe("3");
 
-    // Submitting the options unchanged does not propose anything.
+    // The options that the table already has cannot be proposed.
+    expect(getInput("create-game-submit").classList).toContain("disabled");
     click("create-game-submit");
     expect(send).not.toHaveBeenCalledWith("tableUpdate", expect.anything());
+    expect(hide).not.toHaveBeenCalled();
 
     fireEvent.change(getInput("createTableName"), {
       target: {

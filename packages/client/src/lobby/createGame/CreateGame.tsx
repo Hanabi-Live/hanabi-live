@@ -264,6 +264,8 @@ export function CreateGame(): React.JSX.Element {
       || Object.values(form.extraOptions).some(Boolean),
   );
   const errors = getErrors(form);
+  // Changing or suggesting the options that the table already has would do nothing.
+  const unchanged = mode !== "create" && equal(form, initialForm);
   const nameRef = useRef<HTMLInputElement>(null);
   const timed = form.timed && !form.extraOptions.speedrun;
   const replaying = isReplaying(form);
@@ -293,7 +295,7 @@ export function CreateGame(): React.JSX.Element {
   }
 
   function submit() {
-    if (rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)) {
+    if (unchanged || rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)) {
       return;
     }
 
@@ -350,8 +352,7 @@ export function CreateGame(): React.JSX.Element {
           store.dispatch(creatingTableChanged(false));
         },
       );
-    } else if (!equal(form, initialForm)) {
-      // A submit that changes nothing does not tell the server anything.
+    } else {
       globals.connection.send("tableUpdate", {
         tableId: globals.joinedTableId,
         settings,
@@ -645,10 +646,14 @@ export function CreateGame(): React.JSX.Element {
         </div>
       )}
 
+      {/* A disabled button gets no pointer events, so this one only looks disabled, to keep its
+          tooltip. */}
       <button
-        className="button fit tw:mt-6"
+        aria-disabled={unchanged}
+        className={`button fit tw:mt-6${unchanged ? " disabled" : ""}`}
         id="create-game-submit"
         onClick={submit}
+        ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
         type="submit"
       >
         {SUBMIT_LABELS[mode]}
