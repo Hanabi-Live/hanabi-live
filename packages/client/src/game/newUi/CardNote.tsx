@@ -208,6 +208,21 @@ function getVisibleArea(element: HTMLElement): { top: number; bottom: number } {
   };
 }
 
+/** The closest element around an element that scrolls up and down, such as the hands on a phone. */
+function getScrollArea(element: HTMLElement): HTMLElement | undefined {
+  for (
+    let ancestor = element.parentElement;
+    ancestor !== null;
+    ancestor = ancestor.parentElement
+  ) {
+    const { overflowY } = getComputedStyle(ancestor);
+    if (overflowY === "auto" || overflowY === "scroll") {
+      return ancestor;
+    }
+  }
+  return undefined;
+}
+
 /**
  * The box to type a note in, below its card, with a pointer at the card. It is above the card when
  * there is no room below it, such as for the hand at the bottom of the screen, so that the player
@@ -233,8 +248,36 @@ function NoteEditor({
   );
   const [shift, setShift] = useState(0);
   const [side, setSide] = useState<"above" | "below">("below");
+
+  // The box also moves when what scrolls around it changes size, which can happen a frame after the
+  // window changes size, such as when the hands on a phone fit themselves to the new width.
+  const [layoutChanges, setLayoutChanges] = useState(0);
+  useEffect(() => {
+    const scrollArea = getScrollArea(boxRef.current!);
+    if (scrollArea === undefined) {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(() => {
+      setLayoutChanges((count) => count + 1);
+    });
+    observer.observe(scrollArea);
+    for (const child of scrollArea.children) {
+      observer.observe(child);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, [windowSize]);
+
   useLayoutEffect(() => {
     const box = boxRef.current!;
+    // The card can be out of view, such as in the hands that scroll on a phone after the window
+    // becomes smaller. It scrolls into view first, so that the box goes on the side with room.
+    box.parentElement!.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+    });
     const rect = box.getBoundingClientRect();
     // The screen's scale comes from the box itself. The scale that "screenScale.ts" keeps is set
     // after this runs when the window changes size.
@@ -267,7 +310,13 @@ function NoteEditor({
     if (Math.abs(next - shift) >= 1) {
       setShift(next);
     }
-  }, [windowSize, shift, side]);
+
+    // The box can still reach past the area, such as when the area is short.
+    box.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [windowSize, shift, side, layoutChanges]);
   // The note when the box opened. The box adds a separator after it, so that the player can add to
   // it, until a key that edits the note itself (such as Backspace) or a click removes the
   // separator.
