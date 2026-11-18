@@ -2813,6 +2813,8 @@ export function CardFace({
       <PossibleCardsBubble
         anchor={faceElement}
         bubble={bubble}
+        // A held card is drawn larger as it lifts, but its bubble stays the size of a card.
+        cardWidth={width}
         colorblindMode={colorblindMode}
         open={(showPossibleCards && (hovered || tapped)) || openPossibleCards}
         variant={variant}
