@@ -560,10 +560,12 @@ export const CLUE_TAB_HAND_CLASS =
 
 /**
  * The tab to the right of the hand, as tall as the hand, with its key halfway down. It has an
- * outline on its top, right, and bottom, which go on from the hand's outline.
+ * outline on its top, right, and bottom, which go on from the hand's outline. The space to the
+ * right of the key is as wide as the space to its left, which is the hand's padding (16px) and the
+ * tab's (10px).
  */
 const TAB_RIGHT_CLASS =
-  "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:rounded-r-game-panel tw:bg-game-panel tw:px-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+  "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:rounded-r-game-panel tw:bg-game-panel tw:pr-[26px] tw:pl-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
 
 /**
  * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
