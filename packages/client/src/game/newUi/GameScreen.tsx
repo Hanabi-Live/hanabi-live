@@ -199,9 +199,13 @@ function panelHasRoom(panel: HTMLElement): boolean {
       return true;
     }
     const clueLog = panel.previousElementSibling;
+    // While the replay controls slide, the log reaches down behind the panel with a negative margin
+    // (see "useReplayDrawer" in "StatusStrip.tsx"), which does not count.
     return (
       !(clueLog instanceof HTMLElement)
-      || clueLog.offsetHeight >= CLUE_LOG_MIN_HEIGHT
+      || clueLog.offsetHeight
+        + Number(getComputedStyle(clueLog).marginBottom.replace(/px$/u, ""))
+        >= CLUE_LOG_MIN_HEIGHT
     );
   }
   const status = panel.querySelector<HTMLElement>("[data-panel-status]");

@@ -469,23 +469,38 @@ function ReplayToggle({
 /**
  * In the panel, the replay controls slide out of the top of the panel when a replay starts, as the
  * clue menu slides out of the hand (see "ClueMenu.tsx"), and the panel's top edge rises with them.
- * With tabs, the panel's edge stays, and the controls slide down from behind the variant instead.
- * Only the drawing moves: the panel takes its new size at once, so that nothing else moves, and the
- * game screen measures the panel's real size. The sliding only decorates.
+ * The clue log's bottom edge rises with the panel's edge. With tabs, the panel's edge stays, and
+ * the controls slide down from behind the variant instead. When the replay ends, the controls slide
+ * back the same way (see "useClosingControls"). Only the drawing moves: the panel takes its new
+ * size at once, so that nothing else moves, and the game screen measures the panel's real size. The
+ * sliding only decorates.
  */
 function useReplayDrawer(
   footer: HTMLElement | null,
   controls: RefObject<HTMLDivElement | null>,
   open: boolean,
+  closing: boolean,
+  onClosed: () => void,
   edgeRises: boolean,
   reducedMotion: boolean,
 ) {
   const wasOpen = useRef(open);
+  const wasClosing = useRef(closing);
   useLayoutEffect(() => {
     const opened = open && !wasOpen.current;
+    const closed = closing && !wasClosing.current;
     wasOpen.current = open;
+    wasClosing.current = closing;
     const group = controls.current;
-    if (!opened || reducedMotion || footer === null || group === null) {
+    if (
+      reducedMotion
+      || footer === null
+      || group === null
+      || (!opened && !closed)
+    ) {
+      if (closed) {
+        onClosed();
+      }
       return undefined;
     }
 
@@ -495,6 +510,9 @@ function useReplayDrawer(
       ? group.nextElementSibling
       : group.previousElementSibling;
     if (!(beside instanceof HTMLElement)) {
+      if (closed) {
+        onClosed();
+      }
       return undefined;
     }
     const rise = edgeRises
@@ -505,41 +523,102 @@ function useReplayDrawer(
         - beside.offsetHeight;
     const shift = edgeRises ? rise : -rise;
     const radius = getComputedStyle(footer).borderTopLeftRadius;
-    // With tabs, the panel fills its place, so its edge stays where it is.
+
+    // When the replay ends, the controls are still drawn, and they slide back. They stay hidden
+    // until they are gone.
+    function slide(
+      element: Element,
+      hidden: Keyframe,
+      shown: Keyframe,
+    ): Animation {
+      return element.animate(
+        opened ? [hidden, shown] : [shown, hidden],
+        opened
+          ? DRAWER_SLIDE
+          : {
+              ...DRAWER_SLIDE,
+              fill: "forwards",
+            },
+      );
+    }
+
+    // With tabs, the panel fills its place, so its edge stays where it is. Without them, the clue
+    // log above the panel reaches down to the panel's edge, which moves the log's bottom edge with
+    // it. The panel is drawn over the log, so the log shows only above the edge.
+    const clueLog = footer.previousElementSibling;
     const animations = [
       ...(edgeRises
         ? [
-            footer.animate(
-              [
-                { clipPath: `inset(${rise}px 0 0 0 round ${radius})` },
-                { clipPath: `inset(0 0 0 0 round ${radius})` },
-              ],
-              DRAWER_SLIDE,
+            slide(
+              footer,
+              { clipPath: `inset(${rise}px 0 0 0 round ${radius})` },
+              { clipPath: `inset(0 0 0 0 round ${radius})` },
             ),
           ]
         : []),
-      group.animate(
-        [
-          {
-            transform: `translateY(${shift}px)`,
-            clipPath: edgeRises
-              ? `inset(0 0 ${rise}px 0)`
-              : `inset(${rise}px 0 0 0)`,
-          },
-          {
-            transform: "none",
-            clipPath: "inset(0 0 0 0)",
-          },
-        ],
-        DRAWER_SLIDE,
+      ...(edgeRises && clueLog !== null
+        ? [
+            slide(
+              clueLog,
+              { marginBottom: `${-rise}px` },
+              { marginBottom: "0px" },
+            ),
+          ]
+        : []),
+      slide(
+        group,
+        {
+          transform: `translateY(${shift}px)`,
+          clipPath: edgeRises
+            ? `inset(0 0 ${rise}px 0)`
+            : `inset(${rise}px 0 0 0)`,
+        },
+        {
+          transform: "none",
+          clipPath: "inset(0 0 0 0)",
+        },
       ),
     ];
+    if (closed) {
+      // A canceled animation means that the controls are already gone, or open again.
+      Promise.all(animations.map(async (animation) => await animation.finished))
+        .then(onClosed)
+        .catch(() => undefined);
+    }
     return () => {
       for (const animation of animations) {
         animation.cancel();
       }
     };
-  }, [open, edgeRises, reducedMotion, footer, controls]);
+  }, [open, closing, onClosed, edgeRises, reducedMotion, footer, controls]);
+}
+
+/**
+ * When a replay ends, the panel keeps its controls until they slide back into it (see
+ * "useReplayDrawer"). It returns the controls that are sliding back, and the function that removes
+ * them.
+ */
+function useClosingControls(
+  replayControls: React.ReactNode,
+  slides: boolean,
+): readonly [React.ReactNode, () => void] {
+  const last = useRef(replayControls);
+  const [closing, setClosing] = useState<React.ReactNode>(undefined);
+  // It runs before the screen is drawn, so the panel never shows without the controls before they
+  // slide back.
+  useLayoutEffect(() => {
+    const previous = last.current;
+    last.current = replayControls;
+    if (replayControls !== undefined || !slides) {
+      setClosing(undefined);
+    } else if (previous !== undefined) {
+      setClosing(previous);
+    }
+  }, [replayControls, slides]);
+  const close = useCallback(() => {
+    setClosing(undefined);
+  }, []);
+  return [closing, close] as const;
 }
 
 type PanelTab = "status" | "clues";
@@ -861,6 +940,10 @@ export function StatusStrip({
     [footerRef],
   );
   const inReplay = replayControls !== undefined;
+  const [closingControls, closeControls] = useClosingControls(
+    replayControls,
+    panel && !reducedMotion,
+  );
   const controlsRef = useRef<HTMLDivElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
@@ -871,6 +954,8 @@ export function StatusStrip({
     footer,
     controlsRef,
     inReplay && panel,
+    closingControls !== undefined,
+    closeControls,
     !tabbed,
     reducedMotion,
   );
@@ -1130,9 +1215,15 @@ export function StatusStrip({
   // panel is as narrow as a phone, so it takes the styles of the phone layout: the smaller text and
   // buttons, and the replay controls that wrap.
   if (panel) {
-    const controls = inReplay && (
-      <div className="tw:flex" ref={controlsRef}>
-        {replayControls}
+    const shownControls = replayControls ?? closingControls;
+    const controls = shownControls !== undefined && (
+      <div
+        className="tw:flex"
+        // The controls of a replay that has ended only slide away.
+        inert={!inReplay}
+        ref={controlsRef}
+      >
+        {shownControls}
       </div>
     );
     // When a replay starts, its controls go where the rest of the panel stays where it was. Without
