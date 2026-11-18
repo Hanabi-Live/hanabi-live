@@ -17,6 +17,7 @@ import {
   MAX_ANIMATED_SEGMENT_CHANGE,
   measureCards,
   measureMovingCards,
+  revealMovedCardMarkers,
   stopCardMoves,
 } from "./cardMotion.ts";
 import { useWindowSize } from "./hooks.ts";
@@ -306,6 +307,8 @@ export function useCardMotion(
         );
       }
     }
+
+    revealMovedCardMarkers(root);
 
     // A clue that was just given flies in from its giver, when the game moves forward a turn.
     const newClue = getClueForTurn(shownState);

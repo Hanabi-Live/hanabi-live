@@ -545,7 +545,7 @@ function SlotTab({
     <span
       aria-hidden="true"
       className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10 tw:flex tw:-translate-x-1/2 tw:items-center tw:gap-[0.3em] tw:rounded-full tw:bg-white tw:leading-none tw:font-extrabold tw:whitespace-nowrap tw:text-card-ink"
-      data-slot-tab
+      data-moved-card-marker
       ref={tabRef}
       style={{
         // The tab sits on the outline, which is 4 pixels wide and 4 pixels outside the card.
@@ -828,7 +828,6 @@ export function PlayArea({
                           >
                             <CardFace
                               colorblindMode={colorblindMode}
-                              highlighted={movedCard?.order === stack.topOrder}
                               note={topNotesHtml !== undefined}
                               noteUnread={notes.unreadNotes.has(stack.topOrder)}
                               rank={stack.topRank}
@@ -838,6 +837,17 @@ export function PlayArea({
                             />
                           </CardNote>
                         )}
+                        {movedCard !== undefined
+                          && movedCard.order === stack.topOrder && (
+                            <span
+                              aria-hidden="true"
+                              className="tw:pointer-events-none tw:absolute tw:inset-0 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
+                              data-moved-card-marker
+                              style={{
+                                borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                              }}
+                            />
+                          )}
                         {movedCard !== undefined
                           && movedCard.order === stack.topOrder
                           && movedCard.slot !== undefined && (
@@ -1728,7 +1738,7 @@ export function DiscardPile({
                       <span
                         aria-hidden="true"
                         className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
-                        data-moved-card-outline
+                        data-moved-card-marker
                         style={{
                           ...getVisibleDiscardSize(rows, columns, rowIndex, i, {
                             cardWidth,

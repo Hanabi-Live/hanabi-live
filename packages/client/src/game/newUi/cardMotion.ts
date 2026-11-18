@@ -380,6 +380,63 @@ export function animateCardMoves(
   }
 }
 
+/** How long the outline and the tab of a card that just moved take to fade in, in milliseconds. */
+const MOVED_CARD_MARKER_FADE_MILLISECONDS = 200;
+
+/**
+ * The last reveal of each outline and tab, so that an older reveal does not show a marker that a
+ * newer move hides again. React can keep the same element for the next card on a stack.
+ */
+const markerReveals = new WeakMap<HTMLElement, object>();
+
+/** Shows the outline or the tab of a card that has landed. */
+function showMarker(marker: HTMLElement) {
+  marker.style.opacity = "";
+  // The fade only decorates the outline, so "Reduced motion" leaves it out.
+  if (!store.getState().session.settings.reducedMotion) {
+    marker.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: MOVED_CARD_MARKER_FADE_MILLISECONDS,
+      easing: "ease-out",
+    });
+  }
+}
+
+/**
+ * Hides the outline and the tab of the card that moved on the turn that shows until the card has
+ * landed on its stack or in the discard pile. Then they fade in. A card that does not move, such as
+ * after a jump in a replay, shows them at once.
+ */
+export function revealMovedCardMarkers(root: HTMLElement): void {
+  for (const marker of root.querySelectorAll<HTMLElement>(
+    "[data-moved-card-marker]",
+  )) {
+    const reveal = {};
+    markerReveals.set(marker, reveal);
+    const card = marker.closest<HTMLElement>("[data-card-order]");
+    const moves = (card?.getAnimations({ subtree: true }) ?? []).filter(
+      (animation) =>
+        (animation.id === CARD_MOVE_ANIMATION_ID
+          || animation.id === PLAY_EFFECT_ANIMATION_ID)
+        && animation.playState !== "finished",
+    );
+    if (moves.length === 0) {
+      marker.style.opacity = "";
+      continue;
+    }
+
+    marker.style.opacity = "0";
+    const moving = new Set(moves);
+    for (const move of moves) {
+      onEnd(move, () => {
+        moving.delete(move);
+        if (moving.size === 0 && markerReveals.get(marker) === reveal) {
+          showMarker(marker);
+        }
+      });
+    }
+  }
+}
+
 /** How a misplayed card bounces off its stack into the discard pile. */
 interface Bounce {
   /** The stack slot that the card bounces off. */
