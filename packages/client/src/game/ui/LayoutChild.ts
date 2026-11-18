@@ -115,6 +115,12 @@ export class LayoutChild extends Konva.Group {
   }
 
   dragEnd(): void {
+    // Konva also ends a drag when it destroys the card, such as when the player leaves the game. It
+    // removes the card from its layout first, so there is no hand to return to and no move to make.
+    if (this.parent === null) {
+      return;
+    }
+
     // Mouse events will not normally fire when the card is released from being dragged.
     this.card.dispatchEvent(new MouseEvent("mouseup"));
     this.card.dispatchEvent(new MouseEvent("mouseleave"));
@@ -166,7 +172,10 @@ export class LayoutChild extends Konva.Group {
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | undefined): void {
     const returnToHand = () => {
-      (this.parent as unknown as CardLayout | PlayStack).doLayout();
+      // The card can be destroyed while the morph or play confirmation modal is open.
+      if (this.parent !== null) {
+        (this.parent as unknown as CardLayout | PlayStack).doLayout();
+      }
     };
 
     switch (draggedTo) {
