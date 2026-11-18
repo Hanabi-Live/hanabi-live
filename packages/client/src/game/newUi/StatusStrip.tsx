@@ -13,6 +13,7 @@ import {
 } from "../ui/constants.ts";
 import { getClueLogHeight } from "./ClueLog.tsx";
 import { DRAWER_SLIDE } from "./ClueMenu.tsx";
+import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
@@ -800,7 +801,14 @@ function PanelTabs({
 }
 
 /** The height of the bar along the bottom of the screen. */
-const BAR_HEIGHT = 76;
+export const BAR_HEIGHT = 76;
+
+/**
+ * The largest width of the variant's name in the bar along the bottom of the screen, in CSS pixels.
+ * A longer name gets smaller text, so that the bar has room for one row (see `BAR_ONE_ROW_WIDTH` in
+ * "GameScreen.tsx").
+ */
+const VARIANT_NAME_MAX_WIDTH = 160;
 
 /**
  * The height of the bar along the bottom of the screen when the replay controls have a row of their
@@ -879,17 +887,11 @@ function useOwnRow(
     // taller layout, so that the chat can no longer scroll down to its last lines.
     footer.style.height = getComputedStyle(footer).height;
     footer.removeAttribute(OWN_ROW_ATTRIBUTE);
-    // Less than a pixel is a rounding error of the measurement. Text that may not be cut off counts
-    // with its whole width, such as a hypothetical's hint.
-    const cutOff = Math.max(
-      0,
-      ...[...group.querySelectorAll<HTMLElement>("[data-full-width]")].map(
-        (text) => text.scrollWidth - text.clientWidth,
-      ),
+    // Less than a pixel is a rounding error of the measurement.
+    const overlap = Math.max(
+      getPaddingOverlap(footer),
+      group.scrollWidth - group.clientWidth,
     );
-    const overlap =
-      Math.max(getPaddingOverlap(footer), group.scrollWidth - group.clientWidth)
-      + cutOff;
     const overflows = overlap >= 1;
     if (hadOwnRow) {
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
@@ -1231,13 +1233,21 @@ export function StatusStrip({
         Variant
         {gameInfoButton}
       </span>
-      <span
-        // When the variant shares a row with the buttons, the name takes no width of its own, so
-        // that only the label sets the variant's minimum width.
-        className="tw:block tw:max-w-full tw:truncate tw:not-phone:group-data-own-row/strip:w-0 tw:not-phone:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:phone:leading-[24px]"
-      >
-        {variantName}
-      </span>
+      {phoneLayout ? (
+        <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted">
+          {variantName}
+        </span>
+      ) : (
+        // A long name gets smaller text instead of a wider bar. When the variant shares a row with
+        // the buttons, the name takes no width of its own, so that only the label sets the
+        // variant's minimum width.
+        <span
+          className="tw:flex tw:min-w-0 tw:group-data-own-row/strip:w-0 tw:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted"
+          style={{ maxWidth: VARIANT_NAME_MAX_WIDTH }}
+        >
+          <FitText text={variantName} />
+        </span>
+      )}
     </div>
   );
   // In the panel, the buttons wrap, and each grows to fill its row. A menu's button or the replay
@@ -1392,7 +1402,7 @@ export function StatusStrip({
   // bar, so that the numbers and the buttons stay where they were.
   return (
     <footer
-      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-8 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
+      className={`tw:group/strip tw:flex tw:h-(--strip-height) tw:shrink-0 tw:items-center tw:gap-7 tw:px-7 tw:text-game-screen-compact ${colorClass} tw:not-phone:data-own-row:h-auto tw:not-phone:data-own-row:flex-wrap tw:not-phone:data-own-row:gap-y-0 tw:not-phone:data-own-row:pt-2.5 tw:phone:h-auto tw:phone:flex-wrap tw:phone:gap-x-5 tw:phone:gap-y-2 tw:narrow-530:gap-x-4 tw:phone:px-3 tw:phone:py-3`}
       data-own-row={ownRow ? "" : undefined}
       ref={setFooter}
       style={{ "--strip-height": `${BAR_HEIGHT}px` } as React.CSSProperties}

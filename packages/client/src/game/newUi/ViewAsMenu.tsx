@@ -1,6 +1,7 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
@@ -67,9 +68,9 @@ export function ViewAsMenu({
       >
         <i aria-hidden="true" className="fas fa-eye" />
         {/* The eye says what the name is for, so that a long name has room. A name that is still
-            too long is cut short. */}
-        <span className="tw:min-w-0 tw:truncate">
-          {viewedName ?? "View as"}
+            too long gets smaller text, so that the bar along the bottom keeps one row. */}
+        <span className="tw:flex tw:max-w-16 tw:min-w-0">
+          <FitText text={viewedName ?? "View as"} />
         </span>
         <MenuCaret open={open} />
       </button>

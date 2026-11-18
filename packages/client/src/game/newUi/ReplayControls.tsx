@@ -196,7 +196,7 @@ function Timeline({
       aria-valuemax={lastSegment + 1}
       aria-valuemin={1}
       aria-valuenow={segment + 1}
-      className={`tw:group tw:relative tw:min-w-36 tw:flex-1 tw:group-data-panel/strip:min-w-[96px] tw:group-data-panel/strip:@max-[22rem]/panel:order-1 tw:group-data-panel/strip:@max-[22rem]/panel:min-w-[calc(100%-2.75rem-0.375rem)] tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
+      className={`tw:group tw:relative tw:min-w-24 tw:flex-1 tw:group-data-panel/strip:min-w-[96px] tw:group-data-panel/strip:@max-[22rem]/panel:order-1 tw:group-data-panel/strip:@max-[22rem]/panel:min-w-[calc(100%-2.75rem-0.375rem)] tw:narrow-530:min-w-20 tw:narrow-410:min-w-12 tw:cursor-pointer tw:touch-none ${STEP_HEIGHT_CLASS}`}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         showTurnAt(event.clientX);
@@ -559,11 +559,11 @@ function HypotheticalHint({
   const tooltip = tooltipRef(truncated ? hint : undefined);
 
   return (
-    <div className="tw:ml-2 tw:flex tw:w-0 tw:grow">
+    // Along the bottom of the screen, the hint keeps the smallest width of the timeline, which it
+    // takes the place of.
+    <div className="tw:ml-2 tw:flex tw:w-0 tw:grow tw:not-phone:min-w-24 tw:group-data-panel/strip:min-w-0">
       <p
         className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal"
-        // The bar has room for one row only when the whole hint fits (see "StatusStrip.tsx").
-        data-full-width
         ref={(element) => {
           textRef.current = element;
           return tooltip(element);
@@ -731,7 +731,7 @@ function LeaderControls({
       {shared !== undefined && (
         // The menu takes the width of its full text (up to its largest width), so that the bar
         // knows the room that it needs.
-        <div className="tw:flex tw:w-max tw:max-w-56 tw:min-w-0 tw:phone:w-auto">
+        <div className="tw:flex tw:w-max tw:max-w-40 tw:min-w-0 tw:phone:w-auto">
           <LeaderMenu
             amLeader={shared.amLeader}
             leader={shared.leader}

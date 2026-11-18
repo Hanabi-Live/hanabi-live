@@ -94,6 +94,11 @@ const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
  * shorter than the height breakpoint, so that both sides of it are seen.
  */
 const SIZES = [
+  // The New UI shows the bar along the bottom only from 1800px (see "BAR_ONE_ROW_WIDTH").
+  {
+    width: 1920,
+    height: 900,
+  },
   {
     width: 1600,
     height: 900,
@@ -1766,10 +1771,7 @@ async function useClassicScreen(cast: Cast) {
  * A window wide enough that the New UI shows its bar along the bottom, which has the "Classic UI"
  * button. A narrower window can show the status panel instead, which does not.
  */
-const BAR_SIZE = {
-  width: 1920,
-  height: 1080,
-} as const;
+const BAR_SIZE = SIZES[0];
 
 /** Switches the New UI to the classic screen. */
 async function showClassic(page: Page) {
@@ -3530,6 +3532,12 @@ async function captureState(
     await settle(page);
 
     for (const size of sizes) {
+      // The pointer leaves the element that it rests on first. Otherwise, at the new size, another
+      // element can move under it and open its own tooltip.
+      const viewport = page.viewportSize();
+      if (viewport !== null) {
+        await page.mouse.move(0, viewport.height - 1);
+      }
       await page.setViewportSize(size);
       for (const theme of options.themes) {
         await page.evaluate(setTheme, theme);

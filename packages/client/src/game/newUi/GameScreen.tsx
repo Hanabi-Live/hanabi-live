@@ -80,6 +80,7 @@ import {
   TableTokens,
 } from "./SharedCards.tsx";
 import {
+  BAR_HEIGHT,
   PANEL_SHORT_ATTRIBUTE,
   REPLAY_BAR_HEIGHT,
   StatusStrip,
@@ -180,6 +181,14 @@ const PHONE_TABLE_GAP = 16;
  * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
  */
 const PANEL_CARD_WIDTH = 82;
+
+/**
+ * The width of the screen, in CSS pixels, from which the bar along the bottom has room for one row
+ * in every game: the widest bar is a shared replay that we lead, with the "Play again" button, and
+ * the longest names (see `VARIANT_NAME_MAX_WIDTH` in "StatusStrip.tsx"). On a narrower screen, the
+ * bar is a panel in the right column, so that it never needs a second row.
+ */
+const BAR_ONE_ROW_WIDTH = 1800;
 
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
@@ -432,15 +441,16 @@ export function GameScreen({
   );
 
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
-  // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
-  // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
-  // the bottom of the right column, so that the hands get the whole height of the screen. Only the
-  // size of the window, the players, and the chat decide where the bar is, not what the bar holds.
-  // So the bar does not move when a replay starts, a hypothetical starts, or the game ends. Along
-  // the bottom, the bar keeps the height of its tallest layout, with the replay controls in a row
-  // of their own (see `REPLAY_BAR_HEIGHT`). In the panel, the panel and the clue log share one box
+  // In the wide layout, the bar is along the bottom of the screen in one row while the screen is at
+  // least `BAR_ONE_ROW_WIDTH` wide and the cards keep a width of at least `PANEL_CARD_WIDTH`.
+  // Otherwise, it moves to a panel at the bottom of the right column, so that the hands get the
+  // whole height of the screen. Only the size of the window, the players, and the chat decide where
+  // the bar is, not what the bar holds. So the bar does not move when a replay starts, a
+  // hypothetical starts, or the game ends. In the panel, the panel and the clue log share one box
   // with tabs when the column is short (see "StatusStrip.tsx"). When even the panel's tab is too
-  // short for it, the bar goes back along the bottom, until the window or the chat changes.
+  // short for it, the bar goes back along the bottom, until the window or the chat changes. There,
+  // the replay controls may need a row of their own, so the bar keeps the height of that layout
+  // (see `REPLAY_BAR_HEIGHT`).
   const [barElement, setBarElement] = useState<HTMLElement | null>(null);
   /** The size of the screen at which the panel was too short, as "sizeKey" in the effect below. */
   const panelShortAt = useRef<string>(undefined);
@@ -513,7 +523,7 @@ export function GameScreen({
     const railShown = !chatOpen || chatPoppedOut;
     const barRowWidth =
       rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
-    const barHandsHeight = handsHeight - (sidePanel ? REPLAY_BAR_HEIGHT : 0);
+    const barHandsHeight = handsHeight - (sidePanel ? BAR_HEIGHT : 0);
     const room = getRoom(barRowWidth, barHandsHeight);
     const cardWidth = getHandCardWidth(
       getWideHandsWidth(barRowWidth, room),
@@ -525,13 +535,16 @@ export function GameScreen({
       false,
     );
     setSidePanel(
-      panelShortAt.current !== sizeKey && cardWidth < PANEL_CARD_WIDTH,
+      panelShortAt.current !== sizeKey
+        && (root.clientWidth < BAR_ONE_ROW_WIDTH
+          || cardWidth < PANEL_CARD_WIDTH),
     );
   });
 
-  // Below the table, the bar along the bottom keeps the room of its tallest layout. When the bar is
-  // shorter, the felt fills the rest. The observer runs before the browser draws the new size, so
-  // the table never shows at another size.
+  // On a screen too narrow for the bar in one row, the bar along the bottom keeps the room of its
+  // tallest layout below the table. When the bar is shorter, the felt fills the rest. The observer
+  // runs before the browser draws the new size, so the table never shows at another size. A new
+  // width of the screen also gives the bar a new width, so the observer runs then too.
   const mainRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     const main = mainRef.current;
@@ -539,14 +552,19 @@ export function GameScreen({
       return undefined;
     }
     const observer = new ResizeObserver(() => {
-      main.style.paddingBottom = `${Math.max(0, REPLAY_BAR_HEIGHT - barElement.offsetHeight)}px`;
+      const root = rootRef.current;
+      const reserved =
+        root === null || root.clientWidth >= BAR_ONE_ROW_WIDTH
+          ? 0
+          : REPLAY_BAR_HEIGHT - barElement.offsetHeight;
+      main.style.paddingBottom = `${Math.max(0, reserved)}px`;
     });
     observer.observe(barElement);
     return () => {
       observer.disconnect();
       main.style.removeProperty("padding-bottom");
     };
-  }, [barElement, panel, stacked]);
+  }, [barElement, panel, rootRef, stacked]);
 
   if (state?.visibleState === undefined) {
     return (

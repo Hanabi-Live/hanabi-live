@@ -272,6 +272,8 @@ const UI_LAYOUT_ARGS = [
   "--state",
   "new-ui-shared-replay",
   "--width",
+  "1920",
+  "--width",
   "1600",
   "--width",
   "1200",
