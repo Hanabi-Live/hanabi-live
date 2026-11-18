@@ -4,7 +4,7 @@ import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
-import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import type { EfficiencyStats } from "../efficiency.ts";
 import {
   formatEfficiency,
@@ -1122,62 +1122,8 @@ function useModeFade(
   }, [footer, mode, reducedMotion]);
 }
 
-/**
- * The attribute that gives the bar's buttons their short labels, such as only a door icon for
- * "Lobby". The labels depend on it (as "data-short-labels"), so that the bar can try the long
- * labels without drawing them.
- */
-const SHORT_LABELS_ATTRIBUTE = "data-short-labels";
-
-/**
- * Whether the bar's buttons need short labels, because their row has no room for the long ones.
- * Which buttons show depends on the game, so the row is measured instead of using a breakpoint.
- * After each render and resize, the row takes away the attribute of the short labels, checks
- * whether its buttons wrap onto a second line, and puts the attribute back. All of it happens
- * before the browser draws the bar.
- *
- * When the replay controls have a row of their own on a wide window (`besideVariant`), the buttons
- * share the next row with the variant, and they also need short labels when they would go to a row
- * under it.
- */
-function useShortLabels(
-  footer: HTMLElement | null,
-  row: RefObject<HTMLDivElement | null>,
-  variant: RefObject<HTMLDivElement | null>,
-  besideVariant: boolean,
-): boolean {
-  // Measures again when the bar's width changes.
-  useElementSize(footer);
-  const [shortLabels, setShortLabels] = useState(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
-  useLayoutEffect(() => {
-    const element = row.current;
-    if (element === null) {
-      return;
-    }
-    const hadShortLabels = element.hasAttribute(SHORT_LABELS_ATTRIBUTE);
-    element.removeAttribute(SHORT_LABELS_ATTRIBUTE);
-    // A hidden child, such as the chat button on a wide screen, has no place in the row.
-    const tops = [...element.children]
-      .filter(
-        (child): child is HTMLElement =>
-          child instanceof HTMLElement && child.offsetParent !== null,
-      )
-      .map((child) => child.offsetTop);
-    const variantElement = variant.current;
-    const wraps =
-      tops.some((top) => top !== tops[0])
-      || (besideVariant
-        && variantElement !== null
-        && element.getBoundingClientRect().top
-          >= variantElement.getBoundingClientRect().bottom);
-    if (hadShortLabels) {
-      element.setAttribute(SHORT_LABELS_ATTRIBUTE, "");
-    }
-    setShortLabels(wraps);
-  });
-  return shortLabels;
-}
+/** The tooltip of the "Lobby" button in the bar, which shows only its icon. */
+const LOBBY_TOOLTIP = "Return to the lobby.";
 
 /**
  * The numbers about the whole game, along the bottom of the screen, most important first. (The clue
@@ -1237,7 +1183,6 @@ export function StatusStrip({
   const controlsRef = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLSpanElement>(null);
   const ownRow = useOwnRow(footer, controlsRef);
-  const buttonsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   // The panel measures its height after the controls take theirs.
   useSteadyControlsHeight(footer, controlsRef, panel);
@@ -1260,13 +1205,6 @@ export function StatusStrip({
     closeControls,
     mode,
     reducedMotion,
-  );
-  const variantRef = useRef<HTMLDivElement>(null);
-  const shortLabels = useShortLabels(
-    footer,
-    buttonsRef,
-    variantRef,
-    ownRow && !phoneLayout,
   );
 
   // The line along the top is a shadow, not a border, so that its width does not move the bar's
@@ -1441,8 +1379,7 @@ export function StatusStrip({
   // a phone, that minimum is zero, so that the name stays in the row of the numbers, and the bar
   // takes only two rows. When the replay controls have a row of their own on a wide window, the
   // name shares the next row with the buttons. Then it starts from no width, and its minimum is the
-  // width of its label, so that the name gets shorter before the buttons get short labels, and the
-  // buttons get short labels before they go to a row of their own.
+  // width of its label, so that the name gets shorter before the buttons go to a row of their own.
   const gameInfoButton = (
     <HelpIcon
       icon="fa-info-circle"
@@ -1453,7 +1390,6 @@ export function StatusStrip({
   const variant = (
     <div
       className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
-      ref={variantRef}
     >
       <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
         Variant
@@ -1482,12 +1418,9 @@ export function StatusStrip({
     <div
       className={
         panel
-          ? `tw:group/buttons tw:flex tw:flex-wrap tw:gap-2 tw:*:grow tw:*:justify-center tw:[&>*>button]:w-full tw:[&>*>button]:justify-center ${tabbed ? "tw:mt-auto" : ""}`
-          : "tw:group/buttons tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
+          ? `tw:flex tw:flex-wrap tw:gap-2 tw:*:grow tw:*:justify-center tw:[&>*>button]:w-full tw:[&>*>button]:justify-center ${tabbed ? "tw:mt-auto" : ""}`
+          : "tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:content-center tw:items-center tw:justify-end tw:gap-2.5 tw:not-phone:group-data-own-row/strip:min-h-(--strip-height) tw:phone:gap-2"
       }
-      // The panel has room for the buttons in more than one row, so they keep their long labels.
-      data-short-labels={shortLabels && !panel ? "" : undefined}
-      ref={buttonsRef}
     >
       {!panel && (
         <div className="tw:mr-auto tw:hidden tw:phone:flex">{chatButton}</div>
@@ -1495,15 +1428,17 @@ export function StatusStrip({
       {replayToggle !== undefined && <ReplayToggle {...replayToggle} />}
       {viewAsMenu}
       {tableMenu}
-      {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}
+      {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. The bar has
+          room only for its icon, so the bar gives it a tooltip. The panel has room for its label. */}
       <button
         aria-label="Lobby"
         className={buttonClass}
         onClick={onLobby}
+        ref={panel ? undefined : tooltipRef(LOBBY_TOOLTIP)}
         type="button"
       >
         <i aria-hidden="true" className="fas fa-door-open" />
-        <span className="tw:group-data-short-labels/buttons:hidden">Lobby</span>
+        {panel && <span>Lobby</span>}
       </button>
     </div>
   );
@@ -1652,7 +1587,6 @@ export function StatusStrip({
           {barControls}
         </div>
       )}
-      {/* When the buttons have no room in one line, they have short labels. */}
       {buttons}
     </footer>
   );

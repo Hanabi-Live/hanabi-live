@@ -189,7 +189,7 @@ const PANEL_CARD_WIDTH = 82;
  * "StatusStrip.tsx"). On a narrower screen, the bar is a panel in the right column, so that it
  * never needs a second row.
  */
-const BAR_ONE_ROW_WIDTH = 1700;
+const BAR_ONE_ROW_WIDTH = 1650;
 
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
