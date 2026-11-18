@@ -16,6 +16,7 @@ import {
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
 import { getClueLogHeight } from "./ClueLog.tsx";
+import { FadeInLabel } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
 import {
@@ -501,7 +502,10 @@ function ReplayToggle({
                 className={`tw:w-0 tw:min-w-full tw:truncate tw:text-center tw:text-xs tw:phone:hidden ${ourTurn ? "tw:font-bold" : "tw:font-medium tw:opacity-70"}`}
                 data-live-turn
               >
-                {ourTurn ? "Your turn" : `${currentName}'s turn`}
+                <FadeInLabel
+                  label={ourTurn ? "Your turn" : `${currentName}'s turn`}
+                  reducedMotion={reducedMotion}
+                />
               </span>
             )}
           </span>
@@ -762,19 +766,23 @@ function useClosingControls(
   replayControls: React.ReactNode,
   slides: boolean,
 ): readonly [React.ReactNode, () => void] {
+  // The controls that showed last. Each render makes new controls, so only whether there are
+  // controls is compared.
   const last = useRef(replayControls);
   const [closing, setClosing] = useState<React.ReactNode>(undefined);
-  // It runs before the screen is drawn, so the panel never shows without the controls before they
-  // slide back.
-  useLayoutEffect(() => {
-    const previous = last.current;
+  // It runs while rendering, so the controls stay on the page as they start to slide back. A new
+  // copy would start over, such as a hint that fades in.
+  const shown = replayControls !== undefined;
+  const [wasShown, setWasShown] = useState(shown);
+  if (shown !== wasShown) {
+    setWasShown(shown);
+    setClosing(shown || !slides ? undefined : last.current);
+  } else if (!slides && closing !== undefined) {
+    setClosing(undefined);
+  }
+  if (shown) {
     last.current = replayControls;
-    if (replayControls !== undefined || !slides) {
-      setClosing(undefined);
-    } else if (previous !== undefined) {
-      setClosing(previous);
-    }
-  }, [replayControls, slides]);
+  }
   const close = useCallback(() => {
     setClosing(undefined);
   }, []);

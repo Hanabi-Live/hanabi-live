@@ -35,7 +35,7 @@ import {
   CARD_W,
 } from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
-import { getOpacityTransition, useFade } from "./motion.ts";
+import { fadeOutCopy, getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import { getScreenScale } from "./screenScale.ts";
 import type {
@@ -1645,6 +1645,17 @@ export function PossibleCardsBubble({
 }
 
 /**
+ * The copy of an open bubble that went, and the frame in which it went. A bubble that opens in the
+ * same frame takes its place without a fade.
+ */
+let removedOpenBubble:
+  | {
+      readonly time: NonNullable<AnimationTimeline["currentTime"]>;
+      readonly copy: HTMLElement;
+    }
+  | undefined;
+
+/**
  * The hand of a card, or of the card that the player holds, which is drawn outside of its hand (see
  * "HeldCardGhost.tsx").
  */
@@ -1832,6 +1843,17 @@ function PossibleCardsGrid({
       return;
     }
     fadedIn.current = true;
+    // A bubble that takes the place of one that was open, such as on the card that the player picks
+    // up, shows at once.
+    const removed = removedOpenBubble;
+    removedOpenBubble = undefined;
+    if (
+      removed !== undefined
+      && removed.time === document.timeline.currentTime
+    ) {
+      removed.copy.remove();
+      return;
+    }
     element.animate(
       [
         {
@@ -1849,6 +1871,50 @@ function PossibleCardsGrid({
       },
     );
   }, [side, closedOffset, closing]);
+
+  // A bubble that goes while it shows or fades out, such as with the card that the player lets go
+  // of, fades out from where it is (see `fadeOutCopy`).
+  const closingRef = useRef(closing);
+  closingRef.current = closing;
+  const closedOffsetRef = useRef(closedOffset);
+  closedOffsetRef.current = closedOffset;
+  useLayoutEffect(() => {
+    const element = ref.current;
+    return () => {
+      if (element === null || store.getState().session.settings.reducedMotion) {
+        return;
+      }
+      const style = getComputedStyle(element);
+      const opacity = Number(style.opacity);
+      if (!(opacity > 0) || style.visibility === "hidden") {
+        return;
+      }
+      const copy = fadeOutCopy(
+        element,
+        [
+          {
+            opacity,
+            translate: style.translate,
+          },
+          {
+            opacity: 0,
+            translate: closedOffsetRef.current,
+          },
+        ],
+        {
+          duration: CLOSE_DURATION_IN_MILLISECONDS * opacity,
+          easing: "ease-in",
+        },
+      );
+      const time = document.timeline.currentTime;
+      if (time !== null && copy !== undefined && !closingRef.current) {
+        removedOpenBubble = {
+          time,
+          copy,
+        };
+      }
+    };
+  }, []);
 
   const ranks = variant.ranks.toSorted(
     (a, b) => rankColumnOrder(a) - rankColumnOrder(b),

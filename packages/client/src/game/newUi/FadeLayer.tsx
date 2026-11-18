@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
@@ -37,6 +38,38 @@ export function FadeLayer({
         transition: reducedMotion ? undefined : getOpacityTransition(shown),
       }}
     />
+  );
+}
+
+/**
+ * A label that fades in when it changes, such as that of a button whose color fades with a
+ * `FadeLayer`. The old label goes at once, so that the button takes the new label's width at once.
+ * The first label shows at once.
+ */
+export function FadeInLabel({
+  label,
+  reducedMotion,
+}: {
+  readonly label: string;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const [first] = useState(label);
+  const [changed, setChanged] = useState(false);
+  if (!changed && label !== first) {
+    setChanged(true);
+  }
+  const fades = changed && !reducedMotion;
+  return (
+    <span
+      className={fades ? "tw:starting:opacity-0" : undefined}
+      // A new label is a new element, so that it fades in.
+      key={label}
+      style={{
+        transition: fades ? getOpacityTransition(true) : undefined,
+      }}
+    >
+      {label}
+    </span>
   );
 }
 

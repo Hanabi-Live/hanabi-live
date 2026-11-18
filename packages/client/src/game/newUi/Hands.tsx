@@ -1746,13 +1746,13 @@ function Hand({
             : NAME_GAP,
       }}
     >
-      {/* In the phone layout, the tab sits inside the hand, so only the menu colors it. */}
-      {canClueSeat && (
-        <ClueHandLayer
-          reducedMotion={props.reducedMotion}
-          shown={chosen || (showsClueTab && !props.stacked)}
-        />
-      )}
+      {/* In the phone layout, the tab sits inside the hand, so only the menu colors it. The layer
+          stays when the viewer can no longer give a clue, such as after they give one, so that it
+          slides back with the menu. */}
+      <ClueHandLayer
+        reducedMotion={props.reducedMotion}
+        shown={chosen || (showsClueTab && !props.stacked)}
+      />
       {/* Beside the cards, the clock goes under the name, so that it does not take width from the
           name. Above the cards, it goes after the name, so that it does not take height from the
           cards. It is positioned, as are the cards, so that both are drawn over the layer behind

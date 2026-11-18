@@ -972,6 +972,9 @@ export function getNotedStackBase(
  */
 const DECK_EDGE_OFFSET = 2;
 
+/** The opacity of the deck's top card while the player holds it. */
+const HELD_DECK_OPACITY = 0.3;
+
 /**
  * How many card edges show under the top of the deck, by the cards left: the most at the start,
  * fewer as it runs low, and none for the last card. Each entry is the fewest cards for its edges.
@@ -1174,8 +1177,39 @@ function Deck({
   // over it. The deck tracks the pointer even without a bubble, so that the bubble opens when the
   // viewer holds Space over it, as over a card in a hand.
   const [top, setTop] = useState<HTMLElement>();
+  // The top card becomes a button when the player can play it, and a new element replaces the old
+  // one. The bubble must point at the new one.
+  const topRef = useCallback(
+    (element: HTMLElement | null) => {
+      if (element !== null && top !== undefined) {
+        setTop(element);
+      }
+    },
+    [top],
+  );
   const [hovered, setHovered] = useState(false);
   const held = play?.held === true;
+  // The glow that says that the player can play the last card fades out when they no longer can,
+  // such as when their turn ends. It stays on the page until it has faded out.
+  const glowShown = play !== undefined && !held;
+  const [glowMounted, setGlowMounted] = useState(glowShown);
+  if (glowShown && !glowMounted) {
+    setGlowMounted(true);
+  } else if (play === undefined && glowMounted && reducedMotion) {
+    setGlowMounted(false);
+  }
+  const glowGoing = play === undefined && glowMounted;
+  useEffect(() => {
+    if (!glowGoing) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      setGlowMounted(false);
+    }, CLOSE_DURATION_IN_MILLISECONDS);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [glowGoing]);
 
   // A tap anywhere else closes the menu.
   const menuOpen = play?.menuOpen === true;
@@ -1313,12 +1347,15 @@ function Deck({
     empty
       ? "tw:border-2 tw:border-dashed"
       : "tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80"
-  } ${emptyStyle} ${held ? "tw:opacity-30" : ""}`;
+  } ${emptyStyle}`;
+  // The top card dims while the player holds it, and comes back if they put it back.
   const topStyle = {
     ...(!empty && CARD_BACK_STYLE),
     width: cardWidth,
     borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
     height,
+    opacity: held ? HELD_DECK_OPACITY : undefined,
+    transition: reducedMotion ? undefined : getOpacityTransition(!held),
   };
 
   return (
@@ -1363,18 +1400,17 @@ function Deck({
             />
           );
         })}
-        {play !== undefined && (
+        {glowMounted && (
           // The glow around the last card says that the player can play it. It pulses, except with
           // "Reduced motion". It fades out while the player holds the card, and back in when they
           // put it back.
           <div
             aria-hidden="true"
-            className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0"
+            className={`tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 ${glowShown ? "tw:opacity-100 tw:starting:opacity-0" : "tw:opacity-0"}`}
             style={{
-              opacity: held ? 0 : 1,
               transition: reducedMotion
                 ? undefined
-                : getOpacityTransition(!held),
+                : getOpacityTransition(glowShown),
             }}
           >
             <div
@@ -1413,6 +1449,7 @@ function Deck({
             onPointerUp={() => {
               onHoldEmpathy(false);
             }}
+            ref={topRef}
             style={topStyle}
           >
             {face}
@@ -1434,6 +1471,7 @@ function Deck({
             onPointerDown={play.onPointerDown}
             onPointerEnter={onPointerEnter}
             onPointerLeave={onPointerLeave}
+            ref={topRef}
             style={{
               ...topStyle,
               // A touch drags the card, so it must not scroll the page.

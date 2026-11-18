@@ -2,7 +2,11 @@ import type { ServerEventData } from "@hanabi-live/data";
 import { useRef, useState } from "react";
 import { store } from "../../store.ts";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
-import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
+import {
+  FADE_LAYER_PARENT_CLASS,
+  FadeInLabel,
+  FadeLayer,
+} from "./FadeLayer.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {
@@ -61,7 +65,10 @@ export function EndGameMenu({
           shown={voted}
         />
         <i aria-hidden="true" className="fas fa-skull" />
-        {voted ? "Voted to end" : "End game"}
+        <FadeInLabel
+          label={voted ? "Voted to end" : "End game"}
+          reducedMotion={reducedMotion}
+        />
         <MenuCaret open={open} />
       </button>
       {open && (

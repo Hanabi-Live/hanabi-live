@@ -42,13 +42,29 @@ export function LeaderDirection({
     shared !== undefined && shared.useSharedSegments && !shared.amLeader;
   const move = useLeaderMove(following, shared?.segment);
 
+  return (
+    // The box stays without arrows, so that arrows that go can fade out in it.
+    <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center">
+      {move !== undefined && (
+        <LeaderArrows direction={move.direction} key={move.key} />
+      )}
+    </div>
+  );
+}
+
+/** The arrows of one move of the leader. They flash once. */
+function LeaderArrows({
+  direction,
+}: {
+  readonly direction: 1 | -1;
+}): React.JSX.Element {
   const ref = useRef<SVGSVGElement>(null);
   useLayoutEffect(() => {
     const arrows = ref.current;
-    if (arrows === null || move === undefined) {
+    if (arrows === null) {
       return undefined;
     }
-    const drift = `${move.direction * DRIFT_FRACTION * 100}%`;
+    const drift = `${direction * DRIFT_FRACTION * 100}%`;
     // They pop in, hold still for a moment, and then drift the way that the leader went as they
     // fade out.
     const animation = arrows.animate(
@@ -80,7 +96,8 @@ export function LeaderDirection({
       },
     );
     // Arrows that go during their flash, such as when the viewer stops following the leader, fade
-    // out from where they are (see `fadeOutCopy`).
+    // out from where they are (see `fadeOutCopy`). This cleanup runs while they are still on the
+    // page, because it belongs to the component that React removes.
     return () => {
       const shown = Number(getComputedStyle(arrows).opacity);
       const { transform } = getComputedStyle(arrows);
@@ -98,38 +115,32 @@ export function LeaderDirection({
       arrows.style.opacity = "";
       arrows.style.transform = "";
     };
-  }, [move]);
+  }, [direction]);
 
   // Two separate triangles, so that each one has its own outline. The back arrows are the same
   // shape, turned around.
   return (
-    // The box stays without arrows, so that arrows that go can fade out in it.
-    <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center">
-      {move !== undefined && (
-        <svg
-          aria-hidden="true"
-          className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
-          data-leader-direction
-          key={move.key}
-          ref={ref}
-          viewBox="0 0 100 80"
-        >
-          <g
-            fill="white"
-            paintOrder="stroke"
-            stroke="rgb(0 0 0 / 0.6)"
-            strokeLinejoin="round"
-            strokeWidth={6}
-            transform={
-              move.direction === -1 ? "translate(100 0) scale(-1 1)" : undefined
-            }
-          >
-            <path d="M8 8 L46 40 L8 72 Z" />
-            <path d="M54 8 L92 40 L54 72 Z" />
-          </g>
-        </svg>
-      )}
-    </div>
+    <svg
+      aria-hidden="true"
+      className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
+      data-leader-direction
+      ref={ref}
+      viewBox="0 0 100 80"
+    >
+      <g
+        fill="white"
+        paintOrder="stroke"
+        stroke="rgb(0 0 0 / 0.6)"
+        strokeLinejoin="round"
+        strokeWidth={6}
+        transform={
+          direction === -1 ? "translate(100 0) scale(-1 1)" : undefined
+        }
+      >
+        <path d="M8 8 L46 40 L8 72 Z" />
+        <path d="M54 8 L92 40 L54 72 Z" />
+      </g>
+    </svg>
   );
 }
 
