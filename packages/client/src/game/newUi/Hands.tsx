@@ -32,8 +32,8 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
 import {
   CLUE_DRAWER_HAND_CLASS,
-  CLUE_TAB_HAND_CLASS,
   ClueTab,
+  ClueTabHandLayer,
 } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
@@ -1572,7 +1572,14 @@ function Hand({
   // A card that the viewer drags hides the tab, so that it does not get in the way.
   const showsClueTab =
     canClueSeat && !chosen && pointedAt && props.draggedCard === undefined;
-  const clueTabRight = showsClueTab && !props.stacked;
+  // The tab stays while it slides back after it closes. It goes at once when the clue menu opens or
+  // the viewer can no longer give a clue.
+  const [clueTabMounted, setClueTabMounted] = useState(false);
+  if (showsClueTab && !clueTabMounted) {
+    setClueTabMounted(true);
+  } else if (clueTabMounted && (!canClueSeat || chosen)) {
+    setClueTabMounted(false);
+  }
 
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
@@ -1580,8 +1587,6 @@ function Hand({
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
   } else if (chosen) {
     boxClass = CLUE_DRAWER_HAND_CLASS;
-  } else if (clueTabRight) {
-    boxClass = CLUE_TAB_HAND_CLASS;
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
@@ -1643,11 +1648,18 @@ function Hand({
             : NAME_GAP,
       }}
     >
+      {canClueSeat && !chosen && !props.stacked && (
+        <ClueTabHandLayer
+          reducedMotion={props.reducedMotion}
+          shown={showsClueTab}
+        />
+      )}
       {/* Beside the cards, the clock goes under the name, so that it does not take width from the
           name. Above the cards, it goes after the name, so that it does not take height from the
-          cards. */}
+          cards. It is positioned, as are the cards, so that both are drawn over the layer behind
+          them. */}
       <div
-        className={`tw:flex tw:max-w-full tw:shrink-0 ${
+        className={`tw:relative tw:flex tw:max-w-full tw:shrink-0 ${
           props.nameColumnWidth === undefined
             ? "tw:items-center tw:gap-3"
             : "tw:flex-col tw:items-start tw:gap-1"
@@ -1693,7 +1705,7 @@ function Hand({
         )}
       </div>
       <div
-        className="tw:flex"
+        className="tw:relative tw:flex"
         onContextMenu={(event) => {
           if (empathyHold) {
             event.preventDefault();
@@ -1778,13 +1790,17 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {showsClueTab && (
+      {clueTabMounted && canClueSeat && !chosen && (
         <ClueTab
           below={props.stacked}
           name={seat.name}
+          onClosed={() => {
+            setClueTabMounted(false);
+          }}
           onOpen={() => {
             props.onChooseClueTarget(seat.playerIndex);
           }}
+          open={showsClueTab}
           reducedMotion={props.reducedMotion}
           top={getHandBoxTopPadding(props.cardWidth)}
         />

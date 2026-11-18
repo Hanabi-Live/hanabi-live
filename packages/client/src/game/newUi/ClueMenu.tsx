@@ -551,12 +551,106 @@ function EmptySlot(): React.JSX.Element {
 }
 
 /**
- * A hand that shows its clue tab to its right. The hand has the color of the tab, and one outline
- * goes around both. The hand has no outline and no round corners on its right, where the tab joins
- * it.
+ * Plays a slide of the clue tab and of its hand forward when `open` turns on, and backward when it
+ * turns off, from where the slide is. The slide holds its look at either end. When it ends after it
+ * played backward, it calls `onClosed`. The tab and its hand use the same slide, so that they fade
+ * together in both directions. The slides only decorate.
  */
-export const CLUE_TAB_HAND_CLASS =
-  "tw:bg-game-panel tw:rounded-r-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
+function useTabSlide(
+  ref: React.RefObject<HTMLElement | null>,
+  getKeyframes: (element: HTMLElement) => readonly Keyframe[],
+  open: boolean,
+  reducedMotion: boolean,
+  layoutKey: unknown,
+  onClosed?: () => void,
+) {
+  const animationRef = useRef<Animation>(undefined);
+  const openRef = useRef(open);
+  openRef.current = open;
+  const keyframesRef = useRef(getKeyframes);
+  keyframesRef.current = getKeyframes;
+  const onClosedRef = useRef(onClosed);
+  onClosedRef.current = onClosed;
+
+  // A slide that starts closed waits at its start.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (reducedMotion || element === null) {
+      return undefined;
+    }
+    const animation = element.animate([...keyframesRef.current(element)], {
+      ...DRAWER_SLIDE,
+      fill: "both",
+    });
+    if (!openRef.current) {
+      animation.pause();
+    }
+    animationRef.current = animation;
+    return () => {
+      animationRef.current = undefined;
+      animation.cancel();
+    };
+  }, [ref, reducedMotion, layoutKey]);
+
+  const startedRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!startedRef.current) {
+      startedRef.current = true;
+      return undefined;
+    }
+    const animation = animationRef.current;
+    if (animation === undefined) {
+      if (!open) {
+        onClosedRef.current?.();
+      }
+      return undefined;
+    }
+    animation.playbackRate = open ? 1 : -1;
+    animation.play();
+    if (open) {
+      return undefined;
+    }
+    function finish() {
+      onClosedRef.current?.();
+    }
+    animation.addEventListener("finish", finish);
+    return () => {
+      animation.removeEventListener("finish", finish);
+    };
+  }, [open]);
+}
+
+function getLayerKeyframes(): readonly Keyframe[] {
+  return [{ opacity: 0 }, { opacity: 1 }];
+}
+
+/**
+ * A layer behind the cards of a hand that can show its clue tab to its right. While the tab shows,
+ * the layer gives the hand the color of the tab, and one outline goes around both. The layer has no
+ * outline and no round corners on its right, where the tab joins it.
+ *
+ * The layer fades in and out with its opacity. Do not animate the hand's background color instead:
+ * Chrome 157 runs such an animation on the compositor, and then sometimes crashes the tab when the
+ * hand's style changes.
+ */
+export function ClueTabHandLayer({
+  shown,
+  reducedMotion,
+}: {
+  readonly shown: boolean;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  useTabSlide(ref, getLayerKeyframes, shown, reducedMotion, undefined);
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]"
+      ref={ref}
+      style={{ opacity: shown ? 1 : 0 }}
+    />
+  );
+}
 
 /**
  * The tab to the right of the hand, as tall as the hand, with its key halfway down. It has an
@@ -569,17 +663,20 @@ const TAB_RIGHT_CLASS =
 
 /**
  * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
- * their hand while the pointer is over the hand, on the viewer's turn when the team has a clue. On
- * a touch screen, a tap on the hand shows it. Like the menu, it opens to the right of the hand,
- * where the hands always leave room (see `getClueDrawerWidth`). In the phone layout, there is no
- * room there, so it sits in the hand's top right corner, beside the player's name.
+ * their hand while the pointer is over the hand, on the viewer's turn when the team has a clue, and
+ * slides back when the pointer leaves. On a touch screen, a tap on the hand shows it. Like the
+ * menu, it opens to the right of the hand, where the hands always leave room (see
+ * `getClueDrawerWidth`). In the phone layout, there is no room there, so it sits in the hand's top
+ * right corner, beside the player's name.
  */
 export function ClueTab({
   name,
   below,
   top,
   reducedMotion,
+  open,
   onOpen,
+  onClosed,
 }: {
   readonly name: string;
   readonly below: boolean;
@@ -587,20 +684,21 @@ export function ClueTab({
   /** In the phone layout, the distance from the top of the hand to the top of the name. */
   readonly top: number;
   readonly reducedMotion: boolean;
+
+  /** Whether the tab is open. When it is not, it slides back, and then `onClosed` removes it. */
+  readonly open: boolean;
   readonly onOpen: () => void;
+  readonly onClosed: () => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-
   // It slides out from behind the edge of the hand, as the menu does. In the phone layout, it
-  // slides in a little from the right. The sliding only decorates.
-  useLayoutEffect(() => {
-    const tab = ref.current;
-    if (reducedMotion || tab === null) {
-      return undefined;
-    }
-    const { width } = measure(tab);
-    const animation = tab.animate(
-      [
+  // slides in a little from the right. It fades in with the color of the hand (see
+  // `ClueTabHandLayer`). When it closes, it slides back, and then it is removed.
+  useTabSlide(
+    ref,
+    (tab) => {
+      const { width } = measure(tab);
+      return [
         below
           ? {
               transform: `translateX(${width / 2}px)`,
@@ -609,19 +707,20 @@ export function ClueTab({
           : {
               transform: `translateX(${-width}px)`,
               clipPath: `inset(0 0 0 ${width}px)`,
+              opacity: 0,
             },
         {
           transform: "none",
           clipPath: "inset(0 0 0 0)",
           opacity: 1,
         },
-      ],
-      DRAWER_SLIDE,
-    );
-    return () => {
-      animation.cancel();
-    };
-  }, [below, reducedMotion]);
+      ];
+    },
+    open,
+    reducedMotion,
+    below,
+    onClosed,
+  );
 
   return (
     <div
