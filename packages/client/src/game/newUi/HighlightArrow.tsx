@@ -175,11 +175,18 @@ export function HighlightArrow({
       SLIDE,
     );
     return () => {
+      // The copy starts from where the drop is, so that an arrow that goes during its drop does not
+      // jump to its place first. The arrow keeps the drop's look only while it is copied.
+      const { opacity, transform } = getComputedStyle(shape);
       drop.cancel();
+      shape.style.opacity = opacity;
+      shape.style.transform = transform;
       fadeOutCopy(arrow, [{ opacity: 1 }, { opacity: 0 }], {
         duration: CLOSE_DURATION_IN_MILLISECONDS,
         easing: "ease-in",
       });
+      shape.style.opacity = "";
+      shape.style.transform = "";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- The arrow appears once. A later change to the motion setting does not play it again.
   }, []);

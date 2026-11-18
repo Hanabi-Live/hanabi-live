@@ -112,7 +112,12 @@ import {
 } from "../ui/effectConfig.ts";
 import { CARD_CORNER_PER_WIDTH } from "./Card.tsx";
 import { getPlayLandingSeconds } from "./cardMotion.ts";
-import { EFFECT_Z_INDEX, animateSampled, onEnd } from "./playMotion.ts";
+import {
+  EFFECT_Z_INDEX,
+  animateSampled,
+  getFadeBackPercent,
+  onEnd,
+} from "./playMotion.ts";
 import { toScreenPixels } from "./screenScale.ts";
 
 /** Something that the canvas draws for a while, starting at a time in seconds. */
@@ -1047,19 +1052,14 @@ function glowScore(root: HTMLElement, start: number, unit: number) {
   }
   const delay = start * SECOND_IN_MILLISECONDS;
   const gold = SCORE_POP_SECONDS * SECOND_IN_MILLISECONDS;
-  animateSampled(
-    score,
-    gold,
-    () => ({ color: GOLD }),
-    delay,
-    undefined,
-    "none",
-  );
   const glow = FINALE_SCORE_GLOW_SECONDS * SECOND_IN_MILLISECONDS;
+  // The number is gold while it pops, and then fades back to its color as the glow fades out.
+  const normal = getComputedStyle(score).color;
   animateSampled(
     score,
     glow,
     (ms) => ({
+      color: `color-mix(in srgb, ${normal} ${getFadeBackPercent(ms, gold, glow)}%, ${GOLD})`,
       textShadow: `0 0 ${toScreenPixels(SCORE_GLOW_BLUR * unit * (1 - ms / glow))}px ${GOLD}`,
     }),
     delay,

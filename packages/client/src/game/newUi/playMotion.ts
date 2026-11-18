@@ -207,6 +207,20 @@ export function isShowingPlay(element: HTMLElement): boolean {
 }
 
 /**
+ * How far a color has faded back to its own, in percent, at `ms` milliseconds into an animation of
+ * `duration` milliseconds. It keeps the new color until `hold`, and then fades back by the end.
+ */
+export function getFadeBackPercent(
+  ms: number,
+  hold: number,
+  duration: number,
+): number {
+  return duration <= hold
+    ? 0
+    : Math.min(100, (Math.max(0, ms - hold) / (duration - hold)) * 100);
+}
+
+/**
  * Animates an element along a path that a function gives for each moment, from 0 to `duration`
  * milliseconds. The animation has evenly spaced keyframes, since a path can have any shape.
  */
@@ -838,6 +852,9 @@ export function animateMisplay(
   }
 }
 
+/** The part of the strikeout's glow during which the score stays red, before it fades back. */
+const STRIKEOUT_SCORE_RED_PART = 0.5;
+
 /**
  * The strike that ends the game: every strike box flashes red with a ring, and the score glows red.
  */
@@ -880,18 +897,25 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
   }
 
   const score = root.querySelector("[data-score]");
-  if (score !== null) {
-    animateSampled(
-      score,
-      duration,
-      (ms) => {
-        const t = ms / duration;
-        return {
-          textShadow: `0 0 ${STRIKEOUT_GLOW * unit * (1 - t)}px ${WARNING_COLOR}`,
-          color: t < 1 ? WARNING_COLOR : "inherit",
-        };
-      },
-      delay,
-    );
+  if (score === null) {
+    return;
   }
+  // The number stays red for the first half of the glow, and then fades back to its color.
+  const normal = getComputedStyle(score).color;
+  const hold = duration * STRIKEOUT_SCORE_RED_PART;
+  animateSampled(
+    score,
+    duration,
+    (ms) => {
+      const t = ms / duration;
+      return {
+        textShadow: `0 0 ${STRIKEOUT_GLOW * unit * (1 - t)}px ${WARNING_COLOR}`,
+        color: `color-mix(in srgb, ${normal} ${getFadeBackPercent(ms, hold, duration)}%, ${WARNING_COLOR})`,
+      };
+    },
+    delay,
+    PLAY_EFFECT_ANIMATION_ID,
+    // Not before the strikeout: the score is red only from then on.
+    "none",
+  );
 }

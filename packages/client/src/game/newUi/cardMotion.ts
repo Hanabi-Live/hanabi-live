@@ -639,6 +639,7 @@ function animateIntoHole(element: HTMLElement, from: DOMRect, to: DOMRect) {
       easing: "ease-in",
     },
   );
+  trackCardMove(element, animation);
   onEnd(animation, restore);
 }
 
