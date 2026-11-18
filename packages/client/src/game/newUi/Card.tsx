@@ -91,8 +91,6 @@ interface FacePip {
   readonly x: number;
   readonly y: number;
   readonly size: number;
-  /** Whether the pip is upside down, as on the bottom half of a playing card. */
-  readonly turned: boolean;
 }
 
 /** The pips on the face of a 2. */
@@ -121,43 +119,38 @@ const SINGLE_PIP = {
   x: 0,
   y: 0,
   size: SUIT_PIP_SIZE_PER_WIDTH,
-  turned: false,
 } as const satisfies FacePip;
 
 /**
  * The pips on a card of each rank: as many pips as the rank, in the pattern of the classic card
  * images, so that players can tell a rank from the pattern at a glance. Another rank, such as a
  * start card, has one pip. The pips fill the space under the rank in the corner, so the rank does
- * not show again, turned over, in the opposite corner.
+ * not show again, turned over, in the opposite corner. Every pip is upright, because a card on the
+ * screen is never upside down, and a turned pip of many suits looks like another symbol.
  */
 const RANK_PIP_LAYOUTS: ReadonlyMap<number, readonly FacePip[]> = (() => {
   const center: FacePip = {
     x: 0,
     y: 0,
     size: CENTER_PIP_SIZE,
-    turned: false,
   };
   const top: FacePip = {
     x: 0,
     y: -OUTER_PIP.offset,
     size: OUTER_PIP.size,
-    turned: false,
   };
   const bottom: FacePip = {
     ...top,
     y: OUTER_PIP.offset,
-    turned: true,
   };
   const left: FacePip = {
     x: -OUTER_PIP.sideOffset,
     y: 0,
     size: OUTER_PIP.size,
-    turned: false,
   };
   const right: FacePip = {
     ...left,
     x: OUTER_PIP.sideOffset,
-    turned: true,
   };
 
   return new Map([
@@ -169,13 +162,11 @@ const RANK_PIP_LAYOUTS: ReadonlyMap<number, readonly FacePip[]> = (() => {
           x: 0,
           y: -RANK_2_PIP.y,
           size: RANK_2_PIP.size,
-          turned: false,
         },
         {
           x: 0,
           y: RANK_2_PIP.y,
           size: RANK_2_PIP.size,
-          turned: true,
         },
       ],
     ],
@@ -2742,7 +2733,6 @@ export function CardFace({
             style={{
               left: width / 2 + width * (pip.x - pip.size / 2),
               top: pipsCenterY + width * (pip.y - pip.size / 2),
-              transform: pip.turned ? "rotate(180deg)" : undefined,
             }}
           >
             <Pip shadow size={width * pip.size} suit={suit} variant={variant} />
