@@ -11,6 +11,7 @@ import {
   LOW_SCORE_PHASE_COLOR,
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
+import { getClueLogHeight } from "./ClueLog.tsx";
 import { DRAWER_SLIDE } from "./ClueMenu.tsx";
 import { useElementSize } from "./hooks.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
@@ -144,7 +145,7 @@ interface StatusStripProps {
 
   /**
    * The clue log, which is above the panel. When the panel wraps onto more rows, the two share one
-   * box with tabs instead (see `usePanelWraps`).
+   * box with tabs instead (see `usePanelTabs`).
    */
   readonly clueLog: React.ReactNode;
 }
@@ -639,23 +640,46 @@ const PANEL_TAB_IDS = {
 const ONE_ROW_STATS_COLUMNS = 5;
 
 /**
- * Whether the panel wraps onto more rows than it has when it is wide: its numbers take two rows
- * (and so does the replay's timeline, which wraps at the same width), or its buttons do. Then the
- * panel and the clue log share one box with tabs, so that the panel has the height that it needs.
- * The panel has the same width with tabs and without them, so the answer stays the same.
+ * The rows of clues that the clue log keeps above a panel that wraps, before the two share tabs.
  */
-function usePanelWraps(
+const STACKED_CLUE_LOG_ROWS = 4;
+
+/** Reads a length in pixels from a computed style, such as "12px". */
+function getPixels(value: string): number {
+  const pixels = Number(value.replace(/px$/u, ""));
+  return Number.isNaN(pixels) ? 0 : pixels;
+}
+
+/**
+ * Whether the panel and the clue log share one box with tabs. That happens when the panel wraps
+ * onto more rows than it has when it is wide (its numbers take two rows, and so does the replay's
+ * timeline, which wraps at the same width, or its buttons do), and the panel below the clue log
+ * would leave the log fewer than `STACKED_CLUE_LOG_ROWS` rows. A tall column keeps both in view,
+ * and only a short one needs tabs. The panel has the same width and contents with tabs and without
+ * them, and the two take the same part of the column, so the answer stays the same.
+ */
+function usePanelTabs(
   footer: HTMLElement | null,
   panel: boolean,
+  status: RefObject<HTMLDivElement | null>,
   stats: RefObject<HTMLDivElement | null>,
   buttons: RefObject<HTMLDivElement | null>,
 ): boolean {
-  const [wraps, setWraps] = useState(false);
+  const [tabs, setTabs] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
+    const content = status.current;
     const grid = stats.current;
     const row = buttons.current;
-    if (!panel || footer === null || grid === null || row === null) {
+    // The panel with tabs is another element than the panel without them, so the one that was drawn
+    // last might be gone.
+    if (
+      !panel
+      || content === null
+      || grid === null
+      || row === null
+      || footer?.isConnected !== true
+    ) {
       return;
     }
     const columns =
@@ -666,14 +690,41 @@ function usePanelWraps(
         child instanceof HTMLElement ? child.offsetHeight : 0,
       ),
     );
-    const wrapsNow =
+    const wraps =
       columns < ONE_ROW_STATS_COLUMNS || row.offsetHeight > tallestButton;
+
+    // The panel's height without tabs: its contents and the gaps between them, which fills its tab
+    // when it has tabs. Its part of the column starts at the clue log above it without tabs, and at
+    // the panel with them. The panel and the log share the column's offset parent.
+    const parts = [...content.children].filter(
+      (child): child is HTMLElement => child instanceof HTMLElement,
+    );
+    const footerStyle = getComputedStyle(footer);
+    const panelHeight =
+      parts.reduce((sum, part) => sum + part.offsetHeight, 0)
+      + Math.max(0, parts.length - 1)
+        * getPixels(getComputedStyle(content).rowGap)
+      + getPixels(footerStyle.paddingTop)
+      + getPixels(footerStyle.paddingBottom);
+    const clueLog = Object.hasOwn(footer.dataset, "tabbed")
+      ? null
+      : footer.previousElementSibling;
+    const top = clueLog instanceof HTMLElement ? clueLog : footer;
+    const room = footer.offsetTop + footer.offsetHeight - top.offsetTop;
+    const gap =
+      footer.parentElement === null
+        ? 0
+        : getPixels(getComputedStyle(footer.parentElement).rowGap);
+    const tabsNow =
+      wraps
+      && room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS);
+
     // The game screen checks the panel's room before the panel draws again with tabs (see
     // "panelHasRoom" in "GameScreen.tsx").
-    footer.toggleAttribute("data-wraps", wrapsNow);
-    setWraps(wrapsNow);
+    footer.toggleAttribute("data-needs-tabs", tabsNow);
+    setTabs(tabsNow);
   });
-  return panel && wraps;
+  return panel && tabs;
 }
 
 /**
@@ -958,7 +1009,8 @@ export function StatusStrip({
   const ownRow = useOwnRow(footer, controlsRef);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
-  const tabbed = usePanelWraps(footer, panel, statsRef, buttonsRef);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const tabbed = usePanelTabs(footer, panel, statusRef, statsRef, buttonsRef);
   const [tab, setTab] = useState<PanelTab>("status");
   useReplayDrawer(
     footer,
@@ -1244,6 +1296,7 @@ export function StatusStrip({
       <div
         className={`tw:flex tw:flex-col tw:gap-3 ${tabbed ? "tw:h-full" : ""}`}
         data-panel-status
+        ref={statusRef}
       >
         {!tabbed && controls}
         {/* The four numbers spread across one row when it has room for them, or two rows of two.

@@ -194,8 +194,8 @@ const CLUE_LOG_MIN_HEIGHT = 60;
  */
 function panelHasRoom(panel: HTMLElement): boolean {
   if (!Object.hasOwn(panel.dataset, "tabbed")) {
-    // A panel that wraps is about to draw again with tabs, and then it has room.
-    if (Object.hasOwn(panel.dataset, "wraps")) {
+    // A panel that needs tabs is about to draw again with them, and then it has room.
+    if (Object.hasOwn(panel.dataset, "needsTabs")) {
       return true;
     }
     const clueLog = panel.previousElementSibling;

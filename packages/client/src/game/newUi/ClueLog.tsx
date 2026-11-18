@@ -32,6 +32,20 @@ const BOTTOM_SLOP = 2;
 /** The height of a line in a row of the log, in CSS pixels: the disc and its outline. */
 const ROW_LINE_HEIGHT = CLUE_DISC_SIZE + 1;
 
+/** The height of a row of the log, in CSS pixels: its line, its `tw:py-1`, and the gap below it. */
+const ROW_HEIGHT = ROW_LINE_HEIGHT + 8 + 1;
+
+/**
+ * The height of the log around its rows, in CSS pixels: the `tw:pt-3` above the list, and the
+ * list's `tw:py-1.5` and `tw:mb-2.5`.
+ */
+const LOG_PADDING = 12 + 12 + 10;
+
+/** The height of a log that shows this many rows, in CSS pixels. */
+export function getClueLogHeight(rows: number): number {
+  return LOG_PADDING + rows * ROW_HEIGHT;
+}
+
 /** How a clue relates to the card that the mouse is over. */
 type Match = "none" | "positive" | "negative";
 
