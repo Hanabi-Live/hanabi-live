@@ -4,7 +4,10 @@
     <h1>{% include "logo.html" %}</h1>
     <nav id="nav"></nav>
   </header>
-  <section id="main" class="container max history-page">
+  <section
+    id="main"
+    class="container max history-page{% if page == 'password-reset' %} narrow{% endif %}"
+  >
     <header>
       <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
     </header>

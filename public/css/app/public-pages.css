@@ -4,6 +4,11 @@
 }
 
 /* History Pages */
+/* A page with only text and a short form, such as the password reset page */
+.history-page.narrow {
+  max-width: 50em;
+}
+
 .history-page > header {
   text-align: center;
 }
