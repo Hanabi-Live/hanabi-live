@@ -318,12 +318,24 @@ export function ClueMenu({
   // hand is cut off. Its content fades in (see `CONTENT_FADE_IN`). The sliding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current;
-    if (measuredSide === undefined || reducedMotion || menu === null) {
+    if (measuredSide === undefined || menu === null) {
+      return undefined;
+    }
+    const hand = menu.parentElement;
+    const reach = hand === null ? undefined : tabReaches.get(hand);
+    if (hand !== null) {
+      tabReaches.delete(hand);
+    }
+    if (reducedMotion) {
       return undefined;
     }
     const animation = menu.animate(
       [
-        getHiddenDrawer(menu, measuredSide),
+        getHiddenDrawer(
+          menu,
+          measuredSide,
+          measuredSide === "right" ? reach : undefined,
+        ),
         {
           transform: "none",
           clipPath: "inset(0 0 0 0)",
@@ -648,13 +660,28 @@ const CONTENT_FADE_OUT = [
   { opacity: 0 },
 ] as const;
 
-/** How the clue menu looks before it slides out of the hand, behind the hand's edge. */
-function getHiddenDrawer(menu: HTMLElement, side: DrawerSide): Keyframe {
+/**
+ * How far the clue tab of a hand reached past the hand's edge when its key opened the clue menu, in
+ * CSS pixels, by the hand. The menu starts its slide there, instead of from behind the hand's edge.
+ * Otherwise, for a frame or two, the hand's outline would end at its edge with nothing beside it.
+ */
+const tabReaches = new WeakMap<Element, number>();
+
+/**
+ * How the clue menu looks before it slides out of the hand, behind the hand's edge. When `reach` is
+ * given, that much of the menu already shows past the hand's edge.
+ */
+function getHiddenDrawer(
+  menu: HTMLElement,
+  side: DrawerSide,
+  reach = 0,
+): Keyframe {
   const { height, width } = measure(menu);
+  const hidden = Math.max(width - reach, 0);
   return side === "right"
     ? {
-        transform: `translateX(${-width}px)`,
-        clipPath: `inset(0 0 0 ${width}px)`,
+        transform: `translateX(${-hidden}px)`,
+        clipPath: `inset(0 0 0 ${hidden}px)`,
       }
     : {
         transform: `translateY(${-height}px)`,
@@ -863,6 +890,25 @@ export function ClueTab({
     onClosed,
   );
 
+  // When its key opens the menu, the tab goes at once, and the menu slides out from where the tab's
+  // edge was (see `tabReaches`), so that the tab seems to grow into the menu.
+  const openedMenuRef = useRef(false);
+  useLayoutEffect(() => {
+    const tab = ref.current;
+    return () => {
+      const hand = tab?.parentElement;
+      if (
+        tab === null
+        || hand === null
+        || hand === undefined
+        || !openedMenuRef.current
+      ) {
+        return;
+      }
+      tabReaches.set(hand, measure(tab).right - measure(hand).right);
+    };
+  }, []);
+
   return (
     <div
       className={`tw:absolute tw:z-20 ${below ? "tw:right-3" : TAB_RIGHT_CLASS}`}
@@ -873,7 +919,10 @@ export function ClueTab({
       <button
         aria-label={`Give ${name} a clue`}
         className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
-        onClick={onOpen}
+        onClick={() => {
+          openedMenuRef.current = true;
+          onOpen();
+        }}
         ref={tooltipRef(`Give ${name} a clue`)}
         type="button"
       >
