@@ -69,14 +69,13 @@ export function useWindowSize(): { width: number; height: number } {
 }
 
 /**
- * Window widths from the breakpoints in "public/css/tokens.css". At or below each one, the game
- * screen makes room: first chat covers the table when open, and then the columns stack and the page
- * scrolls. Before that, the parts beside the hands give up room when the hands need it, and the
- * columns can also stack on a wider window, when the hands are too narrow (see "getWideLayoutRoom"
- * and the "phone" variant).
+ * Window widths at or below which the game screen makes room: first chat covers the table when
+ * open, and then the columns stack and the page scrolls (the phone layout, see the "phone"
+ * variant). Before that, the parts beside the hands give up room when the hands need it (see
+ * "getWideLayoutRoom"). The first is a breakpoint from "public/css/tokens.css".
  */
 export const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
-export const STACKED_WIDTH_QUERY = "(max-width: 980px)";
+export const STACKED_WIDTH_QUERY = "(max-width: 959px)";
 
 /** Whether a media query, such as a window width, matches. It updates as the window changes. */
 export function useMediaQuery(query: string): boolean {

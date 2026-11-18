@@ -34,12 +34,6 @@ const HAND_CARD_WIDTH = {
  */
 export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
 
-/**
- * The wide layout keeps the hand cards at least this wide, when the height allows it. Otherwise,
- * the game screen uses the phone layout, which scrolls.
- */
-const WIDE_LAYOUT_MIN_CARD_WIDTH = 75;
-
 /** The smallest and largest card on the play stacks. */
 const STACK_CARD_WIDTH = {
   MIN: 30,
@@ -192,13 +186,6 @@ export interface WideLayoutRoom {
    * room, so that their cards get smaller.
    */
   readonly handsNarrowed: boolean;
-
-  /**
-   * Whether the hands are still too narrow when everything beside them has given up its room: the
-   * width makes the cards smaller than their height allows, and smaller than
-   * `WIDE_LAYOUT_MIN_CARD_WIDTH`. Then the game screen uses the phone layout.
-   */
-  readonly handsTooNarrow: boolean;
 }
 
 /**
@@ -229,7 +216,6 @@ export function getWideLayoutRoom(
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
     handsNarrowed: false,
-    handsTooNarrow: false,
   };
   if (rowWidth <= 0 || handsHeight <= 0) {
     return widest;
@@ -302,11 +288,6 @@ export function getWideLayoutRoom(
       TABLE_COLUMN_GAP.MAX
       - spacingShare * (TABLE_COLUMN_GAP.MAX - TABLE_COLUMN_GAP.MIN),
     handsNarrowed: missing > 0,
-    // Each pixel that the cards lose gives the hands `cardsPerHand` pixels.
-    handsTooNarrow:
-      missing
-      > cardsPerHand
-        * (cardWidth - Math.min(cardWidth, WIDE_LAYOUT_MIN_CARD_WIDTH)),
   };
 }
 

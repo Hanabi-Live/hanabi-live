@@ -270,10 +270,8 @@ export function GameScreen({
   const sentMove = useAppSelector((root) => root.newUi.sentMove);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
-  // Whether the wide layout's hands are too narrow (see "wideOther").
-  const [handsTooNarrow, setHandsTooNarrow] = useState(false);
   // The phone layout: the columns stack, and the page scrolls.
-  const stacked = narrowWindow || handsTooNarrow;
+  const stacked = narrowWindow;
   // Whether the wide layout's bar is a panel in the right column (see "barRef").
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
@@ -438,23 +436,7 @@ export function GameScreen({
     clearDrop,
   );
 
-  // The phone layout starts at the 980px breakpoint, or on a wider window when the wide layout's
-  // hands are too narrow, even after the parts beside them gave up their room (see
-  // "getWideLayoutRoom"). How large the hands are depends on the players, the names, the chat, and
-  // the size of the window, so it is measured, not a breakpoint. The phone layout cannot measure
-  // the wide layout. So when it starts, it keeps the size of the rest of the wide layout and the
-  // width of its names, and it ends when the hands would fit beside it again. The names are
-  // narrower in the phone layout, so a check with their width there would end the phone layout at
-  // once, and the screen would switch between the layouts on every frame. A change to what is
-  // beside the hands (the chat or the variant's play stacks) tries the wide layout again.
-  const wideOther = useRef<{
-    readonly width: number;
-    readonly height: number;
-    readonly nameWidth: number;
-    readonly beside: string;
-  }>(undefined);
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
-  const beside = `${chatBeside}-${state?.metadata.options.variantId}`;
   // In the wide layout, the bar is along the bottom of the screen while the cards keep a width of
   // at least `PANEL_CARD_WIDTH`. When the cards would get smaller with it, it moves to a panel at
   // the bottom of the right column, so that the hands get the whole height of the screen. It also
@@ -490,140 +472,101 @@ export function GameScreen({
     }
 
     const { options } = state.metadata;
-    function getRoom(
-      rowWidth: number,
-      handsHeight: number,
-      wideNameWidth = nameWidth,
-    ) {
+    function getRoom(rowWidth: number, handsHeight: number) {
       return getWideLayoutRoom(
         rowWidth,
         handsHeight,
         options.numPlayers,
         getCardsPerHand(options),
-        wideNameWidth,
+        nameWidth,
         touch ? EMPATHY_TOGGLE_SPACE : 0,
       );
     }
 
-    function tooNarrow(
-      rowWidth: number,
-      handsHeight: number,
-      wideNameWidth = nameWidth,
+    // The elements are measured now, because the wide layout might have just started, before their
+    // sizes were observed.
+    const rowWidth = tableElement.clientWidth - playAreaElement.clientWidth;
+    const handsHeight = handsElement.clientHeight;
+    // When the window gets narrower, the chat beside the table collapses before the hands get
+    // smaller. The screen's scale does not count, since the layout does not change with it. A
+    // player who opens the chat again keeps it open until the window gets narrower again.
+    if (
+      chatBeside
+      && previousScreenWidth !== undefined
+      && root.clientWidth < previousScreenWidth
+      && getRoom(rowWidth, handsHeight).handsNarrowed
     ) {
-      return getRoom(rowWidth, handsHeight, wideNameWidth).handsTooNarrow;
+      gameChat.hide();
+      return;
     }
-
-    if (!handsTooNarrow) {
-      // The elements are measured now, because the wide layout might have just started, before
-      // their sizes were observed.
-      const rowWidth = tableElement.clientWidth - playAreaElement.clientWidth;
-      const handsHeight = handsElement.clientHeight;
-      // When the window gets narrower, the chat beside the table collapses before the hands get
-      // smaller. The screen's scale does not count, since the layout does not change with it. A
-      // player who opens the chat again keeps it open until the window gets narrower again.
-      if (
-        chatBeside
-        && previousScreenWidth !== undefined
-        && root.clientWidth < previousScreenWidth
-        && getRoom(rowWidth, handsHeight).handsNarrowed
-      ) {
-        gameChat.hide();
-        return;
-      }
-      if (tooNarrow(rowWidth, handsHeight)) {
-        wideOther.current = {
-          width: root.clientWidth - rowWidth,
-          height: root.clientHeight - handsHeight,
-          nameWidth,
-          beside,
-        };
-        setHandsTooNarrow(true);
-        return;
-      }
-
-      const bar = barRef.current;
-      if (bar === null) {
-        return;
-      }
-      // What changes the room for the panel: the size of the window, the chat beside the table, and
-      // the controls in the panel.
-      const panelKey = [
-        root.clientWidth,
-        root.clientHeight,
-        beside,
-        hasReplayControls(state),
-        state.replay.hypothetical !== undefined,
-        state.replay.shared?.amLeader,
-      ].join(",");
-      if (sidePanel && !panelHasRoom(bar)) {
-        panelMissedRoom.current = panelKey;
-        setSidePanel(false);
-        return;
-      }
-
-      const barHeight = sidePanel ? 0 : bar.offsetHeight;
-      // The panel also hides the rail of the collapsed chat, which gives the table its width. The
-      // check counts the rail, so that its width does not move the bar back.
-      const railShown = !chatOpen || chatPoppedOut;
-      const rowWidthWithRail =
-        rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
-      const room = getRoom(
-        rowWidthWithRail,
-        handsHeight + barHeight - REPLAY_BAR_HEIGHT,
-      );
-      const cardWidth = getHandCardWidth(
-        getWideHandsWidth(rowWidthWithRail, room),
-        handsHeight + barHeight - REPLAY_BAR_HEIGHT,
-        options.numPlayers,
-        getCardsPerHand(options),
-        Math.min(nameWidth, room.nameColumnMaxWidth)
-          + (touch ? EMPATHY_TOGGLE_SPACE : 0),
-        nameHeight,
-        false,
-      );
-      // The bar also moves when it would need two rows for its replay controls, except on a window
-      // that is at least `WIDE_WINDOW_WIDTH` wide. The bar measures how much width it misses for
-      // one row, and the screen remembers the width that the bar needs, so that the panel can tell
-      // when the bar would fit again. An ongoing game counts the bar of its replay (see "barRef"),
-      // which it can measure only during a replay. The width is for the game, not for what the bar
-      // holds now, so that entering a hypothetical, leaving it, or passing the lead does not move
-      // the bar. It is the most that any of the game's bars has needed.
-      const barKey = [state.finished, state.playing].join(",");
-      const missing = Number(bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE));
-      if (!sidePanel && missing > 0 && hasReplayControls(state)) {
-        barOneRowWidths.current.set(
-          barKey,
-          Math.max(
-            barOneRowWidths.current.get(barKey) ?? 0,
-            root.clientWidth + missing,
-          ),
-        );
-      }
-      const barOneRowWidth =
-        barOneRowWidths.current.get(barKey)
-        ?? (state.finished ? 0 : ONGOING_REPLAY_BAR_WIDTH);
-      const barWraps =
-        window.innerWidth < WIDE_WINDOW_WIDTH
-        && root.clientWidth < barOneRowWidth;
-      setSidePanel(
-        panelMissedRoom.current !== panelKey
-          && (cardWidth < PANEL_CARD_WIDTH || barWraps),
-      );
+    const bar = barRef.current;
+    if (bar === null) {
+      return;
+    }
+    // What changes the room for the panel: the size of the window, the chat beside the table, and
+    // the controls in the panel.
+    const panelKey = [
+      root.clientWidth,
+      root.clientHeight,
+      chatBeside,
+      hasReplayControls(state),
+      state.replay.hypothetical !== undefined,
+      state.replay.shared?.amLeader,
+    ].join(",");
+    if (sidePanel && !panelHasRoom(bar)) {
+      panelMissedRoom.current = panelKey;
+      setSidePanel(false);
       return;
     }
 
-    const other = wideOther.current;
-    if (
-      other === undefined
-      || other.beside !== beside
-      || !tooNarrow(
-        root.clientWidth - other.width,
-        root.clientHeight - other.height,
-        other.nameWidth,
-      )
-    ) {
-      setHandsTooNarrow(false);
+    const barHeight = sidePanel ? 0 : bar.offsetHeight;
+    // The panel also hides the rail of the collapsed chat, which gives the table its width. The
+    // check counts the rail, so that its width does not move the bar back.
+    const railShown = !chatOpen || chatPoppedOut;
+    const rowWidthWithRail =
+      rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
+    const room = getRoom(
+      rowWidthWithRail,
+      handsHeight + barHeight - REPLAY_BAR_HEIGHT,
+    );
+    const cardWidth = getHandCardWidth(
+      getWideHandsWidth(rowWidthWithRail, room),
+      handsHeight + barHeight - REPLAY_BAR_HEIGHT,
+      options.numPlayers,
+      getCardsPerHand(options),
+      Math.min(nameWidth, room.nameColumnMaxWidth)
+        + (touch ? EMPATHY_TOGGLE_SPACE : 0),
+      nameHeight,
+      false,
+    );
+    // The bar also moves when it would need two rows for its replay controls, except on a window
+    // that is at least `WIDE_WINDOW_WIDTH` wide. The bar measures how much width it misses for one
+    // row, and the screen remembers the width that the bar needs, so that the panel can tell when
+    // the bar would fit again. An ongoing game counts the bar of its replay (see "barRef"), which
+    // it can measure only during a replay. The width is for the game, not for what the bar holds
+    // now, so that entering a hypothetical, leaving it, or passing the lead does not move the bar.
+    // It is the most that any of the game's bars has needed.
+    const barKey = [state.finished, state.playing].join(",");
+    const missing = Number(bar.getAttribute(ONE_ROW_MISSING_ATTRIBUTE));
+    if (!sidePanel && missing > 0 && hasReplayControls(state)) {
+      barOneRowWidths.current.set(
+        barKey,
+        Math.max(
+          barOneRowWidths.current.get(barKey) ?? 0,
+          root.clientWidth + missing,
+        ),
+      );
     }
+    const barOneRowWidth =
+      barOneRowWidths.current.get(barKey)
+      ?? (state.finished ? 0 : ONGOING_REPLAY_BAR_WIDTH);
+    const barWraps =
+      window.innerWidth < WIDE_WINDOW_WIDTH
+      && root.clientWidth < barOneRowWidth;
+    setSidePanel(
+      panelMissedRoom.current !== panelKey
+        && (cardWidth < PANEL_CARD_WIDTH || barWraps),
+    );
   });
 
   if (state?.visibleState === undefined) {
