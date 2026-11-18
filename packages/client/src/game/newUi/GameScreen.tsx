@@ -277,10 +277,10 @@ export function GameScreen({
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
   const touch = useMediaQuery(TOUCH_QUERY);
-  // On a touch screen or a narrow window, the play stacks and the discard pile can be off the
-  // screen, so the viewer taps a card and then "Play" or "Discard" instead of dragging it. Only one
-  // of the two ways works at a time.
-  const tapToMove = touch || stacked;
+  // The mouse drags a card to play or discard it, and a tap opens its menu instead. A touch cannot
+  // hold a hand to show its player's view, since it opens a card's menu, so on a touch screen and
+  // in the phone layout, each hand has a brain button that shows the view.
+  const empathyButtons = touch || stacked;
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const closeCardMenu = useCallback(() => {
     setMenuCard(undefined);
@@ -982,15 +982,15 @@ export function GameScreen({
     options.numPlayers,
     getCardsPerHand(options),
     nameWidth,
-    tapToMove ? EMPATHY_TOGGLE_SPACE : 0,
+    empathyButtons ? EMPATHY_TOGGLE_SPACE : 0,
   );
-  // In tap-to-move mode, the name column also holds the brain button that shows a player's view of
+  // With brain buttons, the name column also holds the brain button that shows a player's view of
   // their hand.
   let nameColumnWidth: number | undefined =
     Math.min(
       nameWidth,
       stacked ? NAME_COLUMN_MAX_WIDTH.MIN : wideRoom.nameColumnMaxWidth,
-    ) + (tapToMove ? EMPATHY_TOGGLE_SPACE : 0);
+    ) + (empathyButtons ? EMPATHY_TOGGLE_SPACE : 0);
   // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
   // rest of the height of the table on the screen, with the same space below them as above the
   // stacks.
@@ -1432,14 +1432,16 @@ export function GameScreen({
                   play: deckPlayable
                     ? {
                         held: held?.fromDeck === true,
-                        tapToMove,
                         menuOpen: menuCard === deckOrder,
                         // Only an inverted suit plays when it is discarded.
                         canDiscard: variant.hasInverted
                           ? canDiscard
                           : undefined,
                         onPointerDown: (event) => {
-                          if (event.button === 0) {
+                          if (
+                            event.pointerType === "mouse"
+                            && event.button === 0
+                          ) {
                             pressCard(
                               deckOrder,
                               event.clientX,
@@ -1583,7 +1585,11 @@ export function GameScreen({
                   nameColumnWidth={nameColumnWidth}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
-                    if (!canMoveCards || tapToMove || event.button !== 0) {
+                    if (
+                      !canMoveCards
+                      || event.pointerType !== "mouse"
+                      || event.button !== 0
+                    ) {
                       return;
                     }
                     // The arrow would get in the way of the card, so it goes away when it points at
@@ -1626,7 +1632,7 @@ export function GameScreen({
                   }}
                   onShowPlayerLog={setLogSeat}
                   onToggleEmpathy={
-                    tapToMove
+                    empathyButtons
                       ? (playerIndex) => {
                           setEmpathyToggled((current) => {
                             const next = new Set(current);
@@ -1671,7 +1677,6 @@ export function GameScreen({
                   showPossibleCards={showHandPossibleCards}
                   speedrunClicks={speedrunClicks}
                   stacked={stacked}
-                  tapToMove={tapToMove}
                   touchedCards={new Set(touched)}
                   variant={variant}
                 />

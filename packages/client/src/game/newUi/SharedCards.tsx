@@ -35,6 +35,7 @@ import {
   PossibleCardsBubble,
   RANK_BOTTOM_PER_WIDTH,
 } from "./Card.tsx";
+import { isMouseClick } from "./cardClicks.ts";
 import {
   DISCARD_PLACE_PREFIX,
   HOLE_PLACE,
@@ -834,9 +835,6 @@ interface DeckPlay {
   /** Whether the player holds the card, so that it is not on the deck. */
   readonly held: boolean;
 
-  /** Whether the player taps the deck for a menu, instead of dragging the card. */
-  readonly tapToMove: boolean;
-
   /** Whether the menu that plays the card is open. */
   readonly menuOpen: boolean;
 
@@ -846,6 +844,7 @@ interface DeckPlay {
    */
   readonly canDiscard: boolean | undefined;
 
+  /** Starts to drag the card with the mouse. A tap opens the menu instead (`onTap`). */
   readonly onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
   readonly onTap: () => void;
   readonly onCloseMenu: () => void;
@@ -919,9 +918,7 @@ function getDeckTooltip(
   }
   if (play !== undefined) {
     lines.push(
-      play.tapToMove
-        ? "Tap the deck to play its last card."
-        : "Drag the deck to the play stacks to play its last card.",
+      "Drag the deck to the play stacks, or tap it, to play its last card.",
     );
   } else if (cardsInDeck > 0) {
     lines.push(
@@ -1180,21 +1177,17 @@ function Deck({
           </div>
         ) : (
           <button
-            aria-expanded={play.tapToMove ? play.menuOpen : undefined}
-            aria-haspopup={play.tapToMove ? "menu" : undefined}
-            aria-label={
-              play.tapToMove
-                ? "Play the last card of the deck"
-                : "Drag the last card of the deck to the play stacks to play it"
-            }
-            className={`${topClass} ${
-              play.tapToMove
-                ? "tw:cursor-pointer"
-                : "tw:cursor-grab tw:touch-none"
-            }`}
+            aria-expanded={play.menuOpen}
+            aria-haspopup="menu"
+            aria-label="Play the last card of the deck. Drag it to the play stacks, or tap it"
+            className={`${topClass} tw:cursor-grab`}
             data-deck
-            onClick={play.tapToMove ? play.onTap : undefined}
-            onPointerDown={play.tapToMove ? undefined : play.onPointerDown}
+            onClick={(event) => {
+              if (!isMouseClick(event)) {
+                play.onTap();
+              }
+            }}
+            onPointerDown={play.onPointerDown}
             onPointerEnter={onPointerEnter}
             onPointerLeave={onPointerLeave}
             style={topStyle}

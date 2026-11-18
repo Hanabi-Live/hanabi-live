@@ -286,3 +286,12 @@ export function getCardClickCommand(
 
   return undefined;
 }
+
+/**
+ * Whether a click came from the mouse, and not from a tap, a pen, or a key. The mouse drags a card
+ * that the player can move, and anything else opens its menu.
+ */
+export function isMouseClick(event: React.MouseEvent): boolean {
+  const { nativeEvent } = event;
+  return "pointerType" in nativeEvent && nativeEvent.pointerType === "mouse";
+}
