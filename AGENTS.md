@@ -60,7 +60,8 @@ Never animate `background-color`, with a transition or with `animate()`. Chrome
 94a93b8bd). This includes Tailwind's `tw:transition` and `tw:transition-colors`.
 To fade an element to a new color, put the color on a layer and fade the layer's
 opacity. In the New UI, use `FadeLayer` from
-`packages/client/src/game/newUi/FadeLayer.tsx`. A text color may animate.
+`packages/client/src/game/newUi/FadeLayer.tsx`. A text color may animate, unless
+something inside the element uses it as its background, such as `tw:bg-current`.
 
 ## Writing style
 
