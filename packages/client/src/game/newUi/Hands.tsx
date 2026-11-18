@@ -14,7 +14,7 @@ import {
   describeCard,
   getClueTokenSize,
 } from "./Card.tsx";
-import { isMouseClick } from "./cardClicks.ts";
+import { isDragClick, stopLongTouchMenu } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
@@ -163,8 +163,8 @@ interface HandsProps {
   readonly speedrunClicks: boolean;
 
   /**
-   * Starts to drag one of the viewer's cards with the mouse, to play or discard it. A touch opens
-   * the card's menu instead (see `MovableCard`).
+   * Starts to drag one of the viewer's cards, to play or discard it. In the phone layout, only the
+   * mouse drags it, and a touch opens the card's menu instead (see `MovableCard`).
    */
   readonly onCardPointerDown: (
     event: React.PointerEvent,
@@ -194,7 +194,7 @@ interface HandsProps {
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
    * player. A hand shows it while the viewer holds the mouse button down on it, or while its brain
    * button is on. The brain buttons show on a touch screen and in the phone layout
-   * (`onToggleEmpathy`), since a touch on a card opens its menu instead.
+   * (`onToggleEmpathy`), since a touch on a card drags it or opens its menu instead.
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
@@ -1006,10 +1006,10 @@ function OwnCard({
 }
 
 /**
- * A card that the viewer can play or discard. With the mouse, the viewer drags it to the play
- * stacks or the discard pile. A tap (or a key) opens a menu that plays or discards it instead,
- * since on a touch screen or in the phone layout, the play stacks and the discard pile can be off
- * the screen. A touch on the card can still scroll the page.
+ * A card that the viewer can play or discard. The viewer drags it to the play stacks or the discard
+ * pile, with the mouse or a touch. A key opens a menu that plays or discards it instead. In the
+ * phone layout, the play stacks and the discard pile can be off the screen, so a tap opens the menu
+ * too, and a touch on the card can still scroll the page.
  */
 function MovableCard({
   order,
@@ -1057,14 +1057,21 @@ function MovableCard({
         // that it follows a clued card, which is drawn raised.
         className="tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
         onClick={(event) => {
-          if (!isMouseClick(event)) {
+          if (!isDragClick(event, props.stacked)) {
             props.onCardTap(order);
           }
+        }}
+        onContextMenu={(event) => {
+          stopLongTouchMenu(event, props.stacked);
         }}
         onPointerDown={(event) => {
           props.onCardPointerDown(event, order);
         }}
-        style={{ borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH }}
+        style={{
+          borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH,
+          // A touch drags the card, so it must not scroll the page.
+          touchAction: props.stacked ? undefined : "none",
+        }}
         type="button"
       >
         {face}
@@ -1277,7 +1284,7 @@ function Hand({
   // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
   // classic screen. On the viewer's own hand, it shows the hand without the viewer's notes. While
   // editing cards, a press picks the card to change instead. Only the mouse does it: a touch on a
-  // card opens its menu, so the brain buttons show the view instead.
+  // card drags it or opens its menu, so the brain buttons show the view instead.
   const empathyHold = !editing && !props.speedrunClicks;
   const heldRef = useRef(false);
   function endHold() {

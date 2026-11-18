@@ -94,7 +94,7 @@ import {
   toggleArrow,
 } from "./arrow.ts";
 import { getArrowTargetAt } from "./arrowAnchor.ts";
-import { usesSpeedrunClicks } from "./cardClicks.ts";
+import { isDragPointer, usesSpeedrunClicks } from "./cardClicks.ts";
 import {
   DISCARD_PLACE_PREFIX,
   HAND_PLACE_PREFIX,
@@ -1466,9 +1466,10 @@ export function GameScreen({
                         canDiscard: variant.hasInverted
                           ? canDiscard
                           : undefined,
+                        phoneLayout: stacked,
                         onPointerDown: (event) => {
                           if (
-                            event.pointerType === "mouse"
+                            isDragPointer(event.pointerType, stacked)
                             && event.button === 0
                           ) {
                             pressCard(
@@ -1616,7 +1617,7 @@ export function GameScreen({
                   onCardPointerDown={(event, order) => {
                     if (
                       !canMoveCards
-                      || event.pointerType !== "mouse"
+                      || !isDragPointer(event.pointerType, stacked)
                       || event.button !== 0
                     ) {
                       return;

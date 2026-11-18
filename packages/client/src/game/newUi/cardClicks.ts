@@ -288,10 +288,54 @@ export function getCardClickCommand(
 }
 
 /**
- * Whether a click came from the mouse, and not from a tap, a pen, or a key. The mouse drags a card
- * that the player can move, and anything else opens its menu.
+ * Whether a pointer drags a card that the player can move. The mouse always drags it. A touch or a
+ * pen drags it too, except in the phone layout, where the play stacks and the discard pile can be
+ * off the screen, so a tap opens the card's menu instead.
  */
-export function isMouseClick(event: React.MouseEvent): boolean {
+export function isDragPointer(
+  pointerType: string,
+  phoneLayout: boolean,
+): boolean {
+  return (
+    pointerType === "mouse"
+    || (!phoneLayout && (pointerType === "touch" || pointerType === "pen"))
+  );
+}
+
+/** The pointer of a click, or an empty string for a key. */
+function getPointerType(event: React.MouseEvent): string {
   const { nativeEvent } = event;
-  return "pointerType" in nativeEvent && nativeEvent.pointerType === "mouse";
+  return "pointerType" in nativeEvent
+    && typeof nativeEvent.pointerType === "string"
+    ? nativeEvent.pointerType
+    : "";
+}
+
+/**
+ * Whether a click came from a pointer that drags the card (see `isDragPointer`), and not from a key
+ * or, in the phone layout, a tap. Any other click opens the card's menu.
+ */
+export function isDragClick(
+  event: React.MouseEvent,
+  phoneLayout: boolean,
+): boolean {
+  return isDragPointer(getPointerType(event), phoneLayout);
+}
+
+/**
+ * Stops the menu that a long touch opens on a card that a touch drags. The browser's menu, or the
+ * card's note box, would stop the drag. A double tap edits the note instead (see
+ * "useCardInput.ts").
+ */
+export function stopLongTouchMenu(
+  event: React.MouseEvent,
+  phoneLayout: boolean,
+): void {
+  const pointerType = getPointerType(event);
+  if (pointerType === "mouse" || !isDragPointer(pointerType, phoneLayout)) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
 }

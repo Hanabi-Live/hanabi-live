@@ -35,7 +35,7 @@ import {
   PossibleCardsBubble,
   RANK_BOTTOM_PER_WIDTH,
 } from "./Card.tsx";
-import { isMouseClick } from "./cardClicks.ts";
+import { isDragClick, stopLongTouchMenu } from "./cardClicks.ts";
 import {
   DISCARD_PLACE_PREFIX,
   HOLE_PLACE,
@@ -844,7 +844,13 @@ interface DeckPlay {
    */
   readonly canDiscard: boolean | undefined;
 
-  /** Starts to drag the card with the mouse. A tap opens the menu instead (`onTap`). */
+  /** Whether the screen has the phone layout, where a tap opens the menu instead of a drag. */
+  readonly phoneLayout: boolean;
+
+  /**
+   * Starts to drag the card. In the phone layout, only the mouse drags it, and a tap opens the menu
+   * instead (`onTap`).
+   */
   readonly onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
   readonly onTap: () => void;
   readonly onCloseMenu: () => void;
@@ -1183,14 +1189,21 @@ function Deck({
             className={`${topClass} tw:cursor-grab`}
             data-deck
             onClick={(event) => {
-              if (!isMouseClick(event)) {
+              if (!isDragClick(event, play.phoneLayout)) {
                 play.onTap();
               }
+            }}
+            onContextMenu={(event) => {
+              stopLongTouchMenu(event, play.phoneLayout);
             }}
             onPointerDown={play.onPointerDown}
             onPointerEnter={onPointerEnter}
             onPointerLeave={onPointerLeave}
-            style={topStyle}
+            style={{
+              ...topStyle,
+              // A touch drags the card, so it must not scroll the page.
+              touchAction: play.phoneLayout ? undefined : "none",
+            }}
             type="button"
           >
             {face}
