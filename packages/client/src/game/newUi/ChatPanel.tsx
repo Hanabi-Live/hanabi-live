@@ -48,11 +48,17 @@ const BORROWED_CHAT_BOX_CLASSES = [
   "tw:pt-3",
   "tw:pb-0",
   // The "is typing" note gets its own row below the chat box, centered in it, so that it does not
-  // touch the box and does not resize the chat when it appears.
+  // touch the box and does not resize the chat when it appears. It stays on one line, so that it
+  // does not spill out of its row. When the names do not fit, they end with an ellipsis, and the
+  // verb stays.
   "tw:[&_#game-chat-istyping]:bottom-0",
   "tw:[&_#game-chat-istyping]:h-[26px]",
   "tw:[&_#game-chat-istyping]:shrink-0",
   "tw:[&_#game-chat-istyping]:leading-[26px]",
+  "tw:[&_#game-chat-istyping]:flex",
+  "tw:[&_#game-chat-istyping]:whitespace-pre",
+  "tw:[&_#game-chat-istyping>span:first-child]:truncate",
+  "tw:[&_#game-chat-istyping>span:last-child]:shrink-0",
   // The site's text size changes with the window width, and at its largest it fits only a few words
   // on each line of the narrow panel. The text box sets its own size, so it gets the same size too.
   "tw:text-lg",

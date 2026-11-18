@@ -335,7 +335,10 @@ function SuggestionButton({
   );
 }
 
-/** Says who is typing. */
+/**
+ * Says who is typing. The names and the verb are in separate spans, so that a narrow chat can
+ * shorten the names and still show the verb.
+ */
 export function TypingMessage({
   typing,
 }: {
@@ -349,7 +352,10 @@ export function TypingMessage({
     case 1: {
       return (
         <>
-          <strong>{typing[0]}</strong> is typing...
+          <span>
+            <strong>{typing[0]}</strong>
+          </span>
+          <span> is typing...</span>
         </>
       );
     }
@@ -357,8 +363,10 @@ export function TypingMessage({
     case 2: {
       return (
         <>
-          <strong>{typing[0]}</strong> and <strong>{typing[1]}</strong> are
-          typing...
+          <span>
+            <strong>{typing[0]}</strong> and <strong>{typing[1]}</strong>
+          </span>
+          <span> are typing...</span>
         </>
       );
     }
@@ -366,14 +374,17 @@ export function TypingMessage({
     case 3: {
       return (
         <>
-          <strong>{typing[0]}</strong>, <strong>{typing[1]}</strong>, and{" "}
-          <strong>{typing[2]}</strong> are typing...
+          <span>
+            <strong>{typing[0]}</strong>, <strong>{typing[1]}</strong>, and{" "}
+            <strong>{typing[2]}</strong>
+          </span>
+          <span> are typing...</span>
         </>
       );
     }
 
     default: {
-      return <>Several people are typing...</>;
+      return <span>Several people are typing...</span>;
     }
   }
 }
