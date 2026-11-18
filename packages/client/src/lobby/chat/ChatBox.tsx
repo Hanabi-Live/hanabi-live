@@ -8,7 +8,7 @@ import { CHAT_LENGTH_LIMIT, onChatInput, onChatKeyDown } from "../../chat.ts";
 import type { SuggestedSettings } from "../../chatKind.ts";
 import type { ChatSegment, ChatTextOptions } from "../../chatText.ts";
 import { chatSegments } from "../../chatText.ts";
-import { FADE_TIME_MS } from "../../constants.ts";
+import { getFadeTimeMs } from "../../elementVisibility.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { acceptOptionsFromGuest } from "../createGame.ts";
 
@@ -133,8 +133,9 @@ export function ChatTextBox({
 function ChatLineView({ line }: { readonly line: ChatLine }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    if (line.fadeIn) {
-      ref.current!.animate([{ opacity: 0 }, { opacity: 1 }], FADE_TIME_MS);
+    const duration = getFadeTimeMs();
+    if (line.fadeIn && duration > 0) {
+      ref.current!.animate([{ opacity: 0 }, { opacity: 1 }], duration);
     }
   }, [line.fadeIn]);
 
