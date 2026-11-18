@@ -49,6 +49,10 @@ export const DISCARD_CARD_MAX_WIDTH = 64;
 /** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
 const STACKED_PLAY_AREA_OTHER_WIDTH = 2 * PLAY_STACKS_PADDING + PLAY_AREA_GAP;
 
+/**
+ * The padding on both sides of a hand's box (`tw:px-[16px]` in "Hands.tsx"). It is in pixels, not
+ * in "rem", because the site's root font size changes with the width of the window.
+ */
 const HAND_BOX_HORIZONTAL_PADDING = 32;
 
 /**
@@ -124,7 +128,8 @@ export function namesFitBesideCards(
 /**
  * The width of the wide layout's right column, with the discard pile and the clue log, in CSS
  * pixels. The column is `NORMAL` wide. It gets narrower when the hands need room, and wider when
- * the hands do not use all of theirs.
+ * the hands do not use all of theirs. It stays wide enough for the clue menu, which opens over it
+ * (see `getWideLayoutRoom`).
  */
 const DISCARD_COLUMN_WIDTH = {
   MIN: 240,
@@ -195,6 +200,11 @@ export interface WideLayoutRoom {
  * and the gaps of the table. The column of names does not give up room. `rowWidth` is the width of
  * the table's row without the play stacks' column. `nameWidth` is the width of the widest name, and
  * `nameExtraWidth` is the width beside the names, such as for the brain buttons.
+ *
+ * The clue menu slides out to the right of a hand, over the right column, and it is
+ * `clueDrawerWidth` wide. So the width to the right of the hands (the gap, the right column, and
+ * the padding) is never less than that, and the hands are no wider than the rest. Then the menu
+ * always fits, up to the edge of the table.
  */
 export function getWideLayoutRoom(
   rowWidth: number,
@@ -203,6 +213,7 @@ export function getWideLayoutRoom(
   cardsPerHand: number,
   nameWidth: number,
   nameExtraWidth: number,
+  clueDrawerWidth: number,
 ): WideLayoutRoom {
   const widest: WideLayoutRoom = {
     discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL,
@@ -259,9 +270,16 @@ export function getWideLayoutRoom(
     };
   }
 
-  const discardRoom = Math.min(
+  // When the padding and the gap are at their smallest, the right column still leaves room for the
+  // clue menu.
+  const discardColumnMinWidth = Math.max(
+    DISCARD_COLUMN_WIDTH.MIN,
+    clueDrawerWidth - TABLE_COLUMN_GAP.MIN - TABLE_SIDE_PADDING.MIN,
+  );
+  const discardRoom = clamp(
     missing,
-    DISCARD_COLUMN_WIDTH.NORMAL - DISCARD_COLUMN_WIDTH.MIN,
+    0,
+    Math.max(0, DISCARD_COLUMN_WIDTH.NORMAL - discardColumnMinWidth),
   );
   missing -= discardRoom;
 

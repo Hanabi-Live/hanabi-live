@@ -51,7 +51,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import { ClueLog } from "./ClueLog.tsx";
-import { ClueMenu } from "./ClueMenu.tsx";
+import { ClueMenu, getClueDrawerWidth } from "./ClueMenu.tsx";
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import {
@@ -457,6 +457,7 @@ export function GameScreen({
         getCardsPerHand(options),
         nameWidth,
         touch ? EMPATHY_TOGGLE_SPACE : 0,
+        getClueDrawerWidth(currentVariant()),
       );
     }
 
@@ -942,6 +943,7 @@ export function GameScreen({
     getCardsPerHand(options),
     nameWidth,
     empathyButtons ? EMPATHY_TOGGLE_SPACE : 0,
+    getClueDrawerWidth(variant),
   );
   // With brain buttons, the name column also holds the brain button that shows a player's view of
   // their hand.

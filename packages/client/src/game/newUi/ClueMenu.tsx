@@ -63,10 +63,10 @@ export const DRAWER_SLIDE = {
  * corners on the side where the menu opens.
  */
 export const CLUE_DRAWER_HAND_CLASS =
-  "tw:bg-game-panel tw:rounded-b-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=right]]:rounded-r-none tw:has-[>[data-clue-drawer=right]]:rounded-l-game-panel tw:has-[>[data-clue-drawer=right]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=above]]:rounded-t-none tw:has-[>[data-clue-drawer=above]]:rounded-b-game-panel tw:has-[>[data-clue-drawer=above]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
+  "tw:bg-game-panel tw:rounded-b-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=right]]:rounded-r-none tw:has-[>[data-clue-drawer=right]]:rounded-l-game-panel tw:has-[>[data-clue-drawer=right]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
 
 /** Where the drawer opens, from the hand. */
-type DrawerSide = "right" | "below" | "above";
+type DrawerSide = "right" | "below";
 
 /** The radius of the drawer's corners, in CSS pixels (`tw:rounded-game-panel`). */
 const DRAWER_RADIUS = 8;
@@ -111,28 +111,47 @@ const BELOW_CLASS =
   "tw:inset-x-0 tw:top-full tw:rounded-b-game-panel tw:pt-1 tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),0_16px_20px_-10px_rgb(0_0_0/55%)]";
 
 /**
- * The menu above the hand. It has no outline on its bottom, where it joins the hand, and its shadow
- * falls up.
- */
-const ABOVE_CLASS =
-  "tw:inset-x-0 tw:bottom-full tw:rounded-t-game-panel tw:pb-1 tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),0_-16px_20px_-10px_rgb(0_0_0/55%)]";
-
-/**
  * The menu to the right of the hand. It has an outline on every side, and a line in the panel's
  * color covers the outline where it joins the hand (see `ClueMenu`). Its shadow falls down and to
  * the right, away from the hand.
  */
 const RIGHT_CLASS =
-  "tw:left-full tw:w-max tw:rounded-r-game-panel tw:[box-shadow:inset_0_0_0_1px_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+  "tw:left-full tw:rounded-r-game-panel tw:[box-shadow:inset_0_0_0_1px_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
 
 const DRAWER_CLASS = {
   right: RIGHT_CLASS,
   below: BELOW_CLASS,
-  above: ABOVE_CLASS,
 } as const satisfies Record<DrawerSide, string>;
 
 /** The width and height of a clue choice, in CSS pixels (`tw:size-11`). */
 const CHOICE_SIZE = 44;
+
+/** The space between the clue choices in a row, in CSS pixels (`tw:gap-2` in `ClueRow`). */
+const CHOICE_GAP = 8;
+
+/**
+ * The fewest choices that the drawer to the right of the hand is as wide as, so that a variant with
+ * few clues still has room for the player's name above them.
+ */
+const DRAWER_MIN_CHOICES = 4;
+
+/**
+ * Returns the width of the drawer to the right of the hand, in CSS pixels: its row of the most
+ * clues, and its padding on each side. The hands leave this room to their right, so that the drawer
+ * always fits there (see "getWideLayoutRoom"). A long name is cut off.
+ */
+export function getClueDrawerWidth(variant: Variant): number {
+  const choices = Math.max(
+    variant.clueColors.length,
+    variant.clueRanks.length,
+    DRAWER_MIN_CHOICES,
+  );
+  return (
+    choices * CHOICE_SIZE
+    + (choices - 1) * CHOICE_GAP
+    + 2 * SPACING.NORMAL.padding
+  );
+}
 
 const choiceSizeClass = "tw:size-11 tw:rounded-game-control";
 
@@ -141,13 +160,12 @@ const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center
 /**
  * The clues that the viewer can give a player. Clicking the player's name opens it out of their
  * hand, as a drawer (see `CLUE_DRAWER_HAND_CLASS`). It opens to the right of the hand, so that it
- * does not cover the other hands. Its top lines up with the top of the hand. When there is not
- * enough room below, its bottom lines up with the bottom of the hand instead. In the phone layout,
- * or when the window is too narrow, it opens below the hand, as wide as the hand. In the wide
- * layout, the page does not scroll, so when there is no room below the hand, such as for the last
- * hand, it opens above the hand instead. A clue that the rules do not allow, such as one that
- * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
- * Clicking outside of it or pressing Escape closes it.
+ * does not cover the other hands. The hands always leave room for it there (see
+ * `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough room
+ * below, its bottom lines up with the bottom of the hand instead. In the phone layout, it opens
+ * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
+ * no cards, leaves an empty well in its place, so that every clue keeps its position. Clicking
+ * outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -170,13 +188,12 @@ export function ClueMenu({
   const contentRef = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
-  // Where the drawer is for the player whose menu this is, in this layout: the side of the hand
-  // that it opens on, whether its bottom lines up with the bottom of the hand instead of its top
-  // with the top, and the heights of both. It is undefined until it is measured.
+  // Where the drawer is for the player whose menu this is, in this layout: whether its bottom lines
+  // up with the bottom of the hand instead of its top with the top, and the heights of both. It is
+  // undefined until it is measured.
   const [placement, setPlacement] = useState<{
     readonly name: string;
     readonly phoneLayout: boolean;
-    readonly side: DrawerSide;
     readonly alignBottom: boolean;
     readonly compact: boolean;
     readonly height: number;
@@ -186,36 +203,21 @@ export function ClueMenu({
     placement?.name === name && placement.phoneLayout === below
       ? placement
       : undefined;
-  const measuredSide = measured?.side;
-  const side = below ? "below" : (measuredSide ?? "right");
+  const side: DrawerSide = below ? "below" : "right";
+  const measuredSide = measured === undefined ? undefined : side;
   const opensRight = side === "right";
 
-  // It measures the drawer to the right of the hand. When the window is too narrow for that, the
-  // drawer opens below the hand instead, or above it when the hands end below it. It measures again
-  // when the window, the hand, or the drawer changes size, such as when the cards grow after the
-  // menu opens.
+  // It measures the drawer and the hand. It measures again when the window, the hand, or the drawer
+  // changes size, such as when the cards grow after the menu opens.
   useLayoutEffect(() => {
     const menu = ref.current!;
     const content = contentRef.current!;
     const hand = menu.parentElement!;
     // It stays beside the hands, so that it does not cover the bar below the table.
     const room = hand.parentElement!;
-    // The width of the drawer to the right of the hand, and its height below or above the hand.
-    // Each is measured while the drawer is there, and kept for when it is somewhere else.
-    let rightWidth = 0;
-    let acrossHeight = 0;
 
     function place() {
-      if (menu.dataset["clueDrawer"] === "right") {
-        rightWidth = menu.getBoundingClientRect().width;
-      } else {
-        acrossHeight = measure(menu).height;
-      }
-      // It compares the width with the window in the window's pixels, and the heights in the
-      // screen's CSS pixels, which become styles.
-      const fitsRight =
-        hand.getBoundingClientRect().right + rightWidth
-        <= document.documentElement.clientWidth;
+      // The heights are in the screen's CSS pixels, which become styles.
       const handRect = measure(hand);
       const roomRect = measure(room);
       // The height of the drawer with the normal spaces. The content has the spaces that it has
@@ -235,17 +237,9 @@ export function ClueMenu({
       const compact =
         height > handRect.height && height - COMPACT_SAVING <= handRect.height;
       const drawerHeight = Math.max(height, handRect.height);
-      let nextSide: DrawerSide = "right";
-      if (below) {
-        nextSide = "below";
-      } else if (!fitsRight) {
-        nextSide =
-          handRect.bottom + acrossHeight <= roomRect.bottom ? "below" : "above";
-      }
       const next = {
         name,
         phoneLayout: below,
-        side: nextSide,
         alignBottom: handRect.top + drawerHeight > roomRect.bottom,
         compact,
         height: compact ? handRect.height : drawerHeight,
@@ -255,7 +249,6 @@ export function ClueMenu({
         previous !== undefined
         && previous.name === next.name
         && previous.phoneLayout === next.phoneLayout
-        && previous.side === next.side
         && previous.alignBottom === next.alignBottom
         && previous.compact === next.compact
         && previous.height === next.height
@@ -292,10 +285,6 @@ export function ClueMenu({
       below: {
         transform: `translateY(${-height}px)`,
         clipPath: `inset(${height}px 0 0 0)`,
-      },
-      above: {
-        transform: `translateY(${height}px)`,
-        clipPath: `inset(0 0 ${height}px 0)`,
       },
     } as const satisfies Record<DrawerSide, Keyframe>;
     const animation = menu.animate(
@@ -373,6 +362,7 @@ export function ClueMenu({
     measured !== undefined && measured.height > measured.handHeight;
   const rightStyle: React.CSSProperties = {
     ...(alignBottom ? { bottom: 0 } : { top: 0 }),
+    width: getClueDrawerWidth(variant),
     minHeight: measured?.height,
     borderTopLeftRadius: alignBottom && reachesPast ? DRAWER_RADIUS : 0,
     borderBottomLeftRadius: !alignBottom && reachesPast ? DRAWER_RADIUS : 0,
@@ -452,7 +442,7 @@ export function ClueMenu({
           className={`tw:-mx-2 tw:flex tw:overflow-x-clip tw:px-2 ${opensRight ? `tw:flex-col ${spacing.buttonClassName}` : "tw:flex-wrap tw:gap-6"}`}
         >
           <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2">
-            <ClueRow>
+            <ClueRow wraps={!opensRight}>
               {colorClues.map((colorClue) => {
                 const color = colorClue.value;
                 if (!isAllowed(colorClue)) {
@@ -483,7 +473,7 @@ export function ClueMenu({
                 );
               })}
             </ClueRow>
-            <ClueRow>
+            <ClueRow wraps={!opensRight}>
               {rankClues.map((rankClue) => {
                 const rank = rankClue.value;
                 if (!isAllowed(rankClue)) {
@@ -528,13 +518,22 @@ export function ClueMenu({
   );
 }
 
-/** A row of clues. */
+/**
+ * A row of clues. Below the hand, it wraps when the hand is narrow. The drawer to the right of the
+ * hand is as wide as its longest row (see `getClueDrawerWidth`), so there it does not wrap.
+ */
 function ClueRow({
   children,
+  wraps,
 }: {
   readonly children: readonly React.JSX.Element[];
+  readonly wraps: boolean;
 }): React.JSX.Element {
-  return <div className="tw:flex tw:flex-wrap tw:gap-2">{children}</div>;
+  return (
+    <div className={`tw:flex tw:gap-2 ${wraps ? "tw:flex-wrap" : ""}`}>
+      {children}
+    </div>
+  );
 }
 
 /**

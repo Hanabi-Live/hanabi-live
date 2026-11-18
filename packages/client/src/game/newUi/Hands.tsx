@@ -1319,7 +1319,7 @@ function Hand({
   return (
     <div
       aria-label={`${seat.name}'s hand`}
-      className={`tw:relative tw:flex tw:rounded-game-panel tw:px-4 ${
+      className={`tw:relative tw:flex tw:rounded-game-panel tw:px-[16px] ${
         props.nameColumnWidth === undefined
           ? "tw:flex-col tw:items-start"
           : "tw:items-center"
