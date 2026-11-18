@@ -552,17 +552,18 @@ function EmptySlot(): React.JSX.Element {
 
 /**
  * A hand that shows its clue tab to its right. The hand has the color of the tab, and one outline
- * goes around both. The hand has no round corner where the tab joins it.
+ * goes around both.
  */
 export const CLUE_TAB_HAND_CLASS =
-  "tw:bg-game-panel tw:rounded-tr-none tw:inset-ring-1 tw:inset-ring-game-line";
+  "tw:bg-game-panel tw:inset-ring-1 tw:inset-ring-game-line";
 
 /**
- * The tab to the right of the hand. It has an outline on its top, right, and bottom. The hand's own
- * outline runs along its left (see `ClueTab`).
+ * The tab to the right of the hand, halfway down it. It has an outline on its top, right, and
+ * bottom. The hand's own outline runs along its left (see `ClueTab`). It moves up with `translate`,
+ * so that the slide's `transform` does not undo it.
  */
 const TAB_RIGHT_CLASS =
-  "tw:top-0 tw:left-full tw:rounded-r-game-panel tw:bg-game-panel tw:p-2 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+  "tw:top-1/2 tw:left-full tw:-translate-y-1/2 tw:rounded-r-game-panel tw:bg-game-panel tw:p-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
 
 /**
  * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
@@ -638,12 +639,12 @@ export function ClueTab({
       )}
       <button
         aria-label={`Give ${name} a clue`}
-        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-9" : "tw:size-11"} ${KEY_CLASS}`}
+        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
         onClick={onOpen}
         ref={tooltipRef(`Give ${name} a clue`)}
         type="button"
       >
-        <ClueTokenIcon className={below ? "tw:size-6" : "tw:size-7"} />
+        <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
       </button>
     </div>
   );
