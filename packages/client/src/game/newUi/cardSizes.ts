@@ -38,7 +38,7 @@ export const NAMES_BESIDE_CARDS_MIN_CARD_WIDTH = 90;
  * The wide layout keeps the hand cards at least this wide, when the height allows it. Otherwise,
  * the game screen uses the phone layout, which scrolls.
  */
-const WIDE_LAYOUT_MIN_CARD_WIDTH = 100;
+const WIDE_LAYOUT_MIN_CARD_WIDTH = 75;
 
 /** The smallest and largest card on the play stacks. */
 const STACK_CARD_WIDTH = {
