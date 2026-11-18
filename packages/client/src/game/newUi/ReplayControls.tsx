@@ -397,7 +397,7 @@ function FollowToggle({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-sync" />
+      <i aria-hidden="true" className="fas fa-link" />
     </button>
   );
 }
@@ -452,7 +452,7 @@ function ShareTurnsToggle({
       ref={tooltipRef(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-sync" />
+      <i aria-hidden="true" className="fas fa-link" />
     </button>
   );
 }
