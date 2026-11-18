@@ -505,10 +505,12 @@ export class Tooltip {
   destroy(): void {
     this.hoverListeners.abort();
     hoveredTooltips.delete(this);
+    // An open tooltip fades out, as when it closes, and then goes. Its anchor can already be gone,
+    // such as a button that a click removed.
     this.close();
-    clearTimeout(this.closingTimeout);
-    this.closingTimeout = undefined;
-    this.bubble.remove();
+    if (!this.isClosing) {
+      this.bubble.remove();
+    }
   }
 }
 

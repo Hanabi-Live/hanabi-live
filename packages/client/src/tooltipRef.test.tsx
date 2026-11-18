@@ -2,7 +2,10 @@
 
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
-import { TOOLTIP_DELAY_IN_MILLISECONDS } from "./Tooltip.ts";
+import {
+  CLOSE_DURATION_IN_MILLISECONDS,
+  TOOLTIP_DELAY_IN_MILLISECONDS,
+} from "./Tooltip.ts";
 import { tooltipRef } from "./tooltipRef.ts";
 
 // The "jsdom" library does not open popovers.
@@ -23,7 +26,13 @@ beforeAll(() => {
   });
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // A tooltip whose element went fades out first. The next test starts without it.
+  for (const bubble of document.querySelectorAll(".tooltip-bubble")) {
+    bubble.remove();
+  }
+});
 
 function Button({
   text,
@@ -64,17 +73,26 @@ test("an open tooltip stays open when its text changes", async () => {
   expect(openElements.has(bubble!)).toBe(true);
 });
 
-test("a tooltip goes away with its element", async () => {
-  const { unmount, getByRole } = render(<Button text="One" />);
-  fireEvent.pointerEnter(getByRole("button"));
-  expect(getBubble()).not.toBeNull();
+test("a tooltip fades out and goes away with its element", async () => {
+  vi.useFakeTimers();
+  try {
+    const { unmount, getByRole } = render(<Button text="One" />);
+    fireEvent.pointerEnter(getByRole("button"));
+    const bubble = getBubble();
+    expect(bubble).not.toBeNull();
 
-  unmount();
-  await act(async () => {
-    await Promise.resolve();
-  });
+    unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(openElements.has(bubble!)).toBe(false);
+    expect(bubble?.textContent).toBe("One");
 
-  expect(getBubble()).toBeNull();
+    vi.advanceTimersByTime(CLOSE_DURATION_IN_MILLISECONDS);
+    expect(getBubble()).toBeNull();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("a tooltip waits for the pointer to rest on its element", () => {

@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { afterAll, beforeAll, expect, test } from "vitest";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { pauseHoverTooltips, Tooltip } from "./Tooltip.ts";
 
 const WINDOW_HEIGHT = 600;
@@ -193,7 +193,9 @@ test("a tooltip keeps its content while it fades out", () => {
   dom.window.document.body.append(anchor);
   const tooltip = new Tooltip(anchor, { content: "Note" });
   tooltip.open();
-  const box = dom.window.document.querySelector(".tooltip-box");
+  // The bubble of a tooltip that an earlier test destroyed can still be fading out.
+  const box =
+    dom.window.document.body.lastElementChild?.querySelector(".tooltip-box");
 
   tooltip.setContent("");
   expect(tooltip.isClosing).toBe(true);
@@ -206,6 +208,29 @@ test("a tooltip keeps its content while it fades out", () => {
   expect(box?.textContent).toBe("Other note");
   tooltip.destroy();
   anchor.remove();
+});
+
+test("a tooltip fades out when it is destroyed while open", () => {
+  vi.useFakeTimers();
+  try {
+    const anchor = dom.window.document.createElement("div");
+    dom.window.document.body.append(anchor);
+    const tooltip = new Tooltip(anchor, { content: "Text" });
+    tooltip.open();
+    const bubble = dom.window.document.querySelector(
+      ".tooltip-bubble:last-child",
+    );
+
+    anchor.remove();
+    tooltip.destroy();
+    expect(tooltip.isClosing).toBe(true);
+    expect(bubble?.isConnected).toBe(true);
+
+    vi.runAllTimers();
+    expect(bubble?.isConnected).toBe(false);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("hover tooltips stay shut while paused and open again after", () => {
