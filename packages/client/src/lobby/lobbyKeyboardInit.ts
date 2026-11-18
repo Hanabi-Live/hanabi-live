@@ -125,8 +125,10 @@ export function lobbyKeyboardInit(): void {
       }
 
       case "s": {
-        // Alt + s. Start the game.
-        if (screen === Screen.PreGame && selectCanStartGame(state)) {
+        // Alt + s. Show the settings in the lobby, or start the game in a pre-game.
+        if (screen === Screen.Lobby) {
+          lobbyPage.show("settings");
+        } else if (screen === Screen.PreGame && selectCanStartGame(state)) {
           startGame();
         }
         break;

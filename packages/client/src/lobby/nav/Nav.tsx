@@ -161,7 +161,9 @@ function LobbyNav() {
           lobbyPage.show("settings");
         }}
       >
-        <span className="tw:narrow-840:hidden">Settings</span>
+        <span className="tw:narrow-840:hidden">
+          <Hotkey>S</Hotkey>ettings
+        </span>
       </NavButton>
       <li className={LIST_ITEM_CLASS_NAME}>
         <a

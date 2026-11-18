@@ -13,6 +13,7 @@ of the repository.
   replay.
 - The lobby has the green felt table of the new UI, and its buttons look like
   the buttons of the new UI. The dark theme uses the dark green of the new UI.
+- In the lobby, `Alt + s` opens the settings.
 
 ## November 16th, 2026
 

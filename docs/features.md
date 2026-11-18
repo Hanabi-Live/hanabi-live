@@ -681,6 +681,7 @@ move for the current situation.
   - Show history: `Alt + h`
   - Watch a specific replay: `Alt + a`
   - Watch the pasted JSON on that page: `Ctrl + Enter`
+  - Show the settings: `Alt + s`
   - Sign out: `Alt + o`
   - Return to the lobby from a page (such as "Settings"): `Alt + r` or `Escape`
 - In a pre-game:
