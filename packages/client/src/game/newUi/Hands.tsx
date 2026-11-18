@@ -202,7 +202,8 @@ interface HandsProps {
 
   /**
    * Whether the cards show their bubble of possible cards on hover, instead of their notes: while
-   * the viewer holds the pointer down on a hand or holds Space.
+   * the viewer holds the pointer down on a hand or holds Space. A hand whose brain button is on
+   * turns it on for its own cards.
    */
   readonly showPossibleCards: boolean;
 
@@ -960,6 +961,7 @@ function OwnCard({
       showPossibleCards={props.showPossibleCards}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
+      tapOpensPossibleCards={!movable}
       trash={card.trash}
       trashIcon={card.trashIcon}
       variant={variant}
@@ -1231,6 +1233,7 @@ function HandCard({
       showPossibleCards={props.showPossibleCards}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
+      tapOpensPossibleCards
       trash={card.trash}
       trashIcon={card.trashIcon}
       variant={props.variant}
@@ -1296,6 +1299,15 @@ function Hand({
     props.onHoldEmpathy(undefined);
   }
   const isClueGiver = props.shownClue?.giver === seat.playerIndex;
+  // With its brain button on, a hand's cards show their bubble of possible cards instead of their
+  // notes, and a tap opens it, since a touch screen has no hover.
+  const handProps =
+    props.empathyToggled.has(seat.playerIndex) && !props.showPossibleCards
+      ? {
+          ...props,
+          showPossibleCards: true,
+        }
+      : props;
 
   return (
     <div
@@ -1431,13 +1443,13 @@ function Hand({
             notes={props.notes}
             order={card.order}
             possibleCards={
-              props.showPossibleCards && card.pips?.bubble !== undefined
+              handProps.showPossibleCards && card.pips?.bubble !== undefined
             }
           >
             <HandCard
               card={card}
               editing={editing}
-              props={props}
+              props={handProps}
               seat={seat}
               slot={i + 1}
             />

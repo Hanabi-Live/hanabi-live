@@ -398,9 +398,17 @@ interface CardFaceProps {
 
   /**
    * Whether the bubble of possible cards opens while the pointer is over the card. The hands turn
-   * it on only while the viewer holds the pointer down on a hand or holds Space.
+   * it on while the viewer holds the pointer down on a hand or holds Space, and on a hand whose
+   * brain button is on.
    */
   readonly showPossibleCards?: boolean;
+
+  /**
+   * Whether a tap on a touch screen opens the bubble of possible cards, when `showPossibleCards` is
+   * on. It stays open until the next tap elsewhere. A card that a tap plays or discards leaves it
+   * off, since the tap opens its menu.
+   */
+  readonly tapOpensPossibleCards?: boolean;
 
   /**
    * Whether the bubble of possible cards is open without the pointer over the card. A card that the
@@ -2530,6 +2538,7 @@ export function CardFace({
   highlighted = false,
   pips,
   showPossibleCards = false,
+  tapOpensPossibleCards = false,
   openPossibleCards = false,
   blank = false,
   doubleDiscard = false,
@@ -2543,6 +2552,27 @@ export function CardFace({
   const [hovered, setHovered] = useState(false);
   // A callback ref keeps the bubble on the face that is on the page.
   const [faceElement, setFaceElement] = useState<HTMLDivElement | null>(null);
+  // A tap opens the bubble until the next tap elsewhere, since a touch screen has no hover.
+  const canTap = showPossibleCards && tapOpensPossibleCards;
+  const [tapped, setTapped] = useState(false);
+  if (tapped && !canTap) {
+    setTapped(false);
+  }
+  useEffect(() => {
+    if (!tapped || faceElement === null) {
+      return undefined;
+    }
+    const face = faceElement;
+    function onPointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && !face.contains(event.target)) {
+        setTapped(false);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [tapped, faceElement]);
   // The browser can miss a "pointerleave", such as when the pointer moves fast while the spacebar
   // goes up and down. Then the card would open its bubble on every press of the spacebar. So, when
   // the bubble can open, the card checks that the pointer is still over it.
@@ -2606,6 +2636,19 @@ export function CardFace({
       // The card tracks the pointer even without a bubble, so that the bubble opens when the card
       // gets one under the pointer, such as when the viewer holds the pointer down on a hand to see
       // its holder's view.
+      onClick={
+        canTap
+          ? (event) => {
+              const { nativeEvent } = event;
+              if (
+                nativeEvent instanceof PointerEvent
+                && nativeEvent.pointerType === "touch"
+              ) {
+                setTapped((open) => !open);
+              }
+            }
+          : undefined
+      }
       onPointerEnter={() => {
         setHovered(true);
       }}
@@ -2710,7 +2753,7 @@ export function CardFace({
         anchor={faceElement}
         bubble={bubble}
         colorblindMode={colorblindMode}
-        open={(showPossibleCards && hovered) || openPossibleCards}
+        open={(showPossibleCards && (hovered || tapped)) || openPossibleCards}
         variant={variant}
       />
     </div>
