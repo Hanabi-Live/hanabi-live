@@ -222,9 +222,6 @@ const TOUCH_QUERY = "(pointer: coarse)";
 /** How often the clock on the current player's name updates. */
 const CLOCK_TICK_MILLISECONDS = 500;
 
-/** How the chat names us among the people watching. */
-const YOU = "You";
-
 /** The move that gives a clue, as the server takes it. */
 function getClueAction(
   receiverIndex: PlayerIndex,
@@ -778,8 +775,7 @@ export function GameScreen({
     },
   };
 
-  // The chat lists everyone who is watching, with us first as "You": our own name alone in a replay
-  // would read as if the game were ours.
+  // The chat lists everyone who is watching, with us first.
   const spectators = [
     ...state.spectators.filter(
       (spectator) => spectator.username === metadata.ourUsername,
@@ -1722,24 +1718,15 @@ export function GameScreen({
 
         <ChatPanel
           open={chatOpen}
+          // Zen mode hides who is watching and the unread messages, as on the classic screen.
+          ourUsername={metadata.ourUsername}
           overlay={chatOverlay}
           poppedOut={chatPoppedOut}
           railHidden={panel}
-          // Zen mode hides who is watching and the unread messages, as on the classic screen.
           spectators={
-            zen
-              ? []
-              : spectators.map((spectator) =>
-                  spectator.username === metadata.ourUsername
-                    ? YOU
-                    : spectator.username,
-                )
+            zen ? [] : spectators.map((spectator) => spectator.username)
           }
-          spectatorsTooltip={getSpectatorsTooltip(
-            spectators,
-            state.finished,
-            YOU,
-          )}
+          spectatorsTooltip={getSpectatorsTooltip(spectators, state.finished)}
           unread={zen ? 0 : chatUnread}
           zen={zen}
           zenAvailable={!state.finished}

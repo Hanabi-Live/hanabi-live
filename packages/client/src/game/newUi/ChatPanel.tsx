@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { Fragment, useLayoutEffect, useRef } from "react";
 import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
@@ -165,6 +165,7 @@ export function ChatPanel({
   overlay,
   unread,
   spectators,
+  ourUsername,
   spectatorsTooltip,
 }: {
   readonly open: boolean;
@@ -196,6 +197,9 @@ export function ChatPanel({
 
   /** The names of the people watching the game. */
   readonly spectators: readonly string[];
+
+  /** Our own name, which the list of spectators shows in our color, as the tooltip does. */
+  readonly ourUsername: string;
 
   /** The tooltip of the spectator count, which lists the people watching, one per line. */
   readonly spectatorsTooltip: string;
@@ -298,7 +302,18 @@ export function ChatPanel({
             <>
               <i aria-hidden="true" className="fas fa-eye tw:mr-1.5" />
               Watching ({spectators.length}):{" "}
-              <span className="tw:text-game-text">{spectators.join(", ")}</span>
+              <span className="tw:text-game-text">
+                {spectators.map((spectator, i) => (
+                  <Fragment key={spectator}>
+                    {i > 0 && ", "}
+                    {spectator === ourUsername ? (
+                      <span className="tw:text-name-me">{spectator}</span>
+                    ) : (
+                      spectator
+                    )}
+                  </Fragment>
+                ))}
+              </span>
             </>
           )}
         </div>

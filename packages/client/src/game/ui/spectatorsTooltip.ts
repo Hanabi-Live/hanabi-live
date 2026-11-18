@@ -7,20 +7,16 @@ import { globals } from "./UiGlobals.ts";
 /**
  * The tooltip that lists the people watching a game, one per line. Our own name and our friends'
  * names have their colors. In an ongoing game, a spectator who shadows a player has the player's
- * name beside theirs. (Perspective shifts in replays are inconsequential.) With `ourName`, our own
- * entry shows it instead of our username.
+ * name beside theirs. (Perspective shifts in replays are inconsequential.)
  */
 export function getSpectatorsTooltip(
   spectators: readonly Spectator[],
   finished: boolean,
-  ourName?: string,
 ): string {
   let nameEntries = "";
   for (const spectator of spectators) {
     const us = spectator.username === globals.metadata.ourUsername;
-    const name = escapeHtml(
-      us ? (ourName ?? spectator.username) : spectator.username,
-    );
+    const name = escapeHtml(spectator.username);
     let nameEntry = "<li>";
     if (us) {
       nameEntry += `<span class="tw:text-name-me">${name}</span>`;
