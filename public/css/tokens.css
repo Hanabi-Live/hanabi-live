@@ -280,16 +280,20 @@
   --tooltip-border-color: var(--border);
   --note-title-line: var(--border);
 
-  --lobby-table-joined: #29294a;
-  --lobby-table-joined-hover: #33335a;
-  --lobby-table-unstarted: #3b3a24;
-  --lobby-table-unstarted-hover: #4b4a34;
-  --lobby-table-unstarted-password: #402626;
-  --lobby-table-unstarted-password-hover: #503636;
-  --lobby-table-started: #1d3a29;
-  --lobby-table-started-hover: #2d4a39;
-  --lobby-table-replay: #3a2740;
-  --lobby-table-replay-hover: #4a3750;
+  /*
+    Saturated, so that each kind of row still shows its color on the green panel. The joined and
+    replay rows use the colors of the New UI's in-game replay and hypothetical panels.
+  */
+  --lobby-table-joined: var(--game-screen-in-game-replay-panel);
+  --lobby-table-joined-hover: #27396a;
+  --lobby-table-unstarted: #4f4416;
+  --lobby-table-unstarted-hover: #5f521c;
+  --lobby-table-unstarted-password: #532222;
+  --lobby-table-unstarted-password-hover: #642a2a;
+  --lobby-table-started: #1f5a3a;
+  --lobby-table-started-hover: #286a46;
+  --lobby-table-replay: var(--game-screen-hypothetical-panel);
+  --lobby-table-replay-hover: #5a2b45;
 
   --login-alert-bg: #3a2020;
   --login-alert-border: #5a3030;
