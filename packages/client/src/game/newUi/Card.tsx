@@ -34,6 +34,7 @@ import {
   CARD_W,
 } from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
+import { getOpacityTransition } from "./fade.ts";
 import { Pip } from "./Pip.tsx";
 import { getScreenScale } from "./screenScale.ts";
 import type {
@@ -2691,7 +2692,7 @@ export function CardFace({
           opacity: highlighted ? 1 : 0,
           transition: reducedMotion
             ? undefined
-            : `opacity ${highlighted ? `${OPEN_DURATION_IN_MILLISECONDS}ms ease-out` : `${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`}`,
+            : getOpacityTransition(highlighted),
         }}
       />
       {clueMarker !== undefined && (

@@ -39,6 +39,7 @@ import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
 import { newUiNoteRead } from "./newUiSlice.ts";
+import { PAUSE_PANEL_FADE_MILLISECONDS } from "./PausePanel.tsx";
 import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
 import {
@@ -75,6 +76,9 @@ export interface Seat {
   /** How the hand shows its cards. */
   readonly view: HandView;
 
+  /** Whether a hypothetical shows the cards that its players draw. */
+  readonly drawnCardsShown: boolean;
+
   /**
    * The time on the player's clock, if the clocks show. In a timed game, it is the time left. In an
    * untimed game, it is the time taken.
@@ -110,8 +114,8 @@ interface HandsProps {
   readonly seats: readonly Seat[];
 
   /**
-   * Whether the hands are hidden, such as under the panel of a paused game. They keep their place,
-   * so that nothing else moves.
+   * Whether the hands are hidden under the panel of a paused game. They keep their place, so that
+   * nothing else moves. They hide once the panel has faded in, so that it fades in over them.
    */
   readonly hidden?: boolean;
 
@@ -888,6 +892,7 @@ function OwnCard({
   movable,
   props,
   view,
+  drawnCardsShown,
 }: {
   readonly card: CardView;
   readonly slot: number;
@@ -899,6 +904,7 @@ function OwnCard({
   readonly movable: boolean;
   readonly props: HandsProps;
   readonly view: HandView;
+  readonly drawnCardsShown: boolean;
 }): React.JSX.Element {
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -966,7 +972,12 @@ function OwnCard({
   );
   const label = `Slot ${slot}: ${describeCard(variant, card.suitIndex, card.rank)}`;
   const fade = (
-    <ViewFade face={face} reducedMotion={props.reducedMotion} view={view} />
+    <ViewFade
+      drawnCardsShown={drawnCardsShown}
+      face={face}
+      reducedMotion={props.reducedMotion}
+      view={view}
+    />
   );
 
   const sendingMark = props.sendingCard === card.order && (
@@ -1389,7 +1400,7 @@ function HandCard({
     return (
       <OwnCard
         card={card}
-
+        drawnCardsShown={seat.drawnCardsShown}
         movable={
           props.canMoveCards
           && seat.acting
@@ -1444,6 +1455,7 @@ function HandCard({
       order={card.order}
       overlay={
         <ViewFade
+          drawnCardsShown={seat.drawnCardsShown}
           face={face}
           reducedMotion={props.reducedMotion}
           view={seat.view}
@@ -1467,23 +1479,27 @@ interface FadingFace {
 }
 
 /**
- * When a hand changes how it shows its cards (see `HandView`), each card changes in place: its face
- * from before covers the new face and fades out, as fast as a tooltip opens or closes. A new turn
- * changes the cards at once, since it shows what happened. When the view changes back during the
- * fade, the new fade starts from the image on the screen, so that the card does not jump.
+ * When a hand changes how it shows its cards (see `HandView`), or a hypothetical shows or hides the
+ * cards that its players draw, each card changes in place: its face from before covers the new face
+ * and fades out, as fast as a tooltip opens or closes. A new turn changes the cards at once, since
+ * it shows what happened. When the view changes back during the fade, the new fade starts from the
+ * image on the screen, so that the card does not jump.
  */
 function ViewFade({
   face,
   view,
+  drawnCardsShown,
   reducedMotion,
 }: {
   readonly face: React.ReactElement<CardFaceProps>;
   readonly view: HandView;
+  readonly drawnCardsShown: boolean;
   readonly reducedMotion: boolean;
 }): React.JSX.Element | undefined {
   const last = useRef({
     face,
     view,
+    drawnCardsShown,
   });
   const [fading, setFading] = useState<FadingFace>();
   const fadeRef = useRef<HTMLDivElement>(null);
@@ -1493,8 +1509,12 @@ function ViewFade({
     last.current = {
       face,
       view,
+      drawnCardsShown,
     };
-    if (previous.view === view) {
+    if (
+      previous.view === view
+      && previous.drawnCardsShown === drawnCardsShown
+    ) {
       return;
     }
     if (reducedMotion) {
@@ -1509,9 +1529,10 @@ function ViewFade({
     setFading({
       face: previous.face,
       from: 1 - shown,
-      opening: view === "player",
+      // Showing the drawn cards fades as a tooltip opens, and hiding them as it closes.
+      opening: previous.view === view ? drawnCardsShown : view === "player",
     });
-  }, [face, view, reducedMotion]);
+  }, [face, view, drawnCardsShown, reducedMotion]);
 
   useLayoutEffect(() => {
     const element = fadeRef.current;
@@ -1848,6 +1869,13 @@ export function Hands(props: HandsProps): React.JSX.Element {
       aria-hidden={props.hidden === true ? true : undefined}
       aria-label="Hands"
       className={`tw:relative tw:flex tw:flex-col tw:items-stretch tw:justify-center tw:self-center ${props.hidden === true ? "tw:invisible" : ""}`}
+      style={
+        props.hidden === true && !props.reducedMotion
+          ? {
+              transition: `visibility 0s linear ${PAUSE_PANEL_FADE_MILLISECONDS}ms`,
+            }
+          : undefined
+      }
     >
       {props.seats.map((seat) => (
         <Hand

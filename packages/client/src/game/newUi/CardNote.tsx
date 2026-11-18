@@ -17,7 +17,7 @@ import {
 } from "../noteShortcuts.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
-import { MenuPointer } from "./Menu.tsx";
+import { MENU_LAYER_CLASS, MenuPointer, useMenuFade } from "./Menu.tsx";
 import { useWindowSize } from "./hooks.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { getScreenScaleForWindow } from "./screenScale.ts";
@@ -253,6 +253,7 @@ function NoteEditor({
   readonly onClose: () => void;
 }): React.JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
   // The box is centered below its card, but moves sideways to stay in the window, such as for a
@@ -288,9 +289,10 @@ function NoteEditor({
 
   useLayoutEffect(() => {
     const box = boxRef.current!;
+    const card = layerRef.current!.parentElement!;
     // The card can be out of view, such as in the hands that scroll on a phone after the window
     // becomes smaller. It scrolls into view first, so that the box goes on the side with room.
-    box.parentElement!.scrollIntoView({
+    card.scrollIntoView({
       block: "nearest",
       inline: "nearest",
     });
@@ -300,12 +302,12 @@ function NoteEditor({
     const scale = rect.width / NOTE_EDITOR_WIDTH;
 
     // The box goes below the card if it fits there, or else on the side with more room.
-    const card = box.parentElement!.getBoundingClientRect();
-    const area = getVisibleArea(box.parentElement!);
+    const cardRect = card.getBoundingClientRect();
+    const area = getVisibleArea(card);
     const needed =
       rect.height + (NOTE_EDITOR_GAP + NOTE_EDITOR_WINDOW_MARGIN) * scale;
-    const roomBelow = area.bottom - card.bottom;
-    const roomAbove = card.top - area.top;
+    const roomBelow = area.bottom - cardRect.bottom;
+    const roomAbove = cardRect.top - area.top;
     const nextSide =
       roomBelow >= needed || roomBelow >= roomAbove ? "below" : "above";
     if (nextSide !== side) {
@@ -358,9 +360,12 @@ function NoteEditor({
     input.value = noteRef.current;
   }
 
+  // It fades in and out as a menu does.
+  useMenuFade(layerRef, side);
+
   // The pointer stays at the middle of the card when the box moves sideways.
   return (
-    <>
+    <div className={MENU_LAYER_CLASS} ref={layerRef}>
       <div
         className={`tw:absolute tw:left-1/2 tw:-translate-x-1/2 ${NOTE_EDITOR_SIDE_CLASS[side]} tw:rounded-game-panel tw:bg-white tw:p-1.5 tw:shadow-lg tw:ring-1 tw:ring-game-line`}
         ref={boxRef}
@@ -452,6 +457,6 @@ function NoteEditor({
         outlineClassName="tw:bg-game-line"
         side={side}
       />
-    </>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
-import { fadeOutCopy } from "./fadeOutCopy.ts";
+import { fadeOutCopy } from "./fade.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /**
@@ -82,9 +82,9 @@ const MENU_SLIDE = 4;
 
 /**
  * The box that holds a menu and its pointer, as large as the container of the button. They fade
- * together in it, so that their outline stays one line where they meet.
+ * together in it, so that their outline stays one line where they meet (see `useMenuFade`).
  */
-const MENU_LAYER_CLASS =
+export const MENU_LAYER_CLASS =
   "tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:*:pointer-events-auto";
 
 /** The least space between a centered menu and the edges of the window, in CSS pixels. */
@@ -201,25 +201,34 @@ export function Menu({
  * A menu fades in as it opens, as fast as a tooltip, and moves a little away from its button. When
  * it closes, a copy of it stays on the page and fades out the other way, so that the menu that the
  * page draws can go at once. The copy shows what the menu showed last, cannot be clicked, and is
- * hidden from screen readers. The "Reduced motion" setting leaves out both fades.
+ * hidden from screen readers. The "Reduced motion" setting leaves out both fades. A menu that moves
+ * to the other side of its button while it is open, such as the note editor when it finds no room
+ * below its card, does not fade again.
  */
-function useMenuFade(
+export function useMenuFade(
   layerRef: React.RefObject<HTMLDivElement | null>,
   side: "above" | "below",
-) {
+): void {
+  const sideRef = useRef(side);
+  useLayoutEffect(() => {
+    sideRef.current = side;
+  }, [side]);
+
   useLayoutEffect(() => {
     const layer = layerRef.current;
     if (layer === null || store.getState().session.settings.reducedMotion) {
       return undefined;
     }
     // A menu above its button moves up as it opens, and a menu below it moves down.
-    const away = side === "above" ? -MENU_SLIDE : MENU_SLIDE;
-    const near = `translateY(${-away}px)`;
+    function getNear() {
+      const away = sideRef.current === "above" ? -MENU_SLIDE : MENU_SLIDE;
+      return `translateY(${-away}px)`;
+    }
     layer.animate(
       [
         {
           opacity: 0,
-          transform: near,
+          transform: getNear(),
         },
         {
           opacity: 1,
@@ -240,7 +249,7 @@ function useMenuFade(
           { opacity: Number(getComputedStyle(layer).opacity) },
           {
             opacity: 0,
-            transform: near,
+            transform: getNear(),
           },
         ],
         {
@@ -249,7 +258,7 @@ function useMenuFade(
         },
       );
     };
-  }, [layerRef, side]);
+  }, [layerRef]);
 }
 
 /**

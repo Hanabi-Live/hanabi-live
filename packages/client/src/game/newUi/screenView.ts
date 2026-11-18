@@ -248,6 +248,7 @@ export function getSeats(
       acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       view: getHandView(empathy, includesNotes),
+      drawnCardsShown: hypo?.showDrawnCards === true,
       clock,
       clockRunning,
       clockTooltip,

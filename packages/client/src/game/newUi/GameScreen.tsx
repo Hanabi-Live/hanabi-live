@@ -1200,6 +1200,7 @@ export function GameScreen({
       // card below it.
       hoveredCard={held === undefined ? getHoveredCardInPlace() : undefined}
       onShowClue={showClue}
+      reducedMotion={settings.reducedMotion}
       shownSegment={shownClue?.segment}
     />
   );
@@ -1720,6 +1721,7 @@ export function GameScreen({
           overlay={chatOverlay}
           poppedOut={chatPoppedOut}
           railHidden={panel}
+          reducedMotion={settings.reducedMotion}
           spectators={
             zen ? [] : spectators.map((spectator) => spectator.username)
           }

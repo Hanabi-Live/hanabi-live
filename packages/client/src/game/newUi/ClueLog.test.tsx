@@ -36,6 +36,7 @@ function renderLog(entries: readonly ClueLogEntry[]) {
       entries={entries}
       hoveredCard={HOVERED_CARD}
       onShowClue={onShowClue}
+      reducedMotion={false}
       shownSegment={undefined}
     />,
   );

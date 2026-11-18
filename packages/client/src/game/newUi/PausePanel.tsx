@@ -1,8 +1,12 @@
 import { useLayoutEffect, useRef } from "react";
+import { fadeOutCopy } from "./fade.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
-/** How long the panel takes to appear, in milliseconds. */
-const APPEAR_MILLISECONDS = 160;
+/**
+ * How long the panel takes to appear or to go, in milliseconds. The hands under it hide only once
+ * it has appeared.
+ */
+export const PAUSE_PANEL_FADE_MILLISECONDS = 160;
 
 /**
  * The panel that covers the hands while the game is paused. It says who paused the game, and a
@@ -22,7 +26,8 @@ export function PausePanel({
 }): React.JSX.Element {
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // The panel fades in, so that the pause reads as something that just happened.
+  // The panel fades in, so that the pause reads as something that just happened. When the game goes
+  // on, a copy of it fades out over the hands (see `fadeOutCopy`).
   useLayoutEffect(() => {
     const panel = panelRef.current;
     if (panel === null || reducedMotion) {
@@ -30,11 +35,17 @@ export function PausePanel({
     }
 
     const animation = panel.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: APPEAR_MILLISECONDS,
+      duration: PAUSE_PANEL_FADE_MILLISECONDS,
       easing: "ease-out",
     });
+    // The panel is still on the page when the cleanup runs: React removes it after that.
     return () => {
+      const shown = Number(getComputedStyle(panel).opacity);
       animation.cancel();
+      fadeOutCopy(panel, [{ opacity: shown }, { opacity: 0 }], {
+        duration: PAUSE_PANEL_FADE_MILLISECONDS,
+        easing: "ease-in",
+      });
     };
   }, [reducedMotion]);
 

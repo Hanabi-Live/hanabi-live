@@ -45,6 +45,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
+import { getOpacityTransition } from "./fade.ts";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
@@ -1134,6 +1135,12 @@ function Deck({
   const finalRound = empty && turnsLeft !== undefined;
   const turns = turnsLeft === 1 ? "turn" : "turns";
   const showEmpathy = empathy !== undefined && !empty;
+  // The cards that the deck showed last, so that they can fade out over its back when the viewer
+  // lets go, as the hands fade (see "Hands.tsx").
+  const [shownEmpathy, setShownEmpathy] = useState(empathy);
+  if (empathy !== undefined && empathy !== shownEmpathy) {
+    setShownEmpathy(empathy);
+  }
   // The top card of the deck, which the bubble of possible cards points at while the pointer is
   // over it. The deck tracks the pointer even without a bubble, so that the bubble opens when the
   // viewer holds Space over it, as over a card in a hand.
@@ -1189,31 +1196,50 @@ function Deck({
     />
   );
 
-  let face: React.ReactNode;
-  if (showEmpathy) {
-    face = (
-      <CardFace
-        colorblindMode={colorblindMode}
-        pips={{
-          suits: empathy.possibleSuitIndexes.map((suitIndex) => ({
-            suitIndex,
-            eliminated: false,
-            positive: false,
-          })),
-          ranks: empathy.possibleRanks.map((rank) => ({
-            rank,
-            eliminated: false,
-            positive: false,
-          })),
-          bubble: undefined,
+  // The face that shows which cards can still be in the deck covers the deck's back and its count.
+  // It fades in and out, as fast as a tooltip opens and closes. Only its opacity changes.
+  const empathyFace = shownEmpathy !== undefined
+    && !empty
+    && (showEmpathy || !reducedMotion) && (
+      <span
+        aria-hidden={showEmpathy ? undefined : true}
+        className={`tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 ${showEmpathy ? "tw:opacity-100 tw:starting:opacity-0" : "tw:opacity-0"}`}
+        onTransitionEnd={(event) => {
+          if (!showEmpathy && event.target === event.currentTarget) {
+            setShownEmpathy(undefined);
+          }
         }}
-        rank={undefined}
-        suitIndex={undefined}
-        variant={variant}
-        width={cardWidth}
-      />
+        style={{
+          transition: reducedMotion
+            ? undefined
+            : getOpacityTransition(showEmpathy),
+        }}
+      >
+        <CardFace
+          colorblindMode={colorblindMode}
+          pips={{
+            suits: shownEmpathy.possibleSuitIndexes.map((suitIndex) => ({
+              suitIndex,
+              eliminated: false,
+              positive: false,
+            })),
+            ranks: shownEmpathy.possibleRanks.map((rank) => ({
+              rank,
+              eliminated: false,
+              positive: false,
+            })),
+            bubble: undefined,
+          }}
+          rank={undefined}
+          suitIndex={undefined}
+          variant={variant}
+          width={cardWidth}
+        />
+      </span>
     );
-  } else if (finalRound) {
+
+  let face: React.ReactNode;
+  if (finalRound) {
     // Smaller than the count of cards, and always with its caption, so that it does not read as
     // cards left.
     face = (
@@ -1243,6 +1269,10 @@ function Deck({
         style={{
           fontSize: cardWidth * CARDS_LEFT_SIZE,
           color: lastCard ? PACE_HIGH_RISK_COLOR : undefined,
+          opacity: showEmpathy ? 0 : 1,
+          transition: reducedMotion
+            ? undefined
+            : getOpacityTransition(!showEmpathy),
         }}
       >
         {cardsInDeck}
@@ -1256,7 +1286,7 @@ function Deck({
       : "tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80"
   } ${emptyStyle} ${held ? "tw:opacity-30" : ""}`;
   const topStyle = {
-    ...(!empty && !showEmpathy && CARD_BACK_STYLE),
+    ...(!empty && CARD_BACK_STYLE),
     width: cardWidth,
     borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
     height,
@@ -1346,6 +1376,7 @@ function Deck({
             style={topStyle}
           >
             {face}
+            {empathyFace}
             {bubble}
           </div>
         ) : (
@@ -1371,6 +1402,7 @@ function Deck({
             type="button"
           >
             {face}
+            {empathyFace}
             {bubble}
           </button>
         )}

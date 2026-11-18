@@ -18,7 +18,7 @@ import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueDisc, getClueText } from "./ClueLog.tsx";
 import { onEscapeKey } from "./escapeKey.ts";
-import { fadeOutCopy } from "./fadeOutCopy.ts";
+import { fadeOutCopy } from "./fade.ts";
 
 /** The width of the card at the start of a row, in CSS pixels. */
 const ROW_CARD_WIDTH = 30;

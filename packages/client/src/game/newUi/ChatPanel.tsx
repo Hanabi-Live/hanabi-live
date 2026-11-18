@@ -1,5 +1,9 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
-import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
+import {
+  CHAT_WINDOW_ID,
+  CLOSE_DURATION_IN_MILLISECONDS,
+  OPEN_DURATION_IN_MILLISECONDS,
+} from "../../Tooltip.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
@@ -11,6 +15,7 @@ import {
   getChatWindow,
   popOutChat,
 } from "./chatWindow.ts";
+import { fadeOutCopy } from "./fade.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /**
@@ -167,6 +172,7 @@ export function ChatPanel({
   spectators,
   ourUsername,
   spectatorsTooltip,
+  reducedMotion,
 }: {
   readonly open: boolean;
 
@@ -203,6 +209,7 @@ export function ChatPanel({
 
   /** The tooltip of the spectator count, which lists the people watching, one per line. */
   readonly spectatorsTooltip: string;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null);
   // The classic screen's spectators tooltip, in the smaller text of this screen's other tooltips.
@@ -279,14 +286,7 @@ export function ChatPanel({
   }
 
   return (
-    <aside
-      aria-label="Chat"
-      className={`tw:flex tw:w-[320px] tw:max-w-full tw:shrink-0 tw:flex-col tw:border-l tw:border-game-raised tw:bg-game-panel ${
-        overlay
-          ? "tw:absolute tw:inset-y-0 tw:right-0 tw:z-20 tw:shadow-2xl"
-          : ""
-      }`}
-    >
+    <OpenChat overlay={overlay} reducedMotion={reducedMotion}>
       <header className="tw:flex tw:items-start tw:gap-2 tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
         {/* With no one watching, the header stays blank. It names everyone, and wraps when the
             names need more than one line. Its tooltip also says whom each person shadows. */}
@@ -347,6 +347,72 @@ export function ChatPanel({
         ref={boxRef}
         style={CHAT_BOX_COLORS as React.CSSProperties}
       />
+    </OpenChat>
+  );
+}
+
+/**
+ * The open chat. When it covers the table, it slides in from the right edge of the screen, and a
+ * copy of it slides back out when it closes (see `fadeOutCopy`). Beside the table, it opens and
+ * closes at once, since the cards change size to make room for it.
+ */
+function OpenChat({
+  overlay,
+  reducedMotion,
+  children,
+}: {
+  readonly overlay: boolean;
+  readonly reducedMotion: boolean;
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  const asideRef = useRef<HTMLElement>(null);
+
+  // A chat that starts or stops covering the table while it is open, such as when the window
+  // changes size, does not slide. Only opening and closing it does.
+  const slidesRef = useRef(false);
+  useLayoutEffect(() => {
+    slidesRef.current = overlay && !reducedMotion;
+  }, [overlay, reducedMotion]);
+
+  useLayoutEffect(() => {
+    const aside = asideRef.current;
+    if (aside === null) {
+      return undefined;
+    }
+    const outside = { transform: "translateX(100%)" };
+    if (slidesRef.current) {
+      aside.animate([outside, { transform: "none" }], {
+        duration: OPEN_DURATION_IN_MILLISECONDS,
+        easing: "ease-out",
+      });
+    }
+
+    // The chat is still on the page when the cleanup runs: React removes it after that.
+    return () => {
+      if (slidesRef.current) {
+        fadeOutCopy(
+          aside,
+          [{ transform: getComputedStyle(aside).transform }, outside],
+          {
+            duration: CLOSE_DURATION_IN_MILLISECONDS,
+            easing: "ease-in",
+          },
+        );
+      }
+    };
+  }, []);
+
+  return (
+    <aside
+      aria-label="Chat"
+      className={`tw:flex tw:w-[320px] tw:max-w-full tw:shrink-0 tw:flex-col tw:border-l tw:border-game-raised tw:bg-game-panel ${
+        overlay
+          ? "tw:absolute tw:inset-y-0 tw:right-0 tw:z-20 tw:shadow-2xl"
+          : ""
+      }`}
+      ref={asideRef}
+    >
+      {children}
     </aside>
   );
 }

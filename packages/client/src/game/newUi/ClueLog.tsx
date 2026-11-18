@@ -9,6 +9,7 @@ import {
   getClueMarkerColor,
   getClueMarkerLabel,
 } from "./Card.tsx";
+import { getOpacityTransition } from "./fade.ts";
 import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
@@ -49,12 +50,17 @@ export function getClueLogHeight(rows: number): number {
 /** How a clue relates to the card that the mouse is over. */
 type Match = "none" | "positive" | "negative";
 
-/** The background of a row about a hovered card, for each match. */
+/**
+ * The color of a row about a hovered card, for each match. It is a layer under the row's text, so
+ * that it can fade in and out as the mouse moves over the hands. Only its opacity animates, never a
+ * background color (see `useModeFade` in "StatusStrip.tsx").
+ */
 const MATCH_BACKGROUND = {
-  none: "",
-  positive: "tw:bg-[rgb(74_222_128/40%)] tw:hover:bg-[rgb(74_222_128/52%)]",
-  negative: "tw:bg-[rgb(248_113_113/40%)] tw:hover:bg-[rgb(248_113_113/52%)]",
-} as const satisfies Record<Match, string>;
+  positive:
+    "tw:bg-[rgb(74_222_128/40%)] tw:group-hover/row:bg-[rgb(74_222_128/52%)]",
+  negative:
+    "tw:bg-[rgb(248_113_113/40%)] tw:group-hover/row:bg-[rgb(248_113_113/52%)]",
+} as const satisfies Record<Exclude<Match, "none">, string>;
 
 /** What the label of a clue about a hovered card adds, for each match. */
 const MATCH_LABEL_SUFFIX = {
@@ -123,6 +129,7 @@ export function ClueLog({
   hoveredCard,
   dragging,
   onShowClue,
+  reducedMotion,
 }: {
   readonly entries: readonly ClueLogEntry[];
   /** The segment of the clue that the turn on screen shows, if any. */
@@ -132,6 +139,7 @@ export function ClueLog({
   /** Whether the player holds a card. Then the rows do not light up under the pointer. */
   readonly dragging: boolean;
   readonly onShowClue: (segment: number) => void;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
 
@@ -189,10 +197,7 @@ export function ClueLog({
           {entries.map((entry) => {
             const match = getMatch(entry, hoveredCard);
             const shown = entry.segment === shownSegment;
-            const background =
-              match === "none"
-                ? `${dragging ? "" : "tw:hover:bg-white/18"} ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`
-                : MATCH_BACKGROUND[match];
+            const background = `${dragging || match !== "none" ? "" : "tw:hover:bg-white/18"} ${shown ? "tw:bg-game-raised" : "tw:bg-transparent"}`;
             return (
               <li
                 className="tw:col-span-full tw:grid tw:grid-cols-subgrid"
@@ -200,7 +205,7 @@ export function ClueLog({
               >
                 <button
                   aria-current={shown ? "step" : undefined}
-                  className={`tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:rounded-game-control tw:border-0 tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
+                  className={`tw:group/row tw:relative tw:isolate tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-2 tw:rounded-game-control tw:border-0 tw:px-2 tw:py-1 tw:text-left tw:text-[14px] tw:text-game-text ${background}`}
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
@@ -210,6 +215,19 @@ export function ClueLog({
                   style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
                   type="button"
                 >
+                  {(["positive", "negative"] as const).map((layer) => (
+                    <span
+                      aria-hidden="true"
+                      className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] ${MATCH_BACKGROUND[layer]}`}
+                      key={layer}
+                      style={{
+                        opacity: match === layer ? 1 : 0,
+                        transition: reducedMotion
+                          ? undefined
+                          : getOpacityTransition(match === layer),
+                      }}
+                    />
+                  ))}
                   <span className="tw:text-[13px] tw:text-game-muted">
                     #{entry.turn}
                   </span>
