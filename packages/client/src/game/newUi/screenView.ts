@@ -13,9 +13,11 @@ import type {
 } from "@hanabi-live/game";
 import {
   StackDirection,
+  getCardSlot,
   getCharacterNameForPlayer,
   getClueName,
   getDeckPossibilities,
+  isCardClued,
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { store } from "../../store.ts";
@@ -459,6 +461,72 @@ export function getClueForTurn(gameState: GameState): StateClue | undefined {
   return segment === undefined
     ? undefined
     : gameState.clues.findLast((clue) => clue.segment === segment - 1);
+}
+
+/** The card that a player played or discarded on the last move, and where it came from. */
+export interface ShownMove {
+  readonly order: CardOrder;
+
+  /** The player who held the card. It is absent for a card played from the deck. */
+  readonly player: PlayerIndex | undefined;
+
+  /** The card's slot in their hand, where slot 1 is the newest card. */
+  readonly slot: number | undefined;
+
+  /** Whether the card was played or misplayed without a clue on it, as the action log says. */
+  readonly blind: boolean;
+}
+
+/**
+ * The card that led to the turn that shows, if the last move was a play, a misplay, or a discard.
+ * The hand that held the card is in the state of the segment before. In a hypothetical, that is one
+ * of its own states.
+ */
+export function getMoveForTurn(state: State): ShownMove | undefined {
+  const gameState = state.visibleState;
+  const segment = gameState?.turn.segment;
+  if (gameState === undefined || segment === undefined) {
+    return undefined;
+  }
+
+  const lastSegment = segment - 1;
+  const card = gameState.deck.find(
+    (cardState) =>
+      cardState.segmentPlayed === lastSegment
+      || cardState.segmentDiscarded === lastSegment,
+  );
+  if (card === undefined) {
+    return undefined;
+  }
+
+  const previousState =
+    state.replay.hypothetical?.states.findLast(
+      (hypotheticalState) => hypotheticalState.turn.segment === lastSegment,
+    ) ?? state.replay.states[lastSegment];
+  const previousCard = previousState?.deck[card.order];
+  const player = previousCard?.location;
+  if (
+    previousState === undefined
+    || previousCard === undefined
+    || typeof player !== "number"
+  ) {
+    return {
+      order: card.order,
+      player: undefined,
+      slot: undefined,
+      blind: false,
+    };
+  }
+
+  const hand = previousState.hands[player] ?? [];
+  return {
+    order: card.order,
+    player,
+    slot: getCardSlot(card.order, hand),
+    blind:
+      (card.segmentPlayed === lastSegment || card.isMisplayed)
+      && !isCardClued(previousCard),
+  };
 }
 
 /** The clues of the game so far, for the clue log. */

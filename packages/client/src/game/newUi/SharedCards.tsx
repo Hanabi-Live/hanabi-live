@@ -418,6 +418,94 @@ const HOLE_CAPTION_SIZE_PER_WIDTH = 0.18;
  * the classic screen. A played card falls into it and sinks out of sight. For a player, who cannot
  * see the score, the pit shows how many cards went into it.
  */
+/**
+ * The card that a player played or discarded on the last move, with the slot that it left, so that
+ * the players see what happened without watching the move again.
+ */
+export interface MovedCard {
+  readonly order: CardOrder;
+
+  /** The card's slot in its holder's hand, where slot 1 is the newest card. */
+  readonly slot: number | undefined;
+
+  /** Whether the card was played or misplayed without a clue on it. */
+  readonly blind: boolean;
+}
+
+/** The height of the tab on a moved card, for each CSS pixel of the card's width. */
+const SLOT_TAB_HEIGHT_PER_WIDTH = 0.3;
+
+/** The smallest height of the tab, in CSS pixels, so that its text stays readable on a phone. */
+const SLOT_TAB_MIN_HEIGHT = 17;
+
+/** The smallest space between the tab and the side of the window, in CSS pixels. */
+const SLOT_TAB_WINDOW_MARGIN = 2;
+
+/**
+ * The tab on the top edge of a moved card's outline, which names the slot that the card left, and
+ * says "(blind)" for a blind play, as the action log does. It is white like the outline, so that
+ * the two read as one shape.
+ */
+function SlotTab({
+  slot,
+  blind,
+  cardWidth,
+}: {
+  readonly slot: number;
+  readonly blind: boolean;
+  readonly cardWidth: number;
+}): React.JSX.Element {
+  const height = Math.max(
+    cardWidth * SLOT_TAB_HEIGHT_PER_WIDTH,
+    SLOT_TAB_MIN_HEIGHT,
+  );
+
+  // The tab can be wider than the card. On a card at the side of the window, such as the first play
+  // stack on a phone, it moves sideways so that it stays in the window.
+  const tabRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const tab = tabRef.current;
+    if (tab === null) {
+      return;
+    }
+    tab.style.marginLeft = "";
+    const rect = tab.getBoundingClientRect();
+    // The game screen can be scaled, so the shift is in the tab's own pixels.
+    const scale = tab.offsetWidth === 0 ? 1 : rect.width / tab.offsetWidth;
+    const windowWidth = document.documentElement.clientWidth;
+    const overLeft = SLOT_TAB_WINDOW_MARGIN - rect.left;
+    const overRight = rect.right - (windowWidth - SLOT_TAB_WINDOW_MARGIN);
+    let shift = 0;
+    if (overLeft > 0) {
+      shift = overLeft;
+    } else if (overRight > 0) {
+      shift = -overRight;
+    }
+    if (shift !== 0) {
+      tab.style.marginLeft = `${shift / scale}px`;
+    }
+  });
+
+  return (
+    <span
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10 tw:flex tw:-translate-x-1/2 tw:items-center tw:gap-[0.3em] tw:rounded-full tw:bg-white tw:leading-none tw:font-extrabold tw:whitespace-nowrap tw:text-card-ink"
+      data-slot-tab
+      ref={tabRef}
+      style={{
+        // The tab sits on the outline, which is 4 pixels wide and 4 pixels outside the card.
+        top: -6 - height / 2,
+        height,
+        paddingInline: height * 0.45,
+        fontSize: height * 0.62,
+      }}
+    >
+      <span>Slot {slot}</span>
+      {blind && <span>(blind)</span>}
+    </span>
+  );
+}
+
 function Hole({
   hole,
   variant,
@@ -510,6 +598,7 @@ export function PlayArea({
   zoneState,
   notes,
   tokens,
+  movedCard,
 }: {
   readonly stacks: readonly StackView[];
 
@@ -527,6 +616,9 @@ export function PlayArea({
 
   /** The clue tokens and the strikes (see `TableTokens`). */
   readonly tokens: React.ReactNode;
+
+  /** The card played on the last move, if it was a play. */
+  readonly movedCard: MovedCard | undefined;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const suitLabels = hasSuitLabels(variant);
@@ -681,6 +773,7 @@ export function PlayArea({
                           >
                             <CardFace
                               colorblindMode={colorblindMode}
+                              highlighted={movedCard?.order === stack.topOrder}
                               note={topNotesHtml !== undefined}
                               noteUnread={notes.unreadNotes.has(stack.topOrder)}
                               rank={stack.topRank}
@@ -690,6 +783,15 @@ export function PlayArea({
                             />
                           </CardNote>
                         )}
+                        {movedCard !== undefined
+                          && movedCard.order === stack.topOrder
+                          && movedCard.slot !== undefined && (
+                            <SlotTab
+                              blind={movedCard.blind}
+                              cardWidth={cardWidth}
+                              slot={movedCard.slot}
+                            />
+                          )}
                       </div>
                     )}
                     {stack.label !== "" && (
@@ -1429,6 +1531,7 @@ export function DiscardPile({
   onShowDiscard,
   notes,
   reducedMotion,
+  movedCard,
 }: {
   readonly rows: ReadonlyArray<readonly DiscardView[]>;
   readonly variant: Variant;
@@ -1450,6 +1553,9 @@ export function DiscardPile({
   readonly onShowDiscard: (order: CardOrder) => void;
   readonly notes: CardNotes;
   readonly reducedMotion: boolean;
+
+  /** The card discarded or misplayed on the last move, if there was one. */
+  readonly movedCard: MovedCard | undefined;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const showNoDiscard = atMaxClues && !realLifeMode;
@@ -1524,9 +1630,11 @@ export function DiscardPile({
                 previousCard === undefined
                   ? undefined
                   : (columns.get(previousCard.order) ?? 0);
+              const moved = movedCard?.order === card.order;
               return (
                 <CardNote
-                  className="tw:shrink-0"
+                  // The moved card goes over the cards around it, so that its outline is whole.
+                  className={`tw:shrink-0 ${moved ? "tw:relative tw:z-10" : ""}`}
                   key={card.order}
                   notes={notes}
                   order={card.order}
@@ -1552,6 +1660,7 @@ export function DiscardPile({
                   >
                     <CardFace
                       colorblindMode={colorblindMode}
+                      highlighted={moved}
                       note={notes.notesHtml.has(card.order)}
                       noteUnread={notes.unreadNotes.has(card.order)}
                       rank={card.rank}
@@ -1559,6 +1668,13 @@ export function DiscardPile({
                       variant={variant}
                       width={cardWidth}
                     />
+                    {moved && movedCard.slot !== undefined && (
+                      <SlotTab
+                        blind={movedCard.blind}
+                        cardWidth={cardWidth}
+                        slot={movedCard.slot}
+                      />
+                    )}
                   </button>
                 </CardNote>
               );

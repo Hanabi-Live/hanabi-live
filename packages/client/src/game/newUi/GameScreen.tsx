@@ -147,6 +147,7 @@ import {
   getDeckEmpathy,
   getDiscardRows,
   getHole,
+  getMoveForTurn,
   getNotesHtml,
   getSeats,
   getShownIdentities,
@@ -674,6 +675,7 @@ export function GameScreen({
     return undefined;
   }
   const shownClue = getClueForTurn(visibleState);
+  const shownMove = getMoveForTurn(state);
   const stacks = getStacks(state);
   const discardRows = getDiscardRows(state);
   const cardNotes: CardNotes = {
@@ -1148,6 +1150,7 @@ export function GameScreen({
         settings.hGroupConventions
         && visibleState.stats.doubleDiscardCard !== undefined
       }
+      movedCard={shownMove}
       notes={cardNotes}
       onShowDiscard={showDiscard}
       realLifeMode={settings.realLifeMode}
@@ -1450,6 +1453,7 @@ export function GameScreen({
                 }}
                 gameEnd={getShownGameEnd(state)}
                 hole={getHole(state)}
+                movedCard={shownMove}
                 notes={cardNotes}
                 stacks={stacks}
                 // In the phone layout, the tokens are beside the discard pile instead.
@@ -1635,6 +1639,7 @@ export function GameScreen({
                           ),
                         }
                   }
+                  shownMover={shownMove?.player}
                   showPossibleCards={showHandPossibleCards}
                   speedrunClicks={speedrunClicks}
                   stacked={stacked}

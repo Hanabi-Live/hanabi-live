@@ -138,6 +138,9 @@ interface HandsProps {
       }
     | undefined;
 
+  /** The player who played or discarded a card on the turn that shows. */
+  readonly shownMover: PlayerIndex | undefined;
+
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
   /** The cards in the acting player's hand now, which are the only ones that can move. */
@@ -1298,7 +1301,11 @@ function Hand({
     heldRef.current = false;
     props.onHoldEmpathy(undefined);
   }
-  const isClueGiver = props.shownClue?.giver === seat.playerIndex;
+  // The player who acted on the turn that shows has a ring around their name: the one who gave the
+  // clue, or the one who played or discarded a card.
+  const isRinged =
+    props.shownClue?.giver === seat.playerIndex
+    || props.shownMover === seat.playerIndex;
   // With its brain button on, a hand's cards show their bubble of possible cards instead of their
   // notes, and a tap opens it, since a touch screen has no hover.
   const handProps =
@@ -1342,8 +1349,8 @@ function Hand({
         style={{ width: props.nameColumnWidth }}
       >
         <div className="tw:flex tw:max-w-full">
-          {/* The name of the player who gave the clue on the turn that shows keeps a ring, where the
-            clue rail starts. While the viewer can clue a player, the player's name is a key, like
+          {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
+            clue rail starts there. While the viewer can clue a player, the player's name is a key, like
             every other button on the screen, and opens the clues. */}
           <button
             aria-expanded={canClueSeat ? chosen : undefined}
@@ -1360,7 +1367,7 @@ function Hand({
               }
             }}
             style={
-              isClueGiver
+              isRinged
                 ? {
                     boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
                       CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
