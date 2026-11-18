@@ -35,6 +35,13 @@ export function getVisibilityTransition(shown: boolean): string {
     : `${getOpacityTransition(false)}, visibility 0s linear ${CLOSE_DURATION_IN_MILLISECONDS}ms`;
 }
 
+/** The attributes by which the page finds elements, which a copy from `fadeOutCopy` leaves out. */
+const COPY_HIDDEN_ATTRIBUTES = [
+  "id",
+  "data-card-order",
+  "data-card-place",
+] as const;
+
 /**
  * Leaves a copy of an element that React is about to remove, and plays an animation on the copy,
  * such as a fade-out. The copy goes when the animation finishes or is canceled. Then the element
@@ -58,11 +65,13 @@ export function fadeOutCopy(
   for (const part of copy.querySelectorAll("[role]")) {
     part.removeAttribute("role");
   }
-  // The page finds some elements by their IDs, such as the chat's messages. It must not find the
-  // copy.
-  copy.removeAttribute("id");
-  for (const part of copy.querySelectorAll("[id]")) {
-    part.removeAttribute("id");
+  // The page finds some elements by these attributes, such as the chat's messages by their IDs, and
+  // the cards that move by their order (see "cardMotion.ts"). It must not find the copy.
+  for (const attribute of COPY_HIDDEN_ATTRIBUTES) {
+    copy.removeAttribute(attribute);
+    for (const part of copy.querySelectorAll(`[${CSS.escape(attribute)}]`)) {
+      part.removeAttribute(attribute);
+    }
   }
   element.after(copy);
 

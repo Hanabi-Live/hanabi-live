@@ -45,3 +45,19 @@ test("a copy goes at once when the element stays on the page", async () => {
   await Promise.resolve();
   expect(document.body.children).toHaveLength(1);
 });
+
+test("a copy of a card is not found as a card", () => {
+  const element = document.createElement("div");
+  const card = document.createElement("div");
+  card.dataset["cardOrder"] = "3";
+  card.dataset["cardPlace"] = "queued";
+  element.append(card);
+  document.body.append(element);
+
+  fadeOutCopy(element, [{ opacity: 1 }, { opacity: 0 }], { duration: 80 });
+  element.remove();
+
+  // The cards that move are found by their order (see "cardMotion.ts").
+  expect(document.querySelectorAll("[data-card-order]")).toHaveLength(0);
+  expect(document.querySelectorAll("[data-card-place]")).toHaveLength(0);
+});
