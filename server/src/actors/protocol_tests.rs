@@ -2775,6 +2775,9 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
             .await.expect_err("Unchanged options should be rejected");
         ensure!(error.to_string() == "There are no new options proposed.");
         ensure!(h.snapshot(id).await?.0.chat.len() == before);
+        // An owner who changes nothing does not announce a change.
+        h.send(0, "tableUpdate", json!({"tableId":id,"settings":{"name":"Original"}})).await?;
+        ensure!(h.snapshot(id).await?.0.chat.len() == before);
         Ok::<(), anyhow::Error>(())
     }.await;
     let cleanup = h.close().await;

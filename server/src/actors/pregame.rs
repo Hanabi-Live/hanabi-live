@@ -128,8 +128,8 @@ impl TableActor {
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
+        let changes = option_changes(&self.table, &options, &name, max_players, &extra);
         if session.user != self.table.owner.user_id {
-            let changes = option_changes(&self.table, &options, &name, max_players, &extra);
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
             // A proposal is a message from its player, so it counts like one.
             self.admit_player_chat(session.user)?;
@@ -154,6 +154,10 @@ impl TableActor {
                 ));
             }
             return self.publish(e).await;
+        }
+        // The owner submitted the dialog without changing anything.
+        if changes.is_empty() {
+            return Ok(());
         }
         let mut next = self.candidate();
         next.name = name;
