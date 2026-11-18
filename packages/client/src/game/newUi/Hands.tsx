@@ -34,7 +34,7 @@ import { ClueHandLayer, ClueTab } from "./ClueMenu.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  KEY_WITH_TEXT_COLOR_STYLE,
+  getKeyTextColorStyle,
 } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
@@ -788,7 +788,7 @@ function PauseButton({
       data-pause-button
       onClick={onPause}
       ref={tooltipRef(PAUSE_BUTTON_TOOLTIP[action])}
-      style={KEY_WITH_TEXT_COLOR_STYLE}
+      style={getKeyTextColorStyle(queued, reducedMotion)}
       type="button"
     >
       {/* The color of the turn fades in while the pause is queued. */}

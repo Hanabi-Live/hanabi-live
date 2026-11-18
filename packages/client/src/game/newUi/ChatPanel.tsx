@@ -8,7 +8,7 @@ import { toggleZen } from "../zen.ts";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  KEY_WITH_TEXT_COLOR_STYLE,
+  getKeyTextColorStyle,
 } from "./FadeLayer.tsx";
 import {
   chatWindowClosed,
@@ -487,7 +487,7 @@ export function ChatButton({
         toggleZen();
       }}
       ref={tooltipRef(tooltip)}
-      style={KEY_WITH_TEXT_COLOR_STYLE}
+      style={getKeyTextColorStyle(collapses, reducedMotion)}
       type="button"
     >
       {pressedClassName !== undefined && (

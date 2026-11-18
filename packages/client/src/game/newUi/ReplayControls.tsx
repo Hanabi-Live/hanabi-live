@@ -23,7 +23,7 @@ import { ChainIcon } from "./ChainIcon.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  KEY_WITH_TEXT_COLOR_STYLE,
+  getKeyTextColorStyle,
 } from "./FadeLayer.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { getOpacityTransition, SLIDE } from "./motion.ts";
@@ -419,7 +419,10 @@ function FollowToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={KEY_WITH_TEXT_COLOR_STYLE}
+      style={getKeyTextColorStyle(
+        following,
+        store.getState().session.settings.reducedMotion,
+      )}
       type="button"
     >
       <PressedLayer pressed={following} />
@@ -474,7 +477,10 @@ function ShareTurnsToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={KEY_WITH_TEXT_COLOR_STYLE}
+      style={getKeyTextColorStyle(
+        sharing,
+        store.getState().session.settings.reducedMotion,
+      )}
       type="button"
     >
       <PressedLayer pressed={sharing} />
@@ -535,7 +541,10 @@ function IconToggle({
       disabled={disabled}
       onClick={onClick}
       ref={tooltipRef(`${label}: ${tooltip}`)}
-      style={KEY_WITH_TEXT_COLOR_STYLE}
+      style={getKeyTextColorStyle(
+        pressed,
+        store.getState().session.settings.reducedMotion,
+      )}
       type="button"
     >
       <PressedLayer pressed={pressed} />
