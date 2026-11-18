@@ -352,7 +352,8 @@ export function HeldCardGhost({
     <div
       aria-hidden="true"
       className="tw:pointer-events-none tw:fixed tw:inset-0 tw:z-50"
-      data-held-card
+      // The bubble of possible cards finds the hand of the card from it (see "Card.tsx").
+      data-held-card={order}
     >
       <div
         className="tw:absolute tw:top-0 tw:left-0 tw:will-change-transform"

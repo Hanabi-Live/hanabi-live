@@ -1644,6 +1644,57 @@ export function PossibleCardsBubble({
       );
 }
 
+/**
+ * The hand of a card, or of the card that the player holds, which is drawn outside of its hand (see
+ * "HeldCardGhost.tsx").
+ */
+function getHandOf(anchor: HTMLElement): Element | undefined {
+  const hand = anchor.closest("[data-hand]");
+  if (hand !== null) {
+    return hand;
+  }
+  const order =
+    anchor.closest<HTMLElement>("[data-held-card]")?.dataset["heldCard"];
+  return order === undefined
+    ? undefined
+    : (document
+        .querySelector(`[data-hand] [data-card-order="${CSS.escape(order)}"]`)
+        ?.closest("[data-hand]") ?? undefined);
+}
+
+/** Whether the bubbles of a hand's cards go below the hand, where it has more room. */
+function isHandBubbleBelow(hand: DOMRect): boolean {
+  return window.innerHeight - hand.bottom >= hand.top;
+}
+
+/**
+ * The least room that a bubble has beside the cards of any hand, on the side that the hand puts its
+ * bubbles, in the window's pixels.
+ */
+function getHandsRoom(offset: number): number {
+  let least = Infinity;
+  for (const hand of document.querySelectorAll("[data-hand]")) {
+    const card = hand
+      .querySelector("[data-card-place]")
+      ?.getBoundingClientRect();
+    // A hand that is not on the screen, such as one that the page is scrolled away from, has no
+    // bubble to fit.
+    if (
+      card === undefined
+      || card.height === 0
+      || card.top < 0
+      || card.bottom > window.innerHeight
+    ) {
+      continue;
+    }
+    const room = isHandBubbleBelow(hand.getBoundingClientRect())
+      ? window.innerHeight - POSSIBLE_CARDS_WINDOW_MARGIN - card.bottom - offset
+      : card.top - offset - POSSIBLE_CARDS_WINDOW_MARGIN;
+    least = Math.min(least, room);
+  }
+  return least;
+}
+
 function PossibleCardsGrid({
   variant,
   colorblindMode,
@@ -1702,7 +1753,8 @@ function PossibleCardsGrid({
   // middle of the card, even when the edge of the window moves the bubble to one side. A card in a
   // hand uses the side of the hand with more room instead. Then the bubbles of all the cards in a
   // hand are on the same side, so that the viewer knows where to look as they go from one card to
-  // the next.
+  // the next. The bubbles of all the hands are drawn as small as the one in the hand with the least
+  // room, so that they are all the same size.
   useLayoutEffect(() => {
     const element = ref.current;
     if (element === null) {
@@ -1722,11 +1774,16 @@ function PossibleCardsGrid({
     const isBelow =
       hand === undefined
         ? height <= roomBelow || (height > roomAbove && roomBelow >= roomAbove)
-        : window.innerHeight - hand.bottom >= hand.top;
+        : isHandBubbleBelow(hand);
     const side = isBelow ? "below" : "above";
     const room = side === "below" ? roomBelow : roomAbove;
     const roomAcross = window.innerWidth - 2 * POSSIBLE_CARDS_WINDOW_MARGIN;
-    const scale = Math.min(1, room / height, roomAcross / width);
+    const scale = Math.min(
+      1,
+      room / height,
+      roomAcross / width,
+      getHandOf(anchor) === undefined ? 1 : getHandsRoom(offset) / height,
+    );
 
     const middle = anchorRect.left + anchorRect.width / 2;
     const left = Math.min(
