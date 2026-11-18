@@ -24,8 +24,18 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
   this.dispatchEvent(new dom.window.Event("close"));
 };
 
+// Nor does it play animations. A copy of a closing modal goes when its fade-out finishes.
+dom.window.HTMLElement.prototype.animate = function animate(this: HTMLElement) {
+  const animation = new dom.window.EventTarget();
+  queueMicrotask(() => {
+    animation.dispatchEvent(new dom.window.Event("finish"));
+  });
+  return animation as unknown as Animation;
+};
+
 const domGlobals = {
   document: dom.window.document,
+  getComputedStyle: dom.window.getComputedStyle.bind(dom.window),
   HTMLDialogElement,
   HTMLElement: dom.window.HTMLElement,
 };

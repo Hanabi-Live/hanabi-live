@@ -4,7 +4,7 @@
   the backdrop fades out.
 */
 #modal-dialog {
-  --modal-fade: 0.4s;
+  /* "modals.ts" sets how long the fades take ("--modal-fade"). */
   align-items: center;
   background: none;
   border: 0;
@@ -43,6 +43,17 @@
 
 @starting-style {
   #modal-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* The modal fades in with the backdrop. When it closes, a copy of it fades out (see "modals.ts"). */
+#modal-dialog > .modal {
+  transition: opacity var(--modal-fade);
+}
+
+@starting-style {
+  #modal-dialog[open] > .modal {
     opacity: 0;
   }
 }

@@ -35,6 +35,12 @@ const MESSAGE_MODAL_ID = "message-modal";
 const PROMPT_MODAL_ID = "prompt-modal";
 export const EMOJI_MODAL_ID = "emoji-modal";
 
+/**
+ * How long the modal and the dimming of the page behind it take to fade in and out, in
+ * milliseconds. With the "Reduced motion" setting, they show and go at once.
+ */
+const MODAL_FADE_MILLISECONDS = 400;
+
 const modalDialog = getModalDialog();
 const modalsContainer = getHtmlElement("#modals-container");
 
@@ -312,6 +318,8 @@ export function closeModals(): void {
     store.dispatch(emojiPickerClosed());
   }
   if (currentModal !== undefined) {
+    // The modal's content goes now, so a copy of it fades out with the dimming of the page.
+    fadeOutModalCopy(currentModal);
     currentModal.classList.add("hidden");
     modalsContainer.append(currentModal);
     currentModal = undefined;
@@ -354,6 +362,58 @@ function showModal(selector: string, allowClose: boolean, ready?: () => void) {
   element.classList.add("modal");
   element.classList.remove("hidden");
   modalDialog.append(element);
+  setModalFade();
   modalDialog.showModal();
   ready?.();
+}
+
+function getModalFadeMilliseconds(): number {
+  return store.getState().session.settings.reducedMotion
+    ? 0
+    : MODAL_FADE_MILLISECONDS;
+}
+
+/**
+ * Sets how long the modal fades, which the stylesheet reads. The setting can change at any time.
+ */
+function setModalFade() {
+  modalDialog.style.setProperty(
+    "--modal-fade",
+    `${getModalFadeMilliseconds()}ms`,
+  );
+}
+
+/**
+ * Leaves a copy of a modal that is about to close, which fades out in the dialog while the dialog's
+ * backdrop fades out. The copy cannot be clicked or focused, and it has no IDs, so that the page
+ * does not find it instead of the modal.
+ */
+function fadeOutModalCopy(modal: HTMLElement) {
+  setModalFade();
+  const duration = getModalFadeMilliseconds();
+  if (duration === 0 || !modalDialog.open) {
+    return;
+  }
+
+  const copy = modal.cloneNode(true) as HTMLElement;
+  for (const element of [copy, ...copy.querySelectorAll("[id]")]) {
+    element.removeAttribute("id");
+  }
+  copy.setAttribute("aria-hidden", "true");
+  copy.setAttribute("inert", "");
+  copy.style.pointerEvents = "none";
+  copy.scrollTop = modal.scrollTop;
+  modalDialog.append(copy);
+
+  const opacity = Number(getComputedStyle(modal).opacity);
+  const animation = copy.animate([{ opacity }, { opacity: 0 }], {
+    duration,
+    easing: "ease-in",
+    fill: "forwards",
+  });
+  function remove() {
+    copy.remove();
+  }
+  animation.addEventListener("finish", remove);
+  animation.addEventListener("cancel", remove);
 }
