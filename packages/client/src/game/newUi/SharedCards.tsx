@@ -277,6 +277,55 @@ export interface DiscardView {
  * of the variant gets a column for each copy that a suit can have of it, so that no card moves when
  * another card is discarded. Cards of unknown rank go last. The rows are already in order of rank.
  */
+/**
+ * The part of a card in the discard pile that the cards after it leave uncovered, from its top-left
+ * corner, in CSS pixels. The next card in its row covers its right side, and the first row below
+ * that has a card over it covers its bottom.
+ */
+function getVisibleDiscardSize(
+  rows: ReadonlyArray<readonly DiscardView[]>,
+  columns: ReadonlyMap<CardOrder, number>,
+  rowIndex: number,
+  index: number,
+  sizes: {
+    readonly cardWidth: number;
+    readonly cardHeight: number;
+    readonly cardStep: number;
+    readonly rowStep: number;
+  },
+): { readonly width: number; readonly height: number } {
+  const { cardWidth, cardHeight, cardStep, rowStep } = sizes;
+  const row = rows[rowIndex] ?? [];
+  const card = row[index];
+  const column = card === undefined ? 0 : (columns.get(card.order) ?? 0);
+  const next = row[index + 1];
+  const width =
+    next === undefined
+      ? cardWidth
+      : Math.min(
+          cardWidth,
+          ((columns.get(next.order) ?? 0) - column) * cardStep,
+        );
+
+  let height = cardHeight;
+  for (let below = rowIndex + 1; below < rows.length; below++) {
+    const covers = (rows[below] ?? []).some(
+      (other) =>
+        Math.abs((columns.get(other.order) ?? 0) - column) * cardStep
+        < cardWidth,
+    );
+    if (covers) {
+      height = Math.min(cardHeight, (below - rowIndex) * rowStep);
+      break;
+    }
+  }
+
+  return {
+    width,
+    height,
+  };
+}
+
 function getDiscardColumns(
   rows: ReadonlyArray<readonly DiscardView[]>,
   variant: Variant,
@@ -1639,8 +1688,7 @@ export function DiscardPile({
               const moved = movedCard?.order === card.order;
               return (
                 <CardNote
-                  // The moved card goes over the cards around it, so that its outline is whole.
-                  className={`tw:shrink-0 ${moved ? "tw:relative tw:z-10" : ""}`}
+                  className="tw:shrink-0"
                   key={card.order}
                   notes={notes}
                   order={card.order}
@@ -1666,7 +1714,6 @@ export function DiscardPile({
                   >
                     <CardFace
                       colorblindMode={colorblindMode}
-                      highlighted={moved}
                       note={notes.notesHtml.has(card.order)}
                       noteUnread={notes.unreadNotes.has(card.order)}
                       rank={card.rank}
@@ -1674,6 +1721,25 @@ export function DiscardPile({
                       variant={variant}
                       width={cardWidth}
                     />
+                    {moved && (
+                      // The moved card stays under the cards that cover it, so that their ranks
+                      // still show. Its outline goes around the part of it that shows, over the
+                      // cards around it.
+                      <span
+                        aria-hidden="true"
+                        className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
+                        data-moved-card-outline
+                        style={{
+                          ...getVisibleDiscardSize(rows, columns, rowIndex, i, {
+                            cardWidth,
+                            cardHeight: height,
+                            cardStep,
+                            rowStep,
+                          }),
+                          borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                        }}
+                      />
+                    )}
                     {moved && movedCard.slot !== undefined && (
                       <SlotTab
                         cardWidth={cardWidth}
