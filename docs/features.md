@@ -545,6 +545,8 @@ additional UI elements are enabled:
 - This feature can also be used to stack multiple effects on top of each other.
   (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_
   border)
+- A "?" or "!" at the end of a special note adds its effect without brackets.
+  (e.g. "kt?" is the same as "[kt][?]", and "r3!" is the same as "[r3][!]")
 
 ### Note Shortcuts
 

@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 18th, 2026
+
+- A note such as "kt?" or "r3!" works without brackets, like "[kt][?]" or
+  "[r3][!]".
+
 ## November 17th, 2026
 
 - A lost card that lowers the maximum score no longer flashes in red in a

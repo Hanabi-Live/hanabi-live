@@ -5,6 +5,7 @@ import type {
   Variant,
 } from "@hanabi-live/game";
 import {
+  ALL_RESERVED_NOTES,
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
@@ -18,7 +19,7 @@ import {
   SPOOK_NOTES,
   UNCLUED_NOTES,
 } from "@hanabi-live/game";
-import { assertDefined } from "complete-common";
+import { assertDefined, ReadonlySet } from "complete-common";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
@@ -148,6 +149,39 @@ function getNoteKeywords(note: string): readonly string[] {
   return keywords;
 }
 
+const TRAILING_MARK_NOTES = new ReadonlySet<string>([
+  ...QUESTION_MARK_NOTES,
+  ...EXCLAMATION_MARK_NOTES,
+]);
+
+/**
+ * Splits a trailing question mark or exclamation mark off a keyword when the rest is a keyword on
+ * its own. Keywords that are not recognized stay as they are, so prose does not change.
+ */
+function splitTrailingMarks(
+  variant: Variant,
+  keywords: readonly string[],
+): readonly string[] {
+  const splitKeywords: string[] = [];
+
+  for (const keyword of keywords) {
+    const mark = keyword.at(-1);
+    const rest = keyword.slice(0, -1).trim();
+    if (
+      mark !== undefined
+      && TRAILING_MARK_NOTES.has(mark)
+      && (ALL_RESERVED_NOTES.has(rest)
+        || noteIdentity.isIdentityKeyword(variant, rest))
+    ) {
+      splitKeywords.push(rest, mark);
+    } else {
+      splitKeywords.push(keyword);
+    }
+  }
+
+  return splitKeywords;
+}
+
 function checkNoteKeywordsForMatch(
   patterns: readonly string[],
   keywords: readonly string[],
@@ -185,7 +219,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
   // We make all letters lowercase to simply the matching logic below.
   const fullNote = textAfterLastPipe.toLowerCase().trim();
 
-  const keywords = getNoteKeywords(fullNote);
+  const keywords = splitTrailingMarks(variant, getNoteKeywords(fullNote));
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
     variant,
     keywords,

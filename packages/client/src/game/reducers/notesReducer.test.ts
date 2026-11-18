@@ -2,6 +2,13 @@ import { getDefaultVariant } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { parseNote } from "./notesReducer.ts";
 
+function noteWithoutText(note: ReturnType<typeof parseNote>) {
+  return {
+    ...note,
+    text: "",
+  };
+}
+
 const VARIANT = getDefaultVariant();
 
 describe("parseNote", () => {
@@ -41,6 +48,30 @@ describe("parseNote", () => {
   ])("parses the spook keyword in %j", (text, expected) => {
     expect(parseNote(VARIANT, text).spook).toBe(expected);
   });
+
+  test.each([
+    ["kt?", "[kt][?]"],
+    ["f?", "[f][?]"],
+    ["r3!", "[r3][!]"],
+    ["R3!", "[r3][!]"],
+    ["rb23?", "[rb23][?]"],
+    ["r,!2?", "[r,!2][?]"],
+    ["[kt?]", "[kt][?]"],
+    ["prose | f?", "[f][?]"],
+  ])("%j is read like %j", (text, expanded) => {
+    expect(noteWithoutText(parseNote(VARIANT, text))).toEqual(
+      noteWithoutText(parseNote(VARIANT, expanded)),
+    );
+  });
+
+  test.each(["what?", "maybe r3?", "kt??"])(
+    "%j does not split a trailing mark",
+    (text) => {
+      const note = parseNote(VARIANT, text);
+      expect(note.knownTrash).toBe(false);
+      expect(note.possibilities).toEqual(parseNote(VARIANT, "").possibilities);
+    },
+  );
 
   test("handles a long unterminated bracket sequence", () => {
     const text = "[".repeat(100_000);

@@ -164,6 +164,21 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   };
 }
 
+/**
+ * Whether a keyword declares card identities, such as `r3`, `rb23`, or `r,!2`. The keyword must
+ * already be lowercase.
+ */
+export function isIdentityKeyword(variant: Variant, keyword: string): boolean {
+  const pattern = identityPattern(variant.identityNotePattern);
+  return keyword.split(",").every((segmentRaw) => {
+    const segment = segmentRaw.trim();
+    const positiveSegment = segment.startsWith("!")
+      ? segment.slice(1).trim()
+      : segment;
+    return positiveSegment !== "" && pattern.test(positiveSegment);
+  });
+}
+
 function identityMapToArray(
   variant: Variant,
   identityMap: ReadonlyArray<readonly boolean[]>,
