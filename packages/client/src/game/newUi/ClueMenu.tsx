@@ -154,7 +154,7 @@ export function getClueDrawerWidth(variant: Variant): number {
 const choiceSizeClass =
   "tw:h-[44px] tw:w-[44px] tw:max-w-full tw:rounded-game-control";
 
-const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
+const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. The key in the player's clue tab (see `ClueTab`)
@@ -492,7 +492,7 @@ export function ClueMenu({
                   <button
                     aria-label={color.name}
                     aria-pressed={pressed}
-                    className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
+                    className={choiceClass}
                     key={color.name}
                     onClick={() => {
                       onChooseClue(pressed ? undefined : colorClue);
@@ -504,6 +504,11 @@ export function ClueMenu({
                     }}
                     type="button"
                   >
+                    <ChoiceRing
+                      className="tw:ring-game-text"
+                      pressed={pressed}
+                      reducedMotion={reducedMotion}
+                    />
                     {symbol !== undefined && (
                       <ColorSymbolView size={CHOICE_SIZE} symbol={symbol} />
                     )}
@@ -521,13 +526,18 @@ export function ClueMenu({
                 return (
                   <button
                     aria-pressed={pressed}
-                    className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+                    className={`${choiceClass} tw:bg-game-text tw:text-card-ink`}
                     key={rank}
                     onClick={() => {
                       onChooseClue(pressed ? undefined : rankClue);
                     }}
                     type="button"
                   >
+                    <ChoiceRing
+                      className="tw:ring-clue"
+                      pressed={pressed}
+                      reducedMotion={reducedMotion}
+                    />
                     {getRankClueLabel(variant, rank)}
                   </button>
                 );
@@ -650,6 +660,33 @@ function getHiddenDrawer(menu: HTMLElement, side: DrawerSide): Keyframe {
         transform: `translateY(${-height}px)`,
         clipPath: `inset(${height}px 0 0 0)`,
       };
+}
+
+/**
+ * The ring around the clue that the player chose in the menu. It is a layer of its own, so that it
+ * fades in and out as the player changes the clue, as fast as a tooltip opens and closes.
+ */
+function ChoiceRing({
+  pressed,
+  className,
+  reducedMotion,
+}: {
+  readonly pressed: boolean;
+
+  /** The color of the ring, such as `tw:ring-clue`. */
+  readonly className: string;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:ring-3 ${className}`}
+      style={{
+        opacity: pressed ? 1 : 0,
+        transition: reducedMotion ? undefined : getOpacityTransition(pressed),
+      }}
+    />
+  );
 }
 
 /**

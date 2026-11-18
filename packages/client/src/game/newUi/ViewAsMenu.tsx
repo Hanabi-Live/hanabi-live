@@ -56,9 +56,7 @@ export function ViewAsMenu({
         aria-label={
           viewedName === undefined ? undefined : `Viewing as ${viewedName}`
         }
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:max-w-full tw:min-w-0 tw:bg-transparent ${FADE_LAYER_PARENT_CLASS} ${
-          shadowing ? "tw:ring-2 tw:ring-game-text" : ""
-        }`}
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:max-w-full tw:min-w-0 tw:bg-transparent ${FADE_LAYER_PARENT_CLASS}`}
         onClick={() => {
           setOpen(!open);
         }}
@@ -73,7 +71,7 @@ export function ViewAsMenu({
           shown={!shadowing}
         />
         <FadeLayer
-          className="tw:bg-white/20 tw:group-hover/layer:bg-white/30"
+          className="tw:bg-white/20 tw:ring-2 tw:ring-game-text tw:group-hover/layer:bg-white/30"
           reducedMotion={reducedMotion}
           shown={shadowing}
         />

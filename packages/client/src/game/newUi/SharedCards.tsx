@@ -1822,7 +1822,7 @@ export function DiscardPile({
           </div>
         ))}
       </div>
-      {zoneState === "blocked" && <NoEntrySign />}
+      {zoneState === "blocked" && <NoEntrySign reducedMotion={reducedMotion} />}
       <ZoneLabel
         reducedMotion={reducedMotion}
         state={zoneState}
@@ -2013,9 +2013,19 @@ function NoEntrySvg({
  * color of clues, because the team has too many clues to discard. It is larger than the held card,
  * so that the card does not cover it. It is in the middle of the pile, around the label.
  */
-function NoEntrySign(): React.JSX.Element {
+function NoEntrySign({
+  reducedMotion,
+}: {
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  // It fades in and out as the card moves over the pile and away.
+  const ref = useRef<HTMLDivElement>(null);
+  useFade(ref, reducedMotion);
   return (
-    <div className="tw:pointer-events-none tw:absolute tw:inset-3 tw:z-10">
+    <div
+      className="tw:pointer-events-none tw:absolute tw:inset-3 tw:z-10"
+      ref={ref}
+    >
       <NoEntrySvg className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]" />
     </div>
   );

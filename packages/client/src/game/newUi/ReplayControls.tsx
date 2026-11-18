@@ -26,7 +26,7 @@ import {
   getKeyTextColorStyle,
 } from "./FadeLayer.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
-import { getOpacityTransition, SLIDE } from "./motion.ts";
+import { getOpacityTransition, SLIDE, useFade } from "./motion.ts";
 import { HOVER_CLASS, HOVER_MILLISECONDS, KEY_CLASS } from "./surfaces.ts";
 
 const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
@@ -132,6 +132,16 @@ function Heading({
  */
 const KNOB_INSET_PX = 16;
 
+/** The shared replay leader and the turn that they show (see `Timeline`). */
+interface TimelineLeader {
+  readonly name: string;
+  readonly amLeader: boolean;
+  readonly segment: number;
+
+  /** The number of the turn that the leader shows, as players count it, if it is known. */
+  readonly turn: number | undefined;
+}
+
 /**
  * A line from the first turn to the last, with a knob on the turn on screen. Clicking it, dragging
  * along it, or turning the mouse wheel over it shows another turn. On a phone, it gets shorter, so
@@ -153,16 +163,7 @@ function Timeline({
    * A mark shows that turn, as the classic screen's white shuttle does, and clicking it follows the
    * leader again.
    */
-  readonly leader:
-    | {
-        readonly name: string;
-        readonly amLeader: boolean;
-        readonly segment: number;
-
-        /** The number of the turn that the leader shows, as players count it, if it is known. */
-        readonly turn: number | undefined;
-      }
-    | undefined;
+  readonly leader: TimelineLeader | undefined;
 
   /** Whether the knob slides to a new turn instead of moving at once, for a leader's moves. */
   readonly slide: boolean;
@@ -230,34 +231,7 @@ function Timeline({
         }}
       />
       {leader !== undefined && (
-        // Under our knob, so that our own turn stays in front. It is a bar that is taller than our
-        // knob, so that its ends show even when it is one turn away from ours. The button is wider
-        // than the bar, so that it is easy to click.
-        <button
-          aria-label={
-            leader.amLeader ? "Everyone's turn" : `${leader.name}'s turn`
-          }
-          className="tw:group/leader tw:absolute tw:-inset-y-1.5 tw:flex tw:w-5 tw:-translate-x-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:p-0"
-          onClick={() => {
-            // The leader goes back to the turn that everyone sees, and takes them along again.
-            if (leader.amLeader) {
-              replay.goToSegment(leader.segment);
-            }
-            replay.toggleSharedSegments();
-          }}
-          onPointerDown={(event) => {
-            // The timeline would show the turn under the pointer instead.
-            event.stopPropagation();
-          }}
-          ref={tooltipRef(leaderMarkTooltip(leader))}
-          style={{ left: timelineLeft(leader.segment, lastSegment) }}
-          tabIndex={-1}
-          type="button"
-        >
-          <span
-            className={`tw:h-full tw:w-3 tw:rounded-full tw:border-2 tw:border-solid tw:border-card-ink tw:bg-game-text tw:transition-transform ${HOVER_CLASS} tw:group-hover/leader:scale-115`}
-          />
-        </button>
+        <LeaderMark lastSegment={lastSegment} leader={leader} />
       )}
       <span
         className={`tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-mode)] tw:transition-transform ${HOVER_CLASS} tw:group-hover:scale-115`}
@@ -269,6 +243,52 @@ function Timeline({
         }}
       />
     </div>
+  );
+}
+
+/**
+ * The leader's turn on the timeline. It is under our knob, so that our own turn stays in front. It
+ * is a bar that is taller than our knob, so that its ends show even when it is one turn away from
+ * ours. The button is wider than the bar, so that it is easy to click. It fades in and out as we
+ * stop and start following the leader.
+ */
+function LeaderMark({
+  leader,
+  lastSegment,
+}: {
+  readonly leader: TimelineLeader;
+  readonly lastSegment: number;
+}): React.JSX.Element {
+  const ref = useRef<HTMLButtonElement | null>(null);
+  useFade(ref, store.getState().session.settings.reducedMotion);
+  const tooltip = tooltipRef(leaderMarkTooltip(leader));
+  return (
+    <button
+      aria-label={leader.amLeader ? "Everyone's turn" : `${leader.name}'s turn`}
+      className="tw:group/leader tw:absolute tw:-inset-y-1.5 tw:flex tw:w-5 tw:-translate-x-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:p-0"
+      onClick={() => {
+        // The leader goes back to the turn that everyone sees, and takes them along again.
+        if (leader.amLeader) {
+          replay.goToSegment(leader.segment);
+        }
+        replay.toggleSharedSegments();
+      }}
+      onPointerDown={(event) => {
+        // The timeline would show the turn under the pointer instead.
+        event.stopPropagation();
+      }}
+      ref={(element) => {
+        ref.current = element;
+        return tooltip(element);
+      }}
+      style={{ left: timelineLeft(leader.segment, lastSegment) }}
+      tabIndex={-1}
+      type="button"
+    >
+      <span
+        className={`tw:h-full tw:w-3 tw:rounded-full tw:border-2 tw:border-solid tw:border-card-ink tw:bg-game-text tw:transition-transform ${HOVER_CLASS} tw:group-hover/leader:scale-115`}
+      />
+    </button>
   );
 }
 
@@ -566,6 +586,7 @@ function HypotheticalHint({
 }): React.JSX.Element {
   const textRef = useRef<HTMLParagraphElement | null>(null);
   const [truncated, setTruncated] = useState(false);
+  const { reducedMotion } = store.getState().session.settings;
 
   useLayoutEffect(() => {
     const text = textRef.current;
@@ -596,11 +617,16 @@ function HypotheticalHint({
     // Along the bottom of the screen, the hint keeps the smallest width of the timeline, which it
     // takes the place of.
     <div className="tw:ml-2 tw:flex tw:w-0 tw:grow tw:not-phone:min-w-24 tw:group-data-panel/strip:min-w-0">
+      {/* A new hint is a new element, so that it fades in. */}
       <p
-        className="tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal"
+        className={`tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal ${reducedMotion ? "" : "tw:starting:opacity-0"}`}
+        key={hint}
         ref={(element) => {
           textRef.current = element;
           return tooltip(element);
+        }}
+        style={{
+          transition: reducedMotion ? undefined : getOpacityTransition(true),
         }}
       >
         {hint}

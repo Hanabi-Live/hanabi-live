@@ -886,10 +886,12 @@ function NoteBadge({
   width,
   pencil,
   unread,
+  reducedMotion,
 }: {
   readonly width: number;
   readonly pencil: boolean;
   readonly unread: boolean;
+  readonly reducedMotion: boolean;
 }): React.JSX.Element {
   const size = width * BADGE_SIZE_PER_WIDTH;
   return (
@@ -930,18 +932,20 @@ function NoteBadge({
       />
       {pencil && <Pencil />}
       {/* A spectator has not read the note since it changed. The dot has the color of the chat's
-          count of unread messages. */}
-      {unread && (
-        <circle
-          className="tw:fill-clue tw:stroke-card-ink"
-          cx={94}
-          cy={6}
-          data-note-unread
-          r={NOTE_UNREAD_DOT_RADIUS}
-          strokeWidth={1.5}
-          vectorEffect="non-scaling-stroke"
-        />
-      )}
+          count of unread messages. It fades out when the spectator reads the note. */}
+      <circle
+        className="tw:fill-clue tw:stroke-card-ink"
+        cx={94}
+        cy={6}
+        data-note-unread={unread ? true : undefined}
+        r={NOTE_UNREAD_DOT_RADIUS}
+        strokeWidth={1.5}
+        style={{
+          opacity: unread ? 1 : 0,
+          transition: reducedMotion ? undefined : getOpacityTransition(unread),
+        }}
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   );
 }
@@ -2791,6 +2795,7 @@ export function CardFace({
       {note && (
         <NoteBadge
           pencil={identityFromNote}
+          reducedMotion={reducedMotion}
           unread={noteUnread}
           width={width}
         />

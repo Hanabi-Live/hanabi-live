@@ -19,10 +19,10 @@ import { getClueLogHeight } from "./ClueLog.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
 import {
-  getOpacityTransition,
   getVisibilityTransition,
   SLIDE,
   SLIDE_BACK,
+  useFade,
 } from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
@@ -252,15 +252,18 @@ function OutOf({
   value,
   max,
   maxStyle,
-  fadesIn = false,
+  fades = false,
   reserve = false,
 }: {
   readonly value: React.ReactNode;
   readonly max: number | string;
   readonly maxStyle?: React.CSSProperties;
 
-  /** Whether the maximum fades in when it appears, such as the last turn when a replay starts. */
-  readonly fadesIn?: boolean;
+  /**
+   * Whether the maximum fades in when it appears and out when it goes, such as the last turn when a
+   * replay starts and ends.
+   */
+  readonly fades?: boolean;
 
   /**
    * Whether this is an invisible copy that holds the space of the value. The animations and the
@@ -268,17 +271,17 @@ function OutOf({
    */
   readonly reserve?: boolean;
 }): React.JSX.Element {
+  const maxRef = useRef<HTMLSpanElement>(null);
+  useFade(maxRef, !fades);
   return (
     <>
       {value}{" "}
       {/* The maximum score pops when it drops (see "scoreMotion.ts"). A transform needs a box. */}
       <span
-        className={`tw:inline-block tw:font-medium tw:text-game-muted ${fadesIn ? "tw:starting:opacity-0" : ""}`}
+        className="tw:inline-block tw:font-medium tw:text-game-muted"
         data-out-of-max={reserve ? undefined : ""}
-        style={{
-          ...maxStyle,
-          ...(fadesIn && { transition: getOpacityTransition(true) }),
-        }}
+        ref={maxRef}
+        style={maxStyle}
       >
         / {max}
       </span>
@@ -524,16 +527,33 @@ function useReplayDrawer(
   closing: boolean,
   onClosed: () => void,
   edgeRises: boolean,
+  mode: ScreenMode | undefined,
   reducedMotion: boolean,
 ) {
   const wasOpen = useRef(open);
   const wasClosing = useRef(closing);
+  const wasMode = useRef(mode);
   useLayoutEffect(() => {
     const opened = open && !wasOpen.current;
     const closed = closing && !wasClosing.current;
+    const modeChanged = mode !== wasMode.current;
     wasOpen.current = open;
     wasClosing.current = closing;
+    wasMode.current = mode;
     const group = controls.current;
+
+    // When a hypothetical starts or ends, the controls of the other mode fade in where the others
+    // were, as in the bar along the bottom (see "useBarControlsFade").
+    if (open && !opened && modeChanged && !reducedMotion && group !== null) {
+      const animation = group.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: OPEN_DURATION_IN_MILLISECONDS,
+        easing: "ease-out",
+      });
+      return () => {
+        animation.cancel();
+      };
+    }
+
     if (
       reducedMotion
       || footer === null
@@ -632,7 +652,16 @@ function useReplayDrawer(
         animation.cancel();
       }
     };
-  }, [open, closing, onClosed, edgeRises, reducedMotion, footer, controls]);
+  }, [
+    open,
+    closing,
+    onClosed,
+    edgeRises,
+    mode,
+    reducedMotion,
+    footer,
+    controls,
+  ]);
 }
 
 /** How far the replay controls in the bar along the bottom rise as they fade in, in CSS pixels. */
@@ -1214,6 +1243,7 @@ export function StatusStrip({
     panel && closingControls !== undefined,
     closeControls,
     !tabbed,
+    mode,
     reducedMotion,
   );
   useBarControlsFade(
@@ -1274,7 +1304,7 @@ export function StatusStrip({
               {lastTurn === undefined ? (
                 turn
               ) : (
-                <OutOf fadesIn={!reducedMotion} max={lastTurn} value={turn} />
+                <OutOf fades={!reducedMotion} max={lastTurn} value={turn} />
               )}
             </span>
           </span>

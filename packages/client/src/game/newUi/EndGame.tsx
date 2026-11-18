@@ -43,9 +43,7 @@ export function EndGameMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:bg-transparent ${FADE_LAYER_PARENT_CLASS} ${
-          voted ? "tw:ring-2 tw:ring-critical" : ""
-        }`}
+        className={`${BOTTOM_BAR_BUTTON_CLASS} ${MENU_BUTTON_CLASS} tw:bg-transparent ${FADE_LAYER_PARENT_CLASS}`}
         onClick={() => {
           setOpen(!open);
         }}
@@ -58,7 +56,7 @@ export function EndGameMenu({
           shown={!voted}
         />
         <FadeLayer
-          className="tw:bg-critical/20 tw:group-hover/layer:bg-critical/30"
+          className="tw:bg-critical/20 tw:ring-2 tw:ring-critical tw:group-hover/layer:bg-critical/30"
           reducedMotion={reducedMotion}
           shown={voted}
         />

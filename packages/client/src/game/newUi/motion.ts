@@ -51,6 +51,7 @@ const COPY_HIDDEN_ATTRIBUTES = [
   "id",
   "data-card-order",
   "data-card-place",
+  "data-out-of-max",
 ] as const;
 
 /**
@@ -77,8 +78,9 @@ export function fadeOutCopy(
   for (const part of copy.querySelectorAll("[role]")) {
     part.removeAttribute("role");
   }
-  // The page finds some elements by these attributes, such as the chat's messages by their IDs, and
-  // the cards that move by their order (see "cardMotion.ts"). It must not find the copy.
+  // The page finds some elements by these attributes, such as the chat's messages by their IDs, the
+  // cards that move by their order (see "cardMotion.ts"), and the maximum score that pops (see
+  // "scoreMotion.ts"). It must not find the copy.
   for (const attribute of COPY_HIDDEN_ATTRIBUTES) {
     copy.removeAttribute(attribute);
     for (const part of copy.querySelectorAll(`[${CSS.escape(attribute)}]`)) {
