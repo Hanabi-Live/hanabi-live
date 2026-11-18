@@ -169,6 +169,9 @@ import { useQueuedMove } from "./useQueuedMove.ts";
 /** The space on each side of the table in the phone layout. */
 const PHONE_SIDE_PADDING = "0.75em";
 
+/** The space between the play stacks, the hands, and the discard pile in the phone layout. */
+const PHONE_TABLE_GAP = 16;
+
 /**
  * The bar moves into the panel of the right column when the hand cards would be narrower than this
  * with the bar (see "barRef"). It is the width that the check finds for a five-player game on a
@@ -959,18 +962,23 @@ export function GameScreen({
       nameWidth,
       stacked ? NAME_COLUMN_MAX_WIDTH.MIN : wideRoom.nameColumnMaxWidth,
     ) + (tapToMove ? EMPATHY_TOGGLE_SPACE : 0);
-  // In the phone layout, the page scrolls, and the hands fit in the height of the table on the
-  // screen, with the same space below them as above them.
+  // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
+  // rest of the height of the table on the screen, with the same space below them as above the
+  // stacks.
+  const phoneTableHeight = tableSize.height - 2 * TABLE_TOP_PADDING.STACKED;
   const handsHeight = stacked
-    ? tableSize.height - 2 * TABLE_TOP_PADDING.STACKED
+    ? phoneTableHeight - playAreaSize.height - PHONE_TABLE_GAP
     : handsSize.height;
   const handsWidth = stacked
     ? handsSize.width
     : getWideHandsWidth(rowWidth, wideRoom);
-  function getHandCardWidthFor(columnWidth: number | undefined) {
+  function getHandCardWidthFor(
+    columnWidth: number | undefined,
+    height = handsHeight,
+  ) {
     return getHandCardWidth(
       handsWidth,
-      handsHeight,
+      height,
       options.numPlayers,
       getCardsPerHand(options),
       columnWidth,
@@ -978,6 +986,16 @@ export function GameScreen({
       stacked,
     );
   }
+  // In the phone layout, the cards on the table are no wider than the hand cards would be without
+  // the play stacks above them. This keeps the stacks short, so that more hands fit below them.
+  // (The hands without the stacks are used, since the size of the stacks changes the room for the
+  // hands.)
+  const phoneTableCardMaxWidth = stacked
+    ? Math.max(
+        getHandCardWidthFor(nameColumnWidth, phoneTableHeight),
+        getHandCardWidthFor(undefined, phoneTableHeight),
+      )
+    : undefined;
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
     const widthWithNamesAbove = getHandCardWidthFor(undefined);
@@ -1001,11 +1019,14 @@ export function GameScreen({
   // Beside the hands, the play area and the discard pile start as low as the hands do, so that the
   // tops of the columns line up.
   const columnTopPadding = stacked ? 0 : handsTopPadding;
-  const tableCardWidth = getTableCardWidth(
-    playAreaSize.width,
-    playAreaSize.height - columnTopPadding,
-    variant.suits.length,
-    stacked,
+  const tableCardWidth = Math.min(
+    getTableCardWidth(
+      playAreaSize.width,
+      playAreaSize.height - columnTopPadding,
+      variant.suits.length,
+      stacked,
+    ),
+    phoneTableCardMaxWidth ?? Infinity,
   );
 
   let playZoneState: ZoneState = "idle";
@@ -1343,7 +1364,7 @@ export function GameScreen({
         />
         <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
-            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:gap-4 tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
+            className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
             style={
               {
@@ -1352,6 +1373,7 @@ export function GameScreen({
                 paddingTop: stacked
                   ? TABLE_TOP_PADDING.STACKED
                   : TABLE_TOP_PADDING.WIDE,
+                ...(stacked && { rowGap: PHONE_TABLE_GAP }),
                 ...(!stacked && {
                   paddingInline: wideRoom.tableSidePadding,
                   columnGap: wideRoom.tableColumnGap,
@@ -1455,7 +1477,7 @@ export function GameScreen({
             {/* In the phone layout, the hands keep room on their left for the clue rail, which
                 runs beside them (see "Hands.tsx"). The screen's padding is part of that room. */}
             <div
-              className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:order-first tw:phone:ml-(--clue-rail-margin) tw:phone:flex-none"
+              className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:ml-(--clue-rail-margin) tw:phone:flex-none"
               style={
                 {
                   maxWidth: stacked ? undefined : wideRoom.handsColumnMaxWidth,
