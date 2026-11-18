@@ -482,10 +482,10 @@ export interface MovedCard {
 }
 
 /**
- * The note after the slot on a moved card's tab, as in the action log: "blind" for a card that was
- * played or misplayed without a clue, and "clued" for a discarded card that had a clue.
+ * The note after the slot on a moved card's tab: "misplayed" for a misplayed card, "blind" for a
+ * card that was played without a clue, and "clued" for a discarded card that had a clue.
  */
-export type MovedCardLabel = "blind" | "clued";
+export type MovedCardLabel = "misplayed" | "blind" | "clued";
 
 /** The height of the tab on a moved card, for each CSS pixel of the card's width. */
 const SLOT_TAB_HEIGHT_PER_WIDTH = 0.3;
@@ -498,8 +498,8 @@ const SLOT_TAB_WINDOW_MARGIN = 2;
 
 /**
  * The tab on the top edge of a moved card's outline, which names the slot that the card left, and
- * says "(blind)" or "(clued)" when the move was unusual, as the action log does. It is white like
- * the outline, so that the two read as one shape.
+ * says "(misplayed)", "(blind)", or "(clued)" when the move was unusual. It is white like the
+ * outline, so that the two read as one shape.
  */
 function SlotTab({
   slot,

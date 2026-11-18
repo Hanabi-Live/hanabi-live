@@ -475,9 +475,10 @@ export interface ShownMove {
   readonly slot: number | undefined;
 
   /**
-   * What the tab on the card adds after the slot: "blind" for a card that was played or misplayed
-   * without a clue on it, and "clued" for a discarded card that had a clue on it. Playing a clued
-   * card and discarding an unclued card are the normal moves, so they add nothing.
+   * What the tab on the card adds after the slot: "misplayed" for a misplayed card, "blind" for a
+   * card that was played without a clue on it, and "clued" for a discarded card that had a clue on
+   * it. Playing a clued card and discarding an unclued card are the normal moves, so they add
+   * nothing.
    */
   readonly label: MovedCardLabel | undefined;
 }
@@ -528,10 +529,12 @@ export function getMoveForTurn(state: State): ShownMove | undefined {
     order: card.order,
     player,
     slot: getCardSlot(card.order, hand),
-    label: getMovedCardLabel(
-      card.segmentPlayed === lastSegment || card.isMisplayed,
-      isCardClued(previousCard),
-    ),
+    label: card.isMisplayed
+      ? "misplayed"
+      : getMovedCardLabel(
+          card.segmentPlayed === lastSegment,
+          isCardClued(previousCard),
+        ),
   };
 }
 
