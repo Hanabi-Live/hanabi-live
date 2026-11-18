@@ -26,11 +26,7 @@ import {
   describeCard,
   getClueTokenSize,
 } from "./Card.tsx";
-import {
-  getPointerType,
-  isDragClick,
-  stopLongTouchMenu,
-} from "./cardClicks.ts";
+import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
@@ -199,8 +195,7 @@ interface HandsProps {
 
   /**
    * The card whose menu shows (see `CardMenu`). A tap on a card in a hand opens it, since a touch
-   * screen has no hover and cannot hold a hand down. A key opens it on a card that the viewer can
-   * move.
+   * screen has no hover. A key opens it on a card that the viewer can move.
    */
   readonly menuCard: CardOrder | undefined;
   readonly onCardTap: (order: CardOrder) => void;
@@ -219,7 +214,7 @@ interface HandsProps {
 
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
-   * player. A hand shows it while the viewer holds the mouse button down on it, or after the viewer
+   * player. A hand shows it while the viewer holds the pointer down on it, or after the viewer
    * turns it on from the menu of one of its cards (`onToggleEmpathy`), until they turn it off.
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
@@ -1099,9 +1094,9 @@ function hasMenuItems(
 }
 
 /**
- * The menu of a card in a hand. It holds what a touch screen cannot do with hover or by holding a
- * hand down: playing or discarding the card (`movable`), showing its holder's view of their hand,
- * opening its bubble of possible cards, and showing its notes.
+ * The menu of a card in a hand. It holds what a touch screen cannot do with hover: playing or
+ * discarding the card (`movable`), showing its holder's view of their hand, opening its bubble of
+ * possible cards, and showing its notes.
  */
 function CardMenu({
   order,
@@ -1252,9 +1247,6 @@ function MovableCard({
             props.onCardTap(order);
           }
         }}
-        onContextMenu={(event) => {
-          stopLongTouchMenu(event, props.stacked);
-        }}
         onPointerDown={(event) => {
           props.onCardPointerDown(event, order);
         }}
@@ -1277,8 +1269,8 @@ function MovableCard({
 
 /**
  * A card in a hand that the viewer cannot play or discard now. A tap opens its menu, when it has
- * anything in it (see `CardMenu`). The mouse has hover and can hold the hand down instead, and
- * speedrun clicks make moves at once.
+ * anything in it (see `CardMenu`). The mouse has hover instead, and speedrun clicks make moves at
+ * once.
  */
 function TappableCard({
   order,
@@ -1613,9 +1605,8 @@ function Hand({
   const chip = <NameChip look={look} seat={seat} />;
 
   // Holding the pointer down on a player's cards shows their view of them until it lifts, as on the
-  // classic screen. On the viewer's own hand, it shows the hand without the viewer's notes. While
-  // editing cards, a press picks the card to change instead. Only the mouse does it: a touch on a
-  // card drags it or opens its menu, which shows the view instead.
+  // classic screen. A long touch does it too. On the viewer's own hand, it shows the hand without
+  // the viewer's notes. While editing cards, a press picks the card to change instead.
   const empathyHold = !editing && !props.speedrunClicks;
   const heldRef = useRef(false);
   function endHold() {
@@ -1724,7 +1715,6 @@ function Hand({
           // screen.
           if (
             !empathyHold
-            || event.pointerType !== "mouse"
             || event.button !== 0
             || event.shiftKey
             || event.altKey

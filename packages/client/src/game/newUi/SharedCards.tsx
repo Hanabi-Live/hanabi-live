@@ -35,7 +35,7 @@ import {
   PossibleCardsBubble,
   RANK_BOTTOM_PER_WIDTH,
 } from "./Card.tsx";
-import { isDragClick, stopLongTouchMenu } from "./cardClicks.ts";
+import { isDragClick } from "./cardClicks.ts";
 import {
   DISCARD_PLACE_PREFIX,
   HOLE_PLACE,
@@ -1359,9 +1359,6 @@ function Deck({
               if (!isDragClick(event, play.phoneLayout)) {
                 play.onTap();
               }
-            }}
-            onContextMenu={(event) => {
-              stopLongTouchMenu(event, play.phoneLayout);
             }}
             onPointerDown={play.onPointerDown}
             onPointerEnter={onPointerEnter}

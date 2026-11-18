@@ -321,21 +321,3 @@ export function isDragClick(
 ): boolean {
   return isDragPointer(getPointerType(event), phoneLayout);
 }
-
-/**
- * Stops the menu that a long touch opens on a card that a touch drags. The browser's menu, or the
- * card's note box, would stop the drag. A double tap edits the note instead (see
- * "useCardInput.ts").
- */
-export function stopLongTouchMenu(
-  event: React.MouseEvent,
-  phoneLayout: boolean,
-): void {
-  const pointerType = getPointerType(event);
-  if (pointerType === "mouse" || !isDragPointer(pointerType, phoneLayout)) {
-    return;
-  }
-
-  event.preventDefault();
-  event.stopPropagation();
-}

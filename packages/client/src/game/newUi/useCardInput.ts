@@ -10,7 +10,11 @@ import {
   RIGHT_MOUSE_BUTTON,
 } from "../ui/constants.ts";
 import type { CardClickContext, CardCommand } from "./cardClicks.ts";
-import { getCardClickCommand, getSpeedrunCommand } from "./cardClicks.ts";
+import {
+  getCardClickCommand,
+  getPointerType,
+  getSpeedrunCommand,
+} from "./cardClicks.ts";
 import { isGameKey } from "./useHotkeys.ts";
 
 /** What the screen shows now, which each render replaces. */
@@ -37,6 +41,9 @@ export interface HoveredCard {
  * (`data-card-order`), or a stack base that takes notes (`data-stack-base`).
  */
 const CARD_SELECTOR = "[data-card-order], [data-stack-base]";
+
+/** The elements that a press shows something on while it is held, such as a player's view. */
+const HOLD_SELECTOR = `${CARD_SELECTOR}, [data-deck]`;
 
 /** The card that an element is part of, if any. */
 function getCardAt(target: EventTarget | null): CardOrder | undefined {
@@ -207,6 +214,19 @@ export function useCardInput(
     },
 
     onContextMenuCapture: (event) => {
+      // A long touch on a card does what holding the mouse button down does, not what a right-click
+      // does, since players know it from the mouse. A double tap edits the note instead.
+      const pointerType = getPointerType(event);
+      if (
+        (pointerType === "touch" || pointerType === "pen")
+        && event.target instanceof Element
+        && event.target.closest(HOLD_SELECTOR) !== null
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       if (speedrunRightClickRef.current) {
         speedrunRightClickRef.current = false;
         event.preventDefault();
