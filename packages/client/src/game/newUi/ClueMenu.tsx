@@ -285,7 +285,14 @@ export function ClueMenu({
       if (menu === null || closingSide === undefined) {
         return;
       }
-      const { clipPath, transform } = getComputedStyle(menu);
+      // A menu that has slid out has no cut, which cannot be animated, so it starts from the cut
+      // that it ended its slide out with.
+      const style = getComputedStyle(menu);
+      const clipPath =
+        style.clipPath === "none"
+          ? getShownDrawer(closingSide).clipPath
+          : style.clipPath;
+      const { transform } = style;
       const contentIndex = [...menu.children].findIndex(
         (child) => child === content,
       );
@@ -336,10 +343,7 @@ export function ClueMenu({
           measuredSide,
           measuredSide === "right" ? reach : undefined,
         ),
-        {
-          transform: "none",
-          clipPath: "inset(0 0 0 0)",
-        },
+        getShownDrawer(measuredSide),
       ],
       SLIDE,
     );
@@ -668,6 +672,14 @@ const CONTENT_FADE_OUT = [
 const tabReaches = new WeakMap<Element, number>();
 
 /**
+ * How far a drawer that slides out of the hand (the clue tab or the clue menu) shows inside the
+ * hand's edge while it slides, in CSS pixels. Its cut is inside the hand, on the hand's own dark
+ * edge, not on the edge itself. When the game screen is scaled, the edge falls between two pixels,
+ * and a cut there leaves a line of half-clear pixels, through which the table shows.
+ */
+const JOINT_OVERLAP = 1;
+
+/**
  * How the clue menu looks before it slides out of the hand, behind the hand's edge. When `reach` is
  * given, that much of the menu already shows past the hand's edge.
  */
@@ -681,12 +693,23 @@ function getHiddenDrawer(
   return side === "right"
     ? {
         transform: `translateX(${-hidden}px)`,
-        clipPath: `inset(0 0 0 ${hidden}px)`,
+        clipPath: `inset(0 0 0 ${hidden - JOINT_OVERLAP}px)`,
       }
     : {
         transform: `translateY(${-height}px)`,
-        clipPath: `inset(${height}px 0 0 0)`,
+        clipPath: `inset(${height - JOINT_OVERLAP}px 0 0 0)`,
       };
+}
+
+/** How the clue menu looks when it has slid out of the hand (see `JOINT_OVERLAP`). */
+function getShownDrawer(side: DrawerSide): Keyframe & { clipPath: string } {
+  return {
+    transform: "none",
+    clipPath:
+      side === "right"
+        ? `inset(0 0 0 ${-JOINT_OVERLAP}px)`
+        : `inset(${-JOINT_OVERLAP}px 0 0 0)`,
+  };
 }
 
 /**
@@ -960,17 +983,14 @@ export function ClueTab({
             }
           : {
               transform: `translateX(${-width}px)`,
-              clipPath: `inset(0 0 0 ${width}px)`,
+              clipPath: `inset(0 0 0 ${width - JOINT_OVERLAP}px)`,
             },
         below
           ? {
               transform: "none",
               opacity: 1,
             }
-          : {
-              transform: "none",
-              clipPath: "inset(0 0 0 0)",
-            },
+          : getShownDrawer("right"),
       ];
     },
     open,
