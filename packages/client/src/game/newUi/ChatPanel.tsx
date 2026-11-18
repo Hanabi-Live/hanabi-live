@@ -15,7 +15,7 @@ import {
   getChatWindow,
   popOutChat,
 } from "./chatWindow.ts";
-import { fadeOutCopy } from "./fade.ts";
+import { fadeOutCopy } from "./motion.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /**

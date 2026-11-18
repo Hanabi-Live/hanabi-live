@@ -1,6 +1,7 @@
 // A tooltip that opens beside an anchor element. The bubble is a manual popover, so it is drawn in
 // the top layer above every other element, including modals.
 
+import { store } from "./store.ts";
 import { getVisibleEdge, pixels } from "./visibleEdge.ts";
 
 /**
@@ -23,6 +24,22 @@ export const OPEN_DURATION_IN_MILLISECONDS = 120;
 
 /** How long a tooltip takes to fade out. It is quicker than opening, to get out of the way. */
 export const CLOSE_DURATION_IN_MILLISECONDS = 80;
+
+/**
+ * How long tooltips take to fade in and out, in milliseconds. With the "Reduced motion" setting,
+ * they open and close at once.
+ */
+function getFadeDurations(): { open: number; close: number } {
+  return store.getState().session.settings.reducedMotion
+    ? {
+        open: 0,
+        close: 0,
+      }
+    : {
+        open: OPEN_DURATION_IN_MILLISECONDS,
+        close: CLOSE_DURATION_IN_MILLISECONDS,
+      };
+}
 
 /** How far a tooltip slides toward its anchor as it opens. */
 export const SLIDE_IN_PIXELS = 4;
@@ -134,14 +151,6 @@ export class Tooltip {
     this.bubble.classList.toggle(
       "tooltip-interactive",
       options.interactive === true,
-    );
-    this.bubble.style.setProperty(
-      "--tooltip-open-duration",
-      `${OPEN_DURATION_IN_MILLISECONDS}ms`,
-    );
-    this.bubble.style.setProperty(
-      "--tooltip-close-duration",
-      `${CLOSE_DURATION_IN_MILLISECONDS}ms`,
     );
     this.bubble.style.setProperty("--tooltip-slide", `${SLIDE_IN_PIXELS}px`);
     this.bubble.style.setProperty(
@@ -374,6 +383,16 @@ export class Tooltip {
     );
 
     if (!this.isOpen) {
+      // The "Reduced motion" setting leaves out the fades. It can change while the page is open.
+      const durations = getFadeDurations();
+      this.bubble.style.setProperty(
+        "--tooltip-open-duration",
+        `${durations.open}ms`,
+      );
+      this.bubble.style.setProperty(
+        "--tooltip-close-duration",
+        `${durations.close}ms`,
+      );
       this.bubble.showPopover();
       watchAnchor(this);
     }
@@ -420,7 +439,7 @@ export class Tooltip {
       this.closingTimeout = undefined;
       this.bubble.remove();
       this.showContent();
-    }, CLOSE_DURATION_IN_MILLISECONDS);
+    }, getFadeDurations().close);
   }
 
   /**

@@ -6,6 +6,7 @@ import type { RefObject } from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { ArrowTarget } from "../highlightArrow.ts";
 import { findArrowAnchor, measureArrowAnchor } from "./arrowAnchor.ts";
+import { SLIDE } from "./motion.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /** The size of the arrow's box, in the screen's CSS pixels. Its outline fits inside it. */
@@ -33,9 +34,6 @@ const TIP_GAP = 2;
 
 /** The least space between the arrow and the top of the screen, in the screen's CSS pixels. */
 const SCREEN_EDGE_MARGIN = 4;
-
-/** How long the arrow takes to drop into place when it appears, in milliseconds. */
-const APPEAR_MILLISECONDS = 280;
 
 /**
  * Whether the middle of the target is scrolled out of a box that it scrolls in, such as the table
@@ -171,10 +169,7 @@ export function HighlightArrow({
           transform: "none",
         },
       ],
-      {
-        duration: APPEAR_MILLISECONDS,
-        easing: "cubic-bezier(0.2, 0.8, 0.3, 1)",
-      },
+      SLIDE,
     );
     return () => {
       drop.cancel();

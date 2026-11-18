@@ -30,19 +30,16 @@ import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
-import {
-  CLUE_DRAWER_HAND_CLASS,
-  ClueTab,
-  ClueTabHandLayer,
-} from "./ClueMenu.tsx";
+import { ClueHandLayer, ClueTab } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
+import { useFade } from "./motion.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
-import { PAUSE_PANEL_FADE_MILLISECONDS } from "./PausePanel.tsx";
 import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
 import {
+  HOVER_CLASS,
   KEY_CLASS,
   MENU_ICON_CLASS,
   MENU_ICON_ITEM_CLASS,
@@ -1231,7 +1228,7 @@ function MovableCard({
         // it up. Pressed, it is picked up (see "HeldCardGhost.tsx"). The shadow is a filter, so
         // that it follows a clued card, which is drawn raised. A touch that lets go of the card
         // where it pressed it opens the menu (see "useCardDrag.ts").
-        className="tw:relative tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[120ms] tw:ease-out tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]"
+        className={`tw:relative tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] ${HOVER_CLASS} tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]`}
         onClick={(event) => {
           if (!isDragClick(event, props.stacked)) {
             props.onCardTap(order);
@@ -1613,8 +1610,6 @@ function Hand({
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
     boxClass = "tw:bg-game-turn/10 tw:inset-ring-3 tw:inset-ring-game-turn";
-  } else if (chosen) {
-    boxClass = CLUE_DRAWER_HAND_CLASS;
   } else if (seat.you) {
     boxClass = "tw:bg-game-zone tw:inset-ring-1 tw:inset-ring-game-line";
   }
@@ -1676,10 +1671,11 @@ function Hand({
             : NAME_GAP,
       }}
     >
-      {canClueSeat && !chosen && !props.stacked && (
-        <ClueTabHandLayer
+      {/* In the phone layout, the tab sits inside the hand, so only the menu colors it. */}
+      {canClueSeat && (
+        <ClueHandLayer
           reducedMotion={props.reducedMotion}
-          shown={showsClueTab}
+          shown={chosen || (showsClueTab && !props.stacked)}
         />
       )}
       {/* Beside the cards, the clock goes under the name, so that it does not take width from the
@@ -1794,21 +1790,14 @@ function Hand({
         </span>
       )}
       {!seat.you && props.empathyToggled.has(seat.playerIndex) && (
-        // A hand that shows its player's view after the viewer turned it on in a card's menu says
-        // so on its top edge, where a tap turns it off again.
-        <button
-          aria-label={`Hide ${seat.name}'s view`}
-          className="tw:absolute tw:top-0 tw:right-3 tw:z-10 tw:flex tw:max-w-[60%] tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-full tw:border-0 tw:bg-game-panel tw:py-0.5 tw:pr-2.5 tw:pl-1.5 tw:text-[13px] tw:font-semibold tw:text-game-text tw:shadow-md tw:ring-1 tw:ring-game-line tw:hover:brightness-125"
-          data-empathy-shown={seat.playerIndex}
-          onClick={() => {
+        <ViewBadge
+          name={seat.name}
+          onHide={() => {
             props.onToggleEmpathy(seat.playerIndex);
           }}
-          type="button"
-        >
-          <BrainIcon className="tw:size-5 tw:shrink-0" />
-          <span className="tw:truncate">{seat.name}&apos;s view</span>
-          <i aria-hidden="true" className="fas fa-times tw:text-game-muted" />
-        </button>
+          playerIndex={seat.playerIndex}
+          reducedMotion={props.reducedMotion}
+        />
       )}
       {props.sendingClueTarget === seat.playerIndex && (
         <SendingMark
@@ -1835,6 +1824,40 @@ function Hand({
       )}
       {chosen && props.clueMenu}
     </div>
+  );
+}
+
+/**
+ * The badge of a hand that shows its player's view after the viewer turned it on in a card's menu.
+ * It sits on the hand's top edge, where a tap turns the view off again. It fades in and out as the
+ * cards under it change (see `ViewFade`).
+ */
+function ViewBadge({
+  name,
+  playerIndex,
+  onHide,
+  reducedMotion,
+}: {
+  readonly name: string;
+  readonly playerIndex: PlayerIndex;
+  readonly onHide: () => void;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const ref = useRef<HTMLButtonElement>(null);
+  useFade(ref, reducedMotion);
+  return (
+    <button
+      aria-label={`Hide ${name}'s view`}
+      className="tw:absolute tw:top-0 tw:right-3 tw:z-10 tw:flex tw:max-w-[60%] tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-full tw:border-0 tw:bg-game-panel tw:py-0.5 tw:pr-2.5 tw:pl-1.5 tw:text-[13px] tw:font-semibold tw:text-game-text tw:shadow-md tw:ring-1 tw:ring-game-line tw:hover:brightness-125"
+      data-empathy-shown={playerIndex}
+      onClick={onHide}
+      ref={ref}
+      type="button"
+    >
+      <BrainIcon className="tw:size-5 tw:shrink-0" />
+      <span className="tw:truncate">{name}&apos;s view</span>
+      <i aria-hidden="true" className="fas fa-times tw:text-game-muted" />
+    </button>
   );
 }
 
@@ -1872,7 +1895,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
       style={
         props.hidden === true && !props.reducedMotion
           ? {
-              transition: `visibility 0s linear ${PAUSE_PANEL_FADE_MILLISECONDS}ms`,
+              transition: `visibility 0s linear ${OPEN_DURATION_IN_MILLISECONDS}ms`,
             }
           : undefined
       }

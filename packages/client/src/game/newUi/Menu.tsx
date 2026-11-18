@@ -9,7 +9,7 @@ import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
-import { fadeOutCopy } from "./fade.ts";
+import { fadeOutCopy } from "./motion.ts";
 import { getScreenScale } from "./screenScale.ts";
 
 /**

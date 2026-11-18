@@ -16,9 +16,9 @@ import {
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
 import { getClueLogHeight } from "./ClueLog.tsx";
-import { DRAWER_SLIDE } from "./ClueMenu.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
+import { getVisibilityTransition, SLIDE } from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
 
@@ -431,11 +431,14 @@ function ReplayToggle({
     };
   }, [ourTurn, inReplay, reducedMotion]);
 
-  let colorClass = buttonClass;
-  if (inReplay) {
-    colorClass = ourTurn
-      ? `${BUTTON_SHAPE_CLASS} tw:bg-game-turn tw:font-bold tw:text-card-ink tw:hover:brightness-110`
-      : `${BUTTON_SHAPE_CLASS} tw:bg-game-text tw:font-bold tw:text-card-ink tw:hover:bg-white`;
+  // In the replay, the button is lit, in the color of our turn when it is our turn. Each color is a
+  // layer that fades in and out over the button, and one label fades into the other. Only opacities
+  // animate, never a color (see `useModeFade`).
+  function getFadeStyle(shown: boolean): React.CSSProperties {
+    return {
+      opacity: shown ? 1 : 0,
+      transition: reducedMotion ? undefined : getVisibilityTransition(shown),
+    };
   }
 
   return (
@@ -446,18 +449,30 @@ function ReplayToggle({
         ref={ringRef}
       />
       <button
-        className={`${colorClass} tw:relative tw:grid tw:leading-tight`}
+        className={`${buttonClass} tw:group/replay tw:relative tw:isolate tw:grid tw:leading-tight`}
         onClick={onToggle}
         type="button"
       >
         <span
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-game-text tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:group-hover/replay:bg-white"
+          style={getFadeStyle(inReplay)}
+        />
+        <span
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-game-turn tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:group-hover/replay:brightness-110"
+          style={getFadeStyle(inReplay && ourTurn)}
+        />
+        <span
           className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:[grid-area:1/1] ${inReplay ? "tw:invisible" : ""}`}
+          style={getFadeStyle(!inReplay)}
         >
           <i aria-hidden="true" className="fas fa-undo" />
           Replay
         </span>
         <span
-          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:font-bold tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
+          className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:font-bold tw:text-card-ink tw:[grid-area:1/1] ${inReplay ? "" : "tw:invisible"}`}
+          style={getFadeStyle(inReplay)}
         >
           {/* The arrow sits beside both lines, as on the lobby's "Return" buttons. */}
           <i aria-hidden="true" className="fas fa-arrow-left" />
@@ -550,9 +565,9 @@ function useReplayDrawer(
       return element.animate(
         opened ? [hidden, shown] : [shown, hidden],
         opened
-          ? DRAWER_SLIDE
+          ? SLIDE
           : {
-              ...DRAWER_SLIDE,
+              ...SLIDE,
               fill: "forwards",
             },
       );
@@ -877,7 +892,7 @@ function PanelTabs({
         style={{
           transition: reducedMotion
             ? undefined
-            : `translate ${DRAWER_SLIDE.duration}ms ${DRAWER_SLIDE.easing}`,
+            : `translate ${SLIDE.duration}ms ${SLIDE.easing}`,
         }}
       />
       {tabs.map(([name, label]) => (
@@ -1578,7 +1593,14 @@ export function StatusStrip({
 
     // The panel and the clue log share the rest of the column, one tab at a time. Both stay drawn,
     // and the hidden one is invisible, so that switching tabs keeps open menus and the log's
-    // scrolling.
+    // scrolling. One fades into the other as the highlight slides to the new tab.
+    function getTabStyle(name: PanelTab): React.CSSProperties {
+      const shown = tab === name;
+      return {
+        opacity: shown ? 1 : 0,
+        transition: reducedMotion ? undefined : getVisibilityTransition(shown),
+      };
+    }
     return (
       <footer
         className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
@@ -1596,6 +1618,7 @@ export function StatusStrip({
             className={`tw:col-start-1 tw:row-start-1 ${tab === "status" ? "" : "tw:invisible"}`}
             id={PANEL_TAB_IDS.status}
             role="tabpanel"
+            style={getTabStyle("status")}
           >
             {status}
           </div>
@@ -1603,6 +1626,7 @@ export function StatusStrip({
             className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${tab === "clues" ? "" : "tw:invisible"}`}
             id={PANEL_TAB_IDS.clues}
             role="tabpanel"
+            style={getTabStyle("clues")}
           >
             {clueLog}
           </div>

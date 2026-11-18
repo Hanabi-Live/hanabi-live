@@ -5,15 +5,13 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { OPEN_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 
 /**
  * How long the connection must stay down before the panel shows, in milliseconds. Most drops
  * recover sooner than this, and a panel that flashes for a moment would only distract.
  */
 const SHOW_DELAY_MILLISECONDS = 1000;
-
-/** How long the panel takes to appear, in milliseconds. */
-const APPEAR_MILLISECONDS = 160;
 
 /** How long one breath of the icon takes, in milliseconds. */
 const BREATHE_MILLISECONDS = 1600;
@@ -64,7 +62,7 @@ export function ReconnectingPanel({
     }
 
     const appear = panel.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: APPEAR_MILLISECONDS,
+      duration: OPEN_DURATION_IN_MILLISECONDS,
       easing: "ease-out",
     });
     const breathe = icon.animate(

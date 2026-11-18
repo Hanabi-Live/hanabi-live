@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
+import { fadeOutCopy } from "./motion.ts";
 import { KEY_CLASS } from "./surfaces.ts";
 
 /** How long the queued card takes to settle into its place when the player queues it. */
@@ -29,6 +31,22 @@ export function QueuedMove({
   readonly children?: React.ReactNode;
 }): React.JSX.Element {
   const cardRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  // When the player cancels the move, a copy of it fades out (see `fadeOutCopy`). A move that is
+  // sent goes at once, since its card moves from here to where it lands.
+  const canceledRef = useRef(false);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    return () => {
+      if (box !== null && canceledRef.current) {
+        fadeOutCopy(box, [{ opacity: 1 }, { opacity: 0 }], {
+          duration: CLOSE_DURATION_IN_MILLISECONDS,
+          easing: "ease-in",
+        });
+      }
+    };
+  }, []);
 
   // The card settles in from a little above, as if the player had just set it down.
   useEffect(() => {
@@ -62,6 +80,7 @@ export function QueuedMove({
       aria-label={text}
       className="tw:absolute tw:top-2 tw:left-1/2 tw:z-30 tw:flex tw:-translate-x-1/2 tw:flex-col tw:items-center tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-2.5 tw:shadow-[0_8px_24px_rgb(0_0_0/45%)] tw:ring-2 tw:ring-clue"
       data-queued-move
+      ref={boxRef}
       role="status"
     >
       {children !== undefined && (
@@ -76,7 +95,10 @@ export function QueuedMove({
         <button
           aria-label={cancelLabel}
           className={`tw:min-h-8 tw:w-full tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:px-3 tw:text-[14px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${KEY_CLASS}`}
-          onClick={onCancel}
+          onClick={() => {
+            canceledRef.current = !reducedMotion;
+            onCancel();
+          }}
           type="button"
         >
           Cancel

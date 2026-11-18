@@ -6,6 +6,7 @@ import { ColorSymbolView, getRankClueLabel } from "./Card.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { getColorSymbol } from "./clueMarkers.ts";
 import { onEscapeKey } from "./escapeKey.ts";
+import { fadeOutCopy, SLIDE } from "./motion.ts";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
@@ -50,20 +51,6 @@ function isSameClue(a: Clue | undefined, b: Clue): boolean {
     ? a.value.name === b.value.name
     : a?.type === "rank" && b.type === "rank" && a.value === b.value;
 }
-
-/** How a drawer slides out, such as this menu or the replay controls in the status panel. */
-export const DRAWER_SLIDE = {
-  duration: 200,
-  easing: "cubic-bezier(0.33, 1, 0.68, 1)",
-} as const;
-
-/**
- * A hand that has its clue menu open. The menu is a drawer that opens out of the hand, so the hand
- * has the menu's color, and one outline goes around both. The hand has no outline and no round
- * corners on the side where the menu opens.
- */
-export const CLUE_DRAWER_HAND_CLASS =
-  "tw:bg-game-panel tw:rounded-b-none tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)] tw:has-[>[data-clue-drawer=right]]:rounded-r-none tw:has-[>[data-clue-drawer=right]]:rounded-l-game-panel tw:has-[>[data-clue-drawer=right]]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]";
 
 /** Where the drawer opens, from the hand. */
 type DrawerSide = "right" | "below";
@@ -165,13 +152,13 @@ const choiceClass = `tw:flex tw:cursor-pointer tw:items-center tw:justify-center
 
 /**
  * The clues that the viewer can give a player. The key in the player's clue tab (see `ClueTab`)
- * opens it out of their hand, as a drawer (see `CLUE_DRAWER_HAND_CLASS`). It opens to the right of
- * the hand, so that it does not cover the other hands. The hands always leave room for it there
- * (see `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough
- * room below, its bottom lines up with the bottom of the hand instead. In the phone layout, it
- * opens below the hand, as wide as the hand. A clue that the rules do not allow, such as one that
- * touches no cards, leaves an empty well in its place, so that every clue keeps its position.
- * Clicking outside of it or pressing Escape closes it.
+ * opens it out of their hand, as a drawer (see `ClueHandLayer`). It opens to the right of the hand,
+ * so that it does not cover the other hands. The hands always leave room for it there (see
+ * `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough room
+ * below, its bottom lines up with the bottom of the hand instead. In the phone layout, it opens
+ * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
+ * no cards, leaves an empty well in its place, so that every clue keeps its position. Clicking
+ * outside of it or pressing Escape closes it.
  */
 export function ClueMenu({
   name,
@@ -276,6 +263,35 @@ export function ClueMenu({
     };
   }, [name, below]);
 
+  // When the drawer closes, a copy of it slides back behind the hand from where it is (see
+  // `fadeOutCopy`), while the hand loses the drawer's color (see `ClueHandLayer`). This runs before
+  // the cleanup below, which stops the drawer's slide out.
+  const closingSideRef = useRef<DrawerSide>(undefined);
+  useLayoutEffect(() => {
+    closingSideRef.current = reducedMotion ? undefined : measuredSide;
+  }, [measuredSide, reducedMotion]);
+  useLayoutEffect(() => {
+    const menu = ref.current;
+    return () => {
+      const closingSide = closingSideRef.current;
+      if (menu === null || closingSide === undefined) {
+        return;
+      }
+      const { clipPath, transform } = getComputedStyle(menu);
+      fadeOutCopy(
+        menu,
+        [
+          {
+            transform,
+            clipPath,
+          },
+          getHiddenDrawer(menu, closingSide),
+        ],
+        SLIDE,
+      );
+    };
+  }, []);
+
   // The drawer slides out from behind the edge of the hand, and the part that is still behind the
   // hand is cut off. The sliding only decorates.
   useLayoutEffect(() => {
@@ -283,26 +299,15 @@ export function ClueMenu({
     if (measuredSide === undefined || reducedMotion || menu === null) {
       return undefined;
     }
-    const { height, width } = measure(menu);
-    const hidden = {
-      right: {
-        transform: `translateX(${-width}px)`,
-        clipPath: `inset(0 0 0 ${width}px)`,
-      },
-      below: {
-        transform: `translateY(${-height}px)`,
-        clipPath: `inset(${height}px 0 0 0)`,
-      },
-    } as const satisfies Record<DrawerSide, Keyframe>;
     const animation = menu.animate(
       [
-        hidden[measuredSide],
+        getHiddenDrawer(menu, measuredSide),
         {
           transform: "none",
           clipPath: "inset(0 0 0 0)",
         },
       ],
-      DRAWER_SLIDE,
+      SLIDE,
     );
     return () => {
       animation.cancel();
@@ -561,6 +566,20 @@ function EmptySlot(): React.JSX.Element {
   );
 }
 
+/** How the clue menu looks before it slides out of the hand, behind the hand's edge. */
+function getHiddenDrawer(menu: HTMLElement, side: DrawerSide): Keyframe {
+  const { height, width } = measure(menu);
+  return side === "right"
+    ? {
+        transform: `translateX(${-width}px)`,
+        clipPath: `inset(0 0 0 ${width}px)`,
+      }
+    : {
+        transform: `translateY(${-height}px)`,
+        clipPath: `inset(${height}px 0 0 0)`,
+      };
+}
+
 /**
  * Plays a slide of the clue tab and of its hand forward when `open` turns on, and backward when it
  * turns off, from where the slide is. The slide holds its look at either end. When it ends after it
@@ -590,7 +609,7 @@ function useTabSlide(
       return undefined;
     }
     const animation = element.animate([...keyframesRef.current(element)], {
-      ...DRAWER_SLIDE,
+      ...SLIDE,
       fill: "both",
     });
     if (!openRef.current) {
@@ -636,15 +655,17 @@ function getLayerKeyframes(): readonly Keyframe[] {
 }
 
 /**
- * A layer behind the cards of a hand that can show its clue tab to its right. While the tab shows,
- * the layer gives the hand the color of the tab, and one outline goes around both. The layer has no
- * outline and no round corners on its right, where the tab joins it.
+ * A layer behind the cards of a hand that can show its clue tab or its clue menu. While the tab or
+ * the menu shows, the layer gives the hand their color, and one outline goes around both. The layer
+ * has no outline and no round corners on the side where they join it: its right, or its bottom when
+ * the menu opens below the hand. The menu is a drawer that opens out of the hand.
  *
- * The layer fades in and out with its opacity. Do not animate the hand's background color instead:
+ * The layer fades in and out with its opacity, as the tab and the menu slide. Do not animate the
+ * hand's background color instead:
  * Chrome 157 runs such an animation on the compositor, and then sometimes crashes the tab when the
  * hand's style changes.
  */
-export function ClueTabHandLayer({
+export function ClueHandLayer({
   shown,
   reducedMotion,
 }: {
@@ -656,7 +677,7 @@ export function ClueTabHandLayer({
   return (
     <div
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)]"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)] tw:[:has(>[data-clue-drawer=below])>&]:rounded-tr-game-panel tw:[:has(>[data-clue-drawer=below])>&]:rounded-bl-none tw:[:has(>[data-clue-drawer=below])>&]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)]"
       ref={ref}
       style={{ opacity: shown ? 1 : 0 }}
     />
@@ -704,7 +725,7 @@ export function ClueTab({
   const ref = useRef<HTMLDivElement>(null);
   // It slides out from behind the edge of the hand, as the menu does. In the phone layout, it
   // slides in a little from the right. It fades in with the color of the hand (see
-  // `ClueTabHandLayer`). When it closes, it slides back, and then it is removed.
+  // `ClueHandLayer`). When it closes, it slides back, and then it is removed.
   useTabSlide(
     ref,
     (tab) => {

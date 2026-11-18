@@ -17,6 +17,7 @@ import {
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import { store } from "../../store.ts";
 import {
   ARROW_SIZE_IN_PIXELS,
   CLOSE_DURATION_IN_MILLISECONDS,
@@ -34,7 +35,7 @@ import {
   CARD_W,
 } from "../ui/constants.ts";
 import { RANK_PATHS } from "../ui/drawStylizedRank.ts";
-import { getOpacityTransition } from "./fade.ts";
+import { getOpacityTransition } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import { getScreenScale } from "./screenScale.ts";
 import type {
@@ -1551,7 +1552,7 @@ interface PossibleCardsBubbleProps {
  * this card cannot be leaves an empty place.
  *
  * Like a tooltip, the bubble fades in as it slides toward the card, and it fades out when it
- * closes.
+ * closes, except with the "Reduced motion" setting.
  */
 export function PossibleCardsBubble({
   open,
@@ -1588,9 +1589,11 @@ export function PossibleCardsBubble({
   }
   const isShown = shownNow !== undefined;
   const [wasShown, setWasShown] = useState(isShown);
+  // The "Reduced motion" setting leaves out the fades, so the bubble goes at once.
+  const { reducedMotion } = store.getState().session.settings;
   if (isShown !== wasShown) {
     setWasShown(isShown);
-    setClosing(!isShown);
+    setClosing(!isShown && !reducedMotion);
   }
   useEffect(() => {
     if (!closing) {
@@ -1738,7 +1741,13 @@ function PossibleCardsGrid({
     const element = ref.current;
     // A bubble that closes before it shows, such as on a card that missed the pointer leaving it,
     // stays hidden.
-    if (closing || side === undefined || element === null || fadedIn.current) {
+    if (
+      closing
+      || side === undefined
+      || element === null
+      || fadedIn.current
+      || store.getState().session.settings.reducedMotion
+    ) {
       return;
     }
     fadedIn.current = true;

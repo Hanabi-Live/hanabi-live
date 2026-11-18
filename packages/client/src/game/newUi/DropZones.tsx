@@ -1,8 +1,9 @@
 import type { RefObject } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { ZoneState } from "./SharedCards.tsx";
+import { getOpacityTransition } from "./motion.ts";
 import { measure } from "./screenScale.ts";
-import { DROP_ZONE_CLASS } from "./surfaces.ts";
+import { DROP_ZONE_CLASS, WELL_SHADOW_CLASS } from "./surfaces.ts";
 
 /**
  * How long the boxes take to fade in when the player picks up a card, and to fade out when the drag
@@ -24,15 +25,34 @@ export const DISCARD_COLUMN_CLASS = "tw:z-2";
 /** The space between each box and the hands, in CSS pixels. A card dropped there goes back. */
 const HANDS_MARGIN = 16;
 
-/** The look of each box. The box under the held card has a ring in the color of clues. */
-const zoneClasses: Record<ZoneState, string> = {
-  idle: "",
-  available: DROP_ZONE_CLASS,
-  hovered: `${DROP_ZONE_CLASS} tw:inset-ring-3 tw:inset-ring-clue`,
-  // At max clues, only the discard pile itself has the dashed border.
-  unavailable: DROP_ZONE_CLASS,
-  blocked: DROP_ZONE_CLASS,
-};
+/**
+ * The ring of the box under the held card, in the color of clues. It is a layer of its own, so that
+ * it fades in and out as the card moves between the boxes. The shadow of the box's top edge falls
+ * on it. At max clues, only the discard pile itself has the dashed border.
+ */
+function ZoneLayers({
+  state,
+  reducedMotion,
+}: {
+  readonly state: ZoneState;
+  readonly reducedMotion: boolean;
+}): React.JSX.Element {
+  const shown = state === "hovered";
+  return (
+    <>
+      <span
+        className="tw:absolute tw:inset-0 tw:rounded-[inherit] tw:inset-ring-3 tw:inset-ring-clue"
+        style={{
+          opacity: shown ? 1 : 0,
+          transition: reducedMotion ? undefined : getOpacityTransition(shown),
+        }}
+      />
+      <span
+        className={`tw:absolute tw:inset-0 tw:rounded-[inherit] ${WELL_SHADOW_CLASS}`}
+      />
+    </>
+  );
+}
 
 /** Where a box is in the screen's columns, in CSS pixels. */
 interface ZoneBox {
@@ -106,9 +126,9 @@ export function DropZones({
     <div className={ZONE_AREA_CLASS} ref={areaRef}>
       <div
         aria-hidden="true"
-        className={`${ZONE_BOX_CLASS} tw:rounded-r-game-panel ${dragging ? zoneClasses[playState] : DROP_ZONE_CLASS} ${fadeClass}`}
-        onTransitionEnd={() => {
-          if (!dragging) {
+        className={`${ZONE_BOX_CLASS} tw:rounded-r-game-panel ${DROP_ZONE_CLASS} ${fadeClass}`}
+        onTransitionEnd={(event) => {
+          if (!dragging && event.target === event.currentTarget) {
             setBoxes(undefined);
           }
         }}
@@ -117,16 +137,20 @@ export function DropZones({
           ...boxes.play,
           ...fadeStyle,
         }}
-      />
+      >
+        <ZoneLayers reducedMotion={reducedMotion} state={playState} />
+      </div>
       <div
         aria-hidden="true"
-        className={`${ZONE_BOX_CLASS} ${chatCoversTable ? "tw:z-30" : "tw:z-1"} tw:rounded-l-game-panel ${dragging ? zoneClasses[discardState] : DROP_ZONE_CLASS} ${fadeClass}`}
+        className={`${ZONE_BOX_CLASS} ${chatCoversTable ? "tw:z-30" : "tw:z-1"} tw:rounded-l-game-panel ${DROP_ZONE_CLASS} ${fadeClass}`}
         ref={zoneRef(discardZoneRef)}
         style={{
           ...boxes.discard,
           ...fadeStyle,
         }}
-      />
+      >
+        <ZoneLayers reducedMotion={reducedMotion} state={discardState} />
+      </div>
     </div>
   );
 }

@@ -3,12 +3,17 @@
  * and a button stands on it, so that a player can tell at a glance which boxes do something.
  */
 
+/** The shadow that the top edge of a well casts into it. */
+export const WELL_SHADOW_CLASS = "tw:inset-shadow-[0_3px_10px_rgb(0_0_0/55%)]";
+
+/** The light on the bottom edge of a well. */
+const WELL_LIGHT_CLASS = "tw:shadow-[0_1px_0_rgb(255_255_255/12%)]";
+
 /**
  * The edges of a well: the shadow that its top edge casts into it, and the light on its bottom
  * edge.
  */
-const WELL_EDGES_CLASS =
-  "tw:inset-shadow-[0_3px_10px_rgb(0_0_0/55%)] tw:shadow-[0_1px_0_rgb(255_255_255/12%)]";
+const WELL_EDGES_CLASS = `${WELL_SHADOW_CLASS} ${WELL_LIGHT_CLASS}`;
 
 /**
  * A readout: a well cut into the felt. Its top edge casts a shadow into it, and light catches its
@@ -18,9 +23,19 @@ export const WELL_CLASS = `tw:bg-game-well ${WELL_EDGES_CLASS}`;
 
 /**
  * A place to drop the held card, such as the play stacks: a well that is darker than a readout, so
- * that the player sees where they can drag the card.
+ * that the player sees where they can drag the card. It has no shadow inside it. Draw
+ * `WELL_SHADOW_CLASS` on a layer over the layers inside it, so that the shadow falls on them too.
  */
-export const DROP_ZONE_CLASS = `tw:bg-game-drop-zone ${WELL_EDGES_CLASS}`;
+export const DROP_ZONE_CLASS = `tw:bg-game-drop-zone ${WELL_LIGHT_CLASS}`;
+
+/**
+ * How long a card or a knob takes to rise or grow under the pointer, in milliseconds. Give the
+ * element `HOVER_CLASS` and a transition of the property that changes.
+ */
+export const HOVER_MILLISECONDS = 120;
+
+/** The timing of `HOVER_MILLISECONDS`. Tailwind needs the number in the class. */
+export const HOVER_CLASS = "tw:duration-[120ms] tw:ease-out";
 
 /**
  * A button: a key with a light top edge and a dark lip under it. Pressing it pushes it down onto

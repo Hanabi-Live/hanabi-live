@@ -11,6 +11,7 @@ of the repository.
 
 - A note such as "kt?" or "r3!" works without brackets, like "[kt][?]" or
   "[r3][!]".
+- "Reduced motion" also stops tooltips from fading in and out.
 
 ## November 17th, 2026
 

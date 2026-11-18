@@ -396,8 +396,8 @@ These options are on the "Settings" page.
   style of the card art.
 - "Show turn timers in untimed games" shows how long each player has taken.
 - "Reduced motion" leaves out the fireworks, explosions, shaking, and pulses in
-  games, and the sliding of the action log in replays. Cards still move. It is
-  off by default.
+  games, the sliding of the action log in replays, and the fading of tooltips.
+  Cards still move. It is off by default.
 
 ### Pre-Playing
 

@@ -45,12 +45,13 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
-import { getOpacityTransition } from "./fade.ts";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
+import { getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import {
+  HOVER_CLASS,
   MENU_ICON_CLASS,
   MENU_ICON_ITEM_CLASS,
   WELL_CLASS,
@@ -390,27 +391,44 @@ function isRefusing(state: ZoneState): boolean {
   return state === "unavailable" || state === "blocked";
 }
 
-function ZoneLabel({
-  state,
-  text,
-  unavailableText,
-}: {
+interface ZoneLabelProps {
   readonly state: ZoneState;
   readonly text: string;
   readonly unavailableText: string;
-}): React.JSX.Element | undefined {
-  if (state === "idle") {
-    return undefined;
-  }
+  readonly reducedMotion: boolean;
+}
 
+/**
+ * The label of a drop target while the player drags a card. It fades in and out with the dark boxes
+ * (see "DropZones.tsx"). It is in the color of clues while the card is over the target.
+ */
+function ZoneLabel(props: ZoneLabelProps): React.JSX.Element | undefined {
+  return props.state === "idle" ? undefined : <ShownZoneLabel {...props} />;
+}
+
+function ShownZoneLabel({
+  state,
+  text,
+  unavailableText,
+  reducedMotion,
+}: ZoneLabelProps): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+  useFade(ref, reducedMotion, DROP_ZONE_FADE_MILLISECONDS);
+  // The color of clues is a layer that fades in and out. Only its opacity animates, never a color.
+  const lit = state === "hovered" || state === "blocked";
   return (
     <span
-      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:-translate-1/2 tw:rounded-full tw:border-2 tw:border-black tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
-        state === "hovered" || state === "blocked"
-          ? "tw:bg-clue tw:text-card-ink"
-          : "tw:bg-game-text tw:text-card-ink"
-      }`}
+      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:isolate tw:-translate-1/2 tw:rounded-full tw:border-2 tw:border-black tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-lg"
+      ref={ref}
     >
+      <span
+        aria-hidden="true"
+        className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-clue"
+        style={{
+          opacity: lit ? 1 : 0,
+          transition: reducedMotion ? undefined : getOpacityTransition(lit),
+        }}
+      />
       {isRefusing(state) ? unavailableText : text}
     </span>
   );
@@ -887,7 +905,12 @@ export function PlayArea({
               />
             )}
           </div>
-          <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
+          <ZoneLabel
+            reducedMotion={deck.reducedMotion}
+            state={zoneState}
+            text="Play"
+            unavailableText="Play"
+          />
         </section>
         {/* In a row, the deck moves down by the stacks' padding, so that its top card is level
             with the cards of the stacks. */}
@@ -1697,17 +1720,23 @@ export function DiscardPile({
           aria-hidden="true"
           className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
             isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
-          }`}
+          } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
           data-discard-pile-icon
-          style={{ fontSize: cardWidth * 1.125 }}
+          style={{
+            fontSize: cardWidth * 1.125,
+            transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
+          }}
         />
       )}
       <div
         className={`tw:relative tw:flex tw:flex-col ${
           isRefusing(zoneState) ? "tw:opacity-60" : ""
-        }`}
+        } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
         ref={setRowsElement}
-        style={{ height: rowsHeight }}
+        style={{
+          height: rowsHeight,
+          transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
+        }}
       >
         {rows.map((row, rowIndex) => (
           <div
@@ -1740,7 +1769,7 @@ export function DiscardPile({
                 >
                   <button
                     aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                    className="tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5"
+                    className={`tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform ${HOVER_CLASS} tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5`}
                     data-card-order={card.order}
                     data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
                     onClick={() => {
@@ -1795,6 +1824,7 @@ export function DiscardPile({
       </div>
       {zoneState === "blocked" && <NoEntrySign />}
       <ZoneLabel
+        reducedMotion={reducedMotion}
         state={zoneState}
         text="Discard"
         unavailableText="No discarding at max clues"

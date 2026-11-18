@@ -20,13 +20,8 @@ import type { State } from "../types/State.ts";
 import * as replay from "../ui/replay.ts";
 import { ChainIcon } from "./ChainIcon.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
-import { KEY_CLASS } from "./surfaces.ts";
-
-/** How long the knob of the timeline takes to slide to the leader's turn, in milliseconds. */
-const TIMELINE_SLIDE_MILLISECONDS = 300;
-
-/** A fast start and a soft stop, so that a slide reads as a move to a place. */
-const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+import { SLIDE } from "./motion.ts";
+import { HOVER_CLASS, HOVER_MILLISECONDS, KEY_CLASS } from "./surfaces.ts";
 
 const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
 
@@ -224,7 +219,7 @@ function Timeline({
         style={{
           width: knobLeft,
           transition: slide
-            ? `width ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}`
+            ? `width ${SLIDE.duration}ms ${SLIDE.easing}`
             : undefined,
         }}
       />
@@ -253,15 +248,17 @@ function Timeline({
           tabIndex={-1}
           type="button"
         >
-          <span className="tw:h-full tw:w-3 tw:rounded-full tw:border-2 tw:border-solid tw:border-card-ink tw:bg-game-text tw:transition-transform tw:group-hover/leader:scale-115" />
+          <span
+            className={`tw:h-full tw:w-3 tw:rounded-full tw:border-2 tw:border-solid tw:border-card-ink tw:bg-game-text tw:transition-transform ${HOVER_CLASS} tw:group-hover/leader:scale-115`}
+          />
         </button>
       )}
       <span
-        className="tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-mode)] tw:transition-transform tw:group-hover:scale-115"
+        className={`tw:absolute tw:top-1/2 tw:size-5 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-full tw:bg-game-text tw:shadow-[0_0_0_4px_var(--game-screen-mode)] tw:transition-transform ${HOVER_CLASS} tw:group-hover:scale-115`}
         style={{
           left: knobLeft,
           transition: slide
-            ? `left ${TIMELINE_SLIDE_MILLISECONDS}ms ${EASE_OUT}, transform 150ms`
+            ? `left ${SLIDE.duration}ms ${SLIDE.easing}, transform ${HOVER_MILLISECONDS}ms ease-out`
             : undefined,
         }}
       />

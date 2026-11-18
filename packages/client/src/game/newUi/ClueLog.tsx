@@ -9,7 +9,7 @@ import {
   getClueMarkerColor,
   getClueMarkerLabel,
 } from "./Card.tsx";
-import { getOpacityTransition } from "./fade.ts";
+import { getOpacityTransition } from "./motion.ts";
 import { WELL_CLASS } from "./surfaces.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
