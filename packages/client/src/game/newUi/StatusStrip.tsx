@@ -18,7 +18,6 @@ import {
 import type { LogTab } from "./ClueLog.tsx";
 import { ACTION_LOG_TAB, CLUE_LOG_TAB, getClueLogHeight } from "./ClueLog.tsx";
 import { FadeInLabel } from "./FadeLayer.tsx";
-import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
 import {
   getVisibilityTransition,
@@ -929,8 +928,8 @@ export const BAR_HEIGHT = 76;
 
 /**
  * The largest width of the variant's name in the bar along the bottom of the screen, in CSS pixels.
- * A longer name gets smaller text, so that the bar has room for one row (see `BAR_ONE_ROW_WIDTH` in
- * "GameScreen.tsx").
+ * A longer name gets smaller text on two lines, so that the bar has room for one row (see
+ * `BAR_ONE_ROW_WIDTH` in "GameScreen.tsx").
  */
 const VARIANT_NAME_MAX_WIDTH = 160;
 
@@ -1412,14 +1411,14 @@ export function StatusStrip({
           {variantName}
         </span>
       ) : (
-        // A long name gets smaller text instead of a wider bar. When the variant shares a row with
-        // the buttons, the name takes no width of its own, so that only the label sets the
-        // variant's minimum width.
+        // A long name gets smaller text on two lines instead of a wider bar. When the variant
+        // shares a row with the buttons, the name takes no width of its own, so that only the label
+        // sets the variant's minimum width.
         <span
           className="tw:flex tw:min-w-0 tw:group-data-own-row/strip:w-0 tw:group-data-own-row/strip:min-w-full tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted"
           style={{ maxWidth: VARIANT_NAME_MAX_WIDTH }}
         >
-          <FitText text={variantName} />
+          <VariantName name={variantName} />
         </span>
       )}
     </div>
@@ -1613,5 +1612,57 @@ export function StatusStrip({
       )}
       {buttons}
     </footer>
+  );
+}
+
+/**
+ * The variant's name in the bar along the bottom of the screen. A name that does not fit on one
+ * line gets smaller text on two lines, in the same height. A hidden copy at the full size sets the
+ * width.
+ */
+function VariantName({ name }: { readonly name: string }): React.JSX.Element {
+  const outerRef = useRef<HTMLSpanElement>(null);
+  const fullRef = useRef<HTMLSpanElement>(null);
+  const [wrapped, setWrapped] = useState(false);
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current!;
+    const full = fullRef.current!;
+    function fit() {
+      setWrapped(full.offsetWidth > outer.clientWidth);
+    }
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(outer);
+    observer.observe(full);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <span
+      className="tw:relative tw:min-w-0 tw:overflow-x-clip tw:whitespace-nowrap"
+      ref={outerRef}
+    >
+      <span
+        aria-hidden="true"
+        className="tw:invisible tw:block tw:w-max"
+        ref={fullRef}
+      >
+        {name}
+      </span>
+      <span className="tw:absolute tw:inset-0 tw:flex tw:items-center">
+        <span
+          className={
+            wrapped
+              ? "tw:line-clamp-2 tw:text-[13px] tw:leading-[15px] tw:whitespace-normal"
+              : "tw:min-w-0 tw:truncate"
+          }
+        >
+          {name}
+        </span>
+      </span>
+    </span>
   );
 }
