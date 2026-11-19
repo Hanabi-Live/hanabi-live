@@ -8,12 +8,6 @@
   position: absolute;
 }
 
-/* The deck plays icon sits too far left. */
-.fa-person-walking-with-cane {
-  position: relative;
-  left: 0.2em;
-}
-
 /* Lists in tooltips are tighter than the tooltip's prose, so that a long list stays compact. */
 .game-tooltips-ul,
 .game-tooltips-ol {
