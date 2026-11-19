@@ -118,6 +118,14 @@ describe("stateReducer", () => {
     expect(state.replay.states).toHaveLength(loaded.replay.states.length);
     expect(state.replay.states[0]).not.toBe(loaded.replay.states[0]);
   });
+  test("a replay can be viewed from no seat", () => {
+    const joined = stateReducer(initialState(defaultMetadata), init());
+    const state = stateReducer(joined, {
+      type: "seatChosen",
+      playerIndex: undefined,
+    });
+    expect(state.metadata.ourPlayerIndex).toBeUndefined();
+  });
   test("choosing a seat does nothing in a game in progress", () => {
     const state = initialState(defaultMetadata);
     expect(

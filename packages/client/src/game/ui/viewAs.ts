@@ -31,9 +31,8 @@ export function canChooseSeat(): boolean {
 }
 
 /**
- * Views the game from a player's seat, or, in an ongoing game, with no seat when the index is
- * `undefined`. In an ongoing game, the page reloads the game, so this happens after the current
- * event ends.
+ * Views the game from a player's seat, or with no seat when the index is `undefined`. In an ongoing
+ * game, the page reloads the game, so this happens after the current event ends.
  */
 export function viewAs(playerIndex: PlayerIndex | undefined): void {
   if (!canChooseSeat()) {
@@ -57,13 +56,11 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
     return;
   }
 
-  // A replay always has a seat. The client changes it, so the replay keeps going for everyone.
-  if (playerIndex !== undefined) {
-    store.dispatch(
-      gameUpdated({
-        type: "seatChosen",
-        playerIndex,
-      }),
-    );
-  }
+  // A replay: the client changes the seat, so the replay keeps going for everyone.
+  store.dispatch(
+    gameUpdated({
+      type: "seatChosen",
+      playerIndex,
+    }),
+  );
 }

@@ -30,7 +30,7 @@ export function ViewAsMenu({
   readonly playerNames: readonly string[];
   /** The seat that the viewer watches from, if any. */
   readonly viewedSeat: PlayerIndex | undefined;
-  /** A replay always has a seat, so only an ongoing game can be watched with none. */
+  /** Whether the game is a replay, where a seat does not stand out as shadowing. */
   readonly finished: boolean;
   readonly onViewAs: (playerIndex: PlayerIndex | undefined) => void;
 }): React.JSX.Element {
@@ -112,27 +112,23 @@ export function ViewAsMenu({
               </button>
             );
           })}
-          {!finished && (
-            <>
-              <span className="tw:mx-1 tw:h-px tw:bg-game-line" />
-              <button
-                aria-checked={viewedSeat === undefined}
-                className={MENU_ICON_ITEM_CLASS}
-                disabled={viewedSeat === undefined}
-                onClick={() => {
-                  choose(undefined);
-                }}
-                role="menuitemradio"
-                type="button"
-              >
-                <i
-                  aria-hidden="true"
-                  className={`fas fa-check tw:w-3.5 tw:text-game-text ${viewedSeat === undefined ? "" : "tw:invisible"}`}
-                />
-                {shadowing ? "Stop: watch as a spectator" : "A spectator"}
-              </button>
-            </>
-          )}
+          <span className="tw:mx-1 tw:h-px tw:bg-game-line" />
+          <button
+            aria-checked={viewedSeat === undefined}
+            className={MENU_ICON_ITEM_CLASS}
+            disabled={viewedSeat === undefined}
+            onClick={() => {
+              choose(undefined);
+            }}
+            role="menuitemradio"
+            type="button"
+          >
+            <i
+              aria-hidden="true"
+              className={`fas fa-check tw:w-3.5 tw:text-game-text ${viewedSeat === undefined ? "" : "tw:invisible"}`}
+            />
+            {shadowing ? "Stop: watch as a spectator" : "A spectator"}
+          </button>
         </Menu>
       )}
     </div>

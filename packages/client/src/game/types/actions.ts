@@ -108,11 +108,12 @@ interface ActionSpectators {
 }
 
 /**
- * We view a replay from another seat. The client makes this action; the server does not send it.
+ * We view a replay from another seat, or from no seat when the index is `undefined`. The client
+ * makes this action; the server does not send it.
  */
 interface ActionSeatChosen {
   readonly type: "seatChosen";
-  readonly playerIndex: PlayerIndex;
+  readonly playerIndex: PlayerIndex | undefined;
 }
 
 interface ActionGameFinished extends Readonly<
