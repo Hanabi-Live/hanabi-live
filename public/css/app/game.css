@@ -77,6 +77,10 @@
 }
 
 #game-chat-modal-white {
+  /* It floats over the game, so it is solid, unlike the boxes on the felt. */
+  background: var(--surface);
+  backdrop-filter: none;
+  --surface-sunken: inherit;
   display: flex;
   flex-direction: column;
   width: calc(100% - 0.3em);

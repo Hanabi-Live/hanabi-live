@@ -442,8 +442,10 @@ input::-webkit-calendar-picker-indicator {
   border-radius: var(--radius);
   margin: 0 0 2em 0;
   padding: 3em;
-  background: var(--surface);
+  background: var(--box-bg);
+  backdrop-filter: var(--box-backdrop);
   box-shadow: var(--box-shadow);
+  --surface-sunken: var(--box-sunken);
 }
 
 .box > :last-child {

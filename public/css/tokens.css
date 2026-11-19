@@ -120,6 +120,14 @@
   /* Every other row in the list of online users */
   --lobby-user-stripe: var(--surface-sunken);
 
+  /*
+    A box on the felt, such as a panel of the lobby: its color, the color of the fields and lists
+    in it, and the effect on the felt that shows through it. In the light theme, it is solid.
+  */
+  --box-bg: var(--surface);
+  --box-sunken: var(--surface-sunken);
+  --box-backdrop: none;
+
   /* The edge of a box, such as a panel of the lobby */
   --box-shadow: 0 2px 0 0 var(--border);
 
@@ -259,7 +267,14 @@
   --surface-sunken: #091a11;
   --surface-panel: var(--surface-sunken);
   --border: #24452f;
-  --header-bg: var(--surface);
+  /*
+    The boxes on the felt and the header bar are dark glass: the felt shows faintly through them,
+    blurred and less saturated, so that they read as part of the table.
+  */
+  --box-bg: rgb(6 14 10 / 62%);
+  --box-sunken: rgb(0 0 0 / 28%);
+  --box-backdrop: blur(14px) saturate(60%);
+  --header-bg: rgb(6 14 10 / 78%);
   --border-panel: var(--border);
   --text: var(--game-screen-text);
   --text-strong: var(--text);
