@@ -260,26 +260,12 @@ function PlayerBox({
 }
 
 /**
- * The number of a seat, which is its place in the turn order: a token in a well in the felt. The
- * first seat takes the first turn, so it has the ring of the player whose turn it is.
+ * The number of a seat: a token in a well in the felt. It does not show the turn order, because the
+ * server shuffles the seats when the game starts.
  */
 function SeatNumber({ seat }: { readonly seat: number }) {
-  const first = seat === 1;
   return (
-    <span
-      className={[
-        "tw:inline-flex tw:flex-none tw:items-center tw:justify-center tw:rounded-full",
-        "tw:size-[1.6em] tw:border tw:border-solid tw:bg-game-well tw:text-[0.8em] tw:font-bold tw:tabular-nums",
-        first
-          ? "tw:border-game-turn tw:text-game-turn"
-          : "tw:border-game-line/60",
-      ].join(" ")}
-      ref={tooltipRef(
-        first
-          ? "This seat takes the first turn."
-          : `Seat ${seat} in the turn order.`,
-      )}
-    >
+    <span className="tw:inline-flex tw:size-[1.6em] tw:flex-none tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-solid tw:border-game-line/60 tw:bg-game-well tw:text-[0.8em] tw:font-bold tw:tabular-nums">
       {seat}
     </span>
   );
