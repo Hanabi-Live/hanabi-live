@@ -367,7 +367,11 @@ function LoginAlert() {
       {alert.retry && (
         <>
           {" "}
-          <button onClick={retryAutomaticLogin} type="button">
+          <button
+            className="button small alt"
+            onClick={retryAutomaticLogin}
+            type="button"
+          >
             Retry
           </button>
         </>
