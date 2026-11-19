@@ -342,9 +342,14 @@ select {
   text-overflow: ellipsis;
 }
 
+/*
+  The browser draws the list of options on its own white popup. A translucent background, such as
+  "--surface-sunken" in a ".box", would show that white through it, so the options use an opaque
+  color.
+*/
 select option {
   color: var(--text);
-  background: var(--surface-sunken);
+  background: var(--surface);
 }
 
 input[type="text"],
