@@ -1,7 +1,6 @@
 use super::{
-    API_PREFIX, HashMap, HeaderMap, HttpError, IntoResponse, Json, Params, Path, PublicState,
-    Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer, json, replay,
-    strict_query,
+    API_PREFIX, HashMap, HttpError, IntoResponse, Json, Params, Path, PublicState, Query, RawQuery,
+    Response, Result, State, Value, catalog, data, encoded, integer, json, replay, strict_query,
 };
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
@@ -98,21 +97,12 @@ const MAIN_PAGE_PARAMETERS: &[&str] = &[
 
 pub(super) async fn main_page(
     State(state): State<PublicState>,
-    headers: HeaderMap,
     RawQuery(raw): RawQuery,
 ) -> Result<Response> {
     let q = strict_query(raw.as_deref(), MAIN_PAGE_PARAMETERS)?;
     q.flag("dev").map_err(HttpError::bad)?;
     q.nonempty("login").map_err(HttpError::bad)?;
-    let username = match crate::accounts::session(&headers, &state.config.session_secret, None) {
-        Some(session) => crate::accounts::session_username(&state.pool, session).await?,
-        None => None,
-    };
-    render(
-        &state,
-        "main.html",
-        json!({"title":"Main","authenticated":username.is_some(),"sessionUsername":username}),
-    )
+    render(&state, "main.html", json!({"title":"Main"}))
 }
 
 pub(super) async fn page(

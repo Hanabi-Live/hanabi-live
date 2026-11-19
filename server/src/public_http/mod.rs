@@ -11,7 +11,7 @@ mod tests;
 use axum::{
     Json, Router,
     extract::{ConnectInfo, Path, RawQuery, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Response},
     routing::get,
 };

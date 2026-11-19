@@ -2,12 +2,7 @@
 
 <!-- Header & Login & Lobby -->
 <!-- "data-login" hides the empty header bar while the login screen shows. -->
-<div
-  id="page-wrapper"
-  data-login
-  data-authenticated="{{ 'true' if authenticated else 'false' }}"
-  data-session-username="{{ sessionUsername|default('', true) }}"
->
+<div id="page-wrapper" data-login>
   <!-- Header -->
   <header id="header">
     <h1 class="lobby-header">{% include "logo.html" %}</h1>

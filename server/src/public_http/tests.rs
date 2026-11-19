@@ -176,7 +176,6 @@ async fn shell_routes_metadata_and_static_files() {
             "id=\"domain\"",
             "id=\"lobby\"",
             "/public/js/bundles/main.test-version.min.js",
-            "data-authenticated=\"false\"",
         ] {
             assert!(body.contains(hook), "{path}: missing {hook}");
         }
@@ -808,21 +807,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(redirect.status(), StatusCode::PERMANENT_REDIRECT, "{page}");
         assert_eq!(redirect.headers()["location"], api, "{page}");
     }
-    let session = crate::cookie::Session { id: 1, version: 0 };
-    let cookie = crate::cookie::encode(
-        session,
-        "public-test-secret",
-        time::OffsetDateTime::now_utc().unix_timestamp(),
-    )
-    .unwrap();
-    let req = Request::builder()
-        .uri("/")
-        .header("Cookie", format!("hanabi.sid={cookie}"))
-        .body(Body::empty())
-        .unwrap();
-    let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    assert!(body.contains("data-authenticated=\"true\""));
     #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
