@@ -19,7 +19,7 @@
   --surface-sunken: #e6ebe6;
   --surface-panel: #e9eee9;
   --border: #e5e5e5;
-  --border-panel: #ececec;
+  --border-panel: #cdd5cd;
   /*
     The lightest gray with normal-text contrast on "--surface-sunken". Text that should look fainter
     can only be lighter in the dark theme.
