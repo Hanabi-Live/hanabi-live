@@ -174,6 +174,9 @@ const NEXT_HAND_FIRST_CARD_SELECTOR =
 /** The name of the next player after the account. */
 const NEXT_NAME_SELECTOR = '#game-new-ui [data-name-chip="1"]';
 
+/** Bob's arrow, but not a copy of an earlier arrow that is still fading out. */
+const ARROW_SELECTOR = "#game-new-ui [data-highlight-arrow]:not([inert])";
+
 /**
  * A card of the account's own hand, counted from 0 on the left. The account's hand is the first on
  * the screen, whatever its seat.
@@ -1284,8 +1287,8 @@ function getStates(): readonly State[] {
         await game.emptyDeck();
       },
     },
-    // After every player has discarded cards, a click on the third player's name lists their
-    // actions: clues and discards.
+    // After every player has discarded cards, the third player's name menu lists their actions:
+    // clues and discards.
     {
       name: "new-ui-player-log",
       path: "/",
@@ -1297,6 +1300,7 @@ function getStates(): readonly State[] {
       },
       prepare: async (page) => {
         await page.locator("[data-name-chip]").nth(2).click();
+        await page.getByRole("menuitem", { name: /^.*'s actions$/u }).click();
         await page.getByRole("dialog").waitFor();
         await settle(page);
       },
@@ -1596,7 +1600,8 @@ function getStates(): readonly State[] {
         // opens only while Space is held.
         await ownCard(page, 2).hover();
         await page.keyboard.down("Space");
-        await page.locator("[data-possible-cards]").waitFor();
+        // A copy of the bubble of the last width can still be fading out.
+        await page.locator("[data-possible-cards]:not([inert] *)").waitFor();
       },
     },
     // The menu of the "End game" button.
@@ -1773,10 +1778,7 @@ function getStates(): readonly State[] {
           type: "card",
           order: Number(order) as CardOrder,
         });
-        // A copy of the arrow can still be fading out.
-        await page
-          .locator("#game-new-ui [data-highlight-arrow]:not([inert])")
-          .waitFor();
+        await page.locator(ARROW_SELECTOR).waitFor();
         await settle(page);
       },
     },
@@ -1795,7 +1797,7 @@ function getStates(): readonly State[] {
           type: "board",
           element: "discardPile",
         });
-        await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
+        await page.locator(ARROW_SELECTOR).waitFor();
         await settle(page);
       },
     },
@@ -1814,7 +1816,7 @@ function getStates(): readonly State[] {
           type: "player",
           playerIndex: 1 as PlayerIndex,
         });
-        await page.locator("#game-new-ui [data-highlight-arrow]").waitFor();
+        await page.locator(ARROW_SELECTOR).waitFor();
         await settle(page);
       },
     },
@@ -3559,7 +3561,11 @@ interface Results {
   readonly errors: string[];
 }
 
-/** Takes the screenshots of states, one at a time, in a new page of a browser context. */
+/**
+ * Takes the screenshots of states, one at a time, in a browser context. Each state has a new page,
+ * so that what a state does to its page cannot change the next state. For example, a state can
+ * route the page's connections away from the server, and Playwright cannot remove such a route.
+ */
 async function capture(
   context: BrowserContext,
   address: string,
@@ -3569,25 +3575,8 @@ async function capture(
   compareBundle: string | undefined,
   results: Results,
 ) {
-  const page = await context.newPage();
-  page.setDefaultTimeout(STEP_TIMEOUT_MILLISECONDS);
-  let stateName = "";
-  let expectedConsoleError: string | undefined;
-  page.on("pageerror", (error) => {
-    results.errors.push(`${stateName}: ${error.message}`);
-  });
-  // Such as a script or image that the content security policy blocked, or a React warning.
-  page.on("console", (message) => {
-    const type = message.type();
-    if (
-      (type === "error" || type === "warning")
-      && message.text() !== expectedConsoleError
-    ) {
-      results.errors.push(`${stateName}: ${type}: ${message.text()}`);
-    }
-  });
   if (compareBundle !== undefined) {
-    await page.route(`**${COMPARE_BUNDLE_PATH}`, async (route) => {
+    await context.route(`**${COMPARE_BUNDLE_PATH}`, async (route) => {
       await route.fulfill({
         contentType: "text/css",
         body: compareBundle,
@@ -3596,8 +3585,21 @@ async function capture(
   }
 
   for (const state of states) {
-    stateName = state.name;
-    ({ expectedConsoleError } = state);
+    const page = await context.newPage();
+    page.setDefaultTimeout(STEP_TIMEOUT_MILLISECONDS);
+    page.on("pageerror", (error) => {
+      results.errors.push(`${state.name}: ${error.message}`);
+    });
+    // Such as a script or image that the content security policy blocked, or a React warning.
+    page.on("console", (message) => {
+      const type = message.type();
+      if (
+        (type === "error" || type === "warning")
+        && message.text() !== state.expectedConsoleError
+      ) {
+        results.errors.push(`${state.name}: ${type}: ${message.text()}`);
+      }
+    });
     try {
       await captureState(
         page,
@@ -3616,9 +3618,8 @@ async function capture(
       throw error;
     }
     console.info(`Captured: ${state.name}`);
+    await page.close();
   }
-
-  await page.close();
 }
 
 /**
