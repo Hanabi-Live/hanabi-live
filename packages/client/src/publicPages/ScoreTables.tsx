@@ -110,6 +110,7 @@ export function ScoresTable({
   return (
     <LocalTable
       columns={columns}
+      emptyText="This player has no scores yet."
       initialSort={{
         column: 0,
         descending: false,
@@ -186,6 +187,7 @@ export function MissingScoresTable({
       <MissingScoresFilters filters={table.filters} />
       <LocalTable
         columns={missingScoreColumns}
+        emptyText="No max scores are missing."
         initialSort={undefined}
         rowKey={(row) => `${row.numPlayers}-${row.variantName}`}
         rows={table.rows}

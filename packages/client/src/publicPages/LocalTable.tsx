@@ -42,12 +42,15 @@ export function LocalTable<Row>({
   rowKey,
   initialSort,
   scrollLabel,
+  emptyText,
 }: {
   readonly columns: ReadonlyArray<LocalColumn<Row>>;
   readonly rows: readonly Row[];
   readonly rowKey: (row: Row) => string;
   readonly initialSort: Sort | undefined;
   readonly scrollLabel?: string;
+  /** What the page shows instead of the table when it has no rows. */
+  readonly emptyText: string;
 }): React.JSX.Element {
   const [sort, setSort] = useState(initialSort);
   const [filters, setFilters] = useState<Filters>(new Map());
@@ -77,6 +80,10 @@ export function LocalTable<Row>({
       return direction * order;
     });
   }
+  if (rows.length === 0) {
+    return <p className="tw:text-center">{emptyText}</p>;
+  }
+
   const start = pageStart(page, size);
   const pager = (
     <Pager
