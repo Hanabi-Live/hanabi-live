@@ -2136,6 +2136,37 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
 }
 
 #[tokio::test]
+async fn replay_spectators_stay_spectators_of_the_restarted_pregame_after_a_server_restart()
+-> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Remade spectators", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        h.send(2, "tableSpectate", json!({"tableId":id})).await?;
+        h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+        h.send(0, "tableRestart", json!({"tableId":id,"startNow":false}))
+            .await?;
+        h.receive(2, "pregame").await?;
+        h.restart().await?;
+        let welcome = h.receive(2, "welcome").await?;
+        // Without the table here, the client joins the pregame that its address names.
+        ensure!(
+            welcome["spectatingAtTables"] == json!([{"tableId":id}]),
+            "The spectator was not told that they spectate the pregame: {}",
+            welcome["spectatingAtTables"]
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());

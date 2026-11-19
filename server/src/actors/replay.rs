@@ -521,7 +521,14 @@ impl TableActor {
             set_seed_suffix: next_requested_seed(self.table.extra.set_seed_suffix.as_deref())?,
             ..ExtraOptions::default()
         };
-        next.shadows.clear();
+        // The viewers who are not seated stay as spectators, so that they come back as spectators
+        // after a reconnect.
+        next.shadows = self
+            .attendees
+            .keys()
+            .filter(|user| !seated.contains(user))
+            .map(|user| (*user, None))
+            .collect();
         next.phase = Phase::Pregame {
             players,
             kicked: vec![],
