@@ -341,7 +341,7 @@ export function Pages({
   const start = pageStart(page, size);
   const end = Math.min(total, start + size);
   const arrow =
-    "tw:h-8 tw:w-8 tw:cursor-pointer tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface-sunken tw:p-0 tw:text-inherit tw:disabled:cursor-default tw:disabled:opacity-40";
+    "tw:h-8 tw:w-8 tw:cursor-pointer tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface-sunken tw:p-0 tw:text-inherit tw:enabled:hover:border-text-label tw:disabled:cursor-default tw:disabled:opacity-40";
   return (
     <div className="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-3 tw:text-[0.9em]">
       <button
