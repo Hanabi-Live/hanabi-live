@@ -366,9 +366,7 @@ impl TableActor {
         self.live()?;
         let order = card.index();
         let text = crate::accounts::truncate_to_max_chars(note, MAX_NOTE_LENGTH);
-        let text = crate::accounts::remove_disallowed_characters(text)
-            .trim()
-            .to_owned();
+        let text = crate::accounts::clean_text(text);
         ensure_or_reject!(
             crate::accounts::max_consecutive_marks(&text) <= crate::accounts::MAX_CONSECUTIVE_MARKS,
             "Notes cannot contain more than {} consecutive diacritics.",

@@ -15,8 +15,8 @@ pub use crypto::{
 #[cfg(test)]
 pub use normalization::normalize_username;
 pub use normalization::{
-    MAX_CONSECUTIVE_MARKS, MAX_USERNAME_LENGTH, USERNAME_SPECIAL_CHARACTERS, max_consecutive_marks,
-    normalize_chat, normalize_discord_chat, normalize_string, remove_disallowed_characters,
+    MAX_CONSECUTIVE_MARKS, MAX_USERNAME_LENGTH, USERNAME_SPECIAL_CHARACTERS, clean_text,
+    max_consecutive_marks, normalize_chat, normalize_discord_chat, normalize_string,
     truncate_to_max_chars, validate_username,
 };
 pub use rate_limit::TooMuchPasswordWork;

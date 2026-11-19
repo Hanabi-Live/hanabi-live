@@ -42,9 +42,15 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     maximum
 }
 
-/// Removes characters that chat messages and notes do not allow.
-pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
-    regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").replace_all(input, "")
+/// Cleans text that a player writes, such as a chat message or a note. Every kind of space becomes a
+/// plain space, so that it still separates words. Other characters that are not letters, marks,
+/// numbers, punctuation, or symbols are removed. Spaces at the start and the end are removed.
+pub fn clean_text(input: &str) -> String {
+    let spaced = regex!(r"\s").replace_all(input, " ");
+    regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]")
+        .replace_all(&spaced, "")
+        .trim()
+        .to_owned()
 }
 
 /// Returns the first `max` characters of `input`.
@@ -74,19 +80,16 @@ pub fn normalize_discord_chat(input: &str) -> Result<String, String> {
 }
 
 fn clean_chat(input: &str) -> Result<String, String> {
-    // Every other kind of space becomes a plain space, so that it still separates words.
-    let spaced = regex!(r"\s").replace_all(input, " ");
-    let cleaned = remove_disallowed_characters(&spaced);
-    let message = cleaned.trim();
+    let message = clean_text(input);
     if message.is_empty() {
         return Err("Chat messages cannot be blank.".into());
     }
-    if max_consecutive_marks(message) > MAX_CONSECUTIVE_MARKS {
+    if max_consecutive_marks(&message) > MAX_CONSECUTIVE_MARKS {
         return Err(format!(
             "Chat messages cannot contain more than {MAX_CONSECUTIVE_MARKS} consecutive diacritics."
         ));
     }
-    Ok(message.to_owned())
+    Ok(message)
 }
 
 /// The shortest username, in bytes.
@@ -190,6 +193,7 @@ mod tests {
             normalize_chat("/w\u{a0}Bob\u{3000}hi"),
             Ok("/w Bob hi".into())
         );
+        assert_eq!(clean_text(" r1\u{a0}b2\u{200B} "), "r1 b2");
         assert_eq!(truncate_to_max_chars("éé", 1), "é");
         assert_eq!(truncate_to_max_chars("éé", 3), "éé");
     }
