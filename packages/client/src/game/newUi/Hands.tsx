@@ -30,8 +30,12 @@ import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
-import type { ClueKeyPlacement } from "./ClueMenu.tsx";
-import { CLUE_KEY_COLUMN_WIDTH, ClueHandLayer, ClueKey } from "./ClueMenu.tsx";
+import type { ClueButtonPlacement } from "./ClueMenu.tsx";
+import {
+  CLUE_BUTTON_COLUMN_WIDTH,
+  ClueButton,
+  ClueHandLayer,
+} from "./ClueMenu.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
@@ -136,7 +140,7 @@ interface HandsProps {
   readonly nameColumnWidth: number | undefined;
 
   /**
-   * Whether the viewer can give a clue. Then, another player's hand shows their clue key, which
+   * Whether the viewer can give a clue. Then, another player's hand shows their clue button, which
    * opens the clues that they can get (`clueMenu`) on their hand.
    */
   readonly canChooseClueTarget: boolean;
@@ -1688,23 +1692,23 @@ function Hand({
     props.shownClue?.giver === seat.playerIndex
     || props.shownMover === seat.playerIndex;
 
-  // In the phone layout, there is no room to the right of the hand for the clue key. With the name
-  // beside the cards, the name column keeps room for it (see `CLUE_KEY_COLUMN_WIDTH`). Otherwise,
-  // it goes in the hand's top right corner.
-  const keyInColumn = props.stacked && props.nameColumnWidth !== undefined;
-  let keyPlacement: ClueKeyPlacement = "right";
-  if (keyInColumn) {
-    keyPlacement = "column";
+  // In the phone layout, there is no room to the right of the hand for the clue button. With the
+  // name beside the cards, the name column keeps room for it (see `CLUE_BUTTON_COLUMN_WIDTH`).
+  // Otherwise, it goes in the hand's top right corner.
+  const buttonInColumn = props.stacked && props.nameColumnWidth !== undefined;
+  let buttonPlacement: ClueButtonPlacement = "right";
+  if (buttonInColumn) {
+    buttonPlacement = "column";
   } else if (props.stacked) {
-    keyPlacement = "corner";
+    buttonPlacement = "corner";
   }
-  const clueKey = canClueSeat && !chosen && (
-    <ClueKey
+  const clueButton = canClueSeat && !chosen && (
+    <ClueButton
       name={seat.name}
       onOpen={() => {
         props.onChooseClueTarget(seat.playerIndex);
       }}
-      placement={keyPlacement}
+      placement={buttonPlacement}
       reducedMotion={props.reducedMotion}
       top={getHandBoxTopPadding(props.cardWidth)}
     />
@@ -1746,10 +1750,10 @@ function Hand({
         }`}
         style={{
           width: props.nameColumnWidth,
-          paddingRight: keyInColumn ? CLUE_KEY_COLUMN_WIDTH : undefined,
+          paddingRight: buttonInColumn ? CLUE_BUTTON_COLUMN_WIDTH : undefined,
         }}
       >
-        {keyInColumn && clueKey}
+        {buttonInColumn && clueButton}
         <div className="tw:flex tw:max-w-full">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
             clue rail starts there. A click on a name lists the player's actions. */}
@@ -1875,7 +1879,7 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {!keyInColumn && clueKey}
+      {!buttonInColumn && clueButton}
       {chosen && props.clueMenu}
     </div>
   );

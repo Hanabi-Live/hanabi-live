@@ -158,9 +158,9 @@ const choiceSizeClass =
 const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
- * The clues that the viewer can give a player. The player's clue key (see `ClueKey`) opens it out
- * of their hand, as a drawer (see `ClueHandLayer`). It opens to the right of the hand, so that it
- * does not cover the other hands. The hands always leave room for it there (see
+ * The clues that the viewer can give a player. The player's clue button (see `ClueButton`) opens it
+ * out of their hand, as a drawer (see `ClueHandLayer`). It opens to the right of the hand, so that
+ * it does not cover the other hands. The hands always leave room for it there (see
  * `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough room
  * below, its bottom lines up with the bottom of the hand instead. In the phone layout, it opens
  * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
@@ -766,45 +766,47 @@ export function ClueHandLayer({
   );
 }
 
-/** The width and height of a clue key, in CSS pixels. */
-const CLUE_KEY_SIZE = {
+/** The width and height of a clue button, in CSS pixels. */
+const CLUE_BUTTON_SIZE = {
   WIDE: 56,
   PHONE: 40,
 } as const;
 
-/** The space between a player's name and their clue key in the name column, in CSS pixels. */
-const CLUE_KEY_NAME_GAP = 8;
+/** The space between a player's name and their clue button in the name column, in CSS pixels. */
+const CLUE_BUTTON_NAME_GAP = 8;
 
 /**
- * The width that the clue key takes in the name column, in the phone layout with the names beside
- * the cards. Every hand keeps it, so that the names line up and do not move when the keys show.
+ * The width that the clue button takes in the name column, in the phone layout with the names
+ * beside the cards. Every hand keeps it, so that the names line up and do not move when the buttons
+ * show.
  */
-export const CLUE_KEY_COLUMN_WIDTH = CLUE_KEY_SIZE.PHONE + CLUE_KEY_NAME_GAP;
+export const CLUE_BUTTON_COLUMN_WIDTH =
+  CLUE_BUTTON_SIZE.PHONE + CLUE_BUTTON_NAME_GAP;
 
 /**
- * Where a clue key sits: to the right of the hand, in the name column to the right of the name, or
- * in the hand's top right corner.
+ * Where a clue button sits: to the right of the hand, in the name column to the right of the name,
+ * or in the hand's top right corner.
  */
-export type ClueKeyPlacement = "right" | "column" | "corner";
+export type ClueButtonPlacement = "right" | "column" | "corner";
 
-const CLUE_KEY_PLACEMENT_CLASS = {
+const CLUE_BUTTON_PLACEMENT_CLASS = {
   right:
     "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5",
   column: "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
   corner: "tw:absolute tw:z-20 tw:right-3",
-} as const satisfies Record<ClueKeyPlacement, string>;
+} as const satisfies Record<ClueButtonPlacement, string>;
 
 /**
- * The key that opens the clue menu of a player. It shows beside their hand while the viewer can
+ * The button that opens the clue menu of a player. It shows beside their hand while the viewer can
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
  * `getClueDrawerWidth`). In the phone layout, there is no room there. With the name beside the
  * cards, it sits in the name column, to the right of the name. With the name above the cards, it
- * sits in the hand's top right corner, beside the name. It is dim, so that the keys of all the
+ * sits in the hand's top right corner, beside the name. It is dim, so that the buttons of all the
  * hands do not compete with the cards, and bright while the pointer is over it. It fades in when it
  * appears, such as when the viewer's turn starts, and fades out when it goes, such as when its menu
  * opens.
  */
-export function ClueKey({
+export function ClueButton({
   name,
   placement,
   top,
@@ -812,7 +814,7 @@ export function ClueKey({
   onOpen,
 }: {
   readonly name: string;
-  readonly placement: ClueKeyPlacement;
+  readonly placement: ClueButtonPlacement;
 
   /** In the hand's corner, the distance from the top of the hand to the top of the name. */
   readonly top: number;
@@ -821,16 +823,17 @@ export function ClueKey({
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   useFade(ref, reducedMotion);
-  const size = placement === "right" ? CLUE_KEY_SIZE.WIDE : CLUE_KEY_SIZE.PHONE;
+  const size =
+    placement === "right" ? CLUE_BUTTON_SIZE.WIDE : CLUE_BUTTON_SIZE.PHONE;
 
   return (
     <div
-      className={CLUE_KEY_PLACEMENT_CLASS[placement]}
-      data-clue-key
+      className={CLUE_BUTTON_PLACEMENT_CLASS[placement]}
+      data-clue-button
       ref={ref}
       style={placement === "corner" ? { top } : undefined}
     >
-      {/* The dimming is on a layer of its own, because the key's press sets its own transition. */}
+      {/* The dimming is on a layer of its own, because the button's press sets its own transition. */}
       <div
         className={`tw:opacity-60 tw:transition-opacity tw:hover:opacity-100 ${HOVER_CLASS}`}
       >

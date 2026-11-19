@@ -221,12 +221,12 @@ const KEYWORD_NOTES = [
 /** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
 
-/** Moves the mouse over the next player's clue key in the New UI, which brightens it. */
-async function pointAtNextPlayersClueKey(page: Page) {
+/** Moves the mouse over the next player's clue button in the New UI, which brightens it. */
+async function pointAtNextPlayersClueButton(page: Page) {
   await page
     .locator("#game-new-ui [data-hand]")
     .nth(1)
-    .locator("[data-clue-key] button")
+    .locator("[data-clue-button] button")
     .hover();
 }
 
@@ -238,7 +238,7 @@ async function chooseClueForNextPlayer(page: Page) {
   await page
     .locator("#game-new-ui [data-hand]")
     .nth(1)
-    .locator("[data-clue-key] button")
+    .locator("[data-clue-button] button")
     .click();
   await page
     .getByRole("dialog", { name: /^Give .* a clue$/u })
@@ -1072,7 +1072,7 @@ function getStates(): readonly State[] {
         await game.discardTurns(15, { mixClueTypes: true });
       },
     },
-    // It is the account's turn and the team has no clues, so that no hand shows a clue key.
+    // It is the account's turn and the team has no clues, so that no hand shows a clue button.
     {
       name: "new-ui-no-clues",
       path: "/",
@@ -1144,10 +1144,10 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
-    // On the account's turn in a five-player game, every other hand shows its clue key. The mouse
-    // is over the next player's key, which brightens it.
+    // On the account's turn in a five-player game, every other hand shows its clue button. The
+    // mouse is over the next player's button, which brightens it.
     {
-      name: "new-ui-clue-keys",
+      name: "new-ui-clue-buttons",
       path: "/",
       loggedIn: true,
       isolated: true,
@@ -1155,7 +1155,7 @@ function getStates(): readonly State[] {
         const game = await cast.startBobsGame(5);
         await game.discardUntilAccountsTurn();
       },
-      hover: pointAtNextPlayersClueKey,
+      hover: pointAtNextPlayersClueButton,
     },
     // On the account's turn in a five-player game, it opens the clue menu on the next player's hand
     // and chooses a clue. The clues that would touch no cards are left out.

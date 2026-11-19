@@ -53,7 +53,7 @@ import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import type { LogTab } from "./ClueLog.tsx";
 import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import {
-  CLUE_KEY_COLUMN_WIDTH,
+  CLUE_BUTTON_COLUMN_WIDTH,
   ClueMenu,
   getClueDrawerWidth,
 } from "./ClueMenu.tsx";
@@ -975,9 +975,11 @@ export function GameScreen(): React.JSX.Element {
     nameWidth,
     getClueDrawerWidth(variant),
   );
-  // In the phone layout, the name column also holds the clue keys (see `CLUE_KEY_COLUMN_WIDTH`).
+  // In the phone layout, the name column also holds the clue buttons (see
+  // `CLUE_BUTTON_COLUMN_WIDTH`).
   let nameColumnWidth: number | undefined = stacked
-    ? Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.PHONE) + CLUE_KEY_COLUMN_WIDTH
+    ? Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.PHONE)
+      + CLUE_BUTTON_COLUMN_WIDTH
     : Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE);
   // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
   // rest of the height of the table on the screen, with the same space below them as above the
