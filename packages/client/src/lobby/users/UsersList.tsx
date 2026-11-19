@@ -186,7 +186,7 @@ function BotIcon() {
   return (
     <span
       aria-label="Bot"
-      className="tw:text-[0.7em] tw:leading-none"
+      className="tw:relative tw:-top-[0.125em] tw:text-[0.7em] tw:leading-none"
       ref={ref}
       role="img"
     >
