@@ -4,6 +4,12 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
+/**
+ * Why the error modal shows: the server closed the connection ("disconnected"), or something on
+ * this page failed ("failed").
+ */
+export type ErrorCause = "disconnected" | "failed";
+
 export type MessageModal =
   | {
       readonly type: "warning";
@@ -14,6 +20,7 @@ export type MessageModal =
       readonly type: "error";
       /** It can hold markup, such as a formatted stack trace. */
       readonly html: string;
+      readonly cause: ErrorCause;
     }
   | {
       readonly type: "idle";

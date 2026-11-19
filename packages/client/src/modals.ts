@@ -9,7 +9,7 @@ import type {
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
 import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
-import type { MessageModal } from "./messageModalSlice.ts";
+import type { ErrorCause, MessageModal } from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
 import type { PromptModal } from "./promptModalSlice.ts";
 import { promptModalClosed, promptModalShown } from "./promptModalSlice.ts";
@@ -239,7 +239,7 @@ export function showDowntime(msg: string): void {
   downtimeMessage = msg;
 }
 
-export function showError(msg: string): void {
+export function showError(msg: string, cause: ErrorCause = "failed"): void {
   // Do nothing if we are already showing the error modal.
   if (store.getState().session.errorOccurred) {
     return;
@@ -250,6 +250,7 @@ export function showError(msg: string): void {
   showMessageModal(
     {
       type: "error",
+      cause,
       html:
         downtimeMessage === undefined
           ? msg

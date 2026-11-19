@@ -37,6 +37,8 @@ of the repository.
   every player count, without hovering.
 - A player's history page has a "With" box. It shows only the games with the
   players that it names.
+- The error window says what happened, such as that the server disconnected you,
+  and "Reload" is its main button.
 
 ## November 18th, 2026
 

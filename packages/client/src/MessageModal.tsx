@@ -9,7 +9,7 @@ import { LOCAL_STORAGE_KEY } from "./constants.ts";
 import { useReducedMotion } from "./fade.ts";
 import { globals } from "./Globals.ts";
 import { signOut } from "./lobby/signOut.ts";
-import type { MessageModal as Modal } from "./messageModalSlice.ts";
+import type { ErrorCause, MessageModal as Modal } from "./messageModalSlice.ts";
 import { closeModals, confirm, keepPlaying } from "./modals.ts";
 import { useAppSelector } from "./store.ts";
 
@@ -18,6 +18,24 @@ import { useAppSelector } from "./store.ts";
  * the same space above and below.
  */
 const MESSAGE_CLASS_NAME = "tw:[&_ul]:my-[1em]";
+
+/**
+ * The text of an error sits in the middle, under its title. A stack trace keeps its lines on the
+ * left and scrolls, and a list loses its bullets, so that it stays in the middle too.
+ */
+const ERROR_MESSAGE_CLASS_NAME =
+  "tw:w-full tw:text-balance tw:text-game-muted tw:[&_ul]:list-none tw:[&_ul]:p-0 tw:[&_pre]:max-h-[12em] tw:[&_pre]:overflow-auto tw:[&_pre]:text-left";
+
+/** The icon of each cause of an error, in its color. */
+const ERROR_ICONS = {
+  disconnected: "fa-plug tw:text-game-turn",
+  failed: "fa-exclamation-triangle tw:text-game-error",
+} as const satisfies Record<ErrorCause, string>;
+
+const ERROR_TITLES = {
+  disconnected: "You were disconnected.",
+  failed: "Something went wrong.",
+} as const satisfies Record<ErrorCause, string>;
 
 export function MessageModal(): React.JSX.Element | undefined {
   const modal = useAppSelector((state) => state.messageModal.modal);
@@ -52,31 +70,40 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
 
     case "error": {
       return (
-        <section id="error-modal">
-          <h3>Error</h3>
+        <section
+          className="tw:flex tw:flex-col tw:items-center tw:text-center"
+          id="error-modal"
+        >
+          <div className="tw:flex tw:size-[5em] tw:items-center tw:justify-center tw:rounded-full tw:ring-[0.25em] tw:ring-game-line/30">
+            <i
+              aria-hidden="true"
+              className={`fas ${ERROR_ICONS[modal.cause]} tw:text-[2em]`}
+            />
+          </div>
+          <h3 className="tw:mt-[0.75em] tw:mb-[0.25em]">
+            {ERROR_TITLES[modal.cause]}
+          </h3>
           {/* Errors can hold the formatted stack trace from "errors.ts". */}
           <p
-            className={MESSAGE_CLASS_NAME}
+            className={`${MESSAGE_CLASS_NAME} ${ERROR_MESSAGE_CLASS_NAME}`}
             dangerouslySetInnerHTML={{ __html: modal.html }}
           />
-          <ul className="actions">
+          <ul className="actions tw:justify-center">
             <li>
               <Button
+                autoFocus
                 onClick={() => {
                   globalThis.location.reload();
                 }}
+                variant="primary"
               >
                 Reload
-              </Button>{" "}
-              <a>
-                <button
-                  className="button small signout"
-                  onClick={signOut}
-                  type="button"
-                >
-                  Sign Out
-                </button>
-              </a>
+              </Button>
+            </li>
+            <li>
+              <Button onClick={signOut} variant="alt">
+                Sign out
+              </Button>
             </li>
           </ul>
         </section>

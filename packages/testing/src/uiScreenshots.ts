@@ -308,6 +308,10 @@ const H_GROUP_LEVEL = 3;
 /** The account that the browser logs in with. Others play the seeded games. */
 const USERNAME = "Alice";
 
+/** The error that the server sends when it stops for maintenance. */
+const MAINTENANCE_ERROR =
+  "The server is going down for maintenance. Your game progress has been saved.\nReload the page after the server restarts.";
+
 interface State {
   readonly name: string;
   readonly path: string;
@@ -336,6 +340,8 @@ interface State {
    * selector, or a function that moves the pointer.
    */
   readonly hover?: string | ((page: Page, cast: Cast) => Promise<void>);
+  /** The text of an error that the page logs on purpose, such as an error from the server. */
+  readonly expectedConsoleError?: string;
 }
 
 /**
@@ -1000,6 +1006,40 @@ function getStates(): readonly State[] {
           }),
         );
         await page.locator("#idle-modal").waitFor();
+        await settle(page);
+      },
+    },
+    // Bob's game with five players, after the server closed the connection for maintenance. The
+    // state sends the server's error itself, through the connection of the page.
+    {
+      name: "new-ui-error-modal",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      expectedConsoleError: MAINTENANCE_ERROR,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page) => {
+        const sockets: WebSocketRoute[] = [];
+        await page.routeWebSocket("**/ws?*", (socket) => {
+          socket.connectToServer();
+          sockets.push(socket);
+        });
+        // The route only sees connections that open after it.
+        await page.reload();
+        await page.evaluate(useStylesheet, `/public/css/${BUNDLE_FILENAME}`);
+        await page.waitForURL(/\/game\/\d+/u);
+        await page.locator("#game-new-ui [data-hand]").first().waitFor();
+        sockets.at(-1)?.send(
+          JSON.stringify({
+            event: "error",
+            data: {
+              message: MAINTENANCE_ERROR,
+            },
+          }),
+        );
+        await page.locator("#error-modal").waitFor();
         await settle(page);
       },
     },
@@ -3393,13 +3433,17 @@ async function capture(
   const page = await context.newPage();
   page.setDefaultTimeout(STEP_TIMEOUT_MILLISECONDS);
   let stateName = "";
+  let expectedConsoleError: string | undefined;
   page.on("pageerror", (error) => {
     results.errors.push(`${stateName}: ${error.message}`);
   });
   // Such as a script or image that the content security policy blocked, or a React warning.
   page.on("console", (message) => {
     const type = message.type();
-    if (type === "error" || type === "warning") {
+    if (
+      (type === "error" || type === "warning")
+      && message.text() !== expectedConsoleError
+    ) {
       results.errors.push(`${stateName}: ${type}: ${message.text()}`);
     }
   });
@@ -3414,6 +3458,7 @@ async function capture(
 
   for (const state of states) {
     stateName = state.name;
+    ({ expectedConsoleError } = state);
     try {
       await captureState(
         page,
