@@ -1461,33 +1461,40 @@ export function StatusStrip({
     // When a replay starts, its controls go where the rest of the panel stays where it was. Without
     // tabs, they are at the top, and the panel grows up into the clue log's space. With tabs, the
     // panel fills its tab, with the numbers at the top and the buttons at the bottom, and the
-    // controls go between them.
+    // controls go between them. The gaps between the three groups are larger than the gaps in them,
+    // so that each group reads as one.
     const status = (
       <div
-        className={`tw:flex tw:flex-col tw:gap-3 ${tabbed ? "tw:h-full" : ""}`}
+        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:h-full" : ""}`}
         data-panel-status
         ref={statusRef}
       >
         {!tabbed && controls}
         {/* The four numbers spread across one row when it has room for them, or two rows of two.
-            The chat button ends the first row, since the chat's rail is hidden (see
-            "ChatPanel.tsx"). */}
-        <div className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:justify-between tw:gap-x-6 tw:gap-y-2.5 tw:@min-[22rem]/panel:grid-cols-[repeat(4,auto)_auto] tw:[&>div:not([data-chat])]:contents">
+            The variant's name is under them. It says what it is, so it needs no label. The chat
+            button is in the corner of the room that the numbers leave: after the first row of two,
+            or after the name, since the chat's rail is hidden (see "ChatPanel.tsx"). With tabs, it
+            is beside them instead, so that the clue log's tab shows it too. */}
+        <div className="tw:grid tw:grid-cols-[auto_auto_1fr] tw:items-start tw:gap-x-6 tw:gap-y-2.5 tw:@min-[18rem]/panel:grid-cols-[repeat(4,auto)] tw:@min-[18rem]/panel:justify-between tw:@min-[18rem]/panel:gap-x-4 tw:[&>div:not([data-chat],[data-variant])]:contents">
           {progress}
           {planning}
+          {!tabbed && (
+            <div
+              className="tw:col-start-3 tw:row-start-1 tw:justify-self-end tw:@min-[18rem]/panel:col-start-4 tw:@min-[18rem]/panel:row-start-2 tw:@min-[18rem]/panel:self-center"
+              data-chat
+            >
+              {chatButton}
+            </div>
+          )}
           <div
-            className="tw:col-start-3 tw:row-start-1 tw:justify-self-end tw:@min-[22rem]/panel:col-start-5"
-            data-chat
+            // In one row of numbers, the name shares its row with the chat button, and it leaves
+            // room for the button (`size-9`) and a gap.
+            className={`tw:col-span-full tw:flex tw:min-w-0 tw:items-center tw:self-center tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted ${tabbed ? "" : "tw:@min-[18rem]/panel:row-start-2 tw:@min-[18rem]/panel:pr-12"}`}
+            data-variant
           >
-            {/* With tabs, the chat button is beside them, so that the clue log's tab shows it
-                too. */}
-            {!tabbed && chatButton}
+            <span className="tw:truncate">{variantName}</span>
+            {gameInfoButton}
           </div>
-        </div>
-        {/* The name says what it is, so it needs no label. */}
-        <div className="tw:flex tw:min-w-0 tw:items-center tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted">
-          <span className="tw:truncate">{variantName}</span>
-          {gameInfoButton}
         </div>
         {tabbed && controls}
         {buttons}

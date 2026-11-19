@@ -58,21 +58,29 @@ const ICON_BUTTON_SIZE_CLASS = {
  * does not push the buttons out of the panel.
  */
 function Controls({
+  rightBesideLeader = false,
   children,
 }: {
+  /**
+   * Whether the buttons on the right share the row of the leader's controls in a narrow panel too.
+   * In a wide panel, they always do. Only one button fits beside the leader's controls in a narrow
+   * panel.
+   */
+  readonly rightBesideLeader?: boolean;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   return (
     <div
       className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:group-data-panel/strip:min-w-0 tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3 tw:group-data-panel/strip:gap-x-1.5"
+      data-right-beside-leader={rightBesideLeader ? "" : undefined}
       role="status"
     >
       {children}
-      {/* In a wide panel, the leader's controls share their row with the buttons on the right, and
-          the rest of the controls start a new row. A narrow panel has no room for that. */}
+      {/* When the leader's controls share their row with the buttons on the right, the rest of the
+          controls start a new row. */}
       <span
         aria-hidden="true"
-        className="tw:hidden tw:h-0 tw:basis-full tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:block tw:group-data-panel/strip:@min-[22rem]/panel:order-[-1]"
+        className="tw:hidden tw:h-0 tw:basis-full tw:group-data-panel/strip:order-[-1] tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:block tw:group-data-panel/strip:group-data-right-beside-leader/controls:group-has-[[data-leader-controls]:not(:empty)]/controls:block"
       />
     </div>
   );
@@ -98,10 +106,17 @@ const AFTER_TIMELINE_CLASS = "tw:group-data-panel/strip:order-1";
 
 /**
  * The right of the controls. On a narrow window and in a wide panel, it shares the first row with
- * the leader's controls, if there are any.
+ * the leader's controls, if there are any. In a narrow panel, it does so only when the controls ask
+ * for it (see `Controls`).
  */
 const RIGHT_CLASS =
-  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden tw:group-data-panel/strip:order-2 tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2]";
+  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden tw:group-data-panel/strip:order-2 tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2] tw:group-data-panel/strip:group-data-right-beside-leader/controls:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2]";
+
+/**
+ * A step or a jump through the turns. In a narrow panel, the four of them share their row, and they
+ * fill it, so that they are larger targets.
+ */
+const STEP_BUTTON_CLASS = "tw:group-data-panel/strip:@max-[22rem]/panel:flex-1";
 
 /**
  * The mode's icon and name. The turn on screen is in the bar, with the other numbers about the
@@ -146,8 +161,9 @@ interface TimelineLeader {
  * A line from the first turn to the last, with a knob on the turn on screen. Clicking it, dragging
  * along it, or turning the mouse wheel over it shows another turn. On a phone, it gets shorter, so
  * that its row fits beside the four buttons that step through the turns. In a narrow panel, it is
- * on the next row, and it fills that row except for the button on its right. Otherwise, the
- * timeline fits beside the buttons, and only the button on its right wraps.
+ * on the next row, and it fills the room that the button on its right leaves. That button is on
+ * this row only when there are no leader's controls (see `Controls`). Otherwise, the timeline fits
+ * beside the buttons, and only the button on its right wraps.
  */
 function Timeline({
   segment,
@@ -705,7 +721,8 @@ export function ReplayControls({
  * aside. They do not shrink in the bar's row, so that the bar sees when it has no room for them. On
  * a narrow window, they share a row with the buttons on the right, and the menu can shrink. There,
  * they start with no width and take the room that the buttons leave. Otherwise, more buttons on the
- * right, as in a hypothetical, would wrap onto a row of their own, and the bar would grow.
+ * right, as in a hypothetical, would wrap onto a row of their own, and the bar would grow. In the
+ * panel, the menu can shrink too, so that the button on the right fits beside it.
  */
 function LeaderControls({
   state,
@@ -715,7 +732,7 @@ function LeaderControls({
   const { shared } = state.replay;
   return (
     <div
-      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:@max-[22rem]/panel:basis-full tw:group-data-panel/strip:@min-[22rem]/panel:order-[-3]"
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:order-[-3] tw:group-data-panel/strip:min-w-0 tw:group-data-panel/strip:shrink tw:group-data-panel/strip:@max-[22rem]/panel:basis-full tw:group-data-panel/strip:@max-[22rem]/panel:group-data-right-beside-leader/controls:basis-auto"
       data-leader-controls
     >
       {shared !== undefined && (
@@ -786,10 +803,11 @@ function TurnsControls({
   // hypothetical is at the right end. The way back to the game is with the bar's other buttons,
   // where the way into the replay is.
   return (
-    <Controls>
+    <Controls rightBesideLeader>
       <LeaderControls state={state} />
       <div className={MIDDLE_CLASS}>
         <IconButton
+          className={STEP_BUTTON_CLASS}
           disabled={atStart}
           icon="fa-step-backward"
           label="First turn"
@@ -797,6 +815,7 @@ function TurnsControls({
           size="jump"
         />
         <IconButton
+          className={STEP_BUTTON_CLASS}
           disabled={atStart}
           icon="fa-chevron-left"
           label="Previous turn"
@@ -806,7 +825,7 @@ function TurnsControls({
           size="step"
         />
         <IconButton
-          className={AFTER_TIMELINE_CLASS}
+          className={`${AFTER_TIMELINE_CLASS} ${STEP_BUTTON_CLASS}`}
           disabled={atEnd}
           icon="fa-chevron-right"
           label="Next turn"
@@ -815,7 +834,7 @@ function TurnsControls({
         />
         {!spoilerFree && (
           <IconButton
-            className={AFTER_TIMELINE_CLASS}
+            className={`${AFTER_TIMELINE_CLASS} ${STEP_BUTTON_CLASS}`}
             disabled={atEnd}
             icon="fa-step-forward"
             label="Last turn"
