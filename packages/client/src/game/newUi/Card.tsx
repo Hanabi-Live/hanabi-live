@@ -743,9 +743,7 @@ function StatusBadge({
       }}
     >
       {badge === "critical" && <ExclamationMark />}
-      {badge === "trash" && (
-        <i aria-hidden="true" className="fas fa-trash-can" />
-      )}
+      {badge === "trash" && <TrashCan />}
       {badge === "doubleDiscard" && (
         <i aria-hidden="true" className="fas fa-question" />
       )}
@@ -766,6 +764,27 @@ function getStatusBadge(
     return "trash";
   }
   return doubleDiscard ? "doubleDiscard" : undefined;
+}
+
+/** The height of the trash can in the badge of a trash card, per badge size. */
+const TRASH_CAN_HEIGHT_PER_SIZE = 0.62;
+
+/**
+ * The trash can in the badge of a trash card: the Font Awesome "trash-can" icon. It is drawn rather
+ * than typed, because the font's glyph reaches above its box and snaps to whole pixels, so that it
+ * sits too high in a small badge. The view box holds only the icon, so that the badge centers it.
+ */
+function TrashCan(): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:fill-current"
+      style={{ height: `${TRASH_CAN_HEIGHT_PER_SIZE * 100}%` }}
+      viewBox="0 -16 448 528"
+    >
+      <path d="M136.7 5.9C141.1-7.2 153.3-16 167.1-16l113.9 0c13.8 0 26 8.8 30.4 21.9L320 32 416 32c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 8.7-26.1zM32 144l384 0 0 304c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-304zm88 64c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24zm104 0c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24zm104 0c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24z" />
+    </svg>
+  );
 }
 
 /**
