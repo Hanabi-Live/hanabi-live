@@ -17,7 +17,10 @@ import {
 } from "./nav/navActions.ts";
 import { signOut } from "./signOut.ts";
 import { tableJoin } from "./tables/tableActions.ts";
-import { selectTableRows } from "./tables/tablesSlice.ts";
+import {
+  selectIsPlayingAtTable,
+  selectTableRows,
+} from "./tables/tablesSlice.ts";
 import { Screen } from "./types/Screen.ts";
 import * as watchReplay from "./watchReplay/WatchReplay.tsx";
 
@@ -93,7 +96,11 @@ export function lobbyKeyboardInit(): void {
 
       case "n": {
         // Alt + n. Create a game.
-        if (screen === Screen.Lobby && !state.session.creatingTable) {
+        if (
+          screen === Screen.Lobby
+          && !state.session.creatingTable
+          && !selectIsPlayingAtTable(state)
+        ) {
           showCreateGame();
         }
         break;

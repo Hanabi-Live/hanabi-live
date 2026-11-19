@@ -5,10 +5,12 @@ import { PATH } from "../../constants.ts";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import type { RootState } from "../../store.ts";
 import { useAppSelector } from "../../store.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { showCreateGame } from "../createGame.ts";
 import * as history from "../history.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 import { signOut } from "../signOut.ts";
+import { selectIsPlayingAtTable } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import * as watchReplay from "../watchReplay/WatchReplay.tsx";
 import {
@@ -40,6 +42,9 @@ const HELP_COLOR_CLASS_NAME = "tw:bg-(--green) tw:hover:bg-(--green-hover)";
 
 const ICON_CLASS_NAME =
   "tw:relative tw:top-[0.05em] tw:mr-[0.3em] tw:narrow-840:mr-0";
+
+const PLAYING_AT_TABLE_TOOLTIP =
+  "You are already playing at a table. Leave it or finish its game before you create a new one.";
 
 type NavBar = "lobby" | "pregame" | "page" | "history" | "otherScores";
 
@@ -108,14 +113,16 @@ export function Nav(): React.JSX.Element | undefined {
 
 function LobbyNav() {
   const creatingTable = useAppSelector((state) => state.session.creatingTable);
+  const playingAtTable = useAppSelector(selectIsPlayingAtTable);
 
   return (
     <NavList>
       <NavButton
-        disabled={creatingTable}
+        disabled={creatingTable || playingAtTable}
         icon="fa-plus"
         id="nav-buttons-lobby-create-game"
         onClick={showCreateGame}
+        tooltip={playingAtTable ? PLAYING_AT_TABLE_TOOLTIP : undefined}
       >
         <span className="tw:narrow-530:hidden">
           <Hotkey>N</Hotkey>ew
@@ -353,6 +360,7 @@ function NavButton({
   icon,
   id,
   onClick,
+  tooltip,
 }: {
   readonly children: React.ReactNode;
   readonly className?: string;
@@ -361,6 +369,8 @@ function NavButton({
   readonly icon: string | React.JSX.Element;
   readonly id: string;
   readonly onClick: () => void;
+  /** Plain text that the button shows in the site's tooltip. */
+  readonly tooltip?: string;
 }) {
   const colorClassName = disabled ? "disabled" : ENABLED_COLOR_CLASS_NAME;
   return (
@@ -375,6 +385,7 @@ function NavButton({
             onClick();
           }
         }}
+        ref={tooltipRef(tooltip)}
       >
         {typeof icon === "string" ? (
           <i className={`fas ${icon} ${ICON_CLASS_NAME}`} />

@@ -138,6 +138,16 @@ function compareSortKeys(a: readonly number[], b: readonly number[]): number {
   return 0;
 }
 
+/**
+ * Whether we play at a table (rather than reviewing a shared replay of our game). The server does
+ * not let us create another table then.
+ */
+export const selectIsPlayingAtTable = createSelector(
+  [selectTables, (state: RootState) => state.session.username],
+  (tables: readonly Table[], username: string): boolean =>
+    tables.some((table) => isOurGame(table, isPlayer(table, username))),
+);
+
 /** Whether the user is one of the table's players. */
 export function isPlayer(table: Table, username: string): boolean {
   return table.playerNames.includes(username);
