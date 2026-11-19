@@ -164,7 +164,6 @@ export function Pregame(): React.JSX.Element | undefined {
           {Array.from({ length: numOpenSeats }, (_, i) => i).map((i) => (
             <OpenSeat
               cardsPerHand={cardsPerHand}
-              isNext={i === 0}
               key={`open-seat-${i}`}
               seat={game.players.length + i + 1}
             />
@@ -271,29 +270,17 @@ const HAND_FAN_STEP_DEGREES = 8;
 
 /**
  * A seat that no one sits in yet: an empty well in the felt, with a hand of cards that waits face
- * down for its player. The next seat to fill breathes, so that the eye finds where the next player
- * will sit. The "Reduced motion" setting leaves it still.
+ * down for its player.
  */
 function OpenSeat({
   cardsPerHand,
-  isNext,
   seat,
 }: {
   readonly cardsPerHand: number;
-  readonly isNext: boolean;
   readonly seat: number;
 }) {
-  const reducedMotion = useReducedMotion();
   return (
-    <li className="tw:relative tw:flex tw:min-h-[3em] tw:flex-col tw:items-center tw:justify-center tw:gap-2 tw:rounded-[5px] tw:bg-game-well tw:p-[0.8em] tw:text-game-muted">
-      <span
-        className={[
-          "tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[5px] tw:border tw:border-dashed",
-          isNext
-            ? `tw:border-game-line ${reducedMotion ? "" : "tw:animate-pulse"}`
-            : "tw:border-game-line/40",
-        ].join(" ")}
-      />
+    <li className="tw:flex tw:min-h-[3em] tw:flex-col tw:items-center tw:justify-center tw:gap-2 tw:rounded-[5px] tw:border tw:border-dashed tw:border-game-line/40 tw:bg-game-well tw:p-[0.8em] tw:text-game-muted">
       <div className="tw:flex tw:h-[3.2em] tw:items-end tw:justify-center">
         {Array.from({ length: cardsPerHand }, (_, i) => i).map((i) => (
           <span
