@@ -4,14 +4,10 @@
 
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals as lobbyGlobals } from "../../Globals.ts";
-import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import { globals } from "./UiGlobals.ts";
 import { backToLobby } from "./backToLobby.ts";
-
-const ALREADY_VIEWING_WARNING =
-  "You are already viewing the game from this player's perspective.";
 
 /** The seat that we view the game from, or `undefined` when we do not view it from a seat. */
 export function getViewedSeat(): PlayerIndex | undefined {
@@ -36,11 +32,6 @@ export function canChooseSeat(): boolean {
  */
 export function viewAs(playerIndex: PlayerIndex | undefined): void {
   if (!canChooseSeat()) {
-    return;
-  }
-
-  if (playerIndex === getViewedSeat()) {
-    modals.showWarning(ALREADY_VIEWING_WARNING);
     return;
   }
 

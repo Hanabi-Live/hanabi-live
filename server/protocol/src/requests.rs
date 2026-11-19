@@ -225,9 +225,6 @@ pub enum ReplayVisibility {
 pub struct ReplayCreateRequest {
     pub source: ReplaySource,
     pub visibility: ReplayVisibility,
-    /// The seat to shadow, if any.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shadowing_player_index: Option<PlayerIndex>,
 }
 
 /// The finished game that a replay shows: one from the database, or one imported in the replay

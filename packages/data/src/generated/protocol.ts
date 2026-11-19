@@ -1627,10 +1627,6 @@ const replayVisibilitySchema = z.discriminatedUnion("type", [
  */
 export const replayCreateRequestSchema = z
   .strictObject({
-    /**
-     * The seat to shadow, if any.
-     */
-    shadowingPlayerIndex: playerIndexSchema.optional(),
     source: replaySourceSchema,
     visibility: replayVisibilitySchema,
   })

@@ -935,7 +935,7 @@ impl Hub {
                     let spectate =
                         ClientRequest::TableSpectate(hanabi_protocol::TableSpectateRequest {
                             table_id: id,
-                            shadowing_player_index: r.shadowing_player_index,
+                            shadowing_player_index: None,
                         });
                     self.route(session, id, Command::Client(Box::new(spectate)), reply);
                 } else {
