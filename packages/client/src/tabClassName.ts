@@ -1,15 +1,15 @@
 /**
  * The class name of a text tab. A brass line underlines it while it is selected. While the mouse is
- * over a tab that is not selected, a line of half that height fades in under it, unless the player
- * turned on the "Reduced motion" setting.
+ * over a tab that is not selected, a 1px line fades in under it, unless the player turned on the
+ * "Reduced motion" setting.
  */
 export function getTabClassName(reducedMotion: boolean): string {
   return [
     "tw:relative tw:cursor-pointer tw:select-none tw:appearance-none tw:border-0 tw:bg-transparent tw:p-0 tw:pb-0.5",
     "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:leading-[1.3] tw:tracking-[inherit] tw:text-text-label",
     "tw:hover:text-text",
-    "tw:after:absolute tw:after:inset-x-0 tw:after:bottom-0 tw:after:h-0.5 tw:after:origin-bottom tw:after:bg-(--button-primary-bg) tw:after:opacity-0 tw:after:content-['']",
-    "tw:hover:after:opacity-100 tw:not-aria-selected:hover:after:scale-y-50",
+    "tw:after:absolute tw:after:inset-x-0 tw:after:bottom-0 tw:after:h-0.5 tw:after:bg-(--button-primary-bg) tw:after:opacity-0 tw:after:content-['']",
+    "tw:hover:after:opacity-100 tw:not-aria-selected:hover:after:h-px",
     "tw:aria-selected:cursor-default tw:aria-selected:text-text tw:aria-selected:after:opacity-100",
     reducedMotion ? "" : TAB_TRANSITION_CLASS_NAME,
   ].join(" ");
