@@ -65,7 +65,7 @@ export function Pregame(): React.JSX.Element | undefined {
   );
 
   return (
-    <div className="tw:flex tw:h-full tw:flex-col">
+    <div className="tw:flex tw:min-h-0 tw:flex-auto tw:flex-col">
       <header className="tw:mb-4 tw:flex-none">
         <h3
           className="tw:m-0 tw:text-[1.4em] tw:leading-tight tw:font-bold"
@@ -129,7 +129,7 @@ export function Pregame(): React.JSX.Element | undefined {
       </header>
       {/* Every row is as tall as the tallest card, so that the open seats look the same. One column
           on a phone has no rows to match. */}
-      <div className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto">
+      <div className="tw:min-h-0 tw:flex-auto tw:overflow-y-auto">
         <ol className="tw:m-0 tw:grid tw:list-none tw:auto-rows-fr tw:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] tw:gap-2 tw:p-0 tw:narrow-410:auto-rows-auto">
           {game.players.map((player, i) => (
             <PlayerBox

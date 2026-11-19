@@ -28,6 +28,16 @@ export const LOBBY_CLASS_NAME =
 /** A row that takes its share of the height of the lobby. */
 const HALF = "tw:min-h-0 tw:flex-1";
 
+/**
+ * The top half while it shows the table that we are at: only as tall as the table, up to half of
+ * the lobby, so that the chats below get the rest. Small screens show one half at a time, so there
+ * it fills the lobby. The column and the box inside pass the height on, so that the seats scroll
+ * when they do not fit.
+ */
+const PREGAME_HALF =
+  "tw:min-h-0 tw:flex-initial tw:flex-col tw:flex-nowrap tw:max-h-[calc((100%---spacing(6))/2)] tw:compact:max-h-none tw:compact:flex-1";
+const PREGAME_COLUMN = "tw:flex tw:min-h-0 tw:flex-auto tw:flex-col";
+
 /** A box that fills its column. */
 const SECTION = "box tw:mb-0 tw:h-full tw:p-6";
 
@@ -81,13 +91,18 @@ export function Lobby(): React.JSX.Element {
       <div
         className={classes(
           "row",
-          HALF,
+          inPregame ? PREGAME_HALF : HALF,
           panel !== "tables" && "tw:compact:hidden",
           full && "tw:hidden",
         )}
         id="lobby-top-half"
       >
-        <div className="col-12 tw:h-full">
+        <div
+          className={classes(
+            "col-12",
+            inPregame ? PREGAME_COLUMN : "tw:h-full",
+          )}
+        >
           <section
             className={classes(SECTION, inPregame && "tw:hidden")}
             id="lobby-games"
@@ -95,7 +110,10 @@ export function Lobby(): React.JSX.Element {
             <TablesList />
           </section>
           <section
-            className={classes(SECTION, !inPregame && "tw:hidden")}
+            className={classes(
+              "box tw:mb-0 tw:p-6",
+              inPregame ? PREGAME_COLUMN : "tw:hidden",
+            )}
             id="lobby-pregame"
           >
             <Pregame />
