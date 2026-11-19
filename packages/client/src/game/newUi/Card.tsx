@@ -1036,7 +1036,19 @@ const SUIT_PIP_PER_CELL = 0.9;
 const RANK_CHIP_HEIGHT_PER_WIDTH = 1.1;
 
 /** The size of the number on a rank chip, per the chip's width. */
-const RANK_CHIP_FONT_PER_WIDTH = 0.84;
+const RANK_CHIP_FONT_PER_WIDTH = 1.15;
+
+/**
+ * The width of the dark outline around the number of a rank, per the chip's width. Half of it
+ * shows, because the white fill covers the inner half.
+ */
+const RANK_OUTLINE_PER_CHIP_WIDTH = 0.2;
+
+/** The thinnest outline around the number of a rank, in CSS pixels. */
+const MIN_RANK_OUTLINE = 2;
+
+/** The shadow under the number of a rank, so that it stands out on the face of an unknown card. */
+const RANK_SHADOW = "drop-shadow(0 1px 1px rgb(0 0 0 / 50%))";
 
 /**
  * How opaque a suit, a rank, or a card in the bubble of possible cards is when the card cannot be
@@ -1106,7 +1118,10 @@ function SuitChip({
   );
 }
 
-/** A rank that a card can be: a dark chip with a white number. */
+/**
+ * A rank that a card can be: a white number with a dark outline and a shadow, like the suits' pips,
+ * with no chip behind it.
+ */
 function RankChip({
   pip,
   chipWidth,
@@ -1129,9 +1144,11 @@ function RankChip({
       }}
     >
       <span
-        className="tw:flex tw:size-full tw:items-center tw:justify-center tw:bg-card-ink tw:font-extrabold tw:leading-none tw:text-white"
+        className="tw:flex tw:size-full tw:items-center tw:justify-center tw:font-black tw:leading-none tw:text-white tw:[paint-order:stroke]"
         style={{
           fontSize: chipWidth * RANK_CHIP_FONT_PER_WIDTH,
+          WebkitTextStroke: `${Math.max(MIN_RANK_OUTLINE, chipWidth * RANK_OUTLINE_PER_CHIP_WIDTH)}px var(--card-ink)`,
+          filter: RANK_SHADOW,
           borderRadius: chipWidth * 0.25,
           opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
           boxShadow: pip.positive ? getPositiveRing(width) : undefined,
@@ -1145,10 +1162,10 @@ function RankChip({
 
 /**
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
- * card, so that they are easy to read at a glance. Each suit is its pip, and each rank is a dark
- * chip with a white number. A suit or a rank that the card cannot be is faded, and one that a clue
- * touched has a ring in the clue color. The card shows the exact cards that it can be in a bubble
- * (see `PossibleCardsBubble`).
+ * card, so that they are easy to read at a glance. Each suit is its pip, and each rank is a white
+ * number with a dark outline. A suit or a rank that the card cannot be is faded, and one that a
+ * clue touched has a ring in the clue color. The card shows the exact cards that it can be in a
+ * bubble (see `PossibleCardsBubble`).
  *
  * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
  * holder learns that the card is not one of them. Its place stays empty.
