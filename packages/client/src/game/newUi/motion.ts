@@ -35,7 +35,7 @@ export const SLIDE = {
  * opens. It starts slowly and speeds up as it goes. Do not give it another curve. With `SLIDE`'s
  * own curve, or with a curve that moves evenly, the close looks about twice as fast as the open
  * (this regressed twice). An element that also fades as it closes should fade on its own, faster
- * curve, so that it starts to change at once (see `useTabSlide` in "ClueMenu.tsx").
+ * curve, so that it starts to change at once (see `ClueHandLayer` in "ClueMenu.tsx").
  */
 export const SLIDE_BACK = {
   duration: SLIDE.duration,

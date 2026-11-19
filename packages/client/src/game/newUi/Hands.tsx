@@ -30,7 +30,7 @@ import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
-import { ClueHandLayer, ClueTab } from "./ClueMenu.tsx";
+import { ClueHandLayer, ClueKey } from "./ClueMenu.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
@@ -135,8 +135,8 @@ interface HandsProps {
   readonly nameColumnWidth: number | undefined;
 
   /**
-   * Whether the viewer can give a clue. Then, the pointer over another player's hand shows their
-   * clue tab, which opens the clues that they can get (`clueMenu`) on their hand.
+   * Whether the viewer can give a clue. Then, another player's hand shows their clue key, which
+   * opens the clues that they can get (`clueMenu`) on their hand.
    */
   readonly canChooseClueTarget: boolean;
 
@@ -1665,21 +1665,6 @@ function Hand({
   const editing = props.onEditCard !== undefined;
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
-  // A card that the viewer drags hides the tab, so that it does not get in the way. While the clue
-  // menu is open on any hand, no hand shows the tab.
-  const showsClueTab =
-    canClueSeat
-    && props.clueTarget === undefined
-    && pointedAt
-    && props.draggedCard === undefined;
-  // The tab stays while it slides back after it closes, also when the viewer can no longer give a
-  // clue. It goes at once when the clue menu opens, which grows out of it.
-  const [clueTabMounted, setClueTabMounted] = useState(false);
-  if (showsClueTab && !clueTabMounted) {
-    setClueTabMounted(true);
-  } else if (clueTabMounted && chosen) {
-    setClueTabMounted(false);
-  }
 
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
@@ -1717,8 +1702,8 @@ function Hand({
           : "tw:items-center"
       } ${boxClass}`}
       data-hand={seat.playerIndex}
-      // A mouse over the hand shows its clue tab. A touch has no hover, so a tap shows it instead,
-      // until a tap somewhere else (see `Hands`).
+      // A mouse over the hand brightens its clue key. A touch has no hover, so a tap brightens it
+      // instead, until a tap somewhere else (see `Hands`).
       onPointerDown={(event) => {
         if (event.pointerType === "touch") {
           onPoint(seat.playerIndex);
@@ -1746,13 +1731,9 @@ function Hand({
             : NAME_GAP,
       }}
     >
-      {/* In the phone layout, the tab sits inside the hand, so only the menu colors it. The layer
-          stays when the viewer can no longer give a clue, such as after they give one, so that it
-          slides back with the menu. */}
-      <ClueHandLayer
-        reducedMotion={props.reducedMotion}
-        shown={chosen || (showsClueTab && !props.stacked)}
-      />
+      {/* The layer stays when the viewer can no longer give a clue, such as after they give one,
+          so that it fades as the menu slides back. */}
+      <ClueHandLayer reducedMotion={props.reducedMotion} shown={chosen} />
       {/* Beside the cards, the clock goes under the name, so that it does not take width from the
           name. Above the cards, it goes after the name, so that it does not take height from the
           cards. It is positioned, as are the cards, so that both are drawn over the layer behind
@@ -1890,17 +1871,14 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {clueTabMounted && !chosen && (
-        <ClueTab
+      {canClueSeat && !chosen && (
+        <ClueKey
           below={props.stacked}
+          highlighted={pointedAt}
           name={seat.name}
-          onClosed={() => {
-            setClueTabMounted(false);
-          }}
           onOpen={() => {
             props.onChooseClueTarget(seat.playerIndex);
           }}
-          open={showsClueTab}
           reducedMotion={props.reducedMotion}
           top={getHandBoxTopPadding(props.cardWidth)}
         />
@@ -1953,7 +1931,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
   // The hand that the pointer is over, or that a touch last tapped.
   const [pointedSeat, setPointedSeat] = useState<PlayerIndex>();
 
-  // A tap outside of the hands hides the clue tab that a tap showed.
+  // A tap outside of the hands dims the clue key that a tap brightened.
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
       const { target } = event;

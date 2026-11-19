@@ -12,6 +12,7 @@ import {
   getOpacityTransition,
   SLIDE,
   SLIDE_BACK,
+  useFade,
 } from "./motion.ts";
 import { measure } from "./screenScale.ts";
 import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
@@ -157,9 +158,9 @@ const choiceSizeClass =
 const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
 
 /**
- * The clues that the viewer can give a player. The key in the player's clue tab (see `ClueTab`)
- * opens it out of their hand, as a drawer (see `ClueHandLayer`). It opens to the right of the hand,
- * so that it does not cover the other hands. The hands always leave room for it there (see
+ * The clues that the viewer can give a player. The player's clue key (see `ClueKey`) opens it out
+ * of their hand, as a drawer (see `ClueHandLayer`). It opens to the right of the hand, so that it
+ * does not cover the other hands. The hands always leave room for it there (see
  * `getClueDrawerWidth`). Its top lines up with the top of the hand. When there is not enough room
  * below, its bottom lines up with the bottom of the hand instead. In the phone layout, it opens
  * below the hand, as wide as the hand. A clue that the rules do not allow, such as one that touches
@@ -325,26 +326,11 @@ export function ClueMenu({
   // hand is cut off. Its content fades in (see `CONTENT_FADE_IN`). The sliding only decorates.
   useLayoutEffect(() => {
     const menu = ref.current;
-    if (measuredSide === undefined || menu === null) {
-      return undefined;
-    }
-    const hand = menu.parentElement;
-    const reach = hand === null ? undefined : tabReaches.get(hand);
-    if (hand !== null) {
-      tabReaches.delete(hand);
-    }
-    if (reducedMotion) {
+    if (measuredSide === undefined || reducedMotion || menu === null) {
       return undefined;
     }
     const animation = menu.animate(
-      [
-        getHiddenDrawer(
-          menu,
-          measuredSide,
-          measuredSide === "right" ? reach : undefined,
-        ),
-        getShownDrawer(measuredSide),
-      ],
+      [getHiddenDrawer(menu, measuredSide), getShownDrawer(measuredSide)],
       SLIDE,
     );
     const contentAnimation = contentRef.current?.animate([...CONTENT_FADE_IN], {
@@ -665,35 +651,20 @@ const CONTENT_FADE_OUT = [
 ] as const;
 
 /**
- * How far the clue tab of a hand reached past the hand's edge when its key opened the clue menu, in
- * CSS pixels, by the hand. The menu starts its slide there, instead of from behind the hand's edge.
- * Otherwise, for a frame or two, the hand's outline would end at its edge with nothing beside it.
- */
-const tabReaches = new WeakMap<Element, number>();
-
-/**
- * How far a drawer that slides out of the hand (the clue tab or the clue menu) shows inside the
- * hand's edge while it slides, in CSS pixels. Its cut is inside the hand, on the hand's own dark
- * edge, not on the edge itself. When the game screen is scaled, the edge falls between two pixels,
- * and a cut there leaves a line of half-clear pixels, through which the table shows.
+ * How far the clue menu shows inside the hand's edge while it slides out of the hand, in CSS
+ * pixels. Its cut is inside the hand, on the hand's own dark edge, not on the edge itself. When the
+ * game screen is scaled, the edge falls between two pixels, and a cut there leaves a line of
+ * half-clear pixels, through which the table shows.
  */
 const JOINT_OVERLAP = 1;
 
-/**
- * How the clue menu looks before it slides out of the hand, behind the hand's edge. When `reach` is
- * given, that much of the menu already shows past the hand's edge.
- */
-function getHiddenDrawer(
-  menu: HTMLElement,
-  side: DrawerSide,
-  reach = 0,
-): Keyframe {
+/** How the clue menu looks before it slides out of the hand, behind the hand's edge. */
+function getHiddenDrawer(menu: HTMLElement, side: DrawerSide): Keyframe {
   const { height, width } = measure(menu);
-  const hidden = Math.max(width - reach, 0);
   return side === "right"
     ? {
-        transform: `translateX(${-hidden}px)`,
-        clipPath: `inset(0 0 0 ${hidden - JOINT_OVERLAP}px)`,
+        transform: `translateX(${-width}px)`,
+        clipPath: `inset(0 0 0 ${width - JOINT_OVERLAP}px)`,
       }
     : {
         transform: `translateY(${-height}px)`,
@@ -740,152 +711,13 @@ function ChoiceRing({
 }
 
 /**
- * Slides the clue tab and fades its hand's color in when `open` turns on, and out when it turns
- * off, from where they are. Each look holds when its animation ends. When the tab has closed, it
- * calls `onClosed`. The slide closes on `SLIDE_BACK`, and the fade closes at an even pace, so that
- * the tab starts to fade as soon as it closes. On `SLIDE_BACK`'s curve, the fade would barely
- * change for half of the close, and then the tab would seem to vanish. The tab and its hand use the
- * same timing, so that they fade together in both directions. The animations only decorate.
- */
-function useTabSlide(
-  ref: React.RefObject<HTMLElement | null>,
-  getKeyframes: (element: HTMLElement) => readonly Keyframe[],
-  open: boolean,
-  reducedMotion: boolean,
-  layoutKey: unknown,
-  onClosed?: () => void,
-) {
-  const animationsRef = useRef<readonly Animation[]>([]);
-  const openRef = useRef(open);
-  openRef.current = open;
-  const keyframesRef = useRef(getKeyframes);
-  keyframesRef.current = getKeyframes;
-  const onClosedRef = useRef(onClosed);
-  onClosedRef.current = onClosed;
-
-  // An element that appears open slides out. One that appears closed stays hidden.
-  useLayoutEffect(() => {
-    const element = ref.current;
-    if (reducedMotion || element === null) {
-      return undefined;
-    }
-    const [hidden] = keyframesRef.current(element);
-    animationsRef.current = openRef.current
-      ? playTabSlide(element, keyframesRef.current(element), true, hidden)
-      : [element.animate([hidden ?? {}], { fill: "forwards" })];
-    return () => {
-      for (const animation of animationsRef.current) {
-        animation.cancel();
-      }
-      animationsRef.current = [];
-    };
-  }, [ref, reducedMotion, layoutKey]);
-
-  const startedRef = useRef(false);
-  useLayoutEffect(() => {
-    if (!startedRef.current) {
-      startedRef.current = true;
-      return undefined;
-    }
-    const element = ref.current;
-    if (reducedMotion || element === null) {
-      if (!open) {
-        onClosedRef.current?.();
-      }
-      return undefined;
-    }
-
-    // It reads where the element is before it stops the animations that put it there.
-    const animations = playTabSlide(
-      element,
-      keyframesRef.current(element),
-      open,
-    );
-    for (const animation of animationsRef.current) {
-      animation.cancel();
-    }
-    animationsRef.current = animations;
-    if (open) {
-      return undefined;
-    }
-    let stopped = false;
-    Promise.all(animations.map(async (animation) => await animation.finished))
-      .then(() => {
-        if (!stopped) {
-          onClosedRef.current?.();
-        }
-      })
-      .catch(() => {
-        // An animation that is canceled does not close the tab.
-      });
-    return () => {
-      stopped = true;
-    };
-  }, [ref, open, reducedMotion]);
-}
-
-/**
- * Plays the slide and the fade of `useTabSlide` from where the element is, or from `from`, to its
- * open or closed look in `keyframes` (closed, then open).
- */
-function playTabSlide(
-  element: HTMLElement,
-  keyframes: readonly Keyframe[],
-  open: boolean,
-  from?: Keyframe,
-): readonly Animation[] {
-  const [hidden, shown] = keyframes;
-  const { opacity, ...motion } = (open ? shown : hidden) ?? {};
-  const style = getComputedStyle(element);
-  function startOf(property: string): string | number | null | undefined {
-    const value = from?.[property];
-    return value === undefined || typeof value === "object"
-      ? style.getPropertyValue(
-          property.replaceAll(
-            /[A-Z]/gu,
-            (letter) => `-${letter.toLowerCase()}`,
-          ),
-        )
-      : value;
-  }
-
-  const animations: Animation[] = [];
-  const motionProperties = Object.keys(motion);
-  if (motionProperties.length > 0) {
-    const motionStart = Object.fromEntries(
-      motionProperties.map((property) => [property, startOf(property)]),
-    );
-    animations.push(
-      element.animate([motionStart, motion], {
-        ...(open ? SLIDE : SLIDE_BACK),
-        fill: "forwards",
-      }),
-    );
-  }
-  if (opacity !== undefined) {
-    animations.push(
-      element.animate([{ opacity: startOf("opacity") }, { opacity }], {
-        duration: SLIDE.duration,
-        easing: open ? SLIDE.easing : "linear",
-        fill: "forwards",
-      }),
-    );
-  }
-  return animations;
-}
-
-function getLayerKeyframes(): readonly Keyframe[] {
-  return [{ opacity: 0 }, { opacity: 1 }];
-}
-
-/**
- * A layer behind the cards of a hand that can show its clue tab or its clue menu. While the tab or
- * the menu shows, the layer gives the hand their color, and one outline goes around both. The layer
- * has no outline and no round corners on the side where they join it: its right, or its bottom when
- * the menu opens below the hand. The menu is a drawer that opens out of the hand.
+ * A layer behind the cards of a hand that can show its clue menu. While the menu shows, the layer
+ * gives the hand its color, and one outline goes around both. The layer has no outline and no round
+ * corners on the side where the menu joins it: its right, or its bottom when the menu opens below
+ * the hand. The menu is a drawer that opens out of the hand.
  *
- * The layer fades in and out with its opacity, as the tab and the menu slide. Do not animate the
- * hand's background color instead:
+ * The layer fades in and out with its opacity, as the menu slides. It fades out at an even pace, so
+ * that it starts to change at once. Do not animate the hand's background color instead:
  * Chrome 157 runs such an animation on the compositor, and then sometimes crashes the tab when the
  * hand's style changes.
  */
@@ -896,20 +728,19 @@ export function ClueHandLayer({
   readonly shown: boolean;
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
   // Whether the layer shows, or still fades out.
   const [visible, setVisible] = useState(shown);
   if (shown && !visible) {
     setVisible(true);
-  }
-  useTabSlide(ref, getLayerKeyframes, shown, reducedMotion, undefined, () => {
+  } else if (!shown && visible && reducedMotion) {
     setVisible(false);
-  });
+  }
+
   return (
     <>
       {/* While the layer shows or fades, a line in the panel's color covers the hand's own outline
-          where the tab or the menu joins the hand. It does not fade. Otherwise, the outline would
-          show as a light line next to the solid tab or menu, until the layer covers it. */}
+          where the menu joins the hand. It does not fade. Otherwise, the outline would show as a
+          light line next to the solid menu, until the layer covers it. */}
       {visible && (
         <span
           aria-hidden="true"
@@ -919,135 +750,82 @@ export function ClueHandLayer({
       <div
         aria-hidden="true"
         className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-l-game-panel tw:bg-game-panel tw:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line)] tw:[:has(>[data-clue-drawer=below])>&]:rounded-tr-game-panel tw:[:has(>[data-clue-drawer=below])>&]:rounded-bl-none tw:[:has(>[data-clue-drawer=below])>&]:[box-shadow:inset_1px_0_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_1px_0_var(--game-screen-line)]"
-        ref={ref}
-        style={{ opacity: shown ? 1 : 0 }}
+        onTransitionEnd={(event) => {
+          if (!shown && event.propertyName === "opacity") {
+            setVisible(false);
+          }
+        }}
+        style={{
+          opacity: shown ? 1 : 0,
+          transition: reducedMotion
+            ? undefined
+            : `opacity ${SLIDE.duration}ms ${shown ? SLIDE.easing : "linear"}`,
+        }}
       />
     </>
   );
 }
 
-/**
- * The tab to the right of the hand, as tall as the hand, with its key halfway down. It has an
- * outline on its top, right, and bottom, which go on from the hand's outline. The space to the
- * right of the key is as wide as the space to its left, which is the hand's padding (16px) and the
- * tab's (10px).
- */
-const TAB_RIGHT_CLASS =
-  "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:rounded-r-game-panel tw:bg-game-panel tw:pr-[26px] tw:pl-2.5 tw:[box-shadow:inset_0_1px_0_var(--game-screen-line),inset_-1px_0_0_var(--game-screen-line),inset_0_-1px_0_var(--game-screen-line),12px_16px_20px_-10px_rgb(0_0_0/55%)]";
+/** The opacity of a clue key while the pointer is not over its hand (see `ClueKey`). */
+const DIM_CLUE_KEY_OPACITY = 0.6;
 
 /**
- * A small drawer with one key, which opens the clue menu of a player. It slides out of the right of
- * their hand while the pointer is over the hand, on the viewer's turn when the team has a clue, and
- * slides back when the pointer leaves. On a touch screen, a tap on the hand shows it. Like the
- * menu, it opens to the right of the hand, where the hands always leave room (see
+ * The key that opens the clue menu of a player. It shows beside their hand while the viewer can
+ * clue them, in the room to the right of the hand that the hands leave for the menu (see
  * `getClueDrawerWidth`). In the phone layout, there is no room there, so it sits in the hand's top
- * right corner, beside the player's name.
+ * right corner, beside the player's name. It is dim, so that the keys of all the hands do not
+ * compete with the cards, and bright while the pointer is over its hand. It fades in when it
+ * appears, such as when the viewer's turn starts, and fades out when it goes, such as when its menu
+ * opens.
  */
-export function ClueTab({
+export function ClueKey({
   name,
   below,
   top,
+  highlighted,
   reducedMotion,
-  open,
   onOpen,
-  onClosed,
 }: {
   readonly name: string;
   readonly below: boolean;
 
   /** In the phone layout, the distance from the top of the hand to the top of the name. */
   readonly top: number;
-  readonly reducedMotion: boolean;
 
-  /** Whether the tab is open. When it is not, it slides back, and then `onClosed` removes it. */
-  readonly open: boolean;
+  /** Whether the pointer is over the hand, or a touch last tapped it. */
+  readonly highlighted: boolean;
+  readonly reducedMotion: boolean;
   readonly onOpen: () => void;
-  readonly onClosed: () => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const keyRef = useRef<HTMLDivElement>(null);
-  // It slides out from behind the edge of the hand, as the menu does, while the hand's color fades
-  // in (see `ClueHandLayer`). Its panel does not fade, so that what is behind it, such as the clue
-  // log, does not show through it. Only its key fades. In the phone layout, it is only a key in the
-  // hand, which slides in a little from the right as it fades in. When it closes, it slides back,
-  // and then it is removed.
-  useTabSlide(
-    ref,
-    (tab) => {
-      const { width } = measure(tab);
-      return [
-        below
-          ? {
-              transform: `translateX(${width / 2}px)`,
-              opacity: 0,
-            }
-          : {
-              transform: `translateX(${-width}px)`,
-              clipPath: `inset(0 0 0 ${width - JOINT_OVERLAP}px)`,
-            },
-        below
-          ? {
-              transform: "none",
-              opacity: 1,
-            }
-          : getShownDrawer("right"),
-      ];
-    },
-    open,
-    reducedMotion,
-    below,
-    onClosed,
-  );
-  useTabSlide(
-    keyRef,
-    () => (below ? [{}, {}] : getLayerKeyframes()),
-    open,
-    reducedMotion,
-    below,
-  );
-
-  // When its key opens the menu, the tab goes at once, and the menu slides out from where the tab's
-  // edge was (see `tabReaches`), so that the tab seems to grow into the menu.
-  const openedMenuRef = useRef(false);
-  useLayoutEffect(() => {
-    const tab = ref.current;
-    return () => {
-      const hand = tab?.parentElement;
-      if (
-        tab === null
-        || hand === null
-        || hand === undefined
-        || !openedMenuRef.current
-      ) {
-        return;
-      }
-      tabReaches.set(hand, measure(tab).right - measure(hand).right);
-    };
-  }, []);
+  useFade(ref, reducedMotion);
 
   return (
     <div
-      className={`tw:absolute tw:z-20 ${below ? "tw:right-3" : TAB_RIGHT_CLASS}`}
-      data-clue-tab
-      // While it slides back, its key cannot be clicked.
-      inert={!open}
+      className={`tw:absolute tw:z-20 ${
+        below
+          ? "tw:right-3"
+          : "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5"
+      }`}
+      data-clue-key
       ref={ref}
       style={below ? { top } : undefined}
     >
-      <div className="tw:flex" ref={keyRef}>
-        <button
-          aria-label={`Give ${name} a clue`}
-          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
-          onClick={() => {
-            openedMenuRef.current = true;
-            onOpen();
-          }}
-          ref={tooltipRef(`Give ${name} a clue`)}
-          type="button"
-        >
-          <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
-        </button>
-      </div>
+      <button
+        aria-label={`Give ${name} a clue`}
+        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
+        onClick={onOpen}
+        ref={tooltipRef(`Give ${name} a clue`)}
+        style={{
+          opacity: highlighted ? 1 : DIM_CLUE_KEY_OPACITY,
+          transition: reducedMotion
+            ? undefined
+            : getOpacityTransition(highlighted),
+        }}
+        type="button"
+      >
+        <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
+      </button>
     </div>
   );
 }
