@@ -10,8 +10,8 @@
   ] %}
   <li>
     <!-- prettier-ignore -->
-    <a class="button fit icon {{ icon }}{% if title == selected_title %} disabled{% endif %}"
-      {% if title != selected_title %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}>{{ label }}</a>
+    <a class="button fit icon {{ icon }}"
+      {% if title == selected_title %}aria-current="page"{% else %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}>{{ label }}</a>
   </li>
   {% endfor %}
 </ul>

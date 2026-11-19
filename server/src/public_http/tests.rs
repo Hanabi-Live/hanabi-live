@@ -293,7 +293,7 @@ fn formatted_templates_preserve_conditional_links() {
         .captures_iter(&buttons)
         .find(|link| link[2].trim() == "Tagged Games")
         .expect("Tagged Games profile button");
-    assert!(tagged[1].contains("disabled"));
+    assert!(tagged[1].contains(r#"aria-current="page""#));
     assert!(
         !tagged[1].contains("href="),
         "The selected profile button must not link to itself"

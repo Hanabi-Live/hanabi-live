@@ -184,7 +184,7 @@ function Header({
   return (
     <th
       aria-sort={sort}
-      className={`tw:relative tw:cursor-pointer tw:whitespace-normal ${sort === "none" ? "" : "tw:bg-table-sorted"} ${column.className ?? ""}`}
+      className={`tw:relative tw:cursor-pointer tw:whitespace-normal ${sort === "none" ? "" : "tw:font-bold tw:text-text-strong"} ${column.className ?? ""}`}
       onClick={onSort}
       onKeyDown={(event) => {
         if (!(event.key === "Enter" || event.key === " ")) {
@@ -196,6 +196,7 @@ function Header({
       }}
       tabIndex={0}
     >
+      {/* The sorted column's header is bold, and its arrow shows the direction. */}
       {column.header}
       {/* The arrows use the header's text color, so that they follow the theme. */}
       <svg
