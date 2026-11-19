@@ -315,7 +315,7 @@ function ShadowName({
       ].join(" ")}
       onClick={(event) => {
         event.stopPropagation();
-        reattend(shadowed ? undefined : playerIndex);
+        changeShadow(shadowed ? undefined : playerIndex);
       }}
       type="button"
     >
@@ -363,11 +363,8 @@ function HGroupLevelBadge({ name }: { readonly name: string }) {
   );
 }
 
-/** Spectates the table again, shadowing a player or no one. */
-function reattend(shadowingPlayerIndex: PlayerIndex | undefined) {
-  globals.connection.send("tableUnattend", {
-    tableId: globals.joinedTableId,
-  });
+/** Changes the player that we shadow, or stops shadowing when the index is `undefined`. */
+function changeShadow(shadowingPlayerIndex: PlayerIndex | undefined) {
   globals.connection.send("tableSpectate", {
     tableId: globals.joinedTableId,
     shadowingPlayerIndex,

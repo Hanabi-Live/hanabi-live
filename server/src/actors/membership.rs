@@ -210,6 +210,9 @@ impl TableActor {
             None
         };
         let pregame = matches!(self.table.phase, Phase::Pregame { .. });
+        // A spectator of a pregame who only changes whom they shadow stays on the pregame screen.
+        let staying =
+            pregame && spectating && self.attending(&session) && self.spectating(session.user);
         let mut next = self.candidate();
         next.shadows.insert(session.user, shadow);
         // The user receives the leader with the replay.
@@ -277,17 +280,19 @@ impl TableActor {
         ));
         if pregame {
             self.pregame_messages(&mut e);
-            e.messages.push((
-                session.clone(),
-                frame(
-                    hanabi_protocol::event::TABLE_JOINED,
-                    TableJoined {
-                        table_id: self.table.id,
-                        stage: TableStage::Pregame,
-                    },
-                ),
-            ));
-            self.chat_history(&mut e, &session)?;
+            if !staying {
+                e.messages.push((
+                    session.clone(),
+                    frame(
+                        hanabi_protocol::event::TABLE_JOINED,
+                        TableJoined {
+                            table_id: self.table.id,
+                            stage: TableStage::Pregame,
+                        },
+                    ),
+                ));
+                self.chat_history(&mut e, &session)?;
+            }
         } else {
             e.messages.push((
                 session,

@@ -336,6 +336,49 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
 }
 
 #[tokio::test]
+async fn a_pregame_spectator_changes_their_shadow_in_place() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Changing the shadow", json!({})).await?;
+        h.send(1, "tableSpectate", json!({"tableId":id})).await?;
+        h.barrier(0).await?;
+        h.barrier(1).await?;
+        h.frames(0);
+        h.frames(1);
+        h.send(
+            1,
+            "tableSpectate",
+            json!({"tableId":id,"shadowingPlayerIndex":0}),
+        )
+        .await?;
+        h.barrier(0).await?;
+        h.barrier(1).await?;
+        let (table, _) = h.snapshot(id).await?;
+        ensure!(
+            table.shadows.get(&UserId::new(2).unwrap()) == Some(&PlayerIndex::new(0)),
+            "The spectator does not shadow the player"
+        );
+        let names: Vec<String> = h.frames(1).into_iter().map(|(name, _)| name).collect();
+        ensure!(
+            !names
+                .iter()
+                .any(|name| name == "tableJoined" || name == "chatList"),
+            "Changing the shadow joined the table again: {names:?}"
+        );
+        ensure!(
+            !h.frames(0).iter().any(|(name, _)| name == "chat"),
+            "Changing the shadow posted a chat notice"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy"]).await? else {
         return Ok(());
