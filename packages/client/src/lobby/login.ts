@@ -7,6 +7,7 @@ import {
   loginRequestSchema,
   noticeSchema,
   setTabAccountFromLogin,
+  takeTabSignedOut,
 } from "@hanabi-live/data";
 import { flushSync } from "react-dom";
 import type { z } from "zod";
@@ -163,6 +164,14 @@ export function automaticLogin(): void {
     console.log(`Automatically logging in as "${username}".`);
     // For test accounts, we use the username as the password, and create the account if needed.
     signIn(username, username, "", true);
+    return;
+  }
+
+  // Another tab can still be signed in, but this tab signed out, so it does not use that account.
+  if (takeTabSignedOut()) {
+    if (!showFirefoxWarningIfNeeded()) {
+      show();
+    }
     return;
   }
 

@@ -4,6 +4,7 @@ import { userRefSchema } from "../generated/protocol.ts";
 // it to the account most recently signed in to in another tab. New tabs use that latest account.
 
 const STORAGE_KEY = "hanabi-account";
+const SIGNED_OUT_KEY = "hanabi-signed-out";
 
 export function getTabAccount(): number | undefined {
   try {
@@ -28,6 +29,33 @@ export function clearTabAccount(): void {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {
     // The sessionStorage API may be unavailable.
+  }
+}
+
+/**
+ * Remembers that this tab signed out, so that the page it loads next shows the sign-in screen. It
+ * does not fall back to an account that is still signed in from another tab.
+ */
+export function markTabSignedOut(): void {
+  clearTabAccount();
+  try {
+    sessionStorage.setItem(SIGNED_OUT_KEY, "true");
+  } catch {
+    // Without sessionStorage, the tab uses the latest account like before.
+  }
+}
+
+/**
+ * Whether this tab has just signed out. It forgets the sign-out, so that a reload signs in again.
+ */
+export function takeTabSignedOut(): boolean {
+  try {
+    const signedOut = sessionStorage.getItem(SIGNED_OUT_KEY) !== null;
+    sessionStorage.removeItem(SIGNED_OUT_KEY);
+    return signedOut;
+  } catch {
+    // The sessionStorage API may be unavailable.
+    return false;
   }
 }
 
