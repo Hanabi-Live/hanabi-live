@@ -174,13 +174,23 @@ function getReplayGameIdError(form: CreateGameForm): string | undefined {
   if (text === "") {
     return undefined;
   }
-  if (!isPositiveInteger(text)) {
-    return "The game ID must be a positive number.";
+  const idError = getGameIdError(text);
+  if (idError !== undefined) {
+    return idError;
   }
   if (form.seed.trim() !== "") {
     return "A replay uses its game's seed, so the custom seed must be blank.";
   }
   return undefined;
+}
+
+/**
+ * Why a game ID is invalid, if it is. The "Watch a Specific Replay" page checks its ID with this.
+ */
+export function getGameIdError(text: string): string | undefined {
+  return isPositiveInteger(text)
+    ? undefined
+    : "The game ID must be a positive number.";
 }
 
 function getReplayTurnError(form: CreateGameForm): string | undefined {

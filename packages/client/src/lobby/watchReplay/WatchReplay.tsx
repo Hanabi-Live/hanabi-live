@@ -10,7 +10,9 @@ import {
   useRevealClassName,
 } from "../../fade.ts";
 import { globals } from "../../Globals.ts";
+import { CheckedInput } from "../CheckedInput.tsx";
 import { DOCS_URL, HelpLink } from "../createGame/CreateGame.tsx";
+import { getGameIdError } from "../createGameForm.ts";
 import type { GameJson } from "../gameJson.ts";
 import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
@@ -49,6 +51,11 @@ export function WatchReplay(): React.JSX.Element {
   const fadeStyle = getFadeStyle(useReducedMotion());
   const sharedRowClass = useRevealClassName(visibility === "shared");
   const gameIdRef = useRef<HTMLInputElement>(null);
+  // An empty ID is not wrong yet, so it gets no error until it is typed.
+  const idError =
+    source === "id" && gameId.trim() !== ""
+      ? getGameIdError(gameId.trim())
+      : undefined;
   const jsonRef = useRef<HTMLTextAreaElement>(null);
 
   // Select the field of the source, so that typing replaces what was used last time.
@@ -63,13 +70,11 @@ export function WatchReplay(): React.JSX.Element {
     let replay:
       { type: "saved"; gameId: number } | { type: "imported"; game: GameJson };
     if (source === "id") {
-      const id = parseIntSafe(gameId);
+      // The field explains an invalid ID itself, so only point to it.
+      const id =
+        idError === undefined ? parseIntSafe(gameId.trim()) : undefined;
       if (id === undefined) {
-        setError("Error: The database ID must be a number.");
-        return;
-      }
-      if (id < 1) {
-        setError("Error: The database ID must be a positive number.");
+        gameIdRef.current!.focus();
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameId);
@@ -132,15 +137,14 @@ export function WatchReplay(): React.JSX.Element {
                 <i className="fas fa-fingerprint fa-fw" />
                 ID
               </label>
-              <input
+              <CheckedInput
+                autoComplete="off"
+                error={idError}
                 id="replay-id"
                 inputMode="numeric"
-                onChange={(event) => {
-                  setGameId(event.target.value);
-                }}
+                onChange={setGameId}
                 placeholder="Game ID"
                 ref={gameIdRef}
-                type="text"
                 value={gameId}
               />
             </li>

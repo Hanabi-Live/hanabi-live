@@ -1,12 +1,6 @@
 // @vitest-environment jsdom
 
-import {
-  act,
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-} from "@testing-library/react";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
@@ -22,6 +16,34 @@ vi.mock("../lobbyPage.ts", () => ({
   },
 }));
 
+/** The error tooltips that are open, by the ID of their text box. */
+const openErrors = new Map<string, string>();
+vi.mock("../../Tooltip.ts", () => ({
+  Tooltip: class {
+    private readonly id: string;
+    private content = "";
+    constructor(anchor: HTMLElement) {
+      this.id = anchor.id;
+    }
+
+    setContent(content: string) {
+      this.content = content;
+    }
+
+    open() {
+      openErrors.set(this.id, this.content);
+    }
+
+    close() {
+      openErrors.delete(this.id);
+    }
+
+    destroy() {
+      this.close();
+    }
+  },
+}));
+
 const send = vi.fn();
 
 function getElement(id: string) {
@@ -32,6 +54,7 @@ beforeEach(() => {
   globals.conn = { send } as unknown as Connection;
   send.mockClear();
   hide.mockClear();
+  openErrors.clear();
   localStorage.clear();
 });
 
@@ -63,22 +86,29 @@ describe("WatchReplay", () => {
     expect(getElement("replay-spoiler-free")!.checked).toBe(true);
   });
 
-  test("shows an error for an ID that is not a number", () => {
+  test("explains an ID that is too large while it is typed, and does not watch it", () => {
     showPage();
     fireEvent.change(getElement("replay-id")!, {
       target: {
-        value: "abc",
+        value: "99999999999",
       },
     });
+    expect(openErrors.get("replay-id")).toBe(
+      "The game ID must be a positive number.",
+    );
+
     act(() => {
       getElement("replay-submit")!.click();
     });
-
-    expect(
-      screen.getByText("Error: The database ID must be a number."),
-    ).toBeTruthy();
     expect(send).not.toHaveBeenCalled();
     expect(hide).not.toHaveBeenCalled();
+
+    fireEvent.change(getElement("replay-id")!, {
+      target: {
+        value: "42",
+      },
+    });
+    expect(openErrors.has("replay-id")).toBe(false);
   });
 
   test("watches a replay and remembers it", () => {

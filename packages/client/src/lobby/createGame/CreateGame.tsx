@@ -43,10 +43,9 @@ import {
 import { creatingTableChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { SuggestBox, suggestVariants } from "../../SuggestBox.tsx";
-import { Tooltip } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { escapeHtml } from "../../utils.ts";
 import { WaitingLabel, getWaitingButtonClass } from "../../WaitingCard.tsx";
+import { CheckedInput } from "../CheckedInput.tsx";
 import { remember } from "../createGame.ts";
 import type {
   CreateGameForm,
@@ -926,58 +925,5 @@ function CheckboxRow({
         <label htmlFor={id} />
       </span>
     </li>
-  );
-}
-
-/** A text box that turns red and explains why in a tooltip while its value is invalid. */
-function CheckedInput({
-  className,
-  error,
-  onChange,
-  ...props
-}: Omit<React.ComponentProps<"input">, "onChange" | "ref" | "type"> & {
-  readonly error: string | undefined;
-  readonly onChange: (value: string) => void;
-}) {
-  const ref = useRef<HTMLInputElement>(null);
-  const tooltip = useRef<Tooltip>(undefined);
-
-  useEffect(() => {
-    const created = new Tooltip(ref.current!, { content: "" });
-    tooltip.current = created;
-    return () => {
-      created.destroy();
-      tooltip.current = undefined;
-    };
-  }, []);
-
-  // The fields depend on each other, and a change can move this one, so each render opens the
-  // tooltip again at the field.
-  useEffect(() => {
-    const shown = tooltip.current!;
-    if (error === undefined) {
-      shown.close();
-    } else {
-      shown.setContent(escapeHtml(error));
-      shown.open();
-    }
-  });
-
-  return (
-    <input
-      {...props}
-      className={[
-        className,
-        error !== undefined
-          && "tw:border-2 tw:border-solid tw:border-(--error)",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      onChange={(event) => {
-        onChange(event.target.value);
-      }}
-      ref={ref}
-      type="text"
-    />
   );
 }
