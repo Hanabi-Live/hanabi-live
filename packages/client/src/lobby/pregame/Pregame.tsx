@@ -88,7 +88,10 @@ export function Pregame(): React.JSX.Element | undefined {
         </h3>
         <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-game-muted">
           <span id="lobby-pregame-variant">
-            <i className="fas fa-palette tw:mr-[0.4em]" />
+            <i
+              className="fas fa-palette tw:mr-[0.4em]"
+              ref={tooltipRef("Variant")}
+            />
             {variant.name}
           </span>
           {hasOptions && (
