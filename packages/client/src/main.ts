@@ -31,6 +31,9 @@ import * as tooltips from "./tooltips.ts";
 import { allowTranslators } from "./translators.ts";
 import { setBrowserAddressBarPath } from "./utils.ts";
 
+// Console commands for development.
+import "./lobby/users/fakeBot.ts"; // eslint-disable-line import-x/no-unassigned-import
+
 // Manually redirect users that are going to wrong URLs.
 if (
   globalThis.location.hostname === OLD_DOMAIN
