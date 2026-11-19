@@ -417,6 +417,13 @@ export interface CardFaceProps {
   readonly doubleDiscard?: boolean;
 
   /**
+   * Whether colorblind mode leaves out the suit's letter beside the rank. The discard pile leaves
+   * it out on the cards that another card covers, so that their ranks still show. The card that
+   * covers them is of the same suit and shows the letter.
+   */
+  readonly suitLetterHidden?: boolean;
+
+  /**
    * The direction of the play stack of the card's suit, for the arrow on the cards of a suit that
    * is played backward or in either direction. A reversed suit goes down when it is left out.
    */
@@ -2836,6 +2843,7 @@ export function CardFace({
   openPossibleCards = false,
   blank = false,
   doubleDiscard = false,
+  suitLetterHidden = false,
   stackDirection,
   clueMarker,
   clueMarkerHidden = false,
@@ -2844,6 +2852,10 @@ export function CardFace({
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(variant, suit, rank, colorblindMode);
+  const suitLetter =
+    suit !== undefined && colorblindMode && !suitLetterHidden
+      ? getSuitAbbreviationForVariant(suit, variant)
+      : undefined;
   const height = width * CARD_HEIGHT_PER_WIDTH;
   const bubble = pips?.bubble;
   const [hovered, setHovered] = useState(false);
@@ -3009,7 +3021,7 @@ export function CardFace({
           width={width}
         />
       )}
-      {(rank !== undefined || (suit !== undefined && colorblindMode)) && (
+      {(rank !== undefined || suitLetter !== undefined) && (
         <CardCorner
           deceptiveRank={
             suitIndex === undefined
@@ -3021,11 +3033,7 @@ export function CardFace({
           showTurnedOver={
             suit === undefined && pips === undefined && arrow === undefined
           }
-          suitLetter={
-            suit !== undefined && colorblindMode
-              ? getSuitAbbreviationForVariant(suit, variant)
-              : undefined
-          }
+          suitLetter={suitLetter}
         />
       )}
 

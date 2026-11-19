@@ -1845,6 +1845,7 @@ export function DiscardPile({
                       noteUnread={notes.unreadNotes.has(card.order)}
                       rank={card.rank}
                       suitIndex={card.suitIndex}
+                      suitLetterHidden={i < row.length - 1}
                       variant={variant}
                       width={cardWidth}
                     />
