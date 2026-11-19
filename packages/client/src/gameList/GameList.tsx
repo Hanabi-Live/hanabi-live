@@ -1,5 +1,6 @@
 // A list of games that the server sorts, filters, and pages, such as a player's history or the
-// games on a seed. Each change loads that page from the server.
+// games on a seed. The public pages and the lobby show it. Each change loads that page from the
+// server.
 
 import type {
   gameListColumnSchema,
@@ -18,12 +19,12 @@ import { iRange } from "complete-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type * as z from "zod";
-import { PATH } from "../constants.ts";
+import { FILTER_DELAY_MILLISECONDS, PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
+import { usePages } from "../publicPages/DataTable.tsx";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { WaitingCard } from "../WaitingCard.tsx";
-import { usePages } from "./DataTable.tsx";
 import {
   END_CONDITION_TEXT,
   GameOptionIcons,
@@ -45,9 +46,6 @@ export type GameListData = Extract<
 >;
 type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 type GameListColumn = z.infer<typeof gameListColumnSchema>;
-
-/** How long to wait after the last keystroke in a filter box before applying it. */
-const FILTER_DELAY_MILLISECONDS = 300;
 
 /**
  * What the buttons of a row do in the lobby. The lobby opens a replay through its connection, so
@@ -95,7 +93,7 @@ const SORT_CHOICES = [
 /** A link to a player in a row. */
 const ROW_LINK = "tw:text-link tw:no-underline tw:hover:underline";
 
-export function GamesTable({
+export function GameList({
   table,
   actions,
 }: {

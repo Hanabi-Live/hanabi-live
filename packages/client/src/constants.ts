@@ -3,6 +3,9 @@
 /** How long an element takes to fade, grow, or shrink in or out, in milliseconds. */
 export const FADE_TIME_MS = 350;
 
+/** How long to wait after the last keystroke in a filter box before applying it. */
+export const FILTER_DELAY_MILLISECONDS = 300;
+
 /** The opacity of a lobby element that is disabled or inactive. */
 export const DIMMED_OPACITY = 0.3;
 

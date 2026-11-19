@@ -1,4 +1,4 @@
-// Parts of a list of past games that the public pages and the lobby's history share.
+// The parts of a row in a list of games: its score, its options, and the style of its buttons.
 
 import type { GameSummary } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";

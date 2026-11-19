@@ -3,9 +3,7 @@
 
 import { PAGE_SIZES } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
-
-/** How long to wait after the last keystroke in a filter box before applying it. */
-const FILTER_DELAY_MILLISECONDS = 300;
+import { FILTER_DELAY_MILLISECONDS } from "../constants.ts";
 
 /** The page size of "All Rows", which only the tables whose rows are all in the page offer. */
 const ALL_ROWS = Infinity;

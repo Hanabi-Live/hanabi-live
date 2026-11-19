@@ -4,9 +4,7 @@
 import { MAX_GAME_SEARCH_LENGTH } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { useEffect, useId, useRef, useState } from "react";
-
-/** How long to wait after the last keystroke before filtering. */
-const FILTER_DELAY_MILLISECONDS = 300;
+import { FILTER_DELAY_MILLISECONDS } from "../constants.ts";
 
 /** The most names that the list suggests at once, so that it does not cover the games. */
 const MAX_SUGGESTIONS = 8;

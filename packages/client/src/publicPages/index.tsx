@@ -8,12 +8,12 @@ import { publicPageTableSchema } from "@hanabi-live/data";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import type * as z from "zod";
+import { GameList } from "../gameList/GameList.tsx";
 import { loadCachedReducedMotion } from "../reducedMotionCache.ts";
 import { store } from "../store.ts";
 import { TAB_TRANSITION_CLASS_NAME } from "../tabClassName.ts";
 import "../tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 import { allowTranslators } from "../translators.ts";
-import { GamesTable } from "./GamesTable.tsx";
 import { PasswordReset } from "./PasswordReset.tsx";
 import { MissingScoresTable, ScoresTable } from "./ScoreTables.tsx";
 
@@ -63,7 +63,7 @@ function PublicPageTable({
     }
 
     case "games": {
-      return <GamesTable table={table} />;
+      return <GameList table={table} />;
     }
   }
 }

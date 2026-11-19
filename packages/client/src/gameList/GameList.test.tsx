@@ -10,8 +10,8 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { GameActions } from "./GamesTable.tsx";
-import { GamesTable } from "./GamesTable.tsx";
+import type { GameActions } from "./GameList.tsx";
+import { GameList } from "./GameList.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -48,7 +48,7 @@ async function settle() {
 
 async function renderHistory(actions?: GameActions) {
   render(
-    <GamesTable
+    <GameList
       actions={actions}
       table={{
         type: "games",
@@ -102,7 +102,7 @@ afterEach(() => {
   fetchMock.mockReset();
 });
 
-describe("GamesTable", () => {
+describe("GameList", () => {
   test("the Variant and With boxes send their trimmed text to the server", async () => {
     await renderHistory();
     await type("Variant", "  rain ");

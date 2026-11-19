@@ -3,9 +3,9 @@
 
 import { API_PREFIX } from "@hanabi-live/data";
 import { PATH } from "../../constants.ts";
+import type { GameActions } from "../../gameList/GameList.tsx";
+import { GameList } from "../../gameList/GameList.tsx";
 import { globals } from "../../Globals.ts";
-import type { GameActions } from "../../publicPages/GamesTable.tsx";
-import { GamesTable } from "../../publicPages/GamesTable.tsx";
 import { useAppSelector } from "../../store.ts";
 import { hide, showOtherScoresFromHistory } from "../history.ts";
 import { replayVisibility } from "../replayVisibility.ts";
@@ -41,7 +41,7 @@ export function HistoryList(): React.JSX.Element | null {
           Open on its own page
         </a>
       </div>
-      <GamesTable
+      <GameList
         actions={LOBBY_ACTIONS}
         table={{
           type: "games",
@@ -68,7 +68,7 @@ export function OtherScoresList(): React.JSX.Element | null {
     <ScreenFrame>
       <h2 className={HEADING}>Games on this seed</h2>
       <div className="tw:text-[0.9em] tw:text-text-label">{seed}</div>
-      <GamesTable
+      <GameList
         actions={LOBBY_ACTIONS}
         key={seed}
         table={{
