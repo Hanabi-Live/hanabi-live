@@ -87,7 +87,10 @@ export function Pregame(): React.JSX.Element | undefined {
           {game.settings.name}
         </h3>
         <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-game-muted">
-          <span id="lobby-pregame-variant">{variant.name}</span>
+          <span id="lobby-pregame-variant">
+            <i className="fas fa-palette tw:mr-[0.4em]" />
+            {variant.name}
+          </span>
           <span id="lobby-pregame-seats">
             <i className="fas fa-users tw:mr-[0.4em]" />
             {game.players.length} / {game.settings.maxPlayers}

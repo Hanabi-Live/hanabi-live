@@ -98,7 +98,7 @@ export function getGameInfoTooltip(): string {
   }
 
   content += tooltipField(
-    "fas fa-rainbow",
+    "fas fa-palette",
     "Variant",
     `<strong>${globals.variant.name}</strong>`,
   );

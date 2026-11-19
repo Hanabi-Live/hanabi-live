@@ -425,7 +425,7 @@ export function CreateGame(): React.JSX.Element {
             <div className="lobby-row-label">
               <RowLabel
                 htmlFor="create-game-variant-dropdown1"
-                icon="fa-rainbow"
+                icon="fa-palette"
               >
                 Variant
               </RowLabel>
