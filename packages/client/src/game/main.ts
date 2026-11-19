@@ -44,10 +44,7 @@ export function init(): void {
   const gameElement = getHtmlElement("#game");
   for (const type of ["mouseenter", "mouseleave"]) {
     gameElement.addEventListener(type, () => {
-      if (
-        store.getState().session.screen === Screen.Game
-        && globals.ui !== undefined
-      ) {
+      if (globals.ui !== undefined) {
         globals.ui.focusLost();
       }
     });

@@ -85,12 +85,11 @@ function init() {
     }
   });
 
-  // Set an event handler for when the entire window loses focus.
+  // Set an event handler for when the entire window loses focus. Firefox can send this event while
+  // a reducer runs, when Redux does not let us read the store. "globals.ui" exists only on the
+  // classic game screen.
   globalThis.addEventListener("blur", () => {
-    if (
-      store.getState().session.screen === Screen.Game
-      && globals.ui !== undefined
-    ) {
+    if (globals.ui !== undefined) {
       globals.ui.focusLost();
     }
   });
