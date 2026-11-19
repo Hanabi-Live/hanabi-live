@@ -1711,7 +1711,11 @@ function getStates(): readonly State[] {
       prepare: async (page, cast) => {
         await endBobsGame(page, cast);
         cast.bobsGame().showSegment(0);
-        const arrows = page.locator("#game-new-ui [data-leader-direction]");
+        // A move that comes during the flash of the last one leaves a copy of the last arrows,
+        // which fades out (see "fadeOutCopy"). The copy is inert.
+        const arrows = page.locator(
+          "#game-new-ui [data-leader-direction]:not([inert])",
+        );
         await arrows.waitFor();
         await arrows.evaluate((element) => {
           for (const animation of element.getAnimations()) {
