@@ -146,11 +146,8 @@
   --difficulty-hard: darkgoldenrod;
   --difficulty-very-hard: darkred;
 
-  /* The spinner on the public pages, and the backdrop behind it */
+  /* The backdrop behind the waiting card on the public pages */
   --spinner-backdrop: rgba(0, 0, 0, 0.3);
-  --spinner-red: #de3500;
-  --spinner-white: #fff;
-  --spinner-brown: rgba(151, 107, 93, 0.3);
 
   /*
     The list of games in the lobby. Each kind of row is a faint wash of its color, with a bright

@@ -39,6 +39,9 @@ of the repository.
   players that it names.
 - The error window says what happened, such as that the server disconnected you,
   and "Reload" is its main button.
+- While the site waits for the server, it shows a card that turns over and shows
+  a different suit each time. The "Create" and "Sign In" buttons show it in
+  place of their label.
 
 ## November 18th, 2026
 

@@ -23,6 +23,7 @@ import { PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
+import { WaitingCard } from "../WaitingCard.tsx";
 import { usePages } from "./DataTable.tsx";
 import { END_CONDITION_TEXT, groupByDay, Score } from "./gameSummary.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
@@ -831,7 +832,7 @@ function Spinner({ shown }: { readonly shown: boolean }) {
       className={`tw:fixed tw:inset-0 tw:z-[var(--z-spinner)] tw:flex tw:items-center tw:justify-center tw:bg-spinner-backdrop tw:transition-[opacity,visibility] ${shown ? "tw:visible tw:opacity-100" : "tw:pointer-events-none tw:invisible tw:opacity-0"}`}
       style={getFadeStyle(reducedMotion)}
     >
-      <span className="tw:relative tw:box-border tw:inline-block tw:h-[48px] tw:w-[48px] tw:animate-spin tw:rounded-full tw:border-x-2 tw:border-y-[3px] tw:border-t-spinner-red tw:border-r-spinner-white/30 tw:border-b-spinner-white tw:border-l-spinner-brown tw:[border-style:solid_dotted] tw:before:absolute tw:before:top-0 tw:before:left-0 tw:before:border-[10px] tw:before:border-transparent tw:before:border-b-spinner-white tw:before:[transform:translate(-10px,19px)_rotate(-35deg)] tw:before:content-[''] tw:after:absolute tw:after:top-0 tw:after:left-0 tw:after:border-[10px] tw:after:border-transparent tw:after:border-t-spinner-red tw:after:[transform:translate(32px,3px)_rotate(-35deg)] tw:after:content-['']" />
+      <WaitingCard />
     </div>
   );
 }

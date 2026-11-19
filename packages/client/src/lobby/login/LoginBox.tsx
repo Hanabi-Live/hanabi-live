@@ -12,6 +12,11 @@ import {
 } from "../../fade.ts";
 import { outdatedClientHtml } from "../../notice.ts";
 import { store, useAppSelector } from "../../store.ts";
+import {
+  WaitingCard,
+  WaitingLabel,
+  getWaitingButtonClass,
+} from "../../WaitingCard.tsx";
 import { acceptFirefoxWarning, retryAutomaticLogin, signIn } from "../login.ts";
 import { confirmingUsernameCleared, loginFailed } from "./loginSlice.ts";
 
@@ -20,7 +25,7 @@ const CHANGE_PASSWORD_TRANSITION_MS = 500;
 
 export function LoginBox(): React.JSX.Element {
   const stage = useAppSelector((state) => state.login.stage);
-  // An error stops the loading, so the spinning card stops too.
+  // An error stops the loading, so the turning card stops too.
   const failed = useAppSelector(
     (state) => state.messageModal.modal?.type === "error",
   );
@@ -31,7 +36,7 @@ export function LoginBox(): React.JSX.Element {
         <section className="box align-center" id="loading">
           <h3>Loading...</h3>
           <p>{PROJECT_NAME} is loading. Please wait!</p>
-          {failed ? <FailedCard /> : <img src="/public/img/ajax.gif" />}
+          {failed ? <FailedCard /> : <WaitingCard />}
         </section>
       );
     }
@@ -140,6 +145,9 @@ function SignIn() {
   }
 
   function submit() {
+    if (busy) {
+      return;
+    }
     if (username === "") {
       store.dispatch(loginFailed({ message: "You must provide a username." }));
       return;
@@ -230,21 +238,16 @@ function SignIn() {
             />
           </InputRow>
         </div>
-        <div className="tw:mt-5 tw:flex tw:items-center tw:gap-3">
+        <div className="tw:mt-5">
+          {/* While it waits, the card replaces the icon too. */}
           <a
-            className={`button fit primary icon fa-sign-in-alt tw:flex-1${busy ? " disabled" : ""}`}
+            aria-busy={busy}
+            className={`button fit primary icon fa-sign-in-alt ${getWaitingButtonClass(busy)}${busy ? " tw:before:invisible" : ""}`}
             id="login-button"
             onClick={submit}
           >
-            {buttonLabel}
+            <WaitingLabel waiting={busy}>{buttonLabel}</WaitingLabel>
           </a>
-          {busy && (
-            <img
-              className="tw:h-[2.5em]"
-              id="login-ajax"
-              src="/public/img/ajax.gif"
-            />
-          )}
         </div>
         <div className="tw:mt-4">
           <LoginAlert />

@@ -136,8 +136,8 @@ describe("CreateGame", () => {
 
     // The page stays open and cannot send the table again.
     expect(hide).not.toHaveBeenCalled();
-    expect(getInput("create-game-submit").classList).toContain("disabled");
-    expect(document.querySelector("#create-game-ajax")).not.toBeNull();
+    expect(getInput("create-game-submit").ariaBusy).toBe("true");
+    expect(document.querySelector("#create-game-submit img")).not.toBeNull();
     click("create-game-submit");
     expect(send).toHaveBeenCalledTimes(1);
 
@@ -146,8 +146,8 @@ describe("CreateGame", () => {
       onReply({ ok: false });
     });
     expect(hide).not.toHaveBeenCalled();
-    expect(getInput("create-game-submit").classList).not.toContain("disabled");
-    expect(document.querySelector("#create-game-ajax")).toBeNull();
+    expect(getInput("create-game-submit").ariaBusy).toBe("false");
+    expect(document.querySelector("#create-game-submit img")).toBeNull();
     expect(store.getState().session.creatingTable).toBe(false);
   });
 

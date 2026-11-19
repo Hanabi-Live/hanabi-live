@@ -45,6 +45,7 @@ import { store } from "../../store.ts";
 import { Tooltip } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
+import { WaitingLabel, getWaitingButtonClass } from "../../WaitingCard.tsx";
 import { remember } from "../createGame.ts";
 import type {
   CreateGameForm,
@@ -669,40 +670,19 @@ export function CreateGame(): React.JSX.Element {
 
       {/* A disabled button gets no pointer events, so this one only looks disabled, to keep its
           tooltip. */}
-      <div className="tw:mt-6 tw:flex tw:items-center tw:gap-3">
-        <button
-          aria-disabled={unchanged || waiting}
-          className={`button fit primary tw:flex-1${unchanged || waiting ? " disabled" : ""}`}
-          id="create-game-submit"
-          onClick={submit}
-          ref={tooltipRef(getSubmitTooltip(waiting, unchanged))}
-          type="submit"
-        >
-          {SUBMIT_LABELS[mode]}
-        </button>
-        {waiting && (
-          <img
-            className="tw:h-[2.5em]"
-            id="create-game-ajax"
-            src="/public/img/ajax.gif"
-          />
-        )}
-      </div>
+      <button
+        aria-busy={waiting}
+        aria-disabled={unchanged || waiting}
+        className={`button fit primary tw:mt-6 ${getWaitingButtonClass(waiting)}${unchanged ? " disabled" : ""}`}
+        id="create-game-submit"
+        onClick={submit}
+        ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
+        type="submit"
+      >
+        <WaitingLabel waiting={waiting}>{SUBMIT_LABELS[mode]}</WaitingLabel>
+      </button>
     </>
   );
-}
-
-function getSubmitTooltip(
-  waiting: boolean,
-  unchanged: boolean,
-): string | undefined {
-  if (waiting) {
-    return "Waiting for the server to answer.";
-  }
-  if (unchanged) {
-    return "Nothing has changed.";
-  }
-  return undefined;
 }
 
 /**
