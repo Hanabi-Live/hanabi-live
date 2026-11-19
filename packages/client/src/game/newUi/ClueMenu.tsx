@@ -46,10 +46,11 @@ interface ClueMenuProps {
   readonly openedItself: boolean;
 
   /**
-   * Whether the screen uses the phone layout. There, the drawer always opens below the hand, and
-   * the page scrolls to show it.
+   * Whether the drawer opens below the hand: in the phone layout, where the page scrolls to show
+   * it, and below the lowest hand when the table has room for it there (see `clueDrawerFitsBelow`).
+   * Otherwise, it opens to the right of the hand, so that it does not cover the other hands.
    */
-  readonly phoneLayout: boolean;
+  readonly below: boolean;
 }
 
 function isSameClue(a: Clue | undefined, b: Clue): boolean {
@@ -108,6 +109,12 @@ const BELOW_CLASS =
 const BELOW_TOP_PADDING = 4;
 
 /**
+ * The height of the menu's title row, in CSS pixels: its buttons (`tw:size-[28px]` in `ClueMenu`),
+ * which are taller than its text.
+ */
+const TITLE_HEIGHT = 28;
+
+/**
  * The space between the clues and the button to give the clue below the hand, in CSS pixels
  * (`tw:gap-[24px]` in `ClueMenu`).
  */
@@ -117,6 +124,24 @@ const BELOW_BUTTON_GAP = 24;
  * The width of the button to give the clue, at its narrowest, in CSS pixels (`tw:min-w-[140px]`).
  */
 const GIVE_BUTTON_MIN_WIDTH = 140;
+
+/**
+ * Returns whether the drawer fits below a hand in the wide layout, where the hands do not leave
+ * room for it there. It does when the hand is the lowest, the table has room below it down to
+ * `bottom`, and the hand is wide enough for the button to go beside the clues. Then the drawer is
+ * `BELOW_HEIGHT` tall. The rectangle is in the screen's CSS pixels (see `measure`).
+ */
+export function clueDrawerFitsBelow(
+  hand: DOMRect,
+  bottom: number,
+  variant: Variant,
+): boolean {
+  return (
+    hand.width
+      >= getClueDrawerWidth(variant) + BELOW_BUTTON_GAP + GIVE_BUTTON_MIN_WIDTH
+    && hand.bottom + BELOW_HEIGHT <= bottom
+  );
+}
 
 /**
  * The menu to the right of the hand. It has an outline on every side, and a line in the panel's
@@ -139,6 +164,18 @@ const CHOICE_SIZE = 44;
 
 /** The space between the clue choices in a row, in CSS pixels (`tw:gap-[8px]` in `ClueRow`). */
 const CHOICE_GAP = 8;
+
+/**
+ * The height of the drawer below the hand, in CSS pixels, when the button to give the clue is
+ * beside the clues: its title row, and its rows of colors and ranks, with its spaces.
+ */
+const BELOW_HEIGHT =
+  BELOW_TOP_PADDING
+  + TITLE_HEIGHT
+  + SPACING.NORMAL.title
+  + 2 * CHOICE_SIZE
+  + CHOICE_GAP
+  + SPACING.NORMAL.padding;
 
 /**
  * The fewest choices that the drawer to the right of the hand is as wide as, so that a variant with
@@ -196,31 +233,29 @@ export function ClueMenu({
   onShowActions,
   onClose,
   openedItself,
-  phoneLayout,
+  below,
 }: ClueMenuProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const cluesRef = useRef<HTMLDivElement>(null);
   const colorClues = variant.clueColors.map((color) => newColorClue(color));
   const rankClues = variant.clueRanks.map((rank) => newRankClue(rank));
   const columns = Math.max(colorClues.length, rankClues.length);
-  // Where the drawer is for the player whose menu this is, in this layout: on which side of the
-  // hand, whether its bottom lines up with the bottom of the hand instead of its top with the top,
-  // and the heights of both. It is undefined until it is measured.
+  // Where the drawer is for the player whose menu this is, in this layout: whether its bottom lines
+  // up with the bottom of the hand instead of its top with the top, and the heights of both. It is
+  // undefined until it is measured.
   const [placement, setPlacement] = useState<{
     readonly name: string;
-    readonly phoneLayout: boolean;
-    readonly side: DrawerSide;
+    readonly below: boolean;
     readonly alignBottom: boolean;
     readonly compact: boolean;
     readonly height: number;
     readonly handHeight: number;
   }>();
   const measured =
-    placement?.name === name && placement.phoneLayout === phoneLayout
+    placement?.name === name && placement.below === below
       ? placement
       : undefined;
-  const side: DrawerSide = measured?.side ?? (phoneLayout ? "below" : "right");
+  const side: DrawerSide = below ? "below" : "right";
   const measuredSide = measured === undefined ? undefined : side;
   const drawerWidth = getClueDrawerWidth(variant);
   const opensRight = side === "right";
@@ -230,7 +265,6 @@ export function ClueMenu({
   useLayoutEffect(() => {
     const menu = ref.current!;
     const content = contentRef.current!;
-    const clues = cluesRef.current!;
     const hand = menu.parentElement!;
     // It stays beside the hands, so that it does not cover the bar below the table.
     const room = hand.parentElement!;
@@ -258,11 +292,7 @@ export function ClueMenu({
       const drawerHeight = Math.max(height, handRect.height);
       const next = {
         name,
-        phoneLayout,
-        side:
-          phoneLayout || fitsBelow(handRect)
-            ? ("below" as const)
-            : ("right" as const),
+        below,
         alignBottom: handRect.top + drawerHeight > roomRect.bottom,
         compact,
         height: compact ? handRect.height : drawerHeight,
@@ -271,8 +301,7 @@ export function ClueMenu({
       setPlacement((previous) =>
         previous !== undefined
         && previous.name === next.name
-        && previous.phoneLayout === next.phoneLayout
-        && previous.side === next.side
+        && previous.below === next.below
         && previous.alignBottom === next.alignBottom
         && previous.compact === next.compact
         && previous.height === next.height
@@ -280,32 +309,6 @@ export function ClueMenu({
           ? previous
           : next,
       );
-    }
-
-    // In the wide layout, the drawer opens below the lowest hand when the box of the hands, which
-    // reaches to the bottom of the table, has room for it there. The hand must be wide enough for
-    // the button to go beside the clues. Then the drawer is never taller below the hand than to its
-    // right, and its height does not depend on its side, so it does not switch sides back and
-    // forth.
-    function fitsBelow(handRect: DOMRect): boolean {
-      const handsBox = room.parentElement;
-      const handBoxes = room.querySelectorAll(":scope > [data-hand]");
-      if (
-        handsBox === null
-        || handBoxes[handBoxes.length - 1] !== hand
-        || handRect.width
-          < drawerWidth + BELOW_BUTTON_GAP + GIVE_BUTTON_MIN_WIDTH
-      ) {
-        return false;
-      }
-      const title = content.firstElementChild!;
-      const belowHeight =
-        BELOW_TOP_PADDING
-        + measure(title).height
-        + SPACING.NORMAL.title
-        + measure(clues).height
-        + SPACING.NORMAL.padding;
-      return handRect.bottom + belowHeight <= measure(handsBox).bottom;
     }
 
     place();
@@ -317,7 +320,7 @@ export function ClueMenu({
     return () => {
       observer.disconnect();
     };
-  }, [name, phoneLayout, drawerWidth]);
+  }, [name, below]);
 
   // When the drawer closes, a copy of it slides back behind the hand from where it is (see
   // `fadeOutCopy`), and its content fades out (see `CONTENT_FADE_OUT`), while the hand loses the
@@ -488,7 +491,7 @@ export function ClueMenu({
           <button
             aria-label={`Show ${name}'s view of their hand after the clue`}
             aria-pressed={cluePreview}
-            className={`tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] ${FADE_LAYER_PARENT_CLASS} ${
+            className={`tw:flex tw:size-[28px] tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] ${FADE_LAYER_PARENT_CLASS} ${
               cluePreview
                 ? "tw:text-card-ink"
                 : "tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
@@ -513,7 +516,7 @@ export function ClueMenu({
           </button>
           <button
             aria-label={`Show ${name}'s actions`}
-            className="tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+            className="tw:flex tw:size-[28px] tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-transparent tw:text-[13px] tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
             onClick={onShowActions}
             ref={tooltipRef(`Show ${name}'s actions`)}
             type="button"
@@ -530,10 +533,7 @@ export function ClueMenu({
         <div
           className={`tw:-mx-2 tw:flex tw:overflow-x-clip tw:px-2 ${opensRight ? `tw:flex-col ${spacing.buttonClassName}` : "tw:flex-wrap tw:gap-[24px]"}`}
         >
-          <div
-            className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2"
-            ref={cluesRef}
-          >
+          <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-[8px]">
             <ClueRow columns={columns} wraps={!opensRight}>
               {colorClues.map((colorClue) => {
                 const color = colorClue.value;
@@ -845,15 +845,18 @@ export const CLUE_BUTTON_COLUMN_WIDTH =
   CLUE_BUTTON_SIZE.PHONE + CLUE_BUTTON_NAME_GAP;
 
 /**
- * Where a clue button sits: to the right of the hand, in the name column below the name or to the
- * right of it, or at the right end of the name's row above the cards, as tall as the name.
+ * Where a clue button sits: to the right of the hand, below the middle of the hand when its menu
+ * opens below it, in the name column below the name or to the right of it, or at the right end of
+ * the name's row above the cards, as tall as the name.
  */
 export type ClueButtonPlacement =
-  "right" | "belowName" | "besideName" | "nameRow";
+  "right" | "belowHand" | "belowName" | "besideName" | "nameRow";
 
 const CLUE_BUTTON_PLACEMENT_CLASS = {
   right:
     "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5",
+  belowHand:
+    "tw:absolute tw:z-20 tw:inset-x-0 tw:top-full tw:flex tw:justify-center tw:pt-2.5",
   belowName: "tw:absolute tw:z-20 tw:inset-0 tw:flex tw:items-end",
   besideName:
     "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
@@ -863,12 +866,14 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
 /**
  * The button that opens the clue menu of a player. It shows beside their hand while the viewer can
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
- * `getClueDrawerWidth`). In the phone layout, there is no room there. With the name beside the
- * cards, it sits in the name column, below the name, or to the right of the name when the cards are
- * too short for it below. With the name above the cards, it sits at the right end of the name's
- * row, as tall as the name. It is dim, so that the buttons of all the hands do not compete with the
- * cards, and bright while the pointer is over it. It fades in when it appears, such as when the
- * viewer's turn starts, and fades out when it goes, such as when its menu opens.
+ * `getClueDrawerWidth`). When the menu opens below the hand instead (see `clueDrawerFitsBelow`), it
+ * sits below the middle of the hand, where the menu comes out. In the phone layout, there is no
+ * room to the right of the hand. With the name beside the cards, it sits in the name column, below
+ * the name, or to the right of the name when the cards are too short for it below. With the name
+ * above the cards, it sits at the right end of the name's row, as tall as the name. It is dim, so
+ * that the buttons of all the hands do not compete with the cards, and bright while the pointer is
+ * over it. It fades in when it appears, such as when the viewer's turn starts, and fades out when
+ * it goes, such as when its menu opens.
  */
 export function ClueButton({
   name,
@@ -884,14 +889,15 @@ export function ClueButton({
   const ref = useRef<HTMLDivElement>(null);
   useFade(ref, reducedMotion);
   // In the name's row, the button fills the room that the row keeps for it (see "Hands.tsx").
+  const wide = placement === "right" || placement === "belowHand";
   let size: number | string = CLUE_BUTTON_SIZE.PHONE;
-  if (placement === "right") {
+  if (wide) {
     size = CLUE_BUTTON_SIZE.WIDE;
   } else if (placement === "nameRow") {
     size = "100%";
   }
   let iconClass = "tw:size-7";
-  if (placement === "right") {
+  if (wide) {
     iconClass = "tw:size-10";
   } else if (placement === "nameRow") {
     iconClass = "tw:size-[75%]";

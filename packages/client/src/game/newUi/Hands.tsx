@@ -147,6 +147,12 @@ interface HandsProps {
   readonly clueButtonBesideName: boolean;
 
   /**
+   * In the wide layout, whether the clue menu of the lowest hand opens below it, so that its clue
+   * button goes below it too (see `clueDrawerFitsBelow`).
+   */
+  readonly clueBelowLowestHand: boolean;
+
+  /**
    * Whether the viewer can give a clue. Then, another player's hand shows their clue button, which
    * opens the clues that they can get (`clueMenu`) on their hand.
    */
@@ -1798,6 +1804,11 @@ function Hand({
     buttonPlacement = "besideName";
   } else if (props.stacked) {
     buttonPlacement = "nameRow";
+  } else if (
+    props.clueBelowLowestHand
+    && props.seats.at(-1)?.playerIndex === seat.playerIndex
+  ) {
+    buttonPlacement = "belowHand";
   }
   const turnWarningTag = seat.turnWarnings && (
     <TurnWarningTag
@@ -1995,7 +2006,8 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {buttonPlacement === "right" && clueButton}
+      {(buttonPlacement === "right" || buttonPlacement === "belowHand")
+        && clueButton}
       {chosen && props.clueMenu}
     </div>
   );

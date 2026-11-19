@@ -54,6 +54,7 @@ import type { LogTab } from "./ClueLog.tsx";
 import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import {
   CLUE_BUTTON_COLUMN_WIDTH,
+  clueDrawerFitsBelow,
   ClueMenu,
   getClueDrawerWidth,
 } from "./ClueMenu.tsx";
@@ -587,6 +588,28 @@ export function GameScreen(): React.JSX.Element {
       main.style.removeProperty("padding-bottom");
     };
   }, [barElement, panel, rootRef, stacked]);
+
+  // In the wide layout, the clue menu of the lowest hand opens below it when the table has room for
+  // it there, such as in a 2-player game. Then it covers nothing. The hand's clue button goes below
+  // it too. The box of the hands reaches to the bottom of the table.
+  const [clueBelowLowestHand, setClueBelowLowestHand] = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
+  useLayoutEffect(() => {
+    const lowestHand =
+      handsElement === null
+        ? undefined
+        : [...handsElement.querySelectorAll("[data-hand]")].at(-1);
+    setClueBelowLowestHand(
+      !stacked
+        && handsElement !== null
+        && lowestHand !== undefined
+        && clueDrawerFitsBelow(
+          measure(lowestHand),
+          measure(handsElement).bottom,
+          currentVariant(),
+        ),
+    );
+  });
 
   if (state?.visibleState === undefined) {
     return (
@@ -1568,6 +1591,7 @@ export function GameScreen(): React.JSX.Element {
                   canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
+                  clueBelowLowestHand={clueBelowLowestHand}
                   clueButtonBesideName={clueButtonBesideName}
                   clueMarkers={getClueMarkers(
                     shownClue,
@@ -1578,6 +1602,11 @@ export function GameScreen(): React.JSX.Element {
                   clueMenu={
                     menuTarget === undefined ? undefined : (
                       <ClueMenu
+                        below={
+                          stacked
+                          || (clueBelowLowestHand
+                            && seats.at(-1)?.playerIndex === menuTarget)
+                        }
                         canGive={canGive}
                         clue={clue}
                         cluePreview={cluePreview}
@@ -1595,7 +1624,6 @@ export function GameScreen(): React.JSX.Element {
                           setCluePreview(!cluePreview);
                         }}
                         openedItself={clueTarget === undefined}
-                        phoneLayout={stacked}
                         reducedMotion={settings.reducedMotion}
                         variant={variant}
                       />
