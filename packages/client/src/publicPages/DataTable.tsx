@@ -2,8 +2,8 @@
 // pager above and below the table.
 
 import { PAGE_SIZES } from "@hanabi-live/data";
-import { useEffect, useRef, useState } from "react";
-import { FILTER_DELAY_MILLISECONDS } from "../constants.ts";
+import { useState } from "react";
+import { useDelayedCallback } from "../useDelayedCallback.ts";
 
 /** The page size of "All Rows", which only the tables whose rows are all in the page offer. */
 const ALL_ROWS = Infinity;
@@ -251,23 +251,13 @@ function TextFilter({
   readonly name: string;
   readonly onChange: (value: string) => void;
 }) {
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(
-    () => () => {
-      clearTimeout(timer.current);
-    },
-    [],
-  );
+  const applyLater = useDelayedCallback(onChange);
   return (
     <input
       aria-label={`Filter by ${name}`}
       className="tw:h-auto tw:w-[5em] tw:rounded-[var(--radius)] tw:border tw:border-border tw:bg-surface tw:text-inherit"
       onChange={(event) => {
-        const { value } = event.target;
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => {
-          onChange(value);
-        }, FILTER_DELAY_MILLISECONDS);
+        applyLater(event.target.value);
       }}
       type="search"
     />

@@ -16,10 +16,10 @@ import {
 } from "@hanabi-live/data";
 import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type * as z from "zod";
-import { FILTER_DELAY_MILLISECONDS, PATH } from "../constants.ts";
+import { PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
 import { usePages } from "../publicPages/DataTable.tsx";
 import { store } from "../store.ts";
@@ -38,6 +38,7 @@ import {
 import { NameFilter, suggestVariants } from "./NameFilter.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
+import { useDelayedCallback } from "../useDelayedCallback.ts";
 
 /** A list of games that a page shows, which the server puts in the page. */
 export type GameListData = Extract<
@@ -336,13 +337,9 @@ function ScoreFilter({
   useEffect(() => {
     setText(value ?? "");
   }, [value]);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(
-    () => () => {
-      clearTimeout(timer.current);
-    },
-    [],
-  );
+  const applyLater = useDelayedCallback((typed: string) => {
+    onChange(typed === "" ? undefined : typed);
+  });
   return (
     <label className="tw:m-0 tw:text-[1em] tw:flex tw:items-center tw:gap-2">
       <span className="tw:text-text-label">Score</span>
@@ -351,11 +348,7 @@ function ScoreFilter({
         inputMode="numeric"
         onChange={(event) => {
           setText(event.target.value);
-          const typed = event.target.value.trim();
-          clearTimeout(timer.current);
-          timer.current = setTimeout(() => {
-            onChange(typed === "" ? undefined : typed);
-          }, FILTER_DELAY_MILLISECONDS);
+          applyLater(event.target.value.trim());
         }}
         placeholder="Any"
         type="text"

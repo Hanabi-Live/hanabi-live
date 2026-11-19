@@ -3,8 +3,8 @@
 
 import { MAX_GAME_SEARCH_LENGTH } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
-import { useEffect, useId, useRef, useState } from "react";
-import { FILTER_DELAY_MILLISECONDS } from "../constants.ts";
+import { useId, useState } from "react";
+import { useDelayedCallback } from "../useDelayedCallback.ts";
 
 /** The most names that the list suggests at once, so that it does not cover the games. */
 const MAX_SUGGESTIONS = 8;
@@ -28,32 +28,21 @@ export function NameFilter({
   const [open, setOpen] = useState(false);
   /** The suggestion that the arrow keys picked, or -1 for none. */
   const [active, setActive] = useState(-1);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const listId = useId();
   const inputId = useId();
-  useEffect(
-    () => () => {
-      clearTimeout(timer.current);
-    },
-    [],
-  );
+  const filterLater = useDelayedCallback((value: string) => {
+    onChange(value.trim());
+  });
 
   const suggestions = suggest?.(text) ?? [];
   const shown = open && suggestions.length > 0;
-
-  function filter(value: string, delay: number) {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      onChange(value.trim());
-    }, delay);
-  }
 
   /** Puts a suggested name in the box, and filters by it at once. */
   function pick(name: string) {
     setText(name);
     setOpen(false);
     setActive(-1);
-    filter(name, 0);
+    filterLater(name, 0);
   }
 
   // The label does not hold the list, so that its names are not part of the box's name. The list
@@ -88,7 +77,7 @@ export function NameFilter({
             setText(event.target.value);
             setOpen(true);
             setActive(-1);
-            filter(event.target.value, FILTER_DELAY_MILLISECONDS);
+            filterLater(event.target.value);
           }}
           onFocus={() => {
             setOpen(true);
