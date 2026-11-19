@@ -884,9 +884,8 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
  * phone layout, there is no room to the right of the hand. With the name beside the cards, it sits
  * in the name column, below the name, or to the right of the name when the cards are too short for
  * it below. With the name above the cards, it sits at the right end of the name's row, as tall as
- * the name. It is dim, so that the buttons of all the hands do not compete with the cards, and
- * bright while the pointer is over it. It fades in when it appears, such as when the viewer's turn
- * starts, and fades out when it goes, such as when its menu opens.
+ * the name. It brightens while the pointer is over it. It fades in when it appears, such as when
+ * the viewer's turn starts, and fades out when it goes, such as when its menu opens.
  */
 export function ClueButton({
   name,
@@ -925,9 +924,9 @@ export function ClueButton({
         paddingLeft: placement === "right" ? CLUE_BUTTON_HAND_GAP : undefined,
       }}
     >
-      {/* The dimming is on a layer of its own, because the button's press sets its own transition. */}
+      {/* The hover is on a layer of its own, because the button's press sets its own transition. */}
       <div
-        className={`tw:opacity-60 tw:transition-opacity tw:hover:opacity-100 ${placement === "nameRow" ? "tw:size-full" : ""} ${HOVER_CLASS}`}
+        className={`tw:transition-[filter] tw:hover:brightness-110 ${placement === "nameRow" ? "tw:size-full" : ""} ${HOVER_CLASS}`}
       >
         <button
           aria-label={`Give ${name} a clue`}
