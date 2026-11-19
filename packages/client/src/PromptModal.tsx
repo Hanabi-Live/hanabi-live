@@ -320,9 +320,9 @@ function MorphPrompt({
   );
 }
 
-/** The text of a card, as the player would type it, such as "Red 1" or "Red S". */
+/** The text of a card, as the player would type it, such as "red 1" or "red S". */
 function getCardText(suitName: string | undefined, rank: Rank): string {
   const rankLabel =
     rank === START_CARD_RANK ? START_CARD_RANK_LABEL : rank.toString();
-  return `${suitName ?? ""} ${rankLabel}`;
+  return `${(suitName ?? "").toLowerCase()} ${rankLabel}`;
 }
