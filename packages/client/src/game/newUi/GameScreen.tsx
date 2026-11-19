@@ -1623,6 +1623,7 @@ export function GameScreen(): React.JSX.Element {
                   clueTarget={menuTarget}
                   colorblindMode={settings.colorblindMode}
                   draggedCard={held?.order}
+                  draggingCard={draggingCard && cardInHand}
                   empathyToggled={empathyToggled}
                   emptyClueTarget={
                     shownClue !== undefined && shownClue.list.length === 0

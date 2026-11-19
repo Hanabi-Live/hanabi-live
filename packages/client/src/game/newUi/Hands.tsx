@@ -198,6 +198,11 @@ interface HandsProps {
   /** The cards in the acting player's hand now, which are the only ones that can move. */
   readonly movableCards: ReadonlySet<CardOrder>;
   readonly draggedCard: CardOrder | undefined;
+  /**
+   * Whether the viewer drags a card now. Then, the clue buttons fade out, so that they do not get
+   * in the way of the card.
+   */
+  readonly draggingCard: boolean;
 
   /**
    * The card that the viewer queued to play or discard on their turn. It shows over the play stacks
@@ -1788,7 +1793,7 @@ function Hand({
       warning={seat.turnWarning}
     />
   );
-  const clueButton = canClueSeat && !chosen && (
+  const clueButton = canClueSeat && !chosen && !props.draggingCard && (
     <ClueButton
       name={seat.name}
       onOpen={() => {
