@@ -68,7 +68,7 @@ table.history {
   white-space: nowrap;
 }
 
-#profile-buttons a::before {
+#profile-buttons i {
   margin-right: 0.5em;
 }
 

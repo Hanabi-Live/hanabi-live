@@ -239,10 +239,9 @@ function SignIn() {
           </InputRow>
         </div>
         <div className="tw:mt-5">
-          {/* While it waits, the card replaces the icon too. */}
           <a
             aria-busy={busy}
-            className={`button fit primary icon fa-right-to-bracket ${getWaitingButtonClass(busy)}${busy ? " tw:before:invisible" : ""}`}
+            className={`button fit primary ${getWaitingButtonClass(busy)}`}
             id="login-button"
             onClick={submit}
           >
@@ -254,6 +253,11 @@ function SignIn() {
                   : "Creating account..."
               }
             >
+              {/* While the button waits, the card replaces the icon too. */}
+              <i
+                aria-hidden
+                className="fas fa-right-to-bracket tw:mr-[0.5em]"
+              />
               {buttonLabel}
             </WaitingLabel>
           </a>

@@ -10,8 +10,8 @@
   ] %}
   <li>
     <!-- prettier-ignore -->
-    <a class="icon {{ icon }}"
-      {% if title == selected_title %}aria-current="page"{% else %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}>{{ label }}</a>
+    <a
+      {% if title == selected_title %}aria-current="page"{% else %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}><i class="fas {{ icon }}" aria-hidden="true"></i>{{ label }}</a>
   </li>
   {% endfor %}
 </ul>
