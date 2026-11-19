@@ -43,7 +43,7 @@ export const EMOJI_MODAL_ID = "emoji-modal";
  * How long the modal and the dimming of the page behind it take to fade in and out, in
  * milliseconds. With the "Reduced motion" setting, they show and go at once.
  */
-const MODAL_FADE_MILLISECONDS = 400;
+const MODAL_FADE_MILLISECONDS = 250;
 
 const modalDialog = getModalDialog();
 const modalsContainer = getHtmlElement("#modals-container");
