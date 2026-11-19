@@ -96,6 +96,7 @@ function showLoginPage(page: LoginPage, targets: Targets) {
   }
 
   hideElement(getHtmlElement("#login"));
+  delete getHtmlElement("#page-wrapper").dataset["login"];
   if (page === "tutorial") {
     fadeIn(targets.tutorial);
     return;

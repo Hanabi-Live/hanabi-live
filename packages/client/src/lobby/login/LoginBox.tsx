@@ -164,21 +164,11 @@ function SignIn() {
   }
 
   return (
-    <section className="box align-center" id="sign-in">
-      <h3>Sign In / Create Account</h3>
-      <p>
-        To create a new account, sign in with a new username and a password.
-        <br />
-        Do <strong>NOT</strong> reuse any of your{" "}
-        <a
-          href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/passwords.md"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          previous passwords
-        </a>
-        !
-      </p>
+    <section
+      className="box align-center tw:mx-auto tw:max-w-[26em] tw:px-8 tw:py-7"
+      id="sign-in"
+    >
+      <h3 className="tw:mb-5">Sign In / Create Account</h3>
       <form
         id="login-form"
         onKeyDown={(event) => {
@@ -212,7 +202,6 @@ function SignIn() {
             value={username}
           />
         </InputRow>
-        <div className="padding0p75" />
         <InputRow icon="fa-key">
           <input
             id="login-password"
@@ -224,7 +213,6 @@ function SignIn() {
             value={password}
           />
         </InputRow>
-        <div className="padding0p75" />
         <div
           className={changePasswordClass}
           id="change-password-container"
@@ -242,61 +230,69 @@ function SignIn() {
             />
           </InputRow>
         </div>
-        <br />
-        <div className="row">
-          <div className="col-7 off-3">
-            <a
-              className={`button fit icon fa-sign-in-alt${busy ? " disabled" : ""}`}
-              id="login-button"
-              onClick={submit}
-            >
-              {buttonLabel}
-            </a>
-          </div>
-          <div className="col-1">
+        <div className="tw:mt-5 tw:flex tw:items-center tw:gap-3">
+          <a
+            className={`button fit icon fa-sign-in-alt tw:flex-1${busy ? " disabled" : ""}`}
+            id="login-button"
+            onClick={submit}
+          >
+            {buttonLabel}
+          </a>
+          {busy && (
             <img
-              className={busy ? "tw:h-[3em]" : "hidden"}
+              className="tw:h-[2.5em]"
               id="login-ajax"
               src="/public/img/ajax.gif"
             />
-          </div>
+          )}
         </div>
-        <div className="row">
-          <div className="col-7 off-3">
-            <LoginAlert />
-            {confirmingUsername !== undefined && (
-              <p
-                className={FADE_IN_CLASS}
-                id="login-no-account"
-                style={getFadeStyle(reducedMotion)}
-              >
-                There is no account named <strong>{confirmingUsername}</strong>.
-                Check the spelling, or click &quot;Create Account&quot; to
-                create it.
-              </p>
-            )}
-            <p className="margin0">
-              <a
-                href="#"
-                id="change-password-link"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setChangingPassword(!changingPassword);
-                  store.dispatch(confirmingUsernameCleared());
-                  usernameRef.current!.focus();
-                }}
-              >
-                Change password
-              </a>{" "}
-              | <a href="/password-reset">Forgot password?</a>
+        <div className="tw:mt-4">
+          <LoginAlert />
+          {confirmingUsername !== undefined && (
+            <p
+              className={FADE_IN_CLASS}
+              id="login-no-account"
+              style={getFadeStyle(reducedMotion)}
+            >
+              There is no account named <strong>{confirmingUsername}</strong>.
+              Check the spelling, or click &quot;Create Account&quot; to create
+              it.
             </p>
-          </div>
+          )}
+          <p className="tw:m-0 tw:text-[0.85em]">
+            <a
+              href="#"
+              id="change-password-link"
+              onClick={(event) => {
+                event.preventDefault();
+                setChangingPassword(!changingPassword);
+                store.dispatch(confirmingUsernameCleared());
+                usernameRef.current!.focus();
+              }}
+            >
+              Change password
+            </a>{" "}
+            | <a href="/password-reset">Forgot password?</a>
+          </p>
         </div>
+        <p className="tw:mt-5 tw:mb-0 tw:border-0 tw:border-t tw:border-solid tw:border-border tw:pt-4 tw:text-[0.9em] tw:leading-normal tw:text-text-label">
+          A new username creates a new account.
+          <br />
+          Use a password that you do not use on any other site.{" "}
+          <a
+            href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/passwords.md"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Why?
+          </a>
+        </p>
       </form>
     </section>
   );
 }
 
+/** A field with its icon inside it, on the left. */
 function InputRow({
   children,
   icon,
@@ -305,13 +301,11 @@ function InputRow({
   readonly icon: string;
 }) {
   return (
-    <div className="row">
-      <div className="col-1 off-2">
-        <i
-          className={`fas ${icon} fa-2x tw:relative tw:top-[0.275em] tw:right-[0.5em]`}
-        />
-      </div>
-      <div className="col-7">{children}</div>
+    <div className="tw:relative tw:mb-3 tw:[&_input]:pl-[2.75em]">
+      <i
+        className={`fas ${icon} tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-[1em] tw:-translate-y-1/2 tw:text-text-label`}
+      />
+      {children}
     </div>
   );
 }

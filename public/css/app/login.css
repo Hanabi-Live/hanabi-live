@@ -1,5 +1,36 @@
+/* The header bar has no buttons on the login screen, so it does not show. */
+#page-wrapper[data-login] {
+  isolation: isolate;
+  padding-top: 0;
+}
+
+#page-wrapper[data-login] > #header {
+  display: none;
+}
+
+/*
+  The felt is lightest behind the logo and the text under it, so the thin text is hard to read. This
+  shade darkens the top of the screen, so that the light falls lower, on the form.
+*/
+#page-wrapper[data-login]::before {
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 40%),
+    rgb(0 0 0 / 30%) 30%,
+    transparent 55%
+  );
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+/* A tight shadow sharpens the edges of the thin letters. */
 #main-login #title-sub {
   color: var(--login-text);
+  font-size: 1.4em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 60%);
 }
 
 #title-sub strong {
@@ -12,7 +43,7 @@
 }
 
 .login-header {
-  margin-top: 4em;
+  margin-top: 2.5em;
 }
 
 #main-login {
@@ -21,7 +52,7 @@
 
 #main-login > header {
   text-align: center;
-  margin: 0 0 3em 0;
+  margin: 0 0 2em 0;
 }
 
 #main-login > header h2 {
@@ -30,17 +61,16 @@
 }
 
 #main-login > header p {
-  border-top: solid 2px var(--border);
   color: var(--text);
   display: inline-block;
   font-style: normal;
   margin: 0;
-  padding: 1em 0 1.25em 0;
+  padding: 0.75em 1em 0 1em;
 }
 
 .login-logo {
-  min-width: 180px;
-  max-width: 306px;
+  min-width: 160px;
+  max-width: 240px;
   width: 30%;
 }
 
