@@ -192,6 +192,8 @@ describe("replay URL loading", () => {
 
   test.each([
     [{}, "tableJoin", { tableId: 123 }],
+    // A player who refreshes the page is already at the table.
+    [{ playingAtTables: [tableId] }, "tableReattend", { tableId }],
     [{ spectatingAtTables: [{ tableId }] }, "tableSpectate", { tableId }],
     // A spectator who closed another table's page is still listed there.
     [

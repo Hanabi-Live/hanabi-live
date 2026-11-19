@@ -138,14 +138,21 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
     return true;
   }
 
-  // Automatically join a pre-game if we are using a "/pre-game/123" URL. If we were spectating it
-  // (such as before a page refresh), spectate it again instead.
+  // Automatically join a pre-game if we are using a "/pre-game/123" URL. If we already joined it or
+  // were spectating it (such as before a page refresh), go back to it instead.
   const preGameTableId = /\/pre-game\/(?<tableId>\d+)/u.exec(
     globalThis.location.pathname,
   )?.groups?.["tableId"];
   if (preGameTableId !== undefined) {
     const tableId = parseIntSafe(preGameTableId);
     if (tableId !== undefined && tableId > 0) {
+      if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
+        globals.connection.send("tableReattend", {
+          tableId,
+        });
+        return true;
+      }
+
       // We can be listed at other tables that we spectated, so look for this one.
       const spectatedTable = data.spectatingAtTables.find(
         (table) => table.tableId === tableId,
