@@ -1923,12 +1923,12 @@ function Hand({
         }}
         onPointerCancel={endHold}
         onPointerDown={(event) => {
-          // A click with Shift, Alt, or Meta does something else, such as Alt + click going to the
-          // turn on which the card was drawn, so it does not show the view, as on the classic
-          // screen.
+          // A click with Ctrl, Shift, Alt, or Meta does something else, such as Ctrl + click
+          // editing the note, so it does not show the view.
           if (
             !empathyHold
             || event.button !== 0
+            || event.ctrlKey
             || event.shiftKey
             || event.altKey
             || event.metaKey
