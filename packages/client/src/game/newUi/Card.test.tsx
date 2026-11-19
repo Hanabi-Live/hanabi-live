@@ -23,7 +23,7 @@ const PIPS = {
     suits: [
       {
         suitIndex: 0,
-        eliminated: false,
+        ruledOutBy: undefined,
         positive: false,
         ranks: [1],
         removed: [],
@@ -164,12 +164,12 @@ test.each(["3 Suits", "4 Suits", "No Variant", "6 Suits"])(
     const pips = {
       suits: variant.suits.map((_suit, i) => ({
         suitIndex: i as SuitIndex,
-        eliminated: false,
+        ruledOutBy: undefined,
         positive: false,
       })),
       ranks: variant.ranks.map((rank: Rank) => ({
         rank,
-        eliminated: false,
+        ruledOutBy: undefined,
         positive: false,
       })),
       bubble: undefined,

@@ -118,11 +118,11 @@ export interface CardView {
 /** A suit or a rank that a card can be, as a pip on the card. */
 interface PipView {
   /**
-   * Whether the card cannot be any of the cards that it would make, though the clues allow them:
-   * the holder sees every copy of them, or the identity in the note on the card leaves them out.
-   * The card shows it faded.
+   * What rules out every card that the pip would make, though the clues allow them: "seen" when the
+   * holder sees every copy of them, and "note" when the identity in the note on the card is needed
+   * to rule them out. It is `undefined` when the card can still be one of them.
    */
-  readonly eliminated: boolean;
+  readonly ruledOutBy: RuledOutBy | undefined;
 
   /** Whether a clue of this color or rank touched the card. */
   readonly positive: boolean;
@@ -161,6 +161,9 @@ interface PossibleSuitView extends SuitPipView {
   readonly removed: readonly RemovedCardView[];
 }
 
+/** What rules out a card that the clues allow. */
+export type RuledOutBy = "seen" | "note";
+
 /** A card that the clues allow, but that the card cannot be. */
 interface RemovedCardView {
   readonly rank: Rank;
@@ -169,12 +172,12 @@ interface RemovedCardView {
    * What rules it out: "seen" when the holder sees every copy of it, and "note" when the identity
    * in the note on the card leaves it out.
    */
-  readonly by: "seen" | "note";
+  readonly by: RuledOutBy;
 }
 
 export interface PossibleCardsView {
   /**
-   * The suits that the clues allow, in the variant's order. A suit is eliminated when the card
+   * The suits that the clues allow, in the variant's order. A suit is ruled out when the card
    * cannot be any of its cards.
    */
   readonly suits: readonly PossibleSuitView[];
@@ -354,15 +357,15 @@ function getPipsView(
   // out, as the bubble does, instead of hiding them.
   const presentation = getCardPipPresentation(variant, cardState, note, true);
   const ruledOut = getRuledOutCards(cardState, note);
-  const remaining = cardState.possibleCardsFromClues.filter(
-    ([cardSuitIndex, cardRank]) =>
-      ruledOut(cardSuitIndex, cardRank) === undefined,
-  );
   const suits =
     suitIndex === undefined
       ? getShownPips(presentation.suitPips).map((pip) => ({
-          eliminated: remaining.every(
-            ([cardSuitIndex]) => cardSuitIndex !== pip.suitIndex,
+          ruledOutBy: getPipRuledOutBy(
+            cardState.possibleCardsFromClues
+              .filter(([cardSuitIndex]) => cardSuitIndex === pip.suitIndex)
+              .map(([cardSuitIndex, cardRank]) =>
+                ruledOut(cardSuitIndex, cardRank),
+              ),
           ),
           positive: pip.positive,
           suitIndex: pip.suitIndex as SuitIndex,
@@ -371,7 +374,13 @@ function getPipsView(
   const ranks =
     rank === undefined
       ? getShownPips(presentation.rankPips).map((pip) => ({
-          eliminated: remaining.every(([, cardRank]) => cardRank !== pip.rank),
+          ruledOutBy: getPipRuledOutBy(
+            cardState.possibleCardsFromClues
+              .filter(([, cardRank]) => cardRank === pip.rank)
+              .map(([cardSuitIndex, cardRank]) =>
+                ruledOut(cardSuitIndex, cardRank),
+              ),
+          ),
           positive: pip.positive,
           rank: pip.rank,
         }))
@@ -427,7 +436,10 @@ function getPossibleCardsView(
         }
         return {
           suitIndex: pip.suitIndex as SuitIndex,
-          eliminated: ranks.length === 0,
+          ruledOutBy:
+            ranks.length > 0
+              ? undefined
+              : getPipRuledOutBy(removed.map((card) => card.by)),
           positive: pip.positive,
           ranks,
           removed,
@@ -438,6 +450,20 @@ function getPossibleCardsView(
 }
 
 /**
+ * Returns what rules out a pip, from what rules out each card that it would make (see
+ * `PipView.ruledOutBy`). The cards that the holder sees are a fact, so they win when they alone
+ * rule out the pip.
+ */
+function getPipRuledOutBy(
+  cards: ReadonlyArray<RuledOutBy | undefined>,
+): RuledOutBy | undefined {
+  if (cards.includes(undefined)) {
+    return undefined;
+  }
+  return cards.every((by) => by === "seen") ? "seen" : "note";
+}
+
+/**
  * Returns what rules out a card that the clues allow: "seen" when the holder sees every copy of it,
  * "note" when the identity in the note on the card leaves it out, or `undefined` when the card can
  * be it. The note applies only when it leaves at least one card and rules out at least one.
@@ -445,7 +471,7 @@ function getPossibleCardsView(
 function getRuledOutCards(
   cardState: CardState,
   note: CardNote,
-): (suitIndex: number, rank: Rank) => RemovedCardView["by"] | undefined {
+): (suitIndex: number, rank: Rank) => RuledOutBy | undefined {
   const holderCards = new Set(
     cardState.possibleCardsForEmpathy.map(([suitIndex, rank]) =>
       cardKey(suitIndex, rank),

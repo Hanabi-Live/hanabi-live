@@ -45,6 +45,7 @@ import type {
   NoteMark,
   PossibleCardsView,
   RankPipView,
+  RuledOutBy,
   SuitPipView,
 } from "./tableView.ts";
 
@@ -1052,9 +1053,8 @@ const MIN_RANK_OUTLINE = 2;
 const RANK_SHADOW = "drop-shadow(0 1px 1px rgb(0 0 0 / 50%))";
 
 /**
- * How opaque a suit, a rank, or a card in the bubble of possible cards is when the card cannot be
- * it, though the clues allow it. A suit or a rank stays in its place, so that the others do not
- * move when the holder learns more.
+ * How opaque a suit or a rank that the note rules out is, and a card in the bubble of possible
+ * cards that the card cannot be.
  */
 const RULED_OUT_OPACITY = 0.2;
 
@@ -1069,18 +1069,94 @@ function getPositiveRing(width: number): string {
   return `0 0 0 ${Math.max(1, width * POSITIVE_RING_PER_WIDTH)}px var(--clue-border)`;
 }
 
+/**
+ * The widths of the slash over a suit or a rank that seen cards rule out, in its drawing's units
+ * (the drawing is 100 wide). A wider white line under the dark one keeps the slash visible on the
+ * dark outline of a pip. A rank's slash is twice as thick, so that it does not get lost in the
+ * thick strokes of the number.
+ */
+const SEEN_SLASH = {
+  suit: {
+    line: 12,
+    halo: 24,
+  },
+  rank: {
+    line: 24,
+    halo: 36,
+  },
+} as const;
+
+/**
+ * How a suit or a rank looks when the card cannot be it, though the clues allow it. It stays in its
+ * place, so that the others do not move when the holder learns more.
+ */
+function getRuledOutOpacity(by: RuledOutBy | undefined): number {
+  // The note is the holder's own guess, so its suits and ranks fade. A suit or a rank that the seen
+  // cards rule out has a slash instead (see `SeenSlash`).
+  return by === "note" ? RULED_OUT_OPACITY : 1;
+}
+
+/**
+ * The slash over a suit or a rank when the holder sees every copy of the cards that it would make.
+ * It is `size` wide and tall.
+ */
+function SeenSlash({
+  by,
+  kind,
+  size,
+}: {
+  readonly by: RuledOutBy | undefined;
+  readonly kind: keyof typeof SEEN_SLASH;
+  readonly size: number;
+}): React.JSX.Element | undefined {
+  if (by !== "seen") {
+    return undefined;
+  }
+
+  const { line, halo } = SEEN_SLASH[kind];
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute"
+      height={size}
+      viewBox="0 0 100 100"
+      width={size}
+    >
+      <path
+        className="tw:stroke-white"
+        d="M 15 85 L 85 15"
+        strokeLinecap="round"
+        strokeWidth={halo}
+      />
+      <path
+        className="tw:stroke-card-ink"
+        d="M 15 85 L 85 15"
+        strokeLinecap="round"
+        strokeWidth={line}
+      />
+    </svg>
+  );
+}
+
 /** A suit that a card can be: its pip, in a square cell. */
 function SuitChip({
   variant,
   pip,
   cell,
   width,
+  fadeRuledOut = false,
 }: {
   readonly variant: Variant;
   readonly pip: SuitPipView;
   readonly cell: number;
   /** The width of the card. */
   readonly width: number;
+
+  /**
+   * Whether the suit fades whatever ruled it out, with no slash. The bubble of possible cards uses
+   * it, since each of its cards already says what ruled it out.
+   */
+  readonly fadeRuledOut?: boolean;
 }): React.JSX.Element | undefined {
   const suit = variant.suits[pip.suitIndex];
   if (suit === undefined) {
@@ -1091,7 +1167,7 @@ function SuitChip({
   return (
     <span
       className="tw:relative tw:flex tw:shrink-0 tw:items-center tw:justify-center"
-      data-pip-eliminated={pip.eliminated ? true : undefined}
+      data-ruled-out-by={pip.ruledOutBy}
       style={{
         width: cell,
         height: cell,
@@ -1102,7 +1178,10 @@ function SuitChip({
         style={{
           width: chip,
           height: chip,
-          opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
+          opacity:
+            fadeRuledOut && pip.ruledOutBy !== undefined
+              ? RULED_OUT_OPACITY
+              : getRuledOutOpacity(pip.ruledOutBy),
           boxShadow: pip.positive ? getPositiveRing(width) : undefined,
         }}
       >
@@ -1115,6 +1194,9 @@ function SuitChip({
           variant={variant}
         />
       </span>
+      {!fadeRuledOut && (
+        <SeenSlash by={pip.ruledOutBy} kind="suit" size={chip} />
+      )}
     </span>
   );
 }
@@ -1137,8 +1219,8 @@ function RankChip({
 }): React.JSX.Element {
   return (
     <span
-      className="tw:relative tw:flex tw:shrink-0"
-      data-pip-eliminated={pip.eliminated ? true : undefined}
+      className="tw:relative tw:flex tw:shrink-0 tw:items-center tw:justify-center"
+      data-ruled-out-by={pip.ruledOutBy}
       style={{
         width: chipWidth,
         height: chipHeight,
@@ -1151,12 +1233,13 @@ function RankChip({
           WebkitTextStroke: `${Math.max(MIN_RANK_OUTLINE, chipWidth * RANK_OUTLINE_PER_CHIP_WIDTH)}px var(--card-ink)`,
           filter: RANK_SHADOW,
           borderRadius: chipWidth * 0.25,
-          opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
+          opacity: getRuledOutOpacity(pip.ruledOutBy),
           boxShadow: pip.positive ? getPositiveRing(width) : undefined,
         }}
       >
         {getRankLabel(pip.rank)}
       </span>
+      <SeenSlash by={pip.ruledOutBy} kind="rank" size={chipWidth} />
     </span>
   );
 }
@@ -1164,9 +1247,9 @@ function RankChip({
 /**
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
  * card, so that they are easy to read at a glance. Each suit is its pip, and each rank is a white
- * number with a dark outline. A suit or a rank that the card cannot be is faded, and one that a
- * clue touched has a ring in the clue color. The card shows the exact cards that it can be in a
- * bubble (see `PossibleCardsBubble`).
+ * number with a dark outline. A suit or a rank that the card cannot be has a mark that says what
+ * ruled it out (see `getRuledOutOpacity`), and one that a clue touched has a ring in the clue
+ * color. The card shows the exact cards that it can be in a bubble (see `PossibleCardsBubble`).
  *
  * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
  * holder learns that the card is not one of them. Its place stays empty.
@@ -2019,6 +2102,7 @@ function PossibleCardsGrid({
           {bubble.suits.map((suit) => [
             <SuitChip
               cell={unit * POSSIBLE_CARDS.pip}
+              fadeRuledOut
               key={`${suit.suitIndex}-pip`}
               pip={suit}
               variant={variant}

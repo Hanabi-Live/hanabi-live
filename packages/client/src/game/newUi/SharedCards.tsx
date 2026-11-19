@@ -1287,12 +1287,12 @@ function Deck({
           pips={{
             suits: shownEmpathy.possibleSuitIndexes.map((suitIndex) => ({
               suitIndex,
-              eliminated: false,
+              ruledOutBy: undefined,
               positive: false,
             })),
             ranks: shownEmpathy.possibleRanks.map((rank) => ({
               rank,
-              eliminated: false,
+              ruledOutBy: undefined,
               positive: false,
             })),
             bubble: undefined,

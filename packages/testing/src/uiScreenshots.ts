@@ -1595,8 +1595,10 @@ function getStates(): readonly State[] {
     // The bubble of every card that a card can be, which opens over a card in the account's hand.
     // The table has five players, and every player has discarded cards, so that the account rules
     // out some of the cards. The variant's color clues touch every 1, so that the bubble can show
-    // cards that the separate suits and ranks cannot show. The card's note rules out a red 1 and a
-    // green 1, and the bubble says how many cards the note and the discarded cards rule out.
+    // cards that the separate suits and ranks cannot show. The card's note rules out a red 1, a
+    // green 1, and an orange 4, and the bubble says how many cards the note and the discarded cards
+    // rule out. The card's pips show every mark: a suit that a clue touched, and suits and ranks
+    // that the note or the seen cards rule out.
     {
       name: "new-ui-possible-cards",
       path: "/",
@@ -1607,7 +1609,7 @@ function getStates(): readonly State[] {
         await game.discardTurns(15, { mixClueTypes: true });
       },
       prepare: async (page) => {
-        await writeNote(page, ownCard(page, 2), "!r1, !g1");
+        await writeNote(page, ownCard(page, 2), "!r1, !g1, !o4");
       },
       hover: async (page) => {
         // The third card, since the clues leave both its suit and its rank unknown. The bubble

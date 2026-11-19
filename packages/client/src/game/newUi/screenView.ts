@@ -393,7 +393,7 @@ export function getDeckEmpathy(state: State): DeckEmpathy {
       suits: variant.suits
         .map((_suit, i) => ({
           suitIndex: i as SuitIndex,
-          eliminated: false,
+          ruledOutBy: undefined,
           positive: false,
           ranks: variant.ranks.filter((rank) =>
             possibilities.some(

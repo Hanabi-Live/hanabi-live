@@ -163,7 +163,7 @@ describe("getCardView", () => {
     possibleCardsForEmpathy: [[1, 4]],
   } as const satisfies Partial<typeof cardState>;
 
-  test("fades the suits and ranks that the holder ruled out", () => {
+  test("slashes the suits and ranks that seen cards rule out", () => {
     const view = getEmpathyView(learnedByElimination);
     expect(view).toMatchObject({
       suitIndex: undefined,
@@ -172,28 +172,28 @@ describe("getCardView", () => {
         suits: [
           {
             suitIndex: 0,
-            eliminated: true,
+            ruledOutBy: "seen",
           },
           {
             suitIndex: 1,
-            eliminated: false,
+            ruledOutBy: undefined,
           },
         ],
         ranks: [
           {
             rank: 3,
-            eliminated: true,
+            ruledOutBy: "seen",
           },
           {
             rank: 4,
-            eliminated: false,
+            ruledOutBy: undefined,
           },
         ],
       },
     });
   });
 
-  test("fades the suits and ranks that the note rules out", () => {
+  test("marks the suits and ranks that the note rules out", () => {
     // The clues say a red or yellow 3 or 4, and the note says a yellow 4 or a red 3.
     const { possibleCardsFromClues } = learnedByElimination;
     const view = getEmpathyView(
@@ -207,26 +207,27 @@ describe("getCardView", () => {
       suits: [
         {
           suitIndex: 0,
-          eliminated: false,
+          ruledOutBy: undefined,
         },
         {
           suitIndex: 1,
-          eliminated: false,
+          ruledOutBy: undefined,
         },
       ],
       ranks: [
         {
           rank: 3,
-          eliminated: false,
+          ruledOutBy: undefined,
         },
         {
           rank: 4,
-          eliminated: false,
+          ruledOutBy: undefined,
         },
       ],
     });
 
-    // The note says a yellow card, so the red pip fades. It stays, so that the pips do not move.
+    // The note says a yellow card, so the red pip is marked. It stays, so that the pips do not
+    // move.
     expect(
       getEmpathyView(
         {
@@ -238,11 +239,36 @@ describe("getCardView", () => {
     ).toMatchObject([
       {
         suitIndex: 0,
-        eliminated: true,
+        ruledOutBy: "note",
       },
       {
         suitIndex: 1,
-        eliminated: false,
+        ruledOutBy: undefined,
+      },
+    ]);
+
+    // The holder sees every red 3, and the note rules out the red 4. The seen cards alone do not
+    // rule out red, so the red pip has the note's mark.
+    expect(
+      getEmpathyView(
+        {
+          possibleCardsFromClues,
+          possibleCardsForEmpathy: [
+            [0, 4],
+            [1, 3],
+            [1, 4],
+          ],
+        },
+        { note: parseNote(VARIANT, "y") },
+      ).pips?.suits,
+    ).toMatchObject([
+      {
+        suitIndex: 0,
+        ruledOutBy: "note",
+      },
+      {
+        suitIndex: 1,
+        ruledOutBy: undefined,
       },
     ]);
   });
@@ -297,7 +323,7 @@ describe("getCardView", () => {
       suits: [
         {
           suitIndex: 0,
-          eliminated: false,
+          ruledOutBy: undefined,
           positive: false,
           ranks: [1, 3, 4, 5],
           removed: [
@@ -331,7 +357,7 @@ describe("getCardView", () => {
       suits: [
         {
           suitIndex: 0,
-          eliminated: false,
+          ruledOutBy: undefined,
           positive: false,
           ranks: [1, 3, 4, 5],
           removed: [
@@ -343,7 +369,7 @@ describe("getCardView", () => {
         },
         {
           suitIndex: 1,
-          eliminated: false,
+          ruledOutBy: undefined,
           positive: false,
           ranks: [1],
           removed: [],
@@ -379,7 +405,7 @@ describe("getCardView", () => {
       suits: [
         {
           suitIndex: 0,
-          eliminated: false,
+          ruledOutBy: undefined,
           ranks: [1, 3],
           removed: [
             {
@@ -398,7 +424,7 @@ describe("getCardView", () => {
         },
         {
           suitIndex: 1,
-          eliminated: true,
+          ruledOutBy: "note",
           ranks: [],
           removed: [
             {
