@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { EmojiPicker } from "./EmojiPicker.tsx";
 import { MessageModal } from "./MessageModal.tsx";
 import { PromptModal } from "./PromptModal.tsx";
+import { rememberTemplateWaitingCard } from "./WaitingCard.tsx";
 import { fadeIn, hideElement } from "./elementVisibility.ts";
 import { GameChatBox } from "./game/GameChatBox.tsx";
 import { GameScreen } from "./game/newUi/GameScreen.tsx";
@@ -51,6 +52,7 @@ export function mountApp(): void {
 
   // The React parts replace what the template shows until the client loads, such as the wait in
   // place of the login form.
+  rememberTemplateWaitingCard();
   for (const target of Object.values(targets)) {
     target.replaceChildren();
   }

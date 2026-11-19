@@ -36,7 +36,7 @@ export function LoginBox(): React.JSX.Element {
         <section className="box align-center" id="loading">
           <h3>Loading...</h3>
           <p>{PROJECT_NAME} is loading. Please wait!</p>
-          {failed ? <FailedCard /> : <WaitingCard />}
+          {failed ? <FailedCard /> : <WaitingCard continueTemplate />}
         </section>
       );
     }

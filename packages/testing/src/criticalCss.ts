@@ -52,7 +52,8 @@ async function buildBundle(directory: string): Promise<string> {
 /**
  * Runs in the page. A rule is critical if the first element that one of its selectors matches
  * starts within the viewport. Rules inside media queries and cascade layers are checked the same
- * way, and other at-rules (such as font faces and keyframes) are left out.
+ * way. Keyframes are critical if an element within the viewport runs them, and other at-rules (such
+ * as font faces) are left out.
  */
 async function getCriticalCss({
   bundle,
@@ -121,6 +122,16 @@ async function getCriticalCss({
     );
   }
 
+  const animationNames = new Set(
+    [...document.querySelectorAll("*")]
+      .filter(
+        (element) => element.getBoundingClientRect().top <= window.innerHeight,
+      )
+      .flatMap((element) => element.getAnimations())
+      .filter((animation) => animation instanceof CSSAnimation)
+      .map((animation) => animation.animationName),
+  );
+
   function getCriticalRules(rules: CSSRuleList): readonly string[] {
     const critical: string[] = [];
     for (const rule of rules) {
@@ -139,6 +150,11 @@ async function getCriticalCss({
         if (inner.length > 0) {
           critical.push(`@layer ${rule.name}{${inner.join("\n")}}`);
         }
+      } else if (
+        rule instanceof CSSKeyframesRule
+        && animationNames.has(rule.name)
+      ) {
+        critical.push(rule.cssText);
       }
     }
     return critical;

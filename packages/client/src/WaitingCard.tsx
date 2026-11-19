@@ -1,5 +1,10 @@
-// A card that turns over while the page waits for the server. The animation is in the image, so
-// that the server's page template can show it before the client loads.
+// A card that turns over while the page waits for the server. Its animation is the "waiting-card"
+// class in "public/css/app/common.css", so that the server's page template can show it before the
+// client loads.
+
+import { useLayoutEffect, useRef } from "react";
+
+const WAITING_CARD_CLASS = "waiting-card";
 
 const WAITING_CARD_SRC = "/public/img/waiting-card.svg";
 
@@ -8,19 +13,59 @@ const WAITING_CARD_SIZE = 64;
 
 const WAITING_TEXT = "Waiting for the server.";
 
-/** With `decorative`, text next to the card says what it waits for, so screen readers skip it. */
+/** When the template's card started to turn, until a `continueTemplate` card takes it. */
+let templateStartTime: number | null = null;
+
+/**
+ * Remembers when the template's card started to turn. Call it before the client replaces the
+ * template, so that the client's card continues the turn instead of starting again.
+ */
+export function rememberTemplateWaitingCard(): void {
+  const card = document.querySelector(`.${WAITING_CARD_CLASS}`);
+  const startTime = card?.getAnimations()[0]?.startTime;
+  templateStartTime = typeof startTime === "number" ? startTime : null;
+}
+
+/**
+ * With `decorative`, text next to the card says what it waits for, so screen readers skip it. With
+ * `continueTemplate`, the card continues the turn of the card that the template showed.
+ */
 export function WaitingCard({
   className,
   decorative = false,
+  continueTemplate = false,
 }: {
   readonly className?: string;
   readonly decorative?: boolean;
+  readonly continueTemplate?: boolean;
 }): React.JSX.Element {
+  const ref = useRef<HTMLImageElement>(null);
+
+  useLayoutEffect(() => {
+    if (
+      !continueTemplate
+      || templateStartTime === null
+      || ref.current === null
+    ) {
+      return;
+    }
+    for (const animation of ref.current.getAnimations()) {
+      animation.startTime = templateStartTime;
+    }
+    // A card that shows later starts on the red face, like every other card.
+    templateStartTime = null;
+  }, [continueTemplate]);
+
   return (
     <img
       alt={decorative ? "" : WAITING_TEXT}
-      className={className}
+      className={
+        className === undefined
+          ? WAITING_CARD_CLASS
+          : `${WAITING_CARD_CLASS} ${className}`
+      }
       height={WAITING_CARD_SIZE}
+      ref={ref}
       src={WAITING_CARD_SRC}
       width={WAITING_CARD_SIZE}
     />
