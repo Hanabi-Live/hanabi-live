@@ -287,18 +287,10 @@ export function getCardClickCommand(
   return undefined;
 }
 
-/**
- * Whether a pointer drags a card that the player can move. The mouse always drags it. A touch or a
- * pen drags it too, except in the phone layout, where the play stacks and the discard pile can be
- * off the screen, so a tap opens the card's menu instead.
- */
-export function isDragPointer(
-  pointerType: string,
-  phoneLayout: boolean,
-): boolean {
+/** Whether a pointer drags a card that the player can move: the mouse, a touch, or a pen. */
+export function isDragPointer(pointerType: string): boolean {
   return (
-    pointerType === "mouse"
-    || (!phoneLayout && (pointerType === "touch" || pointerType === "pen"))
+    pointerType === "mouse" || pointerType === "touch" || pointerType === "pen"
   );
 }
 
@@ -312,12 +304,9 @@ export function getPointerType(event: React.MouseEvent): string {
 }
 
 /**
- * Whether a click came from a pointer that drags the card (see `isDragPointer`), and not from a key
- * or, in the phone layout, a tap. Any other click opens the card's menu.
+ * Whether a click came from a pointer that drags the card (see `isDragPointer`), and not from a
+ * key. A key opens the card's menu.
  */
-export function isDragClick(
-  event: React.MouseEvent,
-  phoneLayout: boolean,
-): boolean {
-  return isDragPointer(getPointerType(event), phoneLayout);
+export function isDragClick(event: React.MouseEvent): boolean {
+  return isDragPointer(getPointerType(event));
 }

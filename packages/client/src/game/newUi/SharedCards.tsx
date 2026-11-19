@@ -1044,13 +1044,7 @@ interface DeckPlay {
    */
   readonly canDiscard: boolean | undefined;
 
-  /** Whether the screen has the phone layout, where a tap opens the menu instead of a drag. */
-  readonly phoneLayout: boolean;
-
-  /**
-   * Starts to drag the card. In the phone layout, only the mouse drags it, and a tap opens the menu
-   * instead (`onTap`).
-   */
+  /** Starts to drag the card. A tap opens the menu instead (`onTap`). */
   readonly onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
   readonly onTap: () => void;
   readonly onCloseMenu: () => void;
@@ -1464,7 +1458,7 @@ function Deck({
             className={`${topClass} tw:cursor-grab`}
             data-deck
             onClick={(event) => {
-              if (!isDragClick(event, play.phoneLayout)) {
+              if (!isDragClick(event)) {
                 play.onTap();
               }
             }}
@@ -1475,7 +1469,7 @@ function Deck({
             style={{
               ...topStyle,
               // A touch drags the card, so it must not scroll the page.
-              touchAction: play.phoneLayout ? undefined : "none",
+              touchAction: "none",
             }}
             type="button"
           >

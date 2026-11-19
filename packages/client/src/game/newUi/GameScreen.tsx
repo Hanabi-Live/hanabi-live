@@ -258,7 +258,7 @@ export function GameScreen(): React.JSX.Element {
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
   // A tap on a card opens its menu, since a touch screen has no hover and cannot hold a hand down
-  // to show its player's view. The mouse drags a card to play or discard it.
+  // to show its player's view. Dragging a card plays or discards it.
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const closeCardMenu = useCallback(() => {
     setMenuCard(undefined);
@@ -1389,6 +1389,8 @@ export function GameScreen(): React.JSX.Element {
           discardState={discardZoneState}
           discardZoneRef={discardZoneRef}
           handsElement={handsElement}
+          heldCard={held?.order}
+          phoneLayout={stacked}
           playState={playZoneState}
           playZoneRef={playZoneRef}
           reducedMotion={settings.reducedMotion}
@@ -1441,10 +1443,9 @@ export function GameScreen(): React.JSX.Element {
                         canDiscard: variant.hasInverted
                           ? canDiscard
                           : undefined,
-                        phoneLayout: stacked,
                         onPointerDown: (event) => {
                           if (
-                            isDragPointer(event.pointerType, stacked)
+                            isDragPointer(event.pointerType)
                             && event.button === 0
                           ) {
                             pressCard(deckOrder, event, {
@@ -1583,7 +1584,7 @@ export function GameScreen(): React.JSX.Element {
                   onCardPointerDown={(event, order) => {
                     if (
                       !canMoveCards
-                      || !isDragPointer(event.pointerType, stacked)
+                      || !isDragPointer(event.pointerType)
                       || event.button !== 0
                     ) {
                       return;

@@ -204,10 +204,7 @@ interface HandsProps {
    */
   readonly speedrunClicks: boolean;
 
-  /**
-   * Starts to drag one of the viewer's cards, to play or discard it. In the phone layout, only the
-   * mouse drags it, and a touch opens the card's menu instead (see `MovableCard`).
-   */
+  /** Starts to drag one of the viewer's cards, to play or discard it (see `MovableCard`). */
   readonly onCardPointerDown: (
     event: React.PointerEvent,
     order: CardOrder,
@@ -1242,9 +1239,7 @@ function CardMenu({
 
 /**
  * A card that the viewer can play or discard. The viewer drags it to the play stacks or the discard
- * pile, with the mouse or a touch. A tap, or a key, opens its menu instead (see `CardMenu`). In the
- * phone layout, the play stacks and the discard pile can be off the screen, so a touch on the card
- * does not drag it, and it can still scroll the page.
+ * pile, with the mouse or a touch. A tap, or a key, opens its menu instead (see `CardMenu`).
  */
 function MovableCard({
   order,
@@ -1282,7 +1277,7 @@ function MovableCard({
         // where it pressed it opens the menu (see "useCardDrag.ts").
         className={`tw:relative tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] ${HOVER_CLASS} tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]`}
         onClick={(event) => {
-          if (!isDragClick(event, props.stacked)) {
+          if (!isDragClick(event)) {
             props.onCardTap(order);
           }
         }}
@@ -1292,7 +1287,7 @@ function MovableCard({
         style={{
           borderRadius: props.cardWidth * CARD_CORNER_PER_WIDTH,
           // A touch drags the card, so it must not scroll the page.
-          touchAction: props.stacked ? undefined : "none",
+          touchAction: "none",
         }}
         type="button"
       >
