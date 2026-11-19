@@ -713,21 +713,6 @@ function VariantPicker({
 
   return (
     <div className={`tw:flex tw:items-center tw:gap-[0.9em] ${FIELD_WIDTH}`}>
-      {searching && (
-        <button
-          aria-label="Choose a random variant"
-          className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
-          onClick={() => {
-            const name = getRandomArrayElement(VARIANT_NAMES);
-            show(name);
-            onChange(name);
-          }}
-          ref={tooltipRef("Choose a random variant")}
-          type="button"
-        >
-          <i className="fas fa-dice" id="dice" />
-        </button>
-      )}
       <div className="tw:relative tw:min-w-0 tw:flex-1">
         {searching ? (
           <>
@@ -790,6 +775,21 @@ function VariantPicker({
           </select>
         )}
       </div>
+      {searching && (
+        <button
+          aria-label="Choose a random variant"
+          className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
+          onClick={() => {
+            const name = getRandomArrayElement(VARIANT_NAMES);
+            show(name);
+            onChange(name);
+          }}
+          ref={tooltipRef("Choose a random variant")}
+          type="button"
+        >
+          <i className="fas fa-dice" id="dice" />
+        </button>
+      )}
     </div>
   );
 }
