@@ -24,6 +24,8 @@ of the repository.
   shows its score with a bar, the colors of its suits, how it ended, and the
   other players. One bar above the list filters by variant, player count, and
   score, and sorts the games. The links between a player's pages are tabs.
+- Warnings and questions show as a small card in the middle of the screen. The
+  warning that an idle game will end soon shows the time left on a ring.
 
 ## November 18th, 2026
 

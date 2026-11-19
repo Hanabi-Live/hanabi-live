@@ -58,6 +58,7 @@ export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
 export const SCRIPTS_PATH = "/public/js/bundles/";
 export const MAX_TABLE_NAME_LENGTH = 45;
 export const SECONDS_PER_MINUTE = 60;
+export const IDLE_WARNING_MS = 300_000;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_BASE_SECONDS = 604_800;
 export const MAX_PER_TURN_SECONDS = 86_400;

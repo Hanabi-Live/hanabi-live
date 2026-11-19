@@ -242,7 +242,7 @@ constants! {
     /// How long a game can go without a move before it ends.
     pub const IDLE_TIMEOUT_MS: i64 = 30 * MS_PER_MINUTE;
     /// How long before an idle game ends to warn its table.
-    pub const IDLE_WARNING_MS: i64 = 5 * MS_PER_MINUTE;
+    @data pub const IDLE_WARNING_MS: i64 = 5 * MS_PER_MINUTE;
     /// How long a typing indicator lasts without another keystroke, in milliseconds.
     @data pub const TYPING_TIMEOUT_MS: i64 = 2 * MS_PER_SECOND;
     /// The number of minutes in an hour.

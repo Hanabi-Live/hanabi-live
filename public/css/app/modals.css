@@ -79,15 +79,20 @@
   min-width: 40vw;
 }
 
+/* A message is a narrow card in the middle of the screen. */
 .modal-message {
-  border: 0;
-  left: 5em;
-  max-width: 100%;
-  right: 5em;
+  align-self: center;
+  background-color: var(--modal-message-bg);
+  border: 1px solid var(--modal-message-edge);
+  box-shadow: var(--modal-message-shadow);
+  margin-inline: auto;
+  max-width: none;
+  min-width: 0;
   overflow: auto;
   padding: 1.875em 1.875em 0 1.875em;
   scrollbar-gutter: unset;
-  top: 15vh;
+  top: auto;
+  width: min(32em, 100% - 2em);
 }
 
 .modal-prompt {

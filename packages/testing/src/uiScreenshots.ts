@@ -20,6 +20,7 @@
 import type { playerActionRequestSchema, UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
+  IDLE_WARNING_MS,
   MAX_CHAT_LENGTH,
   SERVER_EVENT_SCHEMAS,
   VERSION,
@@ -41,7 +42,7 @@ import {
   MAX_STRIKES,
   START_CARD_RANK,
 } from "@hanabi-live/game";
-import { assertDefined } from "complete-common";
+import { assertDefined, SECOND_IN_MILLISECONDS } from "complete-common";
 import { execFile } from "node:child_process";
 import {
   appendFile,
@@ -54,7 +55,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { parseArgs, promisify } from "node:util";
-import type { BrowserContext, Locator, Page } from "playwright";
+import type { BrowserContext, Locator, Page, WebSocketRoute } from "playwright";
 import { chromium } from "playwright";
 import type * as z from "zod";
 import { evaluationDatabase } from "./database.ts";
@@ -962,6 +963,44 @@ function getStates(): readonly State[] {
           showClocks: true,
         });
         await game.clueAgain();
+      },
+    },
+    // Bob's game with five players, with the warning that the game ends soon because no one took a
+    // turn. The server warns only near the end of a long wait, so the state sends the warning
+    // itself, through the connection of the page.
+    {
+      name: "new-ui-idle-warning",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page) => {
+        const sockets: WebSocketRoute[] = [];
+        await page.routeWebSocket("**/ws?*", (socket) => {
+          socket.connectToServer();
+          sockets.push(socket);
+        });
+        // The route only sees connections that open after it.
+        await page.reload();
+        await page.evaluate(useStylesheet, `/public/css/${BUNDLE_FILENAME}`);
+        await page.waitForURL(/\/game\/\d+/u);
+        await page.locator("#game-new-ui [data-hand]").first().waitFor();
+        const tableId = Number(
+          /\/game\/(?<tableId>\d+)/u.exec(page.url())?.groups?.["tableId"],
+        );
+        sockets.at(-1)?.send(
+          JSON.stringify({
+            event: "idleWarning",
+            data: {
+              idleRemainingMs: IDLE_WARNING_MS - 34 * SECOND_IN_MILLISECONDS,
+              tableId,
+            },
+          }),
+        );
+        await page.locator("#idle-modal").waitFor();
+        await settle(page);
       },
     },
     // Bob's game with five players in color-blind mode, so that the corner of each card shows the

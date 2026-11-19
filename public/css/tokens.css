@@ -119,6 +119,18 @@
 
   /* Covers the page behind a modal */
   --modal-backdrop: rgba(0, 24, 5, 0.7);
+  /*
+    A message modal lifts off of the dimmed page: it is lighter than the page, with a pale edge, a
+    light top edge, and a deep shadow.
+  */
+  --modal-message-bg: var(--game-screen-panel);
+  --modal-message-edge: color-mix(
+    in srgb,
+    var(--game-screen-line) 50%,
+    transparent
+  );
+  --modal-message-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%), 0 1.5em 4em rgb(0 0 0 / 60%);
   /* The options of the dialog that morphs a card */
   --morph-option-border: gray;
   --morph-option-selected: orange;

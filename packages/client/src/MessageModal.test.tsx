@@ -7,6 +7,7 @@ import {
   render,
   screen,
 } from "@testing-library/react";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type { Connection } from "./Connection.ts";
@@ -57,17 +58,13 @@ test("the idle warning counts down, and only players can keep the game going", (
     deadline: Date.now() + 299_000,
     canKeepPlaying: false,
   });
-  expect(document.querySelector("#idle-modal strong")?.textContent).toBe(
-    "4:59",
-  );
-  expect(screen.queryByText("Keep Playing")).toBeNull();
+  expect(screen.getByRole("timer").textContent).toBe("4:59");
+  expect(screen.queryByText("Keep playing")).toBeNull();
 
   act(() => {
     vi.advanceTimersByTime(60_000);
   });
-  expect(document.querySelector("#idle-modal strong")?.textContent).toBe(
-    "3:59",
-  );
+  expect(screen.getByRole("timer").textContent).toBe("3:59");
 
   cleanup();
   show({
@@ -75,8 +72,14 @@ test("the idle warning counts down, and only players can keep the game going", (
     deadline: Date.now() + 299_000,
     canKeepPlaying: true,
   });
+  // The ring fills up again before the game goes on.
   act(() => {
-    screen.getByText("Keep Playing").click();
+    screen.getByText("Keep playing").click();
+  });
+  expect(screen.getByRole("timer").textContent).toBe("5:00");
+  expect(keepPlaying).not.toHaveBeenCalled();
+  act(() => {
+    vi.advanceTimersByTime(SECOND_IN_MILLISECONDS);
   });
   expect(keepPlaying).toHaveBeenCalledTimes(1);
 });

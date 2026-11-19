@@ -1,10 +1,12 @@
 // The message modals: a warning, an error, the idle warning, a question, and the password of a
 // table. "modals.ts" opens and closes the dialog that holds them.
 
+import { IDLE_WARNING_MS, SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { useEffect, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "./constants.ts";
+import { useReducedMotion } from "./fade.ts";
 import { globals } from "./Globals.ts";
 import { signOut } from "./lobby/signOut.ts";
 import type { MessageModal as Modal } from "./messageModalSlice.ts";
@@ -110,12 +112,22 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
   }
 }
 
+/** How long the ring of the idle warning takes to fill up again after "Keep playing". */
+const IDLE_REFILL_MILLISECONDS = 250;
+
+/** The radius of the ring of the idle warning, in the units of its view box (0 to 100). */
+const IDLE_RING_RADIUS = 45;
+
 function IdleModal({
   modal,
 }: {
   readonly modal: Extract<Modal, { type: "idle" }>;
 }) {
+  const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(Date.now);
+  // "Keep playing" fills the ring up again before the modal closes, so that the player sees the
+  // time go back to the start.
+  const [refilling, setRefilling] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -126,29 +138,101 @@ function IdleModal({
     };
   }, []);
 
+  useEffect(() => {
+    if (!refilling) {
+      return undefined;
+    }
+
+    const timeout = setTimeout(keepPlaying, IDLE_REFILL_MILLISECONDS);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [refilling]);
+
+  const remaining = refilling
+    ? IDLE_WARNING_MS
+    : Math.max(0, modal.deadline - now);
+  const fraction = Math.min(1, remaining / IDLE_WARNING_MS);
+  const lastMinute = remaining < SECONDS_PER_MINUTE * SECOND_IN_MILLISECONDS;
+  const colorClass = lastMinute ? "tw:text-game-error" : "tw:text-game-turn";
+
   return (
-    <section id="idle-modal">
-      <h3>Is anyone still there?</h3>
-      <p>
-        Nobody has taken a turn in a while, so this game will end in{" "}
-        <strong>
-          {millisecondsToClockString(Math.max(0, modal.deadline - now))}
-        </strong>
-        {modal.canKeepPlaying
-          ? " unless someone takes a turn or keeps it going."
-          : " unless a player takes a turn or keeps it going."}
+    <section
+      className="tw:flex tw:flex-col tw:items-center tw:text-center"
+      id="idle-modal"
+    >
+      <div className="tw:relative tw:size-[8.5em]">
+        <svg
+          aria-hidden
+          className="tw:size-full tw:-rotate-90"
+          viewBox="0 0 100 100"
+        >
+          <circle
+            className="tw:stroke-game-line/30"
+            cx="50"
+            cy="50"
+            fill="none"
+            r={IDLE_RING_RADIUS}
+            strokeWidth="6"
+          />
+          <circle
+            className={`tw:stroke-current ${colorClass}`}
+            cx="50"
+            cy="50"
+            fill="none"
+            pathLength={1}
+            r={IDLE_RING_RADIUS}
+            strokeDasharray="1 1"
+            // The spent time grows clockwise from the top, like the hand of a clock.
+            strokeDashoffset={fraction - 1}
+            strokeLinecap="round"
+            strokeWidth="6"
+            style={
+              refilling
+                ? {
+                    transition: `stroke-dashoffset ${IDLE_REFILL_MILLISECONDS}ms ease-out`,
+                  }
+                : undefined
+            }
+          />
+        </svg>
+        <span
+          className={`tw:absolute tw:inset-0 tw:flex tw:items-center tw:justify-center tw:text-[2.25em] tw:font-semibold tw:tabular-nums ${colorClass}`}
+          role="timer"
+        >
+          {millisecondsToClockString(remaining)}
+        </span>
+      </div>
+      <h3 className="tw:mt-[0.5em] tw:mb-[0.25em]">This game ends soon.</h3>
+      <p className="tw:text-game-muted">
+        No one has taken a turn for a while.
+        {!modal.canKeepPlaying && " Only a player can keep it going."}
       </p>
-      <ul className="actions">
+      <ul className="actions tw:justify-center">
+        {modal.canKeepPlaying && (
+          <li>
+            <Button
+              autoFocus
+              onClick={() => {
+                if (reducedMotion) {
+                  keepPlaying();
+                } else {
+                  setRefilling(true);
+                }
+              }}
+              variant="primary"
+            >
+              Keep playing
+            </Button>
+          </li>
+        )}
         <li>
-          {modal.canKeepPlaying && (
-            <>
-              <Button autoFocus onClick={keepPlaying}>
-                Keep Playing
-              </Button>{" "}
-            </>
-          )}
-          <Button autoFocus={!modal.canKeepPlaying} onClick={closeModals}>
-            Close
+          <Button
+            autoFocus={!modal.canKeepPlaying}
+            onClick={closeModals}
+            variant={modal.canKeepPlaying ? "alt" : undefined}
+          >
+            Dismiss
           </Button>
         </li>
       </ul>
@@ -214,16 +298,21 @@ function Button({
   autoFocus = false,
   children,
   onClick,
+  variant,
 }: {
   readonly autoFocus?: boolean;
   readonly children: React.ReactNode;
   readonly onClick: () => void;
+  /** The main action of the modal ("primary"), or a quiet one beside it ("alt"). */
+  readonly variant?: "primary" | "alt";
 }) {
   return (
     <button
       // A modal focuses the button that it expects.
       autoFocus={autoFocus}
-      className="button small"
+      className={
+        variant === undefined ? "button small" : `button small ${variant}`
+      }
       onClick={onClick}
       type="button"
     >
