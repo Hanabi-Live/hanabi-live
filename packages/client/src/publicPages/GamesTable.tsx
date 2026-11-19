@@ -248,7 +248,7 @@ function GameList({
         />
       )}
       <div
-        className="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:gap-x-6 tw:gap-y-3 tw:border-b tw:border-border tw:pb-4 tw:text-[0.9em]"
+        className="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:gap-x-4 tw:gap-y-3 tw:border-b tw:border-border tw:pb-4 tw:text-[0.9em]"
         key={resetKey}
       >
         {!seed && (
@@ -392,7 +392,7 @@ function VariantFilter({
     <label className="tw:m-0 tw:text-[1em] tw:flex tw:min-w-0 tw:items-center tw:gap-2">
       <span className="tw:text-text-label">Variant</span>
       <input
-        className="tw:h-8 tw:w-[12em] tw:max-w-full tw:px-3 tw:text-[1em]"
+        className="tw:h-8 tw:w-[10em] tw:max-w-full tw:px-3 tw:text-[1em]"
         list="variant-names"
         onChange={(event) => {
           const name = event.target.value.trim().toLowerCase();
@@ -438,7 +438,7 @@ function TeammatesFilter({
       <span className="tw:text-text-label">With</span>
       <input
         autoCapitalize="off"
-        className="tw:h-8 tw:w-[12em] tw:max-w-full tw:px-3 tw:text-[1em]"
+        className="tw:h-8 tw:w-[8em] tw:max-w-full tw:px-3 tw:text-[1em]"
         onChange={(event) => {
           const names = parseNames(event.target.value);
           clearTimeout(timer.current);
