@@ -441,9 +441,10 @@ function GameRow({
             </div>
           )}
           <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:text-[0.8em] tw:text-text-label">
+            {/* The ID comes first, so that it lines up from row to row. */}
+            <span className="tw:tabular-nums">#{game.gameId}</span>
             {ending !== undefined && <span>{ending}</span>}
             <GameOptionIcons options={game.options} />
-            <span className="tw:tabular-nums">#{game.gameId}</span>
           </div>
           {context.list === "tags" && game.tags.length > 0 && (
             <div className="tw:text-[0.8em] tw:text-text-label">
