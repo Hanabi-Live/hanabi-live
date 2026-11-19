@@ -57,9 +57,9 @@ const ICON_BUTTON_SIZE_CLASS = {
  * on the left, its main controls in the middle, and its other buttons on the right. Each part is as
  * tall as a step. The timeline has a smallest width, so that the bar knows the room that the
  * controls need (see "StatusStrip.tsx"). On a narrow window, the middle has a row of its own, under
- * the others, when there are leader's controls. The panel has a fixed width, so there the group can
- * be narrower than its content. Then a long leader's name makes the leader's menu smaller, and it
- * does not push the buttons out of the panel.
+ * the others, when there are leader's controls and no room for it beside them. The panel has a
+ * fixed width, so there the group can be narrower than its content. Then a long leader's name makes
+ * the leader's menu smaller, and it does not push the buttons out of the panel.
  */
 function Controls({
   children,
@@ -83,15 +83,24 @@ function Controls({
 }
 
 /**
- * The middle of the controls. On a narrow window, it has the last row of the controls to itself
- * when there are leader's controls. Otherwise, it shares its row with the right of the controls, as
- * on a wide window, so that the buttons on the right do not take a row of their own. It starts from
- * no width there, so that the timeline gets shorter before the buttons wrap. On the narrowest
- * screens, the gaps get smaller too, so that the buttons on the right still fit. In the panel of
- * the wide layout (see "StatusStrip.tsx"), the middle's parts wrap with the rest of the controls,
- * so that the buttons on the right share their row (see `AFTER_TIMELINE_CLASS`).
+ * The middle of the controls. In the phone layout, it shares the row of the leader's controls and
+ * the buttons on the right when the window has room for all of them, so that the bar does not take
+ * a row for a few buttons. On a narrower window, it has the last row of the controls to itself. The
+ * steps through the turns and the timeline need more room than the buttons of a hypothetical, so
+ * they get a row of their own on wider windows (see `TURNS_MIDDLE_CLASS`). Without leader's
+ * controls, the middle always shares its row with the right of the controls, so that the buttons on
+ * the right do not take a row of their own. It starts from no width there, so that the timeline
+ * gets shorter before the buttons wrap. On the narrowest screens, the gaps get smaller too, so that
+ * the buttons on the right still fit. In the panel of the wide layout (see "StatusStrip.tsx"), the
+ * middle's parts wrap with the rest of the controls, so that the buttons on the right share their
+ * row (see `AFTER_TIMELINE_CLASS`).
  */
-const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS} tw:group-data-panel/strip:contents`;
+const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap-1.5 tw:phone:basis-0 tw:phone:narrow-410:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:narrow-410:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full ${STEP_HEIGHT_CLASS} tw:group-data-panel/strip:contents`;
+
+/**
+ * The middle of the controls of the turns, which needs room for the timeline (see `MIDDLE_CLASS`).
+ */
+const TURNS_MIDDLE_CLASS = `${MIDDLE_CLASS} tw:phone:narrow-640:group-has-[[data-leader-controls]:not(:empty)]/controls:order-last tw:phone:narrow-640:group-has-[[data-leader-controls]:not(:empty)]/controls:basis-full`;
 
 /**
  * The steps forward. In the panel (see "StatusStrip.tsx"), they come after the timeline, so that it
@@ -715,9 +724,11 @@ export function ReplayControls({
  * A long name makes the menu's text smaller, so that the menu does not push the other controls
  * aside. They do not shrink in the bar's row, so that the bar sees when it has no room for them. On
  * a narrow window, they share a row with the buttons on the right, and the menu can shrink. There,
- * they start with no width and take the room that the buttons leave. Otherwise, more buttons on the
- * right, as in a hypothetical, would wrap onto a row of their own, and the bar would grow. In the
- * panel, the menu can shrink too, so that the buttons on the right fit beside it.
+ * they start with no width and take the room that the buttons leave, up to the width of their
+ * content. Otherwise, more buttons on the right, as in a hypothetical, would wrap onto a row of
+ * their own, and the bar would grow. When the middle of the controls shares their row, it gets the
+ * rest of the room (see `MIDDLE_CLASS`). In the panel, the menu can shrink too, so that the buttons
+ * on the right fit beside it.
  */
 function LeaderControls({
   state,
@@ -727,7 +738,7 @@ function LeaderControls({
   const { shared } = state.replay;
   return (
     <div
-      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:order-[-3] tw:group-data-panel/strip:min-w-0 tw:group-data-panel/strip:shrink"
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:max-w-max tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:order-[-3] tw:group-data-panel/strip:min-w-0 tw:group-data-panel/strip:shrink"
       data-leader-controls
     >
       {shared !== undefined && (
@@ -800,7 +811,7 @@ function TurnsControls({
   return (
     <Controls>
       <LeaderControls state={state} />
-      <div className={MIDDLE_CLASS}>
+      <div className={TURNS_MIDDLE_CLASS}>
         <IconButton
           className={STEP_BUTTON_CLASS}
           disabled={atStart}
