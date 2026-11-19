@@ -1652,15 +1652,9 @@ function ViewFade({
 function Hand({
   seat,
   props,
-  pointedAt,
-  onPoint,
 }: {
   readonly seat: Seat;
   readonly props: HandsProps;
-
-  /** Whether the pointer is over the hand, or a touch last tapped it. */
-  readonly pointedAt: boolean;
-  readonly onPoint: (playerIndex: PlayerIndex | undefined) => void;
 }): React.JSX.Element {
   const editing = props.onEditCard !== undefined;
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
@@ -1702,23 +1696,6 @@ function Hand({
           : "tw:items-center"
       } ${boxClass}`}
       data-hand={seat.playerIndex}
-      // A mouse over the hand brightens its clue key. A touch has no hover, so a tap brightens it
-      // instead, until a tap somewhere else (see `Hands`).
-      onPointerDown={(event) => {
-        if (event.pointerType === "touch") {
-          onPoint(seat.playerIndex);
-        }
-      }}
-      onPointerEnter={(event) => {
-        if (event.pointerType !== "touch") {
-          onPoint(seat.playerIndex);
-        }
-      }}
-      onPointerLeave={(event) => {
-        if (event.pointerType !== "touch") {
-          onPoint(undefined);
-        }
-      }}
       role="group"
       // With the name above the cards, the gap leaves room for the clue tokens, so that they do not
       // cover the name.
@@ -1874,7 +1851,6 @@ function Hand({
       {canClueSeat && !chosen && (
         <ClueKey
           below={props.stacked}
-          highlighted={pointedAt}
           name={seat.name}
           onOpen={() => {
             props.onChooseClueTarget(seat.playerIndex);
@@ -1928,26 +1904,6 @@ function ViewBadge({
  * different numbers of cards, such as after the deck runs out.
  */
 export function Hands(props: HandsProps): React.JSX.Element {
-  // The hand that the pointer is over, or that a touch last tapped.
-  const [pointedSeat, setPointedSeat] = useState<PlayerIndex>();
-
-  // A tap outside of the hands dims the clue key that a tap brightened.
-  useEffect(() => {
-    function onPointerDown(event: PointerEvent) {
-      const { target } = event;
-      if (
-        event.pointerType === "touch"
-        && !(target instanceof Element && target.closest("[data-hand]"))
-      ) {
-        setPointedSeat(undefined);
-      }
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, []);
-
   return (
     <section
       aria-hidden={props.hidden === true ? true : undefined}
@@ -1962,13 +1918,7 @@ export function Hands(props: HandsProps): React.JSX.Element {
       }
     >
       {props.seats.map((seat) => (
-        <Hand
-          key={seat.playerIndex}
-          onPoint={setPointedSeat}
-          pointedAt={pointedSeat === seat.playerIndex}
-          props={props}
-          seat={seat}
-        />
+        <Hand key={seat.playerIndex} props={props} seat={seat} />
       ))}
       {props.shownClue !== undefined && (
         <ClueRail

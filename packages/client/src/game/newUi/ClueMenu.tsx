@@ -15,7 +15,7 @@ import {
   useFade,
 } from "./motion.ts";
 import { measure } from "./screenScale.ts";
-import { KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
+import { HOVER_CLASS, KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 interface ClueMenuProps {
   readonly name: string;
@@ -766,23 +766,18 @@ export function ClueHandLayer({
   );
 }
 
-/** The opacity of a clue key while the pointer is not over its hand (see `ClueKey`). */
-const DIM_CLUE_KEY_OPACITY = 0.6;
-
 /**
  * The key that opens the clue menu of a player. It shows beside their hand while the viewer can
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
  * `getClueDrawerWidth`). In the phone layout, there is no room there, so it sits in the hand's top
  * right corner, beside the player's name. It is dim, so that the keys of all the hands do not
- * compete with the cards, and bright while the pointer is over its hand. It fades in when it
- * appears, such as when the viewer's turn starts, and fades out when it goes, such as when its menu
- * opens.
+ * compete with the cards, and bright while the pointer is over it. It fades in when it appears,
+ * such as when the viewer's turn starts, and fades out when it goes, such as when its menu opens.
  */
 export function ClueKey({
   name,
   below,
   top,
-  highlighted,
   reducedMotion,
   onOpen,
 }: {
@@ -791,9 +786,6 @@ export function ClueKey({
 
   /** In the phone layout, the distance from the top of the hand to the top of the name. */
   readonly top: number;
-
-  /** Whether the pointer is over the hand, or a touch last tapped it. */
-  readonly highlighted: boolean;
   readonly reducedMotion: boolean;
   readonly onOpen: () => void;
 }): React.JSX.Element {
@@ -811,21 +803,20 @@ export function ClueKey({
       ref={ref}
       style={below ? { top } : undefined}
     >
-      <button
-        aria-label={`Give ${name} a clue`}
-        className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink tw:hover:brightness-110 ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
-        onClick={onOpen}
-        ref={tooltipRef(`Give ${name} a clue`)}
-        style={{
-          opacity: highlighted ? 1 : DIM_CLUE_KEY_OPACITY,
-          transition: reducedMotion
-            ? undefined
-            : getOpacityTransition(highlighted),
-        }}
-        type="button"
+      {/* The dimming is on a layer of its own, because the key's press sets its own transition. */}
+      <div
+        className={`tw:opacity-60 tw:transition-opacity tw:hover:opacity-100 ${HOVER_CLASS}`}
       >
-        <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
-      </button>
+        <button
+          aria-label={`Give ${name} a clue`}
+          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
+          onClick={onOpen}
+          ref={tooltipRef(`Give ${name} a clue`)}
+          type="button"
+        >
+          <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
+        </button>
+      </div>
     </div>
   );
 }

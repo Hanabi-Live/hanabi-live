@@ -221,10 +221,13 @@ const KEYWORD_NOTES = [
 /** The note that the account writes on the next player's first card. */
 const NEXT_HAND_NOTE = "r1 maybe :D";
 
-/** Moves the mouse over the next player's hand in the New UI, which brightens their clue key. */
-async function pointAtNextPlayer(page: Page) {
-  await page.locator("#game-new-ui [data-hand]").nth(1).hover();
-  await page.locator("#game-new-ui [data-clue-key]").first().waitFor();
+/** Moves the mouse over the next player's clue key in the New UI, which brightens it. */
+async function pointAtNextPlayersClueKey(page: Page) {
+  await page
+    .locator("#game-new-ui [data-hand]")
+    .nth(1)
+    .locator("[data-clue-key] button")
+    .hover();
 }
 
 /**
@@ -232,7 +235,6 @@ async function pointAtNextPlayer(page: Page) {
  * allow, so that its cards show which ones it would touch.
  */
 async function chooseClueForNextPlayer(page: Page) {
-  await pointAtNextPlayer(page);
   await page
     .locator("#game-new-ui [data-hand]")
     .nth(1)
@@ -1122,7 +1124,7 @@ function getStates(): readonly State[] {
       },
     },
     // On the account's turn in a five-player game, every other hand shows its clue key. The mouse
-    // is over the next player's hand, which brightens theirs.
+    // is over the next player's key, which brightens it.
     {
       name: "new-ui-clue-keys",
       path: "/",
@@ -1132,7 +1134,7 @@ function getStates(): readonly State[] {
         const game = await cast.startBobsGame(5);
         await game.discardUntilAccountsTurn();
       },
-      hover: pointAtNextPlayer,
+      hover: pointAtNextPlayersClueKey,
     },
     // On the account's turn in a five-player game, it opens the clue menu on the next player's hand
     // and chooses a clue. The clues that would touch no cards are left out.
