@@ -173,7 +173,7 @@
     The list of games in the lobby. Each kind of row is a faint wash of its color, with a bright
     edge on its left, and its taken seats in that color too ("--lobby-table-joined-mark" and the
     others). The colors are the New UI's: gold for the turn, green for a game, blue for the in-game
-    replay, pink for the hypothetical, and red for an error.
+    replay, silver for the finished replay, and red for an error.
   */
   --lobby-table-joined: rgb(143 178 255 / 14%);
   --lobby-table-joined-hover: rgb(143 178 255 / 24%);
@@ -187,9 +187,9 @@
   --lobby-table-started: rgb(111 207 122 / 11%);
   --lobby-table-started-hover: rgb(111 207 122 / 20%);
   --lobby-table-started-mark: var(--game-screen-green-text);
-  --lobby-table-replay: rgb(247 161 196 / 12%);
-  --lobby-table-replay-hover: rgb(247 161 196 / 21%);
-  --lobby-table-replay-mark: var(--game-screen-hypothetical);
+  --lobby-table-replay: rgb(207 214 224 / 9%);
+  --lobby-table-replay-hover: rgb(207 214 224 / 17%);
+  --lobby-table-replay-mark: var(--game-screen-finished-replay);
   /* The lines between the cells of a row */
   --lobby-table-cell-line: rgb(255 255 255 / 7%);
 
