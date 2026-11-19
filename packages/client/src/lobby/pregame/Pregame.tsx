@@ -73,7 +73,7 @@ export function Pregame(): React.JSX.Element | undefined {
         >
           {variant.name}
         </h3>
-        <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-[0.85em] tw:text-game-muted">
+        <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-game-muted">
           <span id="lobby-pregame-name">{game.settings.name}</span>
           <span id="lobby-pregame-seats">
             <i className="fas fa-users tw:mr-[0.4em]" />
@@ -147,7 +147,7 @@ export function Pregame(): React.JSX.Element | undefined {
             <li
               className={[
                 "tw:flex tw:min-h-[3em] tw:items-center tw:justify-center tw:rounded-[5px]",
-                "tw:border tw:border-dashed tw:border-game-line/40 tw:text-[0.85em] tw:text-game-muted",
+                "tw:border tw:border-dashed tw:border-game-line/40 tw:text-game-muted",
               ].join(" ")}
               key={`open-seat-${i}`}
             >
@@ -189,7 +189,7 @@ function PlayerBox({
   return (
     <li
       className={[
-        "tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:p-[0.8em] tw:text-[0.85em]",
+        "tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:p-[0.8em]",
         JOIN_CLASS,
         player.present ? "" : "tw:opacity-60",
       ].join(" ")}
