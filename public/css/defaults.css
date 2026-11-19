@@ -568,14 +568,11 @@ table {
   width: 100%;
 }
 
+/* Rows have a faint line between them, as on the profile pages, and no stripes or cell grid. */
 table tbody tr {
   border: solid 1px var(--border);
   border-left: 0;
   border-right: 0;
-}
-
-table tbody tr:nth-child(2n + 1) {
-  background-color: var(--surface-sunken);
 }
 
 table td {

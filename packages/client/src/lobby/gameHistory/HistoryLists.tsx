@@ -10,7 +10,6 @@ import { globals } from "../../Globals.ts";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRefHtml } from "../../tooltipRef.ts";
 import { dateTimeFormatter } from "../../utils.ts";
-import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
   hide,
   showMore,
@@ -61,7 +60,7 @@ export function HistoryList(): React.JSX.Element {
       className="tw:h-full tw:overflow-y-auto"
       id="lobby-history-table-container"
     >
-      <table className={BORDERED_TABLE}>
+      <table>
         <thead>
           <tr>
             <th>Game ID</th>
@@ -187,7 +186,7 @@ export function OtherScoresList(): React.JSX.Element {
 
   return (
     <div className="tw:h-full tw:overflow-y-auto">
-      <table className={BORDERED_TABLE}>
+      <table>
         <thead>
           <tr>
             <th>Game ID</th>

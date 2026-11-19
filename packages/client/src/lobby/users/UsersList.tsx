@@ -40,7 +40,7 @@ export function UsersList(): React.JSX.Element {
       // The names and statuses are quiet, so that the list of games stands out. A faint dotted line
       // shows that they are links, and it becomes solid on hover. Names that have their own color,
       // such as our own, keep it.
-      className="tw:mb-2 tw:[&_td]:p-1 tw:[&>tbody>tr:nth-child(odd)]:bg-transparent tw:[&_a]:decoration-dotted tw:[&_a]:decoration-[color-mix(in_srgb,currentColor_50%,transparent)] tw:[&_a]:underline-offset-[0.2em] tw:[&_a:hover]:decoration-solid tw:[&_a:hover]:decoration-current tw:[&_a:not([class])]:text-text"
+      className="tw:mb-2 tw:[&_td]:p-1 tw:[&_a]:decoration-dotted tw:[&_a]:decoration-[color-mix(in_srgb,currentColor_50%,transparent)] tw:[&_a]:underline-offset-[0.2em] tw:[&_a:hover]:decoration-solid tw:[&_a:hover]:decoration-current tw:[&_a:not([class])]:text-text"
       id="lobby-users-table"
     >
       <thead>
