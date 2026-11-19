@@ -42,8 +42,8 @@
   --focus: var(--game-screen-muted);
 
   /* Green marks something that is on or selected, such as a checked box or the selected tab. */
-  --green: #2e7d32;
-  --green-hover: #256a29;
+  --green: #286e2c;
+  --green-hover: #215c25;
   --green-text: #6fcf7a;
   --green-tint: var(--game-screen-raised);
 
@@ -86,8 +86,11 @@
   --button-translucent-hover-bg: rgb(255 255 255 / 15%);
 
   /* Form controls */
-  /* 3:1 contrast with "--surface-panel", so that an unchecked box is visible */
-  --checkbox-border: var(--game-screen-line);
+  /*
+    3:1 contrast with "--surface-panel", so that an unchecked box is visible. It is gray, so that
+    only a checked box is green.
+  */
+  --checkbox-border: #7d8781;
   /* The arrow of a dropdown, in the color of "--text". An image cannot use a variable's color. */
   --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23eef1f3' /%3E%3C/svg%3E");
 
