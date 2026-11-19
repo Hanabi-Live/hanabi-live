@@ -14,6 +14,7 @@ import { OptionIcon } from "../OptionIcon.tsx";
 import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses.ts";
 import { getOptionDescriptions } from "../optionDescriptions.ts";
 import { selectTable } from "../tables/tablesSlice.ts";
+import { Screen } from "../types/Screen.ts";
 import { selectHGroupLevel } from "../users/usersSlice.ts";
 import type { Game } from "./pregameSlice.ts";
 
@@ -36,17 +37,23 @@ export function Pregame(): React.JSX.Element | undefined {
   );
   const reducedMotion = useReducedMotion();
   // The people who are at the table when we join it show at once, with the table. The people who
-  // come after them fade in.
-  const tableId = game?.tableId;
-  const [shownTableId, setShownTableId] = useState(tableId);
+  // come after them fade in. The table's details come before the screen shows, and an element that
+  // stops being hidden plays its starting style again, so we wait for the screen.
+  const shown = useAppSelector(
+    (state) => state.session.screen === Screen.PreGame,
+  );
+  const shownTableId = shown ? game?.tableId : undefined;
+  const [fadingTableId, setFadingTableId] = useState(shownTableId);
   useEffect(() => {
-    setShownTableId(tableId);
-  }, [tableId]);
+    setFadingTableId(shownTableId);
+  }, [shownTableId]);
   if (game === undefined) {
     return undefined;
   }
 
-  const fadeStyle = getFadeStyle(reducedMotion || tableId !== shownTableId);
+  const fadeStyle = getFadeStyle(
+    reducedMotion || shownTableId !== fadingTableId,
+  );
 
   const isSpectator = game.players.every(
     (player) => player.username !== username,
