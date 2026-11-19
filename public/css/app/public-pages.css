@@ -4,18 +4,20 @@
 }
 
 /* History Pages */
+/* Space between the header bar and the box */
+.history-page {
+  padding-top: 2em;
+}
+
+@media screen and (max-width: 736px) {
+  .history-page {
+    padding-top: 1em;
+  }
+}
+
 /* A page with only text and a short form, such as the password reset page */
 .history-page.narrow {
   max-width: 50em;
-}
-
-.history-page > header {
-  text-align: center;
-}
-
-.history-page > header h2 {
-  font-size: 2.75em;
-  margin: 0;
 }
 
 table.history {
@@ -50,11 +52,5 @@ table.history {
 
   #profile-buttons li {
     padding-top: 1em;
-  }
-}
-
-@media screen and (max-width: 736px) {
-  .history-page > header h2 {
-    font-size: 2em;
   }
 }
