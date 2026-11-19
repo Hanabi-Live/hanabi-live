@@ -25,6 +25,9 @@ export const SHARED_REPLAY_TOOLTIP = "Watch in a shared replay.";
 /** The tooltip of a row's button that shows the other games on the seed. */
 export const OTHER_GAMES_TOOLTIP = "See the other games on this seed.";
 
+/** The tooltip of a row's other games, when no one else has played the seed. */
+export const NO_OTHER_GAMES_TOOLTIP = "No one else has played this seed.";
+
 /** How a game ended, when it did not end normally. */
 export const END_CONDITION_TEXT = {
   normal: undefined,

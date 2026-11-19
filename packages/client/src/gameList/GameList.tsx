@@ -25,6 +25,7 @@ import {
   END_CONDITION_TEXT,
   GameOptionIcons,
   groupByDay,
+  NO_OTHER_GAMES_TOOLTIP,
   OTHER_GAMES_TOOLTIP,
   ROW_BUTTON,
   ROW_ICON_BUTTON,
@@ -584,7 +585,7 @@ function GameButtons({
           that the buttons of every row line up. */}
       {list !== "seed" && (
         <span className="tw:w-[6.5em] tw:narrow-640:w-auto">
-          {others > 0 && (
+          {others > 0 ? (
             <a
               aria-label={`Other scores: ${others}`}
               className={`button ${ROW_BUTTON}`}
@@ -594,19 +595,36 @@ function GameButtons({
               })}
               ref={tooltipRef(OTHER_GAMES_TOOLTIP)}
             >
-              <i aria-hidden className="fas fa-chart-bar" />
-              <span className="tw:tabular-nums">
-                {others}
-                <span className="tw:narrow-640:hidden">
-                  {" "}
-                  {others === 1 ? "other" : "others"}
-                </span>
-              </span>
+              <OtherGamesLabel others={others} />
             </a>
+          ) : (
+            // Dim text, not a button, tells the player that the seed has no other games yet.
+            <span
+              className={`${ROW_BUTTON} tw:text-text-label`}
+              ref={tooltipRef(NO_OTHER_GAMES_TOOLTIP)}
+            >
+              <OtherGamesLabel others={0} />
+            </span>
           )}
         </span>
       )}
     </div>
+  );
+}
+
+/** The icon and the count of a row's other games on the seed. */
+function OtherGamesLabel({ others }: { readonly others: number }) {
+  return (
+    <>
+      <i aria-hidden className="fas fa-chart-bar" />
+      <span className="tw:tabular-nums">
+        {others}
+        <span className="tw:narrow-640:hidden">
+          {" "}
+          {others === 1 ? "other" : "others"}
+        </span>
+      </span>
+    </>
   );
 }
 
