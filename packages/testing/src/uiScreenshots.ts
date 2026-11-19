@@ -324,6 +324,12 @@ const MAX_CLICK_ATTEMPTS = 3;
 /** The name of the table of `openLockedTable`, which has a password. */
 const LOCKED_TABLE_NAME = "Locked table";
 
+/** A username that no account has, for the warning of "warning-modal". */
+const MISSING_USERNAME = "NoSuchPlayer";
+
+/** The warning that the server sends for `MISSING_USERNAME`. */
+const MISSING_USERNAME_WARNING = `The username of "${MISSING_USERNAME}" does not exist in the database.`;
+
 /** The error that the server sends when it stops for maintenance. */
 const MAINTENANCE_ERROR =
   "The server is going down for maintenance. Your game progress has been saved.\nReload the page after the server restarts.";
@@ -808,13 +814,14 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
-    // A reply before anyone sent us a private message shows a warning.
+    // A request that the server rejects shows a warning, such as a friend who does not exist.
     {
       name: "warning-modal",
       path: "/",
       loggedIn: true,
+      expectedConsoleError: MISSING_USERNAME_WARNING,
       prepare: async (page) => {
-        await page.fill("#lobby-chat-input", "/r hi");
+        await page.fill("#lobby-chat-input", `/friend ${MISSING_USERNAME}`);
         await page.press("#lobby-chat-input", "Enter");
         await page.locator("#warning-modal").waitFor();
         await settle(page);
