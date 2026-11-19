@@ -443,7 +443,7 @@ input::-webkit-calendar-picker-indicator {
   margin: 0 0 2em 0;
   padding: 3em;
   background: var(--surface);
-  box-shadow: 0 2px 0 0 var(--border);
+  box-shadow: var(--box-shadow);
 }
 
 .box > :last-child {

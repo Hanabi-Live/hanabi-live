@@ -8,10 +8,10 @@ import {
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants.ts";
 import { useAppSelector } from "../../store.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import * as tooltips from "../../tooltips.ts";
 import { copyStringToClipboard, getUrlFromPath } from "../../utils.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
-import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
   FULL_CURSOR,
   JOIN_CURSOR,
@@ -38,13 +38,13 @@ const COLUMNS = {
     className: "tw:narrow-736:hidden",
   },
   numPlayers: {
-    title: "# of Players",
-    className: "tw:narrow-840:hidden",
+    title: "Seats",
+    // The column is only as wide as the seats.
+    className: "tw:w-px tw:whitespace-nowrap tw:narrow-840:hidden",
   },
-  // When the "Name" column is hidden, this column is the first one, so it needs a left border.
   variant: {
     title: "Variant",
-    className: "tw:narrow-736:[border-left-width:1px]",
+    className: undefined,
   },
   options: {
     title: "Options",
@@ -64,15 +64,22 @@ const COLUMNS = {
   },
 } as const;
 
-/** The background of each kind of row. */
+/**
+ * The rows stand apart from each other, with lines between their cells. In the dark theme, a line
+ * on the left of each row and its taken seats show its kind, in the color of "--row-mark".
+ */
+const TABLE_CLASS_NAME =
+  "tw:mb-0 tw:border-separate tw:border-spacing-y-1 tw:[&>thead]:border-b-0 tw:[&>tbody>tr]:shadow-[inset_4px_0_0_var(--row-mark,transparent)] tw:[&>tbody>tr>td]:border-r tw:[&>tbody>tr>td:last-child]:border-r-0 tw:[&>tbody>tr>td]:border-(--lobby-table-cell-line)";
+
+/** The background and the mark of each kind of row. */
 const ROW_CLASSES = {
-  joined: `tw:bg-lobby-table-joined tw:hover:bg-lobby-table-joined-hover ${REJOIN_CURSOR}`,
+  joined: `tw:bg-lobby-table-joined tw:hover:bg-lobby-table-joined-hover tw:[--row-mark:var(--lobby-table-joined-mark)] ${REJOIN_CURSOR}`,
   unstarted:
-    "tw:bg-lobby-table-unstarted tw:hover:bg-lobby-table-unstarted-hover",
+    "tw:bg-lobby-table-unstarted tw:hover:bg-lobby-table-unstarted-hover tw:[--row-mark:var(--lobby-table-unstarted-mark)]",
   "unstarted-password":
-    "tw:bg-lobby-table-unstarted-password tw:hover:bg-lobby-table-unstarted-password-hover",
-  started: `tw:bg-lobby-table-started tw:hover:bg-lobby-table-started-hover ${SPECTATE_CURSOR}`,
-  replay: `tw:bg-lobby-table-replay tw:hover:bg-lobby-table-replay-hover ${SPECTATE_CURSOR}`,
+    "tw:bg-lobby-table-unstarted-password tw:hover:bg-lobby-table-unstarted-password-hover tw:[--row-mark:var(--lobby-table-unstarted-password-mark)]",
+  started: `tw:bg-lobby-table-started tw:hover:bg-lobby-table-started-hover tw:[--row-mark:var(--lobby-table-started-mark)] ${SPECTATE_CURSOR}`,
+  replay: `tw:bg-lobby-table-replay tw:hover:bg-lobby-table-replay-hover tw:[--row-mark:var(--lobby-table-replay-mark)] ${SPECTATE_CURSOR}`,
 } as const;
 
 export function TablesList(): React.JSX.Element {
@@ -92,7 +99,7 @@ export function TablesList(): React.JSX.Element {
       id="lobby-games-table-container"
     >
       <h3 className="tw:text-[1.3em]">List of games</h3>
-      <table className={`${BORDERED_TABLE} tw:mb-0`} id="lobby-games-table">
+      <table className={TABLE_CLASS_NAME} id="lobby-games-table">
         <thead>
           <tr>
             {Object.values(COLUMNS).map(({ title, className }) => (
@@ -180,9 +187,14 @@ function TableRowView({
         {table.settings.name}
       </td>
       <td className={COLUMNS.numPlayers.className}>
-        {table.phase.type === "pregame"
-          ? `${table.playerNames.length} / ${table.settings.maxPlayers}`
-          : table.playerNames.length}
+        <SeatPips
+          numSeats={
+            table.phase.type === "pregame"
+              ? table.settings.maxPlayers
+              : table.playerNames.length
+          }
+          numTaken={table.playerNames.length}
+        />
       </td>
       <td className={COLUMNS.variant.className}>
         {getVariantById(table.settings.options.variantId).name}
@@ -266,6 +278,36 @@ function TableRowView({
         ))}
       </td>
     </tr>
+  );
+}
+
+/**
+ * A dot for each seat at the table: filled for a seat that a player has taken, and a ring for an
+ * open one. A game that has started has no open seats.
+ */
+function SeatPips({
+  numSeats,
+  numTaken,
+}: {
+  readonly numSeats: number;
+  readonly numTaken: number;
+}) {
+  const label = `${numTaken} of ${numSeats} seats are taken.`;
+
+  return (
+    <span
+      aria-label={label}
+      className="tw:inline-flex tw:items-center tw:gap-[0.35em] tw:align-middle tw:text-(--row-mark,currentColor)"
+      ref={tooltipRef(label)}
+      role="img"
+    >
+      {Array.from({ length: numSeats }, (_, i) => (
+        <span
+          className={`tw:size-[0.8em] tw:rounded-full tw:border-[0.13em] tw:border-solid tw:border-current ${i < numTaken ? "tw:bg-current" : "tw:opacity-55"}`}
+          key={i}
+        />
+      ))}
+    </span>
   );
 }
 

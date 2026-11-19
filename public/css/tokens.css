@@ -107,6 +107,21 @@
   --lobby-table-started-hover: #cdffdd;
   --lobby-table-replay: #fff0ff;
   --lobby-table-replay-hover: #ffe1ff;
+  /*
+    The light theme shows the kind of each row in the list of games by the row's color alone. The
+    dark theme also gives each kind a color for the edge on the left of the row and for its taken
+    seats ("--lobby-table-joined-mark" and the others). Here they are not set, so the edge does not
+    show and the seats use the color of the text.
+  */
+  /* The lines between the cells of a row in the list of games */
+  --lobby-table-cell-line: var(--border);
+  /* The names and statuses in the list of online users */
+  --lobby-user-link: var(--link);
+  /* Every other row in the list of online users */
+  --lobby-user-stripe: var(--surface-sunken);
+
+  /* The edge of a box, such as a panel of the lobby */
+  --box-shadow: 0 2px 0 0 var(--border);
 
   /* Login alert (based on the Bootstrap alert colors) */
   --login-alert-bg: #f2dede;
@@ -237,13 +252,14 @@
 
 :root[data-theme="dark"] {
   /*
-    The dark theme uses the colors of the New UI: panels of dark felt, and wells that are darker
-    still.
+    The dark theme's panels are a deep green, much darker than the felt, so that they stand apart
+    from it even at its dark edges. Wells are darker still. The header bar is a panel too.
   */
-  --surface: var(--game-screen-panel);
-  --surface-sunken: #102b1d;
+  --surface: #0e2418;
+  --surface-sunken: #091a11;
   --surface-panel: var(--surface-sunken);
-  --border: #2e5a40;
+  --border: #24452f;
+  --header-bg: var(--surface);
   --border-panel: var(--border);
   --text: var(--game-screen-text);
   --text-strong: var(--text);
@@ -253,7 +269,8 @@
   --name-hover: var(--link);
   --error: #ff6b6b;
   --help-icon-hover: var(--link);
-  --focus: #7fb2ff;
+  /* Pale felt, so that a focused field stands out without a color that the panels do not use */
+  --focus: var(--game-screen-muted);
   --green: #2e7d32;
   --green-text: #6fcf7a;
   --green-tint: var(--game-screen-raised);
@@ -278,7 +295,7 @@
   --menu-text: var(--text);
   --menu-hover-bg: var(--surface-sunken);
   --menu-hover-text: #fff;
-  --chat-bg: var(--surface-sunken);
+  --chat-bg: transparent;
   --game-chat-border: var(--border);
   --slider-track: var(--border);
   --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23eef1f3' /%3E%3C/svg%3E");
@@ -287,19 +304,37 @@
   --note-title-line: var(--border);
 
   /*
-    Saturated, so that each kind of row still shows its color on the green panel. The joined and
-    replay rows use the colors of the New UI's in-game replay and hypothetical panels.
+    Each kind of row is a faint wash of its color on the panel, with a bright edge on its left. The
+    colors are the New UI's: gold for the turn, green for a game, blue for the in-game replay, pink
+    for the hypothetical, and red for an error.
   */
-  --lobby-table-joined: var(--game-screen-in-game-replay-panel);
-  --lobby-table-joined-hover: #27396a;
-  --lobby-table-unstarted: #4f4416;
-  --lobby-table-unstarted-hover: #5f521c;
-  --lobby-table-unstarted-password: #532222;
-  --lobby-table-unstarted-password-hover: #642a2a;
-  --lobby-table-started: #1f5a3a;
-  --lobby-table-started-hover: #286a46;
-  --lobby-table-replay: var(--game-screen-hypothetical-panel);
-  --lobby-table-replay-hover: #5a2b45;
+  --lobby-table-joined: rgb(143 178 255 / 14%);
+  --lobby-table-joined-hover: rgb(143 178 255 / 24%);
+  --lobby-table-unstarted: rgb(255 208 74 / 11%);
+  --lobby-table-unstarted-hover: rgb(255 208 74 / 20%);
+  --lobby-table-unstarted-password: rgb(255 107 107 / 12%);
+  --lobby-table-unstarted-password-hover: rgb(255 107 107 / 21%);
+  --lobby-table-started: rgb(111 207 122 / 11%);
+  --lobby-table-started-hover: rgb(111 207 122 / 20%);
+  --lobby-table-replay: rgb(247 161 196 / 12%);
+  --lobby-table-replay-hover: rgb(247 161 196 / 21%);
+  --lobby-table-joined-mark: var(--game-screen-in-game-replay);
+  --lobby-table-unstarted-mark: var(--game-screen-turn);
+  --lobby-table-unstarted-password-mark: var(--game-screen-error);
+  --lobby-table-started-mark: var(--game-screen-green-text);
+  --lobby-table-replay-mark: var(--game-screen-hypothetical);
+  --lobby-table-cell-line: rgb(255 255 255 / 7%);
+  --lobby-user-link: var(--text);
+  --lobby-user-stripe: transparent;
+
+  /*
+    A panel sits on the felt: a thin light outline, a lit top edge, and a soft shadow under it. The
+    felt is dark at the edges of the screen, nearly as dark as the panel, so the outline shows where
+    the panel ends.
+  */
+  --box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 30px rgb(0 0 0 / 35%);
 
   --login-alert-bg: #3a2020;
   --login-alert-border: #5a3030;
