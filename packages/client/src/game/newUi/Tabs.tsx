@@ -27,7 +27,9 @@ export function Tabs<Tab extends string>({
   return (
     <div
       aria-label={label}
-      className="tw:relative tw:grid tw:auto-cols-fr tw:grid-flow-col tw:rounded-game-control tw:bg-black/25 tw:p-1"
+      // The tabs are always the same width, so that the highlight covers one tab. In a row that is
+      // too narrow for them, they shrink together.
+      className="tw:relative tw:grid tw:min-w-0 tw:auto-cols-[minmax(0,1fr)] tw:grid-flow-col tw:rounded-game-control tw:bg-black/25 tw:p-1"
       role="tablist"
     >
       {/* The highlight is as wide as one tab: the box without its padding, split evenly. */}
@@ -46,7 +48,7 @@ export function Tabs<Tab extends string>({
         <button
           aria-controls={id}
           aria-selected={tab === id}
-          className={`tw:relative tw:cursor-pointer tw:border-0 tw:bg-transparent tw:px-4 tw:py-1.5 tw:text-[15px] tw:leading-[20px] tw:font-semibold tw:whitespace-nowrap ${tab === id ? "tw:text-game-text" : "tw:text-game-muted tw:hover:text-game-text"}`}
+          className={`tw:relative tw:grid tw:min-w-0 tw:cursor-pointer tw:grid-cols-[minmax(0,1fr)] tw:justify-items-center tw:border-0 tw:bg-transparent tw:px-0 tw:py-1.5 tw:text-[15px] tw:leading-[20px] tw:font-semibold tw:whitespace-nowrap ${tab === id ? "tw:text-game-text" : "tw:text-game-muted tw:hover:text-game-text"}`}
           key={id}
           onClick={() => {
             onTab(id);
@@ -61,7 +63,17 @@ export function Tabs<Tab extends string>({
           }}
           type="button"
         >
-          {name}
+          {/*
+            An invisible copy of the name with the space beside it gives the tab its width. In a
+            narrow row, the tab can be narrower than the copy, and the name stays in its middle.
+          */}
+          <span
+            aria-hidden="true"
+            className="tw:invisible tw:col-start-1 tw:row-start-1 tw:px-4"
+          >
+            {name}
+          </span>
+          <span className="tw:col-start-1 tw:row-start-1">{name}</span>
         </button>
       ))}
     </div>
