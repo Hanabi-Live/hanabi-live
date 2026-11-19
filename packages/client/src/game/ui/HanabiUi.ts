@@ -19,7 +19,6 @@ import { globals, releaseSubscriptions } from "./UiGlobals.ts";
 
 export class HanabiUi {
   private readonly resizeHandler: () => void;
-  private readonly themeChangeHandler: () => void;
   private resizeRequestAnimationFrame: number | undefined = undefined;
   private resizeFrame = 0;
   private lastResizeEventFrame = 0;
@@ -72,17 +71,6 @@ export class HanabiUi {
 
     // Rebuild the UI when the theme changes so that the canvas elements are redrawn with the new
     // colors.
-    this.themeChangeHandler = () => {
-      if (
-        store.getState().session.screen !== Screen.Game
-        || gameSession.isLoading()
-        || this.liveResizeActive
-      ) {
-        return;
-      }
-      this.rebuildGameUi();
-    };
-    document.addEventListener("theme_change", this.themeChangeHandler);
 
     // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the reply to "gameInitLoad" from the server in order to know how many players
@@ -230,7 +218,6 @@ export class HanabiUi {
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
     window.screen.orientation.removeEventListener("change", this.resizeHandler);
-    document.removeEventListener("theme_change", this.themeChangeHandler);
     if (this.resizeRequestAnimationFrame !== undefined) {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = undefined;

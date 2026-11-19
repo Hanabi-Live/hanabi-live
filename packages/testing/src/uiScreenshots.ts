@@ -1,14 +1,13 @@
-// Takes screenshots of the site's screens at several widths in both themes. It starts this
-// checkout's server with a disposable database and seeds it through the client protocol, so that
-// every run sees the same pages. Run it through "runTests.ts", which provides the database and
-// builds the server and a development client: `bun run ui-screenshots [options]`. An error or
-// warning in a page, or a New UI game screen whose hands, play stacks, and discard pile do not line
-// up at the top, fails the run.
+// Takes screenshots of the site's screens at several widths. It starts this checkout's server with
+// a disposable database and seeds it through the client protocol, so that every run sees the same
+// pages. Run it through "runTests.ts", which provides the database and builds the server and a
+// development client: `bun run ui-screenshots [options]`. An error or warning in a page, or a New
+// UI game screen whose hands, play stacks, and discard pile do not line up at the top, fails the
+// run.
 
 // Options:
 // - `--state <name>`: Only this state. Repeat it for more than one.
 // - `--width <pixels>`: Only this width. Repeat it for more than one.
-// - `--theme <light|dark>`: Only this theme.
 // - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
 //   that ref, and take a screenshot with them wherever a difference shows.
 
@@ -122,9 +121,6 @@ const SIZES = [
     height: 700,
   },
 ] as const;
-
-const THEMES = ["light", "dark"] as const;
-type Theme = (typeof THEMES)[number];
 
 /** States are set up at this size, so that every button is visible. */
 const SETUP_SIZE = SIZES[0];
@@ -3181,11 +3177,6 @@ async function createCast(
   };
 }
 
-/** Runs in the page. */
-function setTheme(theme: Theme) {
-  document.documentElement.dataset["theme"] = theme;
-}
-
 /** Runs in the page. Loads a bundle in place of the page's stylesheets, or restores them. */
 async function useStylesheet(href: string | undefined) {
   for (const link of document.querySelectorAll<HTMLLinkElement>(
@@ -3294,7 +3285,6 @@ function compareStyles(compare: boolean): readonly string[] {
 interface Options {
   readonly states: readonly string[];
   readonly widths: readonly number[];
-  readonly themes: readonly Theme[];
   readonly compare: string | undefined;
 }
 
@@ -3309,9 +3299,6 @@ function parseOptions(): Options {
         type: "string",
         multiple: true,
       },
-      theme: {
-        type: "string",
-      },
       compare: {
         type: "string",
       },
@@ -3324,14 +3311,9 @@ function parseOptions(): Options {
       throw new Error(`The width must be one of: ${allowedWidths.join(", ")}`);
     }
   }
-  const { theme } = values;
-  if (theme !== undefined && !THEMES.includes(theme as Theme)) {
-    throw new Error(`The theme must be one of: ${THEMES.join(", ")}`);
-  }
   return {
     states: values.state ?? [],
     widths,
-    themes: theme === undefined ? THEMES : [theme as Theme],
     compare: values.compare,
   };
 }
@@ -3605,86 +3587,78 @@ async function captureState(
         await page.mouse.move(0, viewport.height - 1);
       }
       await page.setViewportSize(size);
-      for (const theme of options.themes) {
-        await page.evaluate(setTheme, theme);
-        if (state.hover !== undefined) {
-          // Move the pointer onto the element again, so that a tooltip opens at its new position.
-          await page.mouse.move(0, size.height - 1);
-          await (typeof state.hover === "string"
-            ? page.hover(state.hover)
-            : state.hover(page, cast));
-        }
-        await settle(page);
-        const file = path.join(
-          OUTPUT_DIRECTORY,
-          `${state.name}-${size.width}-${theme}`,
+      if (state.hover !== undefined) {
+        // Move the pointer onto the element again, so that a tooltip opens at its new position.
+        await page.mouse.move(0, size.height - 1);
+        await (typeof state.hover === "string"
+          ? page.hover(state.hover)
+          : state.hover(page, cast));
+      }
+      await settle(page);
+      const file = path.join(OUTPUT_DIRECTORY, `${state.name}-${size.width}`);
+      // Animations that never end, such as a pulse, show their first frame.
+      await page.screenshot({
+        path: `${file}.png`,
+        animations: "disabled",
+      });
+      const tops = await page.evaluate(getColumnTops);
+      if (
+        tops !== undefined
+        && Math.max(tops.hands, tops.stacks, tops.discardPile)
+          - Math.min(tops.hands, tops.stacks, tops.discardPile)
+          > COLUMN_TOP_TOLERANCE
+      ) {
+        results.errors.push(
+          `${state.name} ${size.width}: The tops of the hands (${tops.hands.toFixed(1)}px), the play stacks (${tops.stacks.toFixed(1)}px), and the discard pile (${tops.discardPile.toFixed(1)}px) do not line up.`,
         );
-        // Animations that never end, such as a pulse, show their first frame.
-        await page.screenshot({
-          path: `${file}.png`,
+      }
+      for (const overflow of await page.evaluate(
+        getOverflows,
+        OVERFLOW_TOLERANCE,
+      )) {
+        results.errors.push(`${state.name} ${size.width}: ${overflow}`);
+      }
+      if (openedWindow !== undefined) {
+        await settle(openedWindow);
+        await openedWindow.screenshot({
+          path: `${file}.window.png`,
           animations: "disabled",
         });
-        const tops = await page.evaluate(getColumnTops);
-        if (
-          tops !== undefined
-          && Math.max(tops.hands, tops.stacks, tops.discardPile)
-            - Math.min(tops.hands, tops.stacks, tops.discardPile)
-            > COLUMN_TOP_TOLERANCE
-        ) {
-          results.errors.push(
-            `${state.name} ${size.width} ${theme}: The tops of the hands (${tops.hands.toFixed(1)}px), the play stacks (${tops.stacks.toFixed(1)}px), and the discard pile (${tops.discardPile.toFixed(1)}px) do not line up.`,
-          );
-        }
-        for (const overflow of await page.evaluate(
-          getOverflows,
-          OVERFLOW_TOLERANCE,
-        )) {
-          results.errors.push(
-            `${state.name} ${size.width} ${theme}: ${overflow}`,
-          );
-        }
-        if (openedWindow !== undefined) {
-          await settle(openedWindow);
-          await openedWindow.screenshot({
-            path: `${file}.window.png`,
+      }
+
+      if (compareBundle === undefined) {
+        continue;
+      }
+
+      // A difference counts only if it shows twice, because a page can still change on its own (for
+      // example, when the server sends an update).
+      let differences: readonly string[] | undefined;
+      for (let i = 0; i < 2 && differences?.length !== 0; i++) {
+        await page.evaluate(compareStyles, false);
+        await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
+        await settle(page);
+        const found = await page.evaluate(compareStyles, true);
+        if (found.length > 0) {
+          await page.screenshot({
+            path: `${file}.compare.png`,
             animations: "disabled",
           });
         }
-
-        if (compareBundle === undefined) {
-          continue;
-        }
-
-        // A difference counts only if it shows twice, because a page can still change on its own
-        // (for example, when the server sends an update).
-        let differences: readonly string[] | undefined;
-        for (let i = 0; i < 2 && differences?.length !== 0; i++) {
-          await page.evaluate(compareStyles, false);
-          await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
-          await settle(page);
-          const found = await page.evaluate(compareStyles, true);
-          if (found.length > 0) {
-            await page.screenshot({
-              path: `${file}.compare.png`,
-              animations: "disabled",
-            });
-          }
-          differences =
-            differences === undefined
-              ? found
-              : differences.filter((line) => found.includes(line));
-          await page.evaluate(useStylesheet, bundleHref);
-          await settle(page);
-        }
-        if (differences === undefined || differences.length === 0) {
-          await rm(`${file}.compare.png`, { force: true });
-        } else {
-          results.comparison.push(
-            `## ${state.name} ${size.width} ${theme}`,
-            ...differences,
-            "",
-          );
-        }
+        differences =
+          differences === undefined
+            ? found
+            : differences.filter((line) => found.includes(line));
+        await page.evaluate(useStylesheet, bundleHref);
+        await settle(page);
+      }
+      if (differences === undefined || differences.length === 0) {
+        await rm(`${file}.compare.png`, { force: true });
+      } else {
+        results.comparison.push(
+          `## ${state.name} ${size.width}`,
+          ...differences,
+          "",
+        );
       }
     }
     await openedWindow?.close();

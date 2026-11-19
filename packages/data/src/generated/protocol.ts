@@ -1706,7 +1706,6 @@ export const settingsSchema = z
         variantId: 0,
       },
     }),
-    darkMode: z.boolean().prefault(false),
     desktopNotification: z.boolean().prefault(false),
     hGroupConventions: z.boolean().prefault(false),
     /**
@@ -1753,7 +1752,6 @@ const settingsChangeSchema = z
   .strictObject({
     colorblindMode: z.boolean().optional(),
     createTable: createTableSettingsSchema.optional(),
-    darkMode: z.boolean().optional(),
     desktopNotification: z.boolean().optional(),
     hGroupConventions: z.boolean().optional(),
     /**

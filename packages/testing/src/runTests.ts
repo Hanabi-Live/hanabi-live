@@ -260,7 +260,7 @@ const SUITES = [
  * checks that the hands, the play stacks, and the discard pile line up at the top in the wide
  * layout, and that no element sticks out of its box. The games have two and five players, one is a
  * replay, and one is a shared replay, which has the most controls. The smallest width (360px) has
- * the least room. One theme is enough, since the themes have the same layout.
+ * the least room.
  */
 const UI_LAYOUT_ARGS = [
   "--state",
@@ -279,8 +279,6 @@ const UI_LAYOUT_ARGS = [
   "1200",
   "--width",
   "360",
-  "--theme",
-  "light",
 ] as const;
 type Suite = (typeof SUITES)[number];
 

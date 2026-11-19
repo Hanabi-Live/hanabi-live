@@ -16,7 +16,6 @@ import { settingsChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { SettingsPage } from "./SettingsPage.tsx";
 
-vi.mock("../../theme.ts", () => ({ setDarkMode: vi.fn() }));
 vi.mock("../../notifications.ts", () => ({ test: vi.fn() }));
 
 const send = vi.fn();

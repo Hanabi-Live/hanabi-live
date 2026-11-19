@@ -195,7 +195,7 @@ async fn shell_routes_metadata_and_static_files() {
     );
     let (status, body) = request(app.clone(), "/public/css/tokens.css").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(body.contains("data-theme"));
+    assert!(body.contains("--surface"));
     let immutable = format!("public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable");
     let mut dev_config = config();
     dev_config.is_dev = true;

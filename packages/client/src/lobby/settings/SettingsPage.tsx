@@ -19,7 +19,6 @@ import * as notifications from "../../notifications.ts";
 import { settingsChanged } from "../../sessionSlice.ts";
 import { SOUNDS_PATH } from "../../sounds.ts";
 import { store, useAppSelector } from "../../store.ts";
-import * as theme from "../../theme.ts";
 
 /** How long "Saved" stays beside a setting before it fades out. */
 const SAVED_STATUS_MILLISECONDS = 2000;
@@ -54,9 +53,6 @@ export function SettingsPage(): React.JSX.Element {
       <div className="lobby-group">
         <h3>Appearance</h3>
         <ul className="lobby-rows">
-          <CheckboxRow icon="fa-adjust" setting="darkMode">
-            Dark mode
-          </CheckboxRow>
           <CheckboxRow icon="fa-columns" setting="keldonMode">
             Keldon mode (hands spread around the table)
           </CheckboxRow>
@@ -140,8 +136,6 @@ function CheckboxRow({
             showSaved();
             if (setting === "desktopNotification" && value) {
               notifications.test();
-            } else if (setting === "darkMode") {
-              theme.setDarkMode(value);
             }
           }}
           type="checkbox"

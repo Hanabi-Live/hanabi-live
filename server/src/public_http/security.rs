@@ -17,23 +17,18 @@ const DISCORD_EMOJI_ORIGIN: &str = "https://cdn.discordapp.com";
 const SHARED_DIRECTIVES: &str =
     "object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 
-/// The content security policy of the production site. The pages have two inline scripts, which
-/// are allowed by their hashes: the script that applies the cached theme, and the `onload` handler
-/// that loads the main style sheet without blocking the first render.
+/// The content security policy of the production site. The pages have one inline script, which is
+/// allowed by its hash: the `onload` handler that loads the main style sheet without blocking the
+/// first render.
 static POLICY: LazyLock<HeaderValue> = LazyLock::new(|| {
-    let theme_script = regex!(r#"(?s)<script type="text/javascript">(.*?)</script>"#)
-        .captures(include_str!("../../templates/theme-init.html"))
-        .expect("the theme script")[1]
-        .to_owned();
     let style_handler = regex!(r#"(?s)\sonload="([^"]*)""#)
         .captures(include_str!("../../templates/layout.html"))
         .expect("the style sheet handler")[1]
         .to_owned();
     header_value(format!(
-        "default-src 'self'; script-src 'self' '{}' 'unsafe-hashes' '{}'; \
+        "default-src 'self'; script-src 'self' 'unsafe-hashes' '{}'; \
          style-src 'self' 'unsafe-inline'; img-src 'self' data: {DISCORD_EMOJI_ORIGIN}; \
          {SHARED_DIRECTIVES}",
-        hash(&theme_script),
         hash(&style_handler),
     ))
 });

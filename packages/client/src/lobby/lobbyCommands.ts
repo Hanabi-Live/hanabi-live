@@ -17,7 +17,6 @@ import {
 } from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
-import * as theme from "../theme.ts";
 import {
   historyReceived,
   lobbyStatusReceived,
@@ -196,24 +195,6 @@ lobbyCommands.set("welcome", (data) => {
   store.dispatch(settingsChanged(data.settings));
   store.dispatch(friendsChanged(data.friends));
   store.dispatch(blockedChanged(data.blocked));
-
-  if (
-    theme.takeLegacyDarkMode()
-    && !store.getState().session.settings.darkMode
-  ) {
-    store.dispatch(
-      settingsChanged({
-        ...store.getState().session.settings,
-        darkMode: true,
-      }),
-    );
-    globals.connection.send("settings", {
-      settings: {
-        darkMode: true,
-      },
-    });
-  }
-  theme.setDarkMode(store.getState().session.settings.darkMode);
 
   // The "lobbyStatus" message reports the total number of games once the statistics load.
   lobbyLogin.hide(data.firstTimeUser);

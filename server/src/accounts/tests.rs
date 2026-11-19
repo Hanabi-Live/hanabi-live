@@ -855,35 +855,6 @@ async fn an_unknown_username_creates_an_account_only_when_asked_postgres() {
 }
 
 #[tokio::test]
-async fn new_accounts_start_with_the_light_theme_postgres() {
-    let Some(db) = test_support::TestDb::create().await else {
-        return;
-    };
-    let app = router(db.pool.clone(), config(), hub());
-    let (status, _, body) = request(
-        &app,
-        "POST",
-        "/login",
-        "username=Alice&password=secret&version=42&createAccount=true",
-        None,
-        false,
-    )
-    .await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Alice")
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    assert!(
-        !crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId::new(id).unwrap())
-            .await
-            .unwrap()
-            .dark_mode
-    );
-    db.close().await;
-}
-
-#[tokio::test]
 async fn login_rejects_unknown_form_fields() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")

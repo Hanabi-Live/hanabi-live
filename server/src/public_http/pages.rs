@@ -51,10 +51,6 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
             include_str!("../../templates/public-page.html"),
         ),
         (
-            "theme-init.html",
-            include_str!("../../templates/theme-init.html"),
-        ),
-        (
             "vite-dev.html",
             include_str!("../../templates/vite-dev.html"),
         ),

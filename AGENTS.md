@@ -28,12 +28,11 @@ meaning is obvious from context can stay inline.
 ## Styling
 
 Style React components with Tailwind utility classes (with the `tw:` prefix),
-not with new rules in `public/css`. Use the theme colors that
+not with new rules in `public/css`. Use the colors that
 `packages/client/src/tailwind.css` maps from `public/css/tokens.css` (such as
-`tw:bg-surface`), so that both themes work. The game screens are the exception:
-they look the same in both themes, so the redesigned game screen ("New UI") uses
-the `--game-screen-*` tokens, which the dark theme does not change. When a
-screen moves to React, delete the stylesheet rules that only that screen used.
+`tw:bg-surface`). The redesigned game screen ("New UI") uses the
+`--game-screen-*` tokens. When a screen moves to React, delete the stylesheet
+rules that only that screen used.
 
 Do not use the HTML `title` attribute for tooltips. The browser draws it as a
 plain box that does not match the site's tooltips. Use the site's tooltip
@@ -121,9 +120,9 @@ or audit requirements for Firefox, WebKit, or other browsers.
 To see or check the site's screens, use `bun run ui-screenshots`. Do not write a
 separate browser script. The command starts this checkout's server with a
 disposable database and seeded games, tables, and chat. It saves a screenshot of
-each state at several widths in both themes to `dist/ui-screenshots`. Use
-`--state`, `--width`, and `--theme` to take fewer screenshots. For a CSS change,
-add `--compare <git ref>`: it reports every computed style that differs from the
+each state at several widths to `dist/ui-screenshots`. Use `--state` and
+`--width` to take fewer screenshots. For a CSS change, add
+`--compare <git ref>`: it reports every computed style that differs from the
 stylesheets of that ref. If a screen or state that you need is missing, add it
 to `packages/testing/src/uiScreenshots.ts`. Keep one state for each screen or
 main element. Do not commit a state that only checks one change, such as a
@@ -147,10 +146,10 @@ are debugging sound.
 
 When you port a legacy screen or element to React, it must still look almost the
 same. Before the change, take detailed screenshots of every state that the port
-touches, at every width and in both themes. Take them again after the change,
-and compare each pair. Fix every difference that is more than a pixel or two.
-Also run `--compare <git ref>` against the commit before the port. Report the
-result in text.
+touches, at every width. Take them again after the change, and compare each
+pair. Fix every difference that is more than a pixel or two. Also run
+`--compare <git ref>` against the commit before the port. Report the result in
+text.
 
 Before you commit a change that adds or modifies a UI element, take a screenshot
 of each new or changed element with `bun run ui-screenshots` and show it to the

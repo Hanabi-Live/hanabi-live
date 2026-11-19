@@ -188,7 +188,6 @@ settings! {
         desktop_notification: bool = false,
         sound_move: SoundMove = SoundMove::All,
         sound_timer: bool = true,
-        dark_mode: bool = false,
         keldon_mode: bool = false,
         /// Shows games in the redesigned game screen, which is in testing. Players opt in.
         new_ui: bool = false,

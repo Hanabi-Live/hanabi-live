@@ -34,7 +34,6 @@ import {
 } from "./sessionSlice.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
-import * as theme from "./theme.ts";
 import { escapeHtml, textToHtml } from "./utils.ts";
 
 const reconnectBackoff = new ReconnectBackoff();
@@ -305,7 +304,6 @@ function openConnection(isReconnect: boolean) {
         store.dispatch(settingsChanged(data.settings));
         store.dispatch(friendsChanged(data.friends));
         store.dispatch(blockedChanged(data.blocked));
-        theme.setDarkMode(store.getState().session.settings.darkMode);
         const retained = globals.joinedTableId;
         conn.on("tableJoined", (table) => {
           if (!isCurrentConnection(conn)) {

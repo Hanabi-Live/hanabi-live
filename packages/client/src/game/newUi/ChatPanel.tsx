@@ -109,8 +109,8 @@ function borrowChatBox(container: HTMLElement): (() => void) | undefined {
 }
 
 /**
- * Gives the chat window the page's stylesheets and theme, and moves the chat box into it. Returns a
- * function that gives the chat box back.
+ * Gives the chat window the page's stylesheets, and moves the chat box into it. Returns a function
+ * that gives the chat box back.
  */
 function setUpChatWindow(chatWindow: Window): () => void {
   const chatDocument = chatWindow.document;
@@ -122,21 +122,6 @@ function setUpChatWindow(chatWindow: Window): () => void {
       ),
     ].map((element) => element.cloneNode(true)),
   );
-
-  // The colors of the chat box do not change with the theme, but its scroll bars and tooltips do.
-  function copyTheme() {
-    const { theme } = document.documentElement.dataset;
-    if (theme === undefined) {
-      delete chatDocument.documentElement.dataset["theme"];
-    } else {
-      chatDocument.documentElement.dataset["theme"] = theme;
-    }
-  }
-  copyTheme();
-  const themeObserver = new MutationObserver(copyTheme);
-  themeObserver.observe(document.documentElement, {
-    attributeFilter: ["data-theme"],
-  });
 
   const container = chatDocument.createElement("div");
   container.id = CHAT_WINDOW_ID;
@@ -150,7 +135,6 @@ function setUpChatWindow(chatWindow: Window): () => void {
   focusChatWindow(true);
 
   return () => {
-    themeObserver.disconnect();
     giveBack?.();
   };
 }
