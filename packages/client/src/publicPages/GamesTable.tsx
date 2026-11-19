@@ -18,6 +18,7 @@ import {
 import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type * as z from "zod";
 import { PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
@@ -865,18 +866,20 @@ function ErrorMessage({ error }: { readonly error: string | undefined }) {
 
 /**
  * Covers the page while a page of games loads. It fades in and out, and the page can be clicked
- * while it fades out.
+ * while it fades out. It is in the body, because the box around the table has a backdrop filter,
+ * which would make the cover only as large as the box.
  */
 function Spinner({ shown }: { readonly shown: boolean }) {
   // A public page reads the setting once, from the browser's cache (see "reducedMotionCache.ts").
   const { reducedMotion } = store.getState().session.settings;
-  return (
+  return createPortal(
     <div
       aria-hidden={!shown}
       className={`tw:fixed tw:inset-0 tw:z-[var(--z-spinner)] tw:flex tw:items-center tw:justify-center tw:bg-spinner-backdrop tw:transition-[opacity,visibility] ${shown ? "tw:visible tw:opacity-100" : "tw:pointer-events-none tw:invisible tw:opacity-0"}`}
       style={getFadeStyle(reducedMotion)}
     >
       <WaitingCard />
-    </div>
+    </div>,
+    document.body,
   );
 }
