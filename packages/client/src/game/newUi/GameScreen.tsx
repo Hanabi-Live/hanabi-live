@@ -54,6 +54,7 @@ import type { LogTab } from "./ClueLog.tsx";
 import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import {
   CLUE_BUTTON_COLUMN_WIDTH,
+  CLUE_BUTTON_RIGHT_ROOM,
   clueDrawerFitsBelow,
   ClueMenu,
   getClueDrawerWidth,
@@ -1555,12 +1556,14 @@ export function GameScreen(): React.JSX.Element {
             </div>
 
             {/* In the phone layout, the hands keep room on their left for the clue rail, which
-                runs beside them (see "Hands.tsx"). The screen's padding is part of that room. */}
+                runs beside them (see "Hands.tsx"). The screen's padding is part of that room. In
+                the wide layout, they keep room on their right for the clue buttons. */}
             <div
               className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-3.5 tw:phone:ml-(--clue-rail-margin) tw:phone:flex-none"
               style={
                 {
                   maxWidth: stacked ? undefined : wideRoom.handsColumnMaxWidth,
+                  paddingRight: stacked ? undefined : CLUE_BUTTON_RIGHT_ROOM,
                   "--clue-rail-margin": `calc(${PHONE_CLUE_RAIL_SPACE}px - var(--phone-side-padding))`,
                 } as React.CSSProperties
               }

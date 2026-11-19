@@ -6,6 +6,7 @@ import {
   CLUE_TOKEN_REACH_PER_WIDTH,
   CLUED_RAISE_PER_WIDTH,
 } from "./Card.tsx";
+import { CLUE_BUTTON_RIGHT_ROOM } from "./ClueMenu.tsx";
 import {
   CARD_GAP,
   HAND_BOX_BOTTOM_PADDING,
@@ -177,8 +178,9 @@ export interface WideLayoutRoom {
   readonly discardColumnWidth: number;
 
   /**
-   * The width of the hands' column. It is no wider than the hands, so that the table has the width
-   * that they do not use on its sides, not between its columns.
+   * The width of the hands' column, with the room for the clue buttons to the right of the hands
+   * (see `CLUE_BUTTON_RIGHT_ROOM`). It is no wider than that, so that the table has the width that
+   * the hands do not use on its sides, not between its columns.
    */
   readonly handsColumnMaxWidth: number;
 
@@ -197,13 +199,16 @@ export interface WideLayoutRoom {
  * be, and the right column also takes the width that the hands do not use, up to its maximum. When
  * the width makes the hand cards smaller than their height allows, the parts give up room to the
  * hands, in this order, and only as much as the hands need: the right column, and then the padding
- * and the gaps of the table. The column of names does not give up room. `rowWidth` is the width of
- * the table's row without the play stacks' column. `nameWidth` is the width of the widest name.
+ * and the gaps of the table. The column of names and the room for the clue buttons to the right of
+ * the hands (see `CLUE_BUTTON_RIGHT_ROOM`) do not give up room. The room for the buttons is kept
+ * even when no button shows, so that the hands do not move when the viewer's turn starts.
+ * `rowWidth` is the width of the table's row without the play stacks' column. `nameWidth` is the
+ * width of the widest name.
  *
  * The clue menu slides out to the right of a hand, over the right column, and it is
- * `clueDrawerWidth` wide. So the width to the right of the hands (the gap, the right column, and
- * the padding) is never less than that, and the hands are no wider than the rest. Then the menu
- * always fits, up to the edge of the table.
+ * `clueDrawerWidth` wide. So the width to the right of the hands (the room for the buttons, the
+ * gap, the right column, and the padding) is never less than that, and the hands are no wider than
+ * the rest. Then the menu always fits, up to the edge of the table.
  */
 export function getWideLayoutRoom(
   rowWidth: number,
@@ -215,11 +220,12 @@ export function getWideLayoutRoom(
 ): WideLayoutRoom {
   const widest: WideLayoutRoom = {
     discardColumnWidth: DISCARD_COLUMN_WIDTH.NORMAL,
-    handsColumnMaxWidth: getHandsWidthForCards(
-      HAND_CARD_WIDTH.MAX,
-      cardsPerHand,
-      NAME_COLUMN_MAX_WIDTH.WIDE,
-    ),
+    handsColumnMaxWidth:
+      getHandsWidthForCards(
+        HAND_CARD_WIDTH.MAX,
+        cardsPerHand,
+        NAME_COLUMN_MAX_WIDTH.WIDE,
+      ) + CLUE_BUTTON_RIGHT_ROOM,
     tableSidePadding: TABLE_SIDE_PADDING.MAX,
     tableColumnGap: TABLE_COLUMN_GAP.MAX,
     handsNarrowed: false,
@@ -231,6 +237,7 @@ export function getWideLayoutRoom(
   const roomForHands =
     rowWidth
     - DISCARD_COLUMN_WIDTH.NORMAL
+    - CLUE_BUTTON_RIGHT_ROOM
     - 2 * TABLE_SIDE_PADDING.MAX
     - 2 * TABLE_COLUMN_GAP.MAX;
   const cardWidth = getHandCardWidth(
@@ -250,7 +257,7 @@ export function getWideLayoutRoom(
     cardsPerHand,
     nameColumnWidth,
   );
-  const handsColumnMaxWidth = Math.ceil(neededWidth);
+  const handsColumnMaxWidth = Math.ceil(neededWidth + CLUE_BUTTON_RIGHT_ROOM);
   let missing = neededWidth - roomForHands;
   if (missing <= 0) {
     // The right column takes the width that the hands do not use, so that the hands do not have
@@ -272,7 +279,10 @@ export function getWideLayoutRoom(
   // clue menu.
   const discardColumnMinWidth = Math.max(
     DISCARD_COLUMN_WIDTH.MIN,
-    clueDrawerWidth - TABLE_COLUMN_GAP.MIN - TABLE_SIDE_PADDING.MIN,
+    clueDrawerWidth
+      - CLUE_BUTTON_RIGHT_ROOM
+      - TABLE_COLUMN_GAP.MIN
+      - TABLE_SIDE_PADDING.MIN,
   );
   const discardRoom = clamp(
     missing,
@@ -301,15 +311,16 @@ export function getWideLayoutRoom(
 
 /**
  * Returns the width of the wide layout's hands, from the sizes that `getWideLayoutRoom` returned
- * for `rowWidth`. It is the width that the hands' column gets on the screen. The game screen uses
- * it rather than measuring the column, because a measurement is one render late: while the window
- * resizes, the cards would show at the wrong size for a frame, and then jump to the right one.
+ * for `rowWidth`. It is the width that the hands' column gets on the screen, without the room for
+ * the clue buttons to the right of the hands. The game screen uses it rather than measuring the
+ * column, because a measurement is one render late: while the window resizes, the cards would show
+ * at the wrong size for a frame, and then jump to the right one.
  */
 export function getWideHandsWidth(
   rowWidth: number,
   room: WideLayoutRoom,
 ): number {
-  return clamp(
+  const columnWidth = clamp(
     rowWidth
       - room.discardColumnWidth
       - 2 * room.tableSidePadding
@@ -317,6 +328,7 @@ export function getWideHandsWidth(
     0,
     room.handsColumnMaxWidth,
   );
+  return Math.max(0, columnWidth - CLUE_BUTTON_RIGHT_ROOM);
 }
 
 /**

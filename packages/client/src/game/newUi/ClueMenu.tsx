@@ -826,6 +826,17 @@ const CLUE_BUTTON_SIZE = {
   PHONE: 40,
 } as const;
 
+/** The space between a hand and the clue button to the right of it, in CSS pixels. */
+const CLUE_BUTTON_HAND_GAP = 10;
+
+/**
+ * The width that a clue button to the right of a hand takes, in CSS pixels. The wide layout keeps
+ * this room to the right of the hands (see "getWideLayoutRoom"), so that the buttons do not cover
+ * the right column.
+ */
+export const CLUE_BUTTON_RIGHT_ROOM =
+  CLUE_BUTTON_HAND_GAP + CLUE_BUTTON_SIZE.WIDE;
+
 /** The space between a player's name and their clue button in the name column, in CSS pixels. */
 const CLUE_BUTTON_NAME_GAP = 8;
 
@@ -855,7 +866,7 @@ export type ClueButtonPlacement =
 
 const CLUE_BUTTON_PLACEMENT_CLASS = {
   right:
-    "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5",
+    "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center",
   belowHand:
     "tw:absolute tw:z-20 tw:inset-x-0 tw:top-full tw:flex tw:justify-center tw:pt-2.5",
   belowName: "tw:absolute tw:z-20 tw:inset-0 tw:flex tw:items-end",
@@ -866,15 +877,15 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
 
 /**
  * The button that opens the clue menu of a player. It shows beside their hand while the viewer can
- * clue them, in the room to the right of the hand that the hands leave for the menu (see
- * `getClueDrawerWidth`). When the menu opens below the hand instead (see `clueDrawerFitsBelow`), it
- * sits below the middle of the hand, where the menu comes out. In the phone layout, there is no
- * room to the right of the hand. With the name beside the cards, it sits in the name column, below
- * the name, or to the right of the name when the cards are too short for it below. With the name
- * above the cards, it sits at the right end of the name's row, as tall as the name. It is dim, so
- * that the buttons of all the hands do not compete with the cards, and bright while the pointer is
- * over it. It fades in when it appears, such as when the viewer's turn starts, and fades out when
- * it goes, such as when its menu opens.
+ * clue them, in the room that the wide layout keeps to the right of the hands (see
+ * `CLUE_BUTTON_RIGHT_ROOM`). When the menu opens below the hand instead (see
+ * `clueDrawerFitsBelow`), it sits below the middle of the hand, where the menu comes out. In the
+ * phone layout, there is no room to the right of the hand. With the name beside the cards, it sits
+ * in the name column, below the name, or to the right of the name when the cards are too short for
+ * it below. With the name above the cards, it sits at the right end of the name's row, as tall as
+ * the name. It is dim, so that the buttons of all the hands do not compete with the cards, and
+ * bright while the pointer is over it. It fades in when it appears, such as when the viewer's turn
+ * starts, and fades out when it goes, such as when its menu opens.
  */
 export function ClueButton({
   name,
@@ -909,6 +920,9 @@ export function ClueButton({
       className={CLUE_BUTTON_PLACEMENT_CLASS[placement]}
       data-clue-button
       ref={ref}
+      style={{
+        paddingLeft: placement === "right" ? CLUE_BUTTON_HAND_GAP : undefined,
+      }}
     >
       {/* The dimming is on a layer of its own, because the button's press sets its own transition. */}
       <div
