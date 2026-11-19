@@ -338,6 +338,12 @@ function openConnection(isReconnect: boolean) {
           if (!isCurrentConnection(conn) || !gameSession.isOpen()) {
             return;
           }
+          if (endedAfterDescribed(state)) {
+            reopenGame();
+            finishReconnecting(conn);
+            initCommands(conn);
+            return;
+          }
           const rebuilding = gameSession.isLoading();
           gameCommands.get("gameState")?.(state);
           finishReconnecting(conn);
@@ -486,8 +492,32 @@ function gameCallback<Command extends ServerEvent>(
     if (commandName !== "gameState" && gameSession.isLoading()) {
       return;
     }
+    if (
+      commandName === "gameState"
+      && endedAfterDescribed(data as ServerEventData["gameState"])
+    ) {
+      reopenGame();
+      return;
+    }
     commandFunction(data);
   };
+}
+
+/**
+ * Whether the game ended after the server described it to us as a game in progress. We skip game
+ * events while the game loads, so we can miss the "gameFinished" event.
+ */
+function endedAfterDescribed(state: ServerEventData["gameState"]): boolean {
+  return (
+    state.phase.type === "replay"
+    && store.getState().game.current?.finished === false
+  );
+}
+
+/** Opens the game again, so that the server describes it as the replay that it is now. */
+function reopenGame() {
+  gameMain.closeGame();
+  gameMain.show(false);
 }
 
 // Install the ordinary initial-connection protocol handlers.
