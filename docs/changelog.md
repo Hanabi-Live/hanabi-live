@@ -58,7 +58,7 @@ of the repository.
 - The site uses version 7 of Font Awesome, so some icons look a little
   different. Shared replays have a share icon instead of the group icon.
 - In a pre-game, each seat shows its number in the turn order, and the first
-  seat is marked. Open seats look like empty places at the table.
+  seat is marked. Open seats show a face-down hand of cards.
 
 ## November 18th, 2026
 

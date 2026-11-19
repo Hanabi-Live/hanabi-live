@@ -16,6 +16,7 @@ import {
 } from "@hanabi-live/game";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { CARD_BACK_STYLE } from "../../cardBack.ts";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { store } from "../../store.ts";
 import {
@@ -2707,18 +2708,6 @@ function DirectionArrow({
     </svg>
   );
 }
-
-/**
- * The back of a card: dark ink with a faint diagonal lattice, so that a pile of them reads as
- * face-down cards. The deck and a card with a "blank" note use it.
- */
-export const CARD_BACK_STYLE = {
-  backgroundColor: "var(--card-ink)",
-  backgroundImage: [
-    "repeating-linear-gradient(45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
-    "repeating-linear-gradient(-45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
-  ].join(", "),
-} as const;
 
 /** The front of a card, as it shows in a hand, on a play stack, or in the discard pile. */
 export function CardFace({

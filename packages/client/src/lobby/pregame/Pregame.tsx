@@ -2,10 +2,11 @@
 // starts.
 
 import type { PlayerIndex } from "@hanabi-live/game";
-import { getVariantById } from "@hanabi-live/game";
+import { getCardsPerHand, getVariantById } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { globals } from "../../Globals.ts";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
+import { CARD_BACK_STYLE } from "../../cardBack.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { useAppSelector } from "../../store.ts";
@@ -67,6 +68,10 @@ export function Pregame(): React.JSX.Element | undefined {
   const hasOptions = game.passwordProtected || optionDescriptions.length > 0;
 
   const variant = getVariantById(game.settings.options.variantId);
+  const cardsPerHand = getCardsPerHand({
+    ...game.settings.options,
+    numPlayers: game.settings.maxPlayers,
+  });
   const numOpenSeats = Math.max(
     game.settings.maxPlayers - game.players.length,
     0,
@@ -158,6 +163,7 @@ export function Pregame(): React.JSX.Element | undefined {
           ))}
           {Array.from({ length: numOpenSeats }, (_, i) => i).map((i) => (
             <OpenSeat
+              cardsPerHand={cardsPerHand}
               isNext={i === 0}
               key={`open-seat-${i}`}
               seat={game.players.length + i + 1}
@@ -238,22 +244,13 @@ function PlayerBox({
  * The number of a seat, which is its place in the turn order: a token in a well in the felt. The
  * first seat takes the first turn, so it has the ring of the player whose turn it is.
  */
-function SeatNumber({
-  empty = false,
-  seat,
-}: {
-  readonly empty?: boolean;
-  readonly seat: number;
-}) {
+function SeatNumber({ seat }: { readonly seat: number }) {
   const first = seat === 1;
   return (
     <span
       className={[
         "tw:inline-flex tw:flex-none tw:items-center tw:justify-center tw:rounded-full",
-        "tw:border tw:font-bold tw:tabular-nums",
-        empty
-          ? "tw:size-[2.2em] tw:border-dashed tw:text-[1.1em] tw:opacity-70"
-          : "tw:size-[1.6em] tw:border-solid tw:bg-game-well tw:text-[0.8em]",
+        "tw:size-[1.6em] tw:border tw:border-solid tw:bg-game-well tw:text-[0.8em] tw:font-bold tw:tabular-nums",
         first
           ? "tw:border-game-turn tw:text-game-turn"
           : "tw:border-game-line/60",
@@ -269,14 +266,20 @@ function SeatNumber({
   );
 }
 
+/** How far each card of a hand turns from the next one, in degrees. */
+const HAND_FAN_STEP_DEGREES = 8;
+
 /**
- * A seat that no one sits in yet: an empty well in the felt. The next seat to fill breathes, so
- * that the eye finds where the next player will sit. The "Reduced motion" setting leaves it still.
+ * A seat that no one sits in yet: an empty well in the felt, with a hand of cards that waits face
+ * down for its player. The next seat to fill breathes, so that the eye finds where the next player
+ * will sit. The "Reduced motion" setting leaves it still.
  */
 function OpenSeat({
+  cardsPerHand,
   isNext,
   seat,
 }: {
+  readonly cardsPerHand: number;
   readonly isNext: boolean;
   readonly seat: number;
 }) {
@@ -291,8 +294,22 @@ function OpenSeat({
             : "tw:border-game-line/40",
         ].join(" ")}
       />
-      <SeatNumber empty seat={seat} />
-      <span>Open seat</span>
+      <div className="tw:flex tw:h-[3.2em] tw:items-end tw:justify-center">
+        {Array.from({ length: cardsPerHand }, (_, i) => i).map((i) => (
+          <span
+            className="tw:-mx-[0.35em] tw:block tw:h-[2.8em] tw:w-[1.9em] tw:origin-[50%_120%] tw:rounded-[4px] tw:border tw:border-solid tw:border-white/30 tw:shadow-[0_1px_3px_rgb(0_0_0/50%)]"
+            key={i}
+            style={{
+              ...CARD_BACK_STYLE,
+              rotate: `${(i - (cardsPerHand - 1) / 2) * HAND_FAN_STEP_DEGREES}deg`,
+            }}
+          />
+        ))}
+      </div>
+      <span className="tw:flex tw:items-center tw:gap-2">
+        <SeatNumber seat={seat} />
+        Open seat
+      </span>
     </li>
   );
 }

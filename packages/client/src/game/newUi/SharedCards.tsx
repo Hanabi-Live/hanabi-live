@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { CARD_BACK_STYLE } from "../../cardBack.ts";
 import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
@@ -31,7 +32,6 @@ import { getGameEndTooltipHtml } from "../gameEnd.ts";
 import { getSuitDescriptionHtml } from "../suitDescription.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import {
-  CARD_BACK_STYLE,
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
