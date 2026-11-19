@@ -32,6 +32,9 @@ of the repository.
 - The lobby's history screen matches a player's history page: a list grouped by
   day, with a score bar for each game. A box above it filters the games by
   variant or by the name of another player.
+- A pre-game table shows its variant at the top and a box for each seat, with
+  the open seats outlined. Each player's best scores on the variant show for
+  every player count, without hovering.
 
 ## November 18th, 2026
 

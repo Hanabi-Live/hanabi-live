@@ -202,9 +202,18 @@ function TableRowView({
       {/* The icons stay on one line when the table is narrow. */}
       <td className={`tw:whitespace-nowrap ${COLUMNS.options.className}`}>
         {getOptionDescriptions(table.settings).map((description) => (
-          // The space separates the icons like the spaces between words.
+          // The space separates the icons like the spaces between words. In the crowded row,
+          // brackets keep a label, such as the clock of a timed game, apart from the next icon.
           <Fragment key={description.name}>
-            <OptionIcon description={description} />{" "}
+            <OptionIcon
+              description={{
+                ...description,
+                label:
+                  description.label === undefined
+                    ? undefined
+                    : `(${description.label})`,
+              }}
+            />{" "}
           </Fragment>
         ))}
       </td>

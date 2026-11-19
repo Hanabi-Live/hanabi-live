@@ -28,7 +28,7 @@ export function getOptionDescriptions(
     descriptions.push({
       name: "timer",
       icon: OptionIcons.Timed,
-      label: `(${timeBase} + ${secondsToClockString(timeControl.perTurnSeconds)})`,
+      label: `${timeBase} + ${secondsToClockString(timeControl.perTurnSeconds)}`,
       tooltip: `This is a <strong>Timed Game</strong>. The base time is <strong>${timeBase} minute${
         timeControl.baseSeconds === SECONDS_PER_MINUTE ? "" : "s"
       }</strong> plus <strong>${timeControl.perTurnSeconds} second${

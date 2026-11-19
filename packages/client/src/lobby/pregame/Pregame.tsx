@@ -2,12 +2,7 @@
 // starts.
 
 import type { PlayerIndex } from "@hanabi-live/game";
-import {
-  getVariant,
-  getVariantById,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-} from "@hanabi-live/game";
+import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useEffect, useState } from "react";
 import { globals } from "../../Globals.ts";
@@ -15,7 +10,7 @@ import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { useAppSelector } from "../../store.ts";
-import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
 import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses.ts";
 import { getOptionDescriptions } from "../optionDescriptions.ts";
@@ -64,48 +59,28 @@ export function Pregame(): React.JSX.Element | undefined {
   const optionDescriptions = getOptionDescriptions(game.settings);
   const hasOptions = game.passwordProtected || optionDescriptions.length > 0;
 
+  const variant = getVariantById(game.settings.options.variantId);
+  const numOpenSeats = Math.max(
+    game.settings.maxPlayers - game.players.length,
+    0,
+  );
+
   return (
-    <div className="tw:flex tw:h-full">
-      <div
-        className="tw:w-[200px] tw:overflow-y-auto tw:pr-2 tw:text-[0.85em] tw:narrow-1440:w-[150px]"
-        id="lobby-pregame-left"
-      >
-        <h4 className="tw:pb-2">
-          <strong>
-            <i className="fas fa-signature tw:mr-[0.4em]" />
-            Name:
-          </strong>
-          <br />
-          <span className="tw:block" id="lobby-pregame-name">
-            {game.settings.name}
-          </span>
-        </h4>
-        <h4 className="tw:pb-2">
-          <strong>
-            <i className="fas fa-rainbow tw:mr-[0.4em]" />
-            Variant:
-          </strong>
-          <br />
-          <span className="tw:block" id="lobby-pregame-variant">
-            {getVariantById(game.settings.options.variantId).name}
-          </span>
-        </h4>
-        <h4 className="tw:pb-2">
-          <strong>
+    <div className="tw:flex tw:h-full tw:flex-col">
+      <header className="tw:mb-4 tw:flex-none">
+        <h3
+          className="tw:m-0 tw:text-[1.4em] tw:leading-tight tw:font-bold"
+          id="lobby-pregame-variant"
+        >
+          {variant.name}
+        </h3>
+        <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-[0.85em] tw:text-game-muted">
+          <span id="lobby-pregame-name">{game.settings.name}</span>
+          <span id="lobby-pregame-seats">
             <i className="fas fa-users tw:mr-[0.4em]" />
-            Players:
-          </strong>
-          <br />
-          <span className="tw:block" id="lobby-pregame-seats">
             {game.players.length} / {game.settings.maxPlayers}
           </span>
-        </h4>
-        {hasOptions && (
-          <h4 className="tw:pb-2" id="lobby-pregame-options-container">
-            <span className="tw:font-normal" id="lobby-pregame-options-title">
-              Options:
-            </span>
-            <br />
+          {hasOptions && (
             <ul
               className="tw:m-0 tw:list-none tw:p-0"
               id="lobby-pregame-options"
@@ -117,93 +92,112 @@ export function Pregame(): React.JSX.Element | undefined {
                 <OptionIcon description={description} key={description.name} />
               ))}
             </ul>
-          </h4>
-        )}
-        {spectators.length > 0 && (
-          <h4
-            className={`tw:pb-2 ${FADE_IN_CLASS}`}
-            id="lobby-pregame-spectators-container"
-            style={fadeStyle}
-          >
-            <strong>
-              <SpectatorsIcon className="tw:mr-[0.4em]" />
-              Spectators:
-            </strong>
-            <br />
-            <ul
-              className="tw:m-0 tw:list-none tw:p-0"
-              id="lobby-pregame-spectators"
+          )}
+          {spectators.length > 0 && (
+            <span
+              className={`tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-2 ${FADE_IN_CLASS}`}
+              ref={tooltipRef("Spectators")}
+              style={fadeStyle}
             >
-              {spectators.map((spectator) => (
-                <li
-                  className={FADE_IN_CLASS}
-                  key={spectator.username}
-                  style={fadeStyle}
-                >
-                  &bull; <Name name={spectator.username} />
-                  {spectator.shadowingPlayerIndex !== undefined && (
-                    <>
-                      {" "}
-                      (<SpectatorsIcon />{" "}
-                      <em>
-                        {table?.playerNames[spectator.shadowingPlayerIndex]}
-                      </em>
-                      )
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </h4>
-        )}
-      </div>
-      <div className="tw:flex tw:h-full tw:flex-[1_1_100%] tw:flex-wrap tw:justify-start tw:overflow-y-auto">
-        {game.players.map((player, i) => (
-          <PlayerBox
-            fadeStyle={fadeStyle}
-            game={game}
-            isSpectator={isSpectator}
-            key={player.username}
-            player={player}
-            playerIndex={i as PlayerIndex}
-            shadowed={shadowingPlayerIndex === i}
-          />
-        ))}
+              <SpectatorsIcon />
+              <ul
+                className="tw:m-0 tw:contents tw:list-none tw:p-0"
+                id="lobby-pregame-spectators"
+              >
+                {spectators.map((spectator) => (
+                  <li
+                    className={FADE_IN_CLASS}
+                    key={spectator.username}
+                    style={fadeStyle}
+                  >
+                    <Name name={spectator.username} />
+                    {spectator.shadowingPlayerIndex !== undefined && (
+                      <>
+                        {" "}
+                        (<SpectatorsIcon />{" "}
+                        <em>
+                          {table?.playerNames[spectator.shadowingPlayerIndex]}
+                        </em>
+                        )
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </span>
+          )}
+        </div>
+      </header>
+      {/* Every row is as tall as the tallest card, so that the open seats look the same. One column
+          on a phone has no rows to match. */}
+      <div className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto">
+        <ol className="tw:m-0 tw:grid tw:list-none tw:auto-rows-fr tw:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] tw:gap-2 tw:p-0 tw:narrow-410:auto-rows-auto">
+          {game.players.map((player, i) => (
+            <PlayerBox
+              fadeStyle={fadeStyle}
+              isSpectator={isSpectator}
+              key={player.username}
+              maxScore={variant.maxScore}
+              numPlayers={game.players.length}
+              player={player}
+              playerIndex={i as PlayerIndex}
+              shadowed={shadowingPlayerIndex === i}
+            />
+          ))}
+          {Array.from({ length: numOpenSeats }, (_, i) => i).map((i) => (
+            <li
+              className={[
+                "tw:flex tw:min-h-[3em] tw:items-center tw:justify-center tw:rounded-[5px]",
+                "tw:border tw:border-dashed tw:border-game-line/40 tw:text-[0.85em] tw:text-game-muted",
+              ].join(" ")}
+              key={`open-seat-${i}`}
+            >
+              Open seat
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
   );
 }
 
+/**
+ * A player who joins pops into their seat: the card grows a little past its size and settles. The
+ * "Reduced motion" setting leaves out the pop and the fade.
+ */
+const JOIN_CLASS =
+  "tw:transition-[opacity,scale] tw:ease-[cubic-bezier(0.34,1.56,0.64,1)] tw:starting:scale-90 tw:starting:opacity-0";
+
 function PlayerBox({
   fadeStyle,
-  game,
+  isSpectator,
+  maxScore,
+  numPlayers,
   player,
   playerIndex,
-  isSpectator,
   shadowed,
 }: {
   readonly fadeStyle: React.CSSProperties;
-  readonly game: Game;
+  readonly isSpectator: boolean;
+  readonly maxScore: number;
+  readonly numPlayers: number;
   readonly player: Player;
   readonly playerIndex: PlayerIndex;
-  readonly isSpectator: boolean;
   readonly shadowed: boolean;
 }) {
-  // The "numPlayers" in the options is not set yet.
-  const numPlayers = game.players.length;
   const variantStats = player.stats.variant;
 
   return (
-    <div
+    <li
       className={[
-        "tw:mr-2 tw:mb-2 tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
-        "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--game-screen-line)/50",
-        `tw:p-[0.8em] tw:narrow-980:max-w-[200px] ${FADE_IN_CLASS}`,
+        "tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:p-[0.8em] tw:text-[0.85em]",
+        JOIN_CLASS,
+        player.present ? "" : "tw:opacity-60",
       ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}
       style={fadeStyle}
     >
-      <p className="tw:m-0 tw:pb-2">
+      <p className="tw:m-0 tw:mb-2 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-2 tw:text-[1.15em]">
         <strong>
           {isSpectator ? (
             <ShadowName
@@ -216,32 +210,18 @@ function PlayerBox({
           )}
         </strong>
         <HGroupLevelBadge name={player.username} />
+        {!player.present && (
+          <span className="tw:text-[0.8em] tw:text-game-muted">Away</span>
+        )}
       </p>
-      <StatRow label="Total games:" value={player.stats.numGames} />
-      <StatRow label="...of this variant:" value={variantStats.numGames} />
-      {numPlayers >= MIN_PLAYERS && (
-        <StatRow
-          label={`${numPlayers}-player best score:`}
-          value={
-            bestScoreAt(variantStats.bestScores, numPlayers)?.score ?? NO_SCORE
-          }
-        />
-      )}
-      <StatRow
-        label={`${numPlayers < MIN_PLAYERS ? "B" : "Other b"}est scores:`}
-        value={
-          <BestScoresIcon
-            bestScores={variantStats.bestScores}
-            variantName={getVariantById(game.settings.options.variantId).name}
-          />
-        }
+      <StatRow label="Games" value={player.stats.numGames} />
+      <StatRow label="This variant" value={variantStats.numGames} />
+      <BestScoresRow
+        bestScores={variantStats.bestScores}
+        maxScore={maxScore}
+        numPlayers={numPlayers}
       />
-      {!player.present && (
-        <p className={`tw:mt-4 tw:mb-0 ${FADE_IN_CLASS}`} style={fadeStyle}>
-          <strong>AWAY</strong>
-        </p>
-      )}
-    </div>
+    </li>
   );
 }
 
@@ -254,26 +234,81 @@ function StatRow({
 }) {
   return (
     <div className="tw:flex tw:gap-2">
-      <div className="tw:flex-1">{label}</div>
+      <div className="tw:flex-1 tw:text-game-muted">{label}</div>
       <div className="tw:text-right">{value}</div>
     </div>
   );
 }
 
-function BestScoresIcon({
+/** A row of the player's best score at each player count, which marks the count of this table. */
+function BestScoresRow({
   bestScores,
-  variantName,
+  maxScore,
+  numPlayers,
 }: {
   readonly bestScores: BestScores;
-  readonly variantName: string;
+  readonly maxScore: number;
+  readonly numPlayers: number;
 }) {
   return (
-    <i
-      className="fas fa-chart-bar green"
-      ref={tooltipRefHtml(getBestScoresTooltip(bestScores, variantName), {
-        instant: true,
-      })}
-    />
+    <div className="tw:mt-2">
+      <div className="tw:text-game-muted">Best scores</div>
+      <ol className="tw:m-0 tw:mt-1 tw:grid tw:list-none tw:grid-cols-5 tw:gap-1 tw:p-0">
+        {[...iRange(MIN_PLAYERS, MAX_PLAYERS)].map((cellNumPlayers) => (
+          <BestScoreCell
+            best={bestScoreAt(bestScores, cellNumPlayers)}
+            current={cellNumPlayers === numPlayers}
+            key={cellNumPlayers}
+            maxScore={maxScore}
+            numPlayers={cellNumPlayers}
+          />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function BestScoreCell({
+  best,
+  current,
+  maxScore,
+  numPlayers,
+}: {
+  readonly best: BestScores[number] | undefined;
+  readonly current: boolean;
+  readonly maxScore: number;
+  readonly numPlayers: number;
+}) {
+  const perfect = best !== undefined && best.score === maxScore;
+  const tooltip =
+    best === undefined
+      ? `No ${numPlayers}-player games of this variant yet.`
+      : `${numPlayers}-player best score: ${best.score} / ${maxScore}.${
+          best.modified
+            ? ' The game used an option such as "One Extra Card", so the score does not count as a normal one.'
+            : ""
+        }`;
+
+  return (
+    <li
+      className={[
+        "tw:rounded-[3px] tw:py-[0.2em] tw:text-center tw:leading-tight",
+        current
+          ? "tw:bg-game-raised tw:outline tw:outline-game-line"
+          : "tw:bg-game-well",
+      ].join(" ")}
+      ref={tooltipRef(tooltip)}
+    >
+      <div className="tw:text-[0.75em] tw:text-game-muted">{numPlayers}p</div>
+      <div
+        className={
+          perfect && !best.modified ? "tw:font-bold tw:text-green-text" : ""
+        }
+      >
+        {best === undefined ? NO_SCORE : best.score}
+        {best?.modified === true && "*"}
+      </div>
+    </li>
   );
 }
 
@@ -282,35 +317,6 @@ function bestScoreAt(
   numPlayers: number,
 ): BestScores[number] | undefined {
   return bestScores.find((bestScore) => bestScore.numPlayers === numPlayers);
-}
-
-function getBestScoresTooltip(
-  bestScores: BestScores,
-  variantName: string,
-): string {
-  const { maxScore } = getVariant(variantName);
-  let html = '<div class="tw:w-32 tw:text-[0.75em]">';
-  for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
-    const best = bestScoreAt(bestScores, bestScorePlayer);
-
-    // The grid's negative margin and gutter would push the rows out of the tooltip.
-    html += '<div class="row tw:ml-0 tw:text-left">';
-    html += `<div class="col-6 tw:pl-0">${bestScorePlayer}-player:</div>`;
-    html += '<div class="col-6 tw:pl-0">';
-    if (best === undefined) {
-      html += ` ${NO_SCORE}`;
-    } else if (best.score === maxScore) {
-      html += `<strong> ${best.score} / ${maxScore}</strong> &nbsp; `;
-      html += best.modified
-        ? '<i class="fas fa-times score-modifier red"></i>'
-        : '<i class="fas fa-check score-modifier green"></i>';
-    } else {
-      html += ` ${best.score} / ${maxScore}`;
-    }
-    html += "</div></div>";
-  }
-  html += "</div>";
-  return html;
 }
 
 /** A user's name, in the color that shows whether they are us or our friend. */
@@ -335,20 +341,21 @@ function ShadowName({
   const nameClassName = useNameClassName(name);
   const shadowClassName = shadowed ? UN_SHADOW_NAME : SHADOW_NAME;
   return (
-    <span
-      className={
-        nameClassName === undefined
-          ? shadowClassName
-          : `${nameClassName} ${shadowClassName}`
-      }
+    <button
+      className={[
+        "tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:[font:inherit] tw:text-inherit",
+        shadowClassName,
+        nameClassName ?? "",
+      ].join(" ")}
       onClick={(event) => {
         event.stopPropagation();
         reattend(shadowed ? undefined : playerIndex);
       }}
+      type="button"
     >
       {name}
       {shadowed && <SpectatorsIcon className="tw:ml-[0.3em]" />}
-    </span>
+    </button>
   );
 }
 

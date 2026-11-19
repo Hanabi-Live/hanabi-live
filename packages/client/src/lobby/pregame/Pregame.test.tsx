@@ -122,11 +122,23 @@ describe("Pregame", () => {
 
     const boxes = document.querySelectorAll('[id^="lobby-pregame-player-"]');
     expect(boxes).toHaveLength(2);
-    expect(boxes[0]!.textContent).toContain("2-player best score:25");
+    // Alice's best scores, from 2 to 6 players. The table has 2 players, so the first cell is
+    // marked.
+    const cells = boxes[0]!.querySelectorAll(":scope ol > li");
+    expect([...cells].map((cell) => cell.textContent)).toEqual([
+      "2p25",
+      "3p\u{2013}",
+      "4p\u{2013}",
+      "5p\u{2013}",
+      "6p\u{2013}",
+    ]);
+    expect(cells[0]!.className).toContain("tw:bg-game-raised");
     expect(screen.getByText("Level 3").getAttribute("href")).toContain(
       "level-3",
     );
-    expect(boxes[1]!.textContent).toContain("AWAY");
+    expect(boxes[1]!.textContent).toContain("Away");
+    // The table has 5 seats, so 3 are open.
+    expect(screen.getAllByText("Open seat")).toHaveLength(3);
 
     const spectators = document.querySelector("#lobby-pregame-spectators")!;
     // The eyes icon before Bob's name says that we view the game as Bob.
@@ -152,7 +164,7 @@ describe("Pregame", () => {
       screen
         .getByText(
           (_content, element) =>
-            element?.tagName === "SPAN"
+            element?.tagName === "BUTTON"
             && element.textContent === "bob"
             && element.querySelector("svg") !== null,
         )
