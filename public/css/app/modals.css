@@ -79,7 +79,7 @@
   min-width: 40vw;
 }
 
-/* A message is a narrow card in the middle of the screen. */
+/* A message or a prompt is a narrow card in the middle of the screen. */
 .modal-message {
   align-self: center;
   background-color: var(--modal-message-bg);
@@ -93,10 +93,6 @@
   scrollbar-gutter: unset;
   top: auto;
   width: min(32em, 100% - 2em);
-}
-
-.modal-prompt {
-  min-width: unset;
 }
 
 #emoji-modal {

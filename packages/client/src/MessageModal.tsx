@@ -11,6 +11,14 @@ import { BREATHE_MILLISECONDS } from "./game/newUi/ReconnectingPanel.tsx";
 import { globals } from "./Globals.ts";
 import { signOut } from "./lobby/signOut.ts";
 import type { ErrorCause, MessageModal as Modal } from "./messageModalSlice.ts";
+import {
+  ModalButton as Button,
+  MODAL_ACTIONS_CLASS_NAME,
+  MODAL_COLUMN_CLASS_NAME,
+  MODAL_DESCRIPTION_CLASS_NAME,
+  MODAL_TITLE_CLASS_NAME,
+  ModalIcon,
+} from "./ModalParts.tsx";
 import { closeModals, confirm, keepPlaying } from "./modals.ts";
 import { useAppSelector } from "./store.ts";
 
@@ -21,11 +29,11 @@ import { useAppSelector } from "./store.ts";
 const MESSAGE_CLASS_NAME = "tw:[&_ul]:my-[1em]";
 
 /**
- * The text of an error sits in the middle, under its title. A stack trace keeps its lines on the
- * left and scrolls, and a list loses its bullets, so that it stays in the middle too.
+ * The text of a warning or an error sits in the middle. A stack trace keeps its lines on the left
+ * and scrolls, and a list loses its bullets, so that it stays in the middle too.
  */
-const ERROR_MESSAGE_CLASS_NAME =
-  "tw:w-full tw:text-balance tw:text-game-muted tw:[&_ul]:list-none tw:[&_ul]:p-0 tw:[&_pre]:max-h-[12em] tw:[&_pre]:overflow-auto tw:[&_pre]:text-left";
+const CENTERED_MESSAGE_CLASS_NAME =
+  "tw:w-full tw:text-balance tw:[&_ul]:list-none tw:[&_ul]:p-0 tw:[&_pre]:max-h-[12em] tw:[&_pre]:overflow-auto tw:[&_pre]:text-left";
 
 /** The icon of each cause of an error, in its color. */
 const ERROR_ICONS = {
@@ -53,16 +61,17 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
   switch (modal.type) {
     case "warning": {
       return (
-        <section id="warning-modal">
-          <h3>Warning</h3>
-          {/* Warnings can hold markup from the server and the client. */}
+        <section className={MODAL_COLUMN_CLASS_NAME} id="warning-modal">
+          <ModalIcon icon="fa-exclamation tw:text-game-turn" />
+          {/* A warning has no title: its text says what happened. It can hold markup from the server
+              and the client. */}
           <p
-            className={MESSAGE_CLASS_NAME}
+            className={`${MESSAGE_CLASS_NAME} ${CENTERED_MESSAGE_CLASS_NAME} tw:mt-[1em] tw:text-[1.125em]`}
             dangerouslySetInnerHTML={{ __html: modal.html }}
           />
-          <ul className="actions">
+          <ul className={MODAL_ACTIONS_CLASS_NAME}>
             <li>
-              <Button autoFocus onClick={closeModals}>
+              <Button autoFocus onClick={closeModals} variant="primary">
                 Close
               </Button>
             </li>
@@ -81,17 +90,47 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
 
     case "confirm": {
       return (
-        <section id="confirm-modal">
-          <h3>{modal.title}</h3>
-          <p>{modal.description}</p>
-          <ul className="actions">
+        <section className={MODAL_COLUMN_CLASS_NAME} id="confirm-modal">
+          <ModalIcon
+            icon={
+              modal.caution
+                ? "fa-exclamation-triangle tw:text-game-error"
+                : "fa-question tw:text-game-turn"
+            }
+          />
+          {/* Without a description, the title keeps the space that it would have. */}
+          <h3
+            className={
+              modal.description === undefined
+                ? `${MODAL_TITLE_CLASS_NAME} tw:mb-[1.25em]`
+                : MODAL_TITLE_CLASS_NAME
+            }
+          >
+            {modal.title}
+          </h3>
+          {modal.description !== undefined && (
+            <p className={MODAL_DESCRIPTION_CLASS_NAME}>{modal.description}</p>
+          )}
+          {/* A risky action, such as a play that can misplay, makes "Cancel" the main button, so
+              that Enter does not take it. */}
+          <ul className={MODAL_ACTIONS_CLASS_NAME}>
             <li>
-              <Button autoFocus onClick={confirm}>
+              <Button
+                autoFocus={!modal.caution}
+                onClick={confirm}
+                variant={modal.caution ? "alt" : "primary"}
+              >
                 {modal.confirmText}
               </Button>
             </li>
             <li>
-              <Button onClick={closeModals}>Cancel</Button>
+              <Button
+                autoFocus={modal.caution}
+                onClick={closeModals}
+                variant={modal.caution ? "primary" : "alt"}
+              >
+                Cancel
+              </Button>
             </li>
           </ul>
         </section>
@@ -138,26 +177,15 @@ function ErrorModal({
   }, [waiting, reducedMotion]);
 
   return (
-    <section
-      className="tw:flex tw:flex-col tw:items-center tw:text-center"
-      id="error-modal"
-    >
-      <div className="tw:flex tw:size-[5em] tw:items-center tw:justify-center tw:rounded-full tw:ring-[0.25em] tw:ring-game-line/30">
-        <i
-          aria-hidden="true"
-          className={`fas ${ERROR_ICONS[modal.cause]} tw:text-[2em]`}
-          ref={iconRef}
-        />
-      </div>
-      <h3 className="tw:mt-[0.75em] tw:mb-[0.25em]">
-        {ERROR_TITLES[modal.cause]}
-      </h3>
+    <section className={MODAL_COLUMN_CLASS_NAME} id="error-modal">
+      <ModalIcon icon={ERROR_ICONS[modal.cause]} iconRef={iconRef} />
+      <h3 className={MODAL_TITLE_CLASS_NAME}>{ERROR_TITLES[modal.cause]}</h3>
       {/* Errors can hold the formatted stack trace from "errors.ts". */}
       <p
-        className={`${MESSAGE_CLASS_NAME} ${ERROR_MESSAGE_CLASS_NAME}`}
+        className={`${MESSAGE_CLASS_NAME} ${CENTERED_MESSAGE_CLASS_NAME} tw:text-game-muted`}
         dangerouslySetInnerHTML={{ __html: modal.html }}
       />
-      <ul className="actions tw:justify-center">
+      <ul className={MODAL_ACTIONS_CLASS_NAME}>
         <li>
           <Button
             autoFocus
@@ -224,10 +252,7 @@ function IdleModal({
   const colorClass = lastMinute ? "tw:text-game-error" : "tw:text-game-turn";
 
   return (
-    <section
-      className="tw:flex tw:flex-col tw:items-center tw:text-center"
-      id="idle-modal"
-    >
+    <section className={MODAL_COLUMN_CLASS_NAME} id="idle-modal">
       <div className="tw:relative tw:size-[8.5em]">
         <svg
           aria-hidden
@@ -275,7 +300,7 @@ function IdleModal({
         No one has taken a turn for a while.
         {!modal.canKeepPlaying && " Only a player can keep it going."}
       </p>
-      <ul className="actions tw:justify-center">
+      <ul className={MODAL_ACTIONS_CLASS_NAME}>
         {modal.canKeepPlaying && (
           <li>
             <Button
@@ -323,12 +348,14 @@ function PasswordModal({ tableId }: { readonly tableId: number }) {
   }
 
   return (
-    <section id="password-modal">
-      <h3>Enter Password</h3>
-      <p>Enter the password for this game:</p>
+    <section className={MODAL_COLUMN_CLASS_NAME} id="password-modal">
+      <ModalIcon icon="fa-lock tw:text-game-turn" />
+      <h3 className={MODAL_TITLE_CLASS_NAME}>This game has a password.</h3>
       {/* The modal only asks for the password. */}
       <input
+        aria-label="Password"
         autoFocus
+        className="tw:mt-[0.75em] tw:mb-[1.25em] tw:w-full"
         id="password-modal-password"
         onChange={(event) => {
           setPassword(event.target.value);
@@ -348,42 +375,18 @@ function PasswordModal({ tableId }: { readonly tableId: number }) {
         type="text"
         value={password}
       />
-      <br />
-      <ul className="actions">
+      <ul className={MODAL_ACTIONS_CLASS_NAME}>
         <li>
-          <Button onClick={submit}>Submit</Button>
+          <Button onClick={submit} variant="primary">
+            Join
+          </Button>
         </li>
         <li>
-          <Button onClick={closeModals}>Cancel</Button>
+          <Button onClick={closeModals} variant="alt">
+            Cancel
+          </Button>
         </li>
       </ul>
     </section>
-  );
-}
-
-function Button({
-  autoFocus = false,
-  children,
-  onClick,
-  variant,
-}: {
-  readonly autoFocus?: boolean;
-  readonly children: React.ReactNode;
-  readonly onClick: () => void;
-  /** The main action of the modal ("primary"), or a quiet one beside it ("alt"). */
-  readonly variant?: "primary" | "alt";
-}) {
-  return (
-    <button
-      // A modal focuses the button that it expects.
-      autoFocus={autoFocus}
-      className={
-        variant === undefined ? "button small" : `button small ${variant}`
-      }
-      onClick={onClick}
-      type="button"
-    >
-      {children}
-    </button>
   );
 }

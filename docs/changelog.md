@@ -48,6 +48,8 @@ of the repository.
   "Creating...".
 - When the server goes down for maintenance, the page reloads by itself once the
   server is back.
+- The warnings, questions, and prompts match the error window. When the game
+  asks you to confirm a play, Enter cancels it.
 
 ## November 18th, 2026
 

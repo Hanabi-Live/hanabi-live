@@ -6,34 +6,41 @@ import type { Rank } from "@hanabi-live/game";
 import { getVariantById, START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { useState } from "react";
-import { ModalHeader } from "./ModalHeader.tsx";
 import { START_CARD_RANK_LABEL } from "./constants.ts";
 import { getCardImages } from "./game/cardImages.ts";
+import {
+  MODAL_ACTIONS_CLASS_NAME,
+  MODAL_COLUMN_CLASS_NAME,
+  MODAL_DESCRIPTION_CLASS_NAME,
+  ModalButton,
+} from "./ModalParts.tsx";
 import { cancelPrompt, submitPrompt } from "./modals.ts";
 import type { PromptModal as Prompt } from "./promptModalSlice.ts";
 import { useAppSelector } from "./store.ts";
 
-/** A morph option: a card with a radio button that is hidden behind a mark in its corner. */
-const MORPH_LABEL_CLASS_NAME = [
-  "tw:relative tw:mx-[0.625em] tw:my-[0.3em] tw:block tw:max-h-[4.5em] tw:cursor-pointer tw:overflow-hidden tw:border tw:border-solid tw:border-morph-option-border tw:p-[0.625em] tw:leading-[1em]",
-  "tw:peer-checked:border-morph-option-selected",
-  // The mark, which grows in when the card is selected.
-  "tw:before:absolute tw:before:top-px tw:before:left-px tw:before:block tw:before:size-[1.5em] tw:before:rounded-[50%] tw:before:border tw:before:border-solid tw:before:border-morph-option-border tw:before:bg-surface tw:before:text-center tw:before:leading-[1.75em] tw:before:text-text-on-accent tw:before:duration-[0.4s] tw:before:content-['_'] tw:before:[transform:scale(0)]",
-  "tw:peer-checked:before:z-1 tw:peer-checked:before:border-[unset] tw:peer-checked:before:bg-morph-option-border tw:peer-checked:before:leading-[1.2em] tw:peer-checked:before:content-[var(--morph-mark)] tw:peer-checked:before:[transform:scale(1)]",
-  // The card, which shrinks a little when it is selected.
-  "tw:[&_canvas]:h-[10vh] tw:[&_canvas]:origin-center tw:[&_canvas]:duration-[0.2s] tw:peer-checked:[&_canvas]:-z-1 tw:peer-checked:[&_canvas]:[transform:scale(0.9)]",
+/** The title of a prompt, which has no icon above it. */
+const PROMPT_TITLE_CLASS_NAME = "tw:mt-0 tw:mb-[0.25em] tw:text-balance";
+
+/**
+ * The widest that a card of the morph prompt gets, so that a variant with few suits stays small.
+ */
+const MORPH_CARD_MAX_WIDTH = "4em";
+
+/**
+ * A card of the morph prompt, after its hidden radio button. It cuts off the bottom of the card,
+ * which only repeats the rank. The selected card has a ring and a check mark in its corner.
+ */
+const MORPH_CARD_CLASS_NAME = [
+  "tw:relative tw:block tw:aspect-[4/5] tw:overflow-hidden tw:rounded-[0.25em] tw:ring-1 tw:ring-game-line/40",
+  "tw:[&_canvas]:block tw:[&_canvas]:h-auto tw:[&_canvas]:w-full",
+  "tw:peer-checked:ring-[0.1875em] tw:peer-checked:ring-game-turn tw:peer-focus-visible:outline-2 tw:peer-focus-visible:outline-offset-2 tw:peer-focus-visible:outline-game-text",
+  "tw:before:absolute tw:before:top-[0.125em] tw:before:right-[0.125em] tw:before:hidden tw:before:size-[1.25em] tw:before:items-center tw:before:justify-center tw:before:rounded-full tw:before:bg-game-turn tw:before:text-[0.75em] tw:before:font-bold tw:before:text-game-panel tw:before:content-[var(--morph-mark)] tw:peer-checked:before:flex",
 ].join(" ");
 
 /** The mark of the selected card: a check mark, escaped for CSS. */
 const MORPH_MARK_STYLE = {
   "--morph-mark": String.raw`"\2713"`,
 } as React.CSSProperties;
-
-/** A row of cards, without the stripes and lines of other tables. */
-const MORPH_TABLE_ROW_CLASS_NAME = "tw:border-0 tw:bg-transparent";
-
-/** A row of the morph prompt, below its cards. */
-const MORPH_ROW_CLASS_NAME = "row tw:mt-4 tw:mb-0";
 
 export function PromptModal(): React.JSX.Element | undefined {
   const prompt = useAppSelector((state) => state.promptModal.prompt);
@@ -48,26 +55,33 @@ function PromptContent({ prompt }: { readonly prompt: Prompt }) {
   switch (prompt.type) {
     case "choice": {
       return (
-        <>
-          <ModalHeader heading={prompt.title} />
-          <p>{prompt.description}</p>
-          <div className="tw:flex tw:content-evenly tw:justify-center tw:gap-x-[0.625em]">
+        <section className={MODAL_COLUMN_CLASS_NAME} id="choice-prompt">
+          <h3 className={PROMPT_TITLE_CLASS_NAME}>{prompt.title}</h3>
+          {prompt.description !== undefined && (
+            <p className={MODAL_DESCRIPTION_CLASS_NAME}>{prompt.description}</p>
+          )}
+          {/* The options are a column of buttons of the same width, such as names. */}
+          <div className="tw:mt-[1em] tw:flex tw:w-full tw:max-w-[16em] tw:flex-col tw:gap-[0.5em] tw:[&_button]:m-0 tw:[&_button]:w-full">
             {prompt.options.map((option, index) => (
-              <button
-                // The dialog would otherwise focus its close button, which comes first.
+              <ModalButton
                 autoFocus={index === 0}
-                className="button"
                 key={option}
                 onClick={() => {
                   submitPrompt(option);
                 }}
-                type="submit"
               >
                 {option}
-              </button>
+              </ModalButton>
             ))}
           </div>
-        </>
+          <ul className={`${MODAL_ACTIONS_CLASS_NAME} tw:mt-[1.25em]`}>
+            <li>
+              <ModalButton onClick={cancelPrompt} variant="alt">
+                Cancel
+              </ModalButton>
+            </li>
+          </ul>
+        </section>
       );
     }
 
@@ -89,11 +103,13 @@ function NumberPrompt({
   const [value, setValue] = useState(prompt.value);
 
   return (
-    <>
-      <ModalHeader heading={prompt.title} />
-      {prompt.description !== undefined && <p>{prompt.description}</p>}
+    <section className={MODAL_COLUMN_CLASS_NAME} id="number-prompt">
+      <h3 className={PROMPT_TITLE_CLASS_NAME}>{prompt.title}</h3>
+      {prompt.description !== undefined && (
+        <p className={MODAL_DESCRIPTION_CLASS_NAME}>{prompt.description}</p>
+      )}
       {/* The labels and their values line up in two columns, each label beside its value. */}
-      <div className="tw:mt-4 tw:grid tw:grid-cols-[auto_auto] tw:items-center tw:justify-center tw:gap-x-4 tw:gap-y-2">
+      <div className="tw:mt-[0.5em] tw:mb-[1.25em] tw:grid tw:grid-cols-[auto_auto] tw:items-center tw:justify-center tw:gap-x-4 tw:gap-y-2 tw:text-left">
         {prompt.current !== undefined && (
           <>
             {/* It looks like the label of the input below. */}
@@ -133,18 +149,24 @@ function NumberPrompt({
           value={value}
         />
       </div>
-      <div className="tw:mt-4 tw:flex tw:justify-center">
-        <button
-          className="button tw:m-0"
-          onClick={() => {
-            submitPrompt(value);
-          }}
-          type="submit"
-        >
-          Go
-        </button>
-      </div>
-    </>
+      <ul className={MODAL_ACTIONS_CLASS_NAME}>
+        <li>
+          <ModalButton
+            onClick={() => {
+              submitPrompt(value);
+            }}
+            variant="primary"
+          >
+            Set
+          </ModalButton>
+        </li>
+        <li>
+          <ModalButton onClick={cancelPrompt} variant="alt">
+            Cancel
+          </ModalButton>
+        </li>
+      </ul>
+    </section>
   );
 }
 
@@ -167,7 +189,8 @@ function MorphPrompt({
   );
 
   return (
-    <div
+    <section
+      className={MODAL_COLUMN_CLASS_NAME}
       id="morph-modal"
       onKeyDown={(event) => {
         // The prompt must not also close the dialog, which cannot close until the card is chosen.
@@ -180,120 +203,120 @@ function MorphPrompt({
         cancelPrompt();
       }}
     >
-      <h2 className="tw:m-0">Morph</h2>
-      <p className="tw:m-0">{prompt.description}</p>
+      <h3 className={PROMPT_TITLE_CLASS_NAME}>Morph</h3>
+      <p className={MODAL_DESCRIPTION_CLASS_NAME}>{prompt.description}</p>
       <form
-        className="tw:mb-2"
+        className="tw:mt-[0.75em] tw:w-full"
         name="morph-modal-form"
         onSubmit={(event) => {
           event.preventDefault();
         }}
       >
-        <table className="tw:mb-2">
-          <tbody>
-            {variant.ranks.map((rank) => (
-              <tr className={MORPH_TABLE_ROW_CLASS_NAME} key={rank}>
-                {variant.suits.map((suit, suitIndex) => {
-                  const radioId = `morph-radio-${suitIndex}-${rank}`;
-                  const possible = prompt.possibilities.some(
-                    (possibility) =>
-                      possibility[0] === suitIndex && possibility[1] === rank,
-                  );
-                  const imageName = `card-${suit.name}-${rank}`;
-                  const image = cardImages.get(imageName);
-                  assertDefined(
-                    image,
-                    `Failed to get the card image with label: ${imageName}`,
-                  );
-                  return (
-                    <td
-                      className={possible ? "tw:p-1" : "tw:p-1 tw:opacity-50"}
-                      key={suit.name}
-                    >
-                      <input
-                        checked={
-                          selected[0] === suitIndex && selected[1] === rank
-                        }
-                        className="tw:peer"
-                        id={radioId}
-                        name="morph-cards"
-                        onChange={() => {
-                          setSelected([suitIndex, rank]);
-                          setText(getCardText(suit.displayName, rank));
-                        }}
-                        type="radio"
-                        value={`${suit.displayName} ${rank}`}
-                      />
-                      <label
-                        className={MORPH_LABEL_CLASS_NAME}
-                        htmlFor={radioId}
-                        // The card images are canvases that the client draws once for each variant.
-                        ref={(label) => {
-                          label?.replaceChildren(image);
-                        }}
-                        style={MORPH_MARK_STYLE}
-                      />
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="row tw:my-4">
-          <div className="col-6 tw:relative tw:top-[1.5em]">
-            or type in the card (such as red 1, b3, or blank)
-          </div>
-          <div className="row tw:my-4">
-            <input
-              autoFocus
-              id="morph-modal-textbox"
-              name="morph-modal-textbox"
-              onChange={(event) => {
-                setText(event.target.value);
-              }}
-              onFocus={(event) => {
-                event.target.select();
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") {
-                  return;
-                }
-
-                event.preventDefault();
-                submitPrompt(text);
-              }}
-              type="text"
-              value={text}
-            />
-          </div>
+        {/* A column for each suit and a row for each rank. The cards shrink to fit a narrow
+            screen. */}
+        <div
+          className="tw:grid tw:justify-center tw:gap-[0.375em]"
+          style={{
+            gridTemplateColumns: `repeat(${variant.suits.length}, minmax(0, ${MORPH_CARD_MAX_WIDTH}))`,
+          }}
+        >
+          {variant.ranks.map((rank) =>
+            variant.suits.map((suit, suitIndex) => {
+              const key = `${suitIndex}-${rank}`;
+              const possible = prompt.possibilities.some(
+                (possibility) =>
+                  possibility[0] === suitIndex && possibility[1] === rank,
+              );
+              const imageName = `card-${suit.name}-${rank}`;
+              const image = cardImages.get(imageName);
+              assertDefined(
+                image,
+                `Failed to get the card image with label: ${imageName}`,
+              );
+              return (
+                // The radio button is inside the label, so that the site's style of a radio
+                // button's label does not apply.
+                <label
+                  className={`tw:m-0 tw:block tw:cursor-pointer ${possible ? "" : "tw:opacity-50"}`}
+                  key={key}
+                >
+                  <input
+                    aria-label={`${suit.displayName} ${rank}`}
+                    checked={selected[0] === suitIndex && selected[1] === rank}
+                    className="tw:peer tw:sr-only"
+                    name="morph-cards"
+                    onChange={() => {
+                      setSelected([suitIndex, rank]);
+                      setText(getCardText(suit.displayName, rank));
+                    }}
+                    type="radio"
+                    value={`${suit.displayName} ${rank}`}
+                  />
+                  <span
+                    className={MORPH_CARD_CLASS_NAME}
+                    // The card images are canvases that the client draws once for each variant.
+                    ref={(span) => {
+                      span?.replaceChildren(image);
+                    }}
+                    style={MORPH_MARK_STYLE}
+                  />
+                </label>
+              );
+            }),
+          )}
         </div>
+        <label
+          className="tw:mt-[1em] tw:mb-[0.25em] tw:block tw:text-game-muted"
+          htmlFor="morph-modal-textbox"
+        >
+          Or type a card, such as red 1, b3, or blank
+        </label>
+        <input
+          autoFocus
+          className="tw:m-0 tw:w-full"
+          id="morph-modal-textbox"
+          name="morph-modal-textbox"
+          onChange={(event) => {
+            setText(event.target.value);
+          }}
+          onFocus={(event) => {
+            event.target.select();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") {
+              return;
+            }
+
+            event.preventDefault();
+            submitPrompt(text);
+          }}
+          type="text"
+          value={text}
+        />
       </form>
-      <div className={MORPH_ROW_CLASS_NAME}>
-        <div className="col-2 off-3">
-          <button
-            className="button"
+      <ul className={MODAL_ACTIONS_CLASS_NAME}>
+        <li>
+          <ModalButton
             id="morph-modal-button-ok"
             onClick={() => {
               submitPrompt(text);
             }}
-            type="submit"
+            variant="primary"
           >
-            Ok
-          </button>
-        </div>
-        <div className="col-2 off-1">
-          <button
-            className="button"
+            Morph
+          </ModalButton>
+        </li>
+        <li>
+          <ModalButton
             id="morph-modal-button-cancel"
             onClick={cancelPrompt}
-            type="submit"
+            variant="alt"
           >
             Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+          </ModalButton>
+        </li>
+      </ul>
+    </section>
   );
 }
 

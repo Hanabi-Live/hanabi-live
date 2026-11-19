@@ -514,9 +514,11 @@ function suggestTurn(who: string, tableId: TableId, segment: number) {
     replay.goToSegment(internalSegment);
   } else {
     modals.askForConfirmation(
-      "Turn Suggestion",
-      `${who} suggests that we go to turn ${segment}. Agree?`,
-      `Go to Turn ${segment}`,
+      {
+        title: `${who} suggests going to turn ${segment}.`,
+        confirmText: `Go to turn ${segment}`,
+        caution: false,
+      },
       () => {
         // The replay may have changed while the modal was open.
         if (canFollowSuggestion()) {

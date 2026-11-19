@@ -35,9 +35,13 @@ export function confirmPlay(
 
   if (!isPlayable(cardState, cardState.possibleCards)) {
     askForConfirmation(
-      "Play Unplayable Card?",
-      "This card is known to be unplayable based on the information available to you (such as positive clues, negative clues, and cards seen).",
-      "Play",
+      {
+        title: "This card is not playable.",
+        description:
+          "The clues on it and the cards that you can see show that it cannot be played now.",
+        confirmText: "Play anyway",
+        caution: true,
+      },
       play,
       cancel,
     );
@@ -58,9 +62,12 @@ export function confirmPlay(
     && !isPlayable(cardState, notePossibilities)
   ) {
     askForConfirmation(
-      "Play Card Contrary to Note?",
-      "If your note on this card is correct, then it is not playable.",
-      "Play",
+      {
+        title: "Your note says that this card is not playable.",
+        description: "If your note is right, this play is a misplay.",
+        confirmText: "Play anyway",
+        caution: true,
+      },
       play,
       cancel,
     );

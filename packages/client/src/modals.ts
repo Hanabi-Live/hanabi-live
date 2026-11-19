@@ -9,7 +9,11 @@ import type {
 import { emojiPickerClosed } from "./emojiPickerSlice.ts";
 import { morphCard } from "./game/hypothetical.ts";
 import * as noteIdentity from "./game/reducers/noteIdentity.ts";
-import type { ErrorCause, MessageModal } from "./messageModalSlice.ts";
+import type {
+  Confirmation,
+  ErrorCause,
+  MessageModal,
+} from "./messageModalSlice.ts";
 import { messageModalClosed, messageModalShown } from "./messageModalSlice.ts";
 import type { PromptModal } from "./promptModalSlice.ts";
 import { promptModalClosed, promptModalShown } from "./promptModalSlice.ts";
@@ -118,8 +122,8 @@ export function askForMorph(
       type: "morph",
       description:
         onMove === undefined
-          ? "Select the card you want to morph it into."
-          : "What will the card will be for the purposes of this hypothetical?",
+          ? "Choose the card that this card becomes."
+          : "Choose what this card is in the hypothetical.",
       variantId: variant.id,
       startSuitIndex: target.identity.suitIndex ?? 0,
       startRank: target.identity.rank ?? 1,
@@ -197,9 +201,7 @@ export function closeIdleWarning(): void {
  * when another modal replaces it.
  */
 export function askForConfirmation(
-  title: string,
-  description: string,
-  confirmText: string,
+  confirmation: Confirmation,
   onConfirm: () => void,
   onCancel?: () => void,
 ): void {
@@ -213,9 +215,7 @@ export function askForConfirmation(
   lastActiveElement = document.activeElement as HTMLElement;
   showMessageModal({
     type: "confirm",
-    title,
-    description,
-    confirmText,
+    ...confirmation,
   });
 
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks

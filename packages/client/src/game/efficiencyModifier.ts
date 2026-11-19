@@ -58,9 +58,9 @@ export function askForEfficiency(): void {
   modals.showPrompt(
     {
       type: "number",
-      title: "Set Modifier",
+      title: "Efficiency modifier",
       description:
-        'Enter a modifier for the "cards currently gotten", such as "1" or "-2".',
+        'Enter a number to add to the "cards currently gotten", such as 1 or -2.',
       current: {
         label: "Current modifier:",
         value: currentModifier.toString(),

@@ -311,6 +311,12 @@ const H_GROUP_LEVEL = 3;
 /** The account that the browser logs in with. Others play the seeded games. */
 const USERNAME = "Alice";
 
+/** How many times a state clicks an element that can miss while the page redraws it. */
+const MAX_CLICK_ATTEMPTS = 3;
+
+/** The name of the table of `openLockedTable`, which has a password. */
+const LOCKED_TABLE_NAME = "Locked table";
+
 /** The error that the server sends when it stops for maintenance. */
 const MAINTENANCE_ERROR =
   "The server is going down for maintenance. Your game progress has been saved.\nReload the page after the server restarts.";
@@ -752,6 +758,36 @@ function getStates(): readonly State[] {
         await page.click("#lobby-chat-input + button");
       },
     },
+    // A table with a password asks for it before the account joins.
+    {
+      name: "password-modal",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.openLockedTable();
+      },
+      prepare: async (page) => {
+        const row = page.locator('#lobby [id^="join-"]', {
+          hasText: LOCKED_TABLE_NAME,
+        });
+        const modal = page.locator("#password-modal");
+        // The tables of the other states can redraw the list while the page clicks the row, which
+        // then misses it.
+        for (let attempt = 1; ; attempt++) {
+          await row.click();
+          try {
+            await modal.waitFor({ timeout: SECOND_IN_MILLISECONDS });
+            break;
+          } catch (error) {
+            if (attempt === MAX_CLICK_ATTEMPTS) {
+              throw error;
+            }
+          }
+        }
+        await settle(page);
+      },
+    },
     // A reply before anyone sent us a private message shows a warning.
     {
       name: "warning-modal",
@@ -1009,6 +1045,53 @@ function getStates(): readonly State[] {
           }),
         );
         await page.locator("#idle-modal").waitFor();
+        await settle(page);
+      },
+    },
+    // Bob's game with five players, where the account plays a card on its turn that its note says
+    // is not playable, which asks it to confirm.
+    {
+      name: "new-ui-confirm-play",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        // A speedrun plays a card without asking.
+        const game = await cast.startBobsGame(5, undefined, {
+          speedrun: false,
+        });
+        await game.discardUntilAccountsTurn();
+        // No card of 5 can be played at the start.
+        await game.noteHand("r5");
+      },
+      prepare: async (page) => {
+        await playCard(
+          page,
+          page
+            .locator(
+              '#game-new-ui button[aria-label*="to the play stacks or the discard pile"]',
+            )
+            .first(),
+        );
+        await page.locator("#confirm-modal").waitFor();
+        await settle(page);
+      },
+    },
+    // Bob's game with five players, where the account opens the prompt that changes the efficiency.
+    {
+      name: "new-ui-efficiency-prompt",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5);
+      },
+      prepare: async (page) => {
+        await page
+          .locator('#game-new-ui button[aria-label^="Future efficiency"]')
+          .first()
+          .click();
+        await page.locator("#number-prompt").waitFor();
         await settle(page);
       },
     },
@@ -2114,6 +2197,8 @@ interface BobsGame {
   readonly cluedCard: () => CardOrder | undefined;
   /** A note that names a card's identity, such as "r3". */
   readonly identityNote: (order: CardOrder) => Promise<string>;
+  /** The account writes a note on each card in its hand. It can only until the page loads. */
+  readonly noteHand: (text: string) => Promise<void>;
   /** In a timed game, the account pauses it on its turn. It can only until the page loads. */
   readonly pause: () => Promise<void>;
   /** Bob ends the game, which turns it into a shared replay that he leads. */
@@ -2170,6 +2255,8 @@ interface Cast {
     },
   ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
+  /** Bob opens a table with a password, which the browser's account does not join. */
+  readonly openLockedTable: () => Promise<void>;
   /** Starts a five-player game that Bob leads, which the browser's account watches. */
   readonly startWatchedGame: () => Promise<WatchedGame>;
   readonly watchedGame: () => WatchedGame;
@@ -2513,6 +2600,8 @@ async function createCast(
   let endGame: (() => Promise<void>) | undefined;
   let currentBobsGame: BobsGame | undefined;
   let currentWatchedGame: WatchedGame | undefined;
+  /** Closes the table of `openLockedTable`. */
+  let closeLockedTable: (() => Promise<void>) | undefined;
 
   async function connectPeer(username: string) {
     const peer = await connect(address, username);
@@ -2547,6 +2636,30 @@ async function createCast(
   async function setNewUi(newUi: boolean) {
     await connectAccount(newUi);
     disconnectAccount();
+  }
+
+  async function openLockedTable() {
+    const bob = await connectPeer(name(BOB));
+    bob.send("tableCreate", {
+      settings: {
+        name: LOCKED_TABLE_NAME,
+        maxPlayers: DEFAULT_MAX_PLAYERS,
+        options: {},
+      },
+      password: "hanabi",
+    });
+    const { tableId } = await bob.receive(
+      "tableJoined",
+      SERVER_EVENT_SCHEMAS.tableJoined,
+    );
+    closeLockedTable = async () => {
+      bob.send("tableLeave", { tableId });
+      await bob.receive(
+        "tableRemoved",
+        SERVER_EVENT_SCHEMAS.tableRemoved,
+        (data) => data.tableId === tableId,
+      );
+    };
   }
 
   async function startWatchedGame(): Promise<WatchedGame> {
@@ -3166,6 +3279,18 @@ async function createCast(
         await clueAccount();
       },
       cluedCard: () => clueTarget?.order,
+      noteHand: async (text) => {
+        for (const card of await hand("account")) {
+          you.send("note", {
+            tableId,
+            order: card.order,
+            text,
+          });
+        }
+        // The server runs the requests of a connection in order, so a reply to the next one shows
+        // that it saved the notes.
+        await you.request("chatPmHistory", { limit: 1 });
+      },
       identityNote: async (order) => {
         const cards = await hand("account");
         const card = cards.find((other) => other.order === order);
@@ -3244,6 +3369,7 @@ async function createCast(
       assertDefined(currentBobsGame, "The state did not start Bob's game.");
       return currentBobsGame;
     },
+    openLockedTable,
     startWatchedGame,
     watchedGame: () => {
       assertDefined(
@@ -3254,6 +3380,8 @@ async function createCast(
     },
     disconnectAccount,
     closeState: async () => {
+      await closeLockedTable?.();
+      closeLockedTable = undefined;
       if (table !== undefined) {
         await endGame?.();
         // The browser's account is still at the table, and would return to it.

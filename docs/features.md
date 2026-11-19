@@ -458,7 +458,7 @@ additional UI elements are enabled:
 - Spectators can write their own notes too. They are kept after the spectator
   leaves, and are shown after the game, below the players' notes.
 - If you try to play a card whose note says that it is unplayable, the game asks
-  you to confirm.
+  you to confirm. Enter cancels the play.
 
 ### Card Identity Notes
 

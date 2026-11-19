@@ -10,7 +10,7 @@ export type PromptModal =
       /** A button for each option. The answer is the option's text. */
       readonly type: "choice";
       readonly title: string;
-      readonly description: string;
+      readonly description?: string;
       readonly options: readonly string[];
     }
   | {

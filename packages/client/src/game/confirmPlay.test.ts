@@ -81,9 +81,10 @@ describe("confirmPlay with an identity note", () => {
     const play = playWithNote([tuple(BLUE, 2)]);
 
     expect(askForConfirmation).toHaveBeenCalledWith(
-      "Play Card Contrary to Note?",
-      expect.any(String),
-      "Play",
+      expect.objectContaining({
+        title: "Your note says that this card is not playable.",
+        caution: true,
+      }),
       play,
       undefined,
     );

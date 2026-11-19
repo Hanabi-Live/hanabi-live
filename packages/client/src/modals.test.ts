@@ -97,6 +97,13 @@ test("the idle warning only lets players keep the game going", async () => {
   expect(store.getState().messageModal.modal).toBeUndefined();
 });
 
+const CONFIRMATION = {
+  title: "Title",
+  description: "Description",
+  confirmText: "OK",
+  caution: false,
+} as const;
+
 test("a confirmation runs exactly one of its callbacks", async () => {
   const modals = await import("./modals.ts");
   modals.init();
@@ -106,7 +113,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
 
   const onConfirm = vi.fn<() => void>();
   const onCancel = vi.fn<() => void>();
-  modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
+  modals.askForConfirmation(CONFIRMATION, onConfirm, onCancel);
   modals.confirm();
   expect(onConfirm).toHaveBeenCalledTimes(1);
   expect(onCancel).not.toHaveBeenCalled();
@@ -115,13 +122,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   // stays visible.
   const onConfirm2 = vi.fn<() => void>();
   const onCancel2 = vi.fn<() => void>();
-  modals.askForConfirmation(
-    "Title",
-    "Description",
-    "OK",
-    onConfirm2,
-    onCancel2,
-  );
+  modals.askForConfirmation(CONFIRMATION, onConfirm2, onCancel2);
   expect(modalDialog.open).toBe(true);
 
   // Escape closes the modal without also reaching the screen behind it.

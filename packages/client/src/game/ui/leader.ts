@@ -26,9 +26,7 @@ export function showPassLeaderDialog(): void {
   modals.showPrompt(
     {
       type: "choice",
-      title: "Set New Leader",
-      description:
-        "Who is the person that you want to pass the replay leader to?",
+      title: "Set new leader to",
       options: others.map((spectator) => spectator.username),
     },
     (username) => {

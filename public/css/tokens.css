@@ -138,8 +138,6 @@
   --modal-message-shadow:
     inset 0 1px 0 rgb(255 255 255 / 10%), 0 1.5em 4em rgb(0 0 0 / 60%);
   /* The options of the dialog that morphs a card */
-  --morph-option-border: gray;
-  --morph-option-selected: orange;
 
   /* The chat box, which the New UI gives a dark well */
   --chat-bg: transparent;
