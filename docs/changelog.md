@@ -32,8 +32,8 @@ of the repository.
 - The lobby's history screen shows the same list as a player's history page,
   with its filters, sorting, and pages.
 - A pre-game table shows its variant at the top and a box for each seat, with
-  the open seats outlined. Each player's best scores on the variant show for
-  every player count, without hovering.
+  the open seats outlined. Each player's best score on the variant at the
+  table's player count shows without hovering.
 - A player's history finds games by part of a variant's name, which it suggests
   as you type, and by parts of other players' names.
 - Each game on a player's history page, tagged games, and a seed's page has a

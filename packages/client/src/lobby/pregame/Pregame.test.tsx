@@ -122,17 +122,8 @@ describe("Pregame", () => {
 
     const boxes = document.querySelectorAll('[id^="lobby-pregame-player-"]');
     expect(boxes).toHaveLength(2);
-    // Alice's best scores, from 2 to 6 players. The table has 2 players, so the first cell is
-    // marked.
-    const cells = boxes[0]!.querySelectorAll(":scope ol > li");
-    expect([...cells].map((cell) => cell.textContent)).toEqual([
-      "2p25",
-      "3p\u{2013}",
-      "4p\u{2013}",
-      "5p\u{2013}",
-      "6p\u{2013}",
-    ]);
-    expect(cells[0]!.className).toContain("tw:bg-game-raised");
+    // Alice's best score at the 2 players of this table.
+    expect(boxes[0]!.textContent).toContain("Best score (2p)25");
     expect(screen.getByText("Level 3").getAttribute("href")).toContain(
       "level-3",
     );

@@ -2,8 +2,7 @@
 // starts.
 
 import type { PlayerIndex } from "@hanabi-live/game";
-import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
-import { iRange } from "complete-common";
+import { getVariantById } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { globals } from "../../Globals.ts";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
@@ -216,7 +215,7 @@ function PlayerBox({
       </p>
       <StatRow label="Games" value={player.stats.numGames} />
       <StatRow label="This variant" value={variantStats.numGames} />
-      <BestScoresRow
+      <BestScoreRow
         bestScores={variantStats.bestScores}
         maxScore={maxScore}
         numPlayers={numPlayers}
@@ -240,8 +239,8 @@ function StatRow({
   );
 }
 
-/** A row of the player's best score at each player count, which marks the count of this table. */
-function BestScoresRow({
+/** The player's best score on the variant at the player count of this table. */
+function BestScoreRow({
   bestScores,
   maxScore,
   numPlayers,
@@ -250,35 +249,7 @@ function BestScoresRow({
   readonly maxScore: number;
   readonly numPlayers: number;
 }) {
-  return (
-    <div className="tw:mt-2">
-      <div className="tw:text-game-muted">Best scores</div>
-      <ol className="tw:m-0 tw:mt-1 tw:grid tw:list-none tw:grid-cols-5 tw:gap-1 tw:p-0">
-        {[...iRange(MIN_PLAYERS, MAX_PLAYERS)].map((cellNumPlayers) => (
-          <BestScoreCell
-            best={bestScoreAt(bestScores, cellNumPlayers)}
-            current={cellNumPlayers === numPlayers}
-            key={cellNumPlayers}
-            maxScore={maxScore}
-            numPlayers={cellNumPlayers}
-          />
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function BestScoreCell({
-  best,
-  current,
-  maxScore,
-  numPlayers,
-}: {
-  readonly best: BestScores[number] | undefined;
-  readonly current: boolean;
-  readonly maxScore: number;
-  readonly numPlayers: number;
-}) {
+  const best = bestScoreAt(bestScores, numPlayers);
   const perfect = best !== undefined && best.score === maxScore;
   const tooltip =
     best === undefined
@@ -290,25 +261,20 @@ function BestScoreCell({
         }`;
 
   return (
-    <li
-      className={[
-        "tw:rounded-[3px] tw:py-[0.2em] tw:text-center tw:leading-tight",
-        current
-          ? "tw:bg-game-raised tw:outline tw:outline-game-line"
-          : "tw:bg-game-well",
-      ].join(" ")}
-      ref={tooltipRef(tooltip)}
-    >
-      <div className="tw:text-[0.75em] tw:text-game-muted">{numPlayers}p</div>
+    <div className="tw:flex tw:gap-2" ref={tooltipRef(tooltip)}>
+      <div className="tw:flex-1 tw:text-game-muted">
+        Best score ({numPlayers}p)
+      </div>
       <div
-        className={
-          perfect && !best.modified ? "tw:font-bold tw:text-green-text" : ""
-        }
+        className={[
+          "tw:text-right",
+          perfect && !best.modified ? "tw:font-bold tw:text-green-text" : "",
+        ].join(" ")}
       >
         {best === undefined ? NO_SCORE : best.score}
         {best?.modified === true && "*"}
       </div>
-    </li>
+    </div>
   );
 }
 
