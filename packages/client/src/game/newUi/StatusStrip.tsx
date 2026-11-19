@@ -1376,12 +1376,11 @@ export function StatusStrip({
     </div>
   );
   // The variant opens the game's information: its seed, options, and table. Its name gives up its
-  // room first, so that the replay controls keep theirs. On a narrow window, it fills the rest of
-  // the row. The buttons go to a second row when the name would get less than its minimum width. On
-  // a phone, that minimum is zero, so that the name stays in the row of the numbers, and the bar
-  // takes only two rows. When the replay controls have a row of their own on a wide window, the
-  // name shares the next row with the buttons. Then it starts from no width, and its minimum is the
-  // width of its label, so that the name gets shorter before the buttons go to a row of their own.
+  // room first, so that the replay controls keep theirs. In the phone layout, it fills the rest of
+  // the row, and its name takes no width of its own. Its minimum is the width of its label at every
+  // width, so that the buttons go to a row of their own only when the label has no room, and a
+  // narrower window never takes a row away. When the replay controls have a row of their own on a
+  // wide window, the name shares the next row with the buttons, with the same minimum.
   const gameInfoButton = (
     <HelpIcon
       icon="fa-info-circle"
@@ -1391,14 +1390,14 @@ export function StatusStrip({
   );
   const variant = (
     <div
-      className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-28 tw:phone:flex-1 tw:narrow-530:min-w-0`}
+      className={`tw:flex tw:flex-initial tw:flex-col tw:gap-0.5 ${inReplay ? "tw:min-w-20" : "tw:min-w-0"} tw:not-phone:group-data-own-row/strip:min-w-min tw:not-phone:group-data-own-row/strip:flex-1 tw:phone:min-w-min tw:phone:flex-1`}
     >
       <span className={`${STAT_LABEL_CLASS} tw:whitespace-nowrap`}>
         Variant
         {gameInfoButton}
       </span>
       {phoneLayout ? (
-        <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted">
+        <span className="tw:block tw:w-0 tw:min-w-full tw:truncate tw:text-[17px] tw:leading-[24px] tw:font-semibold tw:text-game-muted">
           {variantName}
         </span>
       ) : (
