@@ -237,7 +237,7 @@ function GroupDivider({
 
 /** An icon that explains the stat beside it in a tooltip, like those on the lobby screens. */
 function HelpIcon({
-  icon = "fa-question-circle",
+  icon = "fa-circle-question",
   label,
   tooltip,
 }: {
@@ -486,7 +486,7 @@ function ReplayToggle({
           className={`tw:flex tw:items-center tw:justify-center tw:gap-2 tw:[grid-area:1/1] ${inReplay ? "tw:invisible" : ""}`}
           style={getFadeStyle(!inReplay)}
         >
-          <i aria-hidden="true" className="fas fa-undo" />
+          <i aria-hidden="true" className="fas fa-arrow-rotate-left" />
           Replay
         </span>
         <span
@@ -1244,7 +1244,7 @@ export function StatusStrip({
           <>
             Turn
             <HelpIcon
-              icon="fa-info-circle"
+              icon="fa-circle-info"
               label="About the turns: how many turns and rounds are left at most."
               tooltip={turnTooltip}
             />
@@ -1346,7 +1346,7 @@ export function StatusStrip({
           <>
             Efficiency
             <HelpIcon
-              icon="fa-info-circle"
+              icon="fa-circle-info"
               label={EFFICIENCY_HELP_LABEL}
               tooltip={getEfficiencyTooltip(
                 efficiencyStats,
@@ -1394,7 +1394,7 @@ export function StatusStrip({
   // wide window, the name shares the next row with the buttons, with the same minimum.
   const gameInfoButton = (
     <HelpIcon
-      icon="fa-info-circle"
+      icon="fa-circle-info"
       label={"Show the game's information: its table, options, and seed"}
       tooltip={gameInfoTooltip}
     />

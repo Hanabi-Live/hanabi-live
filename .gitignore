@@ -216,3 +216,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Font Awesome, which "bun install" copies from its package
+/public/css/lib
+/public/webfonts/fa-solid-900.woff2

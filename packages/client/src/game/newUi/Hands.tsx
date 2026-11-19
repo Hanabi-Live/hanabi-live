@@ -664,7 +664,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
       )}
       role="img"
     >
-      <i aria-hidden="true" className="fas fa-unlink" />
+      <i aria-hidden="true" className="fas fa-link-slash" />
     </span>
   ) : undefined;
 
@@ -849,7 +849,7 @@ const TURN_WARNING = {
   },
   doubleDiscard: {
     label: "Double Discard",
-    icon: "fa-exclamation-triangle",
+    icon: "fa-triangle-exclamation",
     colorClass: "tw:text-game-turn",
     tooltip:
       'The last player discarded a card that may be the other copy of a card in this hand: a "Double Discard" situation.',
@@ -1269,7 +1269,7 @@ function NotePopup({
         >
           <i
             aria-hidden="true"
-            className={`${MENU_ICON_CLASS} ${noteHtml === undefined ? "fa-sticky-note" : "fa-pencil-alt"}`}
+            className={`${MENU_ICON_CLASS} ${noteHtml === undefined ? "fa-note-sticky" : "fa-pencil"}`}
           />
           {noteHtml === undefined ? "Add note" : "Edit note"}
         </button>
@@ -2087,7 +2087,7 @@ function ViewBadge({
     >
       <BrainIcon className="tw:size-5 tw:shrink-0" />
       <span className="tw:truncate">{name}&apos;s view</span>
-      <i aria-hidden="true" className="fas fa-times tw:text-game-muted" />
+      <i aria-hidden="true" className="fas fa-xmark tw:text-game-muted" />
     </button>
   );
 }

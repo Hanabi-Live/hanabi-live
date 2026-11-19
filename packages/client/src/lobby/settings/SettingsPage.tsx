@@ -54,7 +54,7 @@ export function SettingsPage(): React.JSX.Element {
       <div className="lobby-group">
         <h3>Appearance</h3>
         <ul className="lobby-rows">
-          <CheckboxRow icon="fa-columns" setting="keldonMode">
+          <CheckboxRow icon="fa-table-columns" setting="keldonMode">
             Keldon mode (hands spread around the table)
           </CheckboxRow>
           <CheckboxRow icon="fa-shapes" setting="newUi">
@@ -63,13 +63,13 @@ export function SettingsPage(): React.JSX.Element {
           <CheckboxRow icon="fa-eye" setting="colorblindMode">
             Colorblind mode
           </CheckboxRow>
-          <CheckboxRow icon="fa-hand-paper" setting="realLifeMode">
+          <CheckboxRow icon="fa-hand" setting="realLifeMode">
             Real-life mode (no extra UI elements)
           </CheckboxRow>
-          <CheckboxRow icon="fa-exchange-alt" setting="reverseHands">
+          <CheckboxRow icon="fa-right-left" setting="reverseHands">
             Reverse hand direction (new cards go on the right)
           </CheckboxRow>
-          <CheckboxRow icon="fa-paint-brush" setting="styleNumbers">
+          <CheckboxRow icon="fa-paintbrush" setting="styleNumbers">
             Make numbers on cards match the art style
           </CheckboxRow>
           <CheckboxRow icon="fa-clock" setting="showTimerInUntimed">
@@ -100,7 +100,7 @@ export function SettingsPage(): React.JSX.Element {
           <CheckboxRow icon="fa-forward" setting="preplay">
             Enable pre-playing cards
           </CheckboxRow>
-          <CheckboxRow icon="fa-running" setting="speedrunFeatures">
+          <CheckboxRow icon="fa-person-running" setting="speedrunFeatures">
             Enable speedrun features in non-speedrun games
           </CheckboxRow>
         </ul>
@@ -199,7 +199,7 @@ function VolumeRow() {
 
   return (
     <li className="lobby-row tw:narrow-640:flex-col tw:narrow-640:items-stretch tw:narrow-640:gap-2">
-      <RowLabel htmlFor="settings-volume-slider" icon="fa-volume-up">
+      <RowLabel htmlFor="settings-volume-slider" icon="fa-volume-high">
         Volume
       </RowLabel>
       {status}

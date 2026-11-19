@@ -18,6 +18,7 @@
       "packages/*"
     ],
     "catalog": {
+      "@fortawesome/fontawesome-free": "7.3.1",
       "@reduxjs/toolkit": "2.14.0",
       "@sinonjs/fake-timers": "15.5.0",
       "@tailwindcss/vite": "4.3.5",
@@ -77,6 +78,7 @@
     "check-variant-files": "bun ./packages/scripts/src/createVariantsJson/checkVariantFiles.ts",
     "create-variants-json": "bun ./packages/scripts/src/createVariantsJson/createVariantsJsonScript.ts",
     "dev": "bun ./packages/scripts/src/dev.ts",
+    "postinstall": "bun packages/scripts/src/copyFontAwesome.ts",
     "lint": "bash ./lint.sh",
     "lint-package-json": "bun ./packages/scripts/src/lintPackageJson.ts",
     "lint-rust": "bash scripts/lint/check-rust.sh",

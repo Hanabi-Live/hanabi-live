@@ -21,7 +21,7 @@ export function ModalHeader({
         onClick={closeModals}
         type="button"
       >
-        <i className="fas fa-times" />
+        <i className="fas fa-xmark" />
       </button>
     </div>
   );

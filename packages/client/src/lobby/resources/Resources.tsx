@@ -16,7 +16,7 @@ const GROUPS = [
     title: "Learn the Game",
     resources: [
       {
-        icon: "fa-play-circle",
+        icon: "fa-circle-play",
         title: "The Rules / How to Play",
         href: "https://www.youtube.com/watch?v=VrFCekQb4nY",
         description:
@@ -53,7 +53,7 @@ const GROUPS = [
         description: "A place to find teammates and discuss strategy.",
       },
       {
-        icon: "fa-running",
+        icon: "fa-person-running",
         title: "Speedrun.com Leaderboards",
         href: "https://www.speedrun.com/hanabi",
         description: "The fastest times in the world are tracked here.",

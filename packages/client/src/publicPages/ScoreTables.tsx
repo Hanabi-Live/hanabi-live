@@ -35,7 +35,7 @@ function ModifierIcon({
 }): React.JSX.Element {
   return (
     <i
-      className="fas fa-times score-modifier red"
+      className="fas fa-xmark score-modifier red"
       ref={tooltipRefHtml(
         `This score is not legitimate since the <strong>${MODIFIER_NAMES[modifier]}</strong> option was used.`,
         { instant: true },

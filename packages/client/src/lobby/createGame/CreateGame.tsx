@@ -88,14 +88,14 @@ const EXTRA_OPTION_ROWS = [
   {
     option: "speedrun",
     id: "createTableSpeedrun",
-    icon: "fa-running",
+    icon: "fa-person-running",
     label: "Speedrun",
     help: `${DOCS_URL}/features.md#speedruns`,
   },
   {
     option: "deckPlays",
     id: "createTableDeckPlays",
-    icon: "fa-blind",
+    icon: "fa-person-walking-with-cane",
     label: "Bottom-Deck Blind-Plays",
     help: `${DOCS_URL}/features.md#bottom-deck-blind-plays`,
   },
@@ -109,14 +109,14 @@ const EXTRA_OPTION_ROWS = [
   {
     option: "oneExtraCard",
     id: "createTableOneExtraCard",
-    icon: "fa-plus-circle",
+    icon: "fa-circle-plus",
     label: "One Extra Card",
     help: `${DOCS_URL}/features.md#one-extra-card`,
   },
   {
     option: "oneLessCard",
     id: "createTableOneLessCard",
-    icon: "fa-minus-circle",
+    icon: "fa-circle-minus",
     label: "One Less Card",
     help: `${DOCS_URL}/features.md#one-less-card`,
   },
@@ -130,7 +130,7 @@ const EXTRA_OPTION_ROWS = [
   {
     option: "detrimentalCharacters",
     id: "createTableDetrimentalCharacters",
-    icon: "fa-flushed",
+    icon: "fa-face-flushed",
     label: "Detrimental Characters",
     help: `${DOCS_URL}/characters.md`,
   },
@@ -623,7 +623,10 @@ export function CreateGame(): React.JSX.Element {
             </li>
             <li className="lobby-row">
               <div className="lobby-row-label">
-                <RowLabel htmlFor="create-game-replay-game-id" icon="fa-undo">
+                <RowLabel
+                  htmlFor="create-game-replay-game-id"
+                  icon="fa-arrow-rotate-left"
+                >
                   Replay Game
                 </RowLabel>
                 <HelpLink
@@ -769,7 +772,7 @@ function VariantPicker({
               value={search}
             >
               {/* Clicks go through the icon to the text box. */}
-              <i className="fas fa-search tw:pointer-events-none tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2" />
+              <i className="fas fa-magnifying-glass tw:pointer-events-none tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2" />
             </SuggestBox>
           </>
         ) : (
@@ -848,7 +851,7 @@ export function HelpLink({
 }): React.JSX.Element {
   return (
     <a aria-label={text} href={href} rel="noopener noreferrer" target="_blank">
-      <i className="fas fa-question-circle tw:hover:text-(--link)" />
+      <i className="fas fa-circle-question tw:hover:text-(--link)" />
     </a>
   );
 }

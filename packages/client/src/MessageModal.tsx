@@ -39,7 +39,7 @@ const CENTERED_MESSAGE_CLASS_NAME =
 const ERROR_ICONS = {
   disconnected: "fa-plug tw:text-game-turn",
   maintenance: "fa-plug tw:text-game-turn",
-  failed: "fa-exclamation-triangle tw:text-game-error",
+  failed: "fa-triangle-exclamation tw:text-game-error",
 } as const satisfies Record<ErrorCause, string>;
 
 const ERROR_TITLES = {
@@ -94,7 +94,7 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
           <ModalIcon
             icon={
               modal.caution
-                ? "fa-exclamation-triangle tw:text-game-error"
+                ? "fa-triangle-exclamation tw:text-game-error"
                 : "fa-question tw:text-game-turn"
             }
           />

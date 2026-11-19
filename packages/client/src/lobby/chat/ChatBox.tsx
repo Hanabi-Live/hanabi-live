@@ -430,7 +430,7 @@ export function ChatInput({
           ref={tooltipRef("Emote picker")}
           type="button"
         >
-          <i className="fas fa-smile tw:text-[1.6em]" />
+          <i className="fas fa-face-smile tw:text-[1.6em]" />
         </button>
       )}
       <LengthCounter

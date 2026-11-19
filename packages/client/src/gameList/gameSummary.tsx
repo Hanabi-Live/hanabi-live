@@ -148,7 +148,7 @@ export function GameOptionIcons({
   return (
     <div className="tw:w-fit" ref={ref}>
       {items.length > MAX_OPTION_ICONS ? (
-        <i className="fas fa-ellipsis-h" />
+        <i className="fas fa-ellipsis" />
       ) : (
         items.map(({ icon }, i) => (
           <Fragment key={icon}>

@@ -188,7 +188,7 @@ export function WatchReplay(): React.JSX.Element {
         <ul className="lobby-rows">
           <li className="lobby-row">
             <span className="lobby-row-text">
-              <i className="fas fa-share-alt fa-fw" />
+              <i className="fas fa-share-nodes fa-fw" />
               Visibility
             </span>
             <Segmented

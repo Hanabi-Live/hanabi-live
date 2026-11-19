@@ -303,7 +303,7 @@ export function ChatPanel({
           ref={tooltipRef("Open chat in a new window")}
           type="button"
         >
-          <i aria-hidden="true" className="fas fa-external-link-alt" />
+          <i aria-hidden="true" className="fas fa-up-right-from-square" />
         </button>
         <button
           aria-label="Collapse chat"
@@ -318,7 +318,7 @@ export function ChatPanel({
           ref={tooltipRef(getZenTooltip("Collapse chat", zen, zenAvailable))}
           type="button"
         >
-          <i aria-hidden="true" className="fas fa-angle-double-right" />
+          <i aria-hidden="true" className="fas fa-angles-right" />
         </button>
       </header>
       <div
@@ -442,7 +442,7 @@ export function ChatButton({
   if (zen) {
     icon = "fa-yin-yang";
   } else if (poppedOut) {
-    icon = "fa-external-link-alt";
+    icon = "fa-up-right-from-square";
   }
 
   return (

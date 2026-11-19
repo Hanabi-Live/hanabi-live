@@ -650,7 +650,7 @@ function OwnHypotheticalControls({
       <div className={RIGHT_CLASS}>
         <IconToggle
           disabled={!canToggleDrawnCards(state)}
-          icon="fa-magic"
+          icon="fa-wand-magic"
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo?.showDrawnCards === true}
@@ -815,7 +815,7 @@ function TurnsControls({
         <IconButton
           className={STEP_BUTTON_CLASS}
           disabled={atStart}
-          icon="fa-step-backward"
+          icon="fa-backward-step"
           label="First turn"
           onClick={replay.backFull}
           size="jump"
@@ -842,7 +842,7 @@ function TurnsControls({
           <IconButton
             className={`${AFTER_TIMELINE_CLASS} ${STEP_BUTTON_CLASS}`}
             disabled={atEnd}
-            icon="fa-step-forward"
+            icon="fa-forward-step"
             label="Last turn"
             onClick={replay.forwardFull}
             size="jump"

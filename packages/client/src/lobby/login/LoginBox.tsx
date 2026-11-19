@@ -226,7 +226,7 @@ function SignIn() {
           id="change-password-container"
           style={getFadeStyle(reducedMotion, CHANGE_PASSWORD_TRANSITION_MS)}
         >
-          <InputRow icon="fa-sync">
+          <InputRow icon="fa-arrows-rotate">
             <input
               id="change-password"
               onChange={(event) => {
@@ -242,7 +242,7 @@ function SignIn() {
           {/* While it waits, the card replaces the icon too. */}
           <a
             aria-busy={busy}
-            className={`button fit primary icon fa-sign-in-alt ${getWaitingButtonClass(busy)}${busy ? " tw:before:invisible" : ""}`}
+            className={`button fit primary icon fa-right-to-bracket ${getWaitingButtonClass(busy)}${busy ? " tw:before:invisible" : ""}`}
             id="login-button"
             onClick={submit}
           >

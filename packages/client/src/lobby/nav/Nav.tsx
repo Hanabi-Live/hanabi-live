@@ -124,7 +124,7 @@ function LobbyNav() {
       </NavButton>
       <NavButton
         className="tw:narrow-530:hidden"
-        icon="fa-list-alt"
+        icon="fa-rectangle-list"
         id="nav-buttons-lobby-history"
         onClick={() => {
           history.show();
@@ -135,7 +135,7 @@ function LobbyNav() {
         </span>
       </NavButton>
       <NavButton
-        icon="fa-undo"
+        icon="fa-arrow-rotate-left"
         id="nav-buttons-lobby-replay"
         onClick={watchReplay.show}
       >
@@ -155,7 +155,7 @@ function LobbyNav() {
         <span className="tw:narrow-840:hidden">Resources</span>
       </NavButton>
       <NavButton
-        icon="fa-cog"
+        icon="fa-gear"
         id="nav-buttons-lobby-settings"
         onClick={() => {
           lobbyPage.show("settings");
@@ -173,7 +173,7 @@ function LobbyNav() {
           rel="noopener noreferrer"
           target="_blank"
         >
-          <i className={`fas fa-question-circle ${ICON_CLASS_NAME}`} />{" "}
+          <i className={`fas fa-circle-question ${ICON_CLASS_NAME}`} />{" "}
           <span className="tw:narrow-840:hidden">Help</span>
         </a>
       </li>
@@ -210,7 +210,7 @@ function PregameNav() {
       {joinButton.type === "join" ? (
         <NavButton
           disabled={!joinButton.enabled}
-          icon="fa-sign-in-alt"
+          icon="fa-right-to-bracket"
           id="nav-buttons-pregame-join"
           onClick={joinGame}
         >
@@ -233,7 +233,7 @@ function PregameNav() {
         </NavButton>
       )}
       <NavButton
-        icon="fa-sliders-h"
+        icon="fa-sliders"
         id="nav-buttons-pregame-change-options"
         onClick={showCreateGame}
       >
@@ -254,7 +254,7 @@ function PregameNav() {
         </span>
       </NavButton>
       <NavButton
-        icon="fa-sign-out-alt"
+        icon="fa-right-from-bracket"
         id="nav-buttons-pregame-leave"
         onClick={leaveGame}
       >
@@ -321,8 +321,8 @@ function OtherScoresNav() {
           rel="noopener noreferrer"
           target="_blank"
         >
-          <i className={`fas fa-search-plus ${ICON_CLASS_NAME}`} /> View seed
-          data
+          <i className={`fas fa-magnifying-glass-plus ${ICON_CLASS_NAME}`} />{" "}
+          View seed data
         </a>
       </li>
       <NavButton

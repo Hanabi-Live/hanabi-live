@@ -55,6 +55,8 @@ of the repository.
   control as the lists of games, under the table.
 - Dropdowns show all of their options without a scroll bar, in the colors of the
   site.
+- The site uses version 7 of Font Awesome, so some icons look a little
+  different. Shared replays have a share icon instead of the group icon.
 
 ## November 18th, 2026
 

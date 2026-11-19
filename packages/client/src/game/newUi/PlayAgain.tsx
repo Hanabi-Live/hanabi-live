@@ -154,7 +154,7 @@ function PlayAgainMenu({
               waited && !reducedMotion ? getOpacityTransition(true) : undefined,
           }}
         >
-          <i aria-hidden="true" className="fas fa-redo" />
+          <i aria-hidden="true" className="fas fa-arrow-rotate-right" />
           Play again
         </span>
         <MenuCaret open={open} />

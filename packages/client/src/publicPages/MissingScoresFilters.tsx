@@ -140,11 +140,11 @@ function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
         >
           {filters.active ? (
             <>
-              <i className="fas fa-cog icon-label" />
+              <i className="fas fa-gear icon-label" />
               Filters active
             </>
           ) : (
-            <i className="fas fa-cog" />
+            <i className="fas fa-gear" />
           )}
         </button>
       </div>

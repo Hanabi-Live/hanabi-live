@@ -111,7 +111,7 @@ function StepContent({
           <Pair
             left={button(
               "yes",
-              "fa-question-circle",
+              "fa-circle-question",
               "2",
               spaced("Give me a basic rundown."),
               true,
@@ -135,7 +135,7 @@ function StepContent({
           <p>Do you already know how to play?</p>
           <Pair
             left={button("2-yes", "fa-check", "2-1", "Yup.", true)}
-            right={button("2-no", "fa-times", "2-2", "Nope.", true)}
+            right={button("2-no", "fa-xmark", "2-2", "Nope.", true)}
           />
         </>
       );
@@ -232,7 +232,7 @@ function StepContent({
           </p>
           <Pair
             left={button("4-yes", "fa-check", "4-1", "Yup.", true)}
-            right={button("4-no", "fa-times", "5", "Nope.", true)}
+            right={button("4-no", "fa-xmark", "5", "Nope.", true)}
           />
         </>
       );
@@ -341,7 +341,7 @@ function StepContent({
           <Pair
             left={button(
               "6-ok",
-              "fa-question-circle",
+              "fa-circle-question",
               "7",
               spaced("Ok, how do I join the H-Group?"),
             )}
@@ -372,7 +372,7 @@ function StepContent({
           </p>
           <Pair
             left={button("7-yes", "fa-check", "8", spaced("Yup."))}
-            right={button("7-no", "fa-times", "7-1", spaced("Nope."))}
+            right={button("7-no", "fa-xmark", "7-1", spaced("Nope."))}
           />
         </>
       );

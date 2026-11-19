@@ -435,7 +435,7 @@ input[type="radio"] + label {
 input[type="checkbox"] + label::before,
 input[type="radio"] + label::before {
   -webkit-font-smoothing: antialiased;
-  font-family: "Font Awesome 5 Free";
+  font-family: "Font Awesome 7 Free";
   font-style: normal;
   font-weight: normal;
   text-transform: none;
@@ -506,14 +506,21 @@ input::-webkit-calendar-picker-indicator {
 
 /* Icon */
 
+/* Each Font Awesome icon is as wide as its glyph. "fa-fw" still gives an icon a fixed width. */
+:root {
+  --fa-width: auto;
+}
+
 .icon {
   text-decoration: none;
   position: relative;
 }
 
+/* A Font Awesome class, such as "fa-check", gives the icon's character in "--fa". */
 .icon::before {
   -webkit-font-smoothing: antialiased;
-  font-family: "Font Awesome 5 Free";
+  content: var(--fa);
+  font-family: "Font Awesome 7 Free";
   font-style: normal;
   font-weight: normal;
   text-transform: none;

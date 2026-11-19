@@ -365,7 +365,7 @@ export function PlayerLog({
             onClick={onClose}
             type="button"
           >
-            <i aria-hidden="true" className="fas fa-times" />
+            <i aria-hidden="true" className="fas fa-xmark" />
           </button>
         </div>
         {entries.length === 0 ? (
@@ -442,7 +442,7 @@ function ActionMark({
           {/* A misplay costs a strike, so its card gets the strike's mark. */}
           {action.type === "misplay" && (
             <span className="tw:absolute tw:-right-1.5 tw:-bottom-1.5 tw:flex tw:size-4.5 tw:items-center tw:justify-center tw:rounded-full tw:bg-[rgb(220_38_38)] tw:text-[10px] tw:text-white tw:ring-2 tw:ring-game-panel">
-              <i className="fas fa-times" />
+              <i className="fas fa-xmark" />
             </span>
           )}
         </span>

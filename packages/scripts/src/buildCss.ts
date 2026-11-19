@@ -97,6 +97,19 @@ function usesUnusedClass(
   );
 }
 
+/**
+ * Lightning CSS 1.33.0 gives a visitor an empty optional value as `null`, but fails to read `null`
+ * back from a returned rule. For example, `var(--fa-width, 1.25em)` has a `from` of `null`. A
+ * missing key reads back as an empty value.
+ */
+function withoutNulls<T>(value: T): T {
+  return JSON.parse(
+    JSON.stringify(value, (_key, child: unknown) =>
+      child === null ? undefined : child,
+    ),
+  ) as T;
+}
+
 /** Removes the rules of the Font Awesome classes that the site does not use. */
 function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
   return {
@@ -114,13 +127,13 @@ function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
         // An empty list removes the rule.
         return selectors.length === 0
           ? []
-          : {
+          : withoutNulls({
               ...rule,
               value: {
                 ...rule.value,
                 selectors,
               },
-            };
+            });
       },
       // Font Awesome names each animation after the class that uses it, such as "fa-spin".
       // eslint-disable-next-line complete/no-mutable-return

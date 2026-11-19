@@ -6,6 +6,7 @@
     "lint": "bash ../../scripts/lint/check-typescript.sh"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "catalog:",
     "@hanabi-live/data": "workspace:*",
     "@hanabi-live/game": "workspace:*",
     "complete-common": "catalog:",

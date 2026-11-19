@@ -1539,11 +1539,11 @@ const RESULT_FACES = {
     caption: ["Out of", "time"],
   },
   terminatedByPlayer: {
-    icon: "fa-stop-circle",
+    icon: "fa-circle-stop",
     caption: ["Ended", "early"],
   },
   terminatedByVote: {
-    icon: "fa-vote-yea",
+    icon: "fa-check-to-slot",
     caption: ["Ended", "by vote"],
   },
   speedrunFail: {
@@ -1559,7 +1559,7 @@ const RESULT_FACES = {
     caption: ["No", "clues"],
   },
   allOrNothingFail: {
-    icon: "fa-times-circle",
+    icon: "fa-circle-xmark",
     caption: ["Not", "perfect"],
   },
   allOrNothingSoftlock: {
@@ -1777,7 +1777,7 @@ export function DiscardPile({
       ) : (
         <i
           aria-hidden="true"
-          className={`fas fa-trash-alt tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
+          className={`fas fa-trash-can tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
             isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
           } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
           data-discard-pile-icon

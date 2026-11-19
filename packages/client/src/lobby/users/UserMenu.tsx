@@ -149,7 +149,7 @@ export function UserLink({
               </li>
               <li>
                 <MenuButton
-                  icon={menuBlocked ? "fa-check-circle" : "fa-ban"}
+                  icon={menuBlocked ? "fa-circle-check" : "fa-ban"}
                   onClick={() => {
                     closeMenu();
                     globals.connection.send(

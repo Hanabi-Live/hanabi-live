@@ -64,7 +64,7 @@ export function setKonvaTooltipContent(
     element.tooltipName,
     customContent || content === ""
       ? content
-      : `<div class="info-tooltip"><i class="fas fa-info-circle fa-sm"></i><div>${content}</div></div>`,
+      : `<div class="info-tooltip"><i class="fas fa-circle-info fa-sm"></i><div>${content}</div></div>`,
   );
 }
 

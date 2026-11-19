@@ -742,7 +742,7 @@ function StatusBadge({
     >
       {badge === "critical" && <ExclamationMark />}
       {badge === "trash" && (
-        <i aria-hidden="true" className="fas fa-trash-alt" />
+        <i aria-hidden="true" className="fas fa-trash-can" />
       )}
       {badge === "doubleDiscard" && (
         <i aria-hidden="true" className="fas fa-question" />
@@ -815,7 +815,7 @@ const NOTE_MARK_OPACITY = 0.6;
  */
 const NOTE_MARK_ICONS = {
   trash: {
-    icon: "fa-trash-alt",
+    icon: "fa-trash-can",
     label: "Marked as trash",
   },
   fix: {
