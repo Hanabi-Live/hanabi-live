@@ -158,10 +158,10 @@ pub struct GameHistoryRequest {
     #[serde(flatten)]
     pub page: PageRequest,
     /// Only the games whose variant, or one of the other players, has a name that contains this
-    /// text, ignoring case. At most `MAX_HISTORY_FILTER_LENGTH` characters. Absent or blank for
+    /// text, ignoring case. At most `MAX_GAME_SEARCH_LENGTH` characters. Absent or blank for
     /// every game.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(length(max = MAX_HISTORY_FILTER_LENGTH))]
+    #[schemars(length(max = MAX_GAME_SEARCH_LENGTH))]
     pub filter: Option<String>,
 }
 

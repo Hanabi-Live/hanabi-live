@@ -685,7 +685,7 @@ async fn lobby_history_filter_finds_variants_and_other_players_postgres() {
     assert_eq!(page("ali").await, (vec![], 0));
     assert_eq!(page("%").await, (vec![], 0));
     assert_eq!(page(" ").await, (vec![shared, own], 2));
-    let too_long = "a".repeat(hanabi_protocol::MAX_HISTORY_FILTER_LENGTH + 1);
+    let too_long = "a".repeat(hanabi_protocol::MAX_GAME_SEARCH_LENGTH + 1);
     assert!(
         ClientRequest::decode(
             "gameHistory",

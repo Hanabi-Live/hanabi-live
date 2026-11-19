@@ -1,7 +1,7 @@
 // The screens that show our past games and the other games on a seed.
 
 import type { GameSummary } from "@hanabi-live/data";
-import { MAX_HISTORY_FILTER_LENGTH } from "@hanabi-live/data";
+import { MAX_GAME_SEARCH_LENGTH } from "@hanabi-live/data";
 import { getVariantById } from "@hanabi-live/game";
 import { PATH } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
@@ -196,7 +196,7 @@ function HistoryFilter() {
         aria-label="Filter by variant or player"
         className="tw:h-[2.25em] tw:w-full tw:py-0 tw:pr-3 tw:pl-[2.25em] tw:text-[1em]"
         id="lobby-history-filter"
-        maxLength={MAX_HISTORY_FILTER_LENGTH}
+        maxLength={MAX_GAME_SEARCH_LENGTH}
         onChange={(event) => {
           filterHistory(event.target.value);
         }}

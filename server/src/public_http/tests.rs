@@ -378,6 +378,22 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?filter[variantId]=0", 2, Some(2)),
         ("/api/v1/seed/same?sort=score&order=asc", 2, Some(2)),
         ("/api/v1/seed/same?filter[gameId]=1", 1, Some(1)),
+        // A search matches part of the variant's name or of another player's name, ignoring
+        // case, and a game must match each term. A player's history leaves out its own players.
+        ("/api/v1/history/Alice?filter[search]=BO", 2, Some(3)),
+        (
+            "/api/v1/history/Alice?filter[search]=no%20variant",
+            2,
+            Some(2),
+        ),
+        (
+            "/api/v1/history/Alice?filter[search]=bob,%20no%20variant,",
+            1,
+            Some(1),
+        ),
+        ("/api/v1/history/Alice?filter[search]=alice", 0, None),
+        ("/api/v1/history/Alice?filter[search]=%25", 0, None),
+        ("/api/v1/seed/same?filter[search]=alice", 2, Some(1)),
         // Values outside a column's type match nothing instead of failing in PostgreSQL.
         ("/api/v1/history/Alice?filter[score]=70000", 0, None),
         ("/api/v1/history/Alice?filter[gameId]=99999999999", 0, None),
@@ -388,6 +404,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(value["total"], total, "{path}");
         assert_eq!(value["games"][0]["gameId"].as_i64(), first, "{path}");
     }
+    let too_long = "a".repeat(hanabi_protocol::MAX_GAME_SEARCH_LENGTH + 1);
+    let (status, body) = request(
+        app.clone(),
+        &format!("/api/v1/history/Alice?filter[search]={too_long}"),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+    assert!(body.contains("at most"), "{body}");
     // Responses match their wire contracts, timestamps included.
     let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
     hanabi_protocol::validate::<hanabi_protocol::GamePage>(&serde_json::from_str(&body).unwrap())

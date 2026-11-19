@@ -30,12 +30,12 @@ const fn filterable_columns(mode: &str) -> &'static [Column] {
 }
 
 /// The query parameters that a game list takes: paging, `sort` with a column's name, `order` with
-/// `asc` or `desc`, `filter[name]` with a column's value, and `start` and `end` with the lowest and
-/// highest game ID.
+/// `asc` or `desc`, `filter[name]` with a column's value, `filter[search]` with terms that each game
+/// must match (see `SearchTerm`), and `start` and `end` with the lowest and highest game ID.
 pub(super) fn list_parameters(mode: &str) -> Vec<String> {
     PAGE_PARAMETERS
         .into_iter()
-        .chain(["sort", "order", "start", "end"])
+        .chain(["sort", "order", "start", "end", "filter[search]"])
         .map(str::to_owned)
         .chain(
             filterable_columns(mode)
@@ -64,6 +64,49 @@ pub(super) struct Selection {
     pub tag_user: Option<i32>,
     /// Each column's required value.
     pub filters: Vec<(&'static str, i64)>,
+    /// The terms of `filter[search]`, which each game must match.
+    pub search: Vec<SearchTerm>,
+}
+
+/// A term of a search of a list of games. A game matches it when the name of its variant, or of
+/// one of its players, contains the term, ignoring case. A player's history leaves out its own
+/// players, who are in every game.
+#[derive(Clone)]
+pub(super) struct SearchTerm {
+    variant_ids: Vec<i16>,
+    /// A pattern for `ILIKE`, with the term's wildcard characters escaped.
+    player_pattern: String,
+}
+
+impl SearchTerm {
+    /// The terms of a search, which commas separate. Blank terms are left out.
+    fn parse(search: &str) -> Vec<Self> {
+        search
+            .split(',')
+            .map(str::trim)
+            .filter(|term| !term.is_empty())
+            .map(|term| {
+                let lowercase = term.to_lowercase();
+                let variant_ids = hanabi_engine::variants()
+                    .iter()
+                    .filter(|variant| variant.name.to_lowercase().contains(&lowercase))
+                    .filter_map(|variant| i16::try_from(variant.id).ok())
+                    .collect();
+                let mut player_pattern = String::from("%");
+                for c in term.chars() {
+                    if matches!(c, '\\' | '%' | '_') {
+                        player_pattern.push('\\');
+                    }
+                    player_pattern.push(c);
+                }
+                player_pattern.push('%');
+                Self {
+                    variant_ids,
+                    player_pattern,
+                }
+            })
+            .collect()
+    }
 }
 
 pub(super) async fn players(
@@ -170,7 +213,7 @@ fn push_compare(qb: &mut QueryBuilder<Postgres>, column: &str, op: &str, value: 
 fn selected(s: Selection) -> QueryBuilder<Postgres> {
     let mut qb = QueryBuilder::new("WITH selected AS NOT MATERIALIZED (SELECT ");
     qb.push(GAME_COLUMNS).push(" FROM games g WHERE TRUE");
-    for id in s.users {
+    for &id in &s.users {
         qb.push(
             " AND EXISTS (SELECT 1 FROM game_participants gp WHERE gp.game_id=g.id AND gp.user_id=",
         )
@@ -198,6 +241,18 @@ fn selected(s: Selection) -> QueryBuilder<Postgres> {
     }
     for (column, value) in s.filters {
         push_compare(&mut qb, column, "=", value);
+    }
+    for term in s.search {
+        qb.push(" AND (g.variant_id=ANY(")
+            .push_bind(term.variant_ids)
+            .push(") OR EXISTS(SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id WHERE o.game_id=g.id AND u.username ILIKE ")
+            .push_bind(term.player_pattern);
+        if !s.users.is_empty() {
+            qb.push(" AND o.user_id<>ALL(")
+                .push_bind(s.users.clone())
+                .push(")");
+        }
+        qb.push("))");
     }
     qb
 }
@@ -240,6 +295,15 @@ pub(super) async fn list(
         }
     }
     s.filters = filters;
+    if let Some(search) = q.get("filter[search]") {
+        if search.chars().count() > hanabi_protocol::MAX_GAME_SEARCH_LENGTH {
+            return Err(HttpError::bad(format!(
+                "The search can have at most {} characters.",
+                hanabi_protocol::MAX_GAME_SEARCH_LENGTH
+            )));
+        }
+        s.search = SearchTerm::parse(search);
+    }
     for (name, bound) in [("start", &mut s.start), ("end", &mut s.end)] {
         *bound = q
             .get(name)

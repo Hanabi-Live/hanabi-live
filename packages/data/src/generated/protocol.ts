@@ -57,7 +57,7 @@ export const WEBSITE_CHAT_COMMANDS = [
 export const MAX_CLIENT_ERROR_MESSAGE_LENGTH = 1000;
 export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
 export const SCRIPTS_PATH = "/public/js/bundles/";
-export const MAX_HISTORY_FILTER_LENGTH = 100;
+export const MAX_GAME_SEARCH_LENGTH = 100;
 export const MAX_TABLE_NAME_LENGTH = 45;
 export const SECONDS_PER_MINUTE = 60;
 export const IDLE_WARNING_MS = 300_000;
@@ -485,7 +485,7 @@ export const gameHistoryRequestSchema = z
   .strictObject({
     /**
      * Only the games whose variant, or one of the other players, has a name that contains this
-     * text, ignoring case. At most `MAX_HISTORY_FILTER_LENGTH` characters. Absent or blank for
+     * text, ignoring case. At most `MAX_GAME_SEARCH_LENGTH` characters. Absent or blank for
      * every game.
      */
     filter: z.string().max(100).optional(),

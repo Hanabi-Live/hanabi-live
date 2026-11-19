@@ -909,6 +909,11 @@ The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `score`. Seed lists filter by `gameId` or `score`, and the other lists by any
 column.
 
+`filter[search]` finds games by text, up to 100 characters. Separate terms with
+commas (for example, `?filter[search]=rainbow,bob`). A game matches a term when
+the name of its variant, or of one of its players, contains the term, ignoring
+case. A history leaves out the players in its URL. A game must match every term.
+
 ## Bots
 
 - It is possible to program a bot to play on the website with other players.
