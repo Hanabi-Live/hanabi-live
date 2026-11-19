@@ -18,7 +18,7 @@ use anyhow::{Context, Result};
 use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
-use hanabi_protocol::{ClientRequest, TableId, TableRef, User, UserId, UserList, UserRemoved};
+use hanabi_protocol::{ClientRequest, TableId, TableRef, User, UserId, UserRemoved};
 use std::{
     collections::{BTreeSet, HashMap},
     panic::AssertUnwindSafe,
@@ -873,23 +873,14 @@ impl Hub {
             session.user,
             Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),
         );
+        // The lists come in the welcome, so that the client shows the lobby with them at once.
+        welcome.users = self.sessions.values().map(Self::user).collect();
+        welcome.tables = self
+            .tables
+            .values()
+            .filter_map(|e| e.view.listing.clone())
+            .collect();
         session.emit(&frame(hanabi_protocol::event::WELCOME, welcome));
-        session.emit(&frame(
-            hanabi_protocol::event::USER_LIST,
-            UserList {
-                users: self.sessions.values().map(Self::user).collect(),
-            },
-        ));
-        session.emit(&frame(
-            hanabi_protocol::event::TABLE_LIST,
-            hanabi_protocol::TableList {
-                tables: self
-                    .tables
-                    .values()
-                    .filter_map(|e| e.view.listing.clone())
-                    .collect(),
-            },
-        ));
         for message in initial {
             session.emit(&message);
         }

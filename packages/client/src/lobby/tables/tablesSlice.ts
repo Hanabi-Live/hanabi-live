@@ -1,4 +1,4 @@
-// The tables in the lobby, from the "tableList", "table", and "tableRemoved" server messages.
+// The tables in the lobby, from the "welcome", "table", and "tableRemoved" server messages.
 
 import type { ServerEventData } from "@hanabi-live/data";
 import { MAX_PLAYERS } from "@hanabi-live/game";
@@ -47,20 +47,17 @@ const tablesSlice = createSlice({
     tableChanged(state, action: PayloadAction<Table>) {
       tablesAdapter.setOne(state, action.payload);
     },
+    /** Replaces the list, as the server sends it in its welcome. */
     tablesListed(state, action: PayloadAction<readonly Table[]>) {
-      tablesAdapter.setMany(state, action.payload);
+      tablesAdapter.setAll(state, action.payload);
     },
     tableGone(state, action: PayloadAction<number>) {
       tablesAdapter.removeOne(state, action.payload);
     },
-    tablesCleared(state) {
-      tablesAdapter.removeAll(state);
-    },
   },
 });
 
-export const { tableChanged, tablesListed, tableGone, tablesCleared } =
-  tablesSlice.actions;
+export const { tableChanged, tablesListed, tableGone } = tablesSlice.actions;
 export const tablesReducer = tablesSlice.reducer;
 
 const tablesSelectors = tablesAdapter.getSelectors(

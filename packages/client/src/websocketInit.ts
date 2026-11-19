@@ -20,9 +20,9 @@ import { SoundType } from "./game/types/SoundType.ts";
 import { globals } from "./Globals.ts";
 import { fetchCookieOnce } from "./lobby/cookieProbe.ts";
 import { lobbyCommands } from "./lobby/lobbyCommands.ts";
-import { tablesCleared } from "./lobby/tables/tablesSlice.ts";
+import { tablesListed } from "./lobby/tables/tablesSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
-import { usersCleared } from "./lobby/users/usersSlice.ts";
+import { usersListed } from "./lobby/users/usersSlice.ts";
 import * as modals from "./modals.ts";
 import { reloadOutdatedClient } from "./outdatedClient.ts";
 import { ReconnectBackoff } from "./reconnect.ts";
@@ -304,8 +304,8 @@ function openConnection(isReconnect: boolean) {
       reconnectBackoff.reset();
       setRecovering(false);
       globals.conn = conn;
-      store.dispatch(usersCleared());
-      store.dispatch(tablesCleared());
+      store.dispatch(usersListed(data.users));
+      store.dispatch(tablesListed(data.tables));
       if (
         store.getState().session.screen === Screen.Game
         && gameSession.isOpen()

@@ -1880,9 +1880,6 @@ const tableStageSchema = z.enum([
 export const tableJoinedSchema = z
   .strictObject({ stage: tableStageSchema, tableId: tableIdSchema })
   .readonly();
-export const tableListSchema = z
-  .strictObject({ tables: z.array(tableSchema).readonly() })
-  .readonly();
 
 /**
  * A table's new owner, who also leads its shared replay. The server sends it to everyone at the
@@ -2032,9 +2029,6 @@ export const userSchema = z
 export const userInactiveRequestSchema = z
   .strictObject({ inactive: z.boolean() })
   .readonly();
-export const userListSchema = z
-  .strictObject({ users: z.array(userSchema).readonly() })
-  .readonly();
 export const userRemovedSchema = z
   .strictObject({ userId: userIdSchema })
   .readonly();
@@ -2085,8 +2079,16 @@ export const welcomeSchema = z
      * return to it.
      */
     spectatingAtTables: z.array(tableSpectateRequestSchema).readonly(),
+    /**
+     * The tables in the lobby. The `table` and `tableRemoved` events change the list.
+     */
+    tables: z.array(tableSchema).readonly(),
     userId: userIdSchema,
     username: z.string().min(1),
+    /**
+     * The users who are online. The `user` and `userRemoved` events change the list.
+     */
+    users: z.array(userSchema).readonly(),
   })
   .readonly();
 export const CLIENT_REQUEST_SCHEMAS = {
@@ -2164,14 +2166,12 @@ export const SERVER_EVENT_SCHEMAS = {
   table: tableSchema,
   tableJoined: tableJoinedSchema,
   tableLeft: tableRefSchema,
-  tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
   tableRestartDecliners: tableRestartDeclinersSchema,
   tableSettingsSuggestion: tableSettingsSuggestionSchema,
   tableSuggestion: tableSuggestionSchema,
   user: userSchema,
-  userList: userListSchema,
   userRemoved: userRemovedSchema,
   votes: votesSchema,
   warning: noticeSchema,

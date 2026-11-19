@@ -1,4 +1,4 @@
-// The users who are currently online, from the "userList", "user", and "userRemoved" server
+// The users who are currently online, from the "welcome", "user", and "userRemoved" server
 // messages.
 
 import type { ServerEventData, UserId } from "@hanabi-live/data";
@@ -41,14 +41,12 @@ const usersSlice = createSlice({
     userChanged(state, action: PayloadAction<User>) {
       usersAdapter.setOne(state, action.payload);
     },
+    /** Replaces the list, as the server sends it in its welcome. */
     usersListed(state, action: PayloadAction<readonly User[]>) {
-      usersAdapter.setMany(state, action.payload);
+      usersAdapter.setAll(state, action.payload);
     },
     userLeft(state, action: PayloadAction<UserId>) {
       usersAdapter.removeOne(state, action.payload);
-    },
-    usersCleared(state) {
-      usersAdapter.removeAll(state);
     },
     botsShownChanged(state, action: PayloadAction<boolean>) {
       state.botsShown = action.payload;
@@ -56,13 +54,8 @@ const usersSlice = createSlice({
   },
 });
 
-export const {
-  userChanged,
-  usersListed,
-  userLeft,
-  usersCleared,
-  botsShownChanged,
-} = usersSlice.actions;
+export const { userChanged, usersListed, userLeft, botsShownChanged } =
+  usersSlice.actions;
 export const usersReducer = usersSlice.reducer;
 
 const usersSelectors = usersAdapter.getSelectors(

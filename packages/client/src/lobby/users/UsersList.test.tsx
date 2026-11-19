@@ -20,14 +20,13 @@ import {
   usernameChanged,
 } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
-import { tablesCleared, tablesListed } from "../tables/tablesSlice.ts";
+import { tablesListed } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import { UsersList, UsersTitle } from "./UsersList.tsx";
 import {
   botsShownChanged,
   userChanged,
   userLeft,
-  usersCleared,
   usersListed,
 } from "./usersSlice.ts";
 
@@ -114,9 +113,9 @@ beforeEach(() => {
   store.dispatch(friendsChanged(["zed", "Bob"]));
   store.dispatch(blockedChanged([]));
   store.dispatch(screenChanged(Screen.Lobby));
-  store.dispatch(usersCleared());
+  store.dispatch(usersListed([]));
   store.dispatch(botsShownChanged(false));
-  store.dispatch(tablesCleared());
+  store.dispatch(tablesListed([]));
 });
 
 afterEach(cleanup);

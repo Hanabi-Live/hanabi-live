@@ -437,28 +437,6 @@
     "valid": false
   },
   {
-    "name": "user list holds presences",
-    "direction": "event",
-    "command": "userList",
-    "input": {
-      "users": [
-        {
-          "userId": 7,
-          "username": "Alice",
-          "activity": {
-            "type": "playing",
-            "tableId": 3
-          },
-          "hGroupConventions": false,
-          "hGroupLevel": 3,
-          "bot": false,
-          "inactive": false
-        }
-      ]
-    },
-    "valid": true
-  },
-  {
     "name": "a user at a table names it",
     "direction": "event",
     "command": "user",
@@ -492,7 +470,7 @@
     "valid": false
   },
   {
-    "name": "welcome fills unchanged settings with the same defaults",
+    "name": "welcome fills unchanged settings with the same defaults, and lists who is online",
     "direction": "event",
     "command": "welcome",
     "input": {
@@ -504,6 +482,21 @@
       "blocked": [],
       "playingAtTables": [3],
       "spectatingAtTables": [],
+      "users": [
+        {
+          "userId": 7,
+          "username": "Alice",
+          "activity": {
+            "type": "playing",
+            "tableId": 3
+          },
+          "hGroupConventions": false,
+          "hGroupLevel": 3,
+          "bot": false,
+          "inactive": false
+        }
+      ],
+      "tables": [],
       "settings": {
         "volume": 70
       }
@@ -518,6 +511,21 @@
       "blocked": [],
       "playingAtTables": [3],
       "spectatingAtTables": [],
+      "users": [
+        {
+          "userId": 7,
+          "username": "Alice",
+          "activity": {
+            "type": "playing",
+            "tableId": 3
+          },
+          "hGroupConventions": false,
+          "hGroupLevel": 3,
+          "bot": false,
+          "inactive": false
+        }
+      ],
+      "tables": [],
       "settings": {
         "desktopNotification": false,
         "soundMove": "all",
@@ -563,6 +571,8 @@
       "blocked": [],
       "playingAtTables": [3],
       "spectatingAtTables": [],
+      "users": [],
+      "tables": [],
       "settings": {
         "createTable": {
           "options": {
@@ -585,6 +595,8 @@
       "blocked": [],
       "playingAtTables": [3],
       "spectatingAtTables": [],
+      "users": [],
+      "tables": [],
       "settings": {
         "desktopNotification": false,
         "soundMove": "all",
@@ -634,6 +646,8 @@
       "blocked": [],
       "playingAtTables": [3],
       "spectatingAtTables": [],
+      "users": [],
+      "tables": [],
       "settings": {
         "createTable": {
           "maxPlayers": 7

@@ -100,7 +100,6 @@ macro_rules! event_contracts {
             TABLE_LEFT "tableLeft" => TableRef;
             TABLE_REMOVED "tableRemoved" => TableRef;
             USER "user" => User;
-            USER_LIST "userList" => UserList;
             USER_REMOVED "userRemoved" => UserRemoved;
             FRIENDS "friends" => Friends;
             BLOCKED "blocked" => Blocked;
@@ -109,7 +108,6 @@ macro_rules! event_contracts {
             WELCOME "welcome" => Welcome;
             SPECTATORS "spectators" => Spectators;
             TABLE "table" => Table;
-            TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
         }
     };

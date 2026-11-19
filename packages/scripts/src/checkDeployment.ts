@@ -17,7 +17,7 @@ const SITE = "hanab.live";
 const ACCOUNT = "test3";
 const TIMEOUT_MS = 30_000;
 /** The messages that every new connection receives before it can use the lobby. */
-const REQUIRED = ["welcome", "userList", "tableList"] as const;
+const REQUIRED = ["welcome"] as const;
 
 const serverSchemas: Readonly<
   Partial<Record<string, (typeof SERVER_EVENT_SCHEMAS)[ServerEvent]>>

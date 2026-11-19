@@ -153,19 +153,9 @@ lobbyCommands.set("tableRemoved", (data) => {
   }
 });
 
-// Received by the client upon initial connection.
-lobbyCommands.set("tableList", (data) => {
-  store.dispatch(tablesListed(data.tables));
-  startupScreen.onTablesListed();
-});
-
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
   store.dispatch(userChanged(data));
-});
-
-lobbyCommands.set("userList", (data) => {
-  store.dispatch(usersListed(data.users));
 });
 
 lobbyCommands.set("userRemoved", (data) => {
@@ -182,21 +172,20 @@ lobbyCommands.set("welcome", (data) => {
   store.dispatch(settingsChanged(data.settings));
   store.dispatch(friendsChanged(data.friends));
   store.dispatch(blockedChanged(data.blocked));
+  store.dispatch(usersListed(data.users));
+  store.dispatch(tablesListed(data.tables));
 
-  // When the page loads, the login screen's wait stays up until the screen that we go to is ready.
-  // The server lists the tables right after this message. A first time user goes to the tutorial.
-  const pageLoad =
-    store.getState().login.page === "login" && !data.firstTimeUser;
-  if (pageLoad) {
-    startupScreen.wait("table");
+  // When the page loads and we go to a table, the login screen's wait stays up until the table
+  // shows. A first time user goes to the tutorial.
+  if (store.getState().login.page === "login" && !data.firstTimeUser) {
+    startupScreen.wait();
   } else {
     lobbyLogin.hide(data.firstTimeUser);
   }
 
   // Go to the table that we were at before we disconnected, or somewhere specific if we have
   // entered a specific URL. If the server refuses, we stay in the lobby.
-  const toTable = url.parseAndGoto(data, startupScreen.leave);
-  if (pageLoad && !toTable) {
-    startupScreen.wait("tables");
+  if (!url.parseAndGoto(data, startupScreen.leave)) {
+    startupScreen.leave();
   }
 });

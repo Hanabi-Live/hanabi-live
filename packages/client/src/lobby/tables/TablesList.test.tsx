@@ -15,12 +15,7 @@ import { friendsChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { TablesList } from "./TablesList.tsx";
 import type { Table } from "./tablesSlice.ts";
-import {
-  selectTableRows,
-  tableChanged,
-  tablesCleared,
-  tablesListed,
-} from "./tablesSlice.ts";
+import { selectTableRows, tableChanged, tablesListed } from "./tablesSlice.ts";
 
 vi.mock("../../tooltips.ts", () => ({ showCopied: vi.fn() }));
 vi.mock("./tableActions.ts", () => ({
@@ -90,7 +85,7 @@ beforeEach(() => {
 
   store.dispatch(usernameChanged("me"));
   store.dispatch(friendsChanged([]));
-  store.dispatch(tablesCleared());
+  store.dispatch(tablesListed([]));
 });
 
 afterEach(() => {

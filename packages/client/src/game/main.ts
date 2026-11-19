@@ -71,7 +71,7 @@ export function show(justStarted: boolean): void {
   document.body.dataset["screen"] = "game";
   // When the page loads, the login screen's wait stays up while the game draws itself out of sight.
   // "revealHeldGame" shows it.
-  const held = startupScreen.isWaitingForGame();
+  const held = startupScreen.isWaiting();
   if (!held) {
     hideElement(getHtmlElement("#page-wrapper")); // We can't fade this out as it will overlap
   }

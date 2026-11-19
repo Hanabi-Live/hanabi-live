@@ -70,12 +70,6 @@ pub enum Activity {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct UserList {
-    pub users: Vec<User>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct UserRemoved {
     pub user_id: UserId,
 }
@@ -242,6 +236,10 @@ pub struct Welcome {
     /// so this can list more than one. The client sends one back as a `tableSpectate` request to
     /// return to it.
     pub spectating_at_tables: Vec<TableSpectateRequest>,
+    /// The users who are online. The `user` and `userRemoved` events change the list.
+    pub users: Vec<User>,
+    /// The tables in the lobby. The `table` and `tableRemoved` events change the list.
+    pub tables: Vec<Table>,
 }
 
 /// A game's options. Missing fields take their defaults. The player count is not an option: a game
@@ -413,12 +411,6 @@ pub enum TablePhase {
         /// The replay's turn, as a percentage of the game's turns.
         progress: Progress,
     },
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableList {
-    pub tables: Vec<Table>,
 }
 
 /// A saved game, as the lists of games show it: a player's history, the games on a seed, and the
