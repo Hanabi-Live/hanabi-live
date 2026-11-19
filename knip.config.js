@@ -12,7 +12,6 @@ const config = {
     ".": {
       ignore: [
         "misc/file.ts", // An intentionally empty file for the root "tsconfig.json".
-        "public/**", // Vendored libraries and build output.
       ],
     },
     "packages/client": {

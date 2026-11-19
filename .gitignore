@@ -50,6 +50,8 @@ GitHub_private_key.pem
 
 # We do not need to include combined or minified CSS
 /public/css/main.*.min.css
+/public/js/bundles/*
+!/public/js/bundles/.gitignore
 
 # Scripts can create temporary SQL files
 /scripts/dev/*.sql
