@@ -120,6 +120,12 @@ interface TooltipOptions {
    * default, it points at the anchor.
    */
   readonly target?: string;
+
+  /**
+   * Whether the tooltip opens only while the anchor's text is cut off, such as by an ellipsis. Use
+   * it for a tooltip that shows the anchor's full text.
+   */
+  readonly onlyWhenTruncated?: boolean;
 }
 
 /** A side of the anchor that a tooltip goes on. */
@@ -128,6 +134,7 @@ export type TooltipSide = "top" | "bottom";
 export class Tooltip {
   private readonly anchor: HTMLElement;
   private readonly target: string | undefined;
+  private readonly onlyWhenTruncated: boolean;
   private readonly bubble = document.createElement("div");
   private readonly box = document.createElement("div");
   private content: Node | string = "";
@@ -158,6 +165,7 @@ export class Tooltip {
   constructor(anchor: HTMLElement, options: TooltipOptions) {
     this.anchor = anchor;
     this.target = options.target;
+    this.onlyWhenTruncated = options.onlyWhenTruncated === true;
 
     this.bubble.className = "tooltip-bubble";
     this.bubble.popover = "manual";
@@ -382,7 +390,11 @@ export class Tooltip {
    * Opens the tooltip, or moves it to its anchor if it is already open. Empty tooltips stay shut.
    */
   open(): void {
-    if (this.content === "") {
+    if (
+      this.content === ""
+      || (this.onlyWhenTruncated
+        && this.anchor.scrollWidth <= this.anchor.clientWidth)
+    ) {
       return;
     }
     // Only the innermost of nested tooltips shows, such as that of a card's note in the discard

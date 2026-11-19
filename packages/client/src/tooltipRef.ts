@@ -29,6 +29,9 @@ interface TooltipRefOptions {
   /** A selector of the element inside this one that the arrow points at (see `TooltipOptions`). */
   readonly target?: string;
 
+  /** Whether the tooltip opens only while the element's text is cut off (see `TooltipOptions`). */
+  readonly onlyWhenTruncated?: boolean;
+
   /**
    * Whether a tap on a touch screen opens the tooltip. Turn it off where a tap does something else,
    * and open the tooltip with `openTooltipOnSide` instead.
@@ -62,6 +65,7 @@ export function tooltipRefHtml(
       const tooltip = new Tooltip(element, {
         content: "",
         target: options.target,
+        onlyWhenTruncated: options.onlyWhenTruncated,
       });
       tooltip.openOnHover(options.instant !== true, options.tapOpens !== false);
       entry = {

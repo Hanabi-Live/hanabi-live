@@ -429,7 +429,10 @@ function GameRow({
           ) : (
             <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
               <SuitDots suits={variant.suits} />
-              <span className="tw:truncate" ref={tooltipRef(variant.name)}>
+              <span
+                className="tw:truncate"
+                ref={tooltipRef(variant.name, { onlyWhenTruncated: true })}
+              >
                 {variant.name}
               </span>
             </div>
