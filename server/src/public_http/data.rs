@@ -12,6 +12,11 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
 
 const SORTABLE_COLUMNS: &[Column] = &[Column::GameId, Column::NumPlayers, Column::Score];
 
+/// Whether a game has an option that keeps its score from counting as a normal one, the options of
+/// `crate::model::ScoreModifier`. False sorts first.
+const MODIFIED_SCORE: &str =
+    "(g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card OR g.all_or_nothing)";
+
 const fn column_field(column: Column) -> &'static str {
     match column {
         Column::GameId => "id",
@@ -334,7 +339,14 @@ pub(super) async fn list(
             .transpose()?;
     }
     let total = count(state, s.clone()).await?;
-    let order = format!("g.{} {direction},g.id DESC", column_field(column));
+    // A score that an option changed, such as one with an extra card, does not compare with a normal
+    // one, so those games come after the others.
+    let modified = if column == Column::Score {
+        format!("{MODIFIED_SCORE},")
+    } else {
+        String::new()
+    };
+    let order = format!("{modified}g.{} {direction},g.id DESC", column_field(column));
     Ok(hanabi_protocol::GamePage {
         games: history(state, s, &order, page).await?,
         total,

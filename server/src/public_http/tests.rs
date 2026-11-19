@@ -369,7 +369,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             3,
             Some(3),
         ),
-        ("/api/v1/history/Alice?sort=score&order=asc", 3, Some(3)),
+        // Game 3 has options that change its score, so it comes last whichever way the scores
+        // sort.
+        ("/api/v1/history/Alice?sort=score&order=asc", 3, Some(2)),
         ("/api/v1/history/Alice?sort=score&order=desc", 3, Some(1)),
         ("/api/v1/history/Alice?filter[gameId]=2", 1, Some(2)),
         ("/api/v1/history/Alice?filter[numPlayers]=2", 3, Some(3)),
@@ -448,7 +450,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(status, StatusCode::OK, "{body}");
     assert_eq!(
         serde_json::from_str::<Value>(&body).unwrap()["games"][0]["gameId"],
-        3
+        2
     );
     let (_, body) = request(app.clone(), "/api/v1/history/Alice?start=3&end=3").await;
     let full = serde_json::from_str::<Value>(&body).unwrap()["games"].take();

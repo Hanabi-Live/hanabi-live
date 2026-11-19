@@ -49,6 +49,8 @@ of the repository.
   server is back.
 - The warnings, questions, and prompts match the error window. When the game
   asks you to confirm a play, Enter cancels it.
+- When a list of games sorts by score, the games with an option that changes the
+  score, such as One Extra Card, come after the other games.
 
 ## November 18th, 2026
 
