@@ -8,6 +8,7 @@ import { GameList } from "../../gameList/GameList.tsx";
 import { globals } from "../../Globals.ts";
 import { useAppSelector } from "../../store.ts";
 import { hide, showOtherScoresFromHistory } from "../history.ts";
+import { TITLE_TEXT } from "../PageTitle.tsx";
 import { replayVisibility } from "../replayVisibility.ts";
 import { Screen } from "../types/Screen.ts";
 
@@ -17,7 +18,7 @@ const LOBBY_ACTIONS = {
   showOtherGames: showOtherScoresFromHistory,
 } as const satisfies GameActions;
 
-const HEADING = "tw:m-0 tw:text-[1.75em] tw:leading-tight";
+const HEADING = `tw:m-0 ${TITLE_TEXT}`;
 
 export function HistoryList(): React.JSX.Element | null {
   const shown = useAppSelector(

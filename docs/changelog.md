@@ -59,6 +59,9 @@ of the repository.
   different. Shared replays have a share icon instead of the group icon.
 - In a pre-game, each seat shows its number in the turn order, and the first
   seat is marked. Open seats show a face-down hand of cards.
+- The "Create Game" page is shorter, so it fits on more screens. The base time
+  and the time per turn are on the "Timed" row, and a click on the "Extra
+  Options" heading shows the extra options.
 
 ## November 18th, 2026
 

@@ -62,6 +62,7 @@ import {
   readTable,
 } from "../createGameForm.ts";
 import * as lobbyPage from "../lobbyPage.ts";
+import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
 
 /**
@@ -162,6 +163,12 @@ function getExclusiveOption(option: ExtraOption): ExtraOption | undefined {
 /** Text fields, the variant picker, and the replay row share one width, so their edges line up. */
 const FIELD_WIDTH =
   "tw:flex-[0_0_20em] tw:w-[20em] tw:narrow-640:basis-auto tw:narrow-640:w-full";
+
+/**
+ * The times of the clock share a row with the box that turns it on. They leave room for the box
+ * (1.8em) and the gap of the row (1.5em), so that their left edge lines up with the other fields.
+ */
+const TIME_FIELDS_WIDTH = "tw:w-[calc(20em-3.3em)] tw:narrow-640:w-full";
 
 /**
  * Whether the form creates a table, changes the options of our table, or suggests options to the
@@ -285,8 +292,6 @@ export function CreateGame(): React.JSX.Element {
   // refusal keeps what the user entered.
   const [waiting, setWaiting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
-  const timed = form.timed && !form.extraOptions.speedrun;
-  const timedRowClass = useRevealClassName(timed);
   const replaying = isReplaying(form);
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
@@ -395,7 +400,7 @@ export function CreateGame(): React.JSX.Element {
 
   return (
     <>
-      <h2>{TITLES[mode]}</h2>
+      <PageTitle>{TITLES[mode]}</PageTitle>
 
       <div className="lobby-group">
         <h3>Table</h3>
@@ -498,6 +503,47 @@ export function CreateGame(): React.JSX.Element {
         <ul className="lobby-rows">
           <CheckboxRow
             checked={form.timed}
+            fields={
+              // Dimmed while the table is untimed. A click on them then checks the box, like a
+              // click anywhere else on the row.
+              <div
+                className={`tw:flex tw:items-center tw:gap-[0.5em] tw:whitespace-nowrap ${TIME_FIELDS_WIDTH}${form.timed ? " tw:relative tw:z-1" : ""}`}
+                style={form.timed ? undefined : { opacity: DIMMED_OPACITY }}
+              >
+                <CheckedInput
+                  aria-label="Base time (minutes)"
+                  className="tw:min-w-0 tw:flex-1 tw:text-center"
+                  disabled={!form.timed}
+                  error={errors.timeBaseMinutes}
+                  id="createTableTimeBaseMinutes"
+                  inputMode="decimal"
+                  onBlur={() => {
+                    change({}, true);
+                  }}
+                  onChange={(value) => {
+                    change({ timeBaseMinutes: value }, false);
+                  }}
+                  value={form.timeBaseMinutes}
+                />
+                min +
+                <CheckedInput
+                  aria-label="Time per turn (seconds)"
+                  className="tw:min-w-0 tw:flex-1 tw:text-center"
+                  disabled={!form.timed}
+                  error={errors.timePerTurnSeconds}
+                  id="createTableTimePerTurnSeconds"
+                  inputMode="numeric"
+                  onBlur={() => {
+                    change({}, true);
+                  }}
+                  onChange={(value) => {
+                    change({ timePerTurnSeconds: value }, false);
+                  }}
+                  value={form.timePerTurnSeconds}
+                />
+                sec per turn
+              </div>
+            }
             icon="fa-clock"
             id="createTableTimed"
             onChange={(checked) => {
@@ -506,174 +552,138 @@ export function CreateGame(): React.JSX.Element {
           >
             Timed
           </CheckboxRow>
-          <li className={`lobby-row ${timedRowClass}`} style={fadeStyle}>
-            <RowLabel
-              htmlFor="createTableTimeBaseMinutes"
-              icon="fa-hourglass-start"
-            >
-              Base time (minutes)
-            </RowLabel>
-            <CheckedInput
-              error={errors.timeBaseMinutes}
-              id="createTableTimeBaseMinutes"
-              inputMode="decimal"
-              onBlur={() => {
-                change({}, true);
-              }}
-              onChange={(value) => {
-                change({ timeBaseMinutes: value }, false);
-              }}
-              value={form.timeBaseMinutes}
-            />
-          </li>
-          <li className={`lobby-row ${timedRowClass}`} style={fadeStyle}>
-            <RowLabel
-              htmlFor="createTableTimePerTurnSeconds"
-              icon="fa-stopwatch"
-            >
-              Time per turn (seconds)
-            </RowLabel>
-            <CheckedInput
-              error={errors.timePerTurnSeconds}
-              id="createTableTimePerTurnSeconds"
-              inputMode="numeric"
-              onBlur={() => {
-                change({}, true);
-              }}
-              onChange={(value) => {
-                change({ timePerTurnSeconds: value }, false);
-              }}
-              value={form.timePerTurnSeconds}
-            />
-          </li>
         </ul>
       </div>
 
-      {/* Most games do not use the extra options, so they start out hidden behind this button. */}
-      <div className="tw:mt-6 tw:text-center">
-        <button
-          aria-controls="create-game-extra-options"
-          aria-expanded={extraOptionsShown}
-          className="button small"
-          id="create-game-show-extra-options"
-          onClick={() => {
-            setExtraOptionsShown(!extraOptionsShown);
-          }}
-          type="button"
+      {/* Most games do not use the extra options, so they start out hidden. A click on the heading
+          shows them. */}
+      <div className="lobby-group">
+        <h3 className="tw:mb-0">
+          <button
+            aria-controls="create-game-extra-options"
+            aria-expanded={extraOptionsShown}
+            className="tw:flex tw:cursor-pointer tw:items-center tw:gap-[0.5em] tw:border-none tw:bg-transparent tw:p-0 tw:tracking-[inherit] tw:text-inherit tw:[font:inherit] tw:hover:text-text"
+            id="create-game-show-extra-options"
+            onClick={() => {
+              setExtraOptionsShown(!extraOptionsShown);
+            }}
+            type="button"
+          >
+            <i
+              className={`fas fa-chevron-right tw:text-[0.75em] tw:transition-transform${extraOptionsShown ? " tw:rotate-90" : ""}`}
+              style={fadeStyle}
+            />
+            Extra Options
+          </button>
+        </h3>
+        {/* The wrapper grows and shrinks, and the space above the rows grows and shrinks with it. */}
+        <div
+          className={extraOptionsClass}
+          id="create-game-extra-options"
+          style={fadeStyle}
         >
-          <i
-            className={`fas ${extraOptionsShown ? "fa-minus" : "fa-plus"} icon-label`}
-          />
-          <span>
-            {extraOptionsShown ? "Hide Extra Options" : "Show Extra Options"}
-          </span>
-        </button>
-      </div>
-
-      {/* The wrapper grows and shrinks, and the space above the group grows and shrinks with it. */}
-      <div className={extraOptionsClass} style={fadeStyle}>
-        <div className="lobby-group tw:pt-6" id="create-game-extra-options">
-          <h3>Extra Options</h3>
-          <ul className="lobby-rows">
-            {EXTRA_OPTION_ROWS.map(({ option, id, icon, label, help }) => {
-              const exclusive = getExclusiveOption(option);
-              const disabled =
-                exclusive !== undefined && form.extraOptions[exclusive];
-              return (
-                <CheckboxRow
-                  checked={form.extraOptions[option]}
-                  disabled={disabled}
-                  help={{
-                    href: help,
-                    text: `About ${label}`,
-                  }}
-                  icon={icon}
-                  id={id}
-                  key={option}
-                  onChange={(checked) => {
-                    changeExtraOption(option, checked);
-                  }}
-                >
-                  {label}
-                </CheckboxRow>
-              );
-            })}
-            <li className="lobby-row">
-              <div className="lobby-row-label">
-                <RowLabel htmlFor="create-game-seed" icon="fa-seedling">
-                  Custom Seed
-                </RowLabel>
-                <HelpLink
-                  href={`${DOCS_URL}/features.md#similar-deals-and-competitive-play`}
-                  text="About Custom Seeds"
-                />
-              </div>
-              <CheckedInput
-                autoComplete="off"
-                error={extraOptionsShown ? errors.seed : undefined}
-                id="create-game-seed"
-                maxLength={MAX_SEED_LENGTH}
-                onChange={(value) => {
-                  change({ seed: value }, false);
-                }}
-                placeholder="Optional"
-                spellCheck={false}
-                value={form.seed}
-              />
-            </li>
-            <li className="lobby-row">
-              <div className="lobby-row-label">
-                <RowLabel
-                  htmlFor="create-game-replay-game-id"
-                  icon="fa-arrow-rotate-left"
-                >
-                  Replay Game
-                </RowLabel>
-                <HelpLink
-                  href={`${DOCS_URL}/features.md#similar-deals-and-competitive-play`}
-                  text="About Replay Game"
-                />
-              </div>
-              {/* The ID of the game to replay and the turn to start from share one row. */}
-              <div
-                className={`tw:flex tw:items-center tw:gap-3 ${FIELD_WIDTH}`}
-              >
+          <div className="tw:pt-[0.6em]">
+            <ul className="lobby-rows">
+              {EXTRA_OPTION_ROWS.map(({ option, id, icon, label, help }) => {
+                const exclusive = getExclusiveOption(option);
+                const disabled =
+                  exclusive !== undefined && form.extraOptions[exclusive];
+                return (
+                  <CheckboxRow
+                    checked={form.extraOptions[option]}
+                    disabled={disabled}
+                    help={{
+                      href: help,
+                      text: `About ${label}`,
+                    }}
+                    icon={icon}
+                    id={id}
+                    key={option}
+                    onChange={(checked) => {
+                      changeExtraOption(option, checked);
+                    }}
+                  >
+                    {label}
+                  </CheckboxRow>
+                );
+              })}
+              <li className="lobby-row">
+                <div className="lobby-row-label">
+                  <RowLabel htmlFor="create-game-seed" icon="fa-seedling">
+                    Custom Seed
+                  </RowLabel>
+                  <HelpLink
+                    href={`${DOCS_URL}/features.md#similar-deals-and-competitive-play`}
+                    text="About Custom Seeds"
+                  />
+                </div>
                 <CheckedInput
-                  aria-label="Game ID"
                   autoComplete="off"
-                  className="tw:min-w-0 tw:flex-1"
-                  error={extraOptionsShown ? errors.replayGameId : undefined}
-                  id="create-game-replay-game-id"
-                  inputMode="numeric"
+                  error={extraOptionsShown ? errors.seed : undefined}
+                  id="create-game-seed"
+                  maxLength={MAX_SEED_LENGTH}
                   onChange={(value) => {
-                    change({ replayGameId: value }, false);
+                    change({ seed: value }, false);
                   }}
-                  placeholder="Game ID"
-                  value={form.replayGameId}
+                  placeholder="Optional"
+                  spellCheck={false}
+                  value={form.seed}
                 />
-                {/* Dimmed until a game ID is entered. */}
-                <label
-                  className="tw:m-0 tw:flex tw:items-center tw:gap-3 tw:whitespace-nowrap"
-                  style={replaying ? undefined : { opacity: DIMMED_OPACITY }}
+              </li>
+              <li className="lobby-row">
+                <div className="lobby-row-label">
+                  <RowLabel
+                    htmlFor="create-game-replay-game-id"
+                    icon="fa-arrow-rotate-left"
+                  >
+                    Replay Game
+                  </RowLabel>
+                  <HelpLink
+                    href={`${DOCS_URL}/features.md#similar-deals-and-competitive-play`}
+                    text="About Replay Game"
+                  />
+                </div>
+                {/* The ID of the game to replay and the turn to start from share one row. */}
+                <div
+                  className={`tw:flex tw:items-center tw:gap-3 ${FIELD_WIDTH}`}
                 >
-                  from turn
                   <CheckedInput
+                    aria-label="Game ID"
                     autoComplete="off"
-                    className="tw:w-[4em] tw:text-center"
-                    disabled={!replaying}
-                    error={extraOptionsShown ? errors.replayTurn : undefined}
-                    id="create-game-replay-turn"
+                    className="tw:min-w-0 tw:flex-1"
+                    error={extraOptionsShown ? errors.replayGameId : undefined}
+                    id="create-game-replay-game-id"
                     inputMode="numeric"
                     onChange={(value) => {
-                      change({ replayTurn: value }, false);
+                      change({ replayGameId: value }, false);
                     }}
-                    placeholder="1"
-                    value={form.replayTurn}
+                    placeholder="Game ID"
+                    value={form.replayGameId}
                   />
-                </label>
-              </div>
-            </li>
-          </ul>
+                  {/* Dimmed until a game ID is entered. */}
+                  <label
+                    className="tw:m-0 tw:flex tw:items-center tw:gap-3 tw:whitespace-nowrap"
+                    style={replaying ? undefined : { opacity: DIMMED_OPACITY }}
+                  >
+                    from turn
+                    <CheckedInput
+                      autoComplete="off"
+                      className="tw:w-[4em] tw:text-center"
+                      disabled={!replaying}
+                      error={extraOptionsShown ? errors.replayTurn : undefined}
+                      id="create-game-replay-turn"
+                      inputMode="numeric"
+                      onChange={(value) => {
+                        change({ replayTurn: value }, false);
+                      }}
+                      placeholder="1"
+                      value={form.replayTurn}
+                    />
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -859,6 +869,7 @@ function CheckboxRow({
   checked,
   children,
   disabled = false,
+  fields,
   help,
   icon,
   id,
@@ -867,6 +878,8 @@ function CheckboxRow({
   readonly checked: boolean;
   readonly children: React.ReactNode;
   readonly disabled?: boolean;
+  /** Fields between the description and the box. A narrow screen puts them below both. */
+  readonly fields?: React.ReactNode;
   readonly help?: { readonly href: string; readonly text: string };
   readonly icon: string;
   readonly id: string;
@@ -880,7 +893,11 @@ function CheckboxRow({
 
   return (
     <li
-      className="lobby-row"
+      className={
+        fields === undefined
+          ? "lobby-row"
+          : "lobby-row tw:narrow-640:flex-row tw:narrow-640:flex-wrap tw:narrow-640:items-center"
+      }
       style={disabled ? { opacity: DIMMED_OPACITY } : undefined}
     >
       {help === undefined ? (
@@ -889,6 +906,11 @@ function CheckboxRow({
         <div className="lobby-row-label">
           {label}
           <HelpLink href={help.href} text={help.text} />
+        </div>
+      )}
+      {fields !== undefined && (
+        <div className="tw:narrow-640:order-last tw:narrow-640:basis-full">
+          {fields}
         </div>
       )}
       <span className="lobby-row-checkbox">

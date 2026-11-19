@@ -1,10 +1,6 @@
 /*
   Lobby pages ("Create Game", "Watch Specific Replay", "Resources", and "Settings")
 */
-.lobby-page h2 {
-  margin-bottom: 1em;
-}
-
 .lobby-page .fa-fw {
   margin-right: 0.6em;
 }

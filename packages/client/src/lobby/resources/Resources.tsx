@@ -1,6 +1,7 @@
 // The "Resources" page: links to documentation, the community, and the project.
 
 import { PROJECT_NAME } from "@hanabi-live/data";
+import { PageTitle } from "../PageTitle.tsx";
 
 interface Resource {
   readonly icon: string;
@@ -119,7 +120,7 @@ const GROUPS = [
 export function Resources(): React.JSX.Element {
   return (
     <>
-      <h2>Resources</h2>
+      <PageTitle>Resources</PageTitle>
       {GROUPS.map(({ title, resources }, index) => (
         <section className={index === 0 ? undefined : "tw:mt-6"} key={title}>
           <h3 className="tw:mx-0 tw:mt-0 tw:mb-[0.6em] tw:text-[1em] tw:text-text-label">

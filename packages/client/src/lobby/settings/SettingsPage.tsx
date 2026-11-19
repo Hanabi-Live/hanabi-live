@@ -20,6 +20,7 @@ import * as notifications from "../../notifications.ts";
 import { settingsChanged } from "../../sessionSlice.ts";
 import { SOUNDS_PATH } from "../../sounds.ts";
 import { store, useAppSelector } from "../../store.ts";
+import { PageTitle } from "../PageTitle.tsx";
 
 /** How long "Saved" stays beside a setting before it fades out. */
 const SAVED_STATUS_MILLISECONDS = 2000;
@@ -35,7 +36,7 @@ export function SettingsPage(): React.JSX.Element {
 
   return (
     <>
-      <h2>Settings</h2>
+      <PageTitle>Settings</PageTitle>
 
       <div className="lobby-group">
         <h3>Notifications &amp; Sound</h3>

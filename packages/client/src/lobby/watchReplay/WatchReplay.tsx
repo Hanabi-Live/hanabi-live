@@ -14,6 +14,7 @@ import { DOCS_URL, HelpLink } from "../createGame/CreateGame.tsx";
 import type { GameJson } from "../gameJson.ts";
 import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
+import { PageTitle } from "../PageTitle.tsx";
 import { replayVisibility } from "../replayVisibility.ts";
 
 export function show(): void {
@@ -105,7 +106,7 @@ export function WatchReplay(): React.JSX.Element {
 
   return (
     <>
-      <h2>Watch a Specific Replay</h2>
+      <PageTitle>Watch a Specific Replay</PageTitle>
 
       <div className="lobby-group">
         <h3>Replay</h3>
