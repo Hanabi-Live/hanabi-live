@@ -115,6 +115,7 @@ export function ScoresTable({
         column: 0,
         descending: false,
       }}
+      noun={["variant", "variants"]}
       rowKey={(row) => row.variantName}
       rows={table.variants}
       scrollLabel="Scores"
@@ -189,6 +190,7 @@ export function MissingScoresTable({
         columns={missingScoreColumns}
         emptyText="No max scores are missing."
         initialSort={undefined}
+        noun={["score", "scores"]}
         rowKey={(row) => `${row.numPlayers}-${row.variantName}`}
         rows={table.rows}
       />

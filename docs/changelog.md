@@ -51,6 +51,8 @@ of the repository.
   asks you to confirm a play, Enter cancels it.
 - When a list of games sorts by score, the games with an option that changes the
   score, such as One Extra Card, come after the other games.
+- The score tables of a player's profile move between pages with the same
+  control as the lists of games, under the table.
 
 ## November 18th, 2026
 

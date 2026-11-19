@@ -8,12 +8,7 @@ import type {
   publicPageTableSchema,
   scoreFrequencySchema,
 } from "@hanabi-live/data";
-import {
-  errorDetails,
-  gamePageSchema,
-  httpError,
-  PAGE_SIZES,
-} from "@hanabi-live/data";
+import { errorDetails, gamePageSchema, httpError } from "@hanabi-live/data";
 import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useEffect, useMemo, useState } from "react";
@@ -21,9 +16,10 @@ import { createPortal } from "react-dom";
 import type * as z from "zod";
 import { PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
-import { usePages } from "../publicPages/DataTable.tsx";
+import { Pages, usePages } from "../publicPages/DataTable.tsx";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
+import { useDelayedCallback } from "../useDelayedCallback.ts";
 import { WaitingCard } from "../WaitingCard.tsx";
 import {
   END_CONDITION_TEXT,
@@ -38,7 +34,6 @@ import {
 import { NameFilter, suggestVariants } from "./NameFilter.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
-import { useDelayedCallback } from "../useDelayedCallback.ts";
 
 /** A list of games that a page shows, which the server puts in the page. */
 export type GameListData = Extract<
@@ -90,6 +85,9 @@ const SORT_CHOICES = [
     descending: true,
   },
 ] as const satisfies readonly SortChoice[];
+
+/** What the count under the list calls one game and several. */
+const GAME_NOUN = ["game", "games"] as const;
 
 /** A link to a player in a row. */
 const ROW_LINK = "tw:text-link tw:no-underline tw:hover:underline";
@@ -312,6 +310,7 @@ export function GameList({
       )}
 
       <Pages
+        noun={GAME_NOUN}
         onPage={setPage}
         onSize={setSize}
         page={page}
@@ -613,81 +612,6 @@ function GameButtons({
           )}
         </span>
       )}
-    </div>
-  );
-}
-
-/** The count of games, and the controls that move between pages when there are more. */
-function Pages({
-  page,
-  size,
-  total,
-  onPage,
-  onSize,
-}: {
-  readonly page: number;
-  readonly size: number;
-  readonly total: number;
-  readonly onPage: (page: number) => void;
-  readonly onSize: (size: number) => void;
-}) {
-  // The list says when it has no games.
-  if (total === 0) {
-    return null;
-  }
-  if (total <= PAGE_SIZES[0]) {
-    return (
-      <p className="tw:mt-4 tw:mb-0 tw:text-center tw:text-[0.9em] tw:text-text-label">
-        {total} {total === 1 ? "game" : "games"}
-      </p>
-    );
-  }
-  const pages = Math.ceil(total / size);
-  const start = page * size;
-  const end = Math.min(total, start + size);
-  const arrow =
-    "tw:h-8 tw:w-8 tw:cursor-pointer tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface-sunken tw:p-0 tw:text-inherit tw:disabled:cursor-default tw:disabled:opacity-40";
-  return (
-    <div className="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-3 tw:text-[0.9em]">
-      <button
-        aria-label="Previous page"
-        className={arrow}
-        disabled={page === 0}
-        onClick={() => {
-          onPage(page - 1);
-        }}
-        type="button"
-      >
-        <i className="fas fa-chevron-left" />
-      </button>
-      <span className="tw:tabular-nums">
-        {start + 1}-{end} of {total}
-      </span>
-      <button
-        aria-label="Next page"
-        className={arrow}
-        disabled={page >= pages - 1}
-        onClick={() => {
-          onPage(page + 1);
-        }}
-        type="button"
-      >
-        <i className="fas fa-chevron-right" />
-      </button>
-      <select
-        aria-label="Games per page"
-        className="tw:ml-4 tw:h-8 tw:w-auto tw:py-0 tw:pr-10 tw:pl-3 tw:text-[1em] tw:leading-8"
-        onChange={(event) => {
-          onSize(Number(event.target.value));
-        }}
-        value={size}
-      >
-        {PAGE_SIZES.map((option) => (
-          <option key={option} value={option}>
-            {option} per page
-          </option>
-        ))}
-      </select>
     </div>
   );
 }

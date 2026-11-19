@@ -5,8 +5,11 @@ import { PAGE_SIZES } from "@hanabi-live/data";
 import { useState } from "react";
 import { useDelayedCallback } from "../useDelayedCallback.ts";
 
-/** The page size of "All Rows", which only the tables whose rows are all in the page offer. */
+/** The page size of "All", which only the tables whose rows are all in the page offer. */
 const ALL_ROWS = Infinity;
+
+/** The value of the "All" choice of page sizes. */
+const ALL_ROWS_VALUE = "all";
 
 interface Choice {
   readonly value: string;
@@ -87,7 +90,7 @@ export function DataTable({
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   const table = (
-    <table className="tw:mt-8">
+    <table className="tw:mt-2">
       <thead>
         <tr>
           {columns.map((column, index) => (
@@ -284,123 +287,108 @@ export function usePages(): {
   };
 }
 
-/** The page navigation above and below a table. */
-export function Pager({
+/** What a count calls one row and several, such as "game" and "games". */
+export type Noun = readonly [one: string, other: string];
+
+/**
+ * The count of rows, and the controls that move between pages when there are more than fit on the
+ * smallest page.
+ */
+export function Pages({
   page,
   size,
-  rows,
-  summary,
-  allRows,
+  total,
+  unfiltered,
+  noun,
+  allRows = false,
   onPage,
   onSize,
 }: {
   /** The current page, counting from 0. */
   readonly page: number;
   readonly size: number;
-  readonly rows: number;
-  /** What follows the row range, such as the number of rows. */
-  readonly summary: string;
-  /** Whether the pager offers "All Rows". */
-  readonly allRows: boolean;
+  /** The number of rows that the filters keep. */
+  readonly total: number;
+  /** The number of rows before the filters, which shows when the filters leave some out. */
+  readonly unfiltered?: number;
+  readonly noun: Noun;
+  /**
+   * Whether the page sizes include "All", which only the tables whose rows are all in the page
+   * offer.
+   */
+  readonly allRows?: boolean;
   readonly onPage: (page: number) => void;
   readonly onSize: (size: number) => void;
-}): React.JSX.Element {
-  const pages = pageCount(rows, size);
-  const start = pageStart(page, size);
-  const end = Math.min(rows, start + size);
-  function goTo(target: number) {
-    onPage(Math.min(Math.max(0, target), pages - 1));
+}): React.JSX.Element | null {
+  // The list says when it has no rows.
+  if (total === 0) {
+    return null;
   }
-  const select = "tw:mx-2 tw:inline-block tw:h-auto tw:w-auto";
-
+  const [one, other] = noun;
+  const inAll =
+    unfiltered === undefined || unfiltered === total
+      ? ""
+      : ` (${unfiltered} in all)`;
+  if (total <= PAGE_SIZES[0]) {
+    return (
+      <p className="tw:mt-4 tw:mb-0 tw:text-center tw:text-[0.9em] tw:text-text-label">
+        {total} {total === 1 ? one : other}
+        {inAll}
+      </p>
+    );
+  }
+  const pages = pageCount(total, size);
+  const start = pageStart(page, size);
+  const end = Math.min(total, start + size);
+  const arrow =
+    "tw:h-8 tw:w-8 tw:cursor-pointer tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface-sunken tw:p-0 tw:text-inherit tw:disabled:cursor-default tw:disabled:opacity-40";
   return (
-    <div className="tw:flex tw:items-center tw:justify-center tw:text-[1em]">
-      Page:
-      <select
-        aria-label="Page"
-        className={select}
-        onChange={(event) => {
-          goTo(Number(event.target.value));
+    <div className="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-3 tw:text-[0.9em]">
+      <button
+        aria-label="Previous page"
+        className={arrow}
+        disabled={page === 0}
+        onClick={() => {
+          onPage(page - 1);
         }}
-        value={page}
+        type="button"
       >
-        {Array.from({ length: pages }, (_, index) => (
-          <option key={index} value={index}>
-            {index + 1}
-          </option>
-        ))}
-      </select>
-      <PagerButton
-        icon="fa-fast-backward"
-        label="First page"
-        onClick={() => {
-          goTo(0);
-        }}
-      />
-      <PagerButton
-        icon="fa-backward"
-        label="Previous page"
-        onClick={() => {
-          goTo(page - 1);
-        }}
-      />
-      <span className="tw:inline-block tw:px-4 tw:font-normal">
-        {rows === 0 ? 0 : start + 1} - {end} / {summary}
+        <i className="fas fa-chevron-left" />
+      </button>
+      <span className="tw:tabular-nums">
+        {start + 1}-{end} of {total}
+        {inAll}
       </span>
-      <PagerButton
-        icon="fa-forward"
-        label="Next page"
+      <button
+        aria-label="Next page"
+        className={arrow}
+        disabled={page >= pages - 1}
         onClick={() => {
-          goTo(page + 1);
+          onPage(page + 1);
         }}
-      />
-      <PagerButton
-        icon="fa-fast-forward"
-        label="Last page"
-        onClick={() => {
-          goTo(pages - 1);
-        }}
-      />
+        type="button"
+      >
+        <i className="fas fa-chevron-right" />
+      </button>
       <select
-        aria-label="Page size"
-        className={select}
+        aria-label={`${other.charAt(0).toUpperCase()}${other.slice(1)} per page`}
+        className="tw:ml-4 tw:h-8 tw:w-auto tw:py-0 tw:pr-10 tw:pl-3 tw:text-[1em] tw:leading-8"
         onChange={(event) => {
           onSize(
-            event.target.value === "all"
+            event.target.value === ALL_ROWS_VALUE
               ? ALL_ROWS
               : Number(event.target.value),
           );
         }}
-        value={Number.isFinite(size) ? size : "all"}
+        value={Number.isFinite(size) ? size : ALL_ROWS_VALUE}
       >
         {PAGE_SIZES.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {option} per page
           </option>
         ))}
-        {allRows && <option value="all">All Rows</option>}
+        {allRows && <option value={ALL_ROWS_VALUE}>All</option>}
       </select>
     </div>
-  );
-}
-
-function PagerButton({
-  icon,
-  label,
-  onClick,
-}: {
-  readonly icon: string;
-  readonly label: string;
-  readonly onClick: () => void;
-}) {
-  return (
-    <button
-      aria-label={label}
-      className="tw:mx-2 tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:text-inherit tw:[font:inherit]"
-      onClick={onClick}
-      type="button"
-    >
-      <i className={`fas ${icon}`} />
-    </button>
   );
 }

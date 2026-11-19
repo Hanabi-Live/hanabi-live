@@ -1,12 +1,12 @@
 // A table whose rows are all in the page, so that it sorts, filters, and pages them itself.
 
 import { useState } from "react";
-import type { Column, Filters, Sort } from "./DataTable.tsx";
+import type { Column, Filters, Noun, Sort } from "./DataTable.tsx";
 import {
   DataTable,
   nextFilters,
   nextSort,
-  Pager,
+  Pages,
   pageStart,
   usePages,
 } from "./DataTable.tsx";
@@ -43,6 +43,7 @@ export function LocalTable<Row>({
   initialSort,
   scrollLabel,
   emptyText,
+  noun,
 }: {
   readonly columns: ReadonlyArray<LocalColumn<Row>>;
   readonly rows: readonly Row[];
@@ -51,6 +52,8 @@ export function LocalTable<Row>({
   readonly scrollLabel?: string;
   /** What the page shows instead of the table when it has no rows. */
   readonly emptyText: string;
+  /** What the count of rows calls one row and several. */
+  readonly noun: Noun;
 }): React.JSX.Element {
   const [sort, setSort] = useState(initialSort);
   const [filters, setFilters] = useState<Filters>(new Map());
@@ -86,20 +89,20 @@ export function LocalTable<Row>({
 
   const start = pageStart(page, size);
   const pager = (
-    <Pager
+    <Pages
       allRows
+      noun={noun}
       onPage={setPage}
       onSize={setSize}
       page={page}
-      rows={shown.length}
       size={size}
-      summary={`${shown.length} (${rows.length})`}
+      total={shown.length}
+      unfiltered={rows.length}
     />
   );
 
   return (
     <>
-      {pager}
       <DataTable
         columns={columns.map((column) => ({
           ...column,
@@ -142,6 +145,11 @@ export function LocalTable<Row>({
           </tr>
         ))}
       </DataTable>
+      {shown.length === 0 && (
+        <p className="tw:my-10 tw:text-center tw:text-text-label">
+          No {noun[1]} match these filters.
+        </p>
+      )}
       {pager}
     </>
   );
