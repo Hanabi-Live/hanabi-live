@@ -991,6 +991,14 @@ function useOwnRow(
   /** The width of the bar when the controls got a row of their own. */
   const ownRowWidth = useRef<number | undefined>(undefined);
 
+  /**
+   * Whether the controls just got a row of their own. The second row can change the bar's width,
+   * such as when the page gets a scroll bar. Then the controls keep the width that the bar has with
+   * two rows. Otherwise, they would leave their row because of a width change that their row
+   * caused, and the bar would switch between its two layouts without end.
+   */
+  const takeTwoRowWidth = useRef(false);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const group = controls.current;
@@ -1015,11 +1023,12 @@ function useOwnRow(
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
     footer.style.removeProperty("height");
-    if (overflows) {
+    if (overflows || (hadOwnRow && takeTwoRowWidth.current)) {
       ownRowWidth.current = footer.clientWidth;
     } else if (ownRowWidth.current !== footer.clientWidth) {
       ownRowWidth.current = undefined;
     }
+    takeTwoRowWidth.current = !hadOwnRow && overflows;
     setOwnRow(ownRowWidth.current !== undefined);
   });
   return ownRow;
