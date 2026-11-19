@@ -289,9 +289,11 @@ fn formatted_templates_preserve_conditional_links() {
         ))
         .unwrap();
     let anchors = regex!(r"(?s)<a\b([^>]*)>(.*?)</a>");
+    // The label follows the tab's icon.
+    let tags = regex!(r"<[^>]*>");
     let tagged = anchors
         .captures_iter(&buttons)
-        .find(|link| link[2].trim() == "Tagged games")
+        .find(|link| tags.replace_all(&link[2], "").trim() == "Tagged games")
         .expect("Tagged games profile tab");
     assert!(tagged[1].contains(r#"aria-current="page""#));
     assert!(
