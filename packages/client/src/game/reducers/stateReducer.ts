@@ -273,6 +273,18 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       break;
     }
 
+    case "seatChosen": {
+      // Only a replay can change its seat in the client. The seat changes which hand is first and
+      // what we deduce about each card, so the states of every segment are computed again.
+      if (!state.finished) {
+        break;
+      }
+
+      state.metadata.ourPlayerIndex = action.playerIndex;
+      loadGameActions(state, snapshot(state.replay.actions));
+      break;
+    }
+
     case "spectators": {
       state.spectators = castDraft(action.spectators);
       break;

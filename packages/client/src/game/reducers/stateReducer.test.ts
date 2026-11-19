@@ -103,4 +103,28 @@ describe("stateReducer", () => {
       queued: true,
     });
   });
+  test("choosing a seat in a replay computes its steps again from that seat", () => {
+    const joined = stateReducer(initialState(defaultMetadata), init());
+    const loaded = stateReducer(
+      joined,
+      gameStateLoaded({ actions: [draw(0, 0, 0, 1), draw(1, 1, 0, 2)] }),
+    );
+    const state = stateReducer(loaded, {
+      type: "seatChosen",
+      playerIndex: 2,
+    });
+    expect(state.metadata.ourPlayerIndex).toBe(2);
+    expect(state.replay.actions).toEqual(loaded.replay.actions);
+    expect(state.replay.states).toHaveLength(loaded.replay.states.length);
+    expect(state.replay.states[0]).not.toBe(loaded.replay.states[0]);
+  });
+  test("choosing a seat does nothing in a game in progress", () => {
+    const state = initialState(defaultMetadata);
+    expect(
+      stateReducer(state, {
+        type: "seatChosen",
+        playerIndex: 2,
+      }),
+    ).toBe(state);
+  });
 });

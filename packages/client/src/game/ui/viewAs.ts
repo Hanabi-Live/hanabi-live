@@ -1,11 +1,12 @@
 // Viewing a game from a player's seat. A spectator of an ongoing game "shadows" the player: they
-// see the game as that player does, with that player's cards hidden. In a replay, the seat only
-// changes which hand is first.
+// see the game as that player does, with that player's cards hidden. In a replay, the seat changes
+// which hand is first and what we deduce about each card.
 
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals as lobbyGlobals } from "../../Globals.ts";
-import { replayVisibility } from "../../lobby/replayVisibility.ts";
 import * as modals from "../../modals.ts";
+import { store } from "../../store.ts";
+import { gameUpdated } from "../gameSlice.ts";
 import { globals } from "./UiGlobals.ts";
 import { backToLobby } from "./backToLobby.ts";
 
@@ -31,7 +32,8 @@ export function canChooseSeat(): boolean {
 
 /**
  * Views the game from a player's seat, or, in an ongoing game, with no seat when the index is
- * `undefined`. The page reloads the game, so this happens after the current event ends.
+ * `undefined`. In an ongoing game, the page reloads the game, so this happens after the current
+ * event ends.
  */
 export function viewAs(playerIndex: PlayerIndex | undefined): void {
   if (!canChooseSeat()) {
@@ -55,44 +57,13 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
     return;
   }
 
-  // A replay always has a seat.
-  if (playerIndex === undefined) {
-    return;
+  // A replay always has a seat. The client changes it, so the replay keeps going for everyone.
+  if (playerIndex !== undefined) {
+    store.dispatch(
+      gameUpdated({
+        type: "seatChosen",
+        playerIndex,
+      }),
+    );
   }
-
-  // When we are the only person in a replay, going back to the lobby ends it. So, leave it and
-  // create a new one from the seat.
-  if (globals.state.spectators.length === 1) {
-    const { gameId } = globals.state.replay;
-    if (gameId === undefined) {
-      setTimeout(() => {
-        modals.showWarning(
-          "Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.",
-        );
-      }, 0);
-      return;
-    }
-
-    setTimeout(() => {
-      backToLobby();
-      lobbyGlobals.connection.send("replayCreate", {
-        source: {
-          type: "saved",
-          gameId,
-        },
-        visibility: replayVisibility(globals.state.replay.shared !== undefined),
-        shadowingPlayerIndex: playerIndex,
-      });
-    }, 0);
-    return;
-  }
-
-  // Otherwise, go back to the lobby and watch the shared replay again, from the seat.
-  setTimeout(() => {
-    backToLobby();
-    lobbyGlobals.connection.send("tableSpectate", {
-      tableId: lobbyGlobals.joinedTableId,
-      shadowingPlayerIndex: playerIndex,
-    });
-  }, 0);
 }

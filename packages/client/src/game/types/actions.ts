@@ -8,6 +8,7 @@ import type {
   AuthorNotes,
   CardIdentity,
   GameAction,
+  PlayerIndex,
 } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction.ts";
 
@@ -21,6 +22,7 @@ export type Action =
   | ActionPause
   | ActionPauseQueue
   | ActionSpectators
+  | ActionSeatChosen
   | ActionGameFinished
   | ActionSharedReplayState;
 
@@ -103,6 +105,14 @@ interface ActionPauseQueue {
 interface ActionSpectators {
   readonly type: "spectators";
   readonly spectators: readonly Spectator[];
+}
+
+/**
+ * We view a replay from another seat. The client makes this action; the server does not send it.
+ */
+interface ActionSeatChosen {
+  readonly type: "seatChosen";
+  readonly playerIndex: PlayerIndex;
 }
 
 interface ActionGameFinished extends Readonly<

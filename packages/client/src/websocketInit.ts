@@ -342,8 +342,10 @@ function openConnection(isReconnect: boolean) {
           {
             tableId: retained,
             ...(!data.playingAtTables.includes(retained) && {
+              // A replay keeps the seat that we chose in the client.
               shadowingPlayerIndex:
                 store.getState().game.current?.shadowing === true
+                || store.getState().game.current?.finished === true
                   ? store.getState().game.current?.metadata.ourPlayerIndex
                   : undefined,
             }),
