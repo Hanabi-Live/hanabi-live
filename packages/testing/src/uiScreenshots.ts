@@ -1203,8 +1203,8 @@ function getStates(): readonly State[] {
       },
     },
     // Bob's game with five players in color-blind mode, so that the corner of each card shows the
-    // suit's letter before the rank. The players discard first, so that the discard pile shows the
-    // letter only on the last card of each row. The last clue touches cards that no other clue
+    // suit's letter before the rank. The players discard first, so that each row of the discard
+    // pile shows its suit's letter before its cards. The last clue touches cards that no other clue
     // touched.
     {
       name: "new-ui-colorblind",

@@ -8,6 +8,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   getNumCopiesOfCard,
+  getSuitAbbreviationForVariant,
   getTotalCardsInDeck,
   MAX_CLUES,
   MAX_STRIKES,
@@ -36,9 +37,11 @@ import {
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
+  CORNER_INSET_PER_WIDTH,
   describeCard,
   PossibleCardsBubble,
   RANK_BOTTOM_PER_WIDTH,
+  SUIT_LETTER_FONT_FAMILY,
 } from "./Card.tsx";
 import { isDragClick } from "./cardClicks.ts";
 import {
@@ -1788,99 +1791,117 @@ export function DiscardPile({
         />
       )}
       <div
-        className={`tw:relative tw:flex tw:flex-col ${
+        className={`tw:relative tw:flex ${
           isRefusing(zoneState) ? "tw:opacity-60" : ""
         } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
-        ref={setRowsElement}
         style={{
           height: rowsHeight,
           transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
         }}
       >
-        {rows.map((row, rowIndex) => (
-          <div
-            className="tw:flex"
-            key={row[0]?.order}
-            style={{
-              marginTop: rowIndex === 0 ? 0 : rowStep - height,
-            }}
-          >
-            {row.map((card, i) => {
-              const column = columns.get(card.order) ?? 0;
-              const previousCard = row[i - 1];
-              const previousColumn =
-                previousCard === undefined
-                  ? undefined
-                  : (columns.get(previousCard.order) ?? 0);
-              const moved = movedCard?.order === card.order;
-              return (
-                <CardNote
-                  className="tw:shrink-0"
-                  key={card.order}
-                  notes={notes}
-                  order={card.order}
-                  style={{
-                    marginLeft:
-                      previousColumn === undefined
-                        ? column * cardStep
-                        : (column - previousColumn) * cardStep - cardWidth,
-                  }}
-                >
-                  <button
-                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                    className={`tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform ${HOVER_CLASS} tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5`}
-                    data-card-order={card.order}
-                    data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
-                    onClick={() => {
-                      onShowDiscard(card.order);
-                    }}
+        {colorblindMode && (
+          <DiscardRowLetters
+            cardWidth={cardWidth}
+            rows={rows}
+            rowStep={rowStep}
+            variant={variant}
+          />
+        )}
+        <div
+          className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
+          ref={setRowsElement}
+        >
+          {rows.map((row, rowIndex) => (
+            <div
+              className="tw:flex"
+              key={row[0]?.order}
+              style={{
+                marginTop: rowIndex === 0 ? 0 : rowStep - height,
+              }}
+            >
+              {row.map((card, i) => {
+                const column = columns.get(card.order) ?? 0;
+                const previousCard = row[i - 1];
+                const previousColumn =
+                  previousCard === undefined
+                    ? undefined
+                    : (columns.get(previousCard.order) ?? 0);
+                const moved = movedCard?.order === card.order;
+                return (
+                  <CardNote
+                    className="tw:shrink-0"
+                    key={card.order}
+                    notes={notes}
+                    order={card.order}
                     style={{
-                      borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                      marginLeft:
+                        previousColumn === undefined
+                          ? column * cardStep
+                          : (column - previousColumn) * cardStep - cardWidth,
                     }}
-                    type="button"
                   >
-                    <CardFace
-                      colorblindMode={colorblindMode}
-                      note={notes.notesHtml.has(card.order)}
-                      noteUnread={notes.unreadNotes.has(card.order)}
-                      rank={card.rank}
-                      suitIndex={card.suitIndex}
-                      suitLetterHidden={i < row.length - 1}
-                      variant={variant}
-                      width={cardWidth}
-                    />
-                    {moved && (
-                      // The moved card stays under the cards that cover it, so that their ranks
-                      // still show. Its outline goes around the part of it that shows, over the
-                      // cards around it.
-                      <span
-                        aria-hidden="true"
-                        className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
-                        data-moved-card-marker
-                        style={{
-                          ...getVisibleDiscardSize(rows, columns, rowIndex, i, {
-                            cardWidth,
-                            cardHeight: height,
-                            cardStep,
-                            rowStep,
-                          }),
-                          borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
-                        }}
+                    <button
+                      aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                      className={`tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform ${HOVER_CLASS} tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5`}
+                      data-card-order={card.order}
+                      data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
+                      onClick={() => {
+                        onShowDiscard(card.order);
+                      }}
+                      style={{
+                        borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                      }}
+                      type="button"
+                    >
+                      <CardFace
+                        colorblindMode={colorblindMode}
+                        note={notes.notesHtml.has(card.order)}
+                        noteUnread={notes.unreadNotes.has(card.order)}
+                        rank={card.rank}
+                        suitIndex={card.suitIndex}
+                        suitLetterHidden
+                        variant={variant}
+                        width={cardWidth}
                       />
-                    )}
-                    {moved && movedCard.slot !== undefined && (
-                      <SlotTab
-                        cardWidth={cardWidth}
-                        label={movedCard.label}
-                        slot={movedCard.slot}
-                      />
-                    )}
-                  </button>
-                </CardNote>
-              );
-            })}
-          </div>
-        ))}
+                      {moved && (
+                        // The moved card stays under the cards that cover it, so that their ranks
+                        // still show. Its outline goes around the part of it that shows, over the
+                        // cards around it.
+                        <span
+                          aria-hidden="true"
+                          className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
+                          data-moved-card-marker
+                          style={{
+                            ...getVisibleDiscardSize(
+                              rows,
+                              columns,
+                              rowIndex,
+                              i,
+                              {
+                                cardWidth,
+                                cardHeight: height,
+                                cardStep,
+                                rowStep,
+                              },
+                            ),
+                            borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                          }}
+                        />
+                      )}
+                      {moved && movedCard.slot !== undefined && (
+                        <SlotTab
+                          cardWidth={cardWidth}
+                          label={movedCard.label}
+                          slot={movedCard.slot}
+                        />
+                      )}
+                    </button>
+                  </CardNote>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
       {zoneState === "blocked" && <NoEntrySign reducedMotion={reducedMotion} />}
       <ZoneLabel
@@ -1898,6 +1919,57 @@ export function DiscardPile({
         <DoubleDiscardOutline reducedMotion={reducedMotion} />
       )}
     </section>
+  );
+}
+
+/** The size of a suit's letter before its row of discards, per the height of a card's rank. */
+const DISCARD_ROW_LETTER_FONT_PER_RANK_HEIGHT = 1.3;
+
+/**
+ * In colorblind mode, the letter of each row's suit, level with the ranks of its cards. The cards
+ * leave out the letter, since each card covers all of the card before it but its rank.
+ */
+function DiscardRowLetters({
+  rows,
+  variant,
+  cardWidth,
+  rowStep,
+}: {
+  readonly rows: ReadonlyArray<readonly DiscardView[]>;
+  readonly variant: Variant;
+  readonly cardWidth: number;
+  readonly rowStep: number;
+}): React.JSX.Element {
+  const rankTop = cardWidth * CORNER_INSET_PER_WIDTH;
+  const rankHeight = cardWidth * RANK_BOTTOM_PER_WIDTH - rankTop;
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:flex tw:shrink-0 tw:flex-col tw:pr-1.5"
+    >
+      {rows.map((row) => {
+        const suitIndex = row[0]?.suitIndex;
+        const suit =
+          suitIndex === undefined ? undefined : variant.suits[suitIndex];
+        return (
+          <div
+            className="tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:leading-none tw:font-bold tw:text-game-text"
+            key={row[0]?.order}
+            style={{
+              height: rankHeight,
+              marginTop: rankTop,
+              marginBottom: rowStep - rankTop - rankHeight,
+              fontFamily: SUIT_LETTER_FONT_FAMILY,
+              fontSize: rankHeight * DISCARD_ROW_LETTER_FONT_PER_RANK_HEIGHT,
+            }}
+          >
+            {suit === undefined
+              ? ""
+              : getSuitAbbreviationForVariant(suit, variant)}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

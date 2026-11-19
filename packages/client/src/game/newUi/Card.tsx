@@ -192,7 +192,7 @@ function getFacePips(rank: Rank | undefined): readonly FacePip[] {
  * How far the rank and the badges in the corners of a card are from its edges, as a fraction of its
  * width. It is the same from the side and from the top, so the corners look even.
  */
-const CORNER_INSET_PER_WIDTH = 0.09;
+export const CORNER_INSET_PER_WIDTH = 0.09;
 
 /**
  * The box around every rank shape, relative to the origin of its path, in the card's own units. The
@@ -418,8 +418,8 @@ export interface CardFaceProps {
 
   /**
    * Whether colorblind mode leaves out the suit's letter beside the rank. The discard pile leaves
-   * it out on the cards that another card covers, so that their ranks still show. The card that
-   * covers them is of the same suit and shows the letter.
+   * it out, since its cards cover all of the card before them but a strip that fits only the rank.
+   * Each row shows the letter of its suit once, before its cards.
    */
   readonly suitLetterHidden?: boolean;
 
@@ -2320,7 +2320,7 @@ const SUIT_LETTER_MEASURE_FONT_SIZE = 100;
  * The font of the suit's letter in color-blind mode. Its brush strokes look like the shapes of the
  * ranks. "public/css/app/common.css" loads it.
  */
-const SUIT_LETTER_FONT_FAMILY = "Kalam";
+export const SUIT_LETTER_FONT_FAMILY = "Kalam";
 
 /**
  * The width of the suit's letter until the browser measures it, in the card's units. It is about
