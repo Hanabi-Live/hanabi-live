@@ -274,6 +274,9 @@ export function CreateGame(): React.JSX.Element {
   const extraOptionsClass = useRevealClassName(extraOptionsShown);
   // Changing or suggesting the options that the table already has would do nothing.
   const unchanged = mode !== "create" && equal(form, initialForm);
+  // From the click on the submit button until the server answers. The page stays open, so that a
+  // refusal keeps what the user entered.
+  const [waiting, setWaiting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const timed = form.timed && !form.extraOptions.speedrun;
   const timedRowClass = useRevealClassName(timed);
@@ -304,7 +307,11 @@ export function CreateGame(): React.JSX.Element {
   }
 
   function submit() {
-    if (unchanged || rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)) {
+    if (
+      waiting
+      || unchanged
+      || rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)
+    ) {
       return;
     }
 
@@ -346,8 +353,7 @@ export function CreateGame(): React.JSX.Element {
       ...(deal !== undefined && { deal }),
     };
 
-    lobbyPage.hide();
-
+    setWaiting(true);
     if (isNew) {
       store.dispatch(creatingTableChanged(true));
       globals.connection.send(
@@ -357,15 +363,26 @@ export function CreateGame(): React.JSX.Element {
           ...(password !== "" && { password }),
         },
         () => {
-          // The new table's pregame, if any, arrives before the reply.
+          // On success, the new table's pregame arrives before the reply and closes the page.
           store.dispatch(creatingTableChanged(false));
+          setWaiting(false);
         },
       );
     } else {
-      globals.connection.send("tableUpdate", {
-        tableId: globals.joinedTableId,
-        settings,
-      });
+      globals.connection.send(
+        "tableUpdate",
+        {
+          tableId: globals.joinedTableId,
+          settings,
+        },
+        (reply) => {
+          setWaiting(false);
+          // The user may have left the page while waiting.
+          if (reply.ok && store.getState().session.lobbyPage === "createGame") {
+            lobbyPage.hide();
+          }
+        },
+      );
     }
   }
 
@@ -652,18 +669,40 @@ export function CreateGame(): React.JSX.Element {
 
       {/* A disabled button gets no pointer events, so this one only looks disabled, to keep its
           tooltip. */}
-      <button
-        aria-disabled={unchanged}
-        className={`button fit primary tw:mt-6${unchanged ? " disabled" : ""}`}
-        id="create-game-submit"
-        onClick={submit}
-        ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
-        type="submit"
-      >
-        {SUBMIT_LABELS[mode]}
-      </button>
+      <div className="tw:mt-6 tw:flex tw:items-center tw:gap-3">
+        <button
+          aria-disabled={unchanged || waiting}
+          className={`button fit primary tw:flex-1${unchanged || waiting ? " disabled" : ""}`}
+          id="create-game-submit"
+          onClick={submit}
+          ref={tooltipRef(getSubmitTooltip(waiting, unchanged))}
+          type="submit"
+        >
+          {SUBMIT_LABELS[mode]}
+        </button>
+        {waiting && (
+          <img
+            className="tw:h-[2.5em]"
+            id="create-game-ajax"
+            src="/public/img/ajax.gif"
+          />
+        )}
+      </div>
     </>
   );
+}
+
+function getSubmitTooltip(
+  waiting: boolean,
+  unchanged: boolean,
+): string | undefined {
+  if (waiting) {
+    return "Waiting for the server to answer.";
+  }
+  if (unchanged) {
+    return "Nothing has changed.";
+  }
+  return undefined;
 }
 
 /**

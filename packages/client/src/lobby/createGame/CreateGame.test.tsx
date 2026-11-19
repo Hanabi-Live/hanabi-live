@@ -63,7 +63,7 @@ vi.mock("../../Tooltip.ts", () => ({
   },
 }));
 
-// The server never replies in these tests.
+// The server replies only when a test calls the callback that was sent.
 const send = vi.fn();
 
 const OUR_USER_ID = 1 as UserId;
@@ -126,9 +126,29 @@ describe("CreateGame", () => {
       },
       expect.any(Function),
     );
-    expect(hide).toHaveBeenCalled();
     expect(store.getState().session.creatingTable).toBe(true);
     expect(localStorage.getItem("createTablePassword")).toBe("secret");
+  });
+
+  test("the page waits for the server, and a refusal keeps it open", () => {
+    showPage();
+    click("create-game-submit");
+
+    // The page stays open and cannot send the table again.
+    expect(hide).not.toHaveBeenCalled();
+    expect(getInput("create-game-submit").classList).toContain("disabled");
+    expect(document.querySelector("#create-game-ajax")).not.toBeNull();
+    click("create-game-submit");
+    expect(send).toHaveBeenCalledTimes(1);
+
+    const onReply = send.mock.calls[0]![2] as (reply: { ok: false }) => void;
+    act(() => {
+      onReply({ ok: false });
+    });
+    expect(hide).not.toHaveBeenCalled();
+    expect(getInput("create-game-submit").classList).not.toContain("disabled");
+    expect(document.querySelector("#create-game-ajax")).toBeNull();
+    expect(store.getState().session.creatingTable).toBe(false);
   });
 
   test("an invalid seed keeps the page open and explains why", () => {
@@ -226,18 +246,22 @@ describe("CreateGame", () => {
       },
     });
     click("create-game-submit");
-    expect(send).toHaveBeenCalledWith("tableUpdate", {
-      tableId: TABLE_ID,
-      settings: {
-        name: "Bob's other game",
-        maxPlayers: 4,
-        options: defaultSettings.createTable.options,
-        deal: {
-          type: "replay",
-          gameId: 12,
-          turn: 2,
+    expect(send).toHaveBeenCalledWith(
+      "tableUpdate",
+      {
+        tableId: TABLE_ID,
+        settings: {
+          name: "Bob's other game",
+          maxPlayers: 4,
+          options: defaultSettings.createTable.options,
+          deal: {
+            type: "replay",
+            gameId: 12,
+            turn: 2,
+          },
         },
       },
-    });
+      expect.any(Function),
+    );
   });
 });
