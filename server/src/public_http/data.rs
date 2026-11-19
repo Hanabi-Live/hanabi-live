@@ -12,10 +12,10 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
 
 const SORTABLE_COLUMNS: &[Column] = &[Column::GameId, Column::NumPlayers, Column::Score];
 
-/// Whether a game has an option that keeps its score from counting as a normal one, the options of
-/// `crate::model::ScoreModifier`. False sorts first.
-const MODIFIED_SCORE: &str =
-    "(g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card OR g.all_or_nothing)";
+/// Whether a game has an option that changes its score: the options of
+/// `crate::model::ScoreModifier`, which keep a score from counting as a normal one, and
+/// Detrimental Characters. False sorts first.
+const MODIFIED_SCORE: &str = "(g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card OR g.all_or_nothing OR g.detrimental_characters)";
 
 const fn column_field(column: Column) -> &'static str {
     match column {

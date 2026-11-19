@@ -909,8 +909,8 @@ The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or
 `score`. Seed lists filter by `gameId` or `score`, and the other lists by any
 column. A sort by `score` puts the games with an option that changes the score
-(Bottom-Deck Blind-Plays, Empty Clues, One Extra Card, One Less Card, or All or
-Nothing) after the other games.
+(Bottom-Deck Blind-Plays, Empty Clues, One Extra Card, One Less Card, All or
+Nothing, or Detrimental Characters) after the other games.
 
 `filter[variant]` finds the games whose variant's name contains its text, and
 `filter[player]` finds the games with a player whose name contains each of its
