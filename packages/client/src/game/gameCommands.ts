@@ -240,10 +240,14 @@ function showsTable(conn: Connection, tableId: number): boolean {
 }
 
 /**
- * Asks the server for what we need to draw the game, such as the players and the variant. When it
- * arrives, we draw the UI, and then ask for the game's state ("gameStateLoad").
+ * Asks the server for what we need to draw the game, such as the players and the variant, and for
+ * the game's state ("gameStateLoad") once the screen can show it.
  */
 export function loadGameInit(conn: Connection, tableId: number): void {
+  // The New UI can show the state as soon as it knows the game, so it asks for both at once. The
+  // table answers its requests in order, so the state arrives after the game's description. The
+  // classic screen first loads its images and draws itself, which needs the description.
+  const newUi = lobbyGlobals.ui === undefined;
   conn.send("gameInitLoad", { tableId }, (reply) => {
     if (!reply.ok || !showsTable(conn, tableId)) {
       return;
@@ -252,23 +256,23 @@ export function loadGameInit(conn: Connection, tableId: number): void {
     setUrl(tableId, metadata);
     initStateStore(metadata);
 
-    // Ask for the game's state once the screen can show it. The classic screen first loads its
-    // images and draws itself, now that it knows the number of players and the variant.
-    if (lobbyGlobals.ui === undefined) {
+    if (newUi) {
       // The New UI handles the clue hotkeys itself, so the other hotkeys need no classic screen.
       keyboard.init();
-      requestGameState();
     } else {
-      uiInit(requestGameState);
+      uiInit(() => {
+        requestGameState(conn, tableId);
+      });
     }
   });
+  if (newUi) {
+    requestGameState(conn, tableId);
+  }
 }
 
 /** Asks for the actions that have taken place in the game so far. */
-function requestGameState() {
-  lobbyGlobals.connection.send("gameStateLoad", {
-    tableId: lobbyGlobals.joinedTableId,
-  });
+function requestGameState(conn: Connection, tableId: number) {
+  conn.send("gameStateLoad", { tableId });
 }
 
 // Received when spectating a game in progress, when someone else changes a note that we may see.

@@ -492,6 +492,13 @@ function gameCallback<Command extends ServerEvent>(
     if (commandName !== "gameState" && gameSession.isLoading()) {
       return;
     }
+    // The state can arrive after the server refused to describe the game.
+    if (
+      commandName === "gameState"
+      && store.getState().game.current === undefined
+    ) {
+      return;
+    }
     if (
       commandName === "gameState"
       && endedAfterDescribed(data as ServerEventData["gameState"])
