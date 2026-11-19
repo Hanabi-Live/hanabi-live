@@ -1,10 +1,6 @@
-// ----------------------
-// Canvas color palette
-// ----------------------
-
-// The game UI is drawn on a Konva canvas, so the normal CSS theming does not apply. The palette
-// colors are defined as CSS custom properties in "public/css/tokens.css" and read from the computed
-// style, so that the canvas and the CSS share a single source of truth.
+// The classic game screen is drawn on a Konva canvas, so CSS does not color it. The palette colors
+// are defined as CSS custom properties in "public/css/tokens.css" and read from the computed style,
+// so that the canvas and the CSS share a single source of truth.
 
 interface CanvasColors {
   /** The turn numbers in the full action log. */

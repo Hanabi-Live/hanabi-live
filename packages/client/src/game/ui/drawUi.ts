@@ -27,8 +27,8 @@ import {
 } from "complete-common";
 import Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import { getCanvasColors } from "../../canvasColors.ts";
 import { store } from "../../store.ts";
-import { getCanvasColors } from "../../theme.ts";
 import * as gameChat from "../chat.ts";
 import { askForEfficiency } from "../efficiencyModifier.ts";
 import * as gameSession from "../gameSession.ts";

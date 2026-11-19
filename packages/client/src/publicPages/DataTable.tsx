@@ -198,7 +198,7 @@ function Header({
     >
       {/* The sorted column's header is bold, and its arrow shows the direction. */}
       {column.header}
-      {/* The arrows use the header's text color, so that they follow the theme. */}
+      {/* The arrows use the header's text color. */}
       <svg
         aria-hidden
         className="tw:absolute tw:top-1/2 tw:right-0 tw:-translate-y-1/2"

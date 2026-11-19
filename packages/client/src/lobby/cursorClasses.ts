@@ -15,8 +15,8 @@ export const SPECTATE_CURSOR = "tw:cursor-(--cursor-spectate)";
 
 /** A player name that a spectator can click to see the game as that player sees it. */
 export const SHADOW_NAME =
-  "tw:hover:cursor-(--cursor-shadow) tw:hover:text-name-hover";
+  "tw:hover:cursor-(--cursor-shadow) tw:hover:text-link";
 
 /** The player name that a spectator shadows, which they can click to stop. */
 export const UN_SHADOW_NAME =
-  "tw:hover:cursor-(--cursor-un-shadow) tw:hover:text-name-hover";
+  "tw:hover:cursor-(--cursor-un-shadow) tw:hover:text-link";

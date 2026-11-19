@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import { getCanvasColors } from "../../canvasColors.ts";
 import * as modals from "../../modals.ts";
-import { getCanvasColors } from "../../theme.ts";
 import { getCardImages } from "../cardImages.ts";
 import { globals } from "./UiGlobals.ts";
 import {

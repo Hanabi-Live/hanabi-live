@@ -33,16 +33,15 @@
     display var(--tooltip-close-duration) allow-discrete;
 }
 
-/* The redesigned game screen looks the same in both themes (see "Tooltip.ts"). Its tooltips are
-   white with dark text, like a sheet of paper, as card notes are on the classic screen. */
+/* The tooltips of the redesigned game screen (see "Tooltip.ts") are white with dark text, like a
+   sheet of paper, as card notes are on the classic screen. */
 .tooltip-bubble.tooltip-game-screen {
   --tooltip-background: white;
   --tooltip-border-width: 1px;
   --tooltip-border-color: rgb(0 0 0 / 25%);
   --surface: white;
   --text: var(--card-ink);
-  --text-strong: var(--card-ink);
-  /* The link color of the light theme, which is also white. */
+  /* A dark link color, since the tooltip is white */
   --link: blue;
   --note-title-line: rgb(0 0 0 / 35%);
   /* No text on the game screen can be selected. */

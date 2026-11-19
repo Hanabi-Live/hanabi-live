@@ -67,7 +67,7 @@
 .modal {
   align-self: flex-start;
   background-color: var(--surface);
-  border: 2px solid var(--modal-border);
+  border: 2px solid var(--border);
   border-radius: var(--radius);
   max-height: calc(100% - 4em);
   max-width: 80vw;

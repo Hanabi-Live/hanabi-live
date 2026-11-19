@@ -1,8 +1,8 @@
 // The menu that the skull button opens, to vote to end the game or to end it now.
 
 import Konva from "konva";
+import { getCanvasColors } from "../../canvasColors.ts";
 import { store } from "../../store.ts";
-import { getCanvasColors } from "../../theme.ts";
 import * as tooltips from "../../tooltips.ts";
 import { globals } from "./UiGlobals.ts";
 import {

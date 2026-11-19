@@ -105,7 +105,7 @@ a {
 
 strong,
 b {
-  color: var(--text-strong);
+  color: var(--text);
   font-weight: 400;
 }
 
@@ -122,7 +122,7 @@ h1,
 h2,
 h3,
 h4 {
-  color: var(--text-strong);
+  color: var(--text);
   font-weight: 300;
   line-height: 1em;
   margin: 0 0 0.5em 0;
@@ -300,7 +300,7 @@ form {
 }
 
 label {
-  color: var(--text-strong);
+  color: var(--text);
   display: block;
   font-size: 0.9em;
   font-weight: 300;
@@ -404,8 +404,8 @@ input[type="radio"] + label::before {
 
 input[type="checkbox"]:checked + label::before,
 input[type="radio"]:checked + label::before {
-  background: var(--checkbox-checked);
-  border-color: var(--checkbox-checked);
+  background: var(--green);
+  border-color: var(--green);
   color: var(--text-on-accent);
   content: "\f00c";
 }
@@ -584,7 +584,7 @@ table td {
 }
 
 table th {
-  color: var(--table-header-text);
+  color: var(--text-label);
   font-size: 0.8em;
   font-weight: 300;
   padding: 0 0.75em 0.25em 0.75em;
@@ -666,7 +666,7 @@ input[type="button"]:focus-visible,
 }
 
 .button.alt {
-  background-color: var(--button-alt-bg);
+  background-color: var(--surface-sunken);
   box-shadow: inset 0 0 0 2px var(--border);
   color: var(--text);
   /* An outlined button is not a key, so it does not move when pressed. */
@@ -674,7 +674,7 @@ input[type="button"]:focus-visible,
 }
 
 .button.alt:hover {
-  background-color: var(--button-alt-hover-bg);
+  background-color: var(--row-hover-bg);
 }
 
 .button.alt:active {

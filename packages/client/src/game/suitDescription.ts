@@ -92,7 +92,7 @@ export function getSuitDescriptionHtml(
 
   return `
     <div class="small-tooltip-text">
-      <div class="tw:font-semibold tw:text-text-strong">
+      <div class="tw:font-semibold tw:text-text">
         ${suit.displayName} (${abbreviation})
       </div>
       ${lines.join("<br>")}

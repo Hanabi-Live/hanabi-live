@@ -197,7 +197,7 @@ function PlayerBox({
     <div
       className={[
         "tw:mr-2 tw:mb-2 tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
-        "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--pregame-player-border)",
+        "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--border)",
         `tw:p-[0.8em] tw:narrow-980:max-w-[200px] ${FADE_IN_CLASS}`,
       ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}

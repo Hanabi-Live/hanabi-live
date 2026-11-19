@@ -47,7 +47,7 @@ export const SLIDE_IN_PIXELS = 4;
 /** The element in the popped-out chat window of the New UI that holds the chat box. */
 export const CHAT_WINDOW_ID = "game-chat-window";
 
-/** The redesigned game screen and its chat window, whose tooltips are white in both themes. */
+/** The redesigned game screen and its chat window, whose tooltips are white. */
 const GAME_SCREEN_SELECTOR = `#game-new-ui, #${CHAT_WINDOW_ID}`;
 
 /** The closest that a tooltip comes to the edge of the window. */
@@ -376,7 +376,7 @@ export class Tooltip {
       // The anchor can be in another window, such as the popped-out chat of the New UI.
       this.anchor.ownerDocument.body.append(this.bubble);
     }
-    // The redesigned game screen looks the same in both themes, so its tooltips are white in both.
+    // The tooltips of the redesigned game screen are white, like the paper of its card notes.
     this.bubble.classList.toggle(
       "tooltip-game-screen",
       this.anchor.closest(GAME_SCREEN_SELECTOR) !== null,

@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { globals as lobbyGlobals } from "../../Globals.ts";
+import { getCanvasColors } from "../../canvasColors.ts";
 import { store } from "../../store.ts";
-import { getCanvasColors } from "../../theme.ts";
 import * as hypothetical from "../hypothetical.ts";
 import { globals } from "./UiGlobals.ts";
 import { BGA_ACTION_LOG, THIN_STROKE_WIDTH } from "./constants.ts";

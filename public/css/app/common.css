@@ -116,7 +116,7 @@ body,
   padding-top: var(--header-height);
 }
 
-/* The felt table of the New UI, in both themes. */
+/* The felt table of the New UI */
 body {
   background-color: var(--game-screen-bg);
   background-image: var(--game-screen-table);

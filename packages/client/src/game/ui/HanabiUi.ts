@@ -69,9 +69,6 @@ export class HanabiUi {
       window.addEventListener("resize", this.resizeHandler);
     }
 
-    // Rebuild the UI when the theme changes so that the canvas elements are redrawn with the new
-    // colors.
-
     // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the reply to "gameInitLoad" from the server in order to know how many players
     // are in the game and what the variant is. Only then can we start drawing the UI.
@@ -122,7 +119,7 @@ export class HanabiUi {
 
   /**
    * Rebuilds the entire game UI from scratch, redrawing every element (for example, so that canvas
-   * elements pick up new theme colors or the new stage size).
+   * elements pick up the new stage size).
    */
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private rebuildGameUi(): void {

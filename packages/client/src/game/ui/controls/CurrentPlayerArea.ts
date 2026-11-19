@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { getCanvasColors } from "../../../theme.ts";
+import { getCanvasColors } from "../../../canvasColors.ts";
 import { globals } from "../UiGlobals.ts";
 import {
   FONT_FAMILY,

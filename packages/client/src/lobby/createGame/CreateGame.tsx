@@ -829,7 +829,7 @@ export function HelpLink({
 }): React.JSX.Element {
   return (
     <a aria-label={text} href={href} rel="noopener noreferrer" target="_blank">
-      <i className="fas fa-question-circle tw:hover:text-(--help-icon-hover)" />
+      <i className="fas fa-question-circle tw:hover:text-(--link)" />
     </a>
   );
 }

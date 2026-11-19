@@ -3,7 +3,7 @@ import type { Tuple } from "complete-common";
 import { assertDefined, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/lib/Container";
-import { getCanvasColors } from "../../theme.ts";
+import { getCanvasColors } from "../../canvasColors.ts";
 import { MultiFitText } from "./MultiFitText.ts";
 import { globals } from "./UiGlobals.ts";
 import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants.ts";

@@ -36,8 +36,7 @@ const BUTTON_CLASS_NAME = [
 const ENABLED_COLOR_CLASS_NAME =
   "tw:bg-white/8 tw:hover:bg-white/15 tw:active:bg-white/8";
 
-const HELP_COLOR_CLASS_NAME =
-  "tw:bg-(--button-green) tw:hover:bg-(--button-green-hover)";
+const HELP_COLOR_CLASS_NAME = "tw:bg-(--green) tw:hover:bg-(--green-hover)";
 
 const ICON_CLASS_NAME =
   "tw:relative tw:top-[0.05em] tw:mr-[0.3em] tw:narrow-840:mr-0";

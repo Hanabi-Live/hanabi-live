@@ -29,7 +29,7 @@
 /* A panel that holds a group of rows. */
 .lobby-rows {
   background-color: var(--surface-panel);
-  border: 1px solid var(--border-panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   list-style: none;
   margin: 0;
@@ -48,7 +48,7 @@
 }
 
 .lobby-row + .lobby-row {
-  border-top: 1px solid var(--border-panel);
+  border-top: 1px solid var(--border);
 }
 
 /* Wrapped lines of a description line up with its text rather than its icon. */

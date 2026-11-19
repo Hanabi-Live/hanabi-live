@@ -7,7 +7,7 @@
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);
 
 /*
-  The colors are the ones in "public/css/tokens.css", so that they follow the theme. For example,
+  The colors are the ones in "public/css/tokens.css". For example,
   "tw:bg-surface" uses "--surface".
 */
 @theme inline {
@@ -30,9 +30,7 @@
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-panel: var(--surface-panel);
   --color-border: var(--border);
-  --color-border-panel: var(--border-panel);
   --color-text: var(--text);
-  --color-text-strong: var(--text-strong);
   --color-text-label: var(--text-label);
   --color-text-on-accent: var(--text-on-accent);
   --color-link: var(--link);
@@ -42,7 +40,6 @@
   --color-green-tint: var(--green-tint);
   --color-name-me: var(--name-me);
   --color-friend: var(--friend);
-  --color-name-hover: var(--name-hover);
   --color-difficulty-hard: var(--difficulty-hard);
   --color-difficulty-very-hard: var(--difficulty-very-hard);
   --color-spinner-backdrop: var(--spinner-backdrop);

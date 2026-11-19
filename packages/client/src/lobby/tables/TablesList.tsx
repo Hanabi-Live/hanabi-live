@@ -65,11 +65,11 @@ const COLUMNS = {
 } as const;
 
 /**
- * The rows stand apart from each other, with lines between their cells. In the dark theme, a line
- * on the left of each row and its taken seats show its kind, in the color of "--row-mark".
+ * The rows stand apart from each other, with lines between their cells. A line on the left of each
+ * row and its taken seats show its kind, in the color of "--row-mark".
  */
 const TABLE_CLASS_NAME =
-  "tw:mb-0 tw:border-separate tw:border-spacing-y-1 tw:[&>thead]:border-b-0 tw:[&>tbody>tr]:shadow-[inset_4px_0_0_var(--row-mark,transparent)] tw:[&>tbody>tr>td]:border-r tw:[&>tbody>tr>td:last-child]:border-r-0 tw:[&>tbody>tr>td]:border-(--lobby-table-cell-line)";
+  "tw:mb-0 tw:border-separate tw:border-spacing-y-1 tw:[&>thead]:border-b-0 tw:[&>tbody>tr]:shadow-[inset_4px_0_0_var(--row-mark)] tw:[&>tbody>tr>td]:border-r tw:[&>tbody>tr>td:last-child]:border-r-0 tw:[&>tbody>tr>td]:border-(--lobby-table-cell-line)";
 
 /** The background and the mark of each kind of row. */
 const ROW_CLASSES = {
@@ -297,7 +297,7 @@ function SeatPips({
   return (
     <span
       aria-label={label}
-      className="tw:inline-flex tw:items-center tw:gap-[0.35em] tw:align-middle tw:text-(--row-mark,currentColor)"
+      className="tw:inline-flex tw:items-center tw:gap-[0.35em] tw:align-middle tw:text-(--row-mark)"
       ref={tooltipRef(label)}
       role="img"
     >

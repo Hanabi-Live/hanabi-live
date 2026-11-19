@@ -255,7 +255,7 @@ function PanelButton({
       className={classes(
         "button small",
         className ?? false,
-        active && "tw:bg-(--button-green)",
+        active && "tw:bg-(--green)",
         !shown && "tw:hidden",
       )}
       id={`lobby-toggle-show-${id}`}

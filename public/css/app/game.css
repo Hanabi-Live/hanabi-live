@@ -58,7 +58,7 @@
   /* The modal is automatically positioned in the "chat.js" file */
   background-color: var(--game-chat-bg);
   border-radius: 10px;
-  border: 3px solid var(--game-chat-border);
+  border: 3px solid var(--border);
   touch-action: none;
 }
 

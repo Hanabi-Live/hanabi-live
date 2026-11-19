@@ -97,7 +97,7 @@ function NumberPrompt({
         {prompt.current !== undefined && (
           <>
             {/* It looks like the label of the input below. */}
-            <span className="tw:text-[0.9em] tw:font-light tw:text-text-strong">
+            <span className="tw:text-[0.9em] tw:font-light tw:text-text">
               {prompt.current.label}
             </span>
             {/* Lined up with the number in the input below, after its border and padding. */}
