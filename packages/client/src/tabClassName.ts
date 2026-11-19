@@ -9,7 +9,7 @@ export function getTabClassName(reducedMotion: boolean): string {
     "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:leading-[1.3] tw:tracking-[inherit] tw:text-text-label",
     "tw:hover:text-text",
     "tw:after:absolute tw:after:inset-x-0 tw:after:bottom-0 tw:after:h-0.5 tw:after:bg-(--button-primary-bg) tw:after:opacity-0 tw:after:content-['']",
-    "tw:hover:after:opacity-100 tw:not-aria-selected:hover:after:h-px",
+    "tw:not-aria-selected:after:h-px tw:hover:after:opacity-100",
     "tw:aria-selected:cursor-default tw:aria-selected:text-text tw:aria-selected:after:opacity-100",
     reducedMotion ? "" : TAB_TRANSITION_CLASS_NAME,
   ].join(" ");
