@@ -242,6 +242,7 @@ function localPartElement(
   }
   return (
     <button
+      className="button small alt"
       key={key}
       onClick={() => {
         navigator.clipboard.writeText(part.copy).catch((error: unknown) => {
@@ -323,7 +324,7 @@ function SuggestionButton({
 
   return (
     <button
-      className="new-options"
+      className="button small alt"
       disabled={sent}
       onClick={() => {
         acceptOptionsFromGuest(suggestion);
