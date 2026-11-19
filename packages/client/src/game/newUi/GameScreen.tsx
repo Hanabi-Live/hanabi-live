@@ -574,9 +574,10 @@ export function GameScreen(): React.JSX.Element {
     };
   }, [barElement, panel, rootRef, stacked]);
 
-  // In the wide layout, the clue menu of the lowest hand opens below it when the table has room for
-  // it there, such as in a 2-player game. Then it covers nothing. The hand's clue button goes below
-  // it too. The box of the hands reaches to the bottom of the table.
+  // In the wide layout of a 2-player game, the clue menu of the lowest hand opens below it when the
+  // table has room for it there. Then it covers nothing. The hand's clue button goes below it too.
+  // The box of the hands reaches to the bottom of the table. With more players, the button stays to
+  // the right of every hand, so that all of the hands look the same.
   const [clueBelowLowestHand, setClueBelowLowestHand] = useState(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
@@ -586,6 +587,7 @@ export function GameScreen(): React.JSX.Element {
         : [...handsElement.querySelectorAll("[data-hand]")].at(-1);
     setClueBelowLowestHand(
       !stacked
+        && state?.metadata.options.numPlayers === 2
         && handsElement !== null
         && lowestHand !== undefined
         && clueDrawerFitsBelow(

@@ -147,8 +147,8 @@ interface HandsProps {
   readonly clueButtonBesideName: boolean;
 
   /**
-   * In the wide layout, whether the clue menu of the lowest hand opens below it, so that its clue
-   * button goes below it too (see `clueDrawerFitsBelow`).
+   * In the wide layout of a 2-player game, whether the clue menu of the lowest hand opens below it,
+   * so that its clue button goes below it too (see `clueDrawerFitsBelow`).
    */
   readonly clueBelowLowestHand: boolean;
 

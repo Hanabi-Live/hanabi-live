@@ -47,8 +47,9 @@ interface ClueMenuProps {
 
   /**
    * Whether the drawer opens below the hand: in the phone layout, where the page scrolls to show
-   * it, and below the lowest hand when the table has room for it there (see `clueDrawerFitsBelow`).
-   * Otherwise, it opens to the right of the hand, so that it does not cover the other hands.
+   * it, and below the lowest hand of a 2-player game when the table has room for it there (see
+   * `clueDrawerFitsBelow`). Otherwise, it opens to the right of the hand, so that it does not cover
+   * the other hands.
    */
   readonly below: boolean;
 }
