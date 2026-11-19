@@ -68,7 +68,6 @@ test.each([
       <main>
         <div>
           <ClueMenu
-            below={below}
             canGive={false}
             clue={undefined}
             cluePreview={false}
@@ -81,6 +80,7 @@ test.each([
             onShowActions={vi.fn<() => void>()}
             onToggleCluePreview={vi.fn<() => void>()}
             openedItself={false}
+            phoneLayout={below}
             reducedMotion
             variant={getVariant("No Variant")}
           />

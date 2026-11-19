@@ -1578,7 +1578,6 @@ export function GameScreen(): React.JSX.Element {
                   clueMenu={
                     menuTarget === undefined ? undefined : (
                       <ClueMenu
-                        below={stacked}
                         canGive={canGive}
                         clue={clue}
                         cluePreview={cluePreview}
@@ -1596,6 +1595,7 @@ export function GameScreen(): React.JSX.Element {
                           setCluePreview(!cluePreview);
                         }}
                         openedItself={clueTarget === undefined}
+                        phoneLayout={stacked}
                         reducedMotion={settings.reducedMotion}
                         variant={variant}
                       />
