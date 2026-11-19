@@ -46,18 +46,9 @@ export function fadeIn(element: HTMLElement): void {
   }
 
   showElement(element);
-  playFadeIn(element);
-}
-
-/**
- * Fades in an element that is already shown, such as one that a class shows. With the "Reduced
- * motion" setting, it does nothing.
- */
-export function playFadeIn(element: HTMLElement): void {
   if (getFadeTimeMs() === 0) {
     return;
   }
-  stopFade(element);
   const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], {
     duration: FADE_TIME_MS,
     easing: "ease-in-out",

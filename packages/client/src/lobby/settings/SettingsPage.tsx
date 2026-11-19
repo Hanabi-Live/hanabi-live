@@ -11,8 +11,8 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { globals } from "../../Globals.ts";
 import {
   getFadeStyle,
-  getRevealClassName,
   useReducedMotion,
+  useRevealClassName,
 } from "../../fade.ts";
 import { SoundType } from "../../game/types/SoundType.ts";
 import * as notifications from "../../notifications.ts";
@@ -250,7 +250,7 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
 
   return (
     <li
-      className={`lobby-row ${getRevealClassName(shown)}`}
+      className={`lobby-row ${useRevealClassName(shown)}`}
       style={getFadeStyle(reducedMotion)}
     >
       <RowLabel htmlFor="hGroupLevel" icon="fa-signal">

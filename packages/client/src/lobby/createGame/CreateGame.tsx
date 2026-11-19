@@ -30,8 +30,8 @@ import {
 } from "../../constants.ts";
 import {
   getFadeStyle,
-  getRevealClassName,
   useReducedMotion,
+  useRevealClassName,
 } from "../../fade.ts";
 import { globals } from "../../Globals.ts";
 import type { LengthLimit } from "../../LengthCounter.tsx";
@@ -270,10 +270,13 @@ export function CreateGame(): React.JSX.Element {
   );
   const errors = getErrors(form);
   const fadeStyle = getFadeStyle(useReducedMotion());
+  const timerGroupClass = useRevealClassName(!form.extraOptions.speedrun);
+  const extraOptionsClass = useRevealClassName(extraOptionsShown);
   // Changing or suggesting the options that the table already has would do nothing.
   const unchanged = mode !== "create" && equal(form, initialForm);
   const nameRef = useRef<HTMLInputElement>(null);
   const timed = form.timed && !form.extraOptions.speedrun;
+  const timedRowClass = useRevealClassName(timed);
   const replaying = isReplaying(form);
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
@@ -466,10 +469,7 @@ export function CreateGame(): React.JSX.Element {
       </div>
 
       {/* Speedruns are never timed, so this group is hidden for them. */}
-      <div
-        className={`lobby-group ${getRevealClassName(!form.extraOptions.speedrun)}`}
-        style={fadeStyle}
-      >
+      <div className={`lobby-group ${timerGroupClass}`} style={fadeStyle}>
         <h3>Timer</h3>
         <ul className="lobby-rows">
           <CheckboxRow
@@ -482,10 +482,7 @@ export function CreateGame(): React.JSX.Element {
           >
             Timed
           </CheckboxRow>
-          <li
-            className={`lobby-row ${getRevealClassName(timed)}`}
-            style={fadeStyle}
-          >
+          <li className={`lobby-row ${timedRowClass}`} style={fadeStyle}>
             <RowLabel
               htmlFor="createTableTimeBaseMinutes"
               icon="fa-hourglass-start"
@@ -505,10 +502,7 @@ export function CreateGame(): React.JSX.Element {
               value={form.timeBaseMinutes}
             />
           </li>
-          <li
-            className={`lobby-row ${getRevealClassName(timed)}`}
-            style={fadeStyle}
-          >
+          <li className={`lobby-row ${timedRowClass}`} style={fadeStyle}>
             <RowLabel
               htmlFor="createTableTimePerTurnSeconds"
               icon="fa-stopwatch"
@@ -553,7 +547,7 @@ export function CreateGame(): React.JSX.Element {
       </div>
 
       {/* The wrapper grows and shrinks, and the space above the group grows and shrinks with it. */}
-      <div className={getRevealClassName(extraOptionsShown)} style={fadeStyle}>
+      <div className={extraOptionsClass} style={fadeStyle}>
         <div className="lobby-group tw:pt-6" id="create-game-extra-options">
           <h3>Extra Options</h3>
           <ul className="lobby-rows">

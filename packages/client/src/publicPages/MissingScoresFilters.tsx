@@ -6,7 +6,7 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useState } from "react";
 import type * as z from "zod";
-import { getFadeStyle, getRevealClassName } from "../fade.ts";
+import { getFadeStyle, useRevealClassName } from "../fade.ts";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 
@@ -74,6 +74,7 @@ function PlayerCountFilter({
  */
 function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
   const [open, setOpen] = useState(filters.active);
+  const filtersClass = useRevealClassName(open);
   const [included, setIncluded] = useState(
     () => new Set(filters.players.flatMap((p) => (p.excluded ? [] : p.name))),
   );
@@ -149,7 +150,7 @@ function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
 
       {/* The wrapper grows and shrinks, and the space below the form grows and shrinks with it. */}
       <div
-        className={`${getRevealClassName(open)} ${open ? "tw:flow-root" : ""}`}
+        className={`${filtersClass} ${open ? "tw:flow-root" : ""}`}
         // A public page reads the setting once, from the browser's cache (see
         // "reducedMotionCache.ts").
         style={getFadeStyle(store.getState().session.settings.reducedMotion)}

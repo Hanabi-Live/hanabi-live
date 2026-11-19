@@ -9,6 +9,7 @@ import {
   MIN_PLAYERS,
 } from "@hanabi-live/game";
 import { iRange } from "complete-common";
+import { useEffect, useState } from "react";
 import { globals } from "../../Globals.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
@@ -39,12 +40,18 @@ export function Pregame(): React.JSX.Element | undefined {
     game === undefined ? undefined : selectTable(state, game.tableId),
   );
   const reducedMotion = useReducedMotion();
+  // The people who are at the table when we join it show at once, with the table. The people who
+  // come after them fade in.
+  const tableId = game?.tableId;
+  const [shownTableId, setShownTableId] = useState(tableId);
+  useEffect(() => {
+    setShownTableId(tableId);
+  }, [tableId]);
   if (game === undefined) {
     return undefined;
   }
 
-  // The people who come to the table fade in.
-  const fadeStyle = getFadeStyle(reducedMotion);
+  const fadeStyle = getFadeStyle(reducedMotion || tableId !== shownTableId);
 
   const isSpectator = game.players.every(
     (player) => player.username !== username,
@@ -153,6 +160,7 @@ export function Pregame(): React.JSX.Element | undefined {
       <div className="tw:flex tw:h-full tw:flex-[1_1_100%] tw:flex-wrap tw:justify-start tw:overflow-y-auto">
         {game.players.map((player, i) => (
           <PlayerBox
+            fadeStyle={fadeStyle}
             game={game}
             isSpectator={isSpectator}
             key={player.username}
@@ -167,12 +175,14 @@ export function Pregame(): React.JSX.Element | undefined {
 }
 
 function PlayerBox({
+  fadeStyle,
   game,
   player,
   playerIndex,
   isSpectator,
   shadowed,
 }: {
+  readonly fadeStyle: React.CSSProperties;
   readonly game: Game;
   readonly player: Player;
   readonly playerIndex: PlayerIndex;
@@ -182,7 +192,6 @@ function PlayerBox({
   // The "numPlayers" in the options is not set yet.
   const numPlayers = game.players.length;
   const variantStats = player.stats.variant;
-  const fadeStyle = getFadeStyle(useReducedMotion());
 
   return (
     <div

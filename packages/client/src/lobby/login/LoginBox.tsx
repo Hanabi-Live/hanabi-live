@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   FADE_IN_CLASS,
   getFadeStyle,
-  getRevealClassName,
   useReducedMotion,
+  useRevealClassName,
 } from "../../fade.ts";
 import { outdatedClientHtml } from "../../notice.ts";
 import { store, useAppSelector } from "../../store.ts";
@@ -129,6 +129,7 @@ function SignIn() {
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const reducedMotion = useReducedMotion();
+  const changePasswordClass = useRevealClassName(changingPassword);
   const usernameRef = useRef<HTMLInputElement>(null);
 
   let buttonLabel = "Sign In";
@@ -225,7 +226,7 @@ function SignIn() {
         </InputRow>
         <div className="padding0p75" />
         <div
-          className={getRevealClassName(changingPassword)}
+          className={changePasswordClass}
           id="change-password-container"
           style={getFadeStyle(reducedMotion, CHANGE_PASSWORD_TRANSITION_MS)}
         >

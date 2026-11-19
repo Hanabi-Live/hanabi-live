@@ -6,8 +6,8 @@ import { LOCAL_STORAGE_KEY } from "../../constants.ts";
 import {
   FADE_IN_CLASS,
   getFadeStyle,
-  getRevealClassName,
   useReducedMotion,
+  useRevealClassName,
 } from "../../fade.ts";
 import { globals } from "../../Globals.ts";
 import { DOCS_URL, HelpLink } from "../createGame/CreateGame.tsx";
@@ -46,6 +46,7 @@ export function WatchReplay(): React.JSX.Element {
   );
   const [error, setError] = useState<string>();
   const fadeStyle = getFadeStyle(useReducedMotion());
+  const sharedRowClass = useRevealClassName(visibility === "shared");
   const gameIdRef = useRef<HTMLInputElement>(null);
   const jsonRef = useRef<HTMLTextAreaElement>(null);
 
@@ -200,10 +201,7 @@ export function WatchReplay(): React.JSX.Element {
               value={visibility}
             />
           </li>
-          <li
-            className={`lobby-row ${getRevealClassName(visibility === "shared")}`}
-            style={fadeStyle}
-          >
+          <li className={`lobby-row ${sharedRowClass}`} style={fadeStyle}>
             <div className="lobby-row-label">
               <label htmlFor="replay-spoiler-free">
                 <i className="fas fa-eye-slash fa-fw" />
