@@ -44,6 +44,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, SECOND_IN_MILLISECONDS } from "complete-common";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import {
   appendFile,
   mkdir,
@@ -2113,6 +2114,12 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
     path.join(ROOT, "node_modules"),
     path.join(source, "node_modules"),
   );
+  // "bun install" copies the stylesheets of Font Awesome into "public/css/lib", which Git ignores.
+  // A ref from before then has its own copy.
+  const library = path.join(source, "public/css/lib");
+  if (!existsSync(library)) {
+    await symlink(path.join(ROOT, "public/css/lib"), library);
+  }
   const bundlePath = path.join(directory, "compare.min.css");
   await run(process.execPath, [path.join(source, bundlerPath), bundlePath]);
   return await Bun.file(bundlePath).text();
