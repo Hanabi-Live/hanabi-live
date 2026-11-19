@@ -34,7 +34,8 @@ export function Select({
           key={index}
           tabIndex={-1}
         >
-          <option>{label}</option>
+          {/* React cannot infer the value of an option that has elements in it. */}
+          <option value="">{label}</option>
         </select>
       ))}
     </span>
