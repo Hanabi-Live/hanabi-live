@@ -7,20 +7,8 @@ import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 import type { State } from "../types/State.ts";
 import { fadeOutCopy } from "./motion.ts";
 
-/** How long the arrows show, from popping in to fading out, in milliseconds. */
-const FLASH_MILLISECONDS = 1000;
-
-/** How long the arrows take to pop in, in milliseconds. */
-const POP_MILLISECONDS = 180;
-
-/** When the arrows start to fade out, in milliseconds. */
-const FADE_DELAY_MILLISECONDS = 350;
-
-/** How far the arrows drift the way that the leader went, as a fraction of their width. */
-const DRIFT_FRACTION = 0.08;
-
-/** An overshoot, so that the arrows pop in. */
-const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+/** How long the arrows take to fade out, in milliseconds, as on the classic screen. */
+const FADE_MILLISECONDS = 1000;
 
 /** A move of the shared replay leader, to a later turn or an earlier one. */
 interface LeaderMove {
@@ -64,56 +52,27 @@ function LeaderArrows({
     if (arrows === null) {
       return undefined;
     }
-    const drift = `${direction * DRIFT_FRACTION * 100}%`;
-    // They pop in, hold still for a moment, and then drift the way that the leader went as they
-    // fade out.
-    const animation = arrows.animate(
-      [
-        {
-          opacity: 0,
-          transform: "translateX(0) scale(0.6)",
-          easing: EASE_OUT_BACK,
-        },
-        {
-          opacity: 1,
-          transform: "translateX(0) scale(1)",
-          offset: POP_MILLISECONDS / FLASH_MILLISECONDS,
-        },
-        {
-          opacity: 1,
-          transform: "translateX(0) scale(1)",
-          offset: FADE_DELAY_MILLISECONDS / FLASH_MILLISECONDS,
-          easing: "ease-in",
-        },
-        {
-          opacity: 0,
-          transform: `translateX(${drift}) scale(1)`,
-        },
-      ],
-      {
-        duration: FLASH_MILLISECONDS,
-        fill: "forwards",
-      },
-    );
+    // They show at once and fade out where they are, as on the classic screen.
+    const animation = arrows.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: FADE_MILLISECONDS,
+      fill: "forwards",
+    });
     // Arrows that go during their flash, such as when the viewer stops following the leader, fade
     // out from where they are (see `fadeOutCopy`). This cleanup runs while they are still on the
     // page, because it belongs to the component that React removes.
     return () => {
       const shown = Number(getComputedStyle(arrows).opacity);
-      const { transform } = getComputedStyle(arrows);
       animation.cancel();
       if (!(shown > 0) || store.getState().session.settings.reducedMotion) {
         return;
       }
 
       arrows.style.opacity = String(shown);
-      arrows.style.transform = transform;
       fadeOutCopy(arrows, [{ opacity: shown }, { opacity: 0 }], {
         duration: CLOSE_DURATION_IN_MILLISECONDS,
         easing: "ease-in",
       });
       arrows.style.opacity = "";
-      arrows.style.transform = "";
     };
   }, [direction]);
 
@@ -125,7 +84,7 @@ function LeaderArrows({
       className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
       data-leader-direction
       ref={ref}
-      viewBox="0 0 100 80"
+      viewBox="0 0 100 56"
     >
       <g
         fill="white"
@@ -137,8 +96,8 @@ function LeaderArrows({
           direction === -1 ? "translate(100 0) scale(-1 1)" : undefined
         }
       >
-        <path d="M8 8 L46 40 L8 72 Z" />
-        <path d="M54 8 L92 40 L54 72 Z" />
+        <path d="M8 8 L46 28 L8 48 Z" />
+        <path d="M54 8 L92 28 L54 48 Z" />
       </g>
     </svg>
   );
