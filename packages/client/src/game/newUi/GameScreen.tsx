@@ -50,7 +50,8 @@ import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
-import { ClueLog } from "./ClueLog.tsx";
+import type { LogTab } from "./ClueLog.tsx";
+import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import { ClueMenu, getClueDrawerWidth } from "./ClueMenu.tsx";
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
@@ -142,6 +143,7 @@ import {
 import { getScreenMode, getScreenModeStyle } from "./screenMode.ts";
 import { measure } from "./screenScale.ts";
 import {
+  getActionLogEntries,
   getClueForTurn,
   getClueLogEntries,
   getDeckEmpathy,
@@ -330,6 +332,8 @@ export function GameScreen(): React.JSX.Element {
     ReadonlySet<PlayerIndex>
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
+  // The log that the box of logs shows.
+  const [logTab, setLogTab] = useState<LogTab>(CLUE_LOG_TAB);
   // The player whose actions the screen lists, after a click on their name.
   const [logSeat, setLogSeat] = useState<PlayerIndex>();
   const closePlayerLog = useCallback(() => {
@@ -1184,14 +1188,19 @@ export function GameScreen(): React.JSX.Element {
 
   const clueLog = (
     <ClueLog
+      actions={getActionLogEntries(state)}
       dragging={held !== undefined}
       entries={getClueLogEntries(state)}
       // No card counts while the player holds a card: the held card is under the pointer, not the
       // card below it.
       hoveredCard={held === undefined ? getHoveredCardInPlace() : undefined}
       onShowClue={showClue}
+      onShowSegment={showReplayTurn}
+      onTab={setLogTab}
       reducedMotion={settings.reducedMotion}
-      shownSegment={shownClue?.segment}
+      screenScrolls={stacked}
+      shownSegment={visibleState.turn.segment}
+      tab={logTab}
     />
   );
 

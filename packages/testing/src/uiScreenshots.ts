@@ -1123,6 +1123,27 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
+    // The action log tab of a five-player game after some turns of clues and discards. When the
+    // status panel shares a box with the logs, the "Logs" tab opens first.
+    {
+      name: "new-ui-action-log",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        const game = await cast.startBobsGame(5);
+        await game.discardTurns(15);
+      },
+      // The tabs are opened at each size, since the logs move when the window changes its size.
+      hover: async (page) => {
+        const logsTab = page.getByRole("tab", { name: "Logs" });
+        if (await logsTab.isVisible()) {
+          await logsTab.click();
+        }
+        await page.getByRole("tab", { name: "Action Log" }).click();
+        await settle(page);
+      },
+    },
     // On the account's turn in a five-player game, every other hand shows its clue key. The mouse
     // is over the next player's key, which brightens it.
     {

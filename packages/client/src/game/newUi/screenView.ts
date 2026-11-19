@@ -17,6 +17,7 @@ import {
   getCharacterNameForPlayer,
   getClueName,
   getDeckPossibilities,
+  getGoesFirstText,
   isCardClued,
   millisecondsToClockString,
 } from "@hanabi-live/game";
@@ -38,7 +39,7 @@ import {
 import type { State } from "../types/State.ts";
 import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
-import type { ClueLogEntry } from "./ClueLog.tsx";
+import type { ActionLogEntry, ClueLogEntry } from "./ClueLog.tsx";
 import type { HandView, Seat } from "./Hands.tsx";
 import type {
   DeckEmpathy,
@@ -548,6 +549,32 @@ function getMovedCardLabel(
     return clued ? undefined : "blind";
   }
   return clued ? "clued" : undefined;
+}
+
+/**
+ * The lines of the game's log so far, for the action log. The line that says who goes first comes
+ * from the deal, so it belongs to the start of the game and has no turn.
+ */
+export function getActionLogEntries(state: State): readonly ActionLogEntry[] {
+  const { playerNames } = state.metadata;
+  const goesFirstTexts = new Set(
+    playerNames.map((_name, i) =>
+      getGoesFirstText(i as PlayerIndex, playerNames),
+    ),
+  );
+  return state.visibleState!.log.map((entry) =>
+    goesFirstTexts.has(entry.text)
+      ? {
+          segment: 0,
+          turn: undefined,
+          text: entry.text,
+        }
+      : {
+          segment: entry.turn,
+          turn: entry.turn,
+          text: entry.text,
+        },
+  );
 }
 
 /** The clues of the game so far, for the clue log. */

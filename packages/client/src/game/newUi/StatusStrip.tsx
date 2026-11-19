@@ -27,6 +27,7 @@ import {
 } from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
 import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
+import { getTabPanelStyle, Tabs } from "./Tabs.tsx";
 
 /** What the efficiency numbers mean, for screen readers. */
 const EFFICIENCY_HELP_LABEL =
@@ -789,12 +790,9 @@ function useClosingControls(
   return [closing, close] as const;
 }
 
-type PanelTab = "status" | "clues";
-
-const PANEL_TAB_IDS = {
-  status: "status-panel-tab",
-  clues: "clue-log-tab",
-} as const satisfies Record<PanelTab, string>;
+/** The IDs of the panel's tabs when it shares one box with the logs. */
+const STATUS_TAB = "status-panel-tab";
+const LOGS_TAB = "logs-tab";
 
 /**
  * The attribute of the panel when the column is too short for it, even with tabs (see
@@ -909,64 +907,6 @@ function usePanelTabs(
     setTabs(room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS));
   });
   return panel && tabs;
-}
-
-/**
- * The tabs that switch between the panel and the clue log when they share one box. A highlight
- * slides to the chosen tab.
- */
-function PanelTabs({
-  tab,
-  onTab,
-  reducedMotion,
-}: {
-  readonly tab: PanelTab;
-  readonly onTab: (tab: PanelTab) => void;
-  readonly reducedMotion: boolean;
-}): React.JSX.Element {
-  const tabs = [
-    ["status", "Status"],
-    ["clues", "Clues"],
-  ] as const;
-  return (
-    <div
-      aria-label="Status and clue log"
-      className="tw:relative tw:grid tw:grid-cols-2 tw:rounded-game-control tw:bg-black/25 tw:p-1"
-      role="tablist"
-    >
-      <span
-        aria-hidden="true"
-        className={`tw:absolute tw:inset-y-1 tw:left-1 tw:w-[calc(50%-4px)] tw:rounded-game-control tw:bg-white/15 ${tab === "clues" ? "tw:translate-x-full" : ""}`}
-        style={{
-          transition: reducedMotion
-            ? undefined
-            : `translate ${SLIDE.duration}ms ${SLIDE.easing}`,
-        }}
-      />
-      {tabs.map(([name, label]) => (
-        <button
-          aria-controls={PANEL_TAB_IDS[name]}
-          aria-selected={tab === name}
-          className={`tw:relative tw:cursor-pointer tw:border-0 tw:bg-transparent tw:px-4 tw:py-1.5 tw:text-[15px] tw:font-semibold ${tab === name ? "tw:text-game-text" : "tw:text-game-muted tw:hover:text-game-text"}`}
-          key={name}
-          onClick={() => {
-            onTab(name);
-          }}
-          role="tab"
-          // The text's color changes as the highlight slides to the tab. A text color is not a
-          // background color, so it may animate.
-          style={{
-            transition: reducedMotion
-              ? undefined
-              : `color ${SLIDE.duration}ms ${SLIDE.easing}`,
-          }}
-          type="button"
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 /** The height of the bar along the bottom of the screen. */
@@ -1243,7 +1183,9 @@ export function StatusStrip({
   // The panel measures its height after the controls take theirs.
   useSteadyControlsHeight(footer, controlsRef, panel);
   const tabbed = usePanelTabs(footer, panel, statusRef, controlsRef);
-  const [tab, setTab] = useState<PanelTab>("status");
+  const [tab, setTab] = useState<typeof STATUS_TAB | typeof LOGS_TAB>(
+    STATUS_TAB,
+  );
   useReplayDrawer(
     footer,
     controlsRef,
@@ -1568,16 +1510,7 @@ export function StatusStrip({
       );
     }
 
-    // The panel and the clue log share the rest of the column, one tab at a time. Both stay drawn,
-    // and the hidden one is invisible, so that switching tabs keeps open menus and the log's
-    // scrolling. One fades into the other as the highlight slides to the new tab.
-    function getTabStyle(name: PanelTab): React.CSSProperties {
-      const shown = tab === name;
-      return {
-        opacity: shown ? 1 : 0,
-        transition: reducedMotion ? undefined : getVisibilityTransition(shown),
-      };
-    }
+    // The panel and the logs share the rest of the column, one tab at a time.
     return (
       <footer
         className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
@@ -1587,23 +1520,32 @@ export function StatusStrip({
         ref={setFooter}
       >
         <div className="tw:flex tw:items-center tw:gap-3">
-          <PanelTabs onTab={setTab} reducedMotion={reducedMotion} tab={tab} />
+          <Tabs
+            label="Status and logs"
+            onTab={setTab}
+            reducedMotion={reducedMotion}
+            tab={tab}
+            tabs={[
+              [STATUS_TAB, "Status"],
+              [LOGS_TAB, "Logs"],
+            ]}
+          />
           <div className="tw:ml-auto">{chatButton}</div>
         </div>
         <div className="tw:grid tw:min-h-0 tw:flex-1 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)]">
           <div
-            className={`tw:col-start-1 tw:row-start-1 ${tab === "status" ? "" : "tw:invisible"}`}
-            id={PANEL_TAB_IDS.status}
+            className={`tw:col-start-1 tw:row-start-1 ${tab === STATUS_TAB ? "" : "tw:invisible"}`}
+            id={STATUS_TAB}
             role="tabpanel"
-            style={getTabStyle("status")}
+            style={getTabPanelStyle(tab === STATUS_TAB, reducedMotion)}
           >
             {status}
           </div>
           <div
-            className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${tab === "clues" ? "" : "tw:invisible"}`}
-            id={PANEL_TAB_IDS.clues}
+            className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${tab === LOGS_TAB ? "" : "tw:invisible"}`}
+            id={LOGS_TAB}
             role="tabpanel"
-            style={getTabStyle("clues")}
+            style={getTabPanelStyle(tab === LOGS_TAB, reducedMotion)}
           >
             {clueLog}
           </div>

@@ -2,9 +2,17 @@
 
 import type { CardOrder } from "@hanabi-live/game";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import type { ClueLogEntry } from "./ClueLog.tsx";
-import { ClueLog } from "./ClueLog.tsx";
+import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
+
+/** A stand-in for jsdom, which has no layout. So nothing changes size. */
+class NoResizeObserver {
+  readonly observe = vi.fn();
+  readonly disconnect = vi.fn();
+}
+
+vi.stubGlobal("ResizeObserver", NoResizeObserver);
 
 function entry(
   segment: number,
@@ -32,12 +40,17 @@ const HOVERED_CARD = 2 as CardOrder;
 function renderLog(entries: readonly ClueLogEntry[]) {
   render(
     <ClueLog
+      actions={[]}
       dragging={false}
       entries={entries}
       hoveredCard={HOVERED_CARD}
       onShowClue={onShowClue}
+      onShowSegment={onShowClue}
+      onTab={onShowClue}
       reducedMotion={false}
+      screenScrolls={false}
       shownSegment={undefined}
+      tab={CLUE_LOG_TAB}
     />,
   );
 }
