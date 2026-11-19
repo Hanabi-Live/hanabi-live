@@ -206,7 +206,7 @@ export function getClueDrawerWidth(variant: Variant): number {
 const choiceSizeClass =
   "tw:h-[44px] tw:w-[44px] tw:max-w-full tw:rounded-game-control";
 
-const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${RAISED_BUTTON_CLASS}`;
+const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold tw:group/choice ${choiceSizeClass} ${RAISED_BUTTON_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. The player's clue button (see `ClueButton`) opens it
@@ -755,9 +755,10 @@ function ChoiceRing({
   return (
     <span
       aria-hidden="true"
-      className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:ring-3 ${className}`}
+      // Under the mouse, a faint ring shows which choice a click would press.
+      className={`tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:ring-3 tw:opacity-0 tw:group-hover/choice:opacity-40 ${className}`}
       style={{
-        opacity: pressed ? 1 : 0,
+        opacity: pressed ? 1 : undefined,
         transition: reducedMotion ? undefined : getOpacityTransition(pressed),
       }}
     />

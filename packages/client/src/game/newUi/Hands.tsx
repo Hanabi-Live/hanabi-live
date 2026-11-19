@@ -1406,7 +1406,7 @@ function EditableCard({
     <button
       aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
       // It is a block, so that it does not sit on a line of text, which would make the hand taller.
-      className="tw:block tw:border-0 tw:bg-transparent tw:p-0"
+      className={`tw:block tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] ${HOVER_CLASS} tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]`}
       data-card-order={card.order}
       data-card-place={place}
       onClick={() => {

@@ -422,7 +422,7 @@ export function ChatInput({
       />
       {emojiPicker && (
         <button
-          className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text"
+          className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text-label tw:hover:text-text"
           onClick={() => {
             openEmojiPicker(id);
           }}
