@@ -131,8 +131,16 @@ body {
   background-attachment: fixed;
 }
 
-/* The game screen is on the felt table. */
+/* The game screen is on the felt table, and its modals are green to match. */
 body[data-screen="game"] {
+  --modal-backdrop: rgb(0 24 5 / 70%);
+  --modal-message-bg: var(--game-screen-panel);
+  --modal-message-edge: color-mix(
+    in srgb,
+    var(--game-screen-line) 50%,
+    transparent
+  );
+
   background-color: var(--game-bg);
   background-image: var(--game-screen-table);
   background-size: 512px, auto, auto;

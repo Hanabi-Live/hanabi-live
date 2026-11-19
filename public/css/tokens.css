@@ -19,16 +19,17 @@
   color-scheme: dark;
 
   /*
-    Surfaces: the panels of the site are the deep green of the New UI's felt, and the fields and
-    lists in them are darker still. A box on the page is glass instead (see "--box-bg").
+    Surfaces: the panels of the site, such as menus, tooltips, and modals, are the near-black of the
+    page (see "--page-bg"), and the fields and lists in them are darker still. A box on the page is
+    glass instead (see "--box-bg").
   */
-  --surface: #0e2418;
+  --surface: #161d1a;
   --surface-sunken: var(--surface-sunken-solid);
   /* The color of a field on a panel, which stays solid on the glass of a box */
-  --surface-sunken-solid: #091a11;
+  --surface-sunken-solid: #0e1311;
   /* A group of rows, such as the options on the Create Game page */
   --surface-panel: var(--surface-sunken);
-  --border: #24452f;
+  --border: #2b3430;
 
   /* Text */
   --text: var(--game-screen-text);
@@ -91,7 +92,7 @@
   --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23eef1f3' /%3E%3C/svg%3E");
 
   /* Lighter than a row, so that the row lights up under the pointer */
-  --row-hover-bg: var(--game-screen-raised);
+  --row-hover-bg: #26302b;
 
   /*
     A list that opens under a field: the options of a dropdown, and the suggestions of a text box
@@ -150,17 +151,14 @@
   --note-title-line: var(--border);
 
   /* Covers the page behind a modal */
-  --modal-backdrop: rgba(0, 24, 5, 0.7);
+  --modal-backdrop: rgb(0 0 0 / 65%);
   /*
     A message modal lifts off of the dimmed page: it is lighter than the page, with a pale edge, a
-    light top edge, and a deep shadow.
+    light top edge, and a deep shadow. On the game screen, it is the green of the New UI's panels
+    instead (see "common.css").
   */
-  --modal-message-bg: var(--game-screen-panel);
-  --modal-message-edge: color-mix(
-    in srgb,
-    var(--game-screen-line) 50%,
-    transparent
-  );
+  --modal-message-bg: #1c2420;
+  --modal-message-edge: rgb(255 255 255 / 14%);
   --modal-message-shadow:
     inset 0 1px 0 rgb(255 255 255 / 10%), 0 1.5em 4em rgb(0 0 0 / 60%);
   /* The options of the dialog that morphs a card */
