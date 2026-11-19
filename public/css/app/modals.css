@@ -95,7 +95,8 @@
   width: min(32em, 100% - 2em);
 }
 
-#emoji-modal {
+/* Style modals with classes, not IDs: the copy that fades out when a modal closes has no IDs. */
+.modal-emoji {
   min-width: unset;
 }
 
