@@ -37,9 +37,13 @@
   --button-bg: #666;
   --button-hover-bg: #737373;
   --button-active-bg: #595959;
-  --button-primary-bg: #b04a2b;
-  --button-primary-hover-bg: #b8502f;
-  --button-primary-active-bg: #a3431f;
+  /*
+    The main action of a page, such as "Create" on the Create Game page: copper, in both themes. It
+    is not green, so that it does not look like a selected option, which is green.
+  */
+  --button-primary-bg: #b85a32;
+  --button-primary-hover-bg: #c2613a;
+  --button-primary-active-bg: #a24e2b;
   --button-disabled-bg: #777;
   --button-disabled-text: #f5f5f5;
   --button-green: #449644;

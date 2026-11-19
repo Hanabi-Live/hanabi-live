@@ -74,7 +74,7 @@ export function PasswordReset(): React.JSX.Element {
       />
       <br />
       <button
-        className="button fit"
+        className="button fit primary"
         disabled={generating}
         id="generate-hash-button"
         type="submit"

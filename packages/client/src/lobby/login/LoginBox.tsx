@@ -232,7 +232,7 @@ function SignIn() {
         </div>
         <div className="tw:mt-5 tw:flex tw:items-center tw:gap-3">
           <a
-            className={`button fit icon fa-sign-in-alt tw:flex-1${busy ? " disabled" : ""}`}
+            className={`button fit primary icon fa-sign-in-alt tw:flex-1${busy ? " disabled" : ""}`}
             id="login-button"
             onClick={submit}
           >

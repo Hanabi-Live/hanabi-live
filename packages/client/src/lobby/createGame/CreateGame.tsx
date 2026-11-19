@@ -654,8 +654,7 @@ export function CreateGame(): React.JSX.Element {
           tooltip. */}
       <button
         aria-disabled={unchanged}
-        // The main action of the page is green, like the "Help" button in the header.
-        className={`button fit tw:mt-6 ${unchanged ? "disabled" : "tw:bg-(--button-green) tw:hover:bg-(--button-green-hover)"}`}
+        className={`button fit primary tw:mt-6${unchanged ? " disabled" : ""}`}
         id="create-game-submit"
         onClick={submit}
         ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}

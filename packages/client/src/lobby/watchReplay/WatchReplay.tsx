@@ -239,7 +239,7 @@ export function WatchReplay(): React.JSX.Element {
       )}
 
       <button
-        className="button fit tw:mt-6"
+        className="button fit primary tw:mt-6"
         id="replay-submit"
         onClick={submit}
         type="submit"
