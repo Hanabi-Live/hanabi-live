@@ -670,7 +670,7 @@ const STATUS_BADGES = {
   trash: {
     label: "Trash",
     tooltip: "Known trash. This card can never be played.",
-    className: "tw:bg-game-line tw:text-white",
+    className: "tw:bg-card-ink tw:text-white",
   },
   doubleDiscard: {
     label: "Double discard",
@@ -718,7 +718,7 @@ function getBadgeStyle(
 
 /**
  * The badge in the bottom-left corner of a card, as on the classic screen. A red badge with an
- * exclamation mark shows the last copy of a card that is still needed. A gray badge with a trash
+ * exclamation mark shows the last copy of a card that is still needed. A dark badge with a trash
  * can shows a card that is known to be trash. With the H-Group conventions setting, a cyan badge
  * with a question mark shows a card that the next discard could lose (see `CardView`).
  */
