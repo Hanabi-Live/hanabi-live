@@ -7,6 +7,9 @@
 /* Space between the header bar and the box */
 .history-page {
   padding-top: 2em;
+  /* Wide enough for a list of games and its filters on one line, but no wider, so that a row's
+     parts stay close together. */
+  max-width: 66em;
 }
 
 @media screen and (max-width: 736px) {

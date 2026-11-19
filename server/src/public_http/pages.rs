@@ -11,7 +11,7 @@ use hanabi_protocol::{
     BestScore, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
     MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
     PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
-    VariantScores,
+    VariantId, VariantScores,
 };
 use std::sync::Arc;
 
@@ -203,6 +203,7 @@ pub(super) async fn page(
                             api_path: api,
                             frequencies: Vec::new(),
                             players: names.iter().cloned().map(Into::into).collect(),
+                            statistics: None,
                         },
                     )?;
                     if names.len() > 1 {
@@ -227,6 +228,7 @@ pub(super) async fn page(
                                 api_path: api,
                                 frequencies: Vec::new(),
                                 players: vec![users[0].1.clone().into()],
+                                statistics: None,
                             },
                         )?;
                     }
@@ -254,10 +256,7 @@ pub(super) async fn page(
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
             let rows = score_frequencies(&state, seed).await?;
-            v["stats"] = match seed_stats(&state, seed, &rows).await? {
-                Some(statistics) => seed_statistics_value(&statistics)?,
-                None => json!({}),
-            };
+            let statistics = seed_stats(&state, seed, &rows).await?;
             set_table(
                 &mut v,
                 &PublicPageTable::Games {
@@ -265,6 +264,7 @@ pub(super) async fn page(
                     api_path: api,
                     frequencies: rows,
                     players: Vec::new(),
+                    statistics,
                 },
             )?;
         }
@@ -292,6 +292,7 @@ pub(super) async fn page(
                         api_path: format!("{API_PREFIX}/tag/{}", encoded(&tag)),
                         frequencies: Vec::new(),
                         players: Vec::new(),
+                        statistics: None,
                     },
                 )?;
             }
@@ -514,6 +515,8 @@ async fn seed_stats(
         .map(|row| row.num_games.get())
         .sum();
     let mut statistics = SeedStatistics {
+        variant_id: VariantId::try_from(game.variant_id)?,
+        num_players: NumPlayers::try_from(game.num_players)?,
         num_games: Count::try_from(games)?,
         num_max_scores: Count::try_from(max_scores)?,
         max_score_rate: percentage(max_scores, games),
@@ -547,23 +550,6 @@ async fn seed_stats(
     }
     Ok(Some(statistics))
 }
-/// The decimal places that a seed's average score is shown with.
-const AVERAGE_SCORE_DECIMALS: usize = 1;
-
-/// A seed's statistics as its page shows them, with rounded numbers.
-fn seed_statistics_value(statistics: &SeedStatistics) -> Result<Value> {
-    let mut v = serde_json::to_value(statistics)?;
-    v["maxScoreRate"] = json!(format_percentage(statistics.max_score_rate));
-    v["averageScore"] = json!(format!(
-        "{:.AVERAGE_SCORE_DECIMALS$}",
-        statistics.average_score
-    ));
-    if let Some(difficulty) = &statistics.difficulty {
-        v["difficulty"]["percentile"] = json!(format!("{:.0}", difficulty.percentile));
-    }
-    Ok(v)
-}
-
 /// The sorted average scores of the seeds with a prefix. A large variant has thousands of seeds,
 /// so the averages are shared for `SEED_AVERAGES_LIFETIME`.
 async fn seed_averages(

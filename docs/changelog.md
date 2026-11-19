@@ -24,6 +24,13 @@ of the repository.
   shows its score with a bar, the colors of its suits, how it ended, and the
   other players. One bar above the list filters by variant, player count, and
   score, and sorts the games. The links between a player's pages are tabs.
+- Warnings and questions show as a small card in the middle of the screen. The
+  warning that an idle game will end soon shows the time left on a ring.
+- The pips reference page has the look of the lobby: glass cards on the felt.
+- The page of a seed shows its variant and player count at the top, its
+  statistics on separate lines, and a chart with a bar for every score and a
+  line at the average. A click on a bar shows only the games with that score.
+  The pages of players and seeds are narrower, so that their parts line up.
 
 ## November 18th, 2026
 

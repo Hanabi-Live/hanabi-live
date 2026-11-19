@@ -11,11 +11,14 @@
     <div class="row uniform 100%">
       <div class="col-12">
         <section class="box">
+          {% if page != "seed" %}
+          <!-- The script of the seed page draws its own heading. -->
           <h2 class="align-center">
             {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name|possessive
             }} Profile{% else %}{{ title }}{% endif %}
           </h2>
-          {% include "profile-buttons.html" %} {% if page == "password-reset" %}
+          {% endif %} {% include "profile-buttons.html" %} {% if page ==
+          "password-reset" %}
           <p>
             Since Hanab Live does not ask for or store your email address, the
             only way to reset the password for an account is for an
@@ -74,29 +77,6 @@
                 <span class="stat-description">Total time spent:</span> {{
                 stats.timeTotal }}
               </li>
-            </ul>
-          </div>
-          {% endif %} {% if page == "seed" and stats.numGames %}
-          <div class="history-bullets">
-            <ul>
-              <li>
-                <span class="stat-description">Perfect scores:</span> {{
-                stats.numMaxScores }} / {{ stats.numGames }} &nbsp;({{
-                stats.maxScoreRate }}%)
-              </li>
-              <li>
-                <span class="stat-description">Average score:</span> {{
-                stats.averageScore }} / {{ stats.maxScore }}
-              </li>
-              {% if stats.difficulty %}
-              <li>
-                <span class="stat-description">Difficulty:</span> harder than {{
-                stats.difficulty.percentile }}% of the {{
-                stats.difficulty.numSeeds }} other {{
-                stats.difficulty.numPlayers }}-player seeds of {{
-                stats.difficulty.variantName }} (by average score)
-              </li>
-              {% endif %}
             </ul>
           </div>
           {% endif %} {% if page in ["tags", "tag"] %}

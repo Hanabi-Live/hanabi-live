@@ -14,7 +14,6 @@ import {
   PAGE_SIZES,
   variantNamesSchema,
 } from "@hanabi-live/data";
-import type { Suit } from "@hanabi-live/game";
 import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +23,8 @@ import { getFadeStyle } from "../fade.ts";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { usePages } from "./DataTable.tsx";
-import { ScoreChart } from "./ScoreChart.tsx";
+import { SeedSummary } from "./SeedSummary.tsx";
+import { SuitDots } from "./SuitDots.tsx";
 
 type GamesTable = Extract<
   z.infer<typeof publicPageTableSchema>,
@@ -65,21 +65,10 @@ export function GamesTable({
     };
   }, []);
 
-  const frequencies = table.frequencies ?? [];
-  return (
-    <>
-      {frequencies.length > 0 && (
-        <>
-          <ScoreChart frequencies={frequencies} />
-          <hr />
-        </>
-      )}
-      {variants === undefined ? (
-        <ErrorMessage error={error} />
-      ) : (
-        <GameList table={table} variants={variants} />
-      )}
-    </>
+  return variants === undefined ? (
+    <ErrorMessage error={error} />
+  ) : (
+    <GameList table={table} variants={variants} />
   );
 }
 
@@ -215,6 +204,19 @@ function GameList({
 
   return (
     <>
+      {seed && (
+        <SeedSummary
+          frequencies={table.frequencies ?? []}
+          onSelectScore={(selected) => {
+            change(() => {
+              setScore(selected === undefined ? undefined : String(selected));
+            });
+          }}
+          seed={decodeURIComponent(table.apiPath.split("/").at(-1) ?? "")}
+          selectedScore={score === undefined ? undefined : Number(score)}
+          statistics={table.statistics}
+        />
+      )}
       <div
         className="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:gap-x-6 tw:gap-y-3 tw:border-b tw:border-border tw:pb-4 tw:text-[0.9em]"
         key={resetKey}
@@ -259,6 +261,7 @@ function GameList({
               setScore(value);
             });
           }}
+          value={score}
         />
         {filtered && (
           <button
@@ -344,7 +347,7 @@ function VariantFilter({
     <label className="tw:m-0 tw:text-[1em] tw:flex tw:min-w-0 tw:items-center tw:gap-2">
       <span className="tw:text-text-label">Variant</span>
       <input
-        className="tw:h-8 tw:w-[16em] tw:max-w-full tw:px-3 tw:text-[1em]"
+        className="tw:h-8 tw:w-[12em] tw:max-w-full tw:px-3 tw:text-[1em]"
         list="variant-names"
         onChange={(event) => {
           const name = event.target.value.trim().toLowerCase();
@@ -371,10 +374,17 @@ function VariantFilter({
 
 /** A box for an exact score, which applies once the typing pauses. */
 function ScoreFilter({
+  value,
   onChange,
 }: {
+  /** The score that the list shows, which a click on the seed page's chart can also set. */
+  readonly value: string | undefined;
   readonly onChange: (score: string | undefined) => void;
 }) {
+  const [text, setText] = useState(value ?? "");
+  useEffect(() => {
+    setText(value ?? "");
+  }, [value]);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(
     () => () => {
@@ -389,14 +399,16 @@ function ScoreFilter({
         className="tw:h-8 tw:w-[4em] tw:px-3 tw:text-[1em]"
         inputMode="numeric"
         onChange={(event) => {
-          const value = event.target.value.trim();
+          setText(event.target.value);
+          const typed = event.target.value.trim();
           clearTimeout(timer.current);
           timer.current = setTimeout(() => {
-            onChange(value === "" ? undefined : value);
+            onChange(typed === "" ? undefined : typed);
           }, FILTER_DELAY_MILLISECONDS);
         }}
         placeholder="Any"
         type="text"
+        value={text}
       />
     </label>
   );
@@ -505,12 +517,21 @@ function GameRow({
       >
         <Score max={variant.maxScore} score={game.score} />
       </a>
-      <div className="tw:grid tw:min-w-0 tw:flex-1 tw:grid-cols-[minmax(0,24em)_minmax(0,1fr)_minmax(5em,max-content)_5.5em] tw:items-center tw:gap-x-6 tw:narrow-840:grid-cols-[minmax(0,1fr)_minmax(0,10em)_minmax(5em,max-content)] tw:narrow-640:flex tw:narrow-640:flex-wrap tw:narrow-640:gap-x-3 tw:narrow-640:gap-y-0.5">
+      <div
+        className={`tw:grid tw:min-w-0 tw:flex-1 tw:items-center tw:gap-x-6 ${context.list === "seed" ? "tw:grid-cols-[minmax(0,1fr)_max-content_5.5em] tw:narrow-840:grid-cols-[minmax(0,1fr)_max-content]" : "tw:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content_5.5em] tw:narrow-840:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content]"} tw:narrow-640:flex tw:narrow-640:flex-wrap tw:narrow-640:gap-x-3 tw:narrow-640:gap-y-0.5`}
+      >
         <div className="tw:min-w-0 tw:narrow-640:basis-full">
-          <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
-            <SuitDots suits={variant.suits} />
-            <span className="tw:truncate">{variant.name}</span>
-          </div>
+          {/* The games on a seed share its variant, which the top of the page shows. */}
+          {context.list === "seed" ? (
+            <div className="tw:truncate">
+              <PlayerLinks names={game.playerNames} />
+            </div>
+          ) : (
+            <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
+              <SuitDots suits={variant.suits} />
+              <span className="tw:truncate">{variant.name}</span>
+            </div>
+          )}
           {ending !== undefined && (
             <div className="tw:text-[0.8em] tw:text-text-label">{ending}</div>
           )}
@@ -521,22 +542,14 @@ function GameRow({
             </div>
           )}
         </div>
-        <div className="tw:min-w-0 tw:truncate tw:text-[0.9em] tw:narrow-640:max-w-full">
-          {teammates.length < game.playerNames.length && (
-            <span className="tw:text-text-label">with </span>
-          )}
-          {teammates.map((name, index) => (
-            <span key={name}>
-              {index > 0 && ", "}
-              <a
-                className={ROW_LINK}
-                href={`${PATH.HISTORY}/${encodeURIComponent(name)}`}
-              >
-                {name}
-              </a>
-            </span>
-          ))}
-        </div>
+        {context.list !== "seed" && (
+          <div className="tw:min-w-0 tw:truncate tw:text-[0.9em] tw:narrow-640:max-w-full">
+            {teammates.length < game.playerNames.length && (
+              <span className="tw:text-text-label">with </span>
+            )}
+            <PlayerLinks names={teammates} />
+          </div>
+        )}
         <span
           className="tw:relative tw:z-10 tw:text-[0.9em] tw:text-text-label tw:tabular-nums"
           ref={tooltipRef(displayTime(game.finishedAt))}
@@ -555,6 +568,25 @@ function GameRow({
         </span>
       </div>
     </li>
+  );
+}
+
+/** Links to the history of each player. */
+function PlayerLinks({ names }: { readonly names: readonly string[] }) {
+  return (
+    <>
+      {names.map((name, index) => (
+        <span key={name}>
+          {index > 0 && ", "}
+          <a
+            className={ROW_LINK}
+            href={`${PATH.HISTORY}/${encodeURIComponent(name)}`}
+          >
+            {name}
+          </a>
+        </span>
+      ))}
+    </>
   );
 }
 
@@ -622,25 +654,6 @@ function Score({
         />
       </div>
     </div>
-  );
-}
-
-/** A dot in the color of each suit of the variant. */
-function SuitDots({ suits }: { readonly suits: readonly Suit[] }) {
-  return (
-    <span aria-hidden className="tw:flex tw:shrink-0 tw:gap-0.5">
-      {suits.map((suit) => (
-        <span
-          className="tw:h-[0.6em] tw:w-[0.6em] tw:rounded-full tw:ring-1 tw:ring-white/25"
-          key={suit.name}
-          style={{
-            background:
-              suit.fill
-              ?? `linear-gradient(135deg, ${suit.fillColors.join(", ")})`,
-          }}
-        />
-      ))}
-    </span>
   );
 }
 

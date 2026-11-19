@@ -857,15 +857,15 @@ async fn seed_page_ranks_the_seed_among_seeds_with_its_prefix() {
     .await
     .unwrap();
     let app = router(db.pool.clone(), &config());
-    let (status, body) = request(app, "/seed/p2v0s2").await;
+    let (status, body) = request(app, "/api/v1/seed/p2v0s2/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    let text = body.split_whitespace().collect::<Vec<_>>().join(" ");
-    for expected in [
-        "1 / 2 &nbsp;(50%)",
-        "20.0 / 25",
-        // Harder than the seed that averages 25, and tied with the other seed that averages 20.
-        "harder than 50% of the 3 other 2-player seeds of No Variant",
-    ] {
-        assert!(text.contains(expected), "{expected}: {text}");
-    }
+    let statistics = serde_json::from_str::<Value>(&body).unwrap();
+    assert_eq!(statistics["numGames"], 2);
+    assert_eq!(statistics["numMaxScores"], 1);
+    assert_eq!(statistics["averageScore"], 20.0);
+    assert_eq!(statistics["variantId"], 0);
+    assert_eq!(statistics["numPlayers"], 2);
+    // Harder than the seed that averages 25, and tied with the other seed that averages 20.
+    assert_eq!(statistics["difficulty"]["percentile"], 50.0);
+    assert_eq!(statistics["difficulty"]["numSeeds"], 3);
 }

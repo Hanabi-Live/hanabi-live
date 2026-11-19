@@ -1972,7 +1972,6 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
 async function linkPublicFiles(directory: string) {
   const links: Array<readonly [string, string]> = [
     ["public/css/critical.min.css", "public/css/critical.min.css"],
-    ["public/js/lib", "public/js/lib"],
     ["public/sounds", "public/sounds"],
     ["public/standalone", "public/standalone"],
     ["public/webfonts", "public/webfonts"],

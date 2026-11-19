@@ -17,6 +17,7 @@ import {
   playerClockSchema,
   playerIndexSchema,
   turnSchema,
+  variantIdSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
 
@@ -1335,6 +1336,40 @@ export const scoreFrequencySchema = z
   .readonly();
 
 /**
+ * How hard a seed is compared to the other seeds of its variant and player count.
+ */
+export const seedDifficultySchema = z
+  .strictObject({
+    numPlayers: numPlayersSchema,
+    numSeeds: countSchema,
+    /**
+     * The percentage of the other seeds that this seed is harder than, from 0 to 100.
+     */
+    percentile: z.number(),
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
+ * The statistics of the games on a seed, from `/api/v1/seed/{seed}/stats`.
+ */
+export const seedStatisticsSchema = z
+  .strictObject({
+    averageScore: z.number(),
+    difficulty: seedDifficultySchema.optional(),
+    maxScore: scoreSchema,
+    /**
+     * The percentage of the games that reached the maximum score, from 0 to 100.
+     */
+    maxScoreRate: z.number(),
+    numGames: countSchema,
+    numMaxScores: countSchema,
+    numPlayers: numPlayersSchema,
+    variantId: variantIdSchema,
+  })
+  .readonly();
+
+/**
  * What the script of a public page draws: its table, and the controls and chart that go with it.
  */
 export const publicPageTableSchema = z.discriminatedUnion("type", [
@@ -1364,6 +1399,10 @@ export const publicPageTableSchema = z.discriminatedUnion("type", [
        * Only a player's history and tagged games have them.
        */
       players: z.array(z.string().min(1)).readonly().optional(),
+      /**
+       * The statistics of the games on the seed. Only a seed's page has them, when it has games.
+       */
+      statistics: seedStatisticsSchema.optional(),
       type: z.literal("games"),
     })
     .readonly(),
@@ -1598,21 +1637,6 @@ export const requestIdSchema = z
   .brand<"RequestId">();
 
 /**
- * How hard a seed is compared to the other seeds of its variant and player count.
- */
-export const seedDifficultySchema = z
-  .strictObject({
-    numPlayers: numPlayersSchema,
-    numSeeds: countSchema,
-    /**
-     * The percentage of the other seeds that this seed is harder than, from 0 to 100.
-     */
-    percentile: z.number(),
-    variantName: z.string(),
-  })
-  .readonly();
-
-/**
  * A page of the games on a seed, best scores first.
  */
 export const seedGamesRequestSchema = z
@@ -1620,23 +1644,6 @@ export const seedGamesRequestSchema = z
     limit: pageLimitSchema,
     offset: countSchema,
     seed: z.string().min(1),
-  })
-  .readonly();
-
-/**
- * The statistics of the games on a seed, from `/api/v1/seed/{seed}/stats`.
- */
-export const seedStatisticsSchema = z
-  .strictObject({
-    averageScore: z.number(),
-    difficulty: seedDifficultySchema.optional(),
-    maxScore: scoreSchema,
-    /**
-     * The percentage of the games that reached the maximum score, from 0 to 100.
-     */
-    maxScoreRate: z.number(),
-    numGames: countSchema,
-    numMaxScores: countSchema,
   })
   .readonly();
 

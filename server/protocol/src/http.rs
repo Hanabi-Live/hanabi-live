@@ -259,6 +259,8 @@ pub struct SeedDifficulty {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SeedStatistics {
+    pub variant_id: VariantId,
+    pub num_players: NumPlayers,
     pub num_games: Count,
     pub num_max_scores: Count,
     /// The percentage of the games that reached the maximum score, from 0 to 100.
@@ -362,5 +364,8 @@ pub enum PublicPageTable {
         /// Only a player's history and tagged games have them.
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         players: Vec<Username>,
+        /// The statistics of the games on the seed. Only a seed's page has them, when it has games.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        statistics: Option<SeedStatistics>,
     },
 }
