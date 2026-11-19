@@ -126,7 +126,6 @@ function UserRowView({
     <tr>
       <td>
         <UserIcon user={user} />
-        {"\u{A0} "}
         <span
           className="tw:transition-opacity"
           style={{
@@ -166,35 +165,32 @@ function HGroupIcon() {
 
   return (
     <span ref={ref}>
-      <i className="fas fa-heading fa-xs" />
+      {/* The icon font centers the glyph, which puts it above the baseline of the name. */}
+      <i className="fas fa-heading fa-xs tw:relative tw:top-[0.125em]" />
     </span>
   );
 }
 
 function UserIcon({ user }: { readonly user: UserRow["user"] }) {
-  if (user.bot) {
-    return <BotIcon />;
-  }
-  if (user.hGroupConventions) {
-    return <HGroupIcon />;
-  }
-  return <span className="tw:inline-block tw:w-3" />;
+  // Every row has a slot of the same width, so the names line up.
+  return (
+    <span className="tw:mr-2 tw:inline-block tw:w-3">
+      {user.bot ? <BotIcon /> : user.hGroupConventions && <HGroupIcon />}
+    </span>
+  );
 }
 
 function BotIcon() {
   const ref = tooltipRef(BOT_TOOLTIP, { instant: true });
 
   return (
-    // The slot has the width of the other icons, which keeps the names aligned.
-    <span className="tw:inline-block tw:w-3">
-      <span
-        aria-label="Bot"
-        className="tw:text-[0.7em] tw:leading-none"
-        ref={ref}
-        role="img"
-      >
-        {ROBOT_EMOJI}
-      </span>
+    <span
+      aria-label="Bot"
+      className="tw:text-[0.7em] tw:leading-none"
+      ref={ref}
+      role="img"
+    >
+      {ROBOT_EMOJI}
     </span>
   );
 }
