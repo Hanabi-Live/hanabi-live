@@ -1832,6 +1832,12 @@ function PossibleCardsGrid({
       roomAcross / width,
       handElement === undefined ? 1 : getHandsRoom(offset) / height,
     );
+    // The bubble is hidden when its side has no room, such as for a moment while the window
+    // shrinks. Otherwise, a negative scale would draw it mirrored.
+    if (scale <= 0) {
+      setPosition(undefined);
+      return;
+    }
 
     const middle = anchorRect.left + anchorRect.width / 2;
     const left = Math.min(
