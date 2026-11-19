@@ -629,7 +629,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert!(missing_variants(&body).contains(&json!("No Variant")));
     for (path, status, text) in [
         ("/scores", 404, "specify a player"),
-        ("/history/Missing/Alice/alice", 404, "does not exist"),
+        ("/history/Missing/Alice/alice", 404, "No player is named"),
         ("/api/v1/history/Alice/alice", 404, "same player twice"),
         (
             "/api/v1/history/Alice?filter[score]=no",

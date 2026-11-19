@@ -35,6 +35,8 @@ of the repository.
 - A pre-game table shows its variant at the top and a box for each seat, with
   the open seats outlined. Each player's best scores on the variant show for
   every player count, without hovering.
+- A player's history page has a "With" box. It shows only the games with the
+  players that it names.
 
 ## November 18th, 2026
 

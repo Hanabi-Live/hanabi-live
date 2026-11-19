@@ -11,6 +11,7 @@ import {
   errorDetails,
   gamePageSchema,
   httpError,
+  noticeSchema,
   PAGE_SIZES,
   variantNamesSchema,
 } from "@hanabi-live/data";
@@ -122,22 +123,40 @@ function GameList({
   const [variantId, setVariantId] = useState<string>();
   const [numPlayers, setNumPlayers] = useState<number>();
   const [score, setScore] = useState<string>();
+  const [teammates, setTeammates] = useState<readonly string[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const { page, size, setPage, setSize } = usePages();
   const [games, setGames] = useState<readonly GameSummary[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  /** Why the list is empty, such as a teammate who does not exist. */
+  const [notice, setNotice] = useState<string>();
   const owners = useMemo(() => new Set(table.players), [table]);
+  const lowerCaseOwners = new Set(
+    table.players?.map((owner) => owner.toLowerCase()),
+  );
+  const tooManyTeammates = owners.size + teammates.length > MAX_PLAYERS;
   // The games on a seed share its player count.
   const sortChoices = seed
     ? SORT_CHOICES.filter((choice) => choice.column !== "numPlayers")
     : SORT_CHOICES;
   const sort = sortChoices[sortIndex] ?? SORT_CHOICES[0];
   const filtered =
-    variantId !== undefined || numPlayers !== undefined || score !== undefined;
+    variantId !== undefined
+    || numPlayers !== undefined
+    || score !== undefined
+    || teammates.length > 0;
 
   useEffect(() => {
+    if (tooManyTeammates) {
+      setGames([]);
+      setTotal(0);
+      setNotice(`A game has at most ${MAX_PLAYERS} players.`);
+      setLoading(false);
+      return undefined;
+    }
+
     const params = new URLSearchParams({
       offset: String(page * size),
       limit: String(size),
@@ -158,15 +177,30 @@ function GameList({
     const controller = new AbortController();
     setLoading(true);
     (async () => {
-      const response = await fetch(`${table.apiPath}?${params.toString()}`, {
+      // The API lists the games of every player in its path.
+      const apiPath = [
+        table.apiPath,
+        ...teammates.map((name) => encodeURIComponent(name)),
+      ].join("/");
+      const response = await fetch(`${apiPath}?${params.toString()}`, {
         signal: controller.signal,
       });
+      const teammateNotice = await getTeammateNotice(response, teammates);
+      if (teammateNotice !== undefined) {
+        setGames([]);
+        setTotal(0);
+        setNotice(teammateNotice);
+        setError(undefined);
+        setLoading(false);
+        return;
+      }
       if (!response.ok) {
         throw await httpError(response, "Loading games");
       }
       const result = gamePageSchema.parse(await response.json());
       setGames(result.games);
       setTotal(result.total);
+      setNotice(undefined);
       setError(undefined);
       setLoading(false);
     })().catch((error_: unknown) => {
@@ -180,7 +214,17 @@ function GameList({
     return () => {
       controller.abort();
     };
-  }, [table.apiPath, page, size, sort, variantId, numPlayers, score]);
+  }, [
+    table.apiPath,
+    page,
+    size,
+    sort,
+    variantId,
+    numPlayers,
+    score,
+    teammates,
+    tooManyTeammates,
+  ]);
 
   /** Applies a change to the filters or the sort, from the first page. */
   function change(apply: () => void) {
@@ -241,6 +285,19 @@ function GameList({
             ))}
           </div>
         )}
+        {table.list === "history" && (
+          <TeammatesFilter
+            onChange={(names) => {
+              change(() => {
+                setTeammates(
+                  names.filter(
+                    (name) => !lowerCaseOwners.has(name.toLowerCase()),
+                  ),
+                );
+              });
+            }}
+          />
+        )}
         <ScoreFilter
           onChange={(value) => {
             change(() => {
@@ -257,6 +314,7 @@ function GameList({
                 setVariantId(undefined);
                 setNumPlayers(undefined);
                 setScore(undefined);
+                setTeammates([]);
                 setResetKey((key) => key + 1);
               });
             }}
@@ -287,9 +345,10 @@ function GameList({
 
       {error === undefined && !loading && games.length === 0 ? (
         <p className="tw:my-10 tw:text-center tw:text-text-label">
-          {filtered
-            ? "No games match these filters."
-            : "No games have been played yet."}
+          {notice
+            ?? (filtered
+              ? "No games match these filters."
+              : "No games have been played yet.")}
         </p>
       ) : (
         <DayGroups
@@ -356,6 +415,74 @@ function VariantFilter({
       </datalist>
     </label>
   );
+}
+
+/**
+ * A box for the names of other players, separated by commas, which applies once the typing pauses.
+ * It narrows the list to the games that every one of them played in.
+ */
+function TeammatesFilter({
+  onChange,
+}: {
+  readonly onChange: (names: readonly string[]) => void;
+}) {
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+    },
+    [],
+  );
+  return (
+    <label className="tw:m-0 tw:text-[1em] tw:flex tw:min-w-0 tw:items-center tw:gap-2">
+      <span className="tw:text-text-label">With</span>
+      <input
+        autoCapitalize="off"
+        className="tw:h-8 tw:w-[12em] tw:max-w-full tw:px-3 tw:text-[1em]"
+        onChange={(event) => {
+          const names = parseNames(event.target.value);
+          clearTimeout(timer.current);
+          timer.current = setTimeout(() => {
+            onChange(names);
+          }, FILTER_DELAY_MILLISECONDS);
+        }}
+        placeholder="Anyone"
+        spellCheck={false}
+        type="text"
+      />
+    </label>
+  );
+}
+
+/** The names in a list separated by commas, without blanks or repeats, ignoring case. */
+function parseNames(text: string): readonly string[] {
+  const names = new Map<string, string>();
+  for (const part of text.split(",")) {
+    const name = part.trim();
+    if (name !== "" && !names.has(name.toLowerCase())) {
+      names.set(name.toLowerCase(), name);
+    }
+  }
+  return [...names.values()];
+}
+
+/**
+ * The server's explanation when it does not find a player that the "With" box names, such as "No
+ * player is named "x"." It is undefined for any other reply.
+ */
+async function getTeammateNotice(
+  response: Response,
+  teammates: readonly string[],
+): Promise<string | undefined> {
+  if (response.status !== 404 || teammates.length === 0) {
+    return undefined;
+  }
+  try {
+    const parsed = noticeSchema.safeParse(await response.clone().json());
+    return parsed.success ? parsed.data.message : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** A box for an exact score, which applies once the typing pauses. */

@@ -158,6 +158,8 @@ that have not been played yet and have only one copy remaining.)
   variant or by the name of another player.
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
+- A player's history page can show only the games with other players. Type their
+  names in the "With" box, separated by commas.
 - Profiles show the time spent playing, the time spent reviewing replays, and
   the total of both. Review time does not count the time before an idle replay
   closes.

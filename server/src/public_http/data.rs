@@ -99,7 +99,7 @@ pub(super) async fn players(
         .map(|row| (row.id, row.username));
         users.push(user.ok_or_else(|| {
             HttpError::not_found(if multiple {
-                format!("The player of \"{name}\" does not exist in the database.")
+                format!("No player is named \"{name}\".")
             } else {
                 "That player does not exist in the database.".into()
             })
