@@ -845,6 +845,7 @@ export const noticeCodeSchema = z.enum([
   "serverIoError",
   "serverUnavailable",
   "sessionGenerationExhausted",
+  "signInRequired",
   "sessionReplaced",
   "tableFailed",
   "tableUnreadable",

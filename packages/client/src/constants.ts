@@ -14,21 +14,6 @@ export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 /** Where each level of the H-Group convention guide is, followed by the level number. */
 export const H_GROUP_LEVEL_URL_PREFIX = "https://hanabi.github.io/level-";
 
-/** The HTTP status codes that the client handles specially. */
-export const HTTP_STATUS = {
-  OK: 200,
-
-  /** Sent when there is no valid session cookie. */
-  NO_CONTENT: 204,
-
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  TOO_MANY_REQUESTS: 429,
-
-  /** Statuses at or above this one are server errors. */
-  INTERNAL_SERVER_ERROR: 500,
-} as const;
-
 /** How the start card's rank is written on cards, in notes, and in the morph dialog. */
 export const START_CARD_RANK_LABEL = "S";
 

@@ -11,13 +11,11 @@ import {
 } from "@hanabi-live/data";
 import { flushSync } from "react-dom";
 import type { z } from "zod";
-import { HTTP_STATUS } from "../constants.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
 import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { getUrlFromPath } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
-import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe.ts";
 import {
   loginAlertCleared,
   loginFailed,
@@ -175,56 +173,13 @@ export function automaticLogin(): void {
     return;
   }
 
-  // If we have logged in previously and our cookie is still good, automatically login.
-  console.log("Testing to see if we have a cached WebSocket cookie.");
-  checkCookieWithRetry()
-    .catch((error: unknown) => {
-      // Handle only failures of the cookie check; a later WebSocket error is separate.
-      console.error(`Failed to fetch "${TEST_COOKIE_PATH}":`, error);
-      store.dispatch(
-        loginFailed({
-          message: errorDetails(error, "Checking your saved session"),
-          retry: true,
-        }),
-      );
+  if (showFirefoxWarningIfNeeded()) {
+    return;
+  }
 
-      if (!showFirefoxWarningIfNeeded()) {
-        show();
-      }
-      return undefined;
-    })
-    .then((response) => {
-      if (response === undefined || showFirefoxWarningIfNeeded()) {
-        return;
-      }
-
-      if (response.status === HTTP_STATUS.OK) {
-        console.log(
-          "WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.",
-        );
-        websocketInit();
-        return;
-      }
-
-      if (response.status === HTTP_STATUS.NO_CONTENT) {
-        console.log(
-          "Either we have not previously logged in or the existing cookie is expired.",
-        );
-      } else {
-        console.log(
-          "Received an unknown status back from the server:",
-          response.status,
-        );
-      }
-      show();
-    })
-    .catch((error: unknown) => {
-      // Do not report errors from websocketInit() as cookie-check failures.
-      console.error("Automatic login initialization failed:", error);
-      if (!showFirefoxWarningIfNeeded()) {
-        show();
-      }
-    });
+  // Connect with the session cookie that we may have. Without a valid session, the server answers
+  // with a "signInRequired" error, and the sign-in form shows.
+  websocketInit();
 }
 
 function isBrowserFirefox() {

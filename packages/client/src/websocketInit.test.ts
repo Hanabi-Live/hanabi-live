@@ -28,6 +28,7 @@ const { globals } = await import("./Globals.ts");
 const { commands } = await import("./commands.ts");
 const { Connection } = await import("./Connection.ts");
 const { websocketInit } = await import("./websocketInit.ts");
+const { store } = await import("./store.ts");
 
 interface FakeSocket {
   url: string;
@@ -83,13 +84,9 @@ beforeEach(() => {
     ],
   });
   sockets.length = 0;
-  reload.mockClear();
+  vi.clearAllMocks();
 
   vi.stubGlobal("WebSocket", MockSocket);
-  vi.stubGlobal(
-    "fetch",
-    vi.fn().mockResolvedValue(new Response(null, { status: 200 })),
-  );
   vi.stubGlobal("navigator", { onLine: true });
   vi.stubGlobal("document", {
     visibilityState: "visible",
@@ -131,39 +128,50 @@ describe("initial WebSocket handshake watchdog", () => {
     expect(sockets[1]?.url).toBe(
       `wss://localhost/ws?version=${encodeURIComponent(VERSION)}`,
     );
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
-  test("a hanging reconnect cookie check times out and retries", async () => {
-    let firstSignal: AbortSignal | null | undefined;
-    const request = vi
-      .fn<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>()
-      .mockImplementationOnce(
-        async (_input, init) =>
-          await new Promise<Response>((_resolve) => {
-            firstSignal = init?.signal;
-            // Deliberately never settle, even when the signal is aborted.
-          }),
-      )
-      .mockResolvedValueOnce(new Response(null, { status: 200 }));
-    vi.stubGlobal("fetch", request);
-
+  test("shows an error after failing to connect before the server welcomes the page", async () => {
     websocketInit();
-
-    await clock.tickAsync(15_001);
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(firstSignal?.aborted).toBe(false);
-
-    await clock.tickAsync(10_000);
-    expect(firstSignal?.aborted).toBe(true);
-    expect(request).toHaveBeenCalledTimes(1);
-
-    await clock.tickAsync(500);
-    expect(request).toHaveBeenCalledTimes(2);
+    sockets[0]?.emit("close");
+    await clock.tickAsync(1000);
     expect(sockets).toHaveLength(2);
-    expect(sockets[1]?.url).toBe(
-      `wss://localhost/ws?version=${encodeURIComponent(VERSION)}`,
-    );
+    sockets[1]?.emit("close");
+    await clock.tickAsync(1000);
+    expect(sockets).toHaveLength(3);
+    sockets[2]?.emit("close");
+
+    await clock.tickAsync(30_000);
+    expect(sockets).toHaveLength(3);
+    expect(store.getState().login.stage).toBe("signIn");
+    expect(store.getState().login.alert?.retry).toBe(true);
+  });
+
+  test("shows the sign-in form when the session is not valid", async () => {
+    websocketInit();
+    sockets[0]?.emit("open");
+    globals.conn?.callbacks.get("error")?.({
+      message: "A valid session is required.",
+      code: "signInRequired",
+    } as never);
+    sockets[0]?.emit("close");
+
+    await clock.tickAsync(30_000);
+    expect(store.getState().login.stage).toBe("signIn");
+    expect(commands.get("error")).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+    expect(sockets).toHaveLength(1);
+  });
+
+  test("reloads when the session ends after the server welcomed the page", () => {
+    websocketInit();
+    sockets[0]?.emit("open");
+    globals.conn?.callbacks.get("welcome")?.({} as never);
+    globals.conn?.callbacks.get("error")?.({
+      message: "This session has ended.",
+      code: "signInRequired",
+    } as never);
+
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   test("clears handshake timers after open and welcome", async () => {
@@ -175,7 +183,6 @@ describe("initial WebSocket handshake watchdog", () => {
     await clock.tickAsync(30_000);
     expect(sockets).toHaveLength(1);
     expect(sockets[0]?.closed).toBe(false);
-    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   test("shows version rejection without retrying the connection", async () => {
@@ -188,7 +195,6 @@ describe("initial WebSocket handshake watchdog", () => {
     await clock.tickAsync(30_000);
     expect(commands.get("error")).toHaveBeenCalledWith(error);
     expect(sockets).toHaveLength(1);
-    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   test("reloads an outdated client once per client version", async () => {

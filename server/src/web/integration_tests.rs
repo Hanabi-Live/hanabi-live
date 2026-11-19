@@ -104,7 +104,26 @@ async fn websocket_rejects_an_ended_session_postgres() {
     request
         .headers_mut()
         .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
-    let error = connect_async(request).await.unwrap_err();
+    // The website's connection opens, so that it can read why the server refuses it.
+    let (mut socket, _) = connect_async(request.clone()).await.unwrap();
+    let Some(Ok(WireMessage::Text(text))) = socket.next().await else {
+        panic!("Expected the refusal");
+    };
+    let Some(Received::Event(event, data)) = parse_frame(&text) else {
+        panic!("Expected an event: {text}");
+    };
+    assert_eq!(event, "error");
+    assert_eq!(data["code"], "signInRequired");
+    assert!(matches!(
+        socket.next().await,
+        Some(Ok(WireMessage::Close(_))) | None
+    ));
+    // Other clients get the HTTP error.
+    let mut bot = format!("ws://{}/ws?client=bot", fixture.address)
+        .into_client_request()
+        .unwrap();
+    *bot.headers_mut() = request.headers().clone();
+    let error = connect_async(bot).await.unwrap_err();
     let tokio_tungstenite::tungstenite::Error::Http(response) = error else {
         panic!("Expected HTTP rejection");
     };

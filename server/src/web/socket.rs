@@ -313,7 +313,7 @@ pub(super) async fn websocket(
         session.and_then(|session| Some((UserId::new(session.id)?, session.version)))
     else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
-        return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
+        return refuse_session(&app, client, upgrade, "A valid session is required.");
     };
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
@@ -334,11 +334,12 @@ pub(super) async fn websocket(
         },
         Ok(None) => {
             tracing::warn!("Rejected websocket for deleted account {id} from IP: {ip}");
-            return HttpError::refused(
-                StatusCode::UNAUTHORIZED,
+            return refuse_session(
+                &app,
+                client,
+                upgrade,
                 "The account for this session no longer exists. Please sign in again.",
-            )
-            .json();
+            );
         }
         Err(error) => {
             return crate::errors::Report::from_error(
@@ -350,11 +351,12 @@ pub(super) async fn websocket(
     };
     if account.session_version != session_version {
         tracing::warn!("Rejected websocket for account {id} with an ended session from IP: {ip}");
-        return HttpError::refused(
-            StatusCode::UNAUTHORIZED,
+        return refuse_session(
+            &app,
+            client,
+            upgrade,
             "This session has ended, such as after a password change. Please sign in again.",
-        )
-        .json();
+        );
     }
     let Some(network_slot) = app.network_sockets.acquire(ip) else {
         tracing::warn!("Rejected websocket for account {id} from {ip} over the network limit.");
@@ -471,6 +473,39 @@ pub(super) async fn websocket(
                 )
                 .await;
         })
+}
+
+/// Refuses a connection without a valid session. Browsers cannot read why an upgrade failed, so the
+/// website's connection opens, gets a `signInRequired` error, and closes. Then the website can open
+/// its connection without checking its session first. Other clients get the HTTP error.
+fn refuse_session(
+    app: &Arc<App>,
+    client: ClientKind,
+    upgrade: WebSocketUpgrade,
+    message: &'static str,
+) -> Response {
+    if client != ClientKind::Web {
+        return HttpError::refused(StatusCode::UNAUTHORIZED, message).json();
+    }
+    let tracker = app.connections.clone();
+    upgrade.on_upgrade(move |mut socket| {
+        tracker.track_future(async move {
+            let notice = hanabi_protocol::Notice {
+                code: Some(hanabi_protocol::NoticeCode::SignInRequired),
+                ..hanabi_protocol::Notice::new(message)
+            };
+            let result = tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
+                socket
+                    .send(Message::Text(frame(hanabi_protocol::event::ERROR, notice)))
+                    .await?;
+                socket.close().await
+            })
+            .await;
+            if !matches!(result, Ok(Ok(()))) {
+                tracing::debug!("A connection without a session closed before it was refused.");
+            }
+        })
+    })
 }
 
 async fn connection(

@@ -564,6 +564,9 @@ named_enum! {
         ServerIoError => "serverIoError",
         ServerUnavailable => "serverUnavailable",
         SessionGenerationExhausted => "sessionGenerationExhausted",
+        // A website connection without a valid session, such as with an expired cookie or after a
+        // password change. The client shows the sign-in form.
+        SignInRequired => "signInRequired",
         // The same account connected somewhere else.
         SessionReplaced => "sessionReplaced",
         TableFailed => "tableFailed",

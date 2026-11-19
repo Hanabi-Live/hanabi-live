@@ -2,24 +2,18 @@
 // requests and passes on the server's messages and replies.
 
 import type { ServerEvent, ServerEventData } from "@hanabi-live/data";
-import {
-  VERSION,
-  errorDetails,
-  httpError,
-  withTabAccount,
-} from "@hanabi-live/data";
+import { VERSION, errorDetails, withTabAccount } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands.ts";
 import { Connection } from "./Connection.ts";
-import { HTTP_STATUS } from "./constants.ts";
 import { sendErrorReports } from "./errors.ts";
 import { gameCommands } from "./game/gameCommands.ts";
 import * as gameSession from "./game/gameSession.ts";
 import * as gameMain from "./game/main.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 import { globals } from "./Globals.ts";
-import { fetchCookieOnce } from "./lobby/cookieProbe.ts";
 import { lobbyCommands } from "./lobby/lobbyCommands.ts";
+import { loginFailed, loginStageChanged } from "./lobby/login/loginSlice.ts";
 import { tablesListed } from "./lobby/tables/tablesSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import { usersListed } from "./lobby/users/usersSlice.ts";
@@ -39,6 +33,11 @@ import { escapeHtml, textToHtml } from "./utils.ts";
 const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
 const WELCOME_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
+/**
+ * How many times the page tries to connect before the server first welcomes it. Then it shows an
+ * error, from which the player can try again.
+ */
+const MAX_ATTEMPTS_BEFORE_WELCOME = 3;
 let activeConnection: Connection | undefined;
 let websocketUrl = "";
 let recovering = false;
@@ -47,16 +46,15 @@ let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 let wakeListenersRegistered = false;
 let welcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let connectTimer: ReturnType<typeof setTimeout> | undefined;
-let cookieProbeInFlight = false;
+/** Whether the server has welcomed this page, which means that it is past the login screen. */
+let welcomed = false;
+/** The failed attempts to connect before the server first welcomed the page. */
+let failedAttemptsBeforeWelcome = 0;
 /**
  * The server stopped for maintenance. The client keeps trying to connect, and reloads the page when
  * the server welcomes it again.
  */
 let reloadWhenBack = false;
-
-function isRecoveryCurrent(connection: Connection | undefined) {
-  return recovering && !stopped && activeConnection === connection;
-}
 
 function clearWelcomeTimer() {
   if (welcomeTimer === undefined) {
@@ -117,7 +115,6 @@ function scheduleReconnect(immediate = false) {
     !recovering
     || stopped
     || reconnectTimer !== undefined
-    || cookieProbeInFlight
     || !canRetryNow()
   ) {
     return;
@@ -126,56 +123,10 @@ function scheduleReconnect(immediate = false) {
   const delay = immediate ? 0 : reconnectBackoff.nextDelay();
   reconnectTimer = setTimeout(() => {
     reconnectTimer = undefined;
-    attemptReconnect().catch((error: unknown) => {
-      console.error("WebSocket reconnect attempt failed:", error);
-      scheduleReconnect();
-    });
-  }, delay);
-}
-
-async function attemptReconnect() {
-  if (!recovering || stopped || cookieProbeInFlight || !canRetryNow()) {
-    return;
-  }
-  cookieProbeInFlight = true;
-  const oldConnection = activeConnection;
-  let shouldRetry = false;
-  try {
-    const response = await fetchCookieOnce();
-    if (!isRecoveryCurrent(oldConnection)) {
-      return;
-    }
-    if (
-      response.status === HTTP_STATUS.NO_CONTENT
-      || response.status === HTTP_STATUS.UNAUTHORIZED
-      || response.status === HTTP_STATUS.FORBIDDEN
-    ) {
-      // The cookie is gone: loading the page afresh restores normal sign-in.
-      stopRecovery();
-      globalThis.location.reload();
-      return;
-    }
-    if (!response.ok) {
-      throw await httpError(
-        response,
-        "Checking the live session before reconnecting",
-      );
-    }
-    if (canRetryNow()) {
+    if (recovering && !stopped && canRetryNow()) {
       openConnection(true);
     }
-  } catch (error: unknown) {
-    console.warn(
-      "Unable to check the WebSocket session before reconnect:",
-      error,
-    );
-    shouldRetry = true;
-  } finally {
-    cookieProbeInFlight = false;
-    if (shouldRetry) {
-      scheduleReconnect();
-    }
-  }
+  }, delay);
 }
 
 function wakeReconnect() {
@@ -215,8 +166,30 @@ function reconnectAfterTimeout(conn: Connection, timeoutMs: number) {
   );
   // Do not depend on a browser emitting close for a stalled CONNECTING socket.
   activeConnection = undefined;
-  setRecovering(true);
   conn.close();
+  retryConnection();
+}
+
+/**
+ * Tries to connect again after a connection failed, unless the page failed to connect too often.
+ */
+function retryConnection() {
+  if (!welcomed) {
+    failedAttemptsBeforeWelcome++;
+    if (failedAttemptsBeforeWelcome >= MAX_ATTEMPTS_BEFORE_WELCOME) {
+      stopRecovery();
+      store.dispatch(
+        loginFailed({
+          message:
+            "Connecting to the server failed. Check your network, and then try again.",
+          retry: true,
+        }),
+      );
+      store.dispatch(loginStageChanged("signIn"));
+      return;
+    }
+  }
+  setRecovering(true);
   scheduleReconnect();
 }
 
@@ -259,8 +232,7 @@ function openConnection(isReconnect: boolean) {
     clearWelcomeTimer();
     console.log("WebSocket closed unexpectedly; attempting to reconnect.");
     conn.setReady(false);
-    setRecovering(true);
-    scheduleReconnect();
+    retryConnection();
   });
   conn.on("socketError", (error: unknown) => {
     console.error("WebSocket error:", error);
@@ -302,6 +274,7 @@ function openConnection(isReconnect: boolean) {
       }
       clearWelcomeTimer();
       reconnectBackoff.reset();
+      welcomed = true;
       setRecovering(false);
       globals.conn = conn;
       store.dispatch(usersListed(data.users));
@@ -409,6 +382,8 @@ export function websocketInit(): void {
   stopped = false;
   recovering = false;
   reloadWhenBack = false;
+  welcomed = false;
+  failedAttemptsBeforeWelcome = 0;
   reconnectBackoff.reset();
   if (reconnectTimer !== undefined) {
     clearTimeout(reconnectTimer);
@@ -438,6 +413,16 @@ function errorCallback(conn: Connection) {
     }
     // Application errors are deliberate disconnects, not transport outages.
     stopRecovery();
+    // Our session is gone. On the login screen, we sign in. Later, loading the page afresh shows
+    // the sign-in form.
+    if (data.code === "signInRequired") {
+      if (welcomed) {
+        globalThis.location.reload();
+      } else {
+        store.dispatch(loginStageChanged("signIn"));
+      }
+      return;
+    }
     // A reload that served the same client again shows the error, which explains how to update.
     if (data.code === "outdatedClient" && reloadOutdatedClient()) {
       return;
@@ -470,6 +455,7 @@ function lobbyCallback<Command extends ServerEvent>(
     if (commandName === "welcome") {
       clearWelcomeTimer();
       reconnectBackoff.reset();
+      welcomed = true;
     }
     commandFunction(data);
   };
