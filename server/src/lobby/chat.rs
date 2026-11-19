@@ -619,6 +619,9 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<ChatMessage>
             && let Some(command) = ChatCommand::parse(&message)
         {
             let shown = match command.classification() {
+                // The website runs these commands itself, so one in the history is a message that
+                // the website did not see, which can be a private message.
+                _ if source == "user" && matches!(command.kind, CommandKind::Website) => false,
                 Classification::Text | Classification::Public => true,
                 Classification::Private => false,
                 Classification::Unknown => {
