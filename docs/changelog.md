@@ -53,6 +53,8 @@ of the repository.
   score, such as One Extra Card, come after the other games.
 - The score tables of a player's profile move between pages with the same
   control as the lists of games, under the table.
+- Dropdowns show all of their options without a scroll bar, in the colors of the
+  site.
 
 ## November 18th, 2026
 

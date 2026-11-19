@@ -7,6 +7,7 @@ import { iRange } from "complete-common";
 import { useState } from "react";
 import type * as z from "zod";
 import { getFadeStyle, useRevealClassName } from "../fade.ts";
+import { Select } from "../Select.tsx";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 
@@ -40,7 +41,7 @@ function PlayerCountFilter({
       <ul className="horizontal">
         <li className={item}>Filter by # of Players</li>
         <li className={item}>
-          <select
+          <Select
             aria-label="Number of players"
             defaultValue={filters.numPlayers ?? ""}
             onChange={(event) => {
@@ -57,7 +58,7 @@ function PlayerCountFilter({
                 {players}-Players
               </option>
             ))}
-          </select>
+          </Select>
         </li>
       </ul>
       <br />

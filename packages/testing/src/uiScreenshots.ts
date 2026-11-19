@@ -667,6 +667,16 @@ function getStates(): readonly State[] {
         await page.getByRole("listbox").waitFor();
       },
     },
+    // Open a dropdown, which the page draws.
+    {
+      name: "dropdown",
+      path: `/history/${USERNAME}`,
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.getByRole("combobox", { name: "Sort" }).click();
+        await page.getByRole("option", { name: "Lowest score" }).waitFor();
+      },
+    },
     {
       name: "missing-scores",
       path: `/missing-scores/${USERNAME}`,
@@ -3659,8 +3669,8 @@ const COLUMN_TOP_TOLERANCE = 1;
  * background or a border, and that lets its content overflow. (A box that clips or scrolls its
  * content means to.) An element that is positioned, or that is in a positioned element inside the
  * box, is placed on purpose, such as a menu or a token that overhangs a card, so it does not count.
- * Neither does an element with a negative margin or a relative offset. `tolerance` is in CSS
- * pixels.
+ * Neither does an element with a negative margin or a relative offset, or the option of a select,
+ * which shows in the select's list. `tolerance` is in CSS pixels.
  */
 function getOverflows(tolerance: number): readonly string[] {
   // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
@@ -3734,7 +3744,11 @@ function getOverflows(tolerance: number): readonly string[] {
   function check(parent: Element, box: Element, outer: DOMRect) {
     for (const element of parent.children) {
       const style = getComputedStyle(element);
-      if (style.display === "none" || isPlaced(style)) {
+      if (
+        style.display === "none"
+        || isPlaced(style)
+        || element instanceof HTMLOptionElement
+      ) {
         continue;
       }
       const rect = element.getBoundingClientRect();

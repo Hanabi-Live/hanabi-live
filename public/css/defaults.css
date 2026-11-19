@@ -61,7 +61,6 @@ table {
 }
 
 input,
-select,
 textarea {
   appearance: none;
 }
@@ -333,6 +332,7 @@ textarea:focus {
 }
 
 select {
+  align-items: center;
   background-image: var(--select-arrow);
   background-size: 1.25em;
   background-repeat: no-repeat;
@@ -340,16 +340,55 @@ select {
   height: 3em;
   padding-right: 3em;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /*
-  The browser draws the list of options on its own white popup. A translucent background, such as
-  "--surface-sunken" in a ".box", would show that white through it, so the options use an opaque
-  color.
+  The page draws the list of options, not the browser. So the list shows all of its options without
+  a scroll bar, and it takes the colors of the site.
 */
-select option {
-  color: var(--text);
+select,
+select::picker(select) {
+  appearance: base-select;
+}
+
+/* Like the browser's own dropdown, which centers its text */
+select {
+  display: flex;
+}
+
+/* The select draws its own arrow, as its background image. */
+select::picker-icon {
+  display: none;
+}
+
+select::picker(select) {
   background: var(--surface);
+  border: solid 1px var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  color: var(--text);
+  margin-block: 4px;
+  padding-block: 0.25em;
+}
+
+select option {
+  gap: 0.5em;
+  padding: 0.15em 1em 0.15em 0.75em;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+select option:hover,
+select option:focus-visible {
+  background: var(--row-hover-bg);
+  color: var(--menu-hover-text);
+  outline: none;
+}
+
+select option::checkmark {
+  color: var(--green-text);
 }
 
 input[type="text"],

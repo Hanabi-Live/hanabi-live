@@ -9,6 +9,7 @@ import {
 import { iRange, parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { globals } from "../../Globals.ts";
+import { Select } from "../../Select.tsx";
 import {
   getFadeStyle,
   useReducedMotion,
@@ -156,7 +157,7 @@ function SoundMoveRow() {
         Move sounds
       </RowLabel>
       {status}
-      <select
+      <Select
         id="soundMove"
         onChange={(event) => {
           changeSetting({
@@ -169,7 +170,7 @@ function SoundMoveRow() {
         <option value="all">Play a sound when a move is made</option>
         <option value="onlyOwn">Play a sound when it's my turn</option>
         <option value="none">No Sound</option>
-      </select>
+      </Select>
     </li>
   );
 }
@@ -258,7 +259,7 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
         </a>
       </RowLabel>
       {status}
-      <select
+      <Select
         id="hGroupLevel"
         onChange={(event) => {
           const level = parseIntSafe(event.target.value);
@@ -284,7 +285,7 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
             Level {level}
           </option>
         ))}
-      </select>
+      </Select>
     </li>
   );
 }
