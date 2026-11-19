@@ -1023,19 +1023,14 @@ const POSSIBILITIES = {
   maxSuitRows: 2,
 } as const;
 
-/** The size of the chip behind a suit's pip, per the pip's cell. */
+/**
+ * The size of the ring around a suit's pip that a clue touched, per the pip's cell. A suit that no
+ * clue touched has only its pip, with no chip behind it, so that the card looks clean.
+ */
 const SUIT_CHIP_PER_CELL = 0.92;
 
-/** The size of a suit's pip, per its cell. The pip fills most of its chip. */
+/** The size of a suit's pip, per its cell. The pip fills most of its ring. */
 const SUIT_PIP_PER_CELL = 0.9;
-
-/**
- * The chip behind a suit's pip: a little darker than the face of an unknown card, with a thin dark
- * ring. Light suits, such as yellow and white, stand out on it better than on a white chip.
- */
-const SUIT_CHIP_BACKGROUND =
-  "color-mix(in srgb, var(--card-face-unknown) 85%, var(--card-ink))";
-const SUIT_CHIP_RING = "inset 0 0 0 1px rgb(27 36 43 / 45%)";
 
 /** The height of a rank chip, per its width. */
 const RANK_CHIP_HEIGHT_PER_WIDTH = 1.1;
@@ -1061,7 +1056,7 @@ function getPositiveRing(width: number): string {
   return `0 0 0 ${Math.max(1, width * POSITIVE_RING_PER_WIDTH)}px var(--clue-border)`;
 }
 
-/** A suit that a card can be: its pip on a gray chip, in a square cell. */
+/** A suit that a card can be: its pip, in a square cell. */
 function SuitChip({
   variant,
   pip,
@@ -1094,15 +1089,12 @@ function SuitChip({
         style={{
           width: chip,
           height: chip,
-          background: SUIT_CHIP_BACKGROUND,
           opacity: pip.eliminated ? RULED_OUT_OPACITY : 1,
-          boxShadow: pip.positive
-            ? `${SUIT_CHIP_RING}, ${getPositiveRing(width)}`
-            : SUIT_CHIP_RING,
+          boxShadow: pip.positive ? getPositiveRing(width) : undefined,
         }}
       >
         {/* With the border and the shadow of the pips on a card's face, so that light suits, such
-            as yellow and white, stand out on the chip. */}
+            as yellow and white, stand out on the gray face of an unknown card. */}
         <Pip
           shadow
           size={cell * SUIT_PIP_PER_CELL}
@@ -1153,10 +1145,10 @@ function RankChip({
 
 /**
  * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
- * card, so that they are easy to read at a glance. Each suit is a pip on a gray chip with a dark
- * ring, and each rank is a dark chip with a white number. A suit or a rank that the card cannot be
- * is faded, and one that a clue touched has a ring in the clue color. The card shows the exact
- * cards that it can be in a bubble (see `PossibleCardsBubble`).
+ * card, so that they are easy to read at a glance. Each suit is its pip, and each rank is a dark
+ * chip with a white number. A suit or a rank that the card cannot be is faded, and one that a clue
+ * touched has a ring in the clue color. The card shows the exact cards that it can be in a bubble
+ * (see `PossibleCardsBubble`).
  *
  * Each suit and each rank of the variant has a fixed place, so that the others do not move when the
  * holder learns that the card is not one of them. Its place stays empty.
