@@ -58,29 +58,21 @@ const ICON_BUTTON_SIZE_CLASS = {
  * does not push the buttons out of the panel.
  */
 function Controls({
-  rightBesideLeader = false,
   children,
 }: {
-  /**
-   * Whether the buttons on the right share the row of the leader's controls in a narrow panel too.
-   * In a wide panel, they always do. Only one button fits beside the leader's controls in a narrow
-   * panel.
-   */
-  readonly rightBesideLeader?: boolean;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   return (
     <div
       className="tw:group/controls tw:flex tw:grow tw:flex-nowrap tw:group-data-panel/strip:min-w-0 tw:items-center tw:gap-x-4 tw:gap-y-2 tw:phone:flex-wrap tw:narrow-410:gap-x-3 tw:group-data-panel/strip:gap-x-1.5"
-      data-right-beside-leader={rightBesideLeader ? "" : undefined}
       role="status"
     >
       {children}
-      {/* When the leader's controls share their row with the buttons on the right, the rest of the
-          controls start a new row. */}
+      {/* In the panel, the leader's controls share their row with the buttons on the right, and the
+          rest of the controls start a new row. */}
       <span
         aria-hidden="true"
-        className="tw:hidden tw:h-0 tw:basis-full tw:group-data-panel/strip:order-[-1] tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:block tw:group-data-panel/strip:group-data-right-beside-leader/controls:group-has-[[data-leader-controls]:not(:empty)]/controls:block"
+        className="tw:hidden tw:h-0 tw:basis-full tw:group-data-panel/strip:order-[-1] tw:group-data-panel/strip:group-has-[[data-leader-controls]:not(:empty)]/controls:block"
       />
     </div>
   );
@@ -105,12 +97,11 @@ const MIDDLE_CLASS = `tw:flex tw:grow tw:items-center tw:gap-2 tw:narrow-410:gap
 const AFTER_TIMELINE_CLASS = "tw:group-data-panel/strip:order-1";
 
 /**
- * The right of the controls. On a narrow window and in a wide panel, it shares the first row with
- * the leader's controls, if there are any. In a narrow panel, it does so only when the controls ask
- * for it (see `Controls`).
+ * The right of the controls. On a narrow window and in the panel, it shares the first row with the
+ * leader's controls, if there are any.
  */
 const RIGHT_CLASS =
-  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden tw:group-data-panel/strip:order-2 tw:group-data-panel/strip:@min-[22rem]/panel:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2] tw:group-data-panel/strip:group-data-right-beside-leader/controls:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2]";
+  "tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:empty:hidden tw:group-data-panel/strip:order-2 tw:group-data-panel/strip:group-has-[[data-leader-controls]:not(:empty)]/controls:order-[-2]";
 
 /**
  * A step or a jump through the turns. In a narrow panel, the four of them share their row, and they
@@ -722,7 +713,7 @@ export function ReplayControls({
  * a narrow window, they share a row with the buttons on the right, and the menu can shrink. There,
  * they start with no width and take the room that the buttons leave. Otherwise, more buttons on the
  * right, as in a hypothetical, would wrap onto a row of their own, and the bar would grow. In the
- * panel, the menu can shrink too, so that the button on the right fits beside it.
+ * panel, the menu can shrink too, so that the buttons on the right fit beside it.
  */
 function LeaderControls({
   state,
@@ -732,7 +723,7 @@ function LeaderControls({
   const { shared } = state.replay;
   return (
     <div
-      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:order-[-3] tw:group-data-panel/strip:min-w-0 tw:group-data-panel/strip:shrink tw:group-data-panel/strip:@max-[22rem]/panel:basis-full tw:group-data-panel/strip:@max-[22rem]/panel:group-data-right-beside-leader/controls:basis-auto"
+      className="tw:flex tw:shrink-0 tw:gap-2 tw:empty:hidden tw:phone:min-w-0 tw:phone:shrink tw:phone:grow tw:phone:basis-0 tw:group-data-panel/strip:order-[-3] tw:group-data-panel/strip:min-w-0 tw:group-data-panel/strip:shrink"
       data-leader-controls
     >
       {shared !== undefined && (
@@ -803,7 +794,7 @@ function TurnsControls({
   // hypothetical is at the right end. The way back to the game is with the bar's other buttons,
   // where the way into the replay is.
   return (
-    <Controls rightBesideLeader>
+    <Controls>
       <LeaderControls state={state} />
       <div className={MIDDLE_CLASS}>
         <IconButton
