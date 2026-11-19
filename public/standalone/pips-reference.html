@@ -4,7 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pips Reference</title>
+    <!--
+      The colors of the site, so that this page looks like the lobby: glass cards on the felt. A
+      deployment has no "tokens.css", but the critical CSS has the same colors and a fixed name.
+    -->
+    <link rel="stylesheet" href="/public/css/critical.min.css" />
     <style>
+      @font-face {
+        font-family: "Source Sans Pro";
+        font-weight: 300;
+        src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2")
+          format("woff2");
+      }
+
+      @font-face {
+        font-family: "Source Sans Pro";
+        font-weight: 400;
+        src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2")
+          format("woff2");
+      }
+
+      @font-face {
+        font-family: "Source Sans Pro";
+        font-weight: 600;
+        src: url("/public/webfonts/source-sans-pro-latin-600-normal.woff2")
+          format("woff2");
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -12,103 +38,119 @@
       }
 
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
-        padding: 40px 20px;
+        padding: 40px 16px;
+        background-color: var(--game-screen-bg);
+        background-image: var(--game-screen-table);
+        background-size: 512px, auto, auto;
+        background-blend-mode: overlay, normal, normal;
+        background-attachment: fixed;
+        color: var(--text);
+        font-family: "Source Sans Pro", sans-serif;
       }
 
       .header {
+        margin-bottom: 32px;
         text-align: center;
-        color: white;
-        margin-bottom: 40px;
       }
 
       .header h1 {
         font-size: 2.5em;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-weight: 300;
+        text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
       }
 
       .header p {
+        color: var(--text-label);
         font-size: 1.1em;
-        opacity: 0.9;
       }
 
       #pips-container {
         max-width: 1400px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 30px;
-        padding: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
       }
 
+      /* A glass card, like the panels of the lobby */
       .pip-wrapper {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 20px;
+        border-radius: var(--radius);
+        background: var(--box-bg);
+        backdrop-filter: var(--box-backdrop);
+        box-shadow: var(--box-shadow);
       }
 
-      .pip-wrapper:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-      }
-
+      /* The pip on the paper of a card, so that dark and light pips both show */
       .pip-canvas {
         display: block;
-        margin-bottom: 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 14px;
+        border-radius: var(--radius);
+        background: white;
+        box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
       }
 
       .pip-label {
-        text-align: center;
         width: 100%;
+        text-align: center;
       }
 
       .pip-name {
+        margin-bottom: 6px;
         font-size: 1.2em;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
+        font-weight: 600;
       }
 
       .pip-id {
-        font-size: 0.9em;
-        color: #666;
-        font-family: "Courier New", monospace;
-        background: #f5f5f5;
-        padding: 4px 8px;
-        border-radius: 4px;
         display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: var(--box-sunken);
+        color: var(--text-label);
+        font-family: monospace;
+        font-size: 0.9em;
       }
 
       .pip-count {
         grid-column: 1 / -1;
+        padding: 16px;
+        color: var(--text-label);
+        font-size: 1.1em;
         text-align: center;
-        margin-top: 20px;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 10px;
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #333;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Two cards in a row on a phone */
+      @media screen and (max-width: 530px) {
+        #pips-container {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+
+        .pip-wrapper {
+          padding: 12px;
+        }
+
+        .pip-name {
+          font-size: 1em;
+        }
+
+        .pip-id {
+          font-size: 0.75em;
+        }
       }
 
       .loading {
-        text-align: center;
-        color: white;
-        font-size: 1.5em;
+        grid-column: 1 / -1;
         padding: 40px;
+        color: var(--text-label);
+        font-size: 1.5em;
+        text-align: center;
       }
     </style>
   </head>
