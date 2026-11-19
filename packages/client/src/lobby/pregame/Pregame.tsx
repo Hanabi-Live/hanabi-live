@@ -136,8 +136,9 @@ export function Pregame(): React.JSX.Element | undefined {
         </div>
       </header>
       {/* Every row is as tall as the tallest card, so that the open seats look the same. One column
-          on a phone has no rows to match. */}
-      <div className="tw:min-h-0 tw:flex-auto tw:overflow-y-auto">
+          on a phone has no rows to match. The padding holds a seat while it pops past its size, so
+          that no scroll bar shows, and the margin keeps the seats in place. */}
+      <div className="tw:-m-1 tw:min-h-0 tw:flex-auto tw:overflow-y-auto tw:p-1">
         <ol className="tw:m-0 tw:grid tw:list-none tw:auto-rows-fr tw:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] tw:gap-2 tw:p-0 tw:narrow-410:auto-rows-auto">
           {game.players.map((player, i) => (
             <PlayerBox
