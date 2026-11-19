@@ -216,6 +216,12 @@
   --game-screen-caution: #ffeb3b;
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
+  /*
+    The note after the slot on the tab of a played or discarded card. They are dark, so that they
+    show on the white tab: red for a misplay, and violet for a blind play or a clued discard.
+  */
+  --moved-card-misplayed: #c62828;
+  --moved-card-notable: #5b3cc4;
   --clue-border: #ff9f1c;
   /* The borders of cards whose notes mark them as chop moved, finessed, or allowed to be discarded. */
   --chop-move-border: #fffce6;

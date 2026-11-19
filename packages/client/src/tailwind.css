@@ -84,6 +84,8 @@
   --color-game-caution: var(--game-screen-caution);
   --color-card-unknown: var(--card-face-unknown);
   --color-card-ink: var(--card-ink);
+  --color-moved-card-misplayed: var(--moved-card-misplayed);
+  --color-moved-card-notable: var(--moved-card-notable);
   --color-clue: var(--clue-border);
   --color-chop-move: var(--chop-move-border);
   --color-finesse: var(--finesse-border);

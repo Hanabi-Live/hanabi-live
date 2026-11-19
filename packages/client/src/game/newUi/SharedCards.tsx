@@ -523,7 +523,8 @@ const SLOT_TAB_WINDOW_MARGIN = 2;
 /**
  * The tab on the top edge of a moved card's outline, which names the slot that the card left, and
  * says "(misplayed)", "(blind)", or "(clued)" when the move was unusual. It is white like the
- * outline, so that the two read as one shape.
+ * outline, so that the two read as one shape. The note has its own color, so that it stands out
+ * from the slot.
  */
 function SlotTab({
   slot,
@@ -580,7 +581,17 @@ function SlotTab({
       }}
     >
       <span>Slot {slot}</span>
-      {label !== undefined && <span>({label})</span>}
+      {label !== undefined && (
+        <span
+          className={
+            label === "misplayed"
+              ? "tw:text-moved-card-misplayed"
+              : "tw:text-moved-card-notable"
+          }
+        >
+          ({label})
+        </span>
+      )}
     </span>
   );
 }
