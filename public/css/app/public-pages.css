@@ -42,7 +42,9 @@ table.history {
   flex-direction: column;
 }
 
-/* The links between a player's pages are tabs. The tab of the current page has a brass bar. */
+/* The links between a player's pages are tabs. The tab of the current page has a brass line under
+   it. While the mouse is over another tab, a line of half that height underlines it (as
+   "tabClassName.ts" does for the tabs in the lobby). */
 #profile-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -53,9 +55,9 @@ table.history {
 }
 
 #profile-buttons a {
+  position: relative;
   display: block;
-  padding: 0.6em 0.5em;
-  border-bottom: solid 3px transparent;
+  padding: 0.6em 0.5em calc(0.6em + 3px);
   margin-bottom: -1px;
   color: var(--text-label);
   text-align: center;
@@ -67,13 +69,32 @@ table.history {
   margin-right: 0.5em;
 }
 
+#profile-buttons a::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: var(--button-primary-bg);
+  content: "";
+  scale: 0 1;
+  transform-origin: bottom;
+}
+
 #profile-buttons a:hover {
   color: var(--text);
 }
 
+#profile-buttons a:hover::after {
+  scale: 1 0.5;
+}
+
 #profile-buttons a[aria-current="page"] {
-  border-bottom-color: var(--button-primary-bg);
   color: var(--text);
+}
+
+#profile-buttons a[aria-current="page"]::after {
+  scale: 1;
 }
 
 @media screen and (max-width: 530px) {

@@ -11,8 +11,10 @@ export function getTabClassName(reducedMotion: boolean): string {
     "tw:after:absolute tw:after:inset-x-0 tw:after:bottom-0 tw:after:h-0.5 tw:after:origin-bottom tw:after:scale-x-0 tw:after:bg-(--button-primary-bg) tw:after:content-['']",
     "tw:not-aria-selected:hover:after:scale-x-100 tw:not-aria-selected:hover:after:scale-y-50",
     "tw:aria-selected:cursor-default tw:aria-selected:text-text tw:aria-selected:after:scale-x-100",
-    reducedMotion
-      ? ""
-      : "tw:transition-[color] tw:duration-200 tw:ease-in-out tw:after:transition-transform tw:after:duration-200 tw:after:ease-out",
+    reducedMotion ? "" : TAB_TRANSITION_CLASS_NAME,
   ].join(" ");
 }
+
+/** The classes that animate a tab's text color and its line. */
+export const TAB_TRANSITION_CLASS_NAME =
+  "tw:transition-[color] tw:duration-200 tw:ease-in-out tw:after:transition-transform tw:after:duration-200 tw:after:ease-out";

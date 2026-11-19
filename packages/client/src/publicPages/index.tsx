@@ -9,6 +9,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import type * as z from "zod";
 import { loadCachedReducedMotion } from "../reducedMotionCache.ts";
+import { store } from "../store.ts";
+import { TAB_TRANSITION_CLASS_NAME } from "../tabClassName.ts";
 import "../tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 import { allowTranslators } from "../translators.ts";
 import { GamesTable } from "./GamesTable.tsx";
@@ -17,6 +19,7 @@ import { MissingScoresTable, ScoresTable } from "./ScoreTables.tsx";
 
 allowTranslators();
 loadCachedReducedMotion();
+animateProfileTabs();
 
 const passwordReset = document.querySelector("#password-reset");
 if (passwordReset === null) {
@@ -62,5 +65,19 @@ function PublicPageTable({
     case "games": {
       return <GamesTable table={table} />;
     }
+  }
+}
+
+/**
+ * Animates the tabs between a player's pages, which the server draws, like the tabs in the lobby. A
+ * public page reads the "Reduced motion" setting once, from the browser's cache (see
+ * "reducedMotionCache.ts").
+ */
+function animateProfileTabs() {
+  if (store.getState().session.settings.reducedMotion) {
+    return;
+  }
+  for (const tab of document.querySelectorAll("#profile-buttons a")) {
+    tab.classList.add(...TAB_TRANSITION_CLASS_NAME.split(" "));
   }
 }
