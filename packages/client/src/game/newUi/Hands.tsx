@@ -602,6 +602,19 @@ function getHandBoxTopPadding(cardWidth: number): number {
  */
 export const HAND_BOX_BOTTOM_PADDING = 8;
 
+/**
+ * The height of the name column, when the clue button is below the name. The column spans the
+ * hand's box, with the box's bottom padding as a margin above and below it, so that it can use the
+ * space above the cards.
+ */
+export function getNameColumnRoom(cardWidth: number): number {
+  return (
+    getHandBoxTopPadding(cardWidth)
+    + cardWidth * CARD_HEIGHT_PER_WIDTH
+    - HAND_BOX_BOTTOM_PADDING
+  );
+}
+
 /** The space between a player's name and their cards, when the name is beside them. */
 export const NAME_GAP = 16;
 
@@ -877,6 +890,27 @@ function TurnWarningTag({
   );
 }
 
+/**
+ * The room below a player's name for their clue button, in the phone layout with the names beside
+ * the cards. It also holds the H-Group warning. The two never show at the same time: the warning is
+ * on the current player's hand, and the buttons are on the other hands. The negative margin cancels
+ * the column's gap, which the button's height includes.
+ */
+function ClueButtonSlot({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div
+      className="tw:relative tw:-mt-1 tw:self-stretch tw:pt-1"
+      style={{ minHeight: CLUE_BUTTON_COLUMN_HEIGHT }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /** The hidden clock that measures the name column has no pause button, so it never pauses. */
 function ignorePause() {
   // The function is empty on purpose.
@@ -885,18 +919,25 @@ function ignorePause() {
 /**
  * Measures the width that the name column needs. It draws every player's name, hidden, in both of
  * its styles: bold for the current player, and plain for the others. The column fits the widest, so
- * it does not change size as the turn moves from player to player. It also draws, hidden, a name
- * with the clock and the H-Group warning under it, to measure their height.
+ * it does not change size as the turn moves from player to player. It also draws, hidden, the name
+ * column of the phone layout with the clue button below the name, to measure its height.
  */
 export function NameColumnSizer({
   seats,
+  phoneWidth,
   onSizeChange,
 }: {
   readonly seats: readonly Seat[];
 
   /**
-   * Gets the width of the widest name, the height of a name, and the height of a name with the
-   * clock and the H-Group warning under it.
+   * The width of the name column in the phone layout. The H-Group warning wraps in a narrow column,
+   * which makes it taller.
+   */
+  readonly phoneWidth: number;
+
+  /**
+   * Gets the width of the widest name, the height of a name, and the height of the name column in
+   * the phone layout with the clue button below the name.
    */
   readonly onSizeChange: (
     width: number,
@@ -933,12 +974,18 @@ export function NameColumnSizer({
       {/* The same as the name column of a hand, with the name beside the cards (see "Hand"). */}
       <div
         aria-hidden="true"
-        className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start tw:gap-1"
+        className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:flex-col tw:items-start tw:gap-1"
         ref={stackRef}
+        style={{ width: phoneWidth }}
       >
         {firstSeat !== undefined && (
           <>
             <NameChip seat={firstSeat} />
+            <ClueButtonSlot>
+              {firstSeat.turnWarnings && (
+                <TurnWarningTag underName warning={undefined} />
+              )}
+            </ClueButtonSlot>
             <PlayerClock
               onPause={ignorePause}
               pauseAction={undefined}
@@ -946,9 +993,6 @@ export function NameColumnSizer({
               seat={firstSeat}
               underName
             />
-            {firstSeat.turnWarnings && (
-              <TurnWarningTag underName warning={undefined} />
-            )}
           </>
         )}
       </div>
@@ -1752,6 +1796,12 @@ function Hand({
   } else if (props.stacked) {
     buttonPlacement = "corner";
   }
+  const turnWarningTag = seat.turnWarnings && (
+    <TurnWarningTag
+      underName={props.nameColumnWidth !== undefined}
+      warning={seat.turnWarning}
+    />
+  );
   const clueButton = canClueSeat && !chosen && (
     <ClueButton
       name={seat.name}
@@ -1801,6 +1851,12 @@ function Hand({
         style={{
           width: props.nameColumnWidth,
           paddingRight: buttonBesideName ? CLUE_BUTTON_COLUMN_WIDTH : undefined,
+          ...(buttonBelowName && {
+            alignSelf: "stretch",
+            justifyContent: "center",
+            marginTop:
+              HAND_BOX_BOTTOM_PADDING - getHandBoxTopPadding(props.cardWidth),
+          }),
         }}
       >
         {buttonBesideName && clueButton}
@@ -1834,14 +1890,11 @@ function Hand({
             <NameChip seat={seat} />
           </button>
         </div>
-        {/* The negative margin cancels the column's gap, which the button's height includes. */}
         {buttonBelowName && (
-          <div
-            className="tw:relative tw:-mt-1 tw:self-stretch"
-            style={{ height: CLUE_BUTTON_COLUMN_HEIGHT }}
-          >
+          <ClueButtonSlot>
+            {turnWarningTag}
             {clueButton}
-          </div>
+          </ClueButtonSlot>
         )}
         <PlayerClock
           onPause={props.onPause}
@@ -1850,12 +1903,7 @@ function Hand({
           seat={seat}
           underName={props.nameColumnWidth !== undefined}
         />
-        {seat.turnWarnings && (
-          <TurnWarningTag
-            underName={props.nameColumnWidth !== undefined}
-            warning={seat.turnWarning}
-          />
-        )}
+        {!buttonBelowName && turnWarningTag}
       </div>
       <div
         className="tw:relative tw:flex"

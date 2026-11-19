@@ -46,18 +46,13 @@ import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { CardClueMarker } from "./Card.tsx";
-import {
-  CARD_CORNER_PER_WIDTH,
-  CARD_HEIGHT_PER_WIDTH,
-  CardFace,
-} from "./Card.tsx";
+import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import type { LogTab } from "./ClueLog.tsx";
 import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import {
-  CLUE_BUTTON_COLUMN_HEIGHT,
   CLUE_BUTTON_COLUMN_WIDTH,
   ClueMenu,
   getClueDrawerWidth,
@@ -65,6 +60,7 @@ import {
 import { DISCARD_COLUMN_CLASS, DropZones } from "./DropZones.tsx";
 import { EndGameMenu } from "./EndGame.tsx";
 import {
+  getNameColumnRoom,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
@@ -1018,13 +1014,11 @@ export function GameScreen(): React.JSX.Element {
   }
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   // In the phone layout with the names beside the cards, the clue button goes below the name, so
-  // that the cards get the width that it would take. When the cards are shorter than the name
-  // column (with the clock and the H-Group warning), the hands would be taller than the room for
-  // them. Then, the button goes to the right of the name.
+  // that the cards get the width that it would take. When the hand's box is too short for that name
+  // column (see `getNameColumnRoom`), the hands would be taller than the room for them. Then, the
+  // button goes to the right of the name.
   const clueButtonBesideName =
-    stacked
-    && nameStackHeight + CLUE_BUTTON_COLUMN_HEIGHT
-      > handCardWidth * CARD_HEIGHT_PER_WIDTH;
+    stacked && nameStackHeight > getNameColumnRoom(handCardWidth);
   if (clueButtonBesideName) {
     nameColumnWidth = phoneNameWidth + CLUE_BUTTON_COLUMN_WIDTH;
     handCardWidth = getHandCardWidthFor(nameColumnWidth);
@@ -1547,6 +1541,7 @@ export function GameScreen(): React.JSX.Element {
               >
                 <NameColumnSizer
                   onSizeChange={onNameSizeChange}
+                  phoneWidth={phoneNameWidth}
                   seats={seats}
                 />
                 <Hands
