@@ -64,12 +64,16 @@
   --button-alt-active-bg: #2d6646;
   /*
     A button is a key: a light top edge and a dark lip under it. Pressing it pushes it down onto its
-    lip, in "--button-press-duration". The lip is translucent black, so that it suits a button of
-    any color. The site's buttons and the New UI's buttons ("RAISED_BUTTON_CLASS") share these.
+    lip, in "--button-press-duration". The pointer over it lifts it by 1px off a deeper lip. The lip
+    is translucent black, so that it suits a button of any color. The site's buttons and the New
+    UI's buttons ("RAISED_BUTTON_CLASS") share these.
   */
   --button-key-shadow:
     inset 0 1px 0 rgb(255 255 255 / 18%), 0 3px 0 rgb(0 0 0 / 35%),
     0 4px 8px rgb(0 0 0 / 25%);
+  --button-key-hover-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%), 0 4px 0 rgb(0 0 0 / 35%),
+    0 6px 12px rgb(0 0 0 / 25%);
   --button-key-pressed-shadow:
     inset 0 1px 0 rgb(255 255 255 / 18%), 0 1px 0 rgb(0 0 0 / 35%);
   --button-press-duration: 75ms;

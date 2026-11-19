@@ -1337,7 +1337,7 @@ function getStates(): readonly State[] {
       },
     },
     // On the account's turn in a five-player game, every other hand shows its clue button. The
-    // mouse is over the next player's button, which brightens it.
+    // mouse is over the next player's button, which raises it.
     {
       name: "new-ui-clue-buttons",
       path: "/",

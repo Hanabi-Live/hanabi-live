@@ -688,6 +688,18 @@ input[type="button"]:hover,
   background-color: var(--button-hover-bg);
 }
 
+/* The key rises under the pointer. An outlined or disabled button does not. */
+@media (hover: hover) {
+  :where(input[type="submit"], input[type="button"], .button):not(
+      .alt,
+      .disabled,
+      :disabled
+    ):hover {
+    box-shadow: var(--button-key-hover-shadow);
+    translate: 0 -1px;
+  }
+}
+
 input[type="submit"]:active,
 input[type="button"]:active,
 .button:active {

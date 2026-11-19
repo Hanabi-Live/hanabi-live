@@ -39,10 +39,11 @@ export const HOVER_CLASS = "tw:duration-[120ms] tw:ease-out";
 
 /**
  * A button that is a key, like the site's buttons: it uses the same shadows and press time
- * ("--button-key-shadow" in "public/css/tokens.css"). A disabled button lies flat.
+ * ("--button-key-shadow" in "public/css/tokens.css"). It rises under the pointer. A disabled button
+ * lies flat.
  */
 export const RAISED_BUTTON_CLASS =
-  "tw:shadow-(--button-key-shadow) tw:transition-[translate,box-shadow] tw:duration-(--button-press-duration) tw:ease-out tw:active:translate-y-[2px] tw:active:shadow-(--button-key-pressed-shadow) tw:disabled:translate-y-0 tw:disabled:shadow-none";
+  "tw:shadow-(--button-key-shadow) tw:transition-[translate,box-shadow] tw:duration-(--button-press-duration) tw:ease-out tw:hover:not-active:not-disabled:not-aria-disabled:-translate-y-px tw:hover:not-active:not-disabled:not-aria-disabled:shadow-(--button-key-hover-shadow) tw:active:translate-y-[2px] tw:active:shadow-(--button-key-pressed-shadow) tw:disabled:translate-y-0 tw:disabled:shadow-none";
 
 /** A button on a bar of the game screen. It sets no color. */
 const BAR_BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text ${RAISED_BUTTON_CLASS}`;
