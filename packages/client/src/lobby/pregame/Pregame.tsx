@@ -37,8 +37,9 @@ export function Pregame(): React.JSX.Element | undefined {
   );
   const reducedMotion = useReducedMotion();
   // The people who are at the table when we join it show at once, with the table. The people who
-  // come after them fade in. The table's details come before the screen shows, and an element that
-  // stops being hidden plays its starting style again, so we wait for the screen.
+  // come after them fade in, and so does our own seat, to show that we took it. The table's details
+  // come before the screen shows, and an element that stops being hidden plays its starting style
+  // again, so we wait for the screen.
   const shown = useAppSelector(
     (state) => state.session.screen === Screen.PreGame,
   );
@@ -140,7 +141,11 @@ export function Pregame(): React.JSX.Element | undefined {
         <ol className="tw:m-0 tw:grid tw:list-none tw:auto-rows-fr tw:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] tw:gap-2 tw:p-0 tw:narrow-410:auto-rows-auto">
           {game.players.map((player, i) => (
             <PlayerBox
-              fadeStyle={fadeStyle}
+              fadeStyle={
+                player.username === username
+                  ? getFadeStyle(reducedMotion)
+                  : fadeStyle
+              }
               isSpectator={isSpectator}
               key={player.username}
               maxScore={variant.maxScore}
