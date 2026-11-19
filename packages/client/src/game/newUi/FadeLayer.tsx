@@ -4,7 +4,6 @@ import {
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
 import { getOpacityTransition } from "./motion.ts";
-import { BUTTON_PRESS_MILLISECONDS } from "./surfaces.ts";
 
 /**
  * Lets a button or a box take a color that fades in and out, such as the light color of a pressed
@@ -85,7 +84,7 @@ export function getButtonTextColorStyle(
   if (reducedMotion) {
     return undefined;
   }
-  const press = `${BUTTON_PRESS_MILLISECONDS}ms`;
+  const press = "var(--button-press-duration)";
   return {
     transitionProperty: "translate, box-shadow, color",
     transitionDuration: `${press}, ${press}, ${shown ? OPEN_DURATION_IN_MILLISECONDS : CLOSE_DURATION_IN_MILLISECONDS}ms`,

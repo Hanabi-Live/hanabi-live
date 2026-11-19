@@ -110,7 +110,7 @@ function PlayAgainMenu({
     return (
       <button
         aria-disabled="true"
-        className={`${BOTTOM_BAR_BUTTON_CLASS} tw:cursor-default tw:bg-white/8 tw:opacity-60`}
+        className={`${BOTTOM_BAR_BUTTON_CLASS} tw:cursor-default tw:bg-button-translucent tw:opacity-60`}
         ref={tooltipRef("Waiting for the server to answer.")}
         type="button"
       >

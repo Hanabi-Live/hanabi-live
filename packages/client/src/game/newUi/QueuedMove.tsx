@@ -134,7 +134,7 @@ export function QueuedMove({
       <button
         aria-hidden={sent ? true : undefined}
         aria-label={cancelLabel}
-        className={`tw:min-h-8 tw:w-full tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:px-3 tw:text-[14px] tw:font-semibold tw:text-game-text tw:hover:bg-white/15 ${RAISED_BUTTON_CLASS} ${sent ? "tw:invisible" : ""}`}
+        className={`tw:min-h-8 tw:w-full tw:cursor-pointer tw:rounded-game-control tw:border-0 tw:bg-button-translucent tw:px-3 tw:text-[14px] tw:font-semibold tw:text-game-text tw:hover:bg-button-translucent-hover ${RAISED_BUTTON_CLASS} ${sent ? "tw:invisible" : ""}`}
         disabled={sent}
         onClick={() => {
           canceledRef.current = !reducedMotion;

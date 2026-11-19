@@ -38,18 +38,11 @@ export const HOVER_MILLISECONDS = 120;
 export const HOVER_CLASS = "tw:duration-[120ms] tw:ease-out";
 
 /**
- * How long a button takes to go down when it is pressed, in milliseconds (see
- * `RAISED_BUTTON_CLASS`).
- */
-export const BUTTON_PRESS_MILLISECONDS = 75;
-
-/**
- * A button with a light top edge and a dark lip under it. Pressing it pushes it down onto its lip,
- * in `BUTTON_PRESS_MILLISECONDS` (Tailwind needs the number in the class). The lip is translucent
- * black, so that it suits a button of any color. A disabled button lies flat.
+ * A button that is a key, like the site's buttons: it uses the same shadows and press time
+ * ("--button-key-shadow" in "public/css/tokens.css"). A disabled button lies flat.
  */
 export const RAISED_BUTTON_CLASS =
-  "tw:inset-shadow-[0_1px_0_rgb(255_255_255/18%)] tw:shadow-[0_3px_0_rgb(0_0_0/35%),0_4px_8px_rgb(0_0_0/25%)] tw:transition-[translate,box-shadow] tw:duration-75 tw:ease-out tw:active:translate-y-[2px] tw:active:shadow-[0_1px_0_rgb(0_0_0/35%)] tw:disabled:translate-y-0 tw:disabled:shadow-none tw:disabled:inset-shadow-none";
+  "tw:shadow-(--button-key-shadow) tw:transition-[translate,box-shadow] tw:duration-(--button-press-duration) tw:ease-out tw:active:translate-y-[2px] tw:active:shadow-(--button-key-pressed-shadow) tw:disabled:translate-y-0 tw:disabled:shadow-none";
 
 /** A button on a bar of the game screen. It sets no color. */
 const BAR_BUTTON_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text ${RAISED_BUTTON_CLASS}`;
@@ -62,10 +55,10 @@ export const BOTTOM_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:phone:h-9 tw:phon
  * the bar in each of the screen's modes.
  */
 export const BOTTOM_BAR_BUTTON_COLOR_CLASS =
-  "tw:bg-white/8 tw:hover:bg-white/15";
+  "tw:bg-button-translucent tw:hover:bg-button-translucent-hover";
 
 /** A button on the replay bar that is not its main action. */
-export const REPLAY_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:justify-center tw:bg-white/8 tw:font-semibold tw:hover:bg-white/15`;
+export const REPLAY_BAR_BUTTON_CLASS = `${BAR_BUTTON_CLASS} tw:justify-center tw:bg-button-translucent tw:font-semibold tw:hover:bg-button-translucent-hover`;
 
 /** The short text at the top of a menu that says what its choices do. */
 export const MENU_LABEL_CLASS =
@@ -79,7 +72,7 @@ export const MENU_ITEM_CLASS = `tw:min-h-10 tw:w-full tw:rounded-game-control tw
 
 /** The usual color of a choice in a menu. */
 export const MENU_ITEM_COLOR_CLASS =
-  "tw:bg-white/8 tw:text-game-text tw:enabled:hover:bg-white/15";
+  "tw:bg-button-translucent tw:text-game-text tw:enabled:hover:bg-button-translucent-hover";
 
 /** A choice in a menu that starts with an icon or a check mark, in the usual color. */
 export const MENU_ICON_ITEM_CLASS = `tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} ${MENU_ITEM_COLOR_CLASS}`;

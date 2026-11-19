@@ -33,7 +33,7 @@ import {
   RAISED_BUTTON_CLASS,
 } from "./surfaces.ts";
 
-const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${RAISED_BUTTON_CLASS}`;
+const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-button-translucent tw:hover:bg-button-translucent-hover tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-button-translucent ${RAISED_BUTTON_CLASS}`;
 
 /** The height of a step to the next or the previous turn, which is the height of the controls. */
 const STEP_HEIGHT_CLASS =
@@ -397,7 +397,7 @@ export function Checkbox({
 }
 
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 ${FADE_LAYER_PARENT_CLASS} ${RAISED_BUTTON_CLASS}`;
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-button-translucent tw:hover:bg-button-translucent-hover ${FADE_LAYER_PARENT_CLASS} ${RAISED_BUTTON_CLASS}`;
 
 /** The light color of a pressed switch, which fades in over the switch (see `FadeLayer`). */
 function PressedLayer({
@@ -552,7 +552,7 @@ function SpectatorHypotheticalControls({
 /** A button of the controls of a hypothetical. It is the size of the button that enters one. */
 const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] tw:disabled:cursor-default tw:disabled:opacity-40 ${RAISED_BUTTON_CLASS}`;
 
-const HYPOTHETICAL_BUTTON_CLASS = `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:text-game-text tw:hover:bg-white/15 tw:disabled:hover:bg-white/8`;
+const HYPOTHETICAL_BUTTON_CLASS = `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-button-translucent tw:text-game-text tw:hover:bg-button-translucent-hover tw:disabled:hover:bg-button-translucent`;
 
 /** A button that stays pressed while its setting is on. It is lit while pressed. */
 function IconToggle({
@@ -575,7 +575,7 @@ function IconToggle({
     <button
       aria-label={label}
       aria-pressed={pressed}
-      className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:hover:bg-white/8 ${FADE_LAYER_PARENT_CLASS} ${
+      className={`${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-button-translucent tw:hover:bg-button-translucent-hover tw:disabled:hover:bg-button-translucent ${FADE_LAYER_PARENT_CLASS} ${
         pressed ? "tw:text-card-ink" : "tw:text-game-text"
       }`}
       disabled={disabled}

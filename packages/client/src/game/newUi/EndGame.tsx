@@ -55,7 +55,7 @@ export function EndGameMenu({
       >
         {/* The button's color is two layers that fade into each other (see `FadeLayer`). */}
         <FadeLayer
-          className="tw:bg-white/8 tw:group-hover/layer:bg-white/15"
+          className="tw:bg-button-translucent tw:group-hover/layer:bg-button-translucent-hover"
           reducedMotion={reducedMotion}
           shown={!voted}
         />

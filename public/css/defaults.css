@@ -605,8 +605,8 @@ input[type="button"],
      (see "AGENTS.md"). */
   transition:
     color 0.2s ease-in-out,
-    translate 75ms ease-out,
-    box-shadow 75ms ease-out;
+    translate var(--button-press-duration) ease-out,
+    box-shadow var(--button-press-duration) ease-out;
   background-color: var(--button-bg);
   border-radius: var(--radius);
   border: 0;

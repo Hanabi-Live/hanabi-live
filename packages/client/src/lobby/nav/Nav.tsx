@@ -27,14 +27,17 @@ import {
 const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 
 const BUTTON_CLASS_NAME = [
-  "button tw:relative tw:ml-2 tw:inline-block tw:h-[2em] tw:rounded-(--radius) tw:px-4",
+  "button tw:relative tw:ml-2 tw:inline-block tw:h-[2em] tw:rounded-(--radius) tw:px-4 tw:text-game-text",
   "tw:leading-[2em]",
   "tw:narrow-1280:px-2",
 ].join(" ");
 
-/** A disabled button takes its colors from the ".disabled" rule instead. */
+/**
+ * The color of the New UI's buttons on its bar along the bottom. A disabled button takes its colors
+ * from the ".disabled" rule instead.
+ */
 const ENABLED_COLOR_CLASS_NAME =
-  "tw:bg-white/8 tw:hover:bg-white/15 tw:active:bg-white/8";
+  "tw:bg-button-translucent tw:hover:bg-button-translucent-hover tw:active:bg-button-translucent";
 
 const HELP_COLOR_CLASS_NAME = "tw:bg-(--green) tw:hover:bg-(--green-hover)";
 
