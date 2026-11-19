@@ -29,13 +29,13 @@
       href="/public/css/critical.min.css?{{ version }}"
     />
     {% endif %}
-    <!-- Preload fonts. -->
+    <!-- Preload the icon font. The production bundle has its own font, with only the icons that it uses. -->
     <link
       rel="preload"
       as="font"
       crossorigin="anonymous"
       type="font/woff2"
-      href="/public/webfonts/fa-solid-900.woff2"
+      href="{% if isDev %}/public/webfonts/fa-solid-900.woff2{% else %}/public/css/main.{{ version }}.icons.woff2{% endif %}"
     />
     {% if isDev %}
     <link rel="stylesheet" type="text/css" href="/public/css/main.css" />

@@ -25,8 +25,10 @@
         "bun.lock",
         "package.json",
         "packages/scripts/src/buildCss.ts",
+        "packages/scripts/src/fontAwesome.ts",
         "public/css/**",
         "!public/css/main.*.min.css",
+        "!public/css/main.*.icons.woff2",
         "scripts/lint/check-css.sh"
       ],
       "env": [
@@ -240,6 +242,7 @@
         "bun.lock",
         "package.json",
         "packages/scripts/src/buildCss.ts",
+        "packages/scripts/src/fontAwesome.ts",
         "packages/testing/package.json",
         "packages/testing/src/criticalCss.ts",
         "packages/testing/src/database.ts",
@@ -247,6 +250,7 @@
         "packages/testing/src/runTests.ts",
         "public/css/**",
         "!public/css/main.*.min.css",
+        "!public/css/main.*.icons.woff2",
         "public/webfonts/**",
         "server/templates/**"
       ],

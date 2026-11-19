@@ -5,6 +5,11 @@
 import { copyFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  FONT_AWESOME_FONT_NAME,
+  FONT_AWESOME_FONT_PATH,
+  FONT_DIR_URL,
+} from "./fontAwesome.ts";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const PACKAGE_DIR = path.dirname(
@@ -13,9 +18,7 @@ const PACKAGE_DIR = path.dirname(
   ),
 );
 const CSS_DIR = path.join(REPO_ROOT, "public", "css", "lib");
-const FONT_DIR = path.join(REPO_ROOT, "public", "webfonts");
 const STYLESHEETS = ["fontawesome.min.css", "solid.min.css"] as const;
-const FONT = "fa-solid-900.woff2";
 
 /**
  * The stylesheets point to the font relative to their own directory. The development pages load
@@ -23,24 +26,23 @@ const FONT = "fa-solid-900.woff2";
  * that the server serves the font at.
  */
 const RELATIVE_FONT_DIR = "../webfonts/";
-const SERVED_FONT_DIR = "/public/webfonts/";
 
 async function copyStylesheet(stylesheet: string) {
   const text = await Bun.file(path.join(PACKAGE_DIR, "css", stylesheet)).text();
   await Bun.write(
     path.join(CSS_DIR, stylesheet),
-    text.replaceAll(RELATIVE_FONT_DIR, SERVED_FONT_DIR),
+    text.replaceAll(RELATIVE_FONT_DIR, FONT_DIR_URL),
   );
 }
 
 async function main() {
   await mkdir(CSS_DIR, { recursive: true });
-  await mkdir(FONT_DIR, { recursive: true });
+  await mkdir(path.dirname(FONT_AWESOME_FONT_PATH), { recursive: true });
   await Promise.all([
     ...STYLESHEETS.map(copyStylesheet),
     copyFile(
-      path.join(PACKAGE_DIR, "webfonts", FONT),
-      path.join(FONT_DIR, FONT),
+      path.join(PACKAGE_DIR, "webfonts", FONT_AWESOME_FONT_NAME),
+      FONT_AWESOME_FONT_PATH,
     ),
   ]);
 }

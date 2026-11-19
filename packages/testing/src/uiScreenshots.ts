@@ -2096,10 +2096,11 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
     { cwd: ROOT },
   );
   const bundlerPath = bundler.trim();
-  // The bundler reads the stylesheets, and searches these directories for icon names.
+  // The bundler reads the stylesheets, and searches these directories for icon names. The bundler
+  // can import other scripts from its directory.
   const paths = [
     "public/css",
-    bundlerPath,
+    path.dirname(bundlerPath),
     "packages/client/src",
     "public/standalone",
     "server/src",
@@ -2114,13 +2115,18 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
     path.join(ROOT, "node_modules"),
     path.join(source, "node_modules"),
   );
-  // "bun install" copies the stylesheets of Font Awesome into "public/css/lib", which Git ignores.
-  // A ref from before then has its own copy.
-  const library = path.join(source, "public/css/lib");
-  if (!existsSync(library)) {
-    await symlink(path.join(ROOT, "public/css/lib"), library);
+  // "bun install" copies the stylesheets and the font of Font Awesome into "public", where Git
+  // ignores them. A ref from before then has its own copies.
+  for (const file of ["public/css/lib", "public/webfonts/fa-solid-900.woff2"]) {
+    const copy = path.join(source, file);
+    if (existsSync(copy)) {
+      continue;
+    }
+    await mkdir(path.dirname(copy), { recursive: true });
+    await symlink(path.join(ROOT, file), copy);
   }
-  const bundlePath = path.join(directory, "compare.min.css");
+  // The server serves the bundle's font, which the bundler writes next to it.
+  const bundlePath = path.join(directory, COMPARE_BUNDLE_PATH.slice(1));
   await run(process.execPath, [path.join(source, bundlerPath), bundlePath]);
   return await Bun.file(bundlePath).text();
 }

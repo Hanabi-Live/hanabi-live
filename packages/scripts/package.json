@@ -13,9 +13,11 @@
     "complete-node": "catalog:",
     "fast-png": "catalog:",
     "lightningcss": "catalog:",
-    "prettier": "catalog:"
+    "prettier": "catalog:",
+    "subset-font": "catalog:"
   },
   "devDependencies": {
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "@types/subset-font": "catalog:"
   }
 }

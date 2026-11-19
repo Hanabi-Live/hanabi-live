@@ -9,9 +9,9 @@ REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 
 # Minify the CSS bundle as the client build does, which fails on any CSS that the minifier cannot
 # parse.
-OUTPUT=$(mktemp)
-trap 'rm -f "$OUTPUT"' EXIT
-bun "$REPO_ROOT/packages/scripts/src/buildCss.ts" "$OUTPUT"
+OUTPUT_DIR=$(mktemp -d)
+trap 'rm -rf "$OUTPUT_DIR"' EXIT
+bun "$REPO_ROOT/packages/scripts/src/buildCss.ts" "$OUTPUT_DIR/main.min.css"
 
 CSS_DIR="$REPO_ROOT/public/css"
 TOKENS="$CSS_DIR/tokens.css"

@@ -63,11 +63,12 @@ for file in *; do
   rm "$file"
 done
 
-# Clean up the files in the CSS directory.
+# Clean up the bundles and fonts of older versions in the CSS directory.
 cd "$CSS_DIR"
-# shellcheck disable=SC2010,SC2143
-if [[ -n $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
-  ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
-fi
+for file in main.*.min.css main.*.icons.woff2; do
+  if [[ -f $file && $file != "main.$VERSION."* ]]; then
+    rm "$file"
+  fi
+done
 
 echo "Client version $VERSION successfully built in $SECONDS seconds."
