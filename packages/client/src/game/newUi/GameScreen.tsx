@@ -350,6 +350,7 @@ export function GameScreen(): React.JSX.Element {
     ReadonlySet<PlayerIndex>
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
+  const [fingerHold, setFingerHold] = useState(false);
   // The log that the box of logs shows.
   const [logTab, setLogTab] = useState<LogTab>(CLUE_LOG_TAB);
   // The player whose actions the screen lists, after a click on their name.
@@ -1638,6 +1639,7 @@ export function GameScreen(): React.JSX.Element {
                       ? shownClue.target
                       : undefined
                   }
+                  fingerHold={fingerHold}
                   // The panel of a paused game covers the hands.
                   hidden={paused && !inReplay}
                   menuCard={menuCard}
@@ -1671,7 +1673,10 @@ export function GameScreen(): React.JSX.Element {
                     }
                   }}
                   onEditCard={editingCards ? editCard : undefined}
-                  onHoldEmpathy={setHeldEmpathy}
+                  onHoldEmpathy={(playerIndex, byFinger = false) => {
+                    setHeldEmpathy(playerIndex);
+                    setFingerHold(playerIndex !== undefined && byFinger);
+                  }}
                   onPause={pause}
                   onPlay={(order) => {
                     setMenuCard(undefined);

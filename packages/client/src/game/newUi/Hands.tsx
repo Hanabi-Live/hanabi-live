@@ -249,13 +249,23 @@ interface HandsProps {
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: (playerIndex: PlayerIndex) => void;
-  readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
+  /** `byFinger` is whether a finger holds the hand, not a mouse or a pen. */
+  readonly onHoldEmpathy: (
+    playerIndex: PlayerIndex | undefined,
+    byFinger?: boolean,
+  ) => void;
 
   /**
    * Whether the cards show their bubble of possible cards on hover, instead of their notes: while
    * the viewer holds the pointer down on a hand or holds Space.
    */
   readonly showPossibleCards: boolean;
+
+  /**
+   * Whether a finger holds a hand. Then only the card under the finger opens its bubble. A mouse
+   * that rests on another card does not open that card's bubble too.
+   */
+  readonly fingerHold: boolean;
 
   /**
    * The card whose bubble of possible cards the viewer opened from its menu. It is open until the
@@ -1115,7 +1125,7 @@ function OwnCard({
       raiseClued
       rank={card.rank}
       reducedMotion={props.reducedMotion}
-      showPossibleCards={props.showPossibleCards}
+      showPossibleCards={props.showPossibleCards && !props.fingerHold}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
       trash={card.trash}
@@ -1593,7 +1603,7 @@ function HandCard({
       raiseClued
       rank={card.rank}
       reducedMotion={props.reducedMotion}
-      showPossibleCards={props.showPossibleCards}
+      showPossibleCards={props.showPossibleCards && !props.fingerHold}
       stackDirection={card.stackDirection}
       suitIndex={card.suitIndex}
       trash={card.trash}
@@ -1990,7 +2000,7 @@ function Hand({
             return;
           }
           heldRef.current = true;
-          props.onHoldEmpathy(seat.playerIndex);
+          props.onHoldEmpathy(seat.playerIndex, event.pointerType === "touch");
           touchCard(event);
         }}
         onPointerLeave={endHold}
