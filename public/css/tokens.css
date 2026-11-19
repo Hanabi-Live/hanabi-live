@@ -133,6 +133,8 @@
   --box-bg: rgb(255 255 255 / 4.5%);
   --box-panel: rgb(0 0 0 / 18%);
   --box-sunken: rgb(0 0 0 / 28%);
+  /* The lines in a box, such as the outline of a field, which are neutral like the box */
+  --box-line: rgb(255 255 255 / 10%);
   --box-backdrop: blur(14px) saturate(60%);
   --box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%),
@@ -181,7 +183,7 @@
     The list of games in the lobby. Each kind of row is a faint wash of its color, with a bright
     edge on its left, and its taken seats in that color too ("--lobby-table-joined-mark" and the
     others). The colors are the New UI's: gold for the turn, green for a game, blue for the in-game
-    replay, silver for the finished replay, and red for an error.
+    replay, violet for the finished replay, and red for an error.
   */
   --lobby-table-joined: rgb(143 178 255 / 14%);
   --lobby-table-joined-hover: rgb(143 178 255 / 24%);
@@ -195,11 +197,11 @@
   --lobby-table-started: rgb(111 207 122 / 15%);
   --lobby-table-started-hover: rgb(111 207 122 / 24%);
   --lobby-table-started-mark: var(--game-screen-green-text);
-  /* A replay is darker than the panel, with dim text, so that the games in progress stand out. */
-  --lobby-table-replay: rgb(0 0 0 / 18%);
-  --lobby-table-replay-hover: rgb(207 214 224 / 6%);
-  --lobby-table-replay-mark: rgb(207 214 224 / 60%);
-  --lobby-table-replay-text: rgb(238 241 243 / 60%);
+  --lobby-table-replay: rgb(185 166 255 / 12%);
+  --lobby-table-replay-hover: rgb(185 166 255 / 21%);
+  --lobby-table-replay-mark: var(--game-screen-finished-replay);
+  /* The text of a replay is a little dim, so that the games in progress stand out. */
+  --lobby-table-replay-text: rgb(238 241 243 / 88%);
   /* The lines between the cells of a row */
   --lobby-table-cell-line: rgb(255 255 255 / 7%);
 
@@ -276,10 +278,10 @@
   */
   --game-screen-in-game-replay: #8fb2ff;
   --game-screen-in-game-replay-panel: #1d2f57;
-  --game-screen-finished-replay: #cfd6e0;
-  --game-screen-finished-replay-panel: #2a2e35;
-  --game-screen-hypothetical: #f7a1c4;
-  --game-screen-hypothetical-panel: #4a2238;
+  --game-screen-finished-replay: #b9a6ff;
+  --game-screen-finished-replay-panel: #2c2650;
+  --game-screen-hypothetical: #6fd8e6;
+  --game-screen-hypothetical-panel: #133f47;
   /* The warm accent that marks the player whose turn it is. */
   --game-screen-turn: #ffd04a;
   /* The arrow that points at a card or a number: the yellow of the classic screen's arrow. */

@@ -525,6 +525,7 @@ input::-webkit-calendar-picker-indicator {
   box-shadow: var(--box-shadow);
   --surface-panel: var(--box-panel);
   --surface-sunken: var(--box-sunken);
+  --border: var(--box-line);
 }
 
 .box > :last-child {
