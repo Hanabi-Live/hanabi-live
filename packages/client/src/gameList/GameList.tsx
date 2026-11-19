@@ -389,7 +389,7 @@ function DayGroups({
     <>
       {groupByDay(games).map((group) => (
         <section key={group.day}>
-          <h3 className="tw:m-0 tw:mt-6 tw:mb-1 tw:px-3 tw:text-[0.85em] tw:font-semibold tw:text-text-label tw:narrow-640:px-1">
+          <h3 className="tw:m-0 tw:mt-8 tw:mb-1 tw:px-3 tw:text-[1em] tw:font-semibold tw:text-text-label tw:narrow-640:px-1">
             {group.day}
           </h3>
           {list(group.games)}
