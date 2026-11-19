@@ -11,7 +11,11 @@ import { globals } from "../../Globals.ts";
 import {
   END_CONDITION_TEXT,
   groupByDay,
+  OTHER_GAMES_TOOLTIP,
+  ROW_BUTTON,
+  ROW_ICON_BUTTON,
   Score,
+  SHARED_REPLAY_TOOLTIP,
 } from "../../publicPages/gameSummary.tsx";
 import { SuitDots } from "../../publicPages/SuitDots.tsx";
 import { useAppSelector } from "../../store.ts";
@@ -208,13 +212,6 @@ function HistoryFilter() {
   );
 }
 
-/** A button in a row of the history, or under it. */
-const ROW_BUTTON =
-  "tw:m-0 tw:inline-flex tw:h-[2.25em] tw:items-center tw:justify-center tw:gap-2 tw:px-3 tw:leading-none";
-
-/** A row's button that shows only an icon. */
-const ROW_ICON_BUTTON = `${ROW_BUTTON} tw:w-[2.25em] tw:px-0`;
-
 function HistoryRow({
   game,
   username,
@@ -271,7 +268,7 @@ function HistoryRow({
           onClick={() => {
             watchReplay(game.gameId, true);
           }}
-          ref={tooltipRef("Watch in a shared replay.")}
+          ref={tooltipRef(SHARED_REPLAY_TOOLTIP)}
           type="button"
         >
           <i aria-hidden className="fas fa-users" />
@@ -286,7 +283,7 @@ function HistoryRow({
               onClick={() => {
                 showOtherScoresFromHistory(game.seed);
               }}
-              ref={tooltipRef("See the other games on this seed.")}
+              ref={tooltipRef(OTHER_GAMES_TOOLTIP)}
               type="button"
             >
               <i aria-hidden className="fas fa-chart-bar" />

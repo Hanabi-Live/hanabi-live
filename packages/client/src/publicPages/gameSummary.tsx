@@ -4,6 +4,22 @@ import type { GameSummary } from "@hanabi-live/data";
 
 type EndCondition = GameSummary["endCondition"];
 
+/**
+ * A button in a row of a list of games, or under it. It uses the page's font, which a button
+ * element does not inherit, so that a button and a link look the same.
+ */
+export const ROW_BUTTON =
+  "tw:m-0 tw:inline-flex tw:h-[2.25em] tw:items-center tw:justify-center tw:gap-2 tw:px-3 tw:[font:inherit] tw:text-[0.9em] tw:leading-none";
+
+/** A row's button that shows only an icon. */
+export const ROW_ICON_BUTTON = `${ROW_BUTTON} tw:w-[2.25em] tw:px-0`;
+
+/** The tooltip of a row's button that opens a shared replay. */
+export const SHARED_REPLAY_TOOLTIP = "Watch in a shared replay.";
+
+/** The tooltip of a row's button that shows the other games on the seed. */
+export const OTHER_GAMES_TOOLTIP = "See the other games on this seed.";
+
 /** How a game ended, when it did not end normally. */
 export const END_CONDITION_TEXT = {
   normal: undefined,

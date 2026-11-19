@@ -25,7 +25,15 @@ import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { WaitingCard } from "../WaitingCard.tsx";
 import { usePages } from "./DataTable.tsx";
-import { END_CONDITION_TEXT, groupByDay, Score } from "./gameSummary.tsx";
+import {
+  END_CONDITION_TEXT,
+  groupByDay,
+  OTHER_GAMES_TOOLTIP,
+  ROW_BUTTON,
+  ROW_ICON_BUTTON,
+  Score,
+  SHARED_REPLAY_TOOLTIP,
+} from "./gameSummary.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
 
@@ -108,9 +116,8 @@ const SORT_CHOICES = [
   },
 ] as const satisfies readonly SortChoice[];
 
-/** A link in a row, which sits above the link that covers the row. */
-const ROW_LINK =
-  "tw:relative tw:z-10 tw:text-link tw:no-underline tw:hover:underline";
+/** A link to a player in a row. */
+const ROW_LINK = "tw:text-link tw:no-underline tw:hover:underline";
 
 function GameList({
   table,
@@ -591,16 +598,10 @@ function GameRow({
   const beaten = percentile(game.score, context.frequencies);
 
   return (
-    <li className="tw:relative tw:flex tw:items-center tw:gap-5 tw:border-b tw:border-border tw:px-3 tw:py-3 tw:hover:bg-[var(--row-hover-bg)] tw:narrow-640:gap-4 tw:narrow-640:px-1">
-      <a
-        aria-label={`Watch the replay of game ${game.gameId}`}
-        className="tw:shrink-0 tw:text-inherit tw:no-underline tw:after:absolute tw:after:inset-0 tw:after:content-['']"
-        href={`${PATH.REPLAY}/${game.gameId}`}
-      >
-        <Score max={variant.maxScore} score={game.score} />
-      </a>
+    <li className="tw:flex tw:items-center tw:gap-5 tw:border-b tw:border-border tw:px-3 tw:py-3 tw:hover:bg-[var(--row-hover-bg)] tw:narrow-640:flex-wrap tw:narrow-640:items-start tw:narrow-640:gap-x-4 tw:narrow-640:gap-y-2 tw:narrow-640:px-1">
+      <Score max={variant.maxScore} score={game.score} />
       <div
-        className={`tw:grid tw:min-w-0 tw:flex-1 tw:items-center tw:gap-x-6 ${context.list === "seed" ? "tw:grid-cols-[minmax(0,1fr)_max-content_5.5em] tw:narrow-840:grid-cols-[minmax(0,1fr)_max-content]" : "tw:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content_5.5em] tw:narrow-840:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content]"} tw:narrow-640:flex tw:narrow-640:flex-wrap tw:narrow-640:gap-x-3 tw:narrow-640:gap-y-0.5`}
+        className={`tw:grid tw:min-w-0 tw:flex-1 tw:items-center tw:gap-x-6 ${context.list === "seed" ? "tw:grid-cols-[minmax(0,1fr)_max-content_5.5em] tw:narrow-840:grid-cols-[minmax(0,1fr)_max-content]" : "tw:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_max-content]"} tw:narrow-640:flex tw:narrow-640:flex-wrap tw:narrow-640:gap-x-3 tw:narrow-640:gap-y-0.5`}
       >
         <div className="tw:min-w-0 tw:narrow-640:basis-full">
           {/* The games on a seed share its variant, which the top of the page shows. */}
@@ -633,7 +634,7 @@ function GameRow({
           </div>
         )}
         <span
-          className="tw:relative tw:z-10 tw:text-[0.9em] tw:text-text-label tw:tabular-nums"
+          className="tw:text-[0.9em] tw:text-text-label tw:tabular-nums"
           ref={tooltipRef(displayTime(game.finishedAt))}
         >
           {new Date(game.finishedAt).toLocaleString(undefined, {
@@ -645,10 +646,13 @@ function GameRow({
             minute: "2-digit",
           })}
         </span>
-        <span className="tw:text-right tw:text-[0.9em] tw:narrow-840:hidden">
-          <SeedResult beaten={beaten} game={game} list={context.list} />
-        </span>
+        {context.list === "seed" && (
+          <span className="tw:text-right tw:text-[0.9em] tw:narrow-840:hidden">
+            <BeatenPercent beaten={beaten} />
+          </span>
+        )}
       </div>
+      <GameButtons game={game} list={context.list} />
     </li>
   );
 }
@@ -672,40 +676,74 @@ function PlayerLinks({ names }: { readonly names: readonly string[] }) {
   );
 }
 
+/** The percent of the other games on a seed that a game's score beat, on the seed's page. */
+function BeatenPercent({ beaten }: { readonly beaten: number | undefined }) {
+  return beaten === undefined ? null : (
+    <span
+      className="tw:text-text-label"
+      ref={tooltipRef(
+        "The percent of the other games on this seed that this score beat.",
+      )}
+    >
+      Beat {beaten}%
+    </span>
+  );
+}
+
 /**
- * How the game did against the other games on its seed: on a seed's page, the percent that it beat,
- * and elsewhere, a link to the other games.
+ * The links of a game, which look like the buttons of the lobby's history: its replay, a shared
+ * replay, and the other games on its seed.
  */
-function SeedResult({
+function GameButtons({
   game,
   list,
-  beaten,
 }: {
   readonly game: GameSummary;
   readonly list: GamesTable["list"];
-  readonly beaten: number | undefined;
 }) {
-  if (list === "seed") {
-    return beaten === undefined ? null : (
-      <span
-        className="tw:relative tw:z-10 tw:text-text-label"
-        ref={tooltipRef(
-          "The percent of the other games on this seed that this score beat.",
-        )}
-      >
-        Beat {beaten}%
-      </span>
-    );
-  }
   const others = game.numGamesOnSeed - 1;
-  return others > 0 ? (
-    <a
-      className={ROW_LINK}
-      href={`${PATH.SEED}/${encodeURIComponent(game.seed)}`}
-    >
-      {others} {others === 1 ? "other" : "others"}
-    </a>
-  ) : null;
+  return (
+    <div className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:narrow-640:basis-full tw:narrow-640:pl-[5.25em]">
+      <a
+        className={`button ${ROW_BUTTON}`}
+        href={`${PATH.REPLAY}/${game.gameId}`}
+      >
+        <i aria-hidden className="fas fa-play" />
+        Replay
+      </a>
+      <a
+        aria-label="Watch in a shared replay"
+        className={`button ${ROW_ICON_BUTTON}`}
+        href={`${PATH.SHARED_REPLAY}/${game.gameId}`}
+        ref={tooltipRef(SHARED_REPLAY_TOOLTIP)}
+      >
+        <i aria-hidden className="fas fa-users" />
+      </a>
+      {/* A seed's page shows the other games on the seed. Elsewhere, the slot keeps its width, so
+          that the buttons of every row line up. */}
+      {list !== "seed" && (
+        <span className="tw:w-[6.5em] tw:narrow-640:w-auto">
+          {others > 0 && (
+            <a
+              aria-label={`Other scores: ${others}`}
+              className={`button ${ROW_BUTTON}`}
+              href={`${PATH.SEED}/${encodeURIComponent(game.seed)}`}
+              ref={tooltipRef(OTHER_GAMES_TOOLTIP)}
+            >
+              <i aria-hidden className="fas fa-chart-bar" />
+              <span className="tw:tabular-nums">
+                {others}
+                <span className="tw:narrow-640:hidden">
+                  {" "}
+                  {others === 1 ? "other" : "others"}
+                </span>
+              </span>
+            </a>
+          )}
+        </span>
+      )}
+    </div>
+  );
 }
 
 /** The count of games, and the controls that move between pages when there are more. */
