@@ -266,7 +266,7 @@ function HistoryRow({
           ref={tooltipRef(SHARED_REPLAY_TOOLTIP)}
           type="button"
         >
-          <i aria-hidden className="fas fa-users" />
+          <i aria-hidden className="fas fa-share-alt" />
         </button>
         {/* The slot keeps its width, so that the buttons of every row line up. */}
         <span className="tw:w-[6.5em] tw:narrow-640:w-auto">
@@ -409,7 +409,7 @@ function ReplayButton({
       type="button"
     >
       <i
-        className={`fas ${visibility === "solo" ? "fa-undo" : "fa-users"} ${BUTTON_ICON}`}
+        className={`fas ${visibility === "solo" ? "fa-undo" : "fa-share-alt"} ${BUTTON_ICON}`}
       />
     </button>
   );

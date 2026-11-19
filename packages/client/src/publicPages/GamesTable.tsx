@@ -723,7 +723,7 @@ function GameButtons({
         href={`${PATH.SHARED_REPLAY}/${game.gameId}`}
         ref={tooltipRef(SHARED_REPLAY_TOOLTIP)}
       >
-        <i aria-hidden className="fas fa-users" />
+        <i aria-hidden className="fas fa-share-alt" />
       </a>
       {/* A seed's page shows the other games on the seed. Elsewhere, the slot keeps its width, so
           that the buttons of every row line up. */}
