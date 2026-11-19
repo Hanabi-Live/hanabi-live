@@ -6,9 +6,10 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { ModalHeader } from "./ModalHeader.tsx";
 import { emojiPickerOpened } from "./emojiPickerSlice.ts";
+import { useReducedMotion } from "./fade.ts";
 import { closeModals, EMOJI_MODAL_ID, showEmojiModal } from "./modals.ts";
 import { store } from "./store.ts";
-import { TAB_CLASS_NAME } from "./tabClassName.ts";
+import { getTabClassName } from "./tabClassName.ts";
 import { tooltipRef } from "./tooltipRef.ts";
 import { getHtmlInputElement } from "./utils.ts";
 
@@ -113,6 +114,7 @@ export function EmojiPicker({
 }): React.JSX.Element {
   const [tabIndex, setTabIndex] = useState(0);
   const [search, setSearch] = useState("");
+  const tabClassName = getTabClassName(useReducedMotion());
 
   const query = search.trim().toLowerCase();
   const symbols =
@@ -143,7 +145,7 @@ export function EmojiPicker({
           {TABS.map((tab, i) => (
             <button
               aria-selected={query === "" && i === tabIndex}
-              className={TAB_CLASS_NAME}
+              className={tabClassName}
               key={tab.label}
               onClick={() => {
                 setTabIndex(i);

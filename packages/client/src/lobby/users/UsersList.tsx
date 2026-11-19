@@ -4,7 +4,7 @@ import { StatusText } from "@hanabi-live/data";
 import { DIMMED_OPACITY } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { store, useAppSelector } from "../../store.ts";
-import { TAB_CLASS_NAME } from "../../tabClassName.ts";
+import { getTabClassName } from "../../tabClassName.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
 import { selectTable } from "../tables/tablesSlice.ts";
@@ -70,6 +70,7 @@ export function UsersTitle(): React.JSX.Element {
   const userCount = useAppSelector(selectUserCount);
   const botCount = useAppSelector(selectBotRows).length;
   const botsShown = useAppSelector(selectBotsShown);
+  const tabClassName = getTabClassName(useReducedMotion());
 
   const usersLabel = (
     <>
@@ -84,7 +85,7 @@ export function UsersTitle(): React.JSX.Element {
     <span className="tw:inline-flex tw:gap-[1.1em]" role="tablist">
       <button
         aria-selected={!botsShown}
-        className={TAB_CLASS_NAME}
+        className={tabClassName}
         onClick={() => {
           store.dispatch(botsShownChanged(false));
         }}
@@ -95,7 +96,7 @@ export function UsersTitle(): React.JSX.Element {
       </button>
       <button
         aria-selected={botsShown}
-        className={TAB_CLASS_NAME}
+        className={tabClassName}
         onClick={() => {
           store.dispatch(botsShownChanged(true));
         }}
