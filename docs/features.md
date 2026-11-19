@@ -243,10 +243,11 @@ that have not been played yet and have only one copy remaining.)
 
 ## Custom Game Options
 
-- In a pre-game, the custom game options (if any) can be seen at the top of the
-  screen, under the name of the table.
-- In a game, the custom game options (if any) can be seen by hovering over the
-  deck.
+- Hanab variants change the rules of the game. Separately, games can be further
+  customized with custom game options.
+- These can be seen:
+  - In a pre-game: Under the name of the table.
+  - In a game: By hovering over the deck.
 
 ### Variants
 

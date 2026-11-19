@@ -2,8 +2,10 @@
 
 [Hanab Live](https://hanab.live) is programmed by enthusiasts who have played
 the game thousands of times. In order to keep the game fresh, the server allows
-you to create games using many different variants. Players also have the ability
-to further customize a game by using a number of
+you to create games using many different variants, which change the rules of the
+game.
+
+Note that separately from variants, games can be further customized with
 [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options).
 
 ## A Quick Overview of Special Suits
