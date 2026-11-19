@@ -14,7 +14,7 @@ import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
 import { settingsChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
-import { SettingsPage } from "./SettingsPage.tsx";
+import { SAVED_STATUS_MILLISECONDS, SettingsPage } from "./SettingsPage.tsx";
 
 vi.mock("../../notifications.ts", () => ({ test: vi.fn() }));
 
@@ -57,7 +57,7 @@ describe("SettingsPage", () => {
     expect(status.className).toContain("tw:opacity-100");
 
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(SAVED_STATUS_MILLISECONDS);
     });
     expect(status.className).toContain("tw:opacity-0");
   });

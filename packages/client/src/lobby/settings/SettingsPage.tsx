@@ -23,7 +23,7 @@ import { store, useAppSelector } from "../../store.ts";
 import { PageTitle } from "../PageTitle.tsx";
 
 /** How long "Saved" stays beside a setting before it fades out. */
-const SAVED_STATUS_MILLISECONDS = 2000;
+export const SAVED_STATUS_MILLISECONDS = 1000;
 
 type BooleanSetting = {
   [Key in keyof Settings]-?: Settings[Key] extends boolean ? Key : never;
