@@ -2,20 +2,22 @@
 // whose data the server puts in the page, with the controls and the chart that go with it, or the
 // form of the password reset page.
 
+// This file must not define a component. For Fast Refresh, Vite makes a file that defines one
+// import itself. After the module changes, that import gets a timestamp, so its URL differs from
+// the one in the page, and the page runs this script twice.
+
 import "../zodConfig.ts"; // eslint-disable-line import-x/no-unassigned-import
 
 import { publicPageTableSchema } from "@hanabi-live/data";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import type * as z from "zod";
-import { GameList } from "../gameList/GameList.tsx";
 import { loadCachedReducedMotion } from "../reducedMotionCache.ts";
 import { store } from "../store.ts";
 import { TAB_TRANSITION_CLASS_NAME } from "../tabClassName.ts";
 import "../tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 import { allowTranslators } from "../translators.ts";
 import { PasswordReset } from "./PasswordReset.tsx";
-import { MissingScoresTable, ScoresTable } from "./ScoreTables.tsx";
+import { PublicPageTable } from "./PublicPageTable.tsx";
 
 allowTranslators();
 loadCachedReducedMotion();
@@ -46,26 +48,6 @@ function renderTable() {
       <PublicPageTable table={table} />
     </StrictMode>,
   );
-}
-
-function PublicPageTable({
-  table,
-}: {
-  readonly table: z.infer<typeof publicPageTableSchema>;
-}): React.JSX.Element {
-  switch (table.type) {
-    case "scores": {
-      return <ScoresTable table={table} />;
-    }
-
-    case "missingScores": {
-      return <MissingScoresTable table={table} />;
-    }
-
-    case "games": {
-      return <GameList table={table} />;
-    }
-  }
 }
 
 /**
