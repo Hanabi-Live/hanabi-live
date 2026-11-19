@@ -36,6 +36,7 @@
 /* The tooltips of the redesigned game screen (see "Tooltip.ts") are white with dark text, like a
    sheet of paper, as card notes are on the classic screen. */
 .tooltip-bubble.tooltip-game-screen {
+  color-scheme: light;
   --tooltip-background: white;
   --tooltip-border-width: 1px;
   --tooltip-border-color: rgb(0 0 0 / 25%);

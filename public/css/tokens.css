@@ -13,6 +13,12 @@
 
 :root {
   /*
+    The site is dark, so the browser draws its own parts dark too, such as scrollbars, number
+    spinners, suggestion lists, and the fields that the browser fills in.
+  */
+  color-scheme: dark;
+
+  /*
     Surfaces: the panels of the site are the deep green of the New UI's felt, and the fields and
     lists in them are darker still. A box on the felt is glass instead (see "--box-bg").
   */
