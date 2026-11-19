@@ -118,8 +118,8 @@
   --page-bg: #0b110e;
   --page-light: #18241e;
 
-  /* The header bar: a step lighter than the page */
-  --header-bg: #121a16;
+  /* The header bar: the color of the New UI's bar along the bottom */
+  --header-bg: var(--game-screen-panel);
   --header-text: var(--game-screen-muted);
   --header-hotkey-line: var(--game-screen-line);
   /* The height of the header bar, which is fixed over the top of the page */
