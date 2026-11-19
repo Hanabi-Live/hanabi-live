@@ -19,6 +19,8 @@ Object.defineProperties(dom.window, {
 // The "jsdom" library neither opens popovers nor lays out elements. A bubble is as tall as its
 // "data-height" attribute, unless its "--tooltip-room" property limits it, as the stylesheet does.
 const openElements = new WeakSet<Element>();
+/** The elements that match ":hover", which "jsdom" does not track. */
+const hoveredElements = new WeakSet<Element>();
 HTMLElement.prototype.showPopover = function showPopover(this: HTMLElement) {
   openElements.add(this);
 };
@@ -26,10 +28,12 @@ HTMLElement.prototype.hidePopover = function hidePopover(this: HTMLElement) {
   openElements.delete(this);
 };
 Object.defineProperties(HTMLElement.prototype, {
-  // The tooltip only matches ":popover-open".
+  // The tooltip only matches ":popover-open" and ":hover".
   matches: {
-    value(this: HTMLElement) {
-      return openElements.has(this);
+    value(this: HTMLElement, selector: string) {
+      return selector === ":hover"
+        ? hoveredElements.has(this)
+        : openElements.has(this);
     },
   },
   offsetHeight: {
@@ -42,6 +46,40 @@ Object.defineProperties(HTMLElement.prototype, {
     },
   },
 });
+
+// The "jsdom" library has no animations. The tests run the ones in this list.
+class FakeKeyframeEffect {
+  readonly target: Element;
+
+  constructor(target: Element) {
+    this.target = target;
+  }
+}
+const runningAnimations: Animation[] = [];
+Object.defineProperty(dom.window, "KeyframeEffect", {
+  value: FakeKeyframeEffect,
+});
+dom.window.document.getAnimations = () => runningAnimations;
+
+/** Starts a move of an element, which ends when the returned function runs. */
+function startMove(element: Element): () => void {
+  const move = Object.assign(new dom.window.EventTarget(), {
+    playState: "running",
+    effect: Object.assign(new FakeKeyframeEffect(element), {
+      getComputedTiming: () => ({ endTime: 300 }),
+      getKeyframes: () => [
+        { transform: "translate(100px, 0px)" },
+        { transform: "none" },
+      ],
+    }),
+  }) as unknown as Animation;
+  runningAnimations.push(move);
+  return () => {
+    runningAnimations.splice(runningAnimations.indexOf(move), 1);
+    Object.assign(move, { playState: "finished" });
+    move.dispatchEvent(new dom.window.Event("finish"));
+  };
+}
 
 function pixels(value: string) {
   return Number(value.replace(/px$/u, ""));
@@ -251,4 +289,34 @@ test("hover tooltips stay shut while paused and open again after", () => {
   expect(tooltip.isOpen).toBe(true);
   tooltip.destroy();
   anchor.remove();
+});
+
+test("a tooltip waits for its anchor to stop moving under the pointer", () => {
+  const card = dom.window.document.createElement("div");
+  const anchor = dom.window.document.createElement("div");
+  card.append(anchor);
+  dom.window.document.body.append(card);
+  const tooltip = new Tooltip(anchor, { content: "Note" });
+  tooltip.openOnHover(false);
+
+  // The card stops under the pointer.
+  let endMove = startMove(card);
+  hoveredElements.add(anchor);
+  anchor.dispatchEvent(pointerEvent("pointerenter"));
+  expect(tooltip.isOpen).toBe(false);
+  endMove();
+  expect(tooltip.isOpen).toBe(true);
+
+  // The card moves on, away from the pointer.
+  tooltip.close();
+  anchor.dispatchEvent(pointerEvent("pointerleave"));
+  endMove = startMove(card);
+  anchor.dispatchEvent(pointerEvent("pointerenter"));
+  hoveredElements.delete(anchor);
+  anchor.dispatchEvent(pointerEvent("pointerleave"));
+  endMove();
+  expect(tooltip.isOpen).toBe(false);
+
+  tooltip.destroy();
+  card.remove();
 });

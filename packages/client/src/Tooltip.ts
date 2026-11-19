@@ -142,6 +142,8 @@ export class Tooltip {
   private contentPending = false;
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
   private openingTimeout: ReturnType<typeof setTimeout> | undefined;
+  /** Counts the waits for the anchor to stop moving, so that a close ends the last one. */
+  private moveWaits = 0;
   /** The next frame in which the tooltip follows its target (see `followTarget`). */
   private followFrame: number | undefined;
   private readonly hoverListeners = new AbortController();
@@ -326,7 +328,32 @@ export class Tooltip {
   openForHover(): void {
     clearTimeout(this.openingTimeout);
     this.openingTimeout = undefined;
+    this.moveWaits++;
     if (hoverPauses > 0) {
+      return;
+    }
+    // An anchor can move under the pointer, such as a played card that starts its move to the play
+    // stacks from the slot under the pointer. The tooltip waits until it stops, and opens only if
+    // the pointer is still over it.
+    const moves = getMoves(this.anchor);
+    if (moves.length > 0) {
+      const wait = this.moveWaits;
+      let movesLeft = moves.length;
+      const end = () => {
+        movesLeft--;
+        if (
+          movesLeft === 0
+          && wait === this.moveWaits
+          && hoveredTooltips.has(this)
+          && this.anchor.matches(":hover")
+        ) {
+          this.openForHover();
+        }
+      };
+      for (const move of moves) {
+        move.addEventListener("finish", end, { once: true });
+        move.addEventListener("cancel", end, { once: true });
+      }
       return;
     }
     if (this.openOnHoverDelayed) {
@@ -475,6 +502,7 @@ export class Tooltip {
     this.avoid = undefined;
     clearTimeout(this.openingTimeout);
     this.openingTimeout = undefined;
+    this.moveWaits++;
     this.anchor.ownerDocument.removeEventListener(
       "pointerdown",
       this.closeOnPointerDownElsewhere,
@@ -570,6 +598,30 @@ export class Tooltip {
       this.bubble.remove();
     }
   }
+}
+
+/**
+ * Returns the animations that move an anchor now: the scripted animations of its transform on the
+ * anchor or an element around it, which end. A CSS transition, such as a card that lifts under the
+ * pointer, does not count.
+ */
+function getMoves(anchor: HTMLElement): readonly Animation[] {
+  // The anchor can be in another window, such as the popped-out chat of the New UI.
+  const anchorWindow = anchor.ownerDocument.defaultView ?? globalThis;
+  return anchor.ownerDocument.getAnimations().filter((animation) => {
+    const { effect } = animation;
+    return (
+      animation.playState === "running"
+      && !("transitionProperty" in animation)
+      && !("animationName" in animation)
+      && effect instanceof anchorWindow.KeyframeEffect
+      && effect.target?.contains(anchor) === true
+      && Number.isFinite(effect.getComputedTiming().endTime)
+      && effect
+        .getKeyframes()
+        .some((keyframe) => "transform" in keyframe || "translate" in keyframe)
+    );
+  });
 }
 
 function watchAnchor(tooltip: Tooltip) {

@@ -8,9 +8,10 @@ import {
 } from "./Tooltip.ts";
 import { tooltipRef } from "./tooltipRef.ts";
 
-// The "jsdom" library does not open popovers.
+// The "jsdom" library does not open popovers, and has no animations.
 const openElements = new WeakSet<Element>();
 beforeAll(() => {
+  document.getAnimations = () => [];
   Object.assign(HTMLElement.prototype, {
     showPopover(this: HTMLElement) {
       openElements.add(this);
