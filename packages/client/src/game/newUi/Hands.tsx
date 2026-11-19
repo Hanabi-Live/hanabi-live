@@ -39,7 +39,7 @@ import {
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  getKeyTextColorStyle,
+  getButtonTextColorStyle,
 } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
@@ -50,9 +50,9 @@ import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
 import {
   HOVER_CLASS,
-  KEY_CLASS,
   MENU_ICON_CLASS,
   MENU_ICON_ITEM_CLASS,
+  RAISED_BUTTON_CLASS,
 } from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
 
@@ -787,13 +787,13 @@ function PauseButton({
     <button
       aria-label={queued ? "Cancel the queued pause" : "Pause the game"}
       aria-pressed={action === "pause" ? undefined : queued}
-      className={`tw:flex tw:size-6 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-white/15 tw:text-[10px] tw:hover:bg-white/25 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS} ${
+      className={`tw:flex tw:size-6 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-white/15 tw:text-[10px] tw:hover:bg-white/25 ${FADE_LAYER_PARENT_CLASS} ${RAISED_BUTTON_CLASS} ${
         queued ? "tw:text-card-ink" : "tw:text-game-text"
       }`}
       data-pause-button
       onClick={onPause}
       ref={tooltipRef(PAUSE_BUTTON_TOOLTIP[action])}
-      style={getKeyTextColorStyle(queued, reducedMotion)}
+      style={getButtonTextColorStyle(queued, reducedMotion)}
       type="button"
     >
       {/* The color of the turn fades in while the pause is queued. */}

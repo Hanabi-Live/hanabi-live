@@ -4,7 +4,7 @@ import {
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
 import { fadeOutCopy } from "./motion.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import { RAISED_BUTTON_CLASS } from "./surfaces.ts";
 
 /**
  * The panel that covers the hands while the game is paused. It says who paused the game, and a
@@ -72,7 +72,7 @@ export function PausePanel({
         </p>
         {onUnpause !== undefined && (
           <button
-            className={`tw:mt-4 tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-game-text tw:px-5 tw:text-[15px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 ${KEY_CLASS}`}
+            className={`tw:mt-4 tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:bg-game-text tw:px-5 tw:text-[15px] tw:font-bold tw:text-card-ink tw:hover:brightness-110 ${RAISED_BUTTON_CLASS}`}
             onClick={onUnpause}
             type="button"
           >

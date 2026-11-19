@@ -26,7 +26,10 @@ import {
   useFade,
 } from "./motion.ts";
 import type { ScreenMode } from "./screenMode.ts";
-import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
+import {
+  BOTTOM_BAR_BUTTON_COLOR_CLASS,
+  RAISED_BUTTON_CLASS,
+} from "./surfaces.ts";
 import { getTabPanelStyle, Tabs } from "./Tabs.tsx";
 
 /** What the efficiency numbers mean, for screen readers. */
@@ -383,7 +386,7 @@ function markedStyle(
 const FIRST_TWO_DIGIT_NUMBER = 10;
 
 /** The shape of a button on the bar. It sets no color. */
-const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:phone:h-9 tw:phone:px-3 tw:phone:text-sm tw:narrow-530:px-2 tw:disabled:cursor-default tw:disabled:opacity-50 ${KEY_CLASS}`;
+const BUTTON_SHAPE_CLASS = `tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-game-control tw:border-0 tw:px-4 tw:text-[15px] tw:phone:h-9 tw:phone:px-3 tw:phone:text-sm tw:narrow-530:px-2 tw:disabled:cursor-default tw:disabled:opacity-50 ${RAISED_BUTTON_CLASS}`;
 
 const buttonClass = `${BUTTON_SHAPE_CLASS} ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text`;
 

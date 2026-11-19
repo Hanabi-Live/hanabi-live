@@ -23,13 +23,17 @@ import { ChainIcon } from "./ChainIcon.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  getKeyTextColorStyle,
+  getButtonTextColorStyle,
 } from "./FadeLayer.tsx";
 import { LeaderMenu } from "./LeaderMenu.tsx";
 import { getOpacityTransition, SLIDE, useFade } from "./motion.ts";
-import { HOVER_CLASS, HOVER_MILLISECONDS, KEY_CLASS } from "./surfaces.ts";
+import {
+  HOVER_CLASS,
+  HOVER_MILLISECONDS,
+  RAISED_BUTTON_CLASS,
+} from "./surfaces.ts";
 
-const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${KEY_CLASS}`;
+const ICON_BUTTON_CLASS = `tw:flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-white/8 ${RAISED_BUTTON_CLASS}`;
 
 /** The height of a step to the next or the previous turn, which is the height of the controls. */
 const STEP_HEIGHT_CLASS =
@@ -384,7 +388,7 @@ export function Checkbox({
 }
 
 /** The shape of the switch to follow the leader: an icon button that sets no color. */
-const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS}`;
+const FOLLOW_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:text-[15px] tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-white/8 tw:hover:bg-white/15 ${FADE_LAYER_PARENT_CLASS} ${RAISED_BUTTON_CLASS}`;
 
 /** The light color of a pressed switch, which fades in over the switch (see `FadeLayer`). */
 function PressedLayer({
@@ -446,7 +450,7 @@ function FollowToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={getKeyTextColorStyle(
+      style={getButtonTextColorStyle(
         following,
         store.getState().session.settings.reducedMotion,
       )}
@@ -504,7 +508,7 @@ function ShareTurnsToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={getKeyTextColorStyle(
+      style={getButtonTextColorStyle(
         sharing,
         store.getState().session.settings.reducedMotion,
       )}
@@ -537,7 +541,7 @@ function SpectatorHypotheticalControls({
 }
 
 /** A button of the controls of a hypothetical. It is the size of the button that enters one. */
-const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] tw:disabled:cursor-default tw:disabled:opacity-40 ${KEY_CLASS}`;
+const HYPOTHETICAL_BUTTON_SHAPE_CLASS = `tw:flex tw:size-11 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:text-[15px] tw:*:text-[17px] tw:disabled:cursor-default tw:disabled:opacity-40 ${RAISED_BUTTON_CLASS}`;
 
 const HYPOTHETICAL_BUTTON_CLASS = `${HYPOTHETICAL_BUTTON_SHAPE_CLASS} tw:bg-white/8 tw:text-game-text tw:hover:bg-white/15 tw:disabled:hover:bg-white/8`;
 
@@ -568,7 +572,7 @@ function IconToggle({
       disabled={disabled}
       onClick={onClick}
       ref={tooltipRef(`${label}: ${tooltip}`)}
-      style={getKeyTextColorStyle(
+      style={getButtonTextColorStyle(
         pressed,
         store.getState().session.settings.reducedMotion,
       )}

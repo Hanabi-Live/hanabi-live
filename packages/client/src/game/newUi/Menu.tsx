@@ -20,7 +20,7 @@ export const MENU_BUTTON_CLASS =
   "tw:aria-expanded:translate-y-[2px] tw:aria-expanded:shadow-[0_1px_0_rgb(0_0_0/35%)]";
 
 /**
- * The menu. Its bottom has more room, so that the lip of the last key in it does not touch the
+ * The menu. Its bottom has more room, so that the lip of the last button in it does not touch the
  * edge. The gap between it and the button leaves room for its pointer.
  */
 const MENU_CLASS =

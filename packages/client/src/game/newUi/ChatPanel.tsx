@@ -8,7 +8,7 @@ import { toggleZen } from "../zen.ts";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
-  getKeyTextColorStyle,
+  getButtonTextColorStyle,
 } from "./FadeLayer.tsx";
 import {
   chatWindowClosed,
@@ -18,7 +18,7 @@ import {
   popOutChat,
 } from "./chatWindow.ts";
 import { fadeOutCopy, SLIDE, SLIDE_BACK, useFade } from "./motion.ts";
-import { KEY_CLASS } from "./surfaces.ts";
+import { RAISED_BUTTON_CLASS } from "./surfaces.ts";
 
 /**
  * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
@@ -264,7 +264,7 @@ export function ChatPanel({
         style={{ width: CHAT_RAIL_WIDTH }}
       >
         <ChatButton
-          className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${KEY_CLASS}`}
+          className={`tw:size-11 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line ${RAISED_BUTTON_CLASS}`}
           open={false}
           poppedOut={poppedOut}
           unread={unread}
@@ -487,7 +487,7 @@ export function ChatButton({
         toggleZen();
       }}
       ref={tooltipRef(tooltip)}
-      style={getKeyTextColorStyle(collapses, reducedMotion)}
+      style={getButtonTextColorStyle(collapses, reducedMotion)}
       type="button"
     >
       {pressedClassName !== undefined && (

@@ -15,7 +15,7 @@ import {
   useFade,
 } from "./motion.ts";
 import { measure } from "./screenScale.ts";
-import { HOVER_CLASS, KEY_CLASS, WELL_CLASS } from "./surfaces.ts";
+import { HOVER_CLASS, RAISED_BUTTON_CLASS, WELL_CLASS } from "./surfaces.ts";
 
 interface ClueMenuProps {
   readonly name: string;
@@ -155,7 +155,7 @@ export function getClueDrawerWidth(variant: Variant): number {
 const choiceSizeClass =
   "tw:h-[44px] tw:w-[44px] tw:max-w-full tw:rounded-game-control";
 
-const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${KEY_CLASS}`;
+const choiceClass = `tw:relative tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:text-lg tw:font-extrabold ${choiceSizeClass} ${RAISED_BUTTON_CLASS}`;
 
 /**
  * The clues that the viewer can give a player. The player's clue button (see `ClueButton`) opens it
@@ -548,7 +548,7 @@ export function ClueMenu({
           </div>
           <div className="tw:relative tw:flex tw:min-w-[140px] tw:flex-1 tw:before:absolute tw:before:inset-y-0 tw:before:-left-3 tw:before:w-px tw:before:bg-game-line">
             <button
-              className={`tw:flex tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-transparent tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${FADE_LAYER_PARENT_CLASS} ${KEY_CLASS}`}
+              className={`tw:flex tw:min-h-11 tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-transparent tw:px-4 tw:text-[17px] tw:leading-tight tw:text-balance tw:font-bold tw:text-card-ink tw:hover:brightness-110 tw:disabled:cursor-default tw:disabled:font-semibold tw:disabled:text-game-muted tw:disabled:inset-ring-1 tw:disabled:inset-ring-game-line/50 tw:disabled:hover:brightness-100 ${FADE_LAYER_PARENT_CLASS} ${RAISED_BUTTON_CLASS}`}
               disabled={!canGive}
               onClick={onGive}
               type="button"
@@ -614,8 +614,9 @@ function ClueRow({
 }
 
 /**
- * The place of a clue that the rules do not allow: an empty well, with no button in it. A key
- * stands on a lip, so the well sits where a pressed key would, to look centered between the keys.
+ * The place of a clue that the rules do not allow: an empty well, with no button in it. A button
+ * stands on a lip, so the well sits where a pressed button would, to look centered between the
+ * buttons.
  */
 function EmptySlot(): React.JSX.Element {
   return (
@@ -839,7 +840,7 @@ export function ClueButton({
       >
         <button
           aria-label={`Give ${name} a clue`}
-          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${KEY_CLASS}`}
+          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${RAISED_BUTTON_CLASS}`}
           onClick={onOpen}
           ref={tooltipRef(`Give ${name} a clue`)}
           style={{

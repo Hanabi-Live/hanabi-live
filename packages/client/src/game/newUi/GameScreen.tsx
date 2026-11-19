@@ -161,7 +161,10 @@ import {
   getStrikeSegments,
   isScoreHidden,
 } from "./screenView.ts";
-import { BOTTOM_BAR_BUTTON_COLOR_CLASS, KEY_CLASS } from "./surfaces.ts";
+import {
+  BOTTOM_BAR_BUTTON_COLOR_CLASS,
+  RAISED_BUTTON_CLASS,
+} from "./surfaces.ts";
 import {
   formatPace,
   getCluePreviewDeck,
@@ -1216,7 +1219,7 @@ export function GameScreen(): React.JSX.Element {
     <StatusStrip
       chatButton={
         <ChatButton
-          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:text-card-ink ${KEY_CLASS}`}
+          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:text-card-ink ${RAISED_BUTTON_CLASS}`}
           open={chatOpen}
           poppedOut={chatPoppedOut}
           pressedClassName="tw:bg-game-text tw:group-hover/layer:bg-white"

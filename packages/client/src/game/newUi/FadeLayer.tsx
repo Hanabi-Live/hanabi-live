@@ -4,7 +4,7 @@ import {
   OPEN_DURATION_IN_MILLISECONDS,
 } from "../../Tooltip.ts";
 import { getOpacityTransition } from "./motion.ts";
-import { KEY_PRESS_MILLISECONDS } from "./surfaces.ts";
+import { BUTTON_PRESS_MILLISECONDS } from "./surfaces.ts";
 
 /**
  * Lets a button or a box take a color that fades in and out, such as the light color of a pressed
@@ -74,18 +74,18 @@ export function FadeInLabel({
 }
 
 /**
- * The transition of a button that has `KEY_CLASS` and a `FadeLayer`: its press, and the color of
- * its text, which changes with the layer, as fast. A text color is not a background color, so it
- * may animate. The "Reduced motion" setting leaves out the change of color.
+ * The transition of a button that has `RAISED_BUTTON_CLASS` and a `FadeLayer`: its press, and the
+ * color of its text, which changes with the layer, as fast. A text color is not a background color,
+ * so it may animate. The "Reduced motion" setting leaves out the change of color.
  */
-export function getKeyTextColorStyle(
+export function getButtonTextColorStyle(
   shown: boolean,
   reducedMotion: boolean,
 ): React.CSSProperties | undefined {
   if (reducedMotion) {
     return undefined;
   }
-  const press = `${KEY_PRESS_MILLISECONDS}ms`;
+  const press = `${BUTTON_PRESS_MILLISECONDS}ms`;
   return {
     transitionProperty: "translate, box-shadow, color",
     transitionDuration: `${press}, ${press}, ${shown ? OPEN_DURATION_IN_MILLISECONDS : CLOSE_DURATION_IN_MILLISECONDS}ms`,
