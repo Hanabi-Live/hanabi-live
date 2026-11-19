@@ -12,20 +12,20 @@ import { getScreenScale } from "./screenScale.ts";
 
 /** The size of the arrow's box, in the screen's CSS pixels. Its outline fits inside it. */
 const ARROW_WIDTH = 38;
-const ARROW_HEIGHT = 50;
+const ARROW_HEIGHT = 66;
 
 /** The point of the arrow, in its box. */
 const ARROW_TIP = {
   x: 19,
-  y: 47,
+  y: 63,
 } as const;
 
 /**
  * The shaft and the head as one shape, so that its outline goes around both, without a line where
  * they meet. It points down. The view box leaves room for the outline.
  */
-const ARROW_PATH = "M10 0 H24 V22 H34 L17 45 L0 22 H10 Z";
-const ARROW_VIEW_BOX = "-2 -2 38 50";
+const ARROW_PATH = "M10 0 H24 V38 H34 L17 61 L0 38 H10 Z";
+const ARROW_VIEW_BOX = "-2 -2 38 66";
 
 /** How far the point goes into a card, as a fraction of the card's height. */
 const CARD_TIP_INSET = 0.12;
