@@ -121,7 +121,7 @@ function PlayAgainMenu({
             transition: reducedMotion ? undefined : getOpacityTransition(true),
           }}
         >
-          <i aria-hidden="true" className="fas fa-hourglass-half" />
+          <i aria-hidden="true" className="fas fa-user-clock" />
           Waiting...
         </span>
       </button>

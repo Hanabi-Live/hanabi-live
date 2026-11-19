@@ -57,10 +57,10 @@ export function SettingsPage(): React.JSX.Element {
           <CheckboxRow icon="fa-adjust" setting="darkMode">
             Dark mode
           </CheckboxRow>
-          <CheckboxRow icon="fa-users" setting="keldonMode">
+          <CheckboxRow icon="fa-columns" setting="keldonMode">
             Keldon mode (hands spread around the table)
           </CheckboxRow>
-          <CheckboxRow icon="fa-flask" setting="newUi">
+          <CheckboxRow icon="fa-shapes" setting="newUi">
             New UI (redesigned game screen, in testing)
           </CheckboxRow>
           <CheckboxRow icon="fa-eye" setting="colorblindMode">

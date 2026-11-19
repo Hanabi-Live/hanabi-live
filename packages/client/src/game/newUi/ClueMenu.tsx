@@ -521,7 +521,7 @@ export function ClueMenu({
             ref={tooltipRef(`Show ${name}'s actions`)}
             type="button"
           >
-            <i aria-hidden="true" className="fas fa-history" />
+            <i aria-hidden="true" className="fas fa-list" />
           </button>
         </div>
         {/* The button to give the clue sits to the right of the clues, in the room that they leave.

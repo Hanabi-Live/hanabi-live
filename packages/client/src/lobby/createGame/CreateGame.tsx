@@ -599,7 +599,7 @@ export function CreateGame(): React.JSX.Element {
             </li>
             <li className="lobby-row">
               <div className="lobby-row-label">
-                <RowLabel htmlFor="create-game-replay-game-id" icon="fa-redo">
+                <RowLabel htmlFor="create-game-replay-game-id" icon="fa-undo">
                   Replay Game
                 </RowLabel>
                 <HelpLink

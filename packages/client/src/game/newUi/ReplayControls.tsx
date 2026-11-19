@@ -630,7 +630,7 @@ function OwnHypotheticalControls({
           ref={tooltipRef("Go back a turn in the hypothetical.")}
           type="button"
         >
-          <i aria-hidden="true" className="fas fa-undo" />
+          <i aria-hidden="true" className="fas fa-chevron-left" />
         </button>
         <button
           aria-label="Pass"

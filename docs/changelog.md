@@ -17,6 +17,9 @@ of the repository.
   through.
 - The login screen fits on one screen: the logo is smaller, the header bar is
   gone, and the icons are inside the fields.
+- Spectators are shown with the same two eyes everywhere, and the lobby's
+  cursors have a matching style. Icons that had two meanings, such as the pause
+  icon on "Return to Lobby", now each have one.
 
 ## November 18th, 2026
 

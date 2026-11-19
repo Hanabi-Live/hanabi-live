@@ -53,7 +53,7 @@ const GROUPS = [
         description: "A place to find teammates and discuss strategy.",
       },
       {
-        icon: "fa-stopwatch",
+        icon: "fa-running",
         title: "Speedrun.com Leaderboards",
         href: "https://www.speedrun.com/hanabi",
         description: "The fastest times in the world are tracked here.",

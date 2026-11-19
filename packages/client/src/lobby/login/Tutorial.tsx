@@ -118,7 +118,7 @@ function StepContent({
             )}
             right={button(
               "no",
-              "fa-sign-in-alt",
+              "fa-door-open",
               "lobby",
               spaced("I already know how everything works."),
               true,
@@ -249,7 +249,7 @@ function StepContent({
             Good luck and enjoy the website!
           </p>
           <Single centered>
-            {button("4-1-ok", "fa-sign-in-alt", "lobby", "Thanks.")}
+            {button("4-1-ok", "fa-door-open", "lobby", "Thanks.")}
           </Single>
         </>
       );
@@ -316,7 +316,7 @@ function StepContent({
           <Single>
             {button(
               "5-1-lobby",
-              "fa-sign-in-alt",
+              "fa-door-open",
               "lobby",
               spaced("Take me to the lobby for now."),
             )}
@@ -347,7 +347,7 @@ function StepContent({
             )}
             right={button(
               "6-lobby",
-              "fa-sign-in-alt",
+              "fa-door-open",
               "lobby",
               spaced("I'll pass, just take me to the lobby."),
             )}
@@ -398,7 +398,7 @@ function StepContent({
             )}
             right={button(
               "7-1-lobby",
-              "fa-sign-in-alt",
+              "fa-door-open",
               "lobby",
               spaced("I'll pass, just take me to the lobby."),
             )}
@@ -425,7 +425,7 @@ function StepContent({
           <Single>
             {button(
               "8-ok",
-              "fa-sign-in-alt",
+              "fa-door-open",
               "lobby",
               spaced("I'll read the guide, thanks. Take me to the lobby."),
             )}

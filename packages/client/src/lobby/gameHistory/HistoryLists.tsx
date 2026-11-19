@@ -107,7 +107,7 @@ export function HistoryList(): React.JSX.Element {
             id="lobby-history-show-all-button"
             type="button"
           >
-            <i className="fas fa-history tw:mr-[0.625em]" />
+            <i className="fas fa-list-alt tw:mr-[0.625em]" />
             All History
           </button>
         </a>
@@ -386,7 +386,7 @@ function ReplayButton({
       type="button"
     >
       <i
-        className={`fas ${visibility === "solo" ? "fa-eye" : "fa-users"} ${BUTTON_ICON}`}
+        className={`fas ${visibility === "solo" ? "fa-undo" : "fa-users"} ${BUTTON_ICON}`}
       />
     </button>
   );

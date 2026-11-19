@@ -79,7 +79,7 @@ export function getGameInfoTooltip(): string {
         ? millisecondsToClockString(elapsedMilliseconds)
         : "Unknown";
     content += tooltipField(
-      "fas fa-stopwatch",
+      "fas fa-hourglass-half",
       "Game Length",
       `<strong>${gameLength}</strong>`,
     );

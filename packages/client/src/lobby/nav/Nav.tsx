@@ -125,7 +125,7 @@ function LobbyNav() {
       </NavButton>
       <NavButton
         className="tw:narrow-530:hidden"
-        icon="fa-history"
+        icon="fa-list-alt"
         id="nav-buttons-lobby-history"
         onClick={() => {
           history.show();
@@ -136,7 +136,7 @@ function LobbyNav() {
         </span>
       </NavButton>
       <NavButton
-        icon="fa-eye"
+        icon="fa-undo"
         id="nav-buttons-lobby-replay"
         onClick={watchReplay.show}
       >
@@ -179,7 +179,7 @@ function LobbyNav() {
         </a>
       </li>
       <NavButton
-        icon="fa-sign-out-alt"
+        icon="fa-power-off"
         id="nav-buttons-lobby-sign-out"
         onClick={signOut}
       >
@@ -234,7 +234,7 @@ function PregameNav() {
         </NavButton>
       )}
       <NavButton
-        icon="fa-rainbow"
+        icon="fa-sliders-h"
         id="nav-buttons-pregame-change-options"
         onClick={showCreateGame}
       >
@@ -243,7 +243,7 @@ function PregameNav() {
         </span>
       </NavButton>
       <NavButton
-        icon="fa-pause"
+        icon="fa-door-open"
         id="nav-buttons-pregame-unattend"
         onClick={returnToLobby}
       >
@@ -255,7 +255,7 @@ function PregameNav() {
         </span>
       </NavButton>
       <NavButton
-        icon="fa-times"
+        icon="fa-sign-out-alt"
         id="nav-buttons-pregame-leave"
         onClick={leaveGame}
       >
