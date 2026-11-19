@@ -559,8 +559,8 @@ function BrainIcon({
  * them: the same brain, which shows on any card. It points with its center.
  */
 const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='${BRAIN_OUTLINE}' fill='${BRAIN_FILL}' stroke='black' stroke-width='1.6' stroke-linejoin='round'/><path d='${BRAIN_FOLDS}' fill='none' stroke='${BRAIN_FOLD_COLOR}' stroke-width='1.3' stroke-linecap='round'/></svg>`,
-)}") 16 16, pointer`;
+  `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 32 32'><path d='${BRAIN_OUTLINE}' fill='${BRAIN_FILL}' stroke='black' stroke-width='1.6' stroke-linejoin='round'/><path d='${BRAIN_FOLDS}' fill='none' stroke='${BRAIN_FOLD_COLOR}' stroke-width='1.3' stroke-linecap='round'/></svg>`,
+)}") 12 12, pointer`;
 
 /**
  * The cursor over a card while editing cards, where a click changes the card: a white pencil with a
