@@ -28,6 +28,7 @@ import { WaitingCard } from "../WaitingCard.tsx";
 import { usePages } from "./DataTable.tsx";
 import {
   END_CONDITION_TEXT,
+  GameOptionIcons,
   groupByDay,
   OTHER_GAMES_TOOLTIP,
   ROW_BUTTON,
@@ -616,9 +617,11 @@ function GameRow({
               <span className="tw:truncate">{variant.name}</span>
             </div>
           )}
-          {ending !== undefined && (
-            <div className="tw:text-[0.8em] tw:text-text-label">{ending}</div>
-          )}
+          <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:text-[0.8em] tw:text-text-label">
+            {ending !== undefined && <span>{ending}</span>}
+            <GameOptionIcons options={game.options} />
+            <span className="tw:tabular-nums">#{game.gameId}</span>
+          </div>
           {context.list === "tags" && game.tags.length > 0 && (
             <div className="tw:text-[0.8em] tw:text-text-label">
               <i aria-hidden className="fas fa-tag tw:mr-1.5" />

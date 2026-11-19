@@ -1,6 +1,11 @@
 // Parts of a list of past games that the public pages and the lobby's history share.
 
 import type { GameSummary } from "@hanabi-live/data";
+import type { GameOptions } from "@hanabi-live/game";
+import { secondsToClockString } from "@hanabi-live/game";
+import { Fragment } from "react";
+import { OptionIcons } from "../enums/OptionIcons.ts";
+import { tooltipRefHtml } from "../tooltipRef.ts";
 
 type EndCondition = GameSummary["endCondition"];
 
@@ -103,4 +108,108 @@ export function Score({
       </div>
     </div>
   );
+}
+
+/** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
+const MAX_OPTION_ICONS = 3;
+
+/**
+ * A few icons for the options of a game, with a tooltip that lists all of them. A game without
+ * options shows the empty text.
+ */
+export function GameOptionIcons({
+  options,
+  emptyText,
+}: {
+  readonly options: GameOptions;
+  readonly emptyText?: string;
+}): React.JSX.Element | null {
+  const items = getOptionItems(options);
+  if (items.length === 0) {
+    return emptyText === undefined ? null : <>{emptyText}</>;
+  }
+
+  const tooltip = items
+    .map(
+      ({ icon, text }) =>
+        `<li class="tw:mb-[0.3em] tw:pl-[0.2em] tw:last:mb-0"><i class="${icon} icon-label"></i>${text}</li>`,
+    )
+    .join("");
+  const ref = tooltipRefHtml(
+    `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
+    { instant: true },
+  );
+
+  // The tooltip's arrow points at the middle of this element, so it must be only as wide as the
+  // icons, not the cell.
+  return (
+    <div className="tw:w-fit" ref={ref}>
+      {items.length > MAX_OPTION_ICONS ? (
+        <i className="fas fa-ellipsis-h" />
+      ) : (
+        items.map(({ icon }, i) => (
+          <Fragment key={icon}>
+            {i > 0 && " "}
+            <i className={icon} />
+          </Fragment>
+        ))
+      )}
+    </div>
+  );
+}
+
+function getOptionItems(
+  options: GameOptions,
+): ReadonlyArray<{ readonly icon: OptionIcons; readonly text: string }> {
+  const items: Array<{ icon: OptionIcons; text: string }> = [];
+  const { timeControl } = options;
+  if (timeControl !== undefined) {
+    items.push({
+      icon: OptionIcons.Timed,
+      text: `Timed (${secondsToClockString(timeControl.baseSeconds)} + ${secondsToClockString(timeControl.perTurnSeconds)})`,
+    });
+  }
+  if (options.speedrun) {
+    items.push({
+      icon: OptionIcons.Speedrun,
+      text: "Speedrun",
+    });
+  }
+  if (options.deckPlays) {
+    items.push({
+      icon: OptionIcons.DeckPlays,
+      text: "Bottom-Deck Blind-Plays",
+    });
+  }
+  if (options.emptyClues) {
+    items.push({
+      icon: OptionIcons.EmptyClues,
+      text: "Empty Clues",
+    });
+  }
+  if (options.oneExtraCard) {
+    items.push({
+      icon: OptionIcons.OneExtraCard,
+      text: "One Extra Card",
+    });
+  }
+  if (options.oneLessCard) {
+    items.push({
+      icon: OptionIcons.OneLessCard,
+      text: "One Less Card",
+    });
+  }
+  if (options.allOrNothing) {
+    items.push({
+      icon: OptionIcons.AllOrNothing,
+      text: "All or Nothing",
+    });
+  }
+  if (options.detrimentalCharacters) {
+    items.push({
+      icon: OptionIcons.DetrimentalCharacters,
+      text: "Detrimental Characters",
+    });
+  }
+  return items;
 }

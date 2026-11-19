@@ -38,7 +38,8 @@ of the repository.
 - A player's history page has a "With" box. It shows only the games with the
   players that it names.
 - Each game on a player's history page, tagged games, and a seed's page has a
-  "Replay" button and a button for a shared replay, as in the lobby's history.
+  "Replay" button and a button for a shared replay, and shows its options and
+  number, as in the lobby's history.
 - The error window says what happened, such as that the server disconnected you,
   and "Reload" is its main button.
 - While the site waits for the server, it shows a card that turns over and shows
