@@ -190,8 +190,9 @@ export function CardNote({
   }, [touchNoteShown, unread, order]);
 
   return (
+    // The note box shows above the clue buttons of the other hands, which use `tw:z-20`.
     <div
-      className={`tw:relative ${editing ? "tw:z-20" : ""} ${className}`}
+      className={`tw:relative ${editing ? "tw:z-30" : ""} ${className}`}
       data-card-note
       onContextMenu={
         onRightClickCard === undefined
