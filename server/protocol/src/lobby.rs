@@ -543,6 +543,9 @@ named_enum! {
         LiveStateUnavailable => "liveStateUnavailable",
         LobbyLoadTimeout => "lobbyLoadTimeout",
         LobbyQueueFull => "lobbyQueueFull",
+        // The server stopped without a planned restart, after it saved the games. The client keeps
+        // trying to connect, and reloads the page when the server is back.
+        Maintenance => "maintenance",
         // A login for a username that has no account, when the client did not ask to create one. The
         // client asks the player to confirm before it creates the account.
         NoAccount => "noAccount",

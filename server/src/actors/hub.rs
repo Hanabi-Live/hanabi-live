@@ -658,10 +658,13 @@ impl Hub {
         } else {
             frame(
                 hanabi_protocol::event::ERROR,
-                hanabi_protocol::Notice::new(format!(
-                    "{}\nReload the page after the server restarts.",
-                    crate::lifecycle::MAINTENANCE_NOTICE
-                )),
+                hanabi_protocol::Notice {
+                    code: Some(hanabi_protocol::NoticeCode::Maintenance),
+                    ..hanabi_protocol::Notice::new(format!(
+                        "{}\nReload the page after the server restarts.",
+                        crate::lifecycle::MAINTENANCE_NOTICE
+                    ))
+                },
             )
         }];
         let receipts = self

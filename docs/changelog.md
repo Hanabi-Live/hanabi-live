@@ -45,6 +45,8 @@ of the repository.
   a different suit each time. While the "Create" and "Sign In" buttons wait,
   they look disabled and show the card and what they are doing, such as
   "Creating...".
+- When the server goes down for maintenance, the page reloads by itself once the
+  server is back.
 
 ## November 18th, 2026
 

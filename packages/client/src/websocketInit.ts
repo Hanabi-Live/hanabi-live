@@ -48,6 +48,11 @@ let wakeListenersRegistered = false;
 let welcomeTimer: ReturnType<typeof setTimeout> | undefined;
 let connectTimer: ReturnType<typeof setTimeout> | undefined;
 let cookieProbeInFlight = false;
+/**
+ * The server stopped for maintenance. The client keeps trying to connect, and reloads the page when
+ * the server welcomes it again.
+ */
+let reloadWhenBack = false;
 
 function isRecoveryCurrent(connection: Connection | undefined) {
   return recovering && !stopped && activeConnection === connection;
@@ -78,7 +83,8 @@ function clearConnectTimer() {
  */
 function setRecovering(value: boolean) {
   recovering = value;
-  if (value) {
+  // After maintenance, the error modal already covers the page until it reloads.
+  if (value && !reloadWhenBack) {
     store.dispatch(reconnectingChanged(true));
   }
 }
@@ -289,6 +295,11 @@ function openConnection(isReconnect: boolean) {
       if (activeConnection !== conn || stopped) {
         return;
       }
+      if (reloadWhenBack) {
+        stopRecovery();
+        globalThis.location.reload();
+        return;
+      }
       clearWelcomeTimer();
       reconnectBackoff.reset();
       setRecovering(false);
@@ -391,6 +402,7 @@ export function websocketInit(): void {
 
   stopped = false;
   recovering = false;
+  reloadWhenBack = false;
   reconnectBackoff.reset();
   if (reconnectTimer !== undefined) {
     clearTimeout(reconnectTimer);
@@ -410,6 +422,12 @@ function isCurrentConnection(conn: Connection) {
 function errorCallback(conn: Connection) {
   return (data: ServerEventData["error"]) => {
     if (!isCurrentConnection(conn)) {
+      return;
+    }
+    // The connection closes after this error, and the "close" handler starts to reconnect.
+    if (data.code === "maintenance") {
+      reloadWhenBack = true;
+      commands.get("error")?.(data);
       return;
     }
     // Application errors are deliberate disconnects, not transport outages.

@@ -839,6 +839,7 @@ export const noticeCodeSchema = z.enum([
   "liveStateUnavailable",
   "lobbyLoadTimeout",
   "lobbyQueueFull",
+  "maintenance",
   "noAccount",
   "operationTimeout",
   "outdatedClient",

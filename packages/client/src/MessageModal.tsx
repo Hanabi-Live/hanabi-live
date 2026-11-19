@@ -4,9 +4,10 @@
 import { IDLE_WARNING_MS, SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "./constants.ts";
 import { useReducedMotion } from "./fade.ts";
+import { BREATHE_MILLISECONDS } from "./game/newUi/ReconnectingPanel.tsx";
 import { globals } from "./Globals.ts";
 import { signOut } from "./lobby/signOut.ts";
 import type { ErrorCause, MessageModal as Modal } from "./messageModalSlice.ts";
@@ -29,11 +30,13 @@ const ERROR_MESSAGE_CLASS_NAME =
 /** The icon of each cause of an error, in its color. */
 const ERROR_ICONS = {
   disconnected: "fa-plug tw:text-game-turn",
+  maintenance: "fa-plug tw:text-game-turn",
   failed: "fa-exclamation-triangle tw:text-game-error",
 } as const satisfies Record<ErrorCause, string>;
 
 const ERROR_TITLES = {
   disconnected: "You were disconnected.",
+  maintenance: "The server is down.",
   failed: "Something went wrong.",
 } as const satisfies Record<ErrorCause, string>;
 
@@ -69,45 +72,7 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
     }
 
     case "error": {
-      return (
-        <section
-          className="tw:flex tw:flex-col tw:items-center tw:text-center"
-          id="error-modal"
-        >
-          <div className="tw:flex tw:size-[5em] tw:items-center tw:justify-center tw:rounded-full tw:ring-[0.25em] tw:ring-game-line/30">
-            <i
-              aria-hidden="true"
-              className={`fas ${ERROR_ICONS[modal.cause]} tw:text-[2em]`}
-            />
-          </div>
-          <h3 className="tw:mt-[0.75em] tw:mb-[0.25em]">
-            {ERROR_TITLES[modal.cause]}
-          </h3>
-          {/* Errors can hold the formatted stack trace from "errors.ts". */}
-          <p
-            className={`${MESSAGE_CLASS_NAME} ${ERROR_MESSAGE_CLASS_NAME}`}
-            dangerouslySetInnerHTML={{ __html: modal.html }}
-          />
-          <ul className="actions tw:justify-center">
-            <li>
-              <Button
-                autoFocus
-                onClick={() => {
-                  globalThis.location.reload();
-                }}
-                variant="primary"
-              >
-                Reload
-              </Button>
-            </li>
-            <li>
-              <Button onClick={signOut} variant="alt">
-                Sign out
-              </Button>
-            </li>
-          </ul>
-        </section>
-      );
+      return <ErrorModal modal={modal} />;
     }
 
     case "idle": {
@@ -137,6 +102,81 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
       return <PasswordModal tableId={modal.tableId} />;
     }
   }
+}
+
+/**
+ * An error, after which the page must load again. While the client waits for the server to come
+ * back from maintenance, the icon breathes, like the icon of the panel that shows while the game
+ * reconnects. The breath only decorates.
+ */
+function ErrorModal({
+  modal,
+}: {
+  readonly modal: Extract<Modal, { type: "error" }>;
+}) {
+  const reducedMotion = useReducedMotion();
+  const iconRef = useRef<HTMLElement>(null);
+  const waiting = modal.cause === "maintenance";
+
+  useLayoutEffect(() => {
+    const icon = iconRef.current;
+    if (!waiting || icon === null || reducedMotion) {
+      return undefined;
+    }
+
+    const breathe = icon.animate(
+      [{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }],
+      {
+        duration: BREATHE_MILLISECONDS,
+        easing: "ease-in-out",
+        iterations: Infinity,
+      },
+    );
+    return () => {
+      breathe.cancel();
+    };
+  }, [waiting, reducedMotion]);
+
+  return (
+    <section
+      className="tw:flex tw:flex-col tw:items-center tw:text-center"
+      id="error-modal"
+    >
+      <div className="tw:flex tw:size-[5em] tw:items-center tw:justify-center tw:rounded-full tw:ring-[0.25em] tw:ring-game-line/30">
+        <i
+          aria-hidden="true"
+          className={`fas ${ERROR_ICONS[modal.cause]} tw:text-[2em]`}
+          ref={iconRef}
+        />
+      </div>
+      <h3 className="tw:mt-[0.75em] tw:mb-[0.25em]">
+        {ERROR_TITLES[modal.cause]}
+      </h3>
+      {/* Errors can hold the formatted stack trace from "errors.ts". */}
+      <p
+        className={`${MESSAGE_CLASS_NAME} ${ERROR_MESSAGE_CLASS_NAME}`}
+        dangerouslySetInnerHTML={{ __html: modal.html }}
+      />
+      <ul className="actions tw:justify-center">
+        <li>
+          <Button
+            autoFocus
+            onClick={() => {
+              globalThis.location.reload();
+            }}
+            variant="primary"
+          >
+            Reload
+          </Button>
+        </li>
+        <li>
+          <Button onClick={signOut} variant="alt">
+            Sign out
+          </Button>
+        </li>
+      </ul>
+    </section>
+  );
 }
 
 /** How long the ring of the idle warning takes to fill up again after "Keep playing". */

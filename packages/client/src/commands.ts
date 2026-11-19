@@ -23,7 +23,10 @@ commands.set("warning", (data) => {
 
 commands.set("error", (data) => {
   console.error(data.message);
-  modals.showError(noticeHtml(data), "disconnected");
+  modals.showError(
+    noticeHtml(data),
+    data.code === "maintenance" ? "maintenance" : "disconnected",
+  );
 
   // Disconnect from the server, if connected.
   if (globals.conn !== undefined) {

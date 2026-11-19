@@ -5,10 +5,11 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
 /**
- * Why the error modal shows: the server closed the connection ("disconnected"), or something on
- * this page failed ("failed").
+ * Why the error modal shows: the server closed the connection ("disconnected"), the server stopped
+ * and the client waits for it to come back ("maintenance"), or something on this page failed
+ * ("failed").
  */
-export type ErrorCause = "disconnected" | "failed";
+export type ErrorCause = "disconnected" | "maintenance" | "failed";
 
 export type MessageModal =
   | {

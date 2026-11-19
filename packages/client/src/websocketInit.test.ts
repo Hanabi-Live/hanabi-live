@@ -26,6 +26,7 @@ vi.mock("./modals.ts", () => ({ showError: vi.fn() }));
 vi.mock("./game/main.ts", () => ({ closeGame: vi.fn() }));
 const { globals } = await import("./Globals.ts");
 const { commands } = await import("./commands.ts");
+const { Connection } = await import("./Connection.ts");
 const { websocketInit } = await import("./websocketInit.ts");
 
 interface FakeSocket {
@@ -210,6 +211,31 @@ describe("initial WebSocket handshake watchdog", () => {
     sockets[1]?.emit("open");
     globals.conn?.callbacks.get("error")?.(error as never);
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  test("keeps reconnecting after maintenance, and reloads when the server is back", async () => {
+    const on = vi.spyOn(Connection.prototype, "on");
+    websocketInit();
+    sockets[0]?.emit("open");
+    const error = {
+      message: "The server is down.",
+      code: "maintenance",
+    };
+    globals.conn?.callbacks.get("error")?.(error as never);
+    sockets[0]?.emit("close");
+    expect(commands.get("error")).toHaveBeenCalledWith(error);
+
+    await clock.tickAsync(500);
+    expect(sockets).toHaveLength(2);
+    expect(reload).not.toHaveBeenCalled();
+
+    sockets[1]?.emit("open");
+    // The connection that reconnected registered the last callback.
+    const reconnected = on.mock.contexts.at(-1) as
+      InstanceType<typeof Connection> | undefined;
+    reconnected?.callbacks.get("welcome")?.({} as never);
+    expect(reload).toHaveBeenCalledTimes(1);
+    on.mockRestore();
   });
 
   test("recovers a socket opened without a welcome", async () => {

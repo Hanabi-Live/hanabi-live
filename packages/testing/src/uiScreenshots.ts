@@ -1022,7 +1022,13 @@ function getStates(): readonly State[] {
       },
       prepare: async (page) => {
         const sockets: WebSocketRoute[] = [];
+        // After the error, the server stays down: a new connection never reaches it, and the page
+        // waits instead of reloading.
+        let serverDown = false;
         await page.routeWebSocket("**/ws?*", (socket) => {
+          if (serverDown) {
+            return;
+          }
           socket.connectToServer();
           sockets.push(socket);
         });
@@ -1031,11 +1037,13 @@ function getStates(): readonly State[] {
         await page.evaluate(useStylesheet, `/public/css/${BUNDLE_FILENAME}`);
         await page.waitForURL(/\/game\/\d+/u);
         await page.locator("#game-new-ui [data-hand]").first().waitFor();
+        serverDown = true;
         sockets.at(-1)?.send(
           JSON.stringify({
             event: "error",
             data: {
               message: MAINTENANCE_ERROR,
+              code: "maintenance",
             },
           }),
         );

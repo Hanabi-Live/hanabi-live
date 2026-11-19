@@ -18,7 +18,7 @@ import { fadeOutCopy } from "./motion.ts";
 const SHOW_DELAY_MILLISECONDS = 1000;
 
 /** How long one breath of the icon takes, in milliseconds. */
-const BREATHE_MILLISECONDS = 1600;
+export const BREATHE_MILLISECONDS = 1600;
 
 function subscribeToOnline(onChange: () => void): () => void {
   globalThis.addEventListener("online", onChange);

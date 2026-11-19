@@ -4,8 +4,14 @@ import type { ServerEventData } from "@hanabi-live/data";
 import { VERSION } from "@hanabi-live/data";
 import { escapeHtml, textToHtml } from "./utils.ts";
 
-/** The HTML of a notice. An outdated client lists its release and the server's. */
+/**
+ * The HTML of a notice. An outdated client lists its release and the server's. After maintenance,
+ * the page reloads by itself (see "websocketInit.ts"), so the notice says so.
+ */
 export function noticeHtml(notice: ServerEventData["warning"]): string {
+  if (notice.code === "maintenance") {
+    return "Your game progress has been saved.<br />This page reloads when the server is back.";
+  }
   return notice.code === "outdatedClient" && notice.latestVersion !== undefined
     ? outdatedClientHtml(notice.latestVersion)
     : textToHtml(notice.message);
