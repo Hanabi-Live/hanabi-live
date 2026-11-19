@@ -654,7 +654,8 @@ export function CreateGame(): React.JSX.Element {
           tooltip. */}
       <button
         aria-disabled={unchanged}
-        className={`button fit tw:mt-6${unchanged ? " disabled" : ""}`}
+        // The main action of the page is green, like the "Help" button in the header.
+        className={`button fit tw:mt-6 ${unchanged ? "disabled" : "tw:bg-(--button-green) tw:hover:bg-(--button-green-hover)"}`}
         id="create-game-submit"
         onClick={submit}
         ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
@@ -689,9 +690,17 @@ function VariantPicker({
   const searchRef = useRef<HTMLInputElement>(null);
 
   // The page starts with the focus on the variant, and it stays there when the search starts or
-  // ends.
+  // ends. The search is selected, so that typing replaces it. A text box scrolls to the end of what
+  // is selected, so it scrolls back to show the start of a long name.
   useEffect(() => {
-    (searching ? searchRef : selectRef).current!.focus();
+    if (searching) {
+      const input = searchRef.current!;
+      input.focus();
+      input.select();
+      input.scrollLeft = 0;
+    } else {
+      selectRef.current!.focus();
+    }
   }, [searching]);
 
   /** Shows a variant. A basic one goes back to the dropdown. */
@@ -727,7 +736,9 @@ function VariantPicker({
               className="tw:pr-[2.75em]"
               id="create-game-variant-dropdown2"
               list={VARIANT_LIST_ID}
-              onBlur={() => {
+              onBlur={(event) => {
+                // Show the start of a long name.
+                event.currentTarget.scrollLeft = 0;
                 if (doesVariantExist(search.trim())) {
                   onChange(search.trim());
                 }
