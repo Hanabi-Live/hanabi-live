@@ -1687,6 +1687,20 @@ function isHandBubbleBelow(hand: DOMRect): boolean {
   return window.innerHeight - hand.bottom >= hand.top;
 }
 
+/** The open bubble of possible cards of each card face, which other tooltips keep clear of. */
+const openBubbles = new WeakMap<Element, HTMLElement>();
+
+/** The bubble of possible cards that a card face has open, if any. */
+export function getOpenPossibleCards(face: Element): HTMLElement | undefined {
+  return openBubbles.get(face);
+}
+
+/** Whether the bubble of possible cards of a card in a hand goes below the card. */
+export function isHandCardBubbleBelow(card: HTMLElement): boolean {
+  const hand = getHandOf(card);
+  return hand === undefined || isHandBubbleBelow(hand.getBoundingClientRect());
+}
+
 /**
  * The least room that a bubble has beside the cards of any hand, on the side that the hand puts its
  * bubbles, in the window's pixels.
@@ -1727,6 +1741,19 @@ function PossibleCardsGrid({
   readonly closing: boolean;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (closing || element === null) {
+      return undefined;
+    }
+
+    openBubbles.set(anchor, element);
+    return () => {
+      if (openBubbles.get(anchor) === element) {
+        openBubbles.delete(anchor);
+      }
+    };
+  }, [anchor, closing]);
   const [position, setPosition] = useState<{
     readonly left: number;
     readonly top: number;
@@ -2818,8 +2845,13 @@ export function CardFace({
             }
           : undefined
       }
-      onPointerEnter={() => {
-        setHovered(true);
+      // A touch has no hover. The hand opens the bubble of the card under a finger that holds it
+      // (`openPossibleCards`). A finger that taps a card can also leave without a "pointerleave",
+      // and the card would then open its bubble on the next press anywhere.
+      onPointerEnter={(event) => {
+        if (event.pointerType !== "touch") {
+          setHovered(true);
+        }
       }}
       onPointerLeave={() => {
         setHovered(false);

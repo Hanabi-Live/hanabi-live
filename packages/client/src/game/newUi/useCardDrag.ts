@@ -4,6 +4,7 @@
 import type { CardOrder } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
+import { LONG_PRESS_MILLISECONDS } from "./cardClicks.ts";
 import { onEscapeKey } from "./escapeKey.ts";
 import { canDiscardNow, moveCard } from "./screenActions.ts";
 import { measure, toScreenPixels } from "./screenScale.ts";
@@ -124,6 +125,7 @@ export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
     pointerType: "mouse",
     x: 0,
     y: 0,
+    time: 0,
   });
   const [held, setHeld] = useState<HeldCard>();
   const heldRef = useRef<HeldCard>(undefined);
@@ -260,10 +262,12 @@ export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
           phase: "return",
           zone: undefined,
         });
+        // A long press only shows the card's bubble of possible cards, so it is not a tap.
         const press = pressRef.current;
         if (
           event !== undefined
           && press.pointerType !== "mouse"
+          && event.timeStamp - press.time < LONG_PRESS_MILLISECONDS
           && Math.hypot(
             toScreenPixels(event.clientX) - press.x,
             toScreenPixels(event.clientY) - press.y,
@@ -336,6 +340,7 @@ export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
       pressRef.current = {
         pointerType: event.pointerType,
         ...pointer,
+        time: event.timeStamp,
       };
       updateHeld({
         order,

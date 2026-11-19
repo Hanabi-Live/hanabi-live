@@ -1,6 +1,7 @@
 // Gives an element of a React component the site's tooltip. Do not use the HTML "title" attribute
 // instead: it shows the browser's plain tooltip, which does not match the site.
 
+import type { TooltipSide } from "./Tooltip.ts";
 import { Tooltip } from "./Tooltip.ts";
 import { escapeHtml } from "./utils.ts";
 
@@ -122,4 +123,24 @@ export function openTooltip(element: HTMLElement): void {
   if (entry !== undefined && entry.content !== "") {
     entry.tooltip.openUntilClickElsewhere();
   }
+}
+
+/**
+ * Opens the tooltip that a tooltip ref gave an element on a side of the element, until
+ * `closeTooltip` (see `Tooltip.openOnSide`). It does nothing when the element has no tooltip.
+ */
+export function openTooltipOnSide(
+  element: HTMLElement,
+  side: TooltipSide,
+  avoid?: Element,
+): void {
+  const entry = elementTooltips.get(element);
+  if (entry !== undefined && entry.content !== "") {
+    entry.tooltip.openOnSide(side, avoid);
+  }
+}
+
+/** Closes the tooltip that a tooltip ref gave an element, if it has one. */
+export function closeTooltip(element: HTMLElement): void {
+  elementTooltips.get(element)?.tooltip.close();
 }

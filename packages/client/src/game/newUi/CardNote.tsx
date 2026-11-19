@@ -7,7 +7,12 @@ import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
 import { FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS } from "../../Tooltip.ts";
 import * as chat from "../../chat.ts";
 import { store } from "../../store.ts";
-import { openTooltip, tooltipRefHtml } from "../../tooltipRef.ts";
+import {
+  closeTooltip,
+  openTooltip,
+  openTooltipOnSide,
+  tooltipRefHtml,
+} from "../../tooltipRef.ts";
 import { pixels } from "../../visibleEdge.ts";
 import { currentState, currentVariant, getLastNote } from "../gameSession.ts";
 import {
@@ -17,6 +22,7 @@ import {
 } from "../noteShortcuts.ts";
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
+import { getOpenPossibleCards, isHandCardBubbleBelow } from "./Card.tsx";
 import { MENU_LAYER_CLASS, MenuPointer, useMenuFade } from "./Menu.tsx";
 import { useWindowSize } from "./hooks.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
@@ -120,6 +126,7 @@ export function CardNote({
   order,
   notes: cardNotes,
   possibleCards = false,
+  touched = false,
   tapOpens = true,
   className = "",
   style,
@@ -133,6 +140,11 @@ export function CardNote({
    */
   readonly possibleCards?: boolean;
   /**
+   * Whether a finger holds the card, which shows its notes until it lets go, as on the classic
+   * screen. They go on the other side of the card from its bubble of possible cards.
+   */
+  readonly touched?: boolean;
+  /**
    * Whether a tap on a touch screen shows the notes. A card in a hand opens its menu instead, which
    * shows them with `openCardNote`.
    */
@@ -143,6 +155,46 @@ export function CardNote({
 }): React.JSX.Element {
   const { onRightClickCard } = cardNotes;
   const editing = cardNotes.noteCard === order;
+  const noteHtml = cardNotes.notesHtml.get(order) ?? "";
+  const touchNoteShown = touched && !editing && noteHtml !== "";
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const tooltip = tooltipRefHtml(
+    editing || (possibleCards && !touchNoteShown) ? "" : noteHtml,
+    // The arrow points at the card, which can be raised in its slot, such as when it is clued.
+    {
+      instant: true,
+      target: "[data-card-face]",
+      tapOpens,
+    },
+  );
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    if (!touchNoteShown || anchor === null) {
+      return undefined;
+    }
+
+    // The bubble takes its place after this render, so the note waits a frame to go clear of it.
+    const frame = requestAnimationFrame(() => {
+      const face = anchor.querySelector("[data-card-face]");
+      openTooltipOnSide(
+        anchor,
+        isHandCardBubbleBelow(anchor) ? "top" : "bottom",
+        face === null ? undefined : getOpenPossibleCards(face),
+      );
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      closeTooltip(anchor);
+    };
+  }, [touchNoteShown]);
+  // Showing the note reads it.
+  const unread = cardNotes.unreadNotes.has(order);
+  useEffect(() => {
+    if (touchNoteShown && unread) {
+      store.dispatch(newUiNoteRead(order));
+    }
+  }, [touchNoteShown, unread, order]);
+
   return (
     <div
       className={`tw:relative ${editing ? "tw:z-20" : ""} ${className}`}
@@ -181,15 +233,10 @@ export function CardNote({
       }
       // While the box is open, it shows the note instead. The note opens at once, as on the classic
       // screen, so that players can read the notes by moving the pointer along a hand.
-      ref={tooltipRefHtml(
-        editing || possibleCards ? "" : (cardNotes.notesHtml.get(order) ?? ""),
-        // The arrow points at the card, which can be raised in its slot, such as when it is clued.
-        {
-          instant: true,
-          target: "[data-card-face]",
-          tapOpens,
-        },
-      )}
+      ref={(element) => {
+        anchorRef.current = element;
+        return tooltip(element);
+      }}
       style={style}
     >
       {children}

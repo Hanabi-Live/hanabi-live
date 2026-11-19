@@ -1036,6 +1036,7 @@ function OwnCard({
   props,
   view,
   drawnCardsShown,
+  touched,
 }: {
   readonly card: CardView;
   readonly slot: number;
@@ -1048,6 +1049,8 @@ function OwnCard({
   readonly props: HandsProps;
   readonly view: HandView;
   readonly drawnCardsShown: boolean;
+  /** Whether a finger holds the card, which opens its bubble while the hand shows it. */
+  readonly touched: boolean;
 }): React.JSX.Element {
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -1103,7 +1106,10 @@ function OwnCard({
       noteBorder={card.noteBorder}
       noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
-      openPossibleCards={props.possibleCardsCard === card.order}
+      openPossibleCards={
+        props.possibleCardsCard === card.order
+        || (touched && props.showPossibleCards)
+      }
       pips={card.pips}
       previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
@@ -1524,6 +1530,7 @@ function HandCard({
   slot,
   seat,
   editing,
+  touched,
   props,
 }: {
   readonly card: CardView;
@@ -1531,6 +1538,8 @@ function HandCard({
   readonly slot: number;
   readonly seat: Seat;
   readonly editing: boolean;
+  /** Whether a finger holds the card (see `getCardUnder`). */
+  readonly touched: boolean;
   readonly props: HandsProps;
 }): React.JSX.Element {
   const place = `${HAND_PLACE_PREFIX}${seat.playerIndex}-${slot - 1}`;
@@ -1558,6 +1567,7 @@ function HandCard({
         place={place}
         props={props}
         slot={slot}
+        touched={touched}
         view={seat.view}
       />
     );
@@ -1579,7 +1589,10 @@ function HandCard({
       noteBorder={card.noteBorder}
       noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
-      openPossibleCards={props.possibleCardsCard === card.order}
+      openPossibleCards={
+        props.possibleCardsCard === card.order
+        || (touched && props.showPossibleCards)
+      }
       pips={card.pips}
       previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
@@ -1752,6 +1765,24 @@ function ViewFade({
   );
 }
 
+/**
+ * The card of a hand under a point, such as a finger, if any. A bubble or a tooltip over the card
+ * does not hide it.
+ */
+function getCardUnder(
+  cards: HTMLElement,
+  x: number,
+  y: number,
+): CardOrder | undefined {
+  for (const element of cards.ownerDocument.elementsFromPoint(x, y)) {
+    const card = element.closest<HTMLElement>("[data-card-order]");
+    if (card !== null && cards.contains(card)) {
+      return Number(card.dataset["cardOrder"]) as CardOrder;
+    }
+  }
+  return undefined;
+}
+
 function Hand({
   seat,
   props,
@@ -1776,7 +1807,20 @@ function Hand({
   // the viewer's notes. While editing cards, a press picks the card to change instead.
   const empathyHold = !editing && !props.speedrunClicks;
   const heldRef = useRef(false);
+  // A touch has no hover, so the hand follows the finger that holds it: the card under the finger
+  // opens its bubble of possible cards and shows its notes.
+  const [touchedCard, setTouchedCard] = useState<CardOrder>();
+  const cardsRef = useRef<HTMLDivElement>(null);
+  function touchCard(event: React.PointerEvent) {
+    if (event.pointerType === "touch" && cardsRef.current !== null) {
+      setTouchedCard(
+        getCardUnder(cardsRef.current, event.clientX, event.clientY),
+      );
+    }
+  }
+
   function endHold() {
+    setTouchedCard(undefined);
     if (!heldRef.current) {
       return;
     }
@@ -1925,8 +1969,12 @@ function Hand({
           </div>
         )}
       </div>
+      {/* A finger that moves sideways on the cards stays with them, so that it can move from card to
+          card. Otherwise, the browser takes it to scroll the page, which ends the hold, or to go
+          back to the previous page. In the phone layout, it can still scroll the hands up and
+          down. */}
       <div
-        className="tw:relative tw:flex"
+        className="tw:relative tw:flex tw:touch-none tw:phone:touch-pan-y"
         onContextMenu={(event) => {
           if (empathyHold) {
             event.preventDefault();
@@ -1948,9 +1996,16 @@ function Hand({
           }
           heldRef.current = true;
           props.onHoldEmpathy(seat.playerIndex);
+          touchCard(event);
         }}
         onPointerLeave={endHold}
+        onPointerMove={(event) => {
+          if (heldRef.current) {
+            touchCard(event);
+          }
+        }}
         onPointerUp={endHold}
+        ref={cardsRef}
         style={{
           gap: CARD_GAP,
           cursor: empathyHold ? EMPATHY_CURSOR : undefined,
@@ -1966,6 +2021,10 @@ function Hand({
               || props.possibleCardsCard === card.order
             }
             tapOpens={editing}
+            // A card that the finger drags shows no notes.
+            touched={
+              touchedCard === card.order && props.draggedCard === undefined
+            }
           >
             <HandCard
               card={card}
@@ -1973,6 +2032,7 @@ function Hand({
               props={props}
               seat={seat}
               slot={i + 1}
+              touched={touchedCard === card.order}
             />
           </CardNote>
         ))}

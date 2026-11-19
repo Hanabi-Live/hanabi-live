@@ -27,10 +27,14 @@ import {
 } from "../speedrunClue.ts";
 import type { State } from "../types/State.ts";
 import {
+  DOUBLE_TAP_DELAY_MILLISECONDS,
   LEFT_MOUSE_BUTTON,
   MIDDLE_MOUSE_BUTTON,
   RIGHT_MOUSE_BUTTON,
 } from "../ui/constants.ts";
+
+/** A touch held down at least this long is a long press, not a tap, as on the classic screen. */
+export const LONG_PRESS_MILLISECONDS = DOUBLE_TAP_DELAY_MILLISECONDS;
 
 /** The button and the keys of a mouse click. */
 export interface CardClick {

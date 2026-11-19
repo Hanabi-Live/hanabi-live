@@ -14,6 +14,7 @@ import {
   getCardClickCommand,
   getPointerType,
   getSpeedrunCommand,
+  LONG_PRESS_MILLISECONDS,
 } from "./cardClicks.ts";
 import { isGameKey } from "./useHotkeys.ts";
 
@@ -89,6 +90,8 @@ export function useCardInput(
 ): CardInputHandlers {
   const hoveredRef = useRef<HoveredCard>(undefined);
   const pointerTypeRef = useRef("mouse");
+  /** When the last touch went down, in the time of the events. */
+  const touchTimeRef = useRef(0);
   const lastTapRef = useRef<{ order: CardOrder; time: number }>(undefined);
   // A right-click that made a speedrun move must not also edit the card's note.
   const speedrunRightClickRef = useRef(false);
@@ -148,6 +151,9 @@ export function useCardInput(
   return {
     onPointerDownCapture: (event) => {
       pointerTypeRef.current = event.pointerType;
+      if (event.pointerType === "touch") {
+        touchTimeRef.current = event.timeStamp;
+      }
       // A press on anything else, such as an item of the card's menu, ends a double tap.
       if (getCardAt(event.target) !== lastTapRef.current?.order) {
         lastTapRef.current = undefined;
@@ -180,8 +186,24 @@ export function useCardInput(
 
     onClickCapture: (event) => {
       const order = getCardAt(event.target);
+      if (order === undefined) {
+        return;
+      }
+
+      // A long press shows the holder's view of the hand while it lasts, so it is not a tap, which
+      // would open the card's menu.
+      if (
+        pointerTypeRef.current === "touch"
+        && event.timeStamp - touchTimeRef.current >= LONG_PRESS_MILLISECONDS
+      ) {
+        lastTapRef.current = undefined;
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       const { current } = input;
-      if (order === undefined || current === undefined) {
+      if (current === undefined) {
         return;
       }
 
