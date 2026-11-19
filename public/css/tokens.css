@@ -121,10 +121,12 @@
   --lobby-user-stripe: var(--surface-sunken);
 
   /*
-    A box on the felt, such as a panel of the lobby: its color, the color of the fields and lists
-    in it, and the effect on the felt that shows through it. In the light theme, it is solid.
+    A box on the felt, such as a panel of the lobby: its color, the color of the groups of rows in
+    it, the color of the fields and lists in it, and the effect on the felt that shows through it.
+    In the light theme, it is solid.
   */
   --box-bg: var(--surface);
+  --box-panel: var(--surface-panel);
   --box-sunken: var(--surface-sunken);
   --box-backdrop: none;
 
@@ -272,6 +274,8 @@
     blurred and less saturated, so that they read as part of the table.
   */
   --box-bg: rgb(6 14 10 / 62%);
+  /* A field in a group of rows is a step darker than the group. */
+  --box-panel: rgb(0 0 0 / 18%);
   --box-sunken: rgb(0 0 0 / 28%);
   --box-backdrop: blur(14px) saturate(60%);
   --header-bg: rgb(6 14 10 / 78%);

@@ -80,6 +80,7 @@
   /* It floats over the game, so it is solid, unlike the boxes on the felt. */
   background: var(--surface);
   backdrop-filter: none;
+  --surface-panel: inherit;
   --surface-sunken: inherit;
   display: flex;
   flex-direction: column;

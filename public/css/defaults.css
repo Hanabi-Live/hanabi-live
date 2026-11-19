@@ -445,6 +445,7 @@ input::-webkit-calendar-picker-indicator {
   background: var(--box-bg);
   backdrop-filter: var(--box-backdrop);
   box-shadow: var(--box-shadow);
+  --surface-panel: var(--box-panel);
   --surface-sunken: var(--box-sunken);
 }
 
