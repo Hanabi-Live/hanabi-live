@@ -46,6 +46,7 @@ function renderStrip(score: number, maxScore: number) {
       gameInfoTooltip=""
       hardVariant={false}
       lastTurn={undefined}
+      logTab="clue-log-tab"
       lowScorePhase={false}
       maxScore={maxScore}
       minEfficiency="1.00"
@@ -53,6 +54,7 @@ function renderStrip(score: number, maxScore: number) {
       onEfficiencyClick={vi.fn<() => void>()}
       onFooter={vi.fn<(element: HTMLElement | null) => void>()}
       onLobby={vi.fn<() => void>()}
+      onLogTab={vi.fn<() => void>()}
       onTurnClick={vi.fn<() => void>()}
       pace="-"
       paceColor={undefined}

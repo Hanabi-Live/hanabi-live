@@ -1,7 +1,7 @@
 import { getVisibilityTransition, SLIDE } from "./motion.ts";
 
 /**
- * Two tabs that switch between two views in one box. A highlight slides to the chosen tab. Each tab
+ * Tabs that switch between views in one box. A highlight slides to the chosen tab. Each tab
  * controls the element with its ID, which should have the `role` "tabpanel" and the style from
  * `getTabPanelStyle`.
  */
@@ -12,25 +12,31 @@ export function Tabs<Tab extends string>({
   onTab,
   reducedMotion,
 }: {
-  /** What the two tabs switch between, for screen readers. */
+  /** What the tabs switch between, for screen readers. */
   readonly label: string;
   /** The ID of each tab's view and the tab's name, from left to right. */
-  readonly tabs: readonly [readonly [Tab, string], readonly [Tab, string]];
+  readonly tabs: ReadonlyArray<readonly [Tab, string]>;
   readonly tab: Tab;
   readonly onTab: (tab: Tab) => void;
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
-  const right = tab === tabs[1][0];
+  const index = Math.max(
+    tabs.findIndex(([id]) => id === tab),
+    0,
+  );
   return (
     <div
       aria-label={label}
-      className="tw:relative tw:grid tw:grid-cols-2 tw:rounded-game-control tw:bg-black/25 tw:p-1"
+      className="tw:relative tw:grid tw:auto-cols-fr tw:grid-flow-col tw:rounded-game-control tw:bg-black/25 tw:p-1"
       role="tablist"
     >
+      {/* The highlight is as wide as one tab: the box without its padding, split evenly. */}
       <span
         aria-hidden="true"
-        className={`tw:absolute tw:inset-y-1 tw:left-1 tw:w-[calc(50%-4px)] tw:rounded-game-control tw:bg-white/15 ${right ? "tw:translate-x-full" : ""}`}
+        className="tw:absolute tw:inset-y-1 tw:left-1 tw:rounded-game-control tw:bg-white/15"
         style={{
+          width: `calc((100% - 8px) / ${tabs.length})`,
+          translate: `${index * 100}% 0`,
           transition: reducedMotion
             ? undefined
             : `translate ${SLIDE.duration}ms ${SLIDE.easing}`,

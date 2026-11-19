@@ -1250,8 +1250,6 @@ export function GameScreen(): React.JSX.Element {
       // The game's length changes as the clock ticks, and the screen draws again with it.
       gameInfoTooltip={getGameInfoTooltip()}
       hardVariant={metadata.hardVariant && settings.hGroupConventions}
-      // The replay controls have no turn, so the turn here says how far into the game it is. A
-      // spoiler-free replay hides how long the game lasts.
       lastTurn={
         (state.replay.segment !== undefined || state.finished)
         && state.replay.hypothetical === undefined
@@ -1259,6 +1257,9 @@ export function GameScreen(): React.JSX.Element {
           ? state.ongoingGame.turn.turnNum + 1
           : undefined
       }
+      // The replay controls have no turn, so the turn here says how far into the game it is. A
+      // spoiler-free replay hides how long the game lasts.
+      logTab={logTab}
       lowScorePhase={
         settings.hGroupConventions
         && isLowScorePhase(visibleState.score, variant.suits.length)
@@ -1271,6 +1272,7 @@ export function GameScreen(): React.JSX.Element {
       onEfficiencyClick={askForEfficiency}
       onFooter={setBarElement}
       onLobby={backToLobby}
+      onLogTab={setLogTab}
       onTurnClick={replay.promptTurn}
       pace={formatPace(
         visibleState.stats.pace,

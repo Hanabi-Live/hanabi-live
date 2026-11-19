@@ -97,7 +97,7 @@ export interface ActionLogEntry {
 
 /** The IDs of the two logs, which are tabs of one box. */
 export const CLUE_LOG_TAB = "clue-log-tab";
-const ACTION_LOG_TAB = "action-log-tab";
+export const ACTION_LOG_TAB = "action-log-tab";
 
 export type LogTab = typeof CLUE_LOG_TAB | typeof ACTION_LOG_TAB;
 
@@ -239,7 +239,8 @@ export function ClueLog({
       className={`tw:group/logs tw:flex tw:min-h-0 tw:flex-col tw:overflow-hidden tw:rounded-game-panel ${screenScrolls ? "tw:flex-none" : "tw:flex-1"} ${WELL_CLASS}`}
       data-screen-scrolls={screenScrolls ? "" : undefined}
     >
-      <div className="tw:px-2 tw:pt-2">
+      {/* When the logs share the panel's box, the panel's tabs choose the log instead. */}
+      <div className="tw:px-2 tw:pt-2 tw:group-data-tabbed/strip:hidden">
         <Tabs
           label="Clue log and action log"
           onTab={onTab}

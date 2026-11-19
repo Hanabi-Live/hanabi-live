@@ -1124,7 +1124,7 @@ function getStates(): readonly State[] {
       },
     },
     // The action log tab of a five-player game after some turns of clues and discards. When the
-    // status panel shares a box with the logs, the "Logs" tab opens first.
+    // status panel shares a box with the logs, the box's "Actions" tab opens it.
     {
       name: "new-ui-action-log",
       path: "/",
@@ -1136,11 +1136,10 @@ function getStates(): readonly State[] {
       },
       // The tabs are opened at each size, since the logs move when the window changes its size.
       hover: async (page) => {
-        const logsTab = page.getByRole("tab", { name: "Logs" });
-        if (await logsTab.isVisible()) {
-          await logsTab.click();
-        }
-        await page.getByRole("tab", { name: "Action Log" }).click();
+        // Only one of the two tabs is on the screen.
+        await page
+          .getByRole("tab", { name: /^(?:Action Log|Actions)$/u })
+          .click();
         await settle(page);
       },
     },

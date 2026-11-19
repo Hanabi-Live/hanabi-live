@@ -15,7 +15,8 @@ import {
   LOW_SCORE_PHASE_COLOR,
   MODIFIED_EFFICIENCY_COLOR,
 } from "../ui/constants.ts";
-import { getClueLogHeight } from "./ClueLog.tsx";
+import type { LogTab } from "./ClueLog.tsx";
+import { ACTION_LOG_TAB, CLUE_LOG_TAB, getClueLogHeight } from "./ClueLog.tsx";
 import { FadeInLabel } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useElementSize } from "./hooks.ts";
@@ -162,9 +163,13 @@ interface StatusStripProps {
 
   /**
    * The clue log, which is above the panel. When the column is short, the two share one box with
-   * tabs instead (see `usePanelTabs`).
+   * tabs instead (see `usePanelTabs`). Then the panel's tabs choose the log, and the log hides its
+   * own tabs.
    */
   readonly clueLog: React.ReactNode;
+  /** The log that shows. */
+  readonly logTab: LogTab;
+  readonly onLogTab: (tab: LogTab) => void;
 }
 
 /**
@@ -793,9 +798,8 @@ function useClosingControls(
   return [closing, close] as const;
 }
 
-/** The IDs of the panel's tabs when it shares one box with the logs. */
+/** The ID of the panel's tab when it shares one box with the logs. */
 const STATUS_TAB = "status-panel-tab";
-const LOGS_TAB = "logs-tab";
 
 /**
  * The attribute of the panel when the column is too short for it, even with tabs (see
@@ -1162,6 +1166,8 @@ export function StatusStrip({
   panel,
   onFooter,
   clueLog,
+  logTab,
+  onLogTab,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
   const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
@@ -1186,9 +1192,8 @@ export function StatusStrip({
   // The panel measures its height after the controls take theirs.
   useSteadyControlsHeight(footer, controlsRef, panel);
   const tabbed = usePanelTabs(footer, panel, statusRef, controlsRef);
-  const [tab, setTab] = useState<typeof STATUS_TAB | typeof LOGS_TAB>(
-    STATUS_TAB,
-  );
+  const [logsShown, setLogsShown] = useState(false);
+  const tab = logsShown ? logTab : STATUS_TAB;
   useReplayDrawer(
     footer,
     controlsRef,
@@ -1531,12 +1536,18 @@ export function StatusStrip({
         <div className="tw:flex tw:items-center tw:gap-3">
           <Tabs
             label="Status and logs"
-            onTab={setTab}
+            onTab={(id) => {
+              setLogsShown(id !== STATUS_TAB);
+              if (id !== STATUS_TAB) {
+                onLogTab(id);
+              }
+            }}
             reducedMotion={reducedMotion}
             tab={tab}
             tabs={[
               [STATUS_TAB, "Status"],
-              [LOGS_TAB, "Logs"],
+              [CLUE_LOG_TAB, "Clues"],
+              [ACTION_LOG_TAB, "Actions"],
             ]}
           />
           <div className="tw:ml-auto">{chatButton}</div>
@@ -1550,11 +1561,10 @@ export function StatusStrip({
           >
             {status}
           </div>
+          {/* The logs' own views are the tabs' views. */}
           <div
-            className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${tab === LOGS_TAB ? "" : "tw:invisible"}`}
-            id={LOGS_TAB}
-            role="tabpanel"
-            style={getTabPanelStyle(tab === LOGS_TAB, reducedMotion)}
+            className={`tw:col-start-1 tw:row-start-1 tw:grid tw:min-h-0 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)] ${logsShown ? "" : "tw:invisible"}`}
+            style={getTabPanelStyle(logsShown, reducedMotion)}
           >
             {clueLog}
           </div>
