@@ -31,40 +31,46 @@ export function LeaderDirection({
   const move = useLeaderMove(following, shared?.segment);
 
   return (
-    // The box stays without arrows, so that arrows that go can fade out in it.
-    <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:flex tw:items-center tw:justify-center">
-      {move !== undefined && (
-        <LeaderArrows direction={move.direction} key={move.key} />
-      )}
+    // The box stays without arrows, so that arrows that go can fade out in it. Its one grid cell
+    // puts a fading copy of the arrows under the arrows, not next to them.
+    <div className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-30 tw:grid tw:place-items-center">
+      {move !== undefined && <LeaderArrows move={move} />}
     </div>
   );
 }
 
-/** The arrows of one move of the leader. They flash once. */
+/** The arrows of the leader's last move. They flash once for each move. */
 function LeaderArrows({
-  direction,
+  move,
 }: {
-  readonly direction: 1 | -1;
+  readonly move: LeaderMove;
 }): React.JSX.Element {
+  const { direction } = move;
   const ref = useRef<SVGSVGElement>(null);
+  const flash = useRef<Animation>(undefined);
+
+  // They show at once and fade out where they are, as on the classic screen. The fade starts
+  // slowly, so that they stay easy to see for longer. A new move replaces the last flash at once.
+  useLayoutEffect(() => {
+    flash.current?.cancel();
+    flash.current = ref.current?.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: FADE_MILLISECONDS,
+      easing: "ease-in",
+      fill: "forwards",
+    });
+  }, [move]);
+
+  // Arrows that go during their flash, such as when the viewer stops following the leader, fade out
+  // from where they are (see `fadeOutCopy`). This cleanup runs while they are still on the page,
+  // because it belongs to the component that React removes.
   useLayoutEffect(() => {
     const arrows = ref.current;
     if (arrows === null) {
       return undefined;
     }
-    // They show at once and fade out where they are, as on the classic screen. The fade starts
-    // slowly, so that they stay easy to see for longer.
-    const animation = arrows.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: FADE_MILLISECONDS,
-      easing: "ease-in",
-      fill: "forwards",
-    });
-    // Arrows that go during their flash, such as when the viewer stops following the leader, fade
-    // out from where they are (see `fadeOutCopy`). This cleanup runs while they are still on the
-    // page, because it belongs to the component that React removes.
     return () => {
       const shown = Number(getComputedStyle(arrows).opacity);
-      animation.cancel();
+      flash.current?.cancel();
       if (!(shown > 0) || store.getState().session.settings.reducedMotion) {
         return;
       }
@@ -76,14 +82,14 @@ function LeaderArrows({
       });
       arrows.style.opacity = "";
     };
-  }, [direction]);
+  }, []);
 
   // Two separate triangles, so that each one has its own outline. The back arrows are the same
   // shape, turned around.
   return (
     <svg
       aria-hidden="true"
-      className="tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
+      className="tw:col-start-1 tw:row-start-1 tw:w-[min(28vmin,200px)] tw:opacity-0 tw:drop-shadow-[0_2px_10px_rgb(0_0_0/0.6)]"
       data-leader-direction
       ref={ref}
       viewBox="0 0 100 56"
