@@ -333,10 +333,15 @@ export function GameScreen(): React.JSX.Element {
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
   const [nameHeight, setNameHeight] = useState(0);
-  const onNameSizeChange = useCallback((width: number, height: number) => {
-    setNameWidth(width);
-    setNameHeight(height);
-  }, []);
+  const [nameStackHeight, setNameStackHeight] = useState(0);
+  const onNameSizeChange = useCallback(
+    (width: number, height: number, stackHeight: number) => {
+      setNameWidth(width);
+      setNameHeight(height);
+      setNameStackHeight(stackHeight);
+    },
+    [],
+  );
 
   // The hands that show their player's view of them: those that the viewer turned on from a card's
   // menu, and the one that the viewer holds the pointer down on.
@@ -1013,12 +1018,12 @@ export function GameScreen(): React.JSX.Element {
   }
   let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   // In the phone layout with the names beside the cards, the clue button goes below the name, so
-  // that the cards get the width that it would take. When the cards are shorter than the name and
-  // the button, the hands would be taller than the room for them. Then, the button goes to the
-  // right of the name.
+  // that the cards get the width that it would take. When the cards are shorter than the name
+  // column (with the clock and the H-Group warning), the hands would be taller than the room for
+  // them. Then, the button goes to the right of the name.
   const clueButtonBesideName =
     stacked
-    && nameHeight + CLUE_BUTTON_COLUMN_HEIGHT
+    && nameStackHeight + CLUE_BUTTON_COLUMN_HEIGHT
       > handCardWidth * CARD_HEIGHT_PER_WIDTH;
   if (clueButtonBesideName) {
     nameColumnWidth = phoneNameWidth + CLUE_BUTTON_COLUMN_WIDTH;

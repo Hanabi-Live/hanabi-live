@@ -877,10 +877,16 @@ function TurnWarningTag({
   );
 }
 
+/** The hidden clock that measures the name column has no pause button, so it never pauses. */
+function ignorePause() {
+  // The function is empty on purpose.
+}
+
 /**
  * Measures the width that the name column needs. It draws every player's name, hidden, in both of
  * its styles: bold for the current player, and plain for the others. The column fits the widest, so
- * it does not change size as the turn moves from player to player.
+ * it does not change size as the turn moves from player to player. It also draws, hidden, a name
+ * with the clock and the H-Group warning under it, to measure their height.
  */
 export function NameColumnSizer({
   seats,
@@ -888,12 +894,21 @@ export function NameColumnSizer({
 }: {
   readonly seats: readonly Seat[];
 
-  /** Gets the width of the widest name, and the height of a name. */
-  readonly onSizeChange: (width: number, height: number) => void;
+  /**
+   * Gets the width of the widest name, the height of a name, and the height of a name with the
+   * clock and the H-Group warning under it.
+   */
+  readonly onSizeChange: (
+    width: number,
+    height: number,
+    stackHeight: number,
+  ) => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = ref.current!;
+    const stack = stackRef.current!;
     // Round up, so that the widest name is not cut short by a fraction of a pixel. Every name is as
     // tall as the first one.
     const observer = new ResizeObserver(() => {
@@ -901,37 +916,65 @@ export function NameColumnSizer({
       onSizeChange(
         Math.ceil(measure(element).width),
         first === null ? 0 : Math.ceil(measure(first).height),
+        Math.ceil(measure(stack).height),
       );
     });
     observer.observe(element);
+    observer.observe(stack);
     return () => {
       observer.disconnect();
     };
   }, [onSizeChange]);
 
+  const firstSeat = seats[0];
+
   return (
-    <div
-      aria-hidden="true"
-      className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start"
-      ref={ref}
-    >
-      {seats.flatMap((seat) => [
-        <NameChip
-          key={`${seat.playerIndex}-active`}
-          seat={{
-            ...seat,
-            active: true,
-          }}
-        />,
-        <NameChip
-          key={`${seat.playerIndex}-waiting`}
-          seat={{
-            ...seat,
-            active: false,
-          }}
-        />,
-      ])}
-    </div>
+    <>
+      {/* The same as the name column of a hand, with the name beside the cards (see "Hand"). */}
+      <div
+        aria-hidden="true"
+        className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start tw:gap-1"
+        ref={stackRef}
+      >
+        {firstSeat !== undefined && (
+          <>
+            <NameChip seat={firstSeat} />
+            <PlayerClock
+              onPause={ignorePause}
+              pauseAction={undefined}
+              reducedMotion
+              seat={firstSeat}
+              underName
+            />
+            {firstSeat.turnWarnings && (
+              <TurnWarningTag underName warning={undefined} />
+            )}
+          </>
+        )}
+      </div>
+      <div
+        aria-hidden="true"
+        className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start"
+        ref={ref}
+      >
+        {seats.flatMap((seat) => [
+          <NameChip
+            key={`${seat.playerIndex}-active`}
+            seat={{
+              ...seat,
+              active: true,
+            }}
+          />,
+          <NameChip
+            key={`${seat.playerIndex}-waiting`}
+            seat={{
+              ...seat,
+              active: false,
+            }}
+          />,
+        ])}
+      </div>
+    </>
   );
 }
 
@@ -1791,6 +1834,15 @@ function Hand({
             <NameChip seat={seat} />
           </button>
         </div>
+        {/* The negative margin cancels the column's gap, which the button's height includes. */}
+        {buttonBelowName && (
+          <div
+            className="tw:relative tw:-mt-1 tw:self-stretch"
+            style={{ height: CLUE_BUTTON_COLUMN_HEIGHT }}
+          >
+            {clueButton}
+          </div>
+        )}
         <PlayerClock
           onPause={props.onPause}
           pauseAction={seat.you ? props.pauseAction : undefined}
@@ -1803,15 +1855,6 @@ function Hand({
             underName={props.nameColumnWidth !== undefined}
             warning={seat.turnWarning}
           />
-        )}
-        {/* The negative margin cancels the column's gap, which the button's height includes. */}
-        {buttonBelowName && (
-          <div
-            className="tw:relative tw:-mt-1 tw:self-stretch"
-            style={{ height: CLUE_BUTTON_COLUMN_HEIGHT }}
-          >
-            {clueButton}
-          </div>
         )}
       </div>
       <div
