@@ -69,13 +69,10 @@ impl ServerInfo {
                         }
                     }
                     vec![self.public_url(&format!(
-                            "/replay/{}{}",
-                            numbers[0],
-                            numbers
-                                .get(1)
-                                .map(|turn| format!("#{turn}"))
-                                .unwrap_or_default()
-                        ))]
+                        "/replay/{}{}",
+                        numbers[0],
+                        numbers.get(1).map_or_default(|turn| format!("#{turn}"))
+                    ))]
                 }
             }
         }

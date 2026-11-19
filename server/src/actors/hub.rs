@@ -304,8 +304,7 @@ impl Hub {
     fn blocks(&self, user: UserId) -> Blocks {
         self.sessions
             .get(&user)
-            .map(|p| p.blocks.clone())
-            .unwrap_or_default()
+            .map_or_default(|p| p.blocks.clone())
     }
     fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: RequestReply) {
         if self.closing || !self.current(&s) {
