@@ -2,7 +2,6 @@ export * from "./chatSymbols.ts";
 export * from "./constants.ts";
 export * from "./functions/errors.ts";
 export * from "./functions/frames.ts";
-export * from "./functions/history.ts";
 export * from "./functions/tabAccount.ts";
 export * from "./generated/protocol.ts";
 export type * from "./interfaces/GameSummary.ts";

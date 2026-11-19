@@ -581,123 +581,7 @@ async fn game(db: &TestDb, user: i32, seed: &str, score: i16) -> i32 {
 }
 
 #[tokio::test]
-async fn lobby_history_pages_include_only_own_games_postgres() {
-    let Some(db) = TestDb::create().await else {
-        return;
-    };
-    let a = db.user("Alice").await;
-    let b = db.user("Bob").await;
-    let d = db.user("Donald").await;
-    let own = game(&db, a, "p2v0s1", 20).await;
-    let other = game(&db, b, "p2v0s2", 20).await;
-    let shared = game(&db, a, "p2v0s4", 20).await;
-    sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat) VALUES($1,$2,1)",
-        shared,
-        b
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    relationships::change_friend(
-        &db.pool,
-        UserId::new(a).unwrap(),
-        UserId::new(b).unwrap(),
-        true,
-    )
-    .await
-    .unwrap();
-    sqlx::query!(
-        "UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)",
-        &[own, other, shared][..]
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    assert_eq!(
-        history_ids(&db.pool, UserId::new(a).unwrap(), 0, 10)
-            .await
-            .unwrap(),
-        vec![shared, own]
-    );
-    assert_eq!(
-        history_ids(&db.pool, UserId::new(a).unwrap(), 1, 1)
-            .await
-            .unwrap(),
-        vec![own]
-    );
-    assert_eq!(
-        history_ids(&db.pool, UserId::new(a).unwrap(), 99, 10)
-            .await
-            .unwrap(),
-        Vec::<i32>::new()
-    );
-    assert_eq!(
-        history_ids(&db.pool, UserId::new(d).unwrap(), 0, 10)
-            .await
-            .unwrap(),
-        Vec::<i32>::new()
-    );
-    db.close().await;
-}
-
-#[tokio::test]
-async fn lobby_history_filter_finds_variants_and_other_players_postgres() {
-    let Some(db) = TestDb::create().await else {
-        return;
-    };
-    let a = db.user("Alice").await;
-    let b = db.user("Bob").await;
-    let own = game(&db, a, "p2v0s1", 20).await;
-    let shared = game(&db, a, "p2v0s2", 20).await;
-    sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat) VALUES($1,$2,1)",
-        shared,
-        b
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    let who = caller(a, "Alice");
-    let page = async |filter: &str| {
-        let result = run(
-            &db.pool,
-            &who,
-            &[],
-            "gameHistory",
-            json!({"offset":0,"limit":10,"filter":filter}),
-        )
-        .await;
-        let history = self_data(&result, "gameHistory");
-        let ids: Vec<i64> = history["games"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|game| game["gameId"].as_i64().unwrap())
-            .collect();
-        (ids, history["total"].as_i64().unwrap())
-    };
-    let (own, shared) = (i64::from(own), i64::from(shared));
-    // The variant's name, in any case.
-    assert_eq!(page("nO vAR").await, (vec![shared, own], 2));
-    assert_eq!(page("bo").await, (vec![shared], 1));
-    // Our own name finds nothing, and a wildcard is an ordinary character.
-    assert_eq!(page("ali").await, (vec![], 0));
-    assert_eq!(page("%").await, (vec![], 0));
-    assert_eq!(page(" ").await, (vec![shared, own], 2));
-    let too_long = "a".repeat(hanabi_protocol::MAX_GAME_SEARCH_LENGTH + 1);
-    assert!(
-        ClientRequest::decode(
-            "gameHistory",
-            &json!({"offset":0,"limit":10,"filter":too_long})
-        )
-        .is_err()
-    );
-    db.close().await;
-}
-
-#[tokio::test]
-async fn lobby_directed_linked_seeds_and_histories_postgres() {
+async fn lobby_directed_linked_seeds_postgres() {
     let Some(db) = TestDb::create().await else {
         return;
     };
@@ -706,14 +590,8 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let c = db.user("Carol").await;
     let who = caller(a, "Alice");
     let ga = game(&db, a, "p2v0s1", 20).await;
-    let gb = game(&db, b, "p2v0s1", 25).await;
+    let _gb = game(&db, b, "p2v0s1", 25).await;
     let _gc = game(&db, c, "p2v0s2", 15).await;
-    // A game with a rule option comes after the games without one, even with a higher score.
-    let gd = game(&db, b, "p2v0s1", 25).await;
-    sqlx::query!("UPDATE games SET deck_plays=TRUE WHERE id=$1", gd)
-        .execute(&db.pool)
-        .await
-        .unwrap();
     let _ = run(&db.pool, &who, &[], "linkAdd", json!({"username":"Bob"})).await;
     let _ = run(
         &db.pool,
@@ -750,56 +628,6 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             .unwrap()
             .ends_with("Bob")
     );
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "gameHistory",
-        json!({"offset":0,"limit":10}),
-    )
-    .await;
-    let history = self_data(&result, "gameHistory");
-    assert_eq!(history["games"][0]["gameId"], ga);
-    assert_eq!(history["games"][0]["options"]["variantId"], 0);
-    assert_eq!(history["games"][0]["playerNames"], json!(["Alice"]));
-    // A page holds at least one game and at most `MAX_PAGE_LIMIT`, from a start that is not
-    // negative.
-    for page in [
-        json!({"offset":0,"limit":0}),
-        json!({"offset":0,"limit":hanabi_protocol::MAX_PAGE_LIMIT + 1}),
-        json!({"offset":-1,"limit":1}),
-    ] {
-        assert!(ClientRequest::decode("gameHistory", &page).is_err());
-        let mut other = page;
-        other["seed"] = "p2v0s1".into();
-        assert!(ClientRequest::decode("seedGames", &other).is_err());
-    }
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "seedGames",
-        json!({"seed":"p2v0s1","offset":0,"limit":10}),
-    )
-    .await;
-    let history = self_data(&result, "seedGames");
-    assert_eq!(history["games"][0]["gameId"], gb);
-    assert_eq!(history["games"][1]["gameId"], ga);
-    assert_eq!(history["games"][2]["gameId"], gd);
-    assert_eq!(history["total"], 3);
-    // Later pages continue in the same order, and count every game on the seed.
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "seedGames",
-        json!({"seed":"p2v0s1","offset":1,"limit":1}),
-    )
-    .await;
-    let history = self_data(&result, "seedGames");
-    assert_eq!(history["games"].as_array().unwrap().len(), 1);
-    assert_eq!(history["games"][0]["gameId"], ga);
-    assert_eq!(history["total"], 3);
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
         ga,

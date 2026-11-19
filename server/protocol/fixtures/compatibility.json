@@ -56,22 +56,21 @@
     "valid": false
   },
   {
-    "name": "ready statistics can accurately report zero games",
+    "name": "a ready lobby has no other fields",
+    "direction": "event",
+    "command": "lobbyStatus",
+    "input": {
+      "type": "ready"
+    },
+    "valid": true
+  },
+  {
+    "name": "a ready lobby no longer counts the player's games",
     "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "ready",
       "numGames": 0
-    },
-    "valid": true
-  },
-  {
-    "name": "ready statistics cannot omit the real total",
-    "direction": "event",
-    "command": "lobbyStatus",
-    "input": {
-      "type": "ready",
-      "numGames": null
     },
     "valid": false
   },
@@ -909,26 +908,6 @@
     "valid": false
   },
   {
-    "name": "history pages start at zero or later",
-    "direction": "request",
-    "command": "gameHistory",
-    "input": {
-      "offset": -1,
-      "limit": 10
-    },
-    "valid": false
-  },
-  {
-    "name": "history pages hold at most the largest page",
-    "direction": "request",
-    "command": "gameHistory",
-    "input": {
-      "offset": 0,
-      "limit": 101
-    },
-    "valid": false
-  },
-  {
     "name": "tables report a pregame roster below the minimum",
     "direction": "event",
     "command": "table",
@@ -991,146 +970,6 @@
       ]
     },
     "valid": true
-  },
-  {
-    "name": "history accepts timestamps in UTC with milliseconds",
-    "direction": "event",
-    "command": "gameHistoryAdded",
-    "input": {
-      "gameId": 12,
-      "options": {
-        "variantId": 0,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "seed": "p2v0s1",
-      "score": 25,
-      "numTurns": 40,
-      "endCondition": "normal",
-      "startedAt": "2023-12-29T18:00:00.000Z",
-      "finishedAt": "2023-12-29T18:21:43.812Z",
-      "numGamesOnSeed": 3,
-      "playerNames": ["Alice", "Bob"],
-      "tags": []
-    },
-    "valid": true
-  },
-  {
-    "name": "history rejects a timestamp with an offset",
-    "direction": "event",
-    "command": "gameHistoryAdded",
-    "input": {
-      "gameId": 12,
-      "options": {
-        "variantId": 0,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "seed": "p2v0s1",
-      "score": 25,
-      "numTurns": 40,
-      "endCondition": "normal",
-      "startedAt": "2023-12-29T18:00:00.000+00:00",
-      "finishedAt": "2023-12-29T18:21:43.812Z",
-      "numGamesOnSeed": 3,
-      "playerNames": ["Alice", "Bob"],
-      "tags": []
-    },
-    "valid": false
-  },
-  {
-    "name": "history rejects a timestamp without milliseconds",
-    "direction": "event",
-    "command": "gameHistoryAdded",
-    "input": {
-      "gameId": 12,
-      "options": {
-        "variantId": 0,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "seed": "p2v0s1",
-      "score": 25,
-      "numTurns": 40,
-      "endCondition": "normal",
-      "startedAt": "2023-12-29T18:00:00Z",
-      "finishedAt": "2023-12-29T18:21:43.812Z",
-      "numGamesOnSeed": 3,
-      "playerNames": ["Alice", "Bob"],
-      "tags": []
-    },
-    "valid": false
-  },
-  {
-    "name": "history rejects a timestamp with microseconds",
-    "direction": "event",
-    "command": "gameHistoryAdded",
-    "input": {
-      "gameId": 12,
-      "options": {
-        "variantId": 0,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "seed": "p2v0s1",
-      "score": 25,
-      "numTurns": 40,
-      "endCondition": "normal",
-      "startedAt": "2023-12-29T18:00:00.000000Z",
-      "finishedAt": "2023-12-29T18:21:43.812Z",
-      "numGamesOnSeed": 3,
-      "playerNames": ["Alice", "Bob"],
-      "tags": []
-    },
-    "valid": false
-  },
-  {
-    "name": "history rejects a date that cannot be parsed",
-    "direction": "event",
-    "command": "gameHistoryAdded",
-    "input": {
-      "gameId": 12,
-      "options": {
-        "variantId": 0,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "seed": "p2v0s1",
-      "score": 25,
-      "numTurns": 40,
-      "endCondition": "normal",
-      "startedAt": "yesterday",
-      "finishedAt": "2023-12-29T18:21:43.812Z",
-      "numGamesOnSeed": 3,
-      "playerNames": ["Alice", "Bob"],
-      "tags": []
-    },
-    "valid": false
   },
   {
     "name": "hypothetical actions are typed objects",
@@ -1665,20 +1504,6 @@
       "messages": [],
       "table": { "tableId": 1, "numUnread": -1 }
     },
-    "valid": false
-  },
-  {
-    "name": "a game page counts its games",
-    "direction": "reply",
-    "command": "gameHistory",
-    "input": { "games": [], "total": 0 },
-    "valid": true
-  },
-  {
-    "name": "a game page has no offset, which only the request names",
-    "direction": "reply",
-    "command": "gameHistory",
-    "input": { "games": [], "total": 0, "offset": 0 },
     "valid": false
   }
 ]

@@ -173,9 +173,8 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
     })
 }
 
-pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, i64)> {
+async fn lobby_initial(app: &App) -> Result<Vec<Frame>> {
     let pool = &app.store.lobby_reads;
-    let total = crate::database::game_count(pool, id).await?;
     let mut initial = vec![];
     let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
     initial.push(frame(
@@ -202,7 +201,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
         Err(error) => return Err(error.into()),
     }
-    Ok((initial, total))
+    Ok(initial)
 }
 
 pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
@@ -223,7 +222,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 StatusCode::SERVICE_UNAVAILABLE))?;
             tokio::time::timeout(
                 LOBBY_LOAD_DEADLINE,
-                lobby_initial(&app, session.user),
+                lobby_initial(&app),
             )
             .await
             .map_err(|_| crate::errors::Fault::new(
@@ -245,16 +244,14 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
         if !session.active() {
             return;
         }
-        let result = result
-            .and_then(|(messages, total)| Ok((messages, hanabi_protocol::Count::try_from(total)?)));
         match result {
-            Ok((messages, total)) => {
+            Ok(messages) => {
                 for message in messages {
                     session.emit(&message);
                 }
                 session.emit(&frame(
                     hanabi_protocol::event::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Ready { num_games: total },
+                    hanabi_protocol::LobbyStatus::Ready {},
                 ));
             }
             Err(error) => {

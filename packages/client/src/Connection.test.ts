@@ -133,16 +133,9 @@ describe("replies", () => {
       conn.onMessage({ data: JSON.stringify(frame) } as MessageEvent);
     }
 
-    conn.send(
-      "gameHistory",
-      {
-        offset: 0,
-        limit: 10,
-      },
-      (answer) => {
-        replies.set("history", answer);
-      },
-    );
+    conn.send("chatPmHistory", { limit: 10 }, (answer) => {
+      replies.set("history", answer);
+    });
     conn.send(
       "tableStart",
       {
@@ -162,8 +155,7 @@ describe("replies", () => {
     reply({
       reply: 1,
       data: {
-        games: [],
-        total: 0,
+        messages: [],
       },
     });
     reply({
@@ -185,8 +177,7 @@ describe("replies", () => {
       history: {
         ok: true,
         data: {
-          games: [],
-          total: 0,
+          messages: [],
         },
       },
       refused: {

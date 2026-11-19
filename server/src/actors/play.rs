@@ -128,13 +128,8 @@ impl TableActor {
         }
         Some(notice)
     }
-    /// Sends the game's events from position `from` on. For a game that just finished,
-    /// `seed_games` is how many saved games use its seed, or `None` when it has no seed.
-    pub(super) async fn transitions(
-        &self,
-        from: usize,
-        seed_games: Option<i64>,
-    ) -> CommandResult<()> {
+    /// Sends the game's events from position `from` on.
+    pub(super) async fn transitions(&self, from: usize) -> CommandResult<()> {
         let s = self.table.game().context("Missing game")?;
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let mut e = self.effects();
@@ -170,7 +165,6 @@ impl TableActor {
         }
         if replay {
             self.spectator_messages(&mut e);
-            let count = seed_games;
             let finished_at = hanabi_protocol::Timestamp::from(
                 s.finished.context("A finished game has no finish time")?,
             );
@@ -186,14 +180,6 @@ impl TableActor {
                     },
                     Some(self.table.id),
                 ));
-                if s.players.iter().any(|p| p.is(a.session.user))
-                    && let Some(history) = s.history(count)
-                {
-                    e.messages.push((
-                        a.session.clone(),
-                        frame(hanabi_protocol::event::GAME_HISTORY_ADDED, history),
-                    ));
-                }
                 e.messages.push((
                     a.session.clone(),
                     frame(
@@ -281,7 +267,7 @@ impl TableActor {
                 }),
             )?;
         }
-        let outcome = self.persist_with(next, Commit::default()).await?;
+        self.persist_with(next, Commit::default()).await?;
         let mut e = self.effects();
         // A vote that ends the game has already made it a replay. Only the voter learns of the vote:
         // the votes of others would tell a player what their teammates think of the game.
@@ -299,7 +285,7 @@ impl TableActor {
         }
         self.publish(e).await?;
         if terminate {
-            self.transitions(from, outcome.seed_games).await?;
+            self.transitions(from).await?;
         }
         Ok(())
     }

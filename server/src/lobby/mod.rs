@@ -1,8 +1,8 @@
 //! Actor-independent commands. Apply every `ToSelf` effect only to the caller's
 //! captured generation; apply `ToUser` only if its captured generation still lives.
 mod chat;
-mod history;
 mod relationships;
+mod seeds;
 mod settings;
 #[cfg(test)]
 mod tests;
@@ -13,12 +13,9 @@ pub use chat::{
     ChatCommand, Classification, CommandKind, GeneralResponse, LobbyChatLimit, RuntimeCommand,
     TableChatCommand, classify_chat, external_command, lobby_history, server_chat, too_quickly,
 };
-use history::{
-    HistoryFilter, filtered_history_count, filtered_history_ids, seed_game_count, seed_history_ids,
-};
-pub use history::{blocked_seeds, get_history, history_ids};
 use relationships::Change;
 pub use relationships::{block_relations, blocked, blocked_between, friends};
+pub use seeds::blocked_seeds;
 pub use settings::get_settings;
 use settings::set_settings;
 
@@ -216,52 +213,6 @@ pub async fn dispatch(
         }
         ClientRequest::BlockRemove(request) => {
             relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
-        }
-        ClientRequest::GameHistory(request) => {
-            let hanabi_protocol::PageRequest { offset, limit } = request.page;
-            let filter = request.filter.as_deref().and_then(HistoryFilter::new);
-            let (ids, total) = if let Some(filter) = filter {
-                (
-                    filtered_history_ids(pool, caller.user, &filter, offset.get(), limit.get())
-                        .await?,
-                    filtered_history_count(pool, caller.user, &filter).await?,
-                )
-            } else {
-                (
-                    history_ids(pool, caller.user, offset.get(), limit.get()).await?,
-                    crate::database::game_count(pool, caller.user).await?,
-                )
-            };
-            vec![Effect::Reply(hanabi_protocol::reply::GAME_HISTORY.data(
-                hanabi_protocol::GamePage {
-                    games: get_history(pool, &ids).await?,
-                    total: hanabi_protocol::Count::try_from(total)?,
-                },
-            ))]
-        }
-        ClientRequest::SeedGames(request) => {
-            let seed = request.seed.as_str();
-            // The schema already refuses an empty seed.
-            let error = if !seed.bytes().all(|b| b == b' ' || b.is_ascii_graphic()) {
-                Some("Seeds can only contain ASCII characters.")
-            } else if !crate::model::is_valid_seed(seed) {
-                Some("Seeds can only contain letters, numbers, and hyphens.")
-            } else {
-                None
-            };
-            if let Some(error) = error {
-                return refused(error);
-            }
-            let offset = request.page.offset;
-            let ids = seed_history_ids(pool, seed, offset.get(), request.page.limit.get()).await?;
-            let games = get_history(pool, &ids).await?;
-            let total = seed_game_count(pool, seed).await?;
-            vec![Effect::Reply(hanabi_protocol::reply::SEED_GAMES.data(
-                hanabi_protocol::GamePage {
-                    games,
-                    total: hanabi_protocol::Count::try_from(total)?,
-                },
-            ))]
         }
         ClientRequest::TagSearch(request) => {
             let tag = match crate::model::normalize_tag(request.tag.as_str()) {

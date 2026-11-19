@@ -31,7 +31,7 @@ pub struct ServerShutdown {
 pub enum LobbyStatus {
     Loading {},
     Error(Notice),
-    Ready { num_games: Count },
+    Ready {},
 }
 
 /// A user's presence in the lobby's user list.

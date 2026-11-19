@@ -480,22 +480,6 @@ export const gameFinishedSchema = z
   .readonly();
 
 /**
- * A page of the player's own games, newest first.
- */
-export const gameHistoryRequestSchema = z
-  .strictObject({
-    /**
-     * Only the games whose variant, or one of the other players, has a name that contains this
-     * text, ignoring case. At most `MAX_GAME_SEARCH_LENGTH` characters. Absent or blank for
-     * every game.
-     */
-    filter: z.string().max(100).optional(),
-    limit: pageLimitSchema,
-    offset: countSchema,
-  })
-  .readonly();
-
-/**
  * A player's detrimental character, in a game and in the replay format, with the value that some
  * characters are assigned. Every player has one when detrimental characters are on.
  */
@@ -888,9 +872,7 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
       type: z.literal("error"),
     })
     .readonly(),
-  z
-    .strictObject({ numGames: countSchema, type: z.literal("ready") })
-    .readonly(),
+  z.strictObject({ type: z.literal("ready") }).readonly(),
 ]);
 
 /**
@@ -1645,17 +1627,6 @@ export const requestIdSchema = z
   .brand<"RequestId">();
 
 /**
- * A page of the games on a seed, best scores first.
- */
-export const seedGamesRequestSchema = z
-  .strictObject({
-    limit: pageLimitSchema,
-    offset: countSchema,
-    seed: z.string().min(1),
-  })
-  .readonly();
-
-/**
  * Sent before a graceful restart or stop closes the connection. The client plays the shutdown
  * sound and reconnects.
  */
@@ -2128,7 +2099,6 @@ export const CLIENT_REQUEST_SCHEMAS = {
   clientError: clientErrorRequestSchema,
   friendAdd: relationshipRequestSchema,
   friendRemove: relationshipRequestSchema,
-  gameHistory: gameHistoryRequestSchema,
   gameInitLoad: tableRefSchema,
   gameLoaded: tableRefSchema,
   gameStateLoad: tableRefSchema,
@@ -2143,7 +2113,6 @@ export const CLIENT_REQUEST_SCHEMAS = {
   playerAction: playerActionRequestSchema,
   replayAction: replayActionSchema,
   replayCreate: replayCreateRequestSchema,
-  seedGames: seedGamesRequestSchema,
   settings: settingsRequestSchema,
   tableCreate: tableCreateRequestSchema,
   tableJoin: tableJoinRequestSchema,
@@ -2167,9 +2136,7 @@ export const CLIENT_REQUEST_SCHEMAS = {
 } as const;
 export const REPLY_SCHEMAS = {
   chatPmHistory: chatPmHistorySchema,
-  gameHistory: gamePageSchema,
   gameInitLoad: gameInitSchema,
-  seedGames: gamePageSchema,
 } as const;
 export const SERVER_EVENT_SCHEMAS = {
   blocked: blockedSchema,
@@ -2183,7 +2150,6 @@ export const SERVER_EVENT_SCHEMAS = {
   friends: friendsSchema,
   gameEvent: gameEventMessageSchema,
   gameFinished: gameFinishedSchema,
-  gameHistoryAdded: gameSummarySchema,
   gameState: gameStateSchema,
   idleReset: tableRefSchema,
   idleWarning: idleWarningSchema,

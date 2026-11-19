@@ -54,8 +54,6 @@ macro_rules! request_contracts {
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
             ClientError "clientError" => ClientErrorRequest;
-            GameHistory "gameHistory" => GameHistoryRequest, reply GAME_HISTORY: GamePage;
-            SeedGames "seedGames" => SeedGamesRequest, reply SEED_GAMES: GamePage;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
             TableUpdate "tableUpdate" => TableUpdateRequest;
@@ -113,7 +111,6 @@ macro_rules! event_contracts {
             TABLE "table" => Table;
             TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
-            GAME_HISTORY_ADDED "gameHistoryAdded" => GameSummary;
         }
     };
 }

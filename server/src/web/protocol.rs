@@ -110,7 +110,6 @@ mod tests {
                 "clientError" => {
                     json!({"message":"Error","stack":"Error\n    at main.js:1:2","translated":false})
                 }
-                "seedGames" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => {
@@ -133,7 +132,6 @@ mod tests {
                 "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
                 | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
-                "gameHistory" => json!({"offset":0,"limit":10}),
                 "tableCreate" => json!({"settings":{"name":"Table","maxPlayers":5,"options":{}}}),
                 "tableUpdate" => {
                     json!({"tableId":1,"settings":{"name":"Table","maxPlayers":5,"options":{}}})

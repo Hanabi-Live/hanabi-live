@@ -600,31 +600,6 @@ impl Snapshot {
         );
         Ok(())
     }
-    /// The game as a player's history lists it, or `None` for a game that is not in the database.
-    /// `count` is how many saved games use its seed.
-    pub fn history(&self, count: Option<i64>) -> Option<hanabi_protocol::GameSummary> {
-        let names = self.players.iter().map(|p| p.name.clone());
-        let time = hanabi_protocol::Timestamp::from;
-        Some(hanabi_protocol::GameSummary {
-            game_id: self.game_id?,
-            options: wire_options(&self.game.options),
-            seed: self.seed.clone()?.into(),
-            score: hanabi_protocol::Score::new(self.game.score)?,
-            num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
-            end_condition: self.game.end?.condition,
-            started_at: time(self.started),
-            finished_at: time(self.finished.unwrap_or(self.started)),
-            num_games_on_seed: hanabi_protocol::Count::new(count?)?,
-            player_names: names.map(Into::into).collect(),
-            tags: self
-                .tags
-                .iter()
-                .map(|t| t.tag.clone())
-                .collect::<std::collections::BTreeSet<_>>()
-                .into_iter()
-                .collect(),
-        })
-    }
 }
 
 /// Converts a player count, which validation keeps from `MIN_PLAYERS` to `MAX_PLAYERS`, to its wire

@@ -28,8 +28,6 @@ pub fn route(message: &ClientRequest) -> Route {
         M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Settings(_)
         | M::UserInactive(_)
-        | M::GameHistory(_)
-        | M::SeedGames(_)
         | M::ChatPm(_)
         | M::ChatPmHistory(_)
         | M::FriendAdd(_)

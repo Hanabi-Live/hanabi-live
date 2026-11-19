@@ -448,11 +448,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         assertDefined(finished.view.gameId, "The finished game was not saved.");
         expect<number>(finished.view.gameId).toBe(checkpoint.game_id);
-        await replacement.receive(
-          "gameHistoryAdded",
-          SERVER_EVENT_SCHEMAS.gameHistoryAdded,
-          (row) => row.gameId === finished.view.gameId,
-        );
         replacement.send("replayAction", {
           tableId,
           action: {

@@ -273,8 +273,8 @@ constants! {
     @data pub const DEFAULT_PER_TURN_SECONDS: i64 = 20;
     /// The rows on a page of a public listing when the request does not name a limit.
     @data pub const DEFAULT_PAGE_LIMIT: i64 = 10;
-    /// The most rows that a page of a public page's table, a player's game history in the lobby, or
-    /// their private messages can have. The HTTP API allows larger pages.
+    /// The most rows that a page of a public page's table or a player's private messages can have.
+    /// The HTTP API allows larger pages.
     @data pub const MAX_PAGE_LIMIT: i64 = 100;
     /// The page sizes that the tables of the public pages offer.
     @data pub const PAGE_SIZES: &[i64] = &[DEFAULT_PAGE_LIMIT, 20, 50, MAX_PAGE_LIMIT];

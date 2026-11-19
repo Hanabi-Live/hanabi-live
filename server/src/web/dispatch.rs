@@ -11,7 +11,6 @@ use crate::{
     routing::Route,
     transport::{Session, frame},
 };
-use anyhow::Context;
 use axum::http::StatusCode;
 use hanabi_protocol::{ClientRequest, ReplyData};
 use std::sync::Arc;
@@ -33,8 +32,6 @@ pub(super) struct CommandFailure {
 pub(super) fn command_failure(error: CommandError, command: Option<&str>) -> CommandFailure {
     let name = command.unwrap_or("unknown command");
     let operation = match name {
-        "gameHistory" => "Loading game history".to_owned(),
-        "seedGames" => "Loading seed history".to_owned(),
         "settings" => "Saving preferences".to_owned(),
         _ => format!("Command {name}"),
     };
@@ -181,29 +178,16 @@ pub(super) async fn lobby_command(
         }
         _ => None,
     };
-    let history = history_command(&message);
-    let pool = if history {
-        &app.store.lobby_reads
-    } else {
-        &app.store.primary
-    };
     let chat = matches!(message, ClientRequest::Chat(_)).then(|| message.clone());
-    let work = lobby::dispatch(
-        pool,
+    let effects = lobby::dispatch(
+        &app.store.primary,
         &app.public.session_secret,
         &caller,
         &online,
         rendered.as_deref(),
         message,
-    );
-    let effects = if history {
-        tokio::select! {
-            () = app.lifecycle.read_shutdown.cancelled() => return Ok(LobbyOutcome::Done(None)),
-            result = work => result.context(crate::errors::LobbyRead)?,
-        }
-    } else {
-        work.await?
-    };
+    )
+    .await?;
     let Some(effects) = effects else {
         // A table's chat continues to its table.
         return Ok(chat.map_or(LobbyOutcome::Done(None), LobbyOutcome::TableChat));
@@ -221,13 +205,6 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
         return None;
     }
     Some(app.integrations.get()?.render(&normalized).await)
-}
-
-fn history_command(message: &ClientRequest) -> bool {
-    matches!(
-        message,
-        ClientRequest::GameHistory(_) | ClientRequest::SeedGames(_)
-    )
 }
 
 /// Runs a request's command. Returns the data of its reply, if it has any.

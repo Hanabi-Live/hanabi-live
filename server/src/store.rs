@@ -342,22 +342,6 @@ impl Store {
                 )
                 .await?;
             }
-            let seed = if work.count_seed {
-                table.game().context("Missing finished game")?.seed.as_ref()
-            } else {
-                None
-            };
-            let seed_games = match seed {
-                Some(seed) => Some(
-                    sqlx::query_scalar!(
-                        "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
-                        seed
-                    )
-                    .fetch_one(&mut *transaction)
-                    .await?,
-                ),
-                _ => None,
-            };
             let mut written = 0;
             let after = if work.retire {
                 crate::state::remove_in(&mut transaction, table.id, saved.revision).await?;
@@ -398,7 +382,7 @@ impl Store {
             self.state.commit(transaction).await?;
             *saved = after;
             crate::metrics::record_checkpoint(written);
-            Ok(Outcome { spawn, seed_games })
+            Ok(Outcome { spawn })
         }
         .await;
         if result.is_ok() {
@@ -438,7 +422,6 @@ impl Store {
         Ok(Committed {
             revision: saved.revision,
             spawn_revision: outcome.spawn.map(|spawn| spawn.revision),
-            seed_games: outcome.seed_games,
         })
     }
     /// The first seed with this prefix that none of the human players have played. Bots play many
@@ -567,16 +550,12 @@ pub struct Commit<'a> {
     pub retire: bool,
     /// A reserved table to save, such as one that a split creates.
     pub spawn: Option<&'a TableSnapshot>,
-    /// Whether to count the saved games on the table's seed, for a game that just finished.
-    pub count_seed: bool,
 }
 
 /// What `Store::commit` returns.
 pub struct Outcome {
     /// What the database holds for the table in `Commit::spawn`.
     pub spawn: Option<Saved>,
-    /// The saved games on the table's seed, if `Commit::count_seed` asked for them.
-    pub seed_games: Option<i64>,
 }
 
 /// What the database holds for a live table: its revision, and what it holds of its parts, which
@@ -604,7 +583,6 @@ pub struct Committed {
     pub revision: i64,
     /// The revision of the table in `Commit::spawn`.
     pub spawn_revision: Option<i64>,
-    pub seed_games: Option<i64>,
 }
 
 /// Gives new chat messages their archive IDs and stored timestamps. Returns their positions.
@@ -1443,7 +1421,6 @@ mod tests {
             notes[1][54] = "last".into();
             let archive = || Commit {
                 archive: true,
-                count_seed: true,
                 ..Commit::default()
             };
 
@@ -1480,10 +1457,6 @@ mod tests {
 
             let committed = store.commit_at(&mut finished.clone(), 2, archive()).await?;
             ensure!(committed.revision == 3);
-            ensure!(
-                committed.seed_games == Some(1),
-                "The seed count left out the game that the commit archived"
-            );
             // A restart refreshes the statistics again after the background refresh.
             for _ in 0..2 {
                 crate::stats::refresh(&store.primary, finished.game().unwrap()).await?;

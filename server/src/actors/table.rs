@@ -612,8 +612,8 @@ impl TableActor {
         next: TableSnapshot,
         from: usize,
     ) -> CommandResult<()> {
-        let outcome = self.persist_with(next, Commit::default()).await?;
-        self.transitions(from, outcome.seed_games).await
+        self.persist_with(next, Commit::default()).await?;
+        self.transitions(from).await
     }
     /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
     /// game becomes a replay and is archived in the same commit. When saving fails, the table keeps
@@ -634,7 +634,6 @@ impl TableActor {
             self.present_leader(&mut next, None);
         }
         work.archive = finished && !next.extra.no_write_to_database;
-        work.count_seed = finished && next.game().is_some_and(|s| s.game_id.is_some());
         let archived = work.archive;
         let dropped = self.chat_bytes.trim(&mut next.chat)?;
         let outcome = match self.store.commit(&mut next, &mut self.saved, work).await {

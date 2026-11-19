@@ -229,9 +229,9 @@ databaseDescribe("normal-server protocol workload", () => {
               samples.liveReconnect.push(performance.now() - reconnectStart);
             }
             await alice.receive(
-              "gameHistoryAdded",
-              SERVER_EVENT_SCHEMAS.gameHistoryAdded,
-              (entry) => entry.score === 25,
+              "gameFinished",
+              SERVER_EVENT_SCHEMAS.gameFinished,
+              (event) => event.tableId === tableId,
             );
             const finished = await bootstrap(alice, tableId);
             expect(finished.init.mode.type).toBe("sharedReplay");

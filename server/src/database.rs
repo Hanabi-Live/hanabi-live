@@ -21,7 +21,9 @@ pub(crate) async fn normal_game_counts(
         .collect()
 }
 
-/// The count of all of a player's games, however each one ended, as their game history shows it.
+/// The count of all of a player's games, however each one ended, which tests check the stored count
+/// with.
+#[cfg(test)]
 pub(crate) async fn game_count(pool: &PgPool, id: UserId) -> Result<i64> {
     Ok(sqlx::query_scalar!(
         "SELECT num_games::bigint AS \"count!\" FROM users WHERE id=$1",

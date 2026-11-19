@@ -143,37 +143,6 @@ pub struct ClientErrorRequest {
     pub translated: bool,
 }
 
-/// A page of a list of games.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PageRequest {
-    pub offset: Count,
-    pub limit: PageLimit,
-}
-
-/// A page of the player's own games, newest first.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistoryRequest {
-    #[serde(flatten)]
-    pub page: PageRequest,
-    /// Only the games whose variant, or one of the other players, has a name that contains this
-    /// text, ignoring case. At most `MAX_GAME_SEARCH_LENGTH` characters. Absent or blank for
-    /// every game.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(length(max = MAX_GAME_SEARCH_LENGTH))]
-    pub filter: Option<String>,
-}
-
-/// A page of the games on a seed, best scores first.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SeedGamesRequest {
-    pub seed: Seed,
-    #[serde(flatten)]
-    pub page: PageRequest,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagSearchRequest {

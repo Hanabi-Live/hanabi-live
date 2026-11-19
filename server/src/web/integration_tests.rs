@@ -1,4 +1,4 @@
-use super::socket::{Account, bootstrap, load_lobby, lobby_initial};
+use super::socket::{Account, bootstrap, load_lobby};
 use super::*;
 use crate::transport::test_frame;
 use crate::{
@@ -6,12 +6,10 @@ use crate::{
     lobby::{self, Publication},
     transport::{Outgoing, Session},
 };
-use axum::extract::ws::Message;
 use axum::http::HeaderValue;
 use futures_util::{SinkExt, StreamExt};
 use hanabi_protocol::UserId;
 use serde_json::{Value, json};
-use std::collections::BTreeSet;
 use std::time::Duration;
 use tokio::sync::oneshot;
 use tokio_tungstenite::{
@@ -34,25 +32,21 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     for (id, page, expected) in [
         (
             1,
-            json!({"offset":"bad","limit":10}),
-            "Invalid GameHistoryRequest payload at /offset",
+            json!({"limit":"bad"}),
+            "Invalid ChatPmHistoryRequest payload at /limit",
         ),
-        (
-            2,
-            json!({"offset":0,"limit":10}),
-            "database connection pool is closed",
-        ),
+        (2, json!({"limit":10}), "database connection pool is closed"),
     ] {
-        let closed = page["offset"] == 0;
+        let closed = page["limit"] == 10;
         if closed {
             fixture.app.store.primary.close().await;
         }
-        send(&mut socket, id, "gameHistory", page).await;
+        send(&mut socket, id, "chatPmHistory", page).await;
         let reply = reply(&mut socket, id).await;
         let error = reply["error"]["message"].as_str().unwrap();
         assert!(error.contains(expected), "{error}");
         if closed {
-            assert!(error.contains("Loading game history"));
+            assert!(error.contains("Command chatPmHistory"));
             assert!(error.contains("Reference:"));
         }
     }
@@ -429,7 +423,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     receive(&mut bob, "tableJoined").await;
     reply(&mut bob, 1).await;
     // Alice's reply comes after the chat that says that Bob joined.
-    send(&mut alice, 10, "gameHistory", json!({"offset":0,"limit":1})).await;
+    send(&mut alice, 10, "chatPmHistory", json!({"limit":1})).await;
     reply(&mut alice, 10).await;
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&fixture.db.pool)
@@ -455,7 +449,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         }
         reply(&mut alice, id).await;
         // Bob's own request is answered after everything that the server sent him before it.
-        send(&mut bob, id, "gameHistory", json!({"offset":0,"limit":1})).await;
+        send(&mut bob, id, "chatPmHistory", json!({"limit":1})).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             loop {
                 let WireMessage::Text(text) = bob.next().await.unwrap().unwrap() else {
@@ -568,16 +562,6 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(welcome["username"], "Alicè");
     assert!(receive(&mut alice, "chatList").await["messages"].is_array());
     assert_eq!(receive(&mut alice, "lobbyStatus").await["type"], "ready");
-    send(&mut alice, 1, "gameHistory", json!({"offset":0,"limit":10})).await;
-    let history = reply(&mut alice, 1).await["data"].clone();
-    assert_eq!(history["games"][0]["gameId"], historical);
-    assert_eq!(history["games"][0]["options"]["variantId"], 1);
-    assert_eq!(
-        history["games"][0]["options"]["timeControl"]["baseSeconds"],
-        180
-    );
-    assert_eq!(history["games"][0]["options"]["emptyClues"], true);
-    assert_eq!(history["games"][0]["tags"], json!(["authored"]));
     let mut bob = connect(&fixture, &bob_cookie).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;
@@ -783,7 +767,6 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     lock.rollback().await.unwrap();
     let ready = receive(&mut socket, "lobbyStatus").await;
     assert_eq!(ready["type"], "ready");
-    assert_eq!(ready["numGames"], 0);
     socket.close(None).await.unwrap();
     fixture.close().await;
 }
@@ -851,182 +834,6 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     assert!(status["message"].as_str().unwrap().contains("Reference:"));
     drop(slots);
     lock.rollback().await.unwrap();
-    fixture.close().await;
-}
-
-#[tokio::test]
-async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
-    let Some(fixture) = test_support::Fixture::start().await else {
-        return;
-    };
-    let alice = fixture.db.user("HistorianAlice").await;
-    let mut shared = Vec::new();
-    for index in 0..5 {
-        shared.push(fixture.db.user(&format!("Historian{index:05}")).await);
-    }
-    let games:Vec<i32>=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-         all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         SELECT 'Historical game '||n,6,1,true,180,30,false,false,true,false,false,false,true,
-         'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id").fetch_all(&fixture.db.pool).await.unwrap();
-    let mut players = vec![alice];
-    players.extend(&shared);
-    sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat)
-             SELECT game_id,user_id,(position-1)::smallint FROM unnest($1::int[]) games(game_id)
-             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)",
-        &games,
-        &players
-    )
-    .execute(&fixture.db.pool)
-    .await
-    .unwrap();
-    sqlx::query!(
-        "INSERT INTO game_tags(game_id,user_id,tag)
-         SELECT game_id,$2,lpad(n::text,3,'0')||repeat('t',97)
-         FROM unnest($1::int[]) games(game_id) CROSS JOIN generate_series(1,8) n",
-        &games,
-        alice
-    )
-    .execute(&fixture.db.pool)
-    .await
-    .unwrap();
-    sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,message)
-         SELECT $1,'user',$2 FROM generate_series(1,50)",
-        alice,
-        &"\"".repeat(300)
-    )
-    .execute(&fixture.db.pool)
-    .await
-    .unwrap();
-
-    let prepared = bootstrap(
-        &fixture.app,
-        test_account(&fixture, alice).await,
-        "127.0.0.1",
-    )
-    .await
-    .unwrap();
-    let mut history_lock = fixture.db.pool.begin().await.unwrap();
-    #[expect(
-        clippy::disallowed_methods,
-        reason = "test SQL that sets up database state or failures directly"
-    )]
-    sqlx::query("LOCK TABLE game_tags IN ACCESS EXCLUSIVE MODE")
-        .execute(&mut *history_lock)
-        .await
-        .unwrap();
-    let (messages, total) = tokio::time::timeout(
-        Duration::from_secs(1),
-        lobby_initial(&fixture.app, UserId::new(alice).unwrap()),
-    )
-    .await
-    .expect("Lobby initialization queried personal history")
-    .unwrap();
-    assert_eq!(total, 200);
-    assert!(
-        messages
-            .iter()
-            .all(|message| !crate::transport::is_event(message, "gameHistory"))
-    );
-    history_lock.rollback().await.unwrap();
-    let own_ids = lobby::history_ids(&fixture.db.pool, UserId::new(alice).unwrap(), 0, 100)
-        .await
-        .unwrap();
-    let next_ids = lobby::history_ids(&fixture.db.pool, UserId::new(alice).unwrap(), 100, 100)
-        .await
-        .unwrap();
-    assert_eq!(own_ids.len(), 100);
-    assert_eq!(next_ids.len(), 100);
-    let own = test_frame(
-        "gameHistory",
-        json!(
-            lobby::get_history(&fixture.db.pool, &own_ids)
-                .await
-                .unwrap()
-        ),
-    );
-    let next = test_frame(
-        "gameHistory",
-        json!(
-            lobby::get_history(&fixture.db.pool, &next_ids)
-                .await
-                .unwrap()
-        ),
-    );
-    let mut initial = lobby_initial(&fixture.app, UserId::new(alice).unwrap())
-        .await
-        .unwrap()
-        .0;
-    assert!(
-        initial
-            .iter()
-            .all(|message| !crate::transport::is_event(message, "gameHistory"))
-    );
-    // Requested full history pages must still fit in the outbound queue.
-    initial.extend([own, next]);
-    let mut expected = vec![
-        "welcome".to_owned(),
-        "userList".to_owned(),
-        "tableList".to_owned(),
-    ];
-    expected.extend(
-        initial
-            .iter()
-            .map(|message| crate::transport::event(message).unwrap().0),
-    );
-    expected.push("user".into());
-    assert!(
-        initial.iter().all(|message| message.len() < 262_144),
-        "This regression must exercise aggregate bootstrap size, not only a large single frame"
-    );
-    assert!(initial.iter().map(|message| message.len()).sum::<usize>() > 262_144);
-    let (session, mut outgoing) = Session::new(UserId::new(alice).unwrap(), prepared.name, 42);
-    let (reply, received) = oneshot::channel();
-    fixture
-        .app
-        .hub
-        .send(HubCommand::Register {
-            session: session.clone(),
-            blocks: BTreeSet::new(),
-            welcome: prepared.welcome,
-            initial,
-            reply,
-        })
-        .await
-        .unwrap();
-    tokio::time::timeout(Duration::from_secs(2), received)
-        .await
-        .unwrap()
-        .unwrap()
-        .unwrap();
-    // No receiver was polled during registration; a writer cannot mask a
-    // synchronously overflowing coordinator publication batch.
-    assert!(
-        session.active(),
-        "Full bootstrap exhausted the outbound queue"
-    );
-    let mut actual = Vec::new();
-    while let Ok(outbound) = outgoing.try_recv() {
-        let Message::Text(text) = outbound.message else {
-            panic!("Unexpected bootstrap frame");
-        };
-        let (command, data) = crate::transport::event(&text).unwrap();
-        actual.push(command.clone());
-        match command.as_str() {
-            "chatList" => assert_eq!(data["messages"].as_array().unwrap().len(), 50),
-            "gameHistory" => {
-                assert_eq!(data.as_array().unwrap().len(), 100);
-                assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);
-                assert_eq!(data[0]["options"]["variantId"], 1);
-                assert_eq!(data[0]["tags"].as_array().unwrap().len(), 8);
-            }
-            _ => {}
-        }
-    }
-    assert_eq!(actual, expected);
-    assert!(session.active());
     fixture.close().await;
 }
 
