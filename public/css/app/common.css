@@ -218,27 +218,19 @@ body[data-screen="game"] {
 }
 
 /*
-  Each side comes up edge-on and opens quickly with a slight lift. Then it starts to turn slowly,
-  and speeds up until it is edge-on again. The card never stands still, so that it does not look
-  stuck when the page stops on one of its frames.
+  The card spins without stopping, like a coin, so that it never looks stuck. Its width follows a
+  sine curve: each side opens from edge-on and closes again. The card is a little taller when it is
+  edge-on.
 */
 @keyframes waiting-card-turn {
+  /* The two curves are the common "ease out sine" and "ease in sine" curves. */
   0% {
     transform: scale(0, 1.06);
-    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+    animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
   }
-  18% {
-    transform: scale(1.03, 1.01);
-    animation-timing-function: ease-out;
-  }
-  26% {
+  50% {
     transform: scale(1, 1);
-    animation-timing-function: linear;
-  }
-  80% {
-    transform: scale(0.9, 1.02);
-    /* The curve starts at the speed of the slow turn before it. */
-    animation-timing-function: cubic-bezier(0.6, 0.025, 0.9, 0.4);
+    animation-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
   }
   100% {
     transform: scale(0, 1.06);
