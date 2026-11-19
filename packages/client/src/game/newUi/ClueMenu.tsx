@@ -766,42 +766,69 @@ export function ClueHandLayer({
   );
 }
 
+/** The width and height of a clue key, in CSS pixels. */
+const CLUE_KEY_SIZE = {
+  WIDE: 56,
+  PHONE: 40,
+} as const;
+
+/** The space between a player's name and their clue key in the name column, in CSS pixels. */
+const CLUE_KEY_NAME_GAP = 8;
+
+/**
+ * The width that the clue key takes in the name column, in the phone layout with the names beside
+ * the cards. Every hand keeps it, so that the names line up and do not move when the keys show.
+ */
+export const CLUE_KEY_COLUMN_WIDTH = CLUE_KEY_SIZE.PHONE + CLUE_KEY_NAME_GAP;
+
+/**
+ * Where a clue key sits: to the right of the hand, in the name column to the right of the name, or
+ * in the hand's top right corner.
+ */
+export type ClueKeyPlacement = "right" | "column" | "corner";
+
+const CLUE_KEY_PLACEMENT_CLASS = {
+  right:
+    "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5",
+  column: "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
+  corner: "tw:absolute tw:z-20 tw:right-3",
+} as const satisfies Record<ClueKeyPlacement, string>;
+
 /**
  * The key that opens the clue menu of a player. It shows beside their hand while the viewer can
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
- * `getClueDrawerWidth`). In the phone layout, there is no room there, so it sits in the hand's top
- * right corner, beside the player's name. It is dim, so that the keys of all the hands do not
- * compete with the cards, and bright while the pointer is over it. It fades in when it appears,
- * such as when the viewer's turn starts, and fades out when it goes, such as when its menu opens.
+ * `getClueDrawerWidth`). In the phone layout, there is no room there. With the name beside the
+ * cards, it sits in the name column, to the right of the name. With the name above the cards, it
+ * sits in the hand's top right corner, beside the name. It is dim, so that the keys of all the
+ * hands do not compete with the cards, and bright while the pointer is over it. It fades in when it
+ * appears, such as when the viewer's turn starts, and fades out when it goes, such as when its menu
+ * opens.
  */
 export function ClueKey({
   name,
-  below,
+  placement,
   top,
   reducedMotion,
   onOpen,
 }: {
   readonly name: string;
-  readonly below: boolean;
+  readonly placement: ClueKeyPlacement;
 
-  /** In the phone layout, the distance from the top of the hand to the top of the name. */
+  /** In the hand's corner, the distance from the top of the hand to the top of the name. */
   readonly top: number;
   readonly reducedMotion: boolean;
   readonly onOpen: () => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   useFade(ref, reducedMotion);
+  const size = placement === "right" ? CLUE_KEY_SIZE.WIDE : CLUE_KEY_SIZE.PHONE;
 
   return (
     <div
-      className={`tw:absolute tw:z-20 ${
-        below
-          ? "tw:right-3"
-          : "tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5"
-      }`}
+      className={CLUE_KEY_PLACEMENT_CLASS[placement]}
       data-clue-key
       ref={ref}
-      style={below ? { top } : undefined}
+      style={placement === "corner" ? { top } : undefined}
     >
       {/* The dimming is on a layer of its own, because the key's press sets its own transition. */}
       <div
@@ -809,12 +836,18 @@ export function ClueKey({
       >
         <button
           aria-label={`Give ${name} a clue`}
-          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${below ? "tw:size-10" : "tw:size-14"} ${KEY_CLASS}`}
+          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${KEY_CLASS}`}
           onClick={onOpen}
           ref={tooltipRef(`Give ${name} a clue`)}
+          style={{
+            width: size,
+            height: size,
+          }}
           type="button"
         >
-          <ClueTokenIcon className={below ? "tw:size-7" : "tw:size-10"} />
+          <ClueTokenIcon
+            className={placement === "right" ? "tw:size-10" : "tw:size-7"}
+          />
         </button>
       </div>
     </div>

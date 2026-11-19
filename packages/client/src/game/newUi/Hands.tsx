@@ -30,7 +30,8 @@ import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
-import { ClueHandLayer, ClueKey } from "./ClueMenu.tsx";
+import type { ClueKeyPlacement } from "./ClueMenu.tsx";
+import { CLUE_KEY_COLUMN_WIDTH, ClueHandLayer, ClueKey } from "./ClueMenu.tsx";
 import {
   FADE_LAYER_PARENT_CLASS,
   FadeLayer,
@@ -1687,6 +1688,28 @@ function Hand({
     props.shownClue?.giver === seat.playerIndex
     || props.shownMover === seat.playerIndex;
 
+  // In the phone layout, there is no room to the right of the hand for the clue key. With the name
+  // beside the cards, the name column keeps room for it (see `CLUE_KEY_COLUMN_WIDTH`). Otherwise,
+  // it goes in the hand's top right corner.
+  const keyInColumn = props.stacked && props.nameColumnWidth !== undefined;
+  let keyPlacement: ClueKeyPlacement = "right";
+  if (keyInColumn) {
+    keyPlacement = "column";
+  } else if (props.stacked) {
+    keyPlacement = "corner";
+  }
+  const clueKey = canClueSeat && !chosen && (
+    <ClueKey
+      name={seat.name}
+      onOpen={() => {
+        props.onChooseClueTarget(seat.playerIndex);
+      }}
+      placement={keyPlacement}
+      reducedMotion={props.reducedMotion}
+      top={getHandBoxTopPadding(props.cardWidth)}
+    />
+  );
+
   return (
     <div
       aria-label={`${seat.name}'s hand`}
@@ -1721,8 +1744,12 @@ function Hand({
             ? "tw:items-center tw:gap-3"
             : "tw:flex-col tw:items-start tw:gap-1"
         }`}
-        style={{ width: props.nameColumnWidth }}
+        style={{
+          width: props.nameColumnWidth,
+          paddingRight: keyInColumn ? CLUE_KEY_COLUMN_WIDTH : undefined,
+        }}
       >
+        {keyInColumn && clueKey}
         <div className="tw:flex tw:max-w-full">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
             clue rail starts there. A click on a name lists the player's actions. */}
@@ -1848,17 +1875,7 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {canClueSeat && !chosen && (
-        <ClueKey
-          below={props.stacked}
-          name={seat.name}
-          onOpen={() => {
-            props.onChooseClueTarget(seat.playerIndex);
-          }}
-          reducedMotion={props.reducedMotion}
-          top={getHandBoxTopPadding(props.cardWidth)}
-        />
-      )}
+      {!keyInColumn && clueKey}
       {chosen && props.clueMenu}
     </div>
   );

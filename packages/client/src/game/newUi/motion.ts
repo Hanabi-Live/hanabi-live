@@ -83,6 +83,7 @@ const COPY_HIDDEN_ATTRIBUTES = [
   "id",
   "data-card-order",
   "data-card-place",
+  "data-clue-key",
   "data-out-of-max",
 ] as const;
 
