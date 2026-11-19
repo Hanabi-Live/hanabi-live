@@ -28,6 +28,12 @@ const PASSWORD_DESCRIPTION = {
 } as const;
 
 type Player = Game["players"][number];
+
+/**
+ * The icons that start the rows of the header. They are as wide as the spectators icon, so that the
+ * text after each icon lines up.
+ */
+const HEADER_ICON_CLASS = "tw:mr-[0.4em] tw:w-[1.115em]";
 type BestScores = Readonly<Player["stats"]["variant"]["bestScores"]>;
 
 export function Pregame(): React.JSX.Element | undefined {
@@ -89,7 +95,7 @@ export function Pregame(): React.JSX.Element | undefined {
         <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-game-muted">
           <span id="lobby-pregame-variant">
             <i
-              className="fas fa-palette tw:mr-[0.4em]"
+              className={`fas fa-palette tw:text-center ${HEADER_ICON_CLASS}`}
               ref={tooltipRef("Variant")}
             />
             {variant.name}
@@ -112,40 +118,34 @@ export function Pregame(): React.JSX.Element | undefined {
           The row keeps its height with no spectators, so that the seats do not
           move when one joins.
         */}
-        <div className="tw:mt-1 tw:min-h-[1lh] tw:text-game-muted">
+        <div className="tw:mt-2 tw:flex tw:min-h-[1.75em] tw:items-center tw:text-game-muted">
           {spectators.length > 0 && (
-            <span
-              className={`tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-2 ${FADE_IN_CLASS}`}
-              style={fadeStyle}
-            >
-              <span ref={tooltipRef("Spectators")}>
-                <SpectatorsIcon />
+            <>
+              <span
+                className={`tw:inline-flex tw:self-stretch tw:items-center ${FADE_IN_CLASS}`}
+                ref={tooltipRef("Spectators")}
+                style={fadeStyle}
+              >
+                <SpectatorsIcon className={HEADER_ICON_CLASS} />
               </span>
               <ul
-                className="tw:m-0 tw:contents tw:list-none tw:p-0"
+                className="tw:m-0 tw:flex tw:list-none tw:flex-wrap tw:gap-1.5 tw:p-0"
                 id="lobby-pregame-spectators"
               >
                 {spectators.map((spectator) => (
-                  <li
-                    className={FADE_IN_CLASS}
+                  <SpectatorChip
+                    fadeStyle={fadeStyle}
                     key={spectator.username}
-                    style={fadeStyle}
-                  >
-                    <Name name={spectator.username} />
-                    {spectator.shadowingPlayerIndex !== undefined && (
-                      <>
-                        {" "}
-                        (<SpectatorsIcon />{" "}
-                        <em>
-                          {table?.playerNames[spectator.shadowingPlayerIndex]}
-                        </em>
-                        )
-                      </>
-                    )}
-                  </li>
+                    name={spectator.username}
+                    shadowedName={
+                      spectator.shadowingPlayerIndex === undefined
+                        ? undefined
+                        : table?.playerNames[spectator.shadowingPlayerIndex]
+                    }
+                  />
                 ))}
               </ul>
-            </span>
+            </>
           )}
         </div>
       </header>
@@ -271,6 +271,44 @@ function SeatNumber({ seat }: { readonly seat: number }) {
     >
       {seat}
     </span>
+  );
+}
+
+/**
+ * A spectator, as a chip on the rail of the table. A spectator who views the game as a player
+ * carries that player's name in a smaller chip.
+ */
+function SpectatorChip({
+  fadeStyle,
+  name,
+  shadowedName,
+}: {
+  readonly fadeStyle: React.CSSProperties;
+  readonly name: string;
+  readonly shadowedName: string | undefined;
+}) {
+  return (
+    <li
+      className={[
+        "tw:inline-flex tw:items-center tw:gap-[0.4em] tw:rounded-full tw:border tw:border-solid tw:border-game-line/40 tw:bg-game-well",
+        "tw:py-[0.15em] tw:leading-[1.3]",
+        shadowedName === undefined
+          ? "tw:px-[0.7em]"
+          : "tw:pr-[0.2em] tw:pl-[0.7em]",
+        FADE_IN_CLASS,
+      ].join(" ")}
+      style={fadeStyle}
+    >
+      <Name name={name} />
+      {shadowedName !== undefined && (
+        <span
+          className="tw:rounded-full tw:border tw:border-solid tw:border-game-line/60 tw:px-[0.6em] tw:text-[0.8em]"
+          ref={tooltipRef(`${name} views the game as ${shadowedName}.`)}
+        >
+          {shadowedName}
+        </span>
+      )}
+    </li>
   );
 }
 

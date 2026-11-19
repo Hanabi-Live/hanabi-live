@@ -131,12 +131,11 @@ describe("Pregame", () => {
     expect(screen.getAllByText("Open seat")).toHaveLength(3);
 
     const spectators = document.querySelector("#lobby-pregame-spectators")!;
-    // The eyes icon before Bob's name says that we view the game as Bob.
+    // Bob's name in our chip says that we view the game as Bob.
     const us = [...spectators.querySelectorAll("li")].find((item) =>
       item.textContent.includes("me"),
     )!;
-    expect(us.textContent).toContain("me ( bob)");
-    expect(us.querySelector("svg")).not.toBeNull();
+    expect(us.lastElementChild!.textContent).toBe("bob");
     expect(screen.getByText("dave").className).toBe("tw:text-friend");
   });
 
