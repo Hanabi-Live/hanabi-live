@@ -83,7 +83,7 @@ function acknowledgeChatRead(
 
     if (state.playing || state.finished) {
       // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
-      // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
+      // "Chat (1)" (or "Chat (2)", if they have multiple unread messages).
       store.dispatch(
         gameChatUnreadChanged(store.getState().gameChat.unread + 1),
       );

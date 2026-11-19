@@ -37,14 +37,14 @@ export interface CardState {
   readonly revealedToPlayer: readonly boolean[];
 
   /**
-   * We need this to highlight pips (e.g. in pink variants).
+   * We need this to highlight pips (such as in pink variants).
    *
    * The elements of this array will always be unique.
    */
   readonly positiveColorClues: Color[];
 
   /**
-   * We need this to highlight pips (e.g. in pink variants).
+   * We need this to highlight pips (such as in pink variants).
    *
    * The elements of this array will always be unique.
    */

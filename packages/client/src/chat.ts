@@ -188,7 +188,7 @@ function input(element: HTMLInputElement, room: ChatRoom) {
 
   // Check for emoji substitution.
   // eslint-disable-next-line complete/require-ascii
-  // e.g. :100: --> 💯
+  // For example, :100: --> 💯
   const newText = substituteEmoji(text);
   if (newText !== undefined) {
     element.value = newText;

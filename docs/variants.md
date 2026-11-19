@@ -8,7 +8,7 @@ to further customize a game by using a number of
 
 ## A Quick Overview of Special Suits
 
-Normal amount of cards per suit (e.g. 10 in total):
+Normal amount of cards per suit (10 in total):
 
 |                    | No color clues | Own color clue | All color clues |
 | ------------------ | -------------- | -------------- | --------------- |
@@ -16,7 +16,7 @@ Normal amount of cards per suit (e.g. 10 in total):
 | **Own rank clue**  | White          | No Variant     | Rainbow         |
 | **All rank clues** | Light Pink     | Pink           | Omni            |
 
-One of each card per suit (e.g. 5 in total):
+One of each card per suit (5 in total):
 
 |                    | No color clues | Own color clue | All color clues |
 | ------------------ | -------------- | -------------- | --------------- |
@@ -126,16 +126,16 @@ The pips that are assigned to each suit is documented on the
 - There is only one of each dark card in the deck, which means that every dark
   card is "critical".
 
-### Special Suit Combinations (e.g. Black & Rainbow)
+### Special Suit Combinations (such as Black & Rainbow)
 
 - Two suits are replaced with special suits.
 
-### Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
+### Suit-Ones (such as Rainbow-Ones, Pink-Ones, and White-Ones)
 
 - Ones have the property of the suit prefix. For example, rainbow-ones are
   "touched" by all colors.
 
-### Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
+### Suit-Fives (such as Rainbow-Fives, Pink-Fives, and White-Fives)
 
 - Fives have the property of the suit prefix. For example, rainbow-fives are
   "touched" by all colors.
@@ -158,7 +158,7 @@ The pips that are assigned to each suit is documented on the
   - The fourth suit is touched by a rank 4 clue
   - The fifth suit is touched by a rank 1 clue (wrapping around)
 
-### Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
+### Suit-Ones or Suit-Fives with Another Special Suit (such as Rainbow-Ones & Pink)
 
 - Suit-Ones or Suit-Fives of a special suit inherit the special suit's
   properties.
@@ -442,7 +442,7 @@ The pips that are assigned to each suit is documented on the
 ### Reversed
 
 - One of the suits is replaced with a reversed suit.
-- The reversed suit must be played in the opposite order (e.g. 5, 4, 3, 2, 1).
+- The reversed suit must be played in the opposite order (5, 4, 3, 2, 1).
 - Two 1's are removed from the reversed suit.
 - Two 5's are added to the reversed suit.
 
@@ -516,12 +516,13 @@ The pips that are assigned to each suit is documented on the
 - Prism
 - Orange
 - Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
-- Special Suit Combinations (e.g. Black & Rainbow)
-- Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
-- Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
+- Special Suit Combinations (such as Black & Rainbow)
+- Suit-Ones (such as Rainbow-Ones, Pink-Ones, and White-Ones)
+- Suit-Fives (such as Rainbow-Fives, Pink-Fives, and White-Fives)
 - Deceptive-Ones
 - Deceptive-Fives
-- Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
+- Suit-Ones or Suit-Fives with Another Special Suit (such as Rainbow-Ones &
+  Pink)
 - Ambiguous
 - Very Ambiguous
 - Extremely Ambiguous

@@ -11,13 +11,13 @@ export const SUIT_GROUP_NAMES = ["suit1", "suit2", "suit3"] as const;
 export const RANK_GROUP_NAMES = ["rank1", "rank2", "rank3"] as const;
 
 /**
- * The name of the group in an identity note pattern that captures squished letters (e.g. `r1b`).
+ * The name of the group in an identity note pattern that captures squished letters (such as `r1b`).
  */
 export const SQUISH_GROUP_NAME = "squish";
 
 /**
- * This function generates a regular expression that is used to detect "identity notes" (i.e., notes
- * about the possible identities of a card, such as `this is a [red 1]`).
+ * This function generates a regular expression that is used to detect "identity notes" (notes about
+ * the possible identities of a card, such as `this is a [red 1]`).
  */
 export function getIdentityNotePatternForVariant(
   suits: readonly Suit[],

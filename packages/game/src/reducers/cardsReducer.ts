@@ -379,7 +379,8 @@ function revealCard(
   card: CardState,
 ): boolean {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
-  // (e.g. we are playing a special variant where cards are not revealed when they are played)
+  // (for example, we are playing a special variant where cards are not revealed when they are
+  // played).
   if (suitIndex === undefined || rank === undefined) {
     return false;
   }

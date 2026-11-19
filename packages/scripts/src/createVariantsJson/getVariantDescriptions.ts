@@ -175,7 +175,7 @@ function getBasicVariants(
   ];
 }
 
-/** Create variants for e.g. "Rainbow (6 Suits)", "Rainbow (5 Suits)", and so on. */
+/** Create variants such as "Rainbow (6 Suits)", "Rainbow (5 Suits)", and so on. */
 function getVariantsForEachSuit(
   suitsToCreateVariantsFor: readonly SuitJson[],
   basicVariantSuits: BasicVariantSuits,
@@ -198,7 +198,7 @@ function getVariantsForEachSuit(
   return variantDescriptions;
 }
 
-/** Create variants for e.g. "Rainbow & White (6 Suits)", "Rainbow & White (5 Suits)", and so on. */
+/** Create variants such as "Rainbow & White (6 Suits)", "Rainbow & White (5 Suits)", and so on. */
 function getVariantsForEachSpecialSuitCombination(
   suitsToCreateVariantsFor: readonly SuitJson[],
   basicVariantSuits: BasicVariantSuits,
@@ -212,8 +212,8 @@ function getVariantsForEachSpecialSuitCombination(
         continue;
       }
 
-      // Disallow combining suits that are too similar to each other
-      // (e.g. Rainbow and Dark Rainbow)
+      // Disallow combining suits that are too similar to each other (such as Rainbow and Dark
+      // Rainbow).
       if (
         suit.allClueColors === suit2.allClueColors
         && suit.allClueRanks === suit2.allClueRanks
@@ -261,7 +261,7 @@ function getVariantsForEachSpecialSuitCombination(
   return variantDescriptions;
 }
 
-/** Create variants for e.g. "Rainbow-Ones (6 Suits)", "Rainbow-Ones (5 Suits)", and so on. */
+/** Create variants such as "Rainbow-Ones (6 Suits)", "Rainbow-Ones (5 Suits)", and so on. */
 function getVariantsForSpecialRanks(
   suitsToCreateVariantsFor: readonly SuitJson[],
   basicVariantSuits: BasicVariantSuits,
@@ -273,8 +273,8 @@ function getVariantsForSpecialRanks(
     const specialClueRanks = getSpecialClueRanks(specialRank);
 
     for (const suit of suitsToCreateVariantsFor) {
-      // There are no one-of-each special ranks (e.g. Black-Ones), prism special ranks (e.g.
-      // Prism-Ones), or inverted special ranks... Yet. (e.g. Inverted-Ones)
+      // There are no one-of-each special ranks (such as Black-Ones), prism special ranks (such as
+      // Prism-Ones), or inverted special ranks (such as Inverted-Ones) yet.
       if (
         suit.oneOfEach === true
         || suit.prism === true
@@ -299,7 +299,7 @@ function getVariantsForSpecialRanks(
         variantDescriptions.push(variantDescription);
       }
 
-      // Second, create the special suit combinations, e.g. "Rainbow-Ones & Rainbow (6 Suits)"
+      // Second, create the special suit combinations, such as "Rainbow-Ones & Rainbow (6 Suits)".
       for (const suit2 of suitsToCreateVariantsFor) {
         for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
           const hyphenatedSuitName = suit.name.replace(" ", "-");
@@ -337,7 +337,7 @@ function getVariantsForSpecialRanks(
       variantDescriptions.push(variantDescription);
     }
 
-    // Second, create the special suit combinations, e.g. "Deceptive-Ones & Rainbow (6 Suits)"
+    // Second, create the special suit combinations, such as "Deceptive-Ones & Rainbow (6 Suits)".
     for (const suit of suitsToCreateVariantsFor) {
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
         const variantName = `${variantNamePrefix} & ${suit.name} (${numSuits} Suits)`;
@@ -387,8 +387,8 @@ function getVariantDescriptionForSpecialRankVariant(
     variantDescription[specialPropertyName] = true;
   }
 
-  // Exclude certain types of rank clues, if applicable
-  // (e.g. you can't clue number 1 in a Pink-Ones variant)
+  // Exclude certain types of rank clues, if applicable (for example, you can't clue number 1 in a
+  // Pink-Ones variant).
   if (suit.allClueRanks === true || suit.noClueRanks === true) {
     variantDescription.clueRanks = specialClueRanks;
   }
@@ -611,7 +611,7 @@ function getMatryoshkaVariants(
     });
   }
 
-  // Second, create the special suit combinations, e.g. "Matryoshka & Rainbow (6 Suits)"
+  // Second, create the special suit combinations, such as "Matryoshka & Rainbow (6 Suits)".
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
       const variantName = `Matryoshka & ${suit.name} (${numSuits} Suits)`;

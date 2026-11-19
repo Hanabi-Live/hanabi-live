@@ -66,7 +66,7 @@ export function setBrowserAddressBarPath(
   hash?: string,
   historyMode: "push" | "replace" = "replace",
 ): void {
-  // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
+  // Combine the path (such as "/") with the query string parameters (such as "?dev").
   const queryParameters = new URLSearchParams(globalThis.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
@@ -79,7 +79,7 @@ export function setBrowserAddressBarPath(
     path += `?${modifiedQueryParameters}`;
   }
   if (hash !== undefined) {
-    // e.g. "#123", which is used to show the current turn
+    // A hash such as "#123" shows the current turn.
     path += hash;
   }
   if (

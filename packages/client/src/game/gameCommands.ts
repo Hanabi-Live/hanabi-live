@@ -1,6 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things. The
-// client also sends these messages to itself in order to emulate actions coming from the server for
-// e.g. in-game replays.
+// client also sends these messages to itself in order to emulate actions coming from the server,
+// such as for in-game replays.
 
 import type { ReplyData, ServerEventData, TableId } from "@hanabi-live/data";
 import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
@@ -318,9 +318,9 @@ gameCommands.set("gameState", (data) => {
   const { phase } = data;
   const shared = phase.type === "replay" ? phase.sharedReplay : undefined;
 
-  // Users can load a specific turn in a replay by using a URL hash (e.g. "/replay/123#5"). Record
-  // the hash before the game state changes, since the screen then overwrites it with the turn that
-  // it shows.
+  // Users can load a specific turn in a replay by using a URL hash (such as "/replay/123#5").
+  // Record the hash before the game state changes, since the screen then overwrites it with the
+  // turn that it shows.
   const specificTurnString =
     globalThis.location.hash === ""
       ? undefined
@@ -371,7 +371,7 @@ gameCommands.set("gameState", (data) => {
     }
   }
 
-  // We might need to go to a specific turn if we loaded a URL of e.g.:
+  // We might need to go to a specific turn if we loaded a URL such as:
   // http://localhost/replay/123#5
   if (specificTurnString !== undefined) {
     replay.goTo(specificTurnString);

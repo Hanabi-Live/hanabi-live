@@ -48,7 +48,7 @@ export function sudokuIsCardNeededForMaxScore(
 /**
  * For Sudoku variants, given a boolean map for which ranks [1, 2, 3, 4, 5] are all discarded,
  * returns an array for these ranks of the longest play sequences starting at these maps (indexed 0
- * through 4), and a boolean stating whether all ranks are still available, i.e. whether the
+ * through 4), and a boolean stating whether all ranks are still available, that is, whether the
  * returned array is [5, 5, 5, 5, 5].
  */
 export function sudokuWalkUpAll(
@@ -211,8 +211,8 @@ function evaluateAssignment(
 }
 
 /**
- * Whether the assignment is better than the previously known best, i.e. has a higher maximum score
- * or has the same score, but is lexicographically smaller.
+ * Whether the assignment is better than the previously known best: it has a higher maximum score or
+ * has the same score, but is lexicographically smaller.
  *
  * @param assignmentValue Value of new assignment.
  * @param assignmentSorted New assignment, sorted in ascending order.

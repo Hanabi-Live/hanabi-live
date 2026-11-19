@@ -25,8 +25,8 @@ const LOADING_LABEL = {
 // When the HanabiUi object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(onDrawn: () => void): void {
-  // Once the initial page (e.g. the login screen / lobby) is finished loading and ready, all of the
-  // images relating to the game screen start to get pre-loaded by the "Loader" class.
+  // Once the initial page (such as the login screen or the lobby) is finished loading and ready,
+  // all of the images relating to the game screen start to get pre-loaded by the "Loader" class.
   const { imageLoader } = lobbyGlobals;
 
   if (imageLoader.failed) {

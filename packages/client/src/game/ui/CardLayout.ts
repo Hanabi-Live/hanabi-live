@@ -36,9 +36,9 @@ export class CardLayout extends Konva.Group {
     assertDefined(config.height, "A height was not defined for a CardLayout.");
   }
 
-  // The card has a relative position relating to its location
-  // (e.g. a player's hand, the play stacks). Use the absolute position so that we can tween it from
-  // one location to another without having to worry about the relative position.
+  // The card has a relative position relating to its location (such as a player's hand or the play
+  // stacks). Use the absolute position so that we can tween it from one location to another without
+  // having to worry about the relative position.
   addChild(child: LayoutChild): void {
     const pos = child.getAbsolutePosition();
     this.add(child);

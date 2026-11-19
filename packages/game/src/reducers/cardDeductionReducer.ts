@@ -418,9 +418,9 @@ function getCardPossibilitiesForPlayer(
     return card.possibleCards;
   }
 
-  // A card that left this player's own hand without being revealed to them (e.g. into the hole) was
-  // seen by everyone else. Their last empathy for it is exactly what they knew. (Replays know the
-  // true identity, so "possibleCards" would leak it to the player we are viewing as.)
+  // A card that left this player's own hand without being revealed to them (such as into the hole)
+  // was seen by everyone else. Their last empathy for it is exactly what they knew. (Replays know
+  // the true identity, so "possibleCards" would leak it to the player we are viewing as.)
   if (
     typeof card.location !== "number"
     && card.revealedToPlayer.every(

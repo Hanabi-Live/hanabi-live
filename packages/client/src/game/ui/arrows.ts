@@ -184,7 +184,7 @@ export function set(
   }
   arrow.rotation(rot);
 
-  // We want the text to always be right-side up (e.g. have a rotation of 0)
+  // We want the text to always be right-side up (with a rotation of 0).
   arrow.text.rotation(FULL_TURN_DEGREES - rot);
 
   // Set the arrow features.

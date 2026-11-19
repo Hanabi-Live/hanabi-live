@@ -203,8 +203,8 @@ function identityMapToArray(
 }
 
 /**
- * Examines a single square bracket-enclosed part of a note (i.e. keyword) and returns the set of
- * card possibilities that it declares.
+ * Examines a single square bracket-enclosed part of a note (a keyword) and returns the set of card
+ * possibilities that it declares.
  *
  * Examples:
  * - `red` --> `[[0,1], [0,2], [0,3], [0,4], [0,5]]`
@@ -264,7 +264,7 @@ function getPossibilitiesFromKeyword(
 
 function getCardIdentitiesFromKeyword(variant: Variant, keyword: string) {
   const positiveCardIdentities: CardIdentities[] = []; // Any combination of suits and ranks
-  const negativeCardIdentities: CardIdentities[] = []; // Any negative cluing, e.g. `!r1` `!3`
+  const negativeCardIdentities: CardIdentities[] = []; // Any negative cluing, such as `!r1` or `!3`
 
   for (const keywordSegmentRaw of keyword.split(",")) {
     const keywordSegment = keywordSegmentRaw.trim();

@@ -102,13 +102,13 @@ export function createVariant(
   // If "clueStarved" is not specified, assume false.
   const clueStarved = variantDescription.clueStarved ?? false;
 
-  // If "colorCluesTouchNothing" is not specified, assume false (e.g. cluing colors in this variant
-  // works normally).
+  // If "colorCluesTouchNothing" is not specified, assume false (that is, cluing colors in this
+  // variant works normally).
   const colorCluesTouchNothing =
     variantDescription.colorCluesTouchNothing ?? false;
 
-  // If "rankCluesTouchNothing" is not specified, assume false (e.g. cluing ranks in this variant
-  // works normally).
+  // If "rankCluesTouchNothing" is not specified, assume false (that is, cluing ranks in this
+  // variant works normally).
   const rankCluesTouchNothing =
     variantDescription.rankCluesTouchNothing ?? false;
 
@@ -121,7 +121,7 @@ export function createVariant(
   // If "duck" is not specified, assume false.
   const duck = variantDescription.duck ?? false;
 
-  // If "oddsAndEvens" is not specified, assume false (e.g. cluing ranks in this variant works
+  // If "oddsAndEvens" is not specified, assume false (that is, cluing ranks in this variant works
   // normally).
   const oddsAndEvens = variantDescription.oddsAndEvens ?? false;
 
@@ -134,14 +134,16 @@ export function createVariant(
   // If "throwItInAHole" is not specified, assume false.
   const throwItInAHole = variantDescription.throwItInAHole ?? false;
 
-  // If "funnels" is not specified, assume false (e.g. cluing ranks in this variant works normally).
+  // If "funnels" is not specified, assume false (that is, cluing ranks in this variant works
+  // normally).
   const funnels = variantDescription.funnels ?? false;
 
-  // If "chimneys" is not specified, assume false (e.g. cluing ranks in this variant works
+  // If "chimneys" is not specified, assume false (that is, cluing ranks in this variant works
   // normally).
   const chimneys = variantDescription.chimneys ?? false;
 
-  // If "sudoku" is not specified, assume false (e.g. cluing ranks in this variant works normally).
+  // If "sudoku" is not specified, assume false (that is, cluing ranks in this variant works
+  // normally).
   const sudoku = variantDescription.sudoku ?? false;
 
   // --------------------------------------
@@ -181,8 +183,8 @@ export function createVariant(
   // Special rank properties (from `VariantJson`)
   // --------------------------------------------
 
-  // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
-  // `undefined` (e.g. there are no special ranks).
+  // Validate the "specialRank" property (such as for "Rainbow-Ones"). If it is not specified,
+  // assume `undefined` (that is, there are no special ranks).
   if (
     variantDescription.specialRank !== undefined
     && !ranks.includes(variantDescription.specialRank)
@@ -193,32 +195,32 @@ export function createVariant(
   }
   const { specialRank } = variantDescription;
 
-  // If "specialRankAllClueColors" is not specified, assume false (e.g. cluing ranks in this variant
-  // works normally).
+  // If "specialRankAllClueColors" is not specified, assume false (that is, cluing ranks in this
+  // variant works normally).
   const specialRankAllClueColors =
     variantDescription.specialRankAllClueColors ?? false;
 
-  // If "specialRankAllClueRanks" is not specified, assume false (e.g. cluing ranks in this variant
-  // works normally).
+  // If "specialRankAllClueRanks" is not specified, assume false (that is, cluing ranks in this
+  // variant works normally).
   const specialRankAllClueRanks =
     variantDescription.specialRankAllClueRanks ?? false;
 
-  // If "specialRankNoClueColors" is not specified, assume false (e.g. cluing ranks in this variant
-  // works normally).
+  // If "specialRankNoClueColors" is not specified, assume false (that is, cluing ranks in this
+  // variant works normally).
   const specialRankNoClueColors =
     variantDescription.specialRankNoClueColors ?? false;
 
-  // If "specialRankNoClueRanks" is not specified, assume false (e.g. cluing ranks in this variant
-  // works normally).
+  // If "specialRankNoClueRanks" is not specified, assume false (that is, cluing ranks in this
+  // variant works normally).
   const specialRankNoClueRanks =
     variantDescription.specialRankNoClueRanks ?? false;
 
-  // If "specialRankDeceptive" is not specified, assume false (e.g. cluing ranks in this variant
+  // If "specialRankDeceptive" is not specified, assume false (that is, cluing ranks in this variant
   // works normally).
   const specialRankDeceptive = variantDescription.specialRankDeceptive ?? false;
 
-  // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
-  // are no critical ranks).
+  // Validate the "criticalRank" property. If it is not specified, assume `undefined` (that is,
+  // there are no critical ranks).
   if (
     variantDescription.criticalRank !== undefined
     && !ranks.includes(variantDescription.criticalRank)
@@ -229,7 +231,7 @@ export function createVariant(
   }
   const { criticalRank } = variantDescription;
 
-  // If "scarceOnes" is not specified, assume false (e.g. there is the usual number of ones per
+  // If "scarceOnes" is not specified, assume false (that is, there is the usual number of ones per
   // suit).
   const scarceOnes = variantDescription.scarceOnes ?? false;
 
@@ -240,8 +242,8 @@ export function createVariant(
   const maxScore = suits.length * stackSize;
 
   // Variants with dual-color suits need to adjust the positions of elements in the corner of the
-  // card (e.g. the note indicator) because it will overlap with the triangle that shows the color
-  // composition of the suit.
+  // card (such as the note indicator) because it will overlap with the triangle that shows the
+  // color composition of the suit.
   const offsetCornerElements = suits.some(
     (suit: Suit) => suit.clueColors.length > 1,
   );

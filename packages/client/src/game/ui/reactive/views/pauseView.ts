@@ -17,7 +17,7 @@ export function onChanged(pause: PauseState): void {
 
   globals.elements.pauseArea?.visible(paused);
 
-  // The timer elements may not be initialized under certain conditions (e.g. an untimed game)
+  // The timer elements may not be initialized under certain conditions (such as an untimed game).
   globals.elements.timer1?.visible(!paused && globals.state.playing);
   globals.elements.timer2?.visible(!paused && !isOurTurn());
   globals.elements.timer1Circle?.visible(pause.queued);

@@ -539,8 +539,8 @@ of the repository.
 
 ## December 8th, 2022
 
-- Spectators' own notes now change how cards look for them (e.g. chop move and
-  finesse borders), as players' notes do.
+- Spectators' own notes now change how cards look for them (such as chop move
+  and finesse borders), as players' notes do.
 
 ## December 1st, 2022
 
@@ -604,8 +604,8 @@ of the repository.
 
 ## January 26th, 2022
 
-- Discord spoilers (e.g., `||text||`) are hidden in the lobby chat until hovered
-  over.
+- Discord spoilers (such as `||text||`) are hidden in the lobby chat until
+  hovered over.
 
 ## January 19th, 2022
 

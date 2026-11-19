@@ -27,7 +27,7 @@ import * as timer from "./ui/timer.ts";
 import { resetGlobals, globals as uiGlobals } from "./ui/UiGlobals.ts";
 import { uiInit } from "./ui/uiInit.ts";
 
-/** The history screen's address (e.g. "#history"), if a replay was opened from one. */
+/** The history screen's address (such as "#history"), if a replay was opened from one. */
 let historyHash = "";
 
 /** The screen that a game or replay returns to: the lobby, or the history screen it came from. */

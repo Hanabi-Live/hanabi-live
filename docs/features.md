@@ -69,7 +69,7 @@ before asking any questions in the chat.
 - Arrows indicate the cards that are touched by a clue.
   - A circle on the arrow shows the type of clue that was given.
   - Arrows with a white fill indicate that they are touching a "brand new" card
-    (e.g. a card that has not been touched by any positive clues yet).
+    (that is, a card that has not been touched by any positive clues yet).
   - Arrows with a gray fill indicate that they are re-touching a card that has
     been previously touched by one or more positive clues.
 - An orange border around a card signifies that it has been "touched" by one or
@@ -447,9 +447,8 @@ additional UI elements are enabled:
   without right-click.) Afterward, by hovering over a card, a tooltip will
   appear with the written note.
 - Press Delete while hovering over a card to delete its note.
-- This is useful for storing contextual information about a card for later.
-  (e.g. "they should know that this card is exactly red 2 from the clue on turn
-  3")
+- This is useful for storing contextual information about a card for later, such
+  as "they should know that this card is exactly red 2 from the clue on turn 3".
 - Notes can also be written during an in-game replay as a way to track a card as
   it moves throughout your hand.
 - Since notes are tracked by the server, players can switch computers mid-game
@@ -463,12 +462,12 @@ additional UI elements are enabled:
 
 ### Card Identity Notes
 
-- If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card
+- If the note matches the name of a card (such as "red 1" or "r1"), the card
   face will change to match.
   - The new card face will automatically be deactivated if a clue is received
     that falsifies the note.
 - If this behavior is undesired, append a question mark to the end of your note.
-  (e.g. "r1?")
+  (for example, "r1?")
 
 | Suit Name       | Abbreviation                                   |
 | --------------- | ---------------------------------------------- |
@@ -540,13 +539,14 @@ additional UI elements are enabled:
 ### Adding Context to Special Notes
 
 - If you want to keep the behavior of a special note but write additional text
-  on the note, place the special note in square brackets. (e.g. "[r2] known from
-  turn 3")
+  on the note, place the special note in square brackets. (for example, "[r2]
+  known from turn 3")
 - This feature can also be used to stack multiple effects on top of each other.
-  (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_
-  border)
+  (for example, "[r1] [f]" will mark a card as both a red 1 and having the
+  _Finesse_ border)
 - A "?" or "!" at the end of a special note adds its effect without brackets.
-  (e.g. "kt?" is the same as "[kt][?]", and "r3!" is the same as "[r3][!]")
+  (for example, "kt?" is the same as "[kt][?]", and "r3!" is the same as
+  "[r3][!]")
 
 ### Note Shortcuts
 
@@ -745,8 +745,8 @@ use these numbers to make the best move for the current situation.
     generated deal for this player number and variant combination.
 - You can force the server to give you a specific deal by entering a seed in the
   "Custom Seed" field under "Extra Options" when creating a game. This is useful
-  for competitive play (e.g. if two groups of players want to compete against
-  each other). The seed can contain letters, numbers, and hyphens.
+  for competitive play (for example, if two groups of players want to compete
+  against each other). The seed can contain letters, numbers, and hyphens.
   - For example, say that a group wanted to play a deal that another group had
     already played. So, they went into the replay for the existing game, and
     moused over the deck, and saw that the seed was `p3v0s123`. Thus, they knew
@@ -795,15 +795,15 @@ use these numbers to make the best move for the current situation.
 
 - When there are a lot of users online and a lot of games going on, it can be
   cumbersome to find the people you care about. The website supports adding
-  specific people to your friends list with the `/friend` command. (e.g.
-  `/friend Alice` to add Alice)
+  specific people to your friends list with the `/friend` command. (For example,
+  `/friend Alice` adds Alice.)
 - Your friends will be listed alphabetically at the top of the user list.
 - Games that contain one or more of your friends will be sorted at the top of
   the games list.
 
 ## Linked Accounts
 
-- If you play on multiple accounts, then you might see the same deals (e.g.
+- If you play on multiple accounts, then you might see the same deals (that is,
   seeds), since deals are only unique per user. If this is not desired, the
   website supports linking accounts by using the `/link` command. For example,
   if Alice had an alternate account of Alice1, then she would type
@@ -890,8 +890,9 @@ The profile and scores pages redirect to their JSON routes when you add `?api`
 to their URLs.
 
 Notes: The paginated lists take the following query parameters, added with a `?`
-at the end of the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). A
-request with any other parameter, or with a parameter repeated, is rejected.
+at the end of the URL (for example,
+`/api/v1/history/Alice?limit=50&offset=100`). A request with any other
+parameter, or with a parameter repeated, is rejected.
 
 | Parameter | Type    | Explanation                     | Values          |
 | --------- | ------- | ------------------------------- | --------------- |

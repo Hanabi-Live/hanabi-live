@@ -149,8 +149,8 @@ export function enterHypoButtonLocationChanged(data: {
 
 // In shared replays, it can be confusing as to what the shared replay leader is doing, so play an
 // appropriate animations to indicate what is going on (and cancel the other tween if it is going).
-// Do not play it though if we are resuming shared segments
-// (e.g. going back to where the shared replay leader is).
+// Do not play it though if we are resuming shared segments (such as going back to where the shared
+// replay leader is).
 function playSharedReplayTween(
   sharedSegment: number,
   previousSharedSegment: number,

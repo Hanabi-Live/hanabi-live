@@ -60,7 +60,7 @@ export function askForEfficiency(): void {
       type: "number",
       title: "Set Modifier",
       description:
-        'Enter a modifier for the "cards currently gotten". (e.g. "1", "-2", etc.)',
+        'Enter a modifier for the "cards currently gotten", such as "1" or "-2".',
       current: {
         label: "Current modifier:",
         value: currentModifier.toString(),

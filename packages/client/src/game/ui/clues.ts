@@ -208,7 +208,7 @@ function shouldGiveClue() {
     ourTurn
     // We can only give a clue if there is a clue token available.
     && clueTokenAvailable
-    // We might be trying to give an invalid clue (e.g. an Empty Clue)
+    // We might be trying to give an invalid clue (such as an Empty Clue).
     && globals.elements.giveClueButton!.enabled
     // Prevent the user from accidentally giving a clue.
     && !recentlyClicked

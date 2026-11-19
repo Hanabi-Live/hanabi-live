@@ -242,7 +242,7 @@ function MorphPrompt({
         </table>
         <div className="row tw:my-4">
           <div className="col-6 tw:relative tw:top-[1.5em]">
-            or type in the card (e.g. red 1, b3, blank)
+            or type in the card (such as red 1, b3, or blank)
           </div>
           <div className="row tw:my-4">
             <input

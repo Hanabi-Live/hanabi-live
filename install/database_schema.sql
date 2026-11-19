@@ -168,7 +168,7 @@ CREATE TABLE games (
     all_or_nothing          BOOLEAN      NOT NULL,
     detrimental_characters  BOOLEAN      NOT NULL,
 
-    /* e.g. "p2v0s1" */
+    /* For example, "p2v0s1". */
     seed                    TEXT         NOT NULL,
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,

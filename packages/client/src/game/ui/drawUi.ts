@@ -2054,7 +2054,7 @@ function drawStatistics() {
       number of clues given or lost
     </em>
     The first number is the minimum amount of efficiency needed from<br />
-    this turn onward in order to win (i.e. future required efficiency).<br />
+    this turn onward in order to win (the future required efficiency).<br />
     The second number shows the minimum possible efficiency needed<br />
     to win with the current number of players and the current variant.<br />
     (For more information, click on the "Help" button in the lobby.)

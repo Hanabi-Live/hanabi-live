@@ -133,8 +133,8 @@ export class HanabiUi {
   }
 
   /**
-   * Rebuilds the entire game UI from scratch, redrawing every element (e.g. so that canvas elements
-   * pick up new theme colors or the new stage size).
+   * Rebuilds the entire game UI from scratch, redrawing every element (for example, so that canvas
+   * elements pick up new theme colors or the new stage size).
    */
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private rebuildGameUi(): void {

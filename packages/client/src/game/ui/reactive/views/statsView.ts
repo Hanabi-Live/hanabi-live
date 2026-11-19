@@ -45,8 +45,8 @@ export function onEfficiencyChanged(data: {
   const minEffX = pipeX + effPipeLabelSize;
   effMinLabel.x(minEffX);
 
-  // Change the color of the efficiency label if there is a custom modification (e.g. to account for
-  // a card that is Finessed).
+  // Change the color of the efficiency label if there is a custom modification (such as to account
+  // for a card that is Finessed).
   effLabel.fill(stats.modified ? MODIFIED_EFFICIENCY_COLOR : LABEL_COLOR);
 
   setKonvaTooltipContent(

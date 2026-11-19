@@ -53,7 +53,7 @@ the IP address of every connection.
 
 Notably, there is no
 [personally identifiable information](https://en.wikipedia.org/wiki/Personal_data)
-in the database (e.g. email addresses), which makes the website a pretty
+in the database (such as email addresses), which makes the website a pretty
 low-priority target for an attacker looking to harvest all of the data.
 
 ## Cookies

@@ -283,7 +283,7 @@ function shouldShowEmpathy(
     !event.evt.shiftKey
     && !event.evt.altKey
     && !event.evt.metaKey
-    // Disable Empathy if the card is tweening (e.g. moving)
+    // Disable Empathy if the card is tweening (moving).
     && !card.tweening
     // Disable empathy for the stack bases.
     && !card.isStackBase

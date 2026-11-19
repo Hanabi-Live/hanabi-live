@@ -11,8 +11,8 @@ If you want to learn the basics of the game with a helpful video, then
 - Unlike other card games, you cannot see your own hand, but you can see the
   hands of the other players.
 - There is a deck of 50 cards comprised of 5 colors and numbers 1 through 5.
-- The goal is to play the cards for each color in order (e.g. 1 through 5), kind
-  of like [Solitaire](<https://en.wikipedia.org/wiki/Klondike_(solitaire)>).
+- The goal is to play the cards for each color in order (1 through 5), kind of
+  like [Solitaire](<https://en.wikipedia.org/wiki/Klondike_(solitaire)>).
 
 ## The Setup
 
@@ -86,7 +86,7 @@ If you want to learn the basics of the game with a helpful video, then
 ## The Deck
 
 - The deck consists of 50 cards.
-- There are 5 colors (e.g. suits). Each color has:
+- There are 5 colors (also called suits). Each color has:
   - Three 1s
   - Two 2s
   - Two 3s

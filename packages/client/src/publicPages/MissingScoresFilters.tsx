@@ -206,14 +206,14 @@ function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
               id="min-efficiency"
               label="Min efficiency"
               onChange={setMinEfficiency}
-              placeholder="e.g. 1.00"
+              placeholder="1.00"
               value={minEfficiency}
             />
             <EfficiencyInput
               id="max-efficiency"
               label="Max efficiency"
               onChange={setMaxEfficiency}
-              placeholder="e.g. 1.50"
+              placeholder="1.50"
               value={maxEfficiency}
             />
             <div className="col-12">

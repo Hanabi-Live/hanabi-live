@@ -236,8 +236,8 @@ function isOrderChopMove(
     return false;
   }
 
-  // Count open 1 stacks before the play. The played card might only be clued as a 1
-  // (e.g. a Dark Omni 3), so adding 1 to the post-play count leaks its actual rank.
+  // Count open 1 stacks before the play. The played card might only be clued as a 1 (such as a Dark
+  // Omni 3), so adding 1 to the post-play count leaks its actual rank.
   let numOnesLeftToPlay = 0;
   for (const [suitIndex, suit] of variant.suits.entries()) {
     if (suit.reversed) {
@@ -282,8 +282,8 @@ function isOrderChopMove(
   // Find the card that should have precedence to be played.
   candidateCards.push(playedCard);
 
-  // Playing Multiple 1's - The Fresh 1's Rule (Part 2). Find out if there are any "fresh" 1s (e.g.
-  // 1s that were not dealt to the starting hand).
+  // Playing Multiple 1's - The Fresh 1's Rule (Part 2). Find out if there are any "fresh" 1s (that
+  // is, 1s that were not dealt to the starting hand).
   const freshCards = candidateCards.filter((card) => !card.dealtToStartingHand);
   const [firstFreshCard, ...otherFreshCards] = freshCards;
   if (firstFreshCard !== undefined) {
@@ -320,8 +320,8 @@ function isOrderChopMove(
 
 function isCandidateOneForOcm(card: CardState): boolean {
   return (
-    // Order Chop Moves are only performed when a player plays a card that they think is a 1
-    // (e.g. a card having a positive rank 1 clue on it)
+    // Order Chop Moves are only performed when a player plays a card that they think is a 1 (such
+    // as a card with a positive rank 1 clue on it).
     card.positiveRankClues.includes(1)
     // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example.
     && card.positiveRankClues.length === 1

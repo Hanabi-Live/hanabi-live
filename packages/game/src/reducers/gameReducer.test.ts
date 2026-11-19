@@ -240,14 +240,14 @@ describe("gameReducer", () => {
 
       expect(state.clueTokens).toBe(MAX_CLUES);
       const efficiency1 = getEfficiencyFromGameState(state);
-      expect(efficiency1).toBe(4); // e.g. 4 / 1
+      expect(efficiency1).toBe(4); // 4 / 1
 
       // Player 0 plays the red 5.
       const playRed5Action = play(0, 2, 0, 5);
       state = gameReducer(state, playRed5Action, "seat", DEFAULT_METADATA);
 
       const efficiency2 = getEfficiencyFromGameState(state);
-      expect(efficiency2).toBe(2.5); // e.g. 5 / 2 (because we wasted a clue)
+      expect(efficiency2).toBe(2.5); // 5 / 2 (because we wasted a clue)
     });
 
     describe("Clue Starved", () => {
@@ -365,7 +365,7 @@ describe("gameReducer", () => {
 
         expect(state.clueTokens).toBe(MAX_CLUES * 2);
         const efficiency1 = getEfficiencyFromGameState(state);
-        expect(efficiency1).toBe(4); // e.g. 4 / 1
+        expect(efficiency1).toBe(4); // 4 / 1
 
         // Player 0 plays the red 5.
         const playRed5Action = play(0, 2, 0, 5);
@@ -378,7 +378,7 @@ describe("gameReducer", () => {
 
         const efficiency2 = getEfficiencyFromGameState(state);
         expect(efficiency2).toBeCloseTo(3.33);
-        // e.g. 5 / 1.5 (because we wasted half a clue)
+        // 5 / 1.5 (because we wasted half a clue).
       });
     });
   });

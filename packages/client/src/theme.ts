@@ -65,7 +65,7 @@ export function takeLegacyDarkMode(): boolean {
 interface CanvasColors {
   /** The turn numbers in the full action log. */
   readonly actionLogNumber: string;
-  /** The large current-player text (e.g. "It is Bob's turn"). */
+  /** The large current-player text (such as "It is Bob's turn"). */
   readonly currentPlayerText: string;
   /** The shared replay shuttle. */
   readonly replayShuttle: string;

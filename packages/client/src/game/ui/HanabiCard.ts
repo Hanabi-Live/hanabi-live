@@ -535,7 +535,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // ----------------------------------------------
 
   /**
-   * Adjusts the "bare" image of the card (e.g. the HTML5 canvas drawing from
+   * Adjusts the "bare" image of the card (that is, the HTML5 canvas drawing from
    * "globals.scaledCardImages"). Additionally, it toggles various card elements (pips, shadows,
    * fading, etc.).
    */
@@ -546,7 +546,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const rankToShow = this.getRankToShow(cardIdentity);
 
     // Cards that are morphed to be blank should not be draggable, unless the player's own note
-    // identifies them (e.g. a card drawn during an in-game hypothetical).
+    // identifies them (such as a card drawn during an in-game hypothetical).
     const morphedBlank = this.isMorphedBlank();
     this.layout.blank = // Also let the LayoutChild know about it
       morphedBlank
@@ -579,12 +579,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   /**
-   * We may know the identity through normal means (e.g. it is a card that is currently in someone
-   * else's hand). We may also know the identity from a future game state (e.g. it is a card in our
-   * hand that we have learned about in the future).
+   * We may know the identity through normal means (for example, it is a card that is currently in
+   * someone else's hand). We may also know the identity from a future game state (for example, it
+   * is a card in our hand that we have learned about in the future).
    */
   getCardIdentity(): CardIdentity {
-    // First, check if we have an alternate identity (e.g. blank or morphed) for this card.
+    // First, check if we have an alternate identity (such as blank or morphed) for this card.
     if (this.isMorphed()) {
       return this.getMorph()!;
     }
@@ -701,7 +701,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   /**
-   * Used to compute the card's "bare name", which is used to render the correct image (e.g.
+   * Used to compute the card's "bare name", which is used to render the correct image (such as
    * "card-${suit}-${bareNameRank}"). The "card" image when nothing is on the stacks has the special
    * name "card-${suit}-${CARD_IMAGE_STACK_BASE_RANK_NAME}".
    */
@@ -1201,7 +1201,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // A card's parent is a LayoutChild. The parent of the LayoutChild is the location of the card
-  // (e.g. a player's hand, the play stacks, etc.). The LayoutChild is removed from the parent prior
+  // (such as a player's hand or the play stacks). The LayoutChild is removed from the parent prior
   // to the card changing location.
   removeLayoutChildFromParent(): void {
     // Ensure that empathy is disabled prior to removing a card from a player's hand.
@@ -1287,8 +1287,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   checkNoteDisproved(): void {
     // If we wrote a card identity note and all the possibilities for that note have been
-    // eliminated, unmorph the card
-    // (e.g. a note of "r1" is now impossible because red 1 has 0 cards left)
+    // eliminated, unmorph the card (for example, a note of "r1" is now impossible because red 1 has
+    // 0 cards left).
     if (
       this.note.possibilities.every(
         ([suitIndex, rank]) =>

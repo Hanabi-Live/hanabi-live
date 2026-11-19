@@ -127,7 +127,7 @@ export function initErrorListener(): void {
       When reporting, please copy/paste the stack-trace above as text, rather than showing a screenshot.
     `;
 
-    const iosText = `You appear to be using an iPhone/iPad/iPod device (i.e. iOS). ${PROJECT_NAME} does not support Apple devices, so the above error might be an iOS-specific error. Please use a desktop PC to access the site, or refresh the page to try again`;
+    const iosText = `You appear to be using an iPhone/iPad/iPod device (iOS). ${PROJECT_NAME} does not support Apple devices, so the above error might be an iOS-specific error. Please use a desktop PC to access the site, or refresh the page to try again`;
 
     const messageSuffix = isIoS() ? iosText : reportInstructions;
     showError(formattedStackTrace + messageSuffix);

@@ -64,7 +64,7 @@ export function init(): void {
       return;
     }
 
-    // The key press must not also act on the screen behind the modal (e.g. leaving a replay). It
+    // The key press must not also act on the screen behind the modal (such as leaving a replay). It
     // must not close the dialog either, because some modals cannot be closed.
     event.preventDefault();
     event.stopImmediatePropagation();

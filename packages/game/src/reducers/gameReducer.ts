@@ -319,8 +319,8 @@ function gameReducerFunction(
     }
 
     /**
-     * The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
-     * timed game, someone terminated, etc.
+     * The game has ended, either by normal means (such as max score), or someone ran out of time in
+     * a timed game, someone terminated, etc.
      *
      * ```ts
      * {

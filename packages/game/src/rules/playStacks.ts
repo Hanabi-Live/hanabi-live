@@ -127,7 +127,7 @@ export function getStackDirection(
     return StackDirection.Undecided;
   }
 
-  // e.g. If top is 4 and there are 2 cards on the stack, it's going down.
+  // For example, if top is 4 and there are 2 cards on the stack, it's going down.
   if (top !== playStack.length) {
     return StackDirection.Down;
   }

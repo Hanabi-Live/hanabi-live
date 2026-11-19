@@ -36,7 +36,7 @@ export function confirmPlay(
   if (!isPlayable(cardState, cardState.possibleCards)) {
     askForConfirmation(
       "Play Unplayable Card?",
-      "This card is known to be unplayable based on the information available to you (e.g. positive clues, negative clues, cards seen, etc.).",
+      "This card is known to be unplayable based on the information available to you (such as positive clues, negative clues, and cards seen).",
       "Play",
       play,
       cancel,

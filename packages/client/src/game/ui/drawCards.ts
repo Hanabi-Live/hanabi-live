@@ -38,7 +38,7 @@ enum CardArea {
 }
 
 /**
- * What a card image shows: a rank, the base of a play stack, or a card of unknown rank (e.g. the
+ * What a card image shows: a rank, the base of a play stack, or a card of unknown rank (such as the
  * gray card with pips on it). Each is also the rank part of the image's name.
  */
 type CardFace =
@@ -314,8 +314,8 @@ export function drawCards(
         }
         ctx.restore();
 
-        // "Index" cards are used to draw cards of learned but not yet known rank
-        // (e.g. for in-game replays)
+        // "Index" cards are used to draw cards of learned but not yet known rank (such as for
+        // in-game replays).
         const cardImagesIndex = `Index-${suit.name}-${rank}`;
         cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 

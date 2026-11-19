@@ -74,8 +74,8 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
 
 /** A shorthand function used to subscribe an observer to the visible state. */
 function subVs<T>(s: Selector<GameState, T>, l: Listener<T>) {
-  // We do not want anything to fire if the visible state is undefined
-  // (e.g. when the UI is still initializing)
+  // We do not want anything to fire if the visible state is undefined (such as when the UI is still
+  // initializing).
   // eslint-disable-next-line func-style
   const selector = (state: State) =>
     state.visibleState === undefined ? SKIP : s(state.visibleState);
@@ -438,7 +438,7 @@ const replayObservers: Subscriptions = [
 ];
 
 const otherObservers = [
-  // Premoves (e.g. queued actions)
+  // Premoves (queued actions)
   subAfterInit(
     (s) => premoveView.shouldShowCancelButton(s),
     premoveView.shouldShowCancelButtonChanged,
