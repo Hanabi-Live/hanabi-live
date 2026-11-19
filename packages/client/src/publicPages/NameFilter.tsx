@@ -1,29 +1,30 @@
-// The box that searches a list of games by the names of variants and players. As the player types a
-// term, a list under the box suggests the names of the variants that contain it.
+// A box that filters a list of games by part of a name, such as a variant's or a player's. It can
+// suggest names in a list under it as the player types.
 
 import { MAX_GAME_SEARCH_LENGTH } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { useEffect, useId, useRef, useState } from "react";
 
-/** How long to wait after the last keystroke before searching. */
-const SEARCH_DELAY_MILLISECONDS = 300;
+/** How long to wait after the last keystroke before filtering. */
+const FILTER_DELAY_MILLISECONDS = 300;
 
-/** The most variant names that the list suggests at once, so that it does not cover the games. */
+/** The most names that the list suggests at once, so that it does not cover the games. */
 const MAX_SUGGESTIONS = 8;
 
-/** The terms of a search are separated by commas, which the server splits them at. */
-const TERM_SEPARATOR = ",";
-
-export function GameSearch({
+export function NameFilter({
+  label,
   placeholder,
-  suggestVariants,
+  widthClassName,
+  suggest,
   onChange,
 }: {
+  readonly label: string;
   readonly placeholder: string;
-  /** Whether the list suggests variant names. A seed's games share one variant. */
-  readonly suggestVariants: boolean;
+  readonly widthClassName: string;
+  /** The names that a list under the box suggests for its text. Without it, the box has no list. */
+  readonly suggest?: (text: string) => readonly string[];
   /** Receives the trimmed text, once the typing pauses or a suggestion is picked. */
-  readonly onChange: (search: string) => void;
+  readonly onChange: (text: string) => void;
 }): React.JSX.Element {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
@@ -39,26 +40,22 @@ export function GameSearch({
     [],
   );
 
-  const term = currentTerm(text);
-  const suggestions = suggestVariants ? getSuggestions(term) : [];
+  const suggestions = suggest?.(text) ?? [];
   const shown = open && suggestions.length > 0;
 
-  function search(value: string, delay: number) {
+  function filter(value: string, delay: number) {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       onChange(value.trim());
     }, delay);
   }
 
-  /** Puts a variant name in place of the term that the player is typing, and searches at once. */
+  /** Puts a suggested name in the box, and filters by it at once. */
   function pick(name: string) {
-    const start = text.lastIndexOf(TERM_SEPARATOR) + 1;
-    const next =
-      start === 0 ? name : `${text.slice(0, start).trimEnd()} ${name}`;
-    setText(next);
+    setText(name);
     setOpen(false);
     setActive(-1);
-    search(next, 0);
+    filter(name, 0);
   }
 
   // The label does not hold the list, so that its names are not part of the box's name. The list
@@ -69,19 +66,21 @@ export function GameSearch({
         className="tw:m-0 tw:text-[1em] tw:text-text-label"
         htmlFor={inputId}
       >
-        Search
+        {label}
       </label>
       <div className="tw:relative tw:min-w-0">
         <input
-          aria-activedescendant={
-            shown && active >= 0 ? `${listId}-${active}` : undefined
-          }
-          aria-autocomplete="list"
-          aria-controls={listId}
-          aria-expanded={shown}
+          {...(suggest !== undefined && {
+            "aria-activedescendant":
+              shown && active >= 0 ? `${listId}-${active}` : undefined,
+            "aria-autocomplete": "list",
+            "aria-controls": listId,
+            "aria-expanded": shown,
+            role: "combobox",
+          })}
           autoCapitalize="off"
           autoComplete="off"
-          className="tw:h-8 tw:w-[12em] tw:max-w-full tw:px-3 tw:text-[1em]"
+          className={`tw:h-8 tw:max-w-full tw:px-3 tw:text-[1em] ${widthClassName}`}
           id={inputId}
           maxLength={MAX_GAME_SEARCH_LENGTH}
           onBlur={() => {
@@ -91,7 +90,7 @@ export function GameSearch({
             setText(event.target.value);
             setOpen(true);
             setActive(-1);
-            search(event.target.value, SEARCH_DELAY_MILLISECONDS);
+            filter(event.target.value, FILTER_DELAY_MILLISECONDS);
           }}
           onFocus={() => {
             setOpen(true);
@@ -140,40 +139,42 @@ export function GameSearch({
             }
           }}
           placeholder={placeholder}
-          role="combobox"
           spellCheck={false}
           type="text"
           value={text}
         />
-        <ul
-          className="tw:absolute tw:top-full tw:left-0 tw:z-20 tw:m-0 tw:mt-1 tw:w-max tw:max-w-[min(24em,calc(100vw-2em))] tw:min-w-full tw:list-none tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-1 tw:shadow-lg"
-          hidden={!shown}
-          id={listId}
-          role="listbox"
-        >
-          {suggestions.map((name, index) => (
-            <li
-              aria-selected={index === active}
-              className={`tw:cursor-pointer tw:truncate tw:rounded-[var(--radius)] tw:px-2.5 tw:py-1.5 tw:hover:bg-[var(--row-hover-bg)] ${index === active ? "tw:bg-[var(--row-hover-bg)]" : ""}`}
-              id={`${listId}-${index}`}
-              key={name}
-              // The box would lose its focus on a click, and close the list before the click lands.
-              onMouseDown={(event) => {
-                event.preventDefault();
-                pick(name);
-              }}
-              role="option"
-            >
-              <Highlighted name={name} term={term} />
-            </li>
-          ))}
-        </ul>
+        {suggest !== undefined && (
+          <ul
+            className="tw:absolute tw:top-full tw:left-0 tw:z-20 tw:m-0 tw:mt-1 tw:w-max tw:max-w-[min(24em,calc(100vw-2em))] tw:min-w-full tw:list-none tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-1 tw:shadow-lg"
+            hidden={!shown}
+            id={listId}
+            role="listbox"
+          >
+            {suggestions.map((name, index) => (
+              <li
+                aria-selected={index === active}
+                className={`tw:cursor-pointer tw:truncate tw:rounded-[var(--radius)] tw:px-2.5 tw:py-1.5 tw:hover:bg-[var(--row-hover-bg)] ${index === active ? "tw:bg-[var(--row-hover-bg)]" : ""}`}
+                id={`${listId}-${index}`}
+                key={name}
+                // The box would lose its focus on a click, and close the list before the click
+                // lands.
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  pick(name);
+                }}
+                role="option"
+              >
+                <Highlighted name={name} term={text.trim()} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
 }
 
-/** A variant name with the part that matches the term in bold. */
+/** A suggested name with the part that matches the text in the box in bold. */
 function Highlighted({
   name,
   term,
@@ -195,17 +196,12 @@ function Highlighted({
   );
 }
 
-/** The term that the player is typing: the text after the last comma. */
-function currentTerm(text: string): string {
-  return text.slice(text.lastIndexOf(TERM_SEPARATOR) + 1).trim();
-}
-
 /**
- * The variant names that contain a term, ignoring case, with the names that start with it first. A
- * name that the term already spells out in full is left out.
+ * The variant names that contain the text, ignoring case, with the names that start with it first.
+ * A name that the text already spells out in full is left out.
  */
-function getSuggestions(term: string): readonly string[] {
-  const lowercase = term.toLowerCase();
+export function suggestVariants(text: string): readonly string[] {
+  const lowercase = text.trim().toLowerCase();
   if (lowercase === "") {
     return [];
   }

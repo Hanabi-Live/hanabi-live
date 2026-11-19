@@ -34,8 +34,8 @@ of the repository.
 - A pre-game table shows its variant at the top and a box for each seat, with
   the open seats outlined. Each player's best scores on the variant show for
   every player count, without hovering.
-- A search box above a player's history finds games by part of a variant's name
-  or of another player's name, and suggests variant names as you type.
+- A player's history finds games by part of a variant's name, which it suggests
+  as you type, and by parts of other players' names.
 - Each game on a player's history page, tagged games, and a seed's page has a
   "Replay" button and a button for a shared replay, and shows its options and
   number, as in the lobby's history.

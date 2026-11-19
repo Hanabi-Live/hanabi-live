@@ -157,10 +157,10 @@ that have not been played yet and have only one copy remaining.)
 - The "Show History" screen shows the same list as a player's history page.
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
-- A player's history groups the games by day. Its search box finds games by part
-  of a variant's name or of another player's name. Separate terms with commas to
-  find the games that match all of them. As you type, the box suggests variant
-  names.
+- A player's history groups the games by day. The "Variant" box finds games by
+  part of a variant's name, and suggests variant names as you type. The "With"
+  box finds games by parts of other players' names. Separate names with commas
+  to find the games that have all of them.
 - Profiles show the time spent playing, the time spent reviewing replays, and
   the total of both. Review time does not count the time before an idle replay
   closes.
@@ -910,10 +910,11 @@ The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `score`. Seed lists filter by `gameId` or `score`, and the other lists by any
 column.
 
-`filter[search]` finds games by text, up to 100 characters. Separate terms with
-commas (for example, `?filter[search]=rainbow,bob`). A game matches a term when
-the name of its variant, or of one of its players, contains the term, ignoring
-case. A history leaves out the players in its URL. A game must match every term.
+`filter[variant]` finds the games whose variant's name contains its text, and
+`filter[player]` finds the games with a player whose name contains each of its
+names, which commas separate (for example, `?filter[player]=bob,carol`). Both
+ignore case and take up to 100 characters. A history leaves out the players in
+its URL. Seed lists do not take `filter[variant]`.
 
 ## Bots
 

@@ -30,12 +30,19 @@ const fn filterable_columns(mode: &str) -> &'static [Column] {
 }
 
 /// The query parameters that a game list takes: paging, `sort` with a column's name, `order` with
-/// `asc` or `desc`, `filter[name]` with a column's value, `filter[search]` with terms that each game
-/// must match (see `SearchTerm`), and `start` and `end` with the lowest and highest game ID.
+/// `asc` or `desc`, `filter[name]` with a column's value, `filter[variant]` with part of a
+/// variant's name, `filter[player]` with parts of players' names (see `TextFilter`), and `start`
+/// and `end` with the lowest and highest game ID. The games on a seed share its variant.
 pub(super) fn list_parameters(mode: &str) -> Vec<String> {
+    let text_filters: &[&str] = if mode == "seed" {
+        &[PLAYER_FILTER]
+    } else {
+        &[VARIANT_FILTER, PLAYER_FILTER]
+    };
     PAGE_PARAMETERS
         .into_iter()
-        .chain(["sort", "order", "start", "end", "filter[search]"])
+        .chain(["sort", "order", "start", "end"])
+        .chain(text_filters.iter().copied())
         .map(str::to_owned)
         .chain(
             filterable_columns(mode)
@@ -64,49 +71,58 @@ pub(super) struct Selection {
     pub tag_user: Option<i32>,
     /// Each column's required value.
     pub filters: Vec<(&'static str, i64)>,
-    /// The terms of `filter[search]`, which each game must match.
-    pub search: Vec<SearchTerm>,
+    /// The variants whose names contain the text of `filter[variant]`, if it has text.
+    pub variant_ids: Option<Vec<i16>>,
+    /// The patterns of `filter[player]`. Each game has a player whose name matches each one.
+    pub player_patterns: Vec<String>,
 }
 
-/// A term of a search of a list of games. A game matches it when the name of its variant, or of
-/// one of its players, contains the term, ignoring case. A player's history leaves out its own
-/// players, who are in every game.
-#[derive(Clone)]
-pub(super) struct SearchTerm {
-    variant_ids: Vec<i16>,
-    /// A pattern for `ILIKE`, with the term's wildcard characters escaped.
-    player_pattern: String,
-}
+/// The query parameter that finds games by part of their variant's name, ignoring case.
+const VARIANT_FILTER: &str = "filter[variant]";
 
-impl SearchTerm {
-    /// The terms of a search, which commas separate. Blank terms are left out.
-    fn parse(search: &str) -> Vec<Self> {
-        search
-            .split(',')
-            .map(str::trim)
-            .filter(|term| !term.is_empty())
-            .map(|term| {
-                let lowercase = term.to_lowercase();
-                let variant_ids = hanabi_engine::variants()
-                    .iter()
-                    .filter(|variant| variant.name.to_lowercase().contains(&lowercase))
-                    .filter_map(|variant| i16::try_from(variant.id).ok())
-                    .collect();
-                let mut player_pattern = String::from("%");
-                for c in term.chars() {
-                    if matches!(c, '\\' | '%' | '_') {
-                        player_pattern.push('\\');
-                    }
-                    player_pattern.push(c);
-                }
-                player_pattern.push('%');
-                Self {
-                    variant_ids,
-                    player_pattern,
-                }
-            })
-            .collect()
+/// The query parameter that finds games by parts of their players' names, ignoring case. Commas
+/// separate the names, and a game must have a player for each one. A player's history leaves out
+/// its own players, who are in every game.
+const PLAYER_FILTER: &str = "filter[player]";
+
+/// The text of a text filter, which is at most `MAX_GAME_SEARCH_LENGTH` characters. It is None
+/// when the request does not have the filter, or when its text is blank.
+fn text_filter<'a>(q: &'a Query, name: &str) -> Result<Option<&'a str>> {
+    let Some(text) = q.get(name) else {
+        return Ok(None);
+    };
+    if text.chars().count() > hanabi_protocol::MAX_GAME_SEARCH_LENGTH {
+        return Err(HttpError::bad(format!(
+            "The {name} filter can have at most {} characters.",
+            hanabi_protocol::MAX_GAME_SEARCH_LENGTH
+        )));
     }
+    let text = text.trim();
+    Ok((!text.is_empty()).then_some(text))
+}
+
+/// The IDs of the variants whose names contain the text, ignoring case.
+fn variant_ids(text: &str) -> Vec<i16> {
+    let lowercase = text.to_lowercase();
+    hanabi_engine::variants()
+        .iter()
+        .filter(|variant| variant.name.to_lowercase().contains(&lowercase))
+        .filter_map(|variant| i16::try_from(variant.id).ok())
+        .collect()
+}
+
+/// A pattern for `ILIKE` that finds the names that contain the text, with the text's wildcard
+/// characters escaped.
+fn contains_pattern(text: &str) -> String {
+    let mut pattern = String::from("%");
+    for c in text.chars() {
+        if matches!(c, '\\' | '%' | '_') {
+            pattern.push('\\');
+        }
+        pattern.push(c);
+    }
+    pattern.push('%');
+    pattern
 }
 
 pub(super) async fn players(
@@ -242,17 +258,18 @@ fn selected(s: Selection) -> QueryBuilder<Postgres> {
     for (column, value) in s.filters {
         push_compare(&mut qb, column, "=", value);
     }
-    for term in s.search {
-        qb.push(" AND (g.variant_id=ANY(")
-            .push_bind(term.variant_ids)
-            .push(") OR EXISTS(SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id WHERE o.game_id=g.id AND u.username ILIKE ")
-            .push_bind(term.player_pattern);
+    if let Some(ids) = s.variant_ids {
+        qb.push(" AND g.variant_id=ANY(").push_bind(ids).push(")");
+    }
+    for pattern in s.player_patterns {
+        qb.push(" AND EXISTS(SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id WHERE o.game_id=g.id AND u.username ILIKE ")
+            .push_bind(pattern);
         if !s.users.is_empty() {
             qb.push(" AND o.user_id<>ALL(")
                 .push_bind(s.users.clone())
                 .push(")");
         }
-        qb.push("))");
+        qb.push(")");
     }
     qb
 }
@@ -295,14 +312,16 @@ pub(super) async fn list(
         }
     }
     s.filters = filters;
-    if let Some(search) = q.get("filter[search]") {
-        if search.chars().count() > hanabi_protocol::MAX_GAME_SEARCH_LENGTH {
-            return Err(HttpError::bad(format!(
-                "The search can have at most {} characters.",
-                hanabi_protocol::MAX_GAME_SEARCH_LENGTH
-            )));
-        }
-        s.search = SearchTerm::parse(search);
+    if mode != "seed" {
+        s.variant_ids = text_filter(q, VARIANT_FILTER)?.map(variant_ids);
+    }
+    if let Some(text) = text_filter(q, PLAYER_FILTER)? {
+        s.player_patterns = text
+            .split(',')
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+            .map(contains_pattern)
+            .collect();
     }
     for (name, bound) in [("start", &mut s.start), ("end", &mut s.end)] {
         *bound = q

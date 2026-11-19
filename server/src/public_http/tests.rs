@@ -378,22 +378,25 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?filter[variantId]=0", 2, Some(2)),
         ("/api/v1/seed/same?sort=score&order=asc", 2, Some(2)),
         ("/api/v1/seed/same?filter[gameId]=1", 1, Some(1)),
-        // A search matches part of the variant's name or of another player's name, ignoring
-        // case, and a game must match each term. A player's history leaves out its own players.
-        ("/api/v1/history/Alice?filter[search]=BO", 2, Some(3)),
+        // The text filters match part of a name, ignoring case. A game must have a player for
+        // each name, and a player's history leaves out its own players.
+        ("/api/v1/history/Alice?filter[variant]=NO%20VAR", 2, Some(2)),
+        ("/api/v1/history/Alice?filter[variant]=%20", 3, Some(3)),
+        ("/api/v1/history/Alice?filter[player]=BO", 2, Some(3)),
         (
-            "/api/v1/history/Alice?filter[search]=no%20variant",
-            2,
-            Some(2),
+            "/api/v1/history/Alice?filter[player]=bob,%20script,",
+            0,
+            None,
         ),
+        ("/api/v1/history/Alice?filter[player]=script", 1, Some(2)),
         (
-            "/api/v1/history/Alice?filter[search]=bob,%20no%20variant,",
+            "/api/v1/history/Alice?filter[variant]=no&filter[player]=bob",
             1,
             Some(1),
         ),
-        ("/api/v1/history/Alice?filter[search]=alice", 0, None),
-        ("/api/v1/history/Alice?filter[search]=%25", 0, None),
-        ("/api/v1/seed/same?filter[search]=alice", 2, Some(1)),
+        ("/api/v1/history/Alice?filter[player]=alice", 0, None),
+        ("/api/v1/history/Alice?filter[player]=%25", 0, None),
+        ("/api/v1/seed/same?filter[player]=alice", 2, Some(1)),
         // Values outside a column's type match nothing instead of failing in PostgreSQL.
         ("/api/v1/history/Alice?filter[score]=70000", 0, None),
         ("/api/v1/history/Alice?filter[gameId]=99999999999", 0, None),
@@ -407,7 +410,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let too_long = "a".repeat(hanabi_protocol::MAX_GAME_SEARCH_LENGTH + 1);
     let (status, body) = request(
         app.clone(),
-        &format!("/api/v1/history/Alice?filter[search]={too_long}"),
+        &format!("/api/v1/history/Alice?filter[player]={too_long}"),
     )
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
@@ -688,6 +691,12 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ),
         (
             "/api/v1/seed/same?filter[numPlayers]=2",
+            400,
+            "Unknown query parameter",
+        ),
+        // The games on a seed share its variant.
+        (
+            "/api/v1/seed/same?filter[variant]=no",
             400,
             "Unknown query parameter",
         ),

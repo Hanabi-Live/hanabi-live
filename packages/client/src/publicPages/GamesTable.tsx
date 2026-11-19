@@ -24,7 +24,6 @@ import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { WaitingCard } from "../WaitingCard.tsx";
 import { usePages } from "./DataTable.tsx";
-import { GameSearch } from "./GameSearch.tsx";
 import {
   END_CONDITION_TEXT,
   GameOptionIcons,
@@ -35,6 +34,7 @@ import {
   Score,
   SHARED_REPLAY_TOOLTIP,
 } from "./gameSummary.tsx";
+import { NameFilter, suggestVariants } from "./NameFilter.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
 
@@ -104,7 +104,8 @@ export function GamesTable({
 }): React.JSX.Element {
   const seed = table.list === "seed";
   const [sortIndex, setSortIndex] = useState(seed ? 2 : 0);
-  const [search, setSearch] = useState("");
+  const [variant, setVariant] = useState("");
+  const [players, setPlayers] = useState("");
   const [numPlayers, setNumPlayers] = useState<number>();
   const [score, setScore] = useState<string>();
   const [resetKey, setResetKey] = useState(0);
@@ -120,7 +121,10 @@ export function GamesTable({
     : SORT_CHOICES;
   const sort = sortChoices[sortIndex] ?? SORT_CHOICES[0];
   const filtered =
-    search !== "" || numPlayers !== undefined || score !== undefined;
+    variant !== ""
+    || players !== ""
+    || numPlayers !== undefined
+    || score !== undefined;
 
   useEffect(() => {
     const params = new URLSearchParams({
@@ -129,8 +133,11 @@ export function GamesTable({
       sort: sort.column,
       order: sort.descending ? "desc" : "asc",
     });
-    if (search !== "") {
-      params.append("filter[search]", search);
+    if (variant !== "") {
+      params.append("filter[variant]", variant);
+    }
+    if (players !== "") {
+      params.append("filter[player]", players);
     }
     if (numPlayers !== undefined) {
       params.append("filter[numPlayers]", String(numPlayers));
@@ -165,7 +172,7 @@ export function GamesTable({
     return () => {
       controller.abort();
     };
-  }, [table.apiPath, page, size, sort, search, numPlayers, score]);
+  }, [table.apiPath, page, size, sort, variant, players, numPlayers, score]);
 
   /** Applies a change to the filters or the sort, from the first page. */
   function change(apply: () => void) {
@@ -194,15 +201,20 @@ export function GamesTable({
         className="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:gap-x-4 tw:gap-y-3 tw:border-b tw:border-border tw:pb-4 tw:text-[0.9em]"
         key={resetKey}
       >
-        <GameSearch
-          onChange={(value) => {
-            change(() => {
-              setSearch(value);
-            });
-          }}
-          placeholder={seed ? "Player" : "Variant or player"}
-          suggestVariants={!seed}
-        />
+        {/* The games on a seed share its variant and player count. */}
+        {!seed && (
+          <NameFilter
+            label="Variant"
+            onChange={(value) => {
+              change(() => {
+                setVariant(value);
+              });
+            }}
+            placeholder="Any"
+            suggest={suggestVariants}
+            widthClassName="tw:w-[10em]"
+          />
+        )}
         {!seed && (
           <div
             aria-label="Number of players"
@@ -227,6 +239,17 @@ export function GamesTable({
             ))}
           </div>
         )}
+        {/* A player's history leaves out its own players, so the box names the others. */}
+        <NameFilter
+          label={seed ? "Players" : "With"}
+          onChange={(value) => {
+            change(() => {
+              setPlayers(value);
+            });
+          }}
+          placeholder={seed ? "Any" : "Anyone"}
+          widthClassName="tw:w-[8em]"
+        />
         <ScoreFilter
           onChange={(value) => {
             change(() => {
@@ -240,7 +263,8 @@ export function GamesTable({
             className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:text-link tw:underline tw:[font:inherit]"
             onClick={() => {
               change(() => {
-                setSearch("");
+                setVariant("");
+                setPlayers("");
                 setNumPlayers(undefined);
                 setScore(undefined);
                 setResetKey((key) => key + 1);

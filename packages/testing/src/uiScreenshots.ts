@@ -660,7 +660,7 @@ function getStates(): readonly State[] {
           })
           .click();
         await page.getByRole("button", { name: "Clear filters" }).waitFor();
-        await page.getByRole("combobox", { name: "Search" }).fill("no v");
+        await page.getByRole("combobox", { name: "Variant" }).fill("no v");
         await page.getByRole("listbox").waitFor();
       },
     },

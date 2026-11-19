@@ -34,10 +34,10 @@ function urlOf(url: Parameters<typeof fetch>[0]): URL {
   return new URL(text, "https://hanab.live");
 }
 
-/** The search of the last request for games, or undefined if it had none. */
-function lastSearch(): string | undefined {
+/** A filter of the last request for games, or undefined if it had none. */
+function lastFilter(name: "variant" | "player"): string | undefined {
   const [url] = fetchMock.mock.calls.at(-1)!;
-  return urlOf(url).searchParams.get("filter[search]") ?? undefined;
+  return urlOf(url).searchParams.get(`filter[${name}]`) ?? undefined;
 }
 
 async function settle() {
@@ -62,20 +62,20 @@ async function renderHistory(actions?: GameActions) {
   await settle();
 }
 
-function searchBox(): HTMLInputElement {
-  return screen.getByRole<HTMLInputElement>("combobox", { name: "Search" });
+function box(name: "Variant" | "With"): HTMLInputElement {
+  return screen.getByLabelText<HTMLInputElement>(name);
 }
 
-/** The suggestions that the search box shows. */
+/** The suggestions that the Variant box shows. */
 function suggestions(): readonly HTMLElement[] {
   return within(screen.getByRole("listbox", { hidden: true })).queryAllByRole(
     "option",
   );
 }
 
-async function type(text: string) {
-  fireEvent.focus(searchBox());
-  fireEvent.change(searchBox(), {
+async function type(name: "Variant" | "With", text: string) {
+  fireEvent.focus(box(name));
+  fireEvent.change(box(name), {
     target: {
       value: text,
     },
@@ -103,26 +103,28 @@ afterEach(() => {
 });
 
 describe("GamesTable", () => {
-  test("the search box sends its trimmed text to the server", async () => {
+  test("the Variant and With boxes send their trimmed text to the server", async () => {
     await renderHistory();
-    await type("  rain, Bob ");
+    await type("Variant", "  rain ");
+    await type("With", " Bob, carol ");
 
-    expect(lastSearch()).toBe("rain, Bob");
+    expect(lastFilter("variant")).toBe("rain");
+    expect(lastFilter("player")).toBe("Bob, carol");
   });
 
-  test("a picked suggestion replaces only the term being typed", async () => {
+  test("a picked variant name fills the Variant box", async () => {
     await renderHistory();
-    await type("bob, rainbow");
+    await type("Variant", "rainbow");
     const [first] = suggestions();
     const name = first!.textContent;
     expect(name.toLowerCase()).toContain("rainbow");
 
-    fireEvent.keyDown(searchBox(), { key: "ArrowDown" });
-    fireEvent.keyDown(searchBox(), { key: "Enter" });
+    fireEvent.keyDown(box("Variant"), { key: "ArrowDown" });
+    fireEvent.keyDown(box("Variant"), { key: "Enter" });
     await settle();
 
-    expect(searchBox().value).toBe(`bob, ${name}`);
-    expect(lastSearch()).toBe(`bob, ${name}`);
+    expect(box("Variant").value).toBe(name);
+    expect(lastFilter("variant")).toBe(name);
     expect(suggestions()).toHaveLength(0);
   });
 
