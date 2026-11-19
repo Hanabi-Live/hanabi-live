@@ -263,22 +263,22 @@
 :root[data-theme="dark"] {
   /*
     The dark theme's panels are a deep green, much darker than the felt, so that they stand apart
-    from it even at its dark edges. Wells are darker still. The header bar is a panel too.
+    from it even at its dark edges. Wells are darker still.
   */
   --surface: #0e2418;
   --surface-sunken: #091a11;
   --surface-panel: var(--surface-sunken);
   --border: #24452f;
   /*
-    The boxes on the felt and the header bar are dark glass: the felt shows faintly through them,
-    blurred and less saturated, so that they read as part of the table.
+    The boxes on the felt are dark glass: the felt shows faintly through them, blurred and less
+    saturated, so that they read as part of the table. The header bar keeps the color of the New
+    UI's bar along the bottom, as in the light theme.
   */
   --box-bg: rgb(6 14 10 / 62%);
   /* A field in a group of rows is a step darker than the group. */
   --box-panel: rgb(0 0 0 / 18%);
   --box-sunken: rgb(0 0 0 / 28%);
   --box-backdrop: blur(14px) saturate(60%);
-  --header-bg: rgb(6 14 10 / 78%);
   --border-panel: var(--border);
   --text: var(--game-screen-text);
   --text-strong: var(--text);

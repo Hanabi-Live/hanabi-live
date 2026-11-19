@@ -13,8 +13,7 @@ of the repository.
   white, and their text is darker.
 - The list of games in the lobby shows the seats of each table as dots, filled
   for each player. In the dark theme, each row has a colored edge instead of a
-  full color, and the panels and header are dark glass that the felt shows
-  through.
+  full color, and the panels are dark glass that the felt shows through.
 - The login screen fits on one screen: the logo is smaller, the header bar is
   gone, and the icons are inside the fields.
 - Spectators are shown with the same two eyes everywhere, and the lobby's
