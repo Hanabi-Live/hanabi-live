@@ -8,7 +8,7 @@
 // times in a row.
 
 import { clamp } from "complete-common";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import {
@@ -51,11 +51,11 @@ const ICON_BUTTON_SIZE_CLASS = {
 /**
  * The group that holds the controls of a mode. Every mode has the same parts: the leader's controls
  * on the left, its main controls in the middle, and its other buttons on the right. Each part is as
- * tall as a step. The timeline has a smallest width, and the hint takes only the room that is left,
- * so that the bar knows the room that the controls need (see "StatusStrip.tsx"). On a narrow
- * window, the middle has a row of its own, under the others, when there are leader's controls. The
- * panel has a fixed width, so there the group can be narrower than its content. Then a long
- * leader's name makes the leader's menu smaller, and it does not push the buttons out of the panel.
+ * tall as a step. The timeline has a smallest width, so that the bar knows the room that the
+ * controls need (see "StatusStrip.tsx"). On a narrow window, the middle has a row of its own, under
+ * the others, when there are leader's controls. The panel has a fixed width, so there the group can
+ * be narrower than its content. Then a long leader's name makes the leader's menu smaller, and it
+ * does not push the buttons out of the panel.
  */
 function Controls({
   children,
@@ -574,83 +574,19 @@ function IconToggle({
 }
 
 /**
- * What to do next in a hypothetical. It takes only the room that is left, so that it never pushes
- * the other controls onto a row of their own. A hint that does not fit is cut off, and only then
- * does its tooltip show all of it. On a narrow window, it wraps onto a second line in smaller text
- * instead. The text is only as wide as it needs, so that its tooltip is centered on it.
- */
-function HypotheticalHint({
-  hint,
-}: {
-  readonly hint: string;
-}): React.JSX.Element {
-  const textRef = useRef<HTMLParagraphElement | null>(null);
-  const [truncated, setTruncated] = useState(false);
-  const { reducedMotion } = store.getState().session.settings;
-
-  useLayoutEffect(() => {
-    const text = textRef.current;
-    if (text === null) {
-      return undefined;
-    }
-
-    function check() {
-      if (text !== null) {
-        setTruncated(
-          text.scrollWidth > text.clientWidth
-            || text.scrollHeight > text.clientHeight,
-        );
-      }
-    }
-
-    check();
-    const observer = new ResizeObserver(check);
-    observer.observe(text);
-    return () => {
-      observer.disconnect();
-    };
-  }, [hint]);
-
-  const tooltip = tooltipRef(truncated ? hint : undefined);
-
-  return (
-    // Along the bottom of the screen, the hint keeps the smallest width of the timeline, which it
-    // takes the place of.
-    <div className="tw:ml-2 tw:flex tw:w-0 tw:grow tw:not-phone:min-w-24 tw:group-data-panel/strip:min-w-0">
-      {/* A new hint is a new element, so that it fades in. */}
-      <p
-        className={`tw:m-0 tw:min-w-0 tw:truncate tw:text-[15px] tw:text-game-muted tw:phone:line-clamp-2 tw:phone:text-[13px] tw:phone:leading-tight tw:phone:whitespace-normal ${reducedMotion ? "" : "tw:starting:opacity-0"}`}
-        key={hint}
-        ref={(element) => {
-          textRef.current = element;
-          return tooltip(element);
-        }}
-        style={{
-          transition: reducedMotion ? undefined : getOpacityTransition(true),
-        }}
-      >
-        {hint}
-      </p>
-    </div>
-  );
-}
-
-/**
  * The controls of a hypothetical that we control. Going back a turn and passing are where the steps
- * through the turns are, and what to do next is where the timeline is. The other buttons are on the
- * right. The last one is lit in the color of the mode, and leaves the hypothetical. It is the size
- * of the button that entered it, and in its place.
+ * through the turns are. The other buttons are on the right. The last one is lit in the color of
+ * the mode, and leaves the hypothetical. It is the size of the button that entered it, and in its
+ * place.
  */
 function OwnHypotheticalControls({
   state,
   editingCards,
   onToggleEditCards,
-  hint,
 }: {
   readonly state: State;
   readonly editingCards: boolean;
   readonly onToggleEditCards: () => void;
-  readonly hint: string;
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical;
   const lockTurn = getDrawnCardsLockTurn(state);
@@ -690,7 +626,6 @@ function OwnHypotheticalControls({
               replay's turns, and the flat hand is the icon of the "Real life mode" setting. */}
           <i aria-hidden="true" className="fas fa-hand-point-right" />
         </button>
-        <HypotheticalHint hint={hint} />
       </div>
       <div className={RIGHT_CLASS}>
         <IconToggle
@@ -742,22 +677,17 @@ export function ReplayControls({
   state,
   editingCards,
   onToggleEditCards,
-  hypotheticalHint,
 }: {
   readonly state: State;
 
   /** Whether the viewer edits cards in a hypothetical that they control. */
   readonly editingCards: boolean;
   readonly onToggleEditCards: () => void;
-
-  /** What the viewer can do next in a hypothetical that they control. */
-  readonly hypotheticalHint: string;
 }): React.JSX.Element {
   if (state.replay.hypothetical !== undefined) {
     return controlsHypothetical(state) ? (
       <OwnHypotheticalControls
         editingCards={editingCards}
-        hint={hypotheticalHint}
         onToggleEditCards={onToggleEditCards}
         state={state}
       />

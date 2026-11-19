@@ -957,16 +957,6 @@ export function GameScreen(): React.JSX.Element {
     onGive: giveClue,
   };
 
-  let hypotheticalHint =
-    "Hover over or tap a player's hand to give them a clue.";
-  if (editingCards) {
-    hypotheticalHint = "Click a card in a hand to change it into another card.";
-  } else if (actingPlayerIndex === undefined) {
-    hypotheticalHint = "The hypothetical game is over.";
-  } else if (!clueAvailable) {
-    hypotheticalHint = "The team has no clues. Play or discard a card.";
-  }
-
   // The parts of the wide layout beside the hands give up room only when the hands need it.
   const rowWidth = tableSize.width - playAreaSize.width;
   const wideRoom = getWideLayoutRoom(
@@ -1273,7 +1263,6 @@ export function GameScreen(): React.JSX.Element {
         hasReplayControls(state) ? (
           <ReplayControls
             editingCards={editingCards}
-            hypotheticalHint={hypotheticalHint}
             onToggleEditCards={() => {
               setEditingCards(!editingCards);
             }}

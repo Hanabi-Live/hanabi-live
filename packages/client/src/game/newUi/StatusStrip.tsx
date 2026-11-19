@@ -771,7 +771,7 @@ function useClosingControls(
   const last = useRef(replayControls);
   const [closing, setClosing] = useState<React.ReactNode>(undefined);
   // It runs while rendering, so the controls stay on the page as they start to slide back. A new
-  // copy would start over, such as a hint that fades in.
+  // copy would start over, such as an element that fades in.
   const shown = replayControls !== undefined;
   const [wasShown, setWasShown] = useState(shown);
   if (shown !== wasShown) {
