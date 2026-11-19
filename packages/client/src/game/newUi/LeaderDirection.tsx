@@ -52,9 +52,11 @@ function LeaderArrows({
     if (arrows === null) {
       return undefined;
     }
-    // They show at once and fade out where they are, as on the classic screen.
+    // They show at once and fade out where they are, as on the classic screen. The fade starts
+    // slowly, so that they stay easy to see for longer.
     const animation = arrows.animate([{ opacity: 1 }, { opacity: 0 }], {
       duration: FADE_MILLISECONDS,
+      easing: "ease-in",
       fill: "forwards",
     });
     // Arrows that go during their flash, such as when the viewer stops following the leader, fade
