@@ -172,9 +172,10 @@ function HGroupIcon() {
 }
 
 function UserIcon({ user }: { readonly user: UserRow["user"] }) {
-  // Every row has a slot of the same width, so the names line up.
+  // Every row has a slot of the same width, so the names line up. The icon is centered in the slot,
+  // so that an icon wider than the slot (such as the bot emoji) has about the same gap to the name.
   return (
-    <span className="tw:mr-2 tw:inline-block tw:w-3">
+    <span className="tw:mr-2 tw:inline-flex tw:w-3 tw:justify-center">
       {user.bot ? <BotIcon /> : user.hGroupConventions && <HGroupIcon />}
     </span>
   );
