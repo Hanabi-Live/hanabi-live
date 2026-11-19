@@ -44,7 +44,7 @@ import {
 } from "./FadeLayer.tsx";
 import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
-import { Menu } from "./Menu.tsx";
+import { Menu, MENU_BUTTON_CLASS } from "./Menu.tsx";
 import { getVisibilityTransition, useFade } from "./motion.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { measure } from "./screenScale.ts";
@@ -224,28 +224,37 @@ interface HandsProps {
   ) => void;
 
   /**
-   * The card whose menu shows (see `CardMenu`). A tap on a card in a hand opens it, since a touch
-   * screen has no hover. A key opens it on a card that the viewer can move.
+   * The card whose note shows in a popup (see `NotePopup`). A tap on a card in a hand opens it,
+   * since a touch screen has no hover. A key opens it on a card that the viewer can move.
    */
-  readonly menuCard: CardOrder | undefined;
+  readonly popupCard: CardOrder | undefined;
   readonly onCardTap: (order: CardOrder) => void;
-  readonly onCloseCardMenu: () => void;
-  readonly canDiscard: boolean;
-  readonly onPlay: (order: CardOrder) => void;
-  readonly onDiscard: (order: CardOrder) => void;
+  readonly onClosePopup: () => void;
 
   readonly notes: CardNotes;
+
+  /**
+   * Opens the box to type a card's note in, or is `undefined` when the viewer cannot write notes.
+   */
+  readonly onEditNote: ((order: CardOrder) => void) | undefined;
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
 
-  /** Clicking a name lists the player's actions, as on the classic screen. */
+  /**
+   * Clicking the viewer's own name lists their actions, as on the classic screen. Clicking another
+   * name opens a menu that also turns on that player's view (see `NameMenu`).
+   */
   readonly onShowPlayerLog: (playerIndex: PlayerIndex) => void;
+
+  /** The player whose name menu is open. */
+  readonly nameMenuSeat: PlayerIndex | undefined;
+  readonly onNameMenu: (playerIndex: PlayerIndex | undefined) => void;
 
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
    * player. A hand shows it while the viewer holds the pointer down on it, or after the viewer
-   * turns it on from the menu of one of its cards (`onToggleEmpathy`), until they turn it off.
+   * turns it on from the menu of its player's name (`onToggleEmpathy`), until they turn it off.
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
   readonly onToggleEmpathy: (playerIndex: PlayerIndex) => void;
@@ -266,16 +275,6 @@ interface HandsProps {
    * that rests on another card does not open that card's bubble too.
    */
   readonly fingerHold: boolean;
-
-  /**
-   * The card whose bubble of possible cards the viewer opened from its menu. It is open until the
-   * next tap. `holder` is the player who holds the card, when it is not the viewer.
-   */
-  readonly possibleCardsCard: CardOrder | undefined;
-  readonly onShowPossibleCards: (
-    order: CardOrder,
-    holder: PlayerIndex | undefined,
-  ) => void;
 
   /** What the pause button beside the viewer's clock does, if it shows (see "../pause.ts"). */
   readonly pauseAction: PauseAction | undefined;
@@ -1116,10 +1115,7 @@ function OwnCard({
       noteBorder={card.noteBorder}
       noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
-      openPossibleCards={
-        props.possibleCardsCard === card.order
-        || (touched && props.showPossibleCards)
-      }
+      openPossibleCards={touched && props.showPossibleCards}
       pips={card.pips}
       previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
@@ -1154,14 +1150,9 @@ function OwnCard({
     />
   );
 
-  const items: CardMenuItems = {
-    holder: undefined,
-    possibleCards: card.pips?.bubble !== undefined,
-  };
   if (!movable) {
     return (
       <TappableCard
-        items={items}
         label={label}
         order={card.order}
         overlay={
@@ -1187,7 +1178,6 @@ function OwnCard({
           {fade}
         </>
       }
-      items={items}
       label={label}
       order={card.order}
       place={place}
@@ -1199,75 +1189,54 @@ function OwnCard({
 }
 
 /**
- * Opens and closes the menu of a card in a hand. A tap anywhere else closes the menu. A tap on
- * another card then opens that card's menu. The container holds the card and its menu.
+ * Opens and closes the note popup of a card in a hand. A tap anywhere else closes it. A tap on
+ * another card then opens that card's popup. The container holds the card and its popup.
  */
-function useCardMenu(
+function useNotePopup(
   order: CardOrder,
   props: HandsProps,
 ): {
-  readonly menuOpen: boolean;
+  readonly popupOpen: boolean;
   readonly containerRef: React.RefObject<HTMLDivElement | null>;
 } {
-  const menuOpen = props.menuCard === order;
+  const popupOpen = props.popupCard === order;
   const containerRef = useRef<HTMLDivElement>(null);
-  const { onCloseCardMenu } = props;
+  const { onClosePopup } = props;
   const setOpen = useCallback(
     (open: boolean) => {
       if (!open) {
-        onCloseCardMenu();
+        onClosePopup();
       }
     },
-    [onCloseCardMenu],
+    [onClosePopup],
   );
-  useCloseOnOutsideClick(menuOpen, containerRef, setOpen);
+  useCloseOnOutsideClick(popupOpen, containerRef, setOpen);
   return {
-    menuOpen,
+    popupOpen,
     containerRef,
   };
 }
 
-/** What the menu of a card in a hand offers, besides playing and discarding it. */
-interface CardMenuItems {
-  /** The player whose view of their hand the menu turns on or off, when it is not the viewer. */
-  readonly holder: Seat | undefined;
-  /** Whether the menu opens the card's bubble of possible cards. */
-  readonly possibleCards: boolean;
-}
-
-/** Whether a card's menu has anything in it, other than playing and discarding the card. */
-function hasMenuItems(
-  order: CardOrder,
-  items: CardMenuItems,
-  props: HandsProps,
-): boolean {
-  return (
-    items.holder !== undefined
-    || items.possibleCards
-    || props.notes.notesHtml.has(order)
-  );
+/** Whether a card has a note popup: it has notes, or the viewer can write one. */
+function hasNotePopup(order: CardOrder, props: HandsProps): boolean {
+  return props.notes.notesHtml.has(order) || props.onEditNote !== undefined;
 }
 
 /**
- * The menu of a card in a hand. It holds what a touch screen cannot do with hover: the card's
- * notes, at its top, playing or discarding the card (`movable`), showing its holder's view of their
- * hand, and opening its bubble of possible cards.
+ * The note popup of a card in a hand. It holds what a touch screen cannot do with hover or a
+ * right-click: it shows the card's notes, and its button opens the box to type the viewer's note
+ * in. The other things that a card does have gestures: a drag plays or discards it, and holding it
+ * shows its holder's view of the hand and its bubble of possible cards.
  */
-function CardMenu({
+function NotePopup({
   order,
-  movable,
-  items,
   props,
 }: {
   readonly order: CardOrder;
-  readonly movable: boolean;
-  readonly items: CardMenuItems;
   readonly props: HandsProps;
 }): React.JSX.Element {
-  const { holder } = items;
-  const viewShown =
-    holder !== undefined && props.empathyToggled.has(holder.playerIndex);
   const noteHtml = props.notes.notesHtml.get(order);
+  const { onEditNote } = props;
   // Showing the note reads it.
   const unread = props.notes.unreadNotes.has(order);
   useEffect(() => {
@@ -1289,62 +1258,20 @@ function CardMenu({
           dangerouslySetInnerHTML={{ __html: noteHtml }}
         />
       )}
-      {movable && (
-        <>
-          <button
-            className={MENU_ICON_ITEM_CLASS}
-            onClick={() => {
-              props.onPlay(order);
-            }}
-            role="menuitem"
-            type="button"
-          >
-            <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-play`} />
-            Play
-          </button>
-          <button
-            className={MENU_ICON_ITEM_CLASS}
-            disabled={!props.canDiscard}
-            onClick={() => {
-              props.onDiscard(order);
-            }}
-            ref={tooltipRef(
-              props.canDiscard
-                ? undefined
-                : "The team cannot discard at the maximum number of clues.",
-            )}
-            role="menuitem"
-            type="button"
-          >
-            <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-trash`} />
-            Discard
-          </button>
-        </>
-      )}
-      {holder !== undefined && (
+      {onEditNote !== undefined && (
         <button
           className={MENU_ICON_ITEM_CLASS}
           onClick={() => {
-            props.onToggleEmpathy(holder.playerIndex);
+            onEditNote(order);
           }}
           role="menuitem"
           type="button"
         >
-          <BrainIcon className="tw:-mx-px tw:size-4 tw:shrink-0" />
-          {viewShown ? "Hide" : "Show"} {holder.name}&apos;s view
-        </button>
-      )}
-      {items.possibleCards && (
-        <button
-          className={MENU_ICON_ITEM_CLASS}
-          onClick={() => {
-            props.onShowPossibleCards(order, holder?.playerIndex);
-          }}
-          role="menuitem"
-          type="button"
-        >
-          <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-th`} />
-          Show possible cards
+          <i
+            aria-hidden="true"
+            className={`${MENU_ICON_CLASS} ${noteHtml === undefined ? "fa-sticky-note" : "fa-pencil-alt"}`}
+          />
+          {noteHtml === undefined ? "Add note" : "Edit note"}
         </button>
       )}
     </Menu>
@@ -1353,14 +1280,13 @@ function CardMenu({
 
 /**
  * A card that the viewer can play or discard. The viewer drags it to the play stacks or the discard
- * pile, with the mouse or a touch. A tap, or a key, opens its menu instead (see `CardMenu`).
+ * pile, with the mouse or a touch. A tap, or a key, opens its note popup instead (see `NotePopup`).
  */
 function MovableCard({
   order,
   place,
   label,
   face,
-  items,
   props,
   children,
 }: {
@@ -1368,11 +1294,11 @@ function MovableCard({
   readonly place: string;
   readonly label: string;
   readonly face: React.JSX.Element;
-  readonly items: CardMenuItems;
   readonly props: HandsProps;
   readonly children?: React.ReactNode;
 }): React.JSX.Element {
-  const { menuOpen, containerRef } = useCardMenu(order, props);
+  const { popupOpen, containerRef } = useNotePopup(order, props);
+  const hasPopup = hasNotePopup(order, props);
 
   return (
     <div
@@ -1382,16 +1308,16 @@ function MovableCard({
       ref={containerRef}
     >
       <button
-        aria-expanded={menuOpen}
-        aria-haspopup="menu"
-        aria-label={`${label}. Drag it to the play stacks or the discard pile, or tap it to play or discard it`}
+        aria-expanded={hasPopup ? popupOpen : undefined}
+        aria-haspopup={hasPopup ? "menu" : undefined}
+        aria-label={`${label}. Drag it to the play stacks or the discard pile`}
         // Under the mouse, a card that the player can drag rises a little, to invite them to pick
         // it up. Pressed, it is picked up (see "HeldCardGhost.tsx"). The shadow is a filter, so
         // that it follows a clued card, which is drawn raised. A touch that lets go of the card
-        // where it pressed it opens the menu (see "useCardDrag.ts").
+        // where it pressed it opens the note popup (see "useCardDrag.ts").
         className={`tw:relative tw:block tw:cursor-grab tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] ${HOVER_CLASS} tw:hover:-translate-y-0.5 tw:hover:drop-shadow-[0_4px_5px_rgb(0_0_0/35%)]`}
         onClick={(event) => {
-          if (!isDragClick(event)) {
+          if (hasPopup && !isDragClick(event)) {
             props.onCardTap(order);
           }
         }}
@@ -1408,23 +1334,19 @@ function MovableCard({
         {face}
       </button>
       {children}
-      {menuOpen && (
-        <CardMenu items={items} movable order={order} props={props} />
-      )}
+      {popupOpen && hasPopup && <NotePopup order={order} props={props} />}
     </div>
   );
 }
 
 /**
- * A card in a hand that the viewer cannot play or discard now. A tap opens its menu, when it has
- * anything in it (see `CardMenu`). The mouse has hover instead, and speedrun clicks make moves at
- * once.
+ * A card in a hand that the viewer cannot play or discard now. A tap opens its note popup, when it
+ * has one (see `NotePopup`). The mouse has hover instead, and speedrun clicks make moves at once.
  */
 function TappableCard({
   order,
   place,
   label,
-  items,
   props,
   overlay,
   children,
@@ -1432,14 +1354,13 @@ function TappableCard({
   readonly order: CardOrder;
   readonly place: string;
   readonly label: string;
-  readonly items: CardMenuItems;
   readonly props: HandsProps;
   /** What shows over the card, such as the mark of a move that waits for the server. */
   readonly overlay?: React.ReactNode;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
-  const { menuOpen, containerRef } = useCardMenu(order, props);
-  const tappable = !props.speedrunClicks && hasMenuItems(order, items, props);
+  const { popupOpen, containerRef } = useNotePopup(order, props);
+  const tappable = !props.speedrunClicks && hasNotePopup(order, props);
 
   return (
     <div
@@ -1449,7 +1370,7 @@ function TappableCard({
       onClick={
         tappable
           ? (event) => {
-              // The menu is inside the card's element, but a tap on it is not a tap on the card.
+              // The popup is inside the card's element, but a tap on it is not a tap on the card.
               if (
                 getPointerType(event) === "touch"
                 && (!(event.target instanceof Element)
@@ -1466,9 +1387,7 @@ function TappableCard({
         {children}
       </div>
       {overlay}
-      {menuOpen && tappable && (
-        <CardMenu items={items} movable={false} order={order} props={props} />
-      )}
+      {popupOpen && tappable && <NotePopup order={order} props={props} />}
     </div>
   );
 }
@@ -1594,10 +1513,7 @@ function HandCard({
       noteBorder={card.noteBorder}
       noteMarks={card.noteMarks}
       noteUnread={props.notes.unreadNotes.has(card.order)}
-      openPossibleCards={
-        props.possibleCardsCard === card.order
-        || (touched && props.showPossibleCards)
-      }
+      openPossibleCards={touched && props.showPossibleCards}
       pips={card.pips}
       previewMarker={props.previewMarkers.get(card.order)}
       raiseClued
@@ -1612,14 +1528,8 @@ function HandCard({
       width={props.cardWidth}
     />
   );
-  // The bubble shows the cards that the holder thinks it can be, so it is in the menu even while
-  // the hand shows the cards as the viewer sees them.
   return (
     <TappableCard
-      items={{
-        holder: seat,
-        possibleCards: true,
-      }}
       label={label}
       order={card.order}
       overlay={
@@ -1799,6 +1709,19 @@ function Hand({
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
 
+  const nameMenuOpen = props.nameMenuSeat === seat.playerIndex;
+  const nameRef = useRef<HTMLDivElement>(null);
+  const { onNameMenu } = props;
+  const setNameMenuOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        onNameMenu(undefined);
+      }
+    },
+    [onNameMenu],
+  );
+  useCloseOnOutsideClick(nameMenuOpen, nameRef, setNameMenuOpen);
+
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
@@ -1922,15 +1845,24 @@ function Hand({
         }}
       >
         {buttonBesideName && clueButton}
-        <div className="tw:flex tw:max-w-full tw:min-w-0">
+        <div
+          className="tw:relative tw:flex tw:max-w-full tw:min-w-0"
+          ref={nameRef}
+        >
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
-            clue rail starts there. A click on a name lists the player's actions. */}
+            clue rail starts there. A click on the viewer's own name lists their actions. A click
+            on another name opens its menu (see `NameMenu`). */}
           <button
-            aria-haspopup="dialog"
-            className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110"
+            aria-expanded={seat.you ? undefined : nameMenuOpen}
+            aria-haspopup={seat.you ? "dialog" : "menu"}
+            className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${MENU_BUTTON_CLASS}`}
             data-name-chip={seat.playerIndex}
             onClick={() => {
-              props.onShowPlayerLog(seat.playerIndex);
+              if (seat.you) {
+                props.onShowPlayerLog(seat.playerIndex);
+              } else {
+                props.onNameMenu(nameMenuOpen ? undefined : seat.playerIndex);
+              }
             }}
             type="button"
           >
@@ -1951,6 +1883,7 @@ function Hand({
             )}
             <NameChip seat={seat} />
           </button>
+          {nameMenuOpen && <NameMenu props={props} seat={seat} />}
         </div>
         {buttonBelowName && (
           <ClueButtonSlot>
@@ -2022,8 +1955,7 @@ function Hand({
             notes={props.notes}
             order={card.order}
             possibleCards={
-              (props.showPossibleCards && card.pips?.bubble !== undefined)
-              || props.possibleCardsCard === card.order
+              props.showPossibleCards && card.pips?.bubble !== undefined
             }
             tapOpens={editing}
             // A card that the finger drags shows no notes.
@@ -2079,9 +2011,57 @@ function Hand({
 }
 
 /**
- * The badge of a hand that shows its player's view after the viewer turned it on in a card's menu.
- * It sits on the hand's top edge, where a tap turns the view off again. It fades in and out as the
- * cards under it change (see `ViewFade`).
+ * The menu of another player's name. It turns their view of their hand on or off until the viewer
+ * turns it off again, which holding the hand down does only while it lasts. It also lists their
+ * actions.
+ */
+function NameMenu({
+  seat,
+  props,
+}: {
+  readonly seat: Seat;
+  readonly props: HandsProps;
+}): React.JSX.Element {
+  const viewShown = props.empathyToggled.has(seat.playerIndex);
+  return (
+    <Menu
+      align="left"
+      className="tw:min-w-40 tw:whitespace-nowrap"
+      scrollIntoView
+      side="below"
+    >
+      <button
+        className={MENU_ICON_ITEM_CLASS}
+        onClick={() => {
+          props.onNameMenu(undefined);
+          props.onToggleEmpathy(seat.playerIndex);
+        }}
+        role="menuitem"
+        type="button"
+      >
+        <BrainIcon className="tw:-mx-px tw:size-4 tw:shrink-0" />
+        {viewShown ? "Hide" : "Show"} {seat.name}&apos;s view
+      </button>
+      <button
+        className={MENU_ICON_ITEM_CLASS}
+        onClick={() => {
+          props.onNameMenu(undefined);
+          props.onShowPlayerLog(seat.playerIndex);
+        }}
+        role="menuitem"
+        type="button"
+      >
+        <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-list`} />
+        {seat.name}&apos;s actions
+      </button>
+    </Menu>
+  );
+}
+
+/**
+ * The badge of a hand that shows its player's view after the viewer turned it on in the menu of its
+ * player's name. It sits on the hand's top edge, where a tap turns the view off again. It fades in
+ * and out as the cards under it change (see `ViewFade`).
  */
 function ViewBadge({
   name,

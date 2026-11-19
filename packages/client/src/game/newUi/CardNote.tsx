@@ -139,8 +139,8 @@ export function CardNote({
    */
   readonly touched?: boolean;
   /**
-   * Whether a tap on a touch screen shows the notes. A card in a hand opens its menu instead, which
-   * shows them at its top.
+   * Whether a tap on a touch screen shows the notes. A card in a hand opens its note popup instead,
+   * which shows them at its top.
    */
   readonly tapOpens?: boolean;
   readonly className?: string;

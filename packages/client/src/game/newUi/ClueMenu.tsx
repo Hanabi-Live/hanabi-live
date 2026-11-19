@@ -487,7 +487,7 @@ export function ClueMenu({
           <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:pl-0.5 tw:text-[14px] tw:font-semibold tw:text-game-muted">
             Clue {name}
           </span>
-          {/* The classic screen's flashlight. A card's menu already shows a hand as its player sees it now. */}
+          {/* The classic screen's flashlight. The menu of a player's name already shows their hand as they see it now. */}
           <button
             aria-label={`Show ${name}'s view of their hand after the clue`}
             aria-pressed={cluePreview}

@@ -398,7 +398,7 @@ export interface CardFaceProps {
   /**
    * Whether a tap on a touch screen opens the bubble of possible cards, when `showPossibleCards` is
    * on. It stays open until the next tap elsewhere. A card in a hand leaves it off, since a tap
-   * opens the card's menu, which opens the bubble.
+   * opens the card's note popup, and holding the card opens the bubble.
    */
   readonly tapOpensPossibleCards?: boolean;
 

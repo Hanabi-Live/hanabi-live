@@ -309,7 +309,7 @@ export function getPointerType(event: React.MouseEvent): string {
 
 /**
  * Whether a click came from a pointer that drags the card (see `isDragPointer`), and not from a
- * key. A key opens the card's menu.
+ * key. A key opens the card's note popup.
  */
 export function isDragClick(event: React.MouseEvent): boolean {
   return isDragPointer(getPointerType(event));

@@ -115,7 +115,7 @@ interface CardDrag {
  * Moves a card with the pointer, and plays or discards it where the player drops it. The drop
  * targets are the boxes that show while the player drags a card (see "DropZones.tsx"). A touch that
  * lets go of the card where it pressed it taps the card instead (`onTap`), which opens the card's
- * menu. A mouse has a click for that.
+ * note popup, or the deck's menu.
  */
 export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
   const onTapRef = useRef(onTap);

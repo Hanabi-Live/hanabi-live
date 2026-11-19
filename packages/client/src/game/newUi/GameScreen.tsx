@@ -140,7 +140,6 @@ import {
   canDiscardNow,
   editCard,
   getActionState,
-  moveCard,
   sendAction,
   showClue,
   showDiscard,
@@ -263,33 +262,18 @@ export function GameScreen(): React.JSX.Element {
   // Whether the wide layout's bar is a panel in the right column (see "barElement").
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
-  // A tap on a card opens its menu, since a touch screen has no hover and cannot hold a hand down
-  // to show its player's view. Dragging a card plays or discards it.
-  const [menuCard, setMenuCard] = useState<CardOrder>();
-  const closeCardMenu = useCallback(() => {
-    setMenuCard(undefined);
+  // A tap on a card in a hand opens its note popup, since a touch screen has no hover or
+  // right-click. A tap on the deck, when its card can be played, opens its menu. Dragging a card
+  // plays or discards it.
+  const [popupCard, setPopupCard] = useState<CardOrder>();
+  const closePopup = useCallback(() => {
+    setPopupCard(undefined);
   }, []);
-  const toggleCardMenu = useCallback((order: CardOrder) => {
-    setMenuCard((current) => (current === order ? undefined : order));
+  const togglePopup = useCallback((order: CardOrder) => {
+    setPopupCard((current) => (current === order ? undefined : order));
   }, []);
-  // The card whose bubble of possible cards the viewer opened from its menu, until the next tap.
-  // The hand of another player shows their view of it meanwhile, as when the mouse holds it down.
-  const [possibleCardsCard, setPossibleCardsCard] = useState<{
-    readonly order: CardOrder;
-    readonly holder: PlayerIndex | undefined;
-  }>();
-  useEffect(() => {
-    if (possibleCardsCard === undefined) {
-      return undefined;
-    }
-    function close() {
-      setPossibleCardsCard(undefined);
-    }
-    document.addEventListener("pointerdown", close, { capture: true });
-    return () => {
-      document.removeEventListener("pointerdown", close, { capture: true });
-    };
-  }, [possibleCardsCard]);
+  // The player whose name menu is open.
+  const [nameMenuSeat, setNameMenuSeat] = useState<PlayerIndex>();
 
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
@@ -370,7 +354,7 @@ export function GameScreen(): React.JSX.Element {
     }
   }, [chatOverlay]);
 
-  // A new turn clears the clue being chosen and any open card menu. In a hypothetical, its own
+  // A new turn clears the clue being chosen and any open note popup. In a hypothetical, its own
   // turns count.
   const turnNum =
     state === undefined ? undefined : getActionState(state).turn.turnNum;
@@ -378,7 +362,7 @@ export function GameScreen(): React.JSX.Element {
     setClueTarget(undefined);
     setClueMenuClosed(false);
     setClue(undefined);
-    setMenuCard(undefined);
+    setPopupCard(undefined);
     setCluePreview(false);
   }, [turnNum]);
 
@@ -423,7 +407,7 @@ export function GameScreen(): React.JSX.Element {
     pressCard,
     playZoneRef,
     discardZoneRef,
-  } = useCardDrag(toggleCardMenu);
+  } = useCardDrag(togglePopup);
   // A card that the player drags hides the bubbles of possible cards, so that they do not cover the
   // places to drop it.
   const draggingCard = held?.moved === true;
@@ -700,9 +684,6 @@ export function GameScreen(): React.JSX.Element {
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
   }
-  if (possibleCardsCard?.holder !== undefined) {
-    empathyPlayers.add(possibleCardsCard.holder);
-  }
   // With the flashlight in the clue menu on, the target's hand shows what the chosen clue would
   // tell them.
   const previewTarget = cluePreview ? menuTarget : undefined;
@@ -790,6 +771,14 @@ export function GameScreen(): React.JSX.Element {
       setNoteCard(undefined);
     },
   };
+  // Opens the box to type a card's note in, which takes the place of the card's note popup.
+  function editNote(order: CardOrder) {
+    if (cardNotes.onRightClickCard === undefined) {
+      return;
+    }
+    setPopupCard(undefined);
+    setNoteCard(order);
+  }
 
   // The chat lists everyone who is watching, with us first.
   const spectators = [
@@ -895,10 +884,7 @@ export function GameScreen(): React.JSX.Element {
     run: (command, order) => {
       switch (command.type) {
         case "editNote": {
-          if (cardNotes.onRightClickCard !== undefined) {
-            setMenuCard(undefined);
-            setNoteCard(order);
-          }
+          editNote(order);
           break;
         }
 
@@ -1498,7 +1484,7 @@ export function GameScreen(): React.JSX.Element {
                   play: deckPlayable
                     ? {
                         held: held?.fromDeck === true,
-                        menuOpen: menuCard === deckOrder,
+                        menuOpen: popupCard === deckOrder,
                         // Only an inverted suit plays when it is discarded.
                         canDiscard: variant.hasInverted
                           ? canDiscard
@@ -1511,20 +1497,20 @@ export function GameScreen(): React.JSX.Element {
                           }
                         },
                         onTap: () => {
-                          setMenuCard((current) =>
+                          setPopupCard((current) =>
                             current === deckOrder ? undefined : deckOrder,
                           );
                         },
-                        onCloseMenu: closeCardMenu,
+                        onCloseMenu: closePopup,
                         onPlay: () => {
-                          setMenuCard(undefined);
+                          setPopupCard(undefined);
                           sendAction({
                             type: "play",
                             order: deckOrder,
                           });
                         },
                         onDiscard: () => {
-                          setMenuCard(undefined);
+                          setPopupCard(undefined);
                           if (canDiscardNow()) {
                             sendAction({
                               type: "discard",
@@ -1589,7 +1575,6 @@ export function GameScreen(): React.JSX.Element {
                 />
                 <Hands
                   canChooseClueTarget={canClue}
-                  canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
                   clueBelowLowestHand={clueBelowLowestHand}
@@ -1642,9 +1627,9 @@ export function GameScreen(): React.JSX.Element {
                   fingerHold={fingerHold}
                   // The panel of a paused game covers the hands.
                   hidden={paused && !inReplay}
-                  menuCard={menuCard}
                   movableCards={movableCards}
                   nameColumnWidth={nameColumnWidth}
+                  nameMenuSeat={nameMenuSeat}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
                     if (!canMoveCards || !picksUpCard(event, order)) {
@@ -1663,35 +1648,23 @@ export function GameScreen(): React.JSX.Element {
                     }
                     pressCard(order, event);
                   }}
-                  onCardTap={toggleCardMenu}
+                  onCardTap={togglePopup}
                   onChooseClueTarget={openClueMenu}
-                  onCloseCardMenu={closeCardMenu}
-                  onDiscard={(order) => {
-                    setMenuCard(undefined);
-                    if (canDiscardNow()) {
-                      moveCard("discard", order);
-                    }
-                  }}
+                  onClosePopup={closePopup}
                   onEditCard={editingCards ? editCard : undefined}
+                  onEditNote={
+                    cardNotes.onRightClickCard === undefined
+                      ? undefined
+                      : editNote
+                  }
                   onHoldEmpathy={(playerIndex, byFinger = false) => {
                     setHeldEmpathy(playerIndex);
                     setFingerHold(playerIndex !== undefined && byFinger);
                   }}
+                  onNameMenu={setNameMenuSeat}
                   onPause={pause}
-                  onPlay={(order) => {
-                    setMenuCard(undefined);
-                    moveCard("play", order);
-                  }}
                   onShowPlayerLog={setLogSeat}
-                  onShowPossibleCards={(order, holder) => {
-                    setMenuCard(undefined);
-                    setPossibleCardsCard({
-                      order,
-                      holder,
-                    });
-                  }}
                   onToggleEmpathy={(playerIndex) => {
-                    setMenuCard(undefined);
                     setEmpathyToggled((current) => {
                       const next = new Set(current);
                       if (next.has(playerIndex)) {
@@ -1703,7 +1676,7 @@ export function GameScreen(): React.JSX.Element {
                     });
                   }}
                   pauseAction={getPauseAction(state)}
-                  possibleCardsCard={possibleCardsCard?.order}
+                  popupCard={popupCard}
                   previewing={previewing}
                   previewMarkers={
                     previewing ? getPreviewMarkers() : NO_CLUE_MARKERS

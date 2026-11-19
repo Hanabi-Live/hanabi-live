@@ -52,8 +52,8 @@ function getCardAt(target: EventTarget | null): CardOrder | undefined {
 }
 
 function getHoveredCardAt(target: EventTarget | null): HoveredCard | undefined {
-  // A card's menu is inside the card's element, but a tap on it is not a tap on the card. Two quick
-  // taps, on the card and then on the menu, would otherwise edit the note.
+  // A card's note popup is inside the card's element, but a tap on it is not a tap on the card. Two
+  // quick taps, on the card and then on the popup, would otherwise edit the note.
   if (
     !(target instanceof Element)
     || target.closest('[role="menu"]') !== null
@@ -154,7 +154,7 @@ export function useCardInput(
       if (event.pointerType === "touch") {
         touchTimeRef.current = event.timeStamp;
       }
-      // A press on anything else, such as an item of the card's menu, ends a double tap.
+      // A press on anything else, such as the button of the card's note popup, ends a double tap.
       if (getCardAt(event.target) !== lastTapRef.current?.order) {
         lastTapRef.current = undefined;
       }
@@ -191,7 +191,7 @@ export function useCardInput(
       }
 
       // A long press shows the holder's view of the hand while it lasts, so it is not a tap, which
-      // would open the card's menu.
+      // would open the card's note popup.
       if (
         pointerTypeRef.current === "touch"
         && event.timeStamp - touchTimeRef.current >= LONG_PRESS_MILLISECONDS

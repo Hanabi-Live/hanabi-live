@@ -171,6 +171,9 @@ const DISCARD_CARD_SELECTOR = '#game-new-ui [data-card-place^="discard-"]';
 const NEXT_HAND_FIRST_CARD_SELECTOR =
   '#game-new-ui [data-card-place="hand-1-0"]';
 
+/** The name of the next player after the account. */
+const NEXT_NAME_SELECTOR = '#game-new-ui [data-name-chip="1"]';
+
 /**
  * A card of the account's own hand, counted from 0 on the left. The account's hand is the first on
  * the screen, whatever its seat.
@@ -1258,11 +1261,10 @@ function getStates(): readonly State[] {
       },
       prepare: chooseClueForNextPlayer,
     },
-    // The account taps its last card on its turn in a five-player game, which opens the card's
-    // menu. The card has a note, which shows above the card while the menu is open. In the phone
-    // layout, the menu is at the edge of the window.
+    // The account taps its last card on its turn in a five-player game, which opens the card's note
+    // popup. In the phone layout, the popup is at the edge of the window.
     {
-      name: "new-ui-card-menu",
+      name: "new-ui-note-popup",
       path: "/",
       loggedIn: true,
       isolated: true,
@@ -1283,11 +1285,11 @@ function getStates(): readonly State[] {
         await page.getByRole("menu").waitFor();
       },
     },
-    // In a five-player game, the account taps a card of the next player's hand and shows that
-    // player's view of it from the card's menu. Then it taps the card again, so that the menu
-    // offers to hide the view.
+    // In a five-player game, the account taps the next player's name and shows that player's view
+    // of their hand from the name's menu. Then it taps the name again, so that the menu offers to
+    // hide the view.
     {
-      name: "new-ui-card-menu-view",
+      name: "new-ui-name-menu",
       path: "/",
       loggedIn: true,
       isolated: true,
@@ -1295,22 +1297,20 @@ function getStates(): readonly State[] {
         await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
       },
       prepare: async (page) => {
-        const card = page.locator(NEXT_HAND_FIRST_CARD_SELECTOR);
-        await tap(card);
+        await tap(page.locator(NEXT_NAME_SELECTOR));
         await page.getByRole("menuitem", { name: /^Show .*'s view$/u }).click();
         await page.locator("[data-empathy-shown]").waitFor();
       },
       // The menu opens again at each width, so that it scrolls into view in the phone layout. A tap
       // on the hand's box closes it.
       hover: async (page) => {
-        const card = page.locator(NEXT_HAND_FIRST_CARD_SELECTOR);
         const menu = page.getByRole("menu");
         if ((await menu.count()) > 0) {
           await tap(page.locator("#game-new-ui [data-hand]").nth(1));
           await menu.waitFor({ state: "detached" });
         }
 
-        await tap(card);
+        await tap(page.locator(NEXT_NAME_SELECTOR));
         await menu.waitFor();
       },
     },
