@@ -138,6 +138,7 @@ describe("CreateGame", () => {
     expect(hide).not.toHaveBeenCalled();
     expect(getInput("create-game-submit").ariaBusy).toBe("true");
     expect(document.querySelector("#create-game-submit img")).not.toBeNull();
+    expect(getInput("create-game-submit").textContent).toContain("Creating...");
     click("create-game-submit");
     expect(send).toHaveBeenCalledTimes(1);
 
@@ -148,6 +149,7 @@ describe("CreateGame", () => {
     expect(hide).not.toHaveBeenCalled();
     expect(getInput("create-game-submit").ariaBusy).toBe("false");
     expect(document.querySelector("#create-game-submit img")).toBeNull();
+    expect(getInput("create-game-submit").textContent).toBe("Create");
     expect(store.getState().session.creatingTable).toBe(false);
   });
 

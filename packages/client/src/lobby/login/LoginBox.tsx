@@ -246,7 +246,16 @@ function SignIn() {
             id="login-button"
             onClick={submit}
           >
-            <WaitingLabel waiting={busy}>{buttonLabel}</WaitingLabel>
+            <WaitingLabel
+              waiting={busy}
+              waitingText={
+                confirmingUsername === undefined
+                  ? "Signing in..."
+                  : "Creating account..."
+              }
+            >
+              {buttonLabel}
+            </WaitingLabel>
           </a>
         </div>
         <div className="tw:mt-4">

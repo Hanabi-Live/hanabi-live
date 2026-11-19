@@ -182,6 +182,13 @@ const SUBMIT_LABELS = {
   suggest: "Suggest to Table Owner",
 } as const satisfies Record<Mode, string>;
 
+/** What the submit button says while it waits for the server. */
+const WAITING_LABELS = {
+  create: "Creating...",
+  change: "Changing...",
+  suggest: "Suggesting...",
+} as const satisfies Record<Mode, string>;
+
 /**
  * The clock that replaces an invalid time: the one of our last timed table, or else the default.
  */
@@ -679,7 +686,9 @@ export function CreateGame(): React.JSX.Element {
         ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
         type="submit"
       >
-        <WaitingLabel waiting={waiting}>{SUBMIT_LABELS[mode]}</WaitingLabel>
+        <WaitingLabel waiting={waiting} waitingText={WAITING_LABELS[mode]}>
+          {SUBMIT_LABELS[mode]}
+        </WaitingLabel>
       </button>
     </>
   );

@@ -40,6 +40,8 @@
   --color-green-tint: var(--green-tint);
   --color-button-translucent: var(--button-translucent-bg);
   --color-button-translucent-hover: var(--button-translucent-hover-bg);
+  --color-button-disabled: var(--button-disabled-bg);
+  --color-button-disabled-text: var(--button-disabled-text);
   --color-name-me: var(--name-me);
   --color-friend: var(--friend);
   --color-difficulty-hard: var(--difficulty-hard);

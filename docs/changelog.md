@@ -42,8 +42,9 @@ of the repository.
 - The error window says what happened, such as that the server disconnected you,
   and "Reload" is its main button.
 - While the site waits for the server, it shows a card that turns over and shows
-  a different suit each time. The "Create" and "Sign In" buttons show it in
-  place of their label.
+  a different suit each time. While the "Create" and "Sign In" buttons wait,
+  they look disabled and show the card and what they are doing, such as
+  "Creating...".
 
 ## November 18th, 2026
 
