@@ -149,7 +149,7 @@ function LobbyNav() {
       </NavButton>
       <NavButton
         className="tw:narrow-640:hidden"
-        icon="fa-link"
+        icon="fa-compass"
         id="nav-buttons-lobby-resources"
         onClick={() => {
           lobbyPage.show("resources");
