@@ -633,8 +633,10 @@ function GameRow({
             <PlayerLinks names={teammates} />
           </div>
         )}
+        {/* Each row is its own grid, so the time has a fixed width. Otherwise a wider time, such as
+            "12:28 AM", would move the columns of its row. */}
         <span
-          className="tw:text-[0.9em] tw:text-text-label tw:tabular-nums"
+          className={`tw:text-right tw:text-[0.9em] tw:text-text-label tw:tabular-nums tw:narrow-640:w-auto ${context.withDate ? "tw:w-[9em]" : "tw:w-[4.75em]"}`}
           ref={tooltipRef(displayTime(game.finishedAt))}
         >
           {new Date(game.finishedAt).toLocaleString(undefined, {
@@ -760,6 +762,10 @@ function Pages({
   readonly onPage: (page: number) => void;
   readonly onSize: (size: number) => void;
 }) {
+  // The list says when it has no games.
+  if (total === 0) {
+    return null;
+  }
   if (total <= PAGE_SIZES[0]) {
     return (
       <p className="tw:mt-4 tw:mb-0 tw:text-center tw:text-[0.9em] tw:text-text-label">
