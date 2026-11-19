@@ -123,15 +123,21 @@ function ScoreHistogram({
   const counts = new Map(frequencies.map((row) => [row.score, row.numGames]));
   const highest = Math.max(1, ...counts.values());
   const scores = [...iRange(0, maxScore)];
-  /** The center of a score's column, as a percent of the chart's width. */
+  /** Where the average's line is, as a percent of the chart's width. */
   const averageCenter = ((average + 0.5) * 100) / scores.length;
+  /**
+   * The score whose column the average's line is in. When that column has a bar, the bar draws the
+   * line itself and stops it above its count, so that the line does not cross the count.
+   */
+  const averageScore = Math.min(Math.round(average), maxScore);
+  const averageInBar = (counts.get(averageScore) ?? 0) > 0;
 
   return (
     <figure className="tw:mx-0 tw:mt-8 tw:mb-0">
       <div className="tw:relative tw:flex tw:h-[11em] tw:items-end tw:border-b tw:border-text-label/40">
         <div
           aria-hidden
-          className="tw:pointer-events-none tw:absolute tw:top-0 tw:bottom-0 tw:border-l tw:border-dashed tw:border-text-label"
+          className={`tw:pointer-events-none tw:absolute tw:top-0 tw:bottom-0 ${averageInBar ? "" : "tw:border-l tw:border-dashed tw:border-text-label"}`}
           style={{ left: `${averageCenter}%` }}
         >
           {/* Near the right edge, the label goes on the left of the line, so that it fits. */}
@@ -143,6 +149,11 @@ function ScoreHistogram({
         </div>
         {scores.map((score) => (
           <ScoreBar
+            averageOffset={
+              averageInBar && score === averageScore
+                ? (average - score + 0.5) * 100
+                : undefined
+            }
             count={counts.get(score) ?? 0}
             dimmed={selectedScore !== undefined && selectedScore !== score}
             highest={highest}
@@ -174,6 +185,7 @@ function ScoreHistogram({
 }
 
 function ScoreBar({
+  averageOffset,
   score,
   count,
   highest,
@@ -182,6 +194,8 @@ function ScoreBar({
   dimmed,
   onSelect,
 }: {
+  /** Where the average's line crosses this column, as a percent of its width, if it does. */
+  readonly averageOffset: number | undefined;
   readonly score: number;
   readonly count: number;
   readonly highest: number;
@@ -191,6 +205,8 @@ function ScoreBar({
   readonly onSelect: () => void;
 }) {
   const games = `${count} ${count === 1 ? "game" : "games"}`;
+  // The count and the bar dim, but not the average's line.
+  const dim = dimmed ? "tw:opacity-35" : "";
   const label = `${games} scored ${score}.`;
   if (count === 0) {
     return (
@@ -206,16 +222,27 @@ function ScoreBar({
     <button
       aria-label={label}
       aria-pressed={selected}
-      className={`tw:group tw:relative tw:flex tw:h-full tw:flex-1 tw:cursor-pointer tw:flex-col tw:items-stretch tw:justify-end tw:border-0 tw:bg-transparent tw:px-px tw:pt-5 tw:pb-0 tw:text-inherit tw:[font:inherit] ${dimmed ? "tw:opacity-35" : ""}`}
+      className="tw:group tw:relative tw:flex tw:h-full tw:flex-1 tw:cursor-pointer tw:flex-col tw:items-stretch tw:justify-end tw:border-0 tw:bg-transparent tw:px-px tw:pt-5 tw:pb-0 tw:text-inherit tw:[font:inherit]"
       onClick={onSelect}
       ref={tooltipRef(label)}
       type="button"
     >
-      <span className="tw:mb-0.5 tw:text-center tw:text-[0.7em] tw:text-text tw:tabular-nums">
+      {averageOffset !== undefined && (
+        // The space above the count. The line starts at the top of the chart, over the padding.
+        <span aria-hidden className="tw:relative tw:flex-1">
+          <span
+            className="tw:absolute tw:-top-5 tw:bottom-0.5 tw:border-l tw:border-dashed tw:border-text-label"
+            style={{ left: `${averageOffset}%` }}
+          />
+        </span>
+      )}
+      <span
+        className={`tw:mb-0.5 tw:text-center tw:text-[0.7em] tw:text-text tw:tabular-nums ${dim}`}
+      >
         {count}
       </span>
       <span
-        className={`tw:block tw:min-h-[2px] tw:rounded-t-[4px] tw:group-hover:brightness-125 ${perfect ? "tw:bg-[var(--button-primary-bg)]" : "tw:bg-green-text"} ${selected ? "tw:outline-2 tw:outline-offset-1 tw:outline-text tw:outline-solid" : ""}`}
+        className={`tw:block tw:min-h-[2px] tw:rounded-t-[4px] ${dim} tw:group-hover:brightness-125 ${perfect ? "tw:bg-[var(--button-primary-bg)]" : "tw:bg-green-text"} ${selected ? "tw:outline-2 tw:outline-offset-1 tw:outline-text tw:outline-solid" : ""}`}
         style={{ height: `calc((100% - 1.5em) * ${count / highest})` }}
       />
     </button>
