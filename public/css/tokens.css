@@ -150,9 +150,9 @@
   --cursor-rejoin: url("/public/img/cursors/rejoin.svg") 12 12, pointer;
   --cursor-join: url("/public/img/cursors/join.svg") 12 10, pointer;
   --cursor-full: url("/public/img/cursors/full.svg") 12 12, pointer;
-  --cursor-spectate: url("/public/img/cursors/spectate.svg") 14 12, pointer;
+  --cursor-spectate: url("/public/img/cursors/spectate.svg") 13 12, pointer;
   --cursor-shadow: url("/public/img/cursors/shadow.svg") 12 12, pointer;
-  --cursor-un-shadow: url("/public/img/cursors/un-shadow.svg") 12 12, pointer;
+  --cursor-un-shadow: url("/public/img/cursors/un-shadow.svg") 14 13, pointer;
 
   /*
     Stacking order, from back to front. Other "z-index" values only order the parts of one

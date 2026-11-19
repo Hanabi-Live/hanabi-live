@@ -1,4 +1,5 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
+import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
 import { store } from "../../store.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
@@ -279,7 +280,7 @@ export function ChatPanel({
             ref={tooltipRefHtml(spectatorsTooltipHtml, { instant: true })}
             role="img"
           >
-            <i aria-hidden="true" className="fas fa-eye" />
+            <SpectatorsIcon />
             {spectators.length}
           </div>
         )}
@@ -302,7 +303,7 @@ export function ChatPanel({
         >
           {spectators.length > 0 && (
             <>
-              <i aria-hidden="true" className="fas fa-eye tw:mr-1.5" />
+              <SpectatorsIcon className="tw:mr-1.5" />
               Watching ({spectators.length}):{" "}
               <span className="tw:text-game-text">
                 {spectators.map((spectator, i) => (
