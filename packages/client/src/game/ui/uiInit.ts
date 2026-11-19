@@ -100,6 +100,21 @@ export function uiInit(onDrawn: () => void): void {
   imageLoader.progress();
 }
 
+/**
+ * Stops a closed game from drawing its screen when the images finish downloading. Otherwise, a game
+ * that the user left during the loading screen would draw itself without a table.
+ */
+export function stopWaitingForImages(): void {
+  const { loader } = lobbyGlobals;
+  if (loader === undefined) {
+    return;
+  }
+
+  loader.progressCallback = undefined;
+  loader.finishedCallback = undefined;
+  loader.failedCallback = undefined;
+}
+
 function showImageLoadError(filePath: string) {
   modals.showError(
     `Failed to download the game image "${filePath}". Please reload the page to retry.`,

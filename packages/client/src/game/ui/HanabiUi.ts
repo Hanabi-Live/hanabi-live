@@ -16,6 +16,7 @@ import * as cluesView from "./reactive/views/cluesView.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
 import { globals, releaseSubscriptions } from "./UiGlobals.ts";
+import { stopWaitingForImages } from "./uiInit.ts";
 
 export class HanabiUi {
   private readonly resizeHandler: () => void;
@@ -213,6 +214,7 @@ export class HanabiUi {
   }
 
   destroy(): void {
+    stopWaitingForImages();
     window.removeEventListener("resize", this.resizeHandler);
     window.screen.orientation.removeEventListener("change", this.resizeHandler);
     if (this.resizeRequestAnimationFrame !== undefined) {
