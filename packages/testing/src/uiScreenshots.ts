@@ -367,6 +367,17 @@ interface State {
 }
 
 /**
+ * Turns the H-Group features on or off on the Settings page. Their checkbox is the label beside it.
+ */
+async function toggleHGroupConventions(page: Page, on: boolean) {
+  if ((await page.locator("#hGroupConventions").isChecked()) !== on) {
+    await page
+      .locator('.lobby-row-checkbox label[for="hGroupConventions"]')
+      .click();
+  }
+}
+
+/**
  * Opens the menu of a button, unless it is open. The New UI's bar moves between the bottom of the
  * screen and the right column when the window changes its size, and that closes its menus.
  */
@@ -896,6 +907,33 @@ function getStates(): readonly State[] {
       loggedIn: true,
       prepare: async (page) => {
         await clickNav(page, "settings");
+      },
+    },
+    // The open list of H-Group levels, which is a grid.
+    {
+      name: "settings-h-group-level",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "settings");
+        await toggleHGroupConventions(page, true);
+        await page.locator("#hGroupLevel").selectOption("12");
+      },
+      hover: async (page) => {
+        const select = page.locator("#hGroupLevel");
+        // The list stays open at another size, so it is not scrolled into view by a click.
+        await select.evaluate((element) => {
+          element.scrollIntoView({ block: "center" });
+        });
+        if (!(await select.evaluate((element) => element.matches(":open")))) {
+          await select.click();
+        }
+        await select.locator("option").first().waitFor();
+      },
+      cleanup: async (page) => {
+        await page.keyboard.press("Escape");
+        await page.locator("#hGroupLevel").selectOption("");
+        await toggleHGroupConventions(page, false);
       },
     },
     {

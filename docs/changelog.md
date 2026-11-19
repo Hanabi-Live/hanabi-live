@@ -66,6 +66,8 @@ of the repository.
   stand out. The status of each game is in the color of its row.
 - The lobby and the other pages outside of a game have a dark background instead
   of the green felt. The felt is now only on the game table.
+- On the "Settings" page, the list of H-Group levels is a grid of numbers, so it
+  shows every level at once.
 
 ## November 18th, 2026
 

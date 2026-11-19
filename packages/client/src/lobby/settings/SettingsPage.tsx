@@ -261,6 +261,7 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
       </RowLabel>
       {status}
       <Select
+        className={LEVEL_PICKER_CLASS}
         id="hGroupLevel"
         onChange={(event) => {
           const level = parseIntSafe(event.target.value);
@@ -278,17 +279,79 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
           }
           showSaved();
         }}
+        onKeyDown={moveInLevelGrid}
+        style={LEVEL_PICKER_STYLE}
         value={hGroupLevel ?? ""}
       >
-        <option value="">Not set</option>
         {[...iRange(1, MAX_H_GROUP_LEVEL)].map((level) => (
-          <option key={level} value={level}>
-            Level {level}
+          <option className={LEVEL_CLASS} key={level} value={level}>
+            {/* The closed dropdown shows the whole text, and the grid shows only the number. */}
+            <span className="tw:hidden">Level </span>
+            {level}
           </option>
         ))}
+        <hr className="tw:col-span-full" />
+        <option className={`${LEVEL_CLASS} tw:col-span-full`} value="">
+          Not set
+        </option>
       </Select>
     </li>
   );
+}
+
+/** The number of levels in each row of the list of levels. */
+const LEVEL_COLUMNS = 5;
+
+/** The list of levels is a grid of numbers, so that it shows every level without a scroll bar. */
+const LEVEL_PICKER_CLASS = [
+  "tw:[&:open::picker(select)]:grid",
+  "tw:[&::picker(select)]:grid-cols-[repeat(var(--level-columns),2.5em)]",
+  "tw:[&::picker(select)]:gap-1",
+  // On a phone, the dropdown and its list fill the row, and the grid is in the middle of the list.
+  "tw:[&::picker(select)]:justify-center",
+  // The grid is wider than the dropdown, so it lines up with the dropdown's right edge.
+  "tw:[&::picker(select)]:[position-area:block-end_span-inline-start]",
+  "tw:[&::picker(select)]:[position-try-fallbacks:flip-block]",
+].join(" ");
+
+const LEVEL_PICKER_STYLE = {
+  "--level-columns": LEVEL_COLUMNS,
+} as React.CSSProperties;
+
+/** A cell of the grid. The chosen level is filled, instead of having a check mark. */
+const LEVEL_CLASS = [
+  "tw:justify-center",
+  "tw:tabular-nums",
+  "tw:[&::checkmark]:hidden",
+  "tw:checked:bg-green",
+  "tw:checked:text-text-on-accent",
+  "tw:checked:hover:bg-green",
+].join(" ");
+
+/** The arrow keys move through the grid of levels in rows and columns. */
+function moveInLevelGrid(event: React.KeyboardEvent<HTMLSelectElement>) {
+  const option = event.target;
+  if (!(option instanceof HTMLOptionElement)) {
+    return;
+  }
+
+  const step = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -LEVEL_COLUMNS,
+    ArrowDown: LEVEL_COLUMNS,
+  }[event.key];
+  if (step === undefined) {
+    return;
+  }
+  event.preventDefault();
+
+  // Down from the last row goes to "Not set", which fills the row under the grid.
+  const { options } = event.currentTarget;
+  const index = Math.min(option.index + step, options.length - 1);
+  if (index >= 0 && index !== option.index) {
+    options[index]?.focus();
+  }
 }
 
 function RowLabel({

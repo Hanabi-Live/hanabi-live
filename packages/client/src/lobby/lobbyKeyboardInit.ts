@@ -27,6 +27,15 @@ import * as watchReplay from "./watchReplay/WatchReplay.tsx";
 export function lobbyKeyboardInit(): void {
   loadKeyboardLayout();
   document.addEventListener("keydown", (event) => {
+    // Escape in the open list of a dropdown only closes the list.
+    if (
+      event.key === "Escape"
+      && event.target instanceof Element
+      && event.target.closest("select")?.matches(":open") === true
+    ) {
+      return;
+    }
+
     // On a lobby page, submit its form if enter is pressed (unless it activates a focused button or
     // link, or adds a line to a text area), and only allow returning otherwise.
     if (lobbyPage.isShown() && !isModalVisible()) {
