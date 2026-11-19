@@ -8,9 +8,6 @@ const WAITING_CARD_CLASS = "waiting-card";
 
 const WAITING_CARD_SRC = "/public/img/waiting-card.svg";
 
-/** The image's size in pixels, when nothing scales it. */
-const WAITING_CARD_SIZE = 64;
-
 const WAITING_TEXT = "Waiting for the server.";
 
 /** When the template's card started to turn, until a `continueTemplate` card takes it. */
@@ -22,7 +19,7 @@ let templateStartTime: number | null = null;
  */
 export function rememberTemplateWaitingCard(): void {
   const card = document.querySelector(`.${WAITING_CARD_CLASS}`);
-  const startTime = card?.getAnimations()[0]?.startTime;
+  const startTime = card?.getAnimations({ subtree: true })[0]?.startTime;
   templateStartTime = typeof startTime === "number" ? startTime : null;
 }
 
@@ -39,7 +36,7 @@ export function WaitingCard({
   readonly decorative?: boolean;
   readonly continueTemplate?: boolean;
 }): React.JSX.Element {
-  const ref = useRef<HTMLImageElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
     if (
@@ -49,7 +46,7 @@ export function WaitingCard({
     ) {
       return;
     }
-    for (const animation of ref.current.getAnimations()) {
+    for (const animation of ref.current.getAnimations({ subtree: true })) {
       animation.startTime = templateStartTime;
     }
     // A card that shows later starts on the red face, like every other card.
@@ -57,18 +54,16 @@ export function WaitingCard({
   }, [continueTemplate]);
 
   return (
-    <img
-      alt={decorative ? "" : WAITING_TEXT}
+    <span
       className={
         className === undefined
           ? WAITING_CARD_CLASS
           : `${WAITING_CARD_CLASS} ${className}`
       }
-      height={WAITING_CARD_SIZE}
       ref={ref}
-      src={WAITING_CARD_SRC}
-      width={WAITING_CARD_SIZE}
-    />
+    >
+      <img alt={decorative ? "" : WAITING_TEXT} src={WAITING_CARD_SRC} />
+    </span>
   );
 }
 

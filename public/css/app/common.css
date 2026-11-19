@@ -195,18 +195,33 @@ body[data-screen="game"] {
 
 /*
   The card that turns over while the page waits for the server ("WaitingCard.tsx", and the page
-  template before the client loads). "waiting-card.svg" has its ten sides in a row. The image shows
-  one side at a time, and steps to the next side each time that the card is edge-on. The animation
-  starts when the card appears, so that it always starts on the red face.
+  template before the client loads). "waiting-card.svg" has its ten sides in a row. The box shows
+  one side at a time, and the row moves to the next side each time that the card is edge-on.
+  - The animation starts when the card appears, so that it always starts on the red face.
+  - Both animations change only "transform", so that Chrome runs them off the main thread. If one
+    of them ran on the main thread, the card would stop while the client starts.
 */
 .waiting-card {
-  object-fit: cover;
-  animation:
-    waiting-card-turn 0.7s infinite,
-    waiting-card-side 7s steps(10) infinite;
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  animation: waiting-card-turn 0.7s infinite;
 }
 
-/* Each side comes up edge-on, opens quickly with a slight lift, rests, and then closes. */
+.waiting-card > img {
+  display: block;
+  width: 1000%;
+  max-width: none;
+  height: 100%;
+  animation: waiting-card-side 7s steps(10) infinite;
+}
+
+/*
+  Each side comes up edge-on and opens quickly with a slight lift. Then it starts to turn slowly,
+  and speeds up until it is edge-on again. The card never stands still, so that it does not look
+  stuck when the page stops on one of its frames.
+*/
 @keyframes waiting-card-turn {
   0% {
     transform: scale(0, 1.06);
@@ -216,22 +231,26 @@ body[data-screen="game"] {
     transform: scale(1.03, 1.01);
     animation-timing-function: ease-out;
   }
-  26%,
-  80% {
+  26% {
     transform: scale(1, 1);
-    animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4);
+    animation-timing-function: linear;
+  }
+  80% {
+    transform: scale(0.9, 1.02);
+    /* The curve starts at the speed of the slow turn before it. */
+    animation-timing-function: cubic-bezier(0.6, 0.025, 0.9, 0.4);
   }
   100% {
     transform: scale(0, 1.06);
   }
 }
 
-/* With ten sides, the last side is at 100%, so each step is 100% / 9. */
+/* The row is ten sides wide, so each step moves it by 10% of its width. */
 @keyframes waiting-card-side {
   from {
-    object-position: 0 0;
+    transform: translateX(0);
   }
   to {
-    object-position: calc(100% * 10 / 9) 0;
+    transform: translateX(-100%);
   }
 }

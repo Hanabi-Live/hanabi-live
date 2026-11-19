@@ -28,13 +28,12 @@
           <section id="loading" class="box align-center">
             <h3>Loading...</h3>
             <p>{{ projectName }} is loading. Please wait!</p>
-            <img
-              class="waiting-card"
-              src="/public/img/waiting-card.svg"
-              width="64"
-              height="64"
-              alt="Waiting for the server."
-            />
+            <span class="waiting-card">
+              <img
+                src="/public/img/waiting-card.svg"
+                alt="Waiting for the server."
+              />
+            </span>
           </section>
 
           {% if isDev %}
