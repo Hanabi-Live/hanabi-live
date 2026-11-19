@@ -229,13 +229,17 @@ function keydown(event: KeyboardEvent) {
       return;
     }
 
+    // The keys below would otherwise also scroll the element that was clicked last, such as the
+    // chat.
     switch (event.key) {
       case "ArrowLeft": {
+        event.preventDefault();
         replay.back();
         return;
       }
 
       case "ArrowRight": {
+        event.preventDefault();
         replay.forward();
         return;
       }
@@ -243,8 +247,10 @@ function keydown(event: KeyboardEvent) {
       case "ArrowUp":
       case "ArrowDown": {
         if (globals.state.replay.shared !== undefined) {
+          event.preventDefault();
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
+          event.preventDefault();
           if (globals.state.replay.segment === undefined) {
             replay.enter();
           } else {
@@ -255,11 +261,13 @@ function keydown(event: KeyboardEvent) {
       }
 
       case "Home": {
+        event.preventDefault();
         replay.backFull();
         return;
       }
 
       case "End": {
+        event.preventDefault();
         replay.forwardFull();
         return;
       }
@@ -269,9 +277,11 @@ function keydown(event: KeyboardEvent) {
       }
     }
   } else if (event.key === "ArrowLeft") {
+    event.preventDefault();
     hypothetical.sendHypotheticalBack();
     return;
   } else if (event.key === "ArrowRight") {
+    event.preventDefault();
     hypothetical.sendHypotheticalPassTurn();
     return;
   }
