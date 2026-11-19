@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { FitText } from "../../FitText.tsx";
 import { store } from "../../store.ts";
 import {
   CLOSE_DURATION_IN_MILLISECONDS,
@@ -42,7 +43,6 @@ import {
   FadeLayer,
   getButtonTextColorStyle,
 } from "./FadeLayer.tsx";
-import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS } from "./Menu.tsx";
 import { getVisibilityTransition, useFade } from "./motion.ts";

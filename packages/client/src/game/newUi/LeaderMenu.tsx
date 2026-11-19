@@ -1,9 +1,9 @@
 import type { Spectator } from "@hanabi-live/data";
 import { useLayoutEffect, useRef, useState } from "react";
+import { FitText } from "../../FitText.tsx";
 import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { setLeader } from "../ui/leader.ts";
-import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {

@@ -1,10 +1,10 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
+import { FitText } from "../../FitText.tsx";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
-import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS, MenuCaret } from "./Menu.tsx";
 import {

@@ -77,6 +77,13 @@ const table = {
 
 const send = vi.fn();
 
+// The test page has no layout, so it has no ResizeObserver.
+class ResizeObserverStub {
+  observe = vi.fn();
+  disconnect = vi.fn();
+}
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+
 beforeEach(() => {
   store.dispatch(usernameChanged("me"));
   store.dispatch(friendsChanged(["dave"]));
@@ -141,7 +148,7 @@ describe("Pregame", () => {
 
   test("a spectator shadows a player, and stops shadowing them", () => {
     act(() => {
-      screen.getByText("alice").click();
+      screen.getByRole("button", { name: "alice" }).click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
       tableId: TABLE_ID,
@@ -150,14 +157,9 @@ describe("Pregame", () => {
 
     // We are already shadowing Bob, so his name has the eyes icon.
     act(() => {
-      screen
-        .getByText(
-          (_content, element) =>
-            element?.tagName === "BUTTON"
-            && element.textContent === "bob"
-            && element.querySelector("svg") !== null,
-        )
-        .click();
+      const bob = screen.getByRole("button", { name: "bob" });
+      expect(bob.querySelector("svg")).not.toBeNull();
+      bob.click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
       tableId: TABLE_ID,

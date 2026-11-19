@@ -4,6 +4,7 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { getCardsPerHand, getVariantById } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
+import { FitText } from "../../FitText.tsx";
 import { globals } from "../../Globals.ts";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { CARD_BACK_STYLE } from "../../cardBack.ts";
@@ -223,8 +224,9 @@ function PlayerBox({
           long the name is. */}
       <div className="tw:mb-2 tw:grid tw:grid-cols-[auto_minmax(0,1fr)] tw:items-center tw:gap-x-2 tw:gap-y-1 tw:text-[1.15em]">
         <SeatNumber seat={playerIndex + 1} />
-        <p className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:gap-x-2 tw:break-words">
-          <strong className="tw:min-w-0">
+        {/* A long name gets smaller to fit on one line. */}
+        <p className="tw:m-0 tw:flex tw:min-w-0 tw:items-center tw:gap-x-2">
+          <strong className="tw:flex tw:min-w-0">
             {isSpectator ? (
               <ShadowName
                 name={player.username}
@@ -232,11 +234,13 @@ function PlayerBox({
                 shadowed={shadowed}
               />
             ) : (
-              <Name name={player.username} />
+              <FitText text={<Name name={player.username} />} />
             )}
           </strong>
           {!player.present && (
-            <span className="tw:text-[0.8em] tw:text-game-muted">Away</span>
+            <span className="tw:flex-none tw:text-[0.8em] tw:text-game-muted">
+              Away
+            </span>
           )}
         </p>
         <HGroupLevelBadge name={player.username} />
@@ -437,7 +441,7 @@ function ShadowName({
   return (
     <button
       className={[
-        "tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:[font:inherit] tw:text-inherit",
+        "tw:flex tw:min-w-0 tw:cursor-pointer tw:items-center tw:border-0 tw:bg-transparent tw:p-0 tw:[font:inherit] tw:text-inherit",
         shadowClassName,
         nameClassName ?? "",
       ].join(" ")}
@@ -447,8 +451,8 @@ function ShadowName({
       }}
       type="button"
     >
-      {name}
-      {shadowed && <SpectatorsIcon className="tw:ml-[0.3em]" />}
+      <FitText text={name} />
+      {shadowed && <SpectatorsIcon className="tw:ml-[0.3em] tw:flex-none" />}
     </button>
   );
 }

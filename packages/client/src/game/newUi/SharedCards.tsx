@@ -21,6 +21,7 @@ import {
   useState,
 } from "react";
 import { CARD_BACK_STYLE } from "../../cardBack.ts";
+import { FitText } from "../../FitText.tsx";
 import {
   CLOSE_DURATION_IN_MILLISECONDS,
   OPEN_DURATION_IN_MILLISECONDS,
@@ -50,7 +51,6 @@ import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
-import { FitText } from "./FitText.tsx";
 import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
 import { getColorTransition, getOpacityTransition, useFade } from "./motion.ts";
