@@ -1066,6 +1066,8 @@ function OwnCard({
   }
 
   if (dragged) {
+    // The slot of a clued card is raised like the card, so that the card goes back to where it was.
+    const raise = card.clued ? cardWidth * CLUED_RAISE_PER_WIDTH : 0;
     return (
       <div
         className="tw:box-border tw:shrink-0 tw:border-2 tw:border-dashed tw:border-game-line"
@@ -1075,6 +1077,7 @@ function OwnCard({
           width: cardWidth,
           height,
           borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+          transform: `translateY(${-raise}px)`,
         }}
       />
     );

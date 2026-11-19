@@ -322,8 +322,12 @@ export function useCardDrag(onTap: (order: CardOrder) => void): CardDrag {
       }
       // The card lifts off the table as soon as it is pressed, so that the player feels that they
       // hold it before they move it. Moving it does not change it. Released in place, it settles
-      // back into the hand.
-      const start = measure(event.currentTarget);
+      // back into the hand. It starts from the card's face, which is above the card's box when the
+      // card is clued.
+      const start = measure(
+        event.currentTarget.querySelector("[data-card-face]")
+          ?? event.currentTarget,
+      );
       const pointer = {
         x: toScreenPixels(event.clientX),
         y: toScreenPixels(event.clientY),
