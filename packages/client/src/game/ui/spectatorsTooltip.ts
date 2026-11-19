@@ -1,5 +1,6 @@
 import type { Spectator } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
+import { spectatorsIconHtml } from "../../SpectatorsIcon.tsx";
 import { store } from "../../store.ts";
 import { escapeHtml } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
@@ -34,8 +35,7 @@ export function getSpectatorsTooltip(
         `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
       );
 
-      // eslint-disable-next-line complete/require-ascii
-      nameEntry += ` (🕵️ <em>${escapeHtml(playerName)}</em>)`;
+      nameEntry += ` (${spectatorsIconHtml()} <em>${escapeHtml(playerName)}</em>)`;
     }
     nameEntry += "</li>";
     nameEntries += nameEntry;

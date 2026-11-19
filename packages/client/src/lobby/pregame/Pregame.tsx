@@ -11,6 +11,7 @@ import {
 import { iRange } from "complete-common";
 import { useEffect, useState } from "react";
 import { globals } from "../../Globals.ts";
+import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { useAppSelector } from "../../store.ts";
@@ -125,7 +126,7 @@ export function Pregame(): React.JSX.Element | undefined {
             style={fadeStyle}
           >
             <strong>
-              <i className="fas fa-glasses tw:mr-[0.4em]" />
+              <SpectatorsIcon className="tw:mr-[0.4em]" />
               Spectators:
             </strong>
             <br />
@@ -143,8 +144,7 @@ export function Pregame(): React.JSX.Element | undefined {
                   {spectator.shadowingPlayerIndex !== undefined && (
                     <>
                       {" "}
-                      {/* eslint-disable-next-line complete/require-ascii */}
-                      (🕵️{" "}
+                      (<SpectatorsIcon />{" "}
                       <em>
                         {table?.playerNames[spectator.shadowingPlayerIndex]}
                       </em>
@@ -347,8 +347,7 @@ function ShadowName({
       }}
     >
       {name}
-      {/* eslint-disable-next-line complete/require-ascii */}
-      {shadowed && " 🕵️"}
+      {shadowed && <SpectatorsIcon className="tw:ml-[0.3em]" />}
     </span>
   );
 }

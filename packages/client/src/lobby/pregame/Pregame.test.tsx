@@ -129,7 +129,12 @@ describe("Pregame", () => {
     expect(boxes[1]!.textContent).toContain("AWAY");
 
     const spectators = document.querySelector("#lobby-pregame-spectators")!;
-    expect(spectators.textContent).toContain("me (\u{1F575}\u{FE0F} bob)");
+    // The eyes icon before Bob's name says that we view the game as Bob.
+    const us = [...spectators.querySelectorAll("li")].find((item) =>
+      item.textContent.includes("me"),
+    )!;
+    expect(us.textContent).toContain("me ( bob)");
+    expect(us.querySelector("svg")).not.toBeNull();
     expect(screen.getByText("dave").className).toBe("tw:text-friend");
   });
 
@@ -142,9 +147,16 @@ describe("Pregame", () => {
       shadowingPlayerIndex: 0,
     });
 
-    // We are already shadowing Bob.
+    // We are already shadowing Bob, so his name has the eyes icon.
     act(() => {
-      screen.getByText("bob \u{1F575}\u{FE0F}").click();
+      screen
+        .getByText(
+          (_content, element) =>
+            element?.tagName === "SPAN"
+            && element.textContent === "bob"
+            && element.querySelector("svg") !== null,
+        )
+        .click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
       tableId: TABLE_ID,

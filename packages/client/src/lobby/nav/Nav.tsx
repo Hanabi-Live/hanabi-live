@@ -3,6 +3,7 @@
 import { Children } from "react";
 import { PATH } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
+import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import type { RootState } from "../../store.ts";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
@@ -222,7 +223,7 @@ function PregameNav() {
       ) : (
         <NavButton
           disabled={!joinButton.enabled}
-          icon="fa-glasses"
+          icon={<SpectatorsIcon className={ICON_CLASS_NAME} />}
           id="nav-buttons-pregame-spectate"
           onClick={spectateGame}
         >
@@ -381,7 +382,8 @@ function NavButton({
   readonly children: React.ReactNode;
   readonly className?: string;
   readonly disabled?: boolean;
-  readonly icon: string;
+  /** A Font Awesome class, such as "fa-play", or an icon element. */
+  readonly icon: string | React.JSX.Element;
   readonly id: string;
   readonly onClick: () => void;
 }) {
@@ -399,7 +401,12 @@ function NavButton({
           }
         }}
       >
-        <i className={`fas ${icon} ${ICON_CLASS_NAME}`} /> {children}
+        {typeof icon === "string" ? (
+          <i className={`fas ${icon} ${ICON_CLASS_NAME}`} />
+        ) : (
+          icon
+        )}{" "}
+        {children}
       </a>
     </li>
   );

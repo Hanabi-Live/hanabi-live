@@ -123,10 +123,10 @@ that have not been played yet and have only one copy remaining.)
 
 - All games have the ability to be spectated by others.
 - Spectators will see all of the hands.
-- The list of current spectators can be seen by hovering over the "👀" icon in
-  the bottom-right-hand corner.
+- The list of current spectators can be seen by hovering over the icon of two
+  eyes in the bottom-right-hand corner.
 - Spectators can view the game from a player's perspective. In ongoing games,
-  this is indicated with a "🕵️" icon.
+  this is indicated with an icon of two eyes beside the player's name.
 - Anyone can left-click on a player's name to see only that player's actions in
   the action log.
 
