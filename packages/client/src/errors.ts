@@ -20,6 +20,14 @@ const INJECTED_ERROR_LOCATION = {
 } as const;
 
 /**
+ * The message of the error that Chrome reports when a `ResizeObserver` callback changes the size of
+ * an observed element. It is harmless: Chrome delivers the rest of the notifications in the next
+ * frame. This happens when the chat is popped out to its own window.
+ */
+const RESIZE_OBSERVER_LOOP_MESSAGE =
+  "ResizeObserver loop completed with undelivered notifications.";
+
+/**
  * The most calls that a stack trace names. Chrome names only 10 by default, which can leave out the
  * code that caused the error. The server cuts a stack trace that is too long.
  */
@@ -108,6 +116,9 @@ export function initErrorListener(): void {
         && !errorEvent.filename.includes(SCRIPTS_PATH))
     ) {
       // Some buggy code that the browser injected is causing an error. Safe to ignore.
+      return;
+    }
+    if (errorEvent.message === RESIZE_OBSERVER_LOOP_MESSAGE) {
       return;
     }
 

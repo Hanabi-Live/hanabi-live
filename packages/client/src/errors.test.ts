@@ -1,6 +1,7 @@
 import { SCRIPTS_PATH } from "@hanabi-live/data";
 import { expect, test, vi } from "vitest";
 import type { Connection } from "./Connection.ts";
+import { showError } from "./modals.ts";
 
 vi.mock("./modals.ts", () => ({ showError: vi.fn() }));
 
@@ -95,4 +96,15 @@ test("errors from the website's scripts are reported once each, up to a limit", 
     throwError(`Later ${index}`);
   }
   expect(sent).toHaveLength(5);
+});
+
+test("a ResizeObserver loop is not shown", () => {
+  vi.mocked(showError).mockClear();
+  listeners.get("error")?.(
+    new FakeErrorEvent(
+      "ResizeObserver loop completed with undelivered notifications.",
+      null,
+    ),
+  );
+  expect(showError).not.toHaveBeenCalled();
 });
