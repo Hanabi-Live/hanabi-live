@@ -650,7 +650,8 @@ function getStates(): readonly State[] {
       name: "history",
       path: `/history/${USERNAME}`,
       loggedIn: false,
-      // Filter by a player count, so that the filters show a selected choice.
+      // Filter by a player count, so that the filters show a selected choice, and type in the
+      // search box, so that it suggests variant names.
       prepare: async (page) => {
         await page
           .getByRole("button", {
@@ -659,6 +660,8 @@ function getStates(): readonly State[] {
           })
           .click();
         await page.getByRole("button", { name: "Clear filters" }).waitFor();
+        await page.getByRole("combobox", { name: "Search" }).fill("no v");
+        await page.getByRole("listbox").waitFor();
       },
     },
     {

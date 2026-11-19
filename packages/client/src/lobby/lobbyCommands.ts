@@ -17,12 +17,6 @@ import {
 } from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
-import {
-  historyGameAdded,
-  lobbyStatusReceived,
-  totalGamesChanged,
-} from "./gameHistory/historySlice.ts";
-import { historyFilterFinds } from "./history.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
@@ -44,7 +38,6 @@ let startGameCooldownTimeout: ReturnType<typeof setTimeout> | undefined;
 export const lobbyCommands = new ServerHandlers();
 
 lobbyCommands.set("lobbyStatus", (data) => {
-  store.dispatch(lobbyStatusReceived(data));
   if (data.type === "error") {
     modals.showWarning(noticeHtml(data));
   }
@@ -98,21 +91,6 @@ lobbyCommands.set("pregame", (data) => {
   startGameCooldownTimeout = setTimeout(() => {
     store.dispatch(startGameCooldownChanged(false));
   }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
-});
-
-lobbyCommands.set("gameHistoryAdded", (data) => {
-  // We just finished a game, so add it to our history and our total.
-  const state = store.getState();
-  const found = historyFilterFinds(
-    data,
-    state.history.filter,
-    state.session.username,
-  );
-  store.dispatch(historyGameAdded(found ? data : undefined));
-  const { totalGames } = store.getState().history;
-  if (totalGames !== undefined) {
-    store.dispatch(totalGamesChanged(totalGames + 1));
-  }
 });
 
 lobbyCommands.set("tableJoined", (data) => {
@@ -197,13 +175,11 @@ lobbyCommands.set("welcome", (data) => {
   store.dispatch(userIdChanged(data.userId));
   setTabAccount(data.userId);
   store.dispatch(usernameChanged(data.username)); // We might have logged-in with a different stylization
-  store.dispatch(totalGamesChanged(undefined));
   globals.muted = data.muted;
   store.dispatch(settingsChanged(data.settings));
   store.dispatch(friendsChanged(data.friends));
   store.dispatch(blockedChanged(data.blocked));
 
-  // The "lobbyStatus" message reports the total number of games once the statistics load.
   lobbyLogin.hide(data.firstTimeUser);
 
   // Go to the table that we were at before we disconnected, or somewhere specific if we have

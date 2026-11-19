@@ -221,6 +221,8 @@ constants! {
     /// The longest stack trace of a client error report, in characters. The server cuts a longer
     /// one.
     @data pub const MAX_CLIENT_ERROR_STACK_LENGTH: usize = 4000;
+    /// The path that every versioned HTTP API route begins with.
+    @data pub const API_PREFIX: &str = "/api/v1";
     /// The URL path of the website's scripts. A client error report must come from one of them.
     @data pub const SCRIPTS_PATH: &str = "/public/js/bundles/";
     /// The longest search of a list of games, in characters.

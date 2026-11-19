@@ -29,14 +29,13 @@ of the repository.
   statistics on separate lines, and a chart with a bar for every score and a
   line at the average. A click on a bar shows only the games with that score.
   The pages of players and seeds are narrower, so that their parts line up.
-- The lobby's history screen matches a player's history page: a list grouped by
-  day, with a score bar for each game. A box above it filters the games by
-  variant or by the name of another player.
+- The lobby's history screen shows the same list as a player's history page,
+  with its filters, sorting, and pages.
 - A pre-game table shows its variant at the top and a box for each seat, with
   the open seats outlined. Each player's best scores on the variant show for
   every player count, without hovering.
-- A player's history page has a "With" box. It shows only the games with the
-  players that it names.
+- A search box above a player's history finds games by part of a variant's name
+  or of another player's name, and suggests variant names as you type.
 - Each game on a player's history page, tagged games, and a seed's page has a
   "Replay" button and a button for a shared replay, and shows its options and
   number, as in the lobby's history.

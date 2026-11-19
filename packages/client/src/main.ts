@@ -71,9 +71,10 @@ function init() {
     }
 
     if (hash.startsWith(HISTORY_HASH)) {
-      lobbyHistory.show();
       const seed = getOtherScoresSeed(hash);
-      if (seed !== undefined) {
+      if (seed === undefined) {
+        lobbyHistory.show();
+      } else {
         lobbyHistory.showOtherScores(seed);
       }
     } else if (

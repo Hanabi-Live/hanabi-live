@@ -19,8 +19,7 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 
-/// The path that every versioned HTTP API route begins with.
-pub(crate) const API_PREFIX: &str = "/api/v1";
+pub(crate) use hanabi_protocol::API_PREFIX;
 
 /// How long browsers keep a release's versioned assets, which never change under the same URL.
 const VERSIONED_ASSET_MAX_AGE_SECONDS: i64 = 365 * hanabi_protocol::SECONDS_PER_DAY;

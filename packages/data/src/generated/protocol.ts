@@ -56,6 +56,7 @@ export const WEBSITE_CHAT_COMMANDS = [
 ] as const;
 export const MAX_CLIENT_ERROR_MESSAGE_LENGTH = 1000;
 export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
+export const API_PREFIX = "/api/v1";
 export const SCRIPTS_PATH = "/public/js/bundles/";
 export const MAX_GAME_SEARCH_LENGTH = 100;
 export const MAX_TABLE_NAME_LENGTH = 45;

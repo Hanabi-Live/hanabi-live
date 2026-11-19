@@ -154,12 +154,13 @@ that have not been played yet and have only one copy remaining.)
 
 - After a game is completed, it will be recorded in the database.
 - Players will be able to see their past games in the "Show History" screen.
-- The "Show History" screen groups the games by day, and can filter them by
-  variant or by the name of another player.
+- The "Show History" screen shows the same list as a player's history page.
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
-- A player's history page can show only the games with other players. Type their
-  names in the "With" box, separated by commas.
+- A player's history groups the games by day. Its search box finds games by part
+  of a variant's name or of another player's name. Separate terms with commas to
+  find the games that match all of them. As you type, the box suggests variant
+  names.
 - Profiles show the time spent playing, the time spent reviewing replays, and
   the total of both. Review time does not count the time before an idle replay
   closes.

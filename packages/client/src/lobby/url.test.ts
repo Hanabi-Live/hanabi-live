@@ -137,9 +137,8 @@ describe("replay URL loading", () => {
 
     parseAndGoto(welcome());
 
-    expect(show).toHaveBeenCalledTimes(1);
+    expect(show).not.toHaveBeenCalled();
     expect(showOtherScores).toHaveBeenCalledWith("p4v0s1");
-    expect(show).toHaveBeenCalledWith(false);
   });
 
   test.each([

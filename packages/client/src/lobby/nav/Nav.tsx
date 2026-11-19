@@ -305,14 +305,18 @@ function HistoryNav() {
 }
 
 function OtherScoresNav() {
-  const seed = useAppSelector((state) => state.history.otherScores?.seed);
+  const seed = useAppSelector((state) => state.history.otherScoresSeed);
 
   return (
     <NavList>
       <li className={LIST_ITEM_CLASS_NAME}>
         <a
           className={`${BUTTON_CLASS_NAME} ${ENABLED_COLOR_CLASS_NAME}`}
-          href={seed === undefined ? PATH.SEED : `${PATH.SEED}/${seed}`}
+          href={
+            seed === undefined
+              ? PATH.SEED
+              : `${PATH.SEED}/${encodeURIComponent(seed)}`
+          }
           id="nav-buttons-history-other-scores-view-all"
           rel="noopener noreferrer"
           target="_blank"
