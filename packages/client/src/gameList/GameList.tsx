@@ -79,11 +79,6 @@ const SORT_CHOICES = [
     column: "score",
     descending: false,
   },
-  {
-    text: "Most players",
-    column: "numPlayers",
-    descending: true,
-  },
 ] as const satisfies readonly SortChoice[];
 
 /** What the count under the list calls one game and several. */
@@ -112,11 +107,7 @@ export function GameList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const owners = useMemo(() => new Set(table.players), [table]);
-  // The games on a seed share its player count.
-  const sortChoices = seed
-    ? SORT_CHOICES.filter((choice) => choice.column !== "numPlayers")
-    : SORT_CHOICES;
-  const sort = sortChoices[sortIndex] ?? SORT_CHOICES[0];
+  const sort = SORT_CHOICES[sortIndex] ?? SORT_CHOICES[0];
   const filtered =
     variant !== ""
     || players !== ""
@@ -283,7 +274,7 @@ export function GameList({
             }}
             value={sortIndex}
           >
-            {sortChoices.map((choice, index) => (
+            {SORT_CHOICES.map((choice, index) => (
               <option key={choice.text} value={index}>
                 {choice.text}
               </option>
