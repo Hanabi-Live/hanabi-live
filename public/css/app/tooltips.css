@@ -111,7 +111,7 @@
       var(--tooltip-arrow-size)
   );
   overflow: auto;
-  padding: 0.65em 0.85em;
+  padding: 0.8667em 1.1333em;
   border-radius: var(--radius);
   /* The bubble draws the border in this transparent space (see above). */
   border: var(--tooltip-border-width) solid transparent;
@@ -121,11 +121,11 @@
   line-height: 1.5;
 }
 
-/* Tooltip text that is smaller than the default. It is a block, so that its lines are spaced by
-   its own font size instead of the box's larger one. */
-.small-tooltip-text {
+/* The larger text of card notes, which players wrote. It is a block, so that its lines are spaced
+   by its own font size instead of the box's smaller one. */
+.large-tooltip-text {
   display: block;
-  font-size: 0.75em;
+  font-size: calc(var(--tooltip-large-text-scale) * 1em);
 }
 
 /* An info icon beside a block of text, so that every line of the text starts at the same place. */

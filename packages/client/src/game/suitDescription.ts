@@ -91,11 +91,9 @@ export function getSuitDescriptionHtml(
   const lines = getSuitRuleLines(variant, suitIndex);
 
   return `
-    <div class="small-tooltip-text">
-      <div class="tw:font-semibold tw:text-text">
-        ${suit.displayName} (${abbreviation})
-      </div>
-      ${lines.join("<br>")}
+    <div class="tw:font-semibold tw:text-text">
+      ${suit.displayName} (${abbreviation})
     </div>
+    ${lines.join("<br>")}
   `.trim();
 }

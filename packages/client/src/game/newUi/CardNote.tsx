@@ -4,7 +4,10 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
-import { FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS } from "../../Tooltip.ts";
+import {
+  LARGE_TEXT_SCALE,
+  FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS,
+} from "../../Tooltip.ts";
 import * as chat from "../../chat.ts";
 import { store } from "../../store.ts";
 import {
@@ -477,12 +480,14 @@ function NoteEditor({
             }}
             ref={inputRef}
             spellCheck={false}
-            // The text is the size of the note's tooltip. The tooltip is outside the zoomed screen,
-            // and its size comes from the page's text, which is smaller in a smaller window.
+            // The text is the size of the note in its tooltip. The tooltip is outside the zoomed
+            // screen, and its size comes from the page's text, which is smaller in a smaller
+            // window.
             style={{
               fontSize:
                 (pixels(getComputedStyle(document.body).fontSize)
-                  * TOOLTIP_FONT_SIZE_IN_EMS)
+                  * TOOLTIP_FONT_SIZE_IN_EMS
+                  * LARGE_TEXT_SCALE)
                 / screenScale,
             }}
             type="text"

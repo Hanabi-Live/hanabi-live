@@ -96,9 +96,9 @@ export function tooltipRefHtml(
 }
 
 /**
- * Returns a callback ref that shows `text` in the site's tooltip, in its smaller text, while the
- * pointer is over the element. With no text, or empty text, the element has no tooltip. The text is
- * escaped, so it can hold names that users wrote.
+ * Returns a callback ref that shows `text` in the site's tooltip while the pointer is over the
+ * element. With no text, or empty text, the element has no tooltip. The text is escaped, so it can
+ * hold names that users wrote.
  *
  * Unlike a hook, it can be used inside a loop, such as for each button in a row.
  */
@@ -107,9 +107,7 @@ export function tooltipRef(
   options: TooltipRefOptions = {},
 ): TooltipRef {
   return tooltipRefHtml(
-    text === undefined || text === ""
-      ? undefined
-      : `<span class="small-tooltip-text">${escapeHtml(text)}</span>`,
+    text === undefined || text === "" ? undefined : escapeHtml(text),
     options,
   );
 }

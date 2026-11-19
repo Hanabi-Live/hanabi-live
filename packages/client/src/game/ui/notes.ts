@@ -196,7 +196,10 @@ export function show(card: HanabiCard): void {
 
   // Update the tooltip content.
   unmountNoteCounter(tooltip);
-  let shownNote = get(card.order, false, true);
+  const note = get(card.order, false, true);
+  // Players wrote the notes, so they are in the larger text.
+  let shownNote =
+    note === "" ? "" : `<div class="large-tooltip-text">${note}</div>`;
   // A card in the hole of a "Throw It in a Hole" variant is on the play stacks, but its suit can be
   // unknown.
   const suitDescription =
@@ -252,7 +255,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
   const counterId = `tooltip-${card.tooltipName}-length-counter`;
   tooltips.setContent(
     tooltip,
-    `<span class="tw:relative tw:inline-block">${input.outerHTML}<span id="${counterId}"></span></span>`,
+    `<div class="large-tooltip-text"><span class="tw:relative tw:inline-block">${input.outerHTML}<span id="${counterId}"></span></span></div>`,
   );
 
   // A card without a note has an empty tooltip, which "show" leaves closed.

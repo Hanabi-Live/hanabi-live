@@ -934,9 +934,7 @@ function CheckedInput({
     if (error === undefined) {
       shown.close();
     } else {
-      shown.setContent(
-        `<span class="small-tooltip-text">${escapeHtml(error)}</span>`,
-      );
+      shown.setContent(escapeHtml(error));
       shown.open();
     }
   });

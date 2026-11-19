@@ -165,7 +165,7 @@ function SuitLabel({
       data-suit-label
       ref={tooltipRefHtml(
         showTooltip
-          ? `${descriptionHtml}<div class="small-tooltip-text">In notes, write "${escapeHtml(abbreviation.toLowerCase())}".</div>`
+          ? `${descriptionHtml}<div>In notes, write "${escapeHtml(abbreviation.toLowerCase())}".</div>`
           : undefined,
       )}
       role="note"
@@ -1137,9 +1137,8 @@ function getDeckTooltip(
     );
   }
 
-  // The tooltip is narrow, so that its lines wrap as in a paragraph. It uses the smaller text of
-  // the screen's other tooltips.
-  return `<div class="small-tooltip-text tw:max-w-80">${lines.join("<br>")}</div>`;
+  // The tooltip is narrow, so that its lines wrap as in a paragraph.
+  return `<div class="tw:max-w-80">${lines.join("<br>")}</div>`;
 }
 
 /**
@@ -1643,7 +1642,7 @@ function DeckResult({
       aria-label={`Game over: ${gameEnd.summary}`}
       className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
       ref={tooltipRefHtml(
-        `<div class="small-tooltip-text tw:max-w-80">${getGameEndTooltipHtml(gameEnd)}</div>`,
+        `<div class="tw:max-w-80">${getGameEndTooltipHtml(gameEnd)}</div>`,
       )}
       role="img"
     >
@@ -1925,7 +1924,7 @@ function getDiscardPileTooltipHtml(
     );
   }
   // The tooltip is narrow, so that the long Double Discard warning wraps as in a paragraph.
-  return `<div class="small-tooltip-text tw:max-w-80">${lines.join("<br>")}</div>`;
+  return `<div class="tw:max-w-80">${lines.join("<br>")}</div>`;
 }
 
 /** How long the discard pile pulses when the team gets to max clues, in milliseconds. */
@@ -2204,7 +2203,7 @@ function getClueTokensTooltipHtml(
       lines.push("No one can discard.");
     }
   }
-  return `<span class="small-tooltip-text">${lines.join("<br>")}</span>`;
+  return lines.join("<br>");
 }
 
 /**
@@ -2366,11 +2365,9 @@ export function TableTokens({
           }
           className="tw:group tw:relative tw:isolate tw:flex tw:h-[28px] tw:items-center tw:gap-1.5"
           ref={tooltipRefHtml(
-            `<span class="small-tooltip-text">${
-              strikesHidden
-                ? "Strikes<br>In this variant, the players cannot see them."
-                : `Strikes: ${strikes} / ${MAX_STRIKES}<br>The game ends at ${MAX_STRIKES} strikes.`
-            }</span>`,
+            strikesHidden
+              ? "Strikes<br>In this variant, the players cannot see them."
+              : `Strikes: ${strikes} / ${MAX_STRIKES}<br>The game ends at ${MAX_STRIKES} strikes.`,
           )}
           role="group"
         >

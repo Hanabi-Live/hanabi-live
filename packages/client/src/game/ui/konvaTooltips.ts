@@ -47,7 +47,7 @@ export function initKonvaTooltips(
 
 /**
  * Changes the content of an element's tooltip. Unless the content is custom, it shows beside an
- * info icon, in the smaller text.
+ * info icon.
  */
 export function setKonvaTooltipContent(
   element: NodeWithTooltip,
@@ -64,7 +64,7 @@ export function setKonvaTooltipContent(
     element.tooltipName,
     customContent || content === ""
       ? content
-      : `<div class="info-tooltip small-tooltip-text"><i class="fas fa-info-circle fa-sm"></i><div>${content}</div></div>`,
+      : `<div class="info-tooltip"><i class="fas fa-info-circle fa-sm"></i><div>${content}</div></div>`,
   );
 }
 

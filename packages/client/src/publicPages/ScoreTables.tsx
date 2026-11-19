@@ -37,7 +37,7 @@ function ModifierIcon({
     <i
       className="fas fa-times score-modifier red"
       ref={tooltipRefHtml(
-        `<div class="tw:text-[0.75em]">This score is not legitimate since the <strong>${MODIFIER_NAMES[modifier]}</strong> option was used.</div>`,
+        `This score is not legitimate since the <strong>${MODIFIER_NAMES[modifier]}</strong> option was used.`,
         { instant: true },
       )}
     />

@@ -9,8 +9,7 @@ import { getHtmlElement } from "./utils.ts";
 /** How long the tooltip that confirms a copied URL stays open. */
 const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
-const CLIPBOARD_CONTENT =
-  '<span class="small-tooltip-text">URL copied to clipboard!</span>';
+const CLIPBOARD_CONTENT = "URL copied to clipboard!";
 
 /** The in-game tooltips that are not for a player or a card. */
 const GAME_TOOLTIP_NAMES = [

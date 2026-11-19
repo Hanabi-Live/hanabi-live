@@ -94,7 +94,7 @@ export function UserLink({
         {user.username}
       </a>
       {createPortal(
-        <ul className="tw:m-0 tw:list-none tw:p-0 tw:text-[0.75em]">
+        <ul className="tw:m-0 tw:list-none tw:p-0">
           <li>
             <a
               className={ITEM_CLASS_NAME}

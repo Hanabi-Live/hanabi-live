@@ -39,7 +39,7 @@ const EFFICIENCY_HELP_LABEL =
 
 /** Explains pace, in the words of the classic screen's tooltip. */
 const PACE_HELP = `
-  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
+  <p class="tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
     Pace is a measure of how many discards can happen while still having a
     chance to get the maximum score.
   </p>
@@ -54,7 +54,7 @@ const LOW_SCORE_PHASE_HELP_LABEL = `About the score's color: it is the Low Score
 
 /** Explains why the score has another color in the H-Group's "Low Score Phase". */
 const LOW_SCORE_PHASE_HELP = `
-  <p class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
+  <p class="tw:m-0 tw:max-w-[19em] tw:phone:max-w-[15em]">
     It is the <strong>Low Score Phase</strong> of the H-Group's conventions. It
     lasts until the score reaches ${LOW_SCORE_PHASE_CARDS_PER_SUIT} cards for
     each suit.
@@ -313,11 +313,6 @@ const VALUE_BUTTON_CLASS =
  */
 const VALUE_LINE_CLASS =
   "tw:border-b-2 tw:border-dotted tw:border-transparent tw:group-hover:border-current tw:group-focus-visible:border-current";
-
-/** Puts the tooltip of a value in the smaller text of the screen's other tooltips. */
-function valueTooltip(html: string): string {
-  return `<div class="small-tooltip-text">${html}</div>`;
-}
 
 /**
  * The HTML of the efficiency's tooltip. It is laid out like the game's information: a title, then
@@ -1251,7 +1246,7 @@ export function StatusStrip({
             <HelpIcon
               icon="fa-info-circle"
               label="About the turns: how many turns and rounds are left at most."
-              tooltip={valueTooltip(turnTooltip)}
+              tooltip={turnTooltip}
             />
           </>
         }
@@ -1353,12 +1348,10 @@ export function StatusStrip({
             <HelpIcon
               icon="fa-info-circle"
               label={EFFICIENCY_HELP_LABEL}
-              tooltip={valueTooltip(
-                getEfficiencyTooltip(
-                  efficiencyStats,
-                  futureEfficiency,
-                  minEfficiency,
-                ),
+              tooltip={getEfficiencyTooltip(
+                efficiencyStats,
+                futureEfficiency,
+                minEfficiency,
               )}
             />
           </>
@@ -1403,7 +1396,7 @@ export function StatusStrip({
     <HelpIcon
       icon="fa-info-circle"
       label={"Show the game's information: its table, options, and seed"}
-      tooltip={valueTooltip(gameInfoTooltip)}
+      tooltip={gameInfoTooltip}
     />
   );
   const variant = (

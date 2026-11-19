@@ -423,7 +423,7 @@ function HistoryOptions({
     )
     .join("");
   const ref = tooltipRefHtml(
-    `<ul class="small-tooltip-text tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
+    `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
     { instant: true },
   );
 

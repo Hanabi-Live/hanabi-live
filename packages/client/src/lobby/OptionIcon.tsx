@@ -10,7 +10,7 @@ export function OptionIcon({
     readonly icon: string;
   };
 }): React.JSX.Element {
-  const ref = tooltipRefHtml(`<div class="tw:text-[0.75em]">${tooltip}</div>`, {
+  const ref = tooltipRefHtml(tooltip, {
     instant: true,
   });
 
