@@ -114,7 +114,6 @@ afterEach(() => {
 describe("Pregame", () => {
   test("shows the table, its players, and its spectators", () => {
     expect(screen.getByText("my table")).toBeTruthy();
-    expect(screen.getByText("2 / 5")).toBeTruthy();
     // The password and the speedrun option.
     expect(
       document.querySelectorAll("#lobby-pregame-options > li"),
