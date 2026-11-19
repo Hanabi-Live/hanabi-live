@@ -112,11 +112,12 @@ export function Pregame(): React.JSX.Element | undefined {
         <div className="tw:mt-1 tw:min-h-[1lh] tw:text-game-muted">
           {spectators.length > 0 && (
             <span
-              className={`tw:inline-flex tw:flex-wrap tw:items-baseline tw:gap-x-2 ${FADE_IN_CLASS}`}
-              ref={tooltipRef("Spectators")}
+              className={`tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-2 ${FADE_IN_CLASS}`}
               style={fadeStyle}
             >
-              <SpectatorsIcon />
+              <span ref={tooltipRef("Spectators")}>
+                <SpectatorsIcon />
+              </span>
               <ul
                 className="tw:m-0 tw:contents tw:list-none tw:p-0"
                 id="lobby-pregame-spectators"
