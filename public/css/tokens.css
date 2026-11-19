@@ -148,7 +148,7 @@
 
   /* The lobby's custom cursors, with their hot spots */
   --cursor-rejoin: url("/public/img/cursors/rejoin.svg") 12 12, pointer;
-  --cursor-join: url("/public/img/cursors/join.svg") 12 10, pointer;
+  --cursor-join: url("/public/img/cursors/join.svg") 13 12, pointer;
   --cursor-full: url("/public/img/cursors/full.svg") 12 12, pointer;
   --cursor-spectate: url("/public/img/cursors/spectate.svg") 13 12, pointer;
   --cursor-shadow: url("/public/img/cursors/shadow.svg") 14 12, pointer;
