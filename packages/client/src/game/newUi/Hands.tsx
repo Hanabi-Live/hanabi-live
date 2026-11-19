@@ -1783,8 +1783,8 @@ function Hand({
 
   // In the phone layout, there is no room to the right of the hand for the clue button. With the
   // name beside the cards, the name column keeps room for it below the name (see
-  // `CLUE_BUTTON_COLUMN_HEIGHT`) or to the right of it (see `CLUE_BUTTON_COLUMN_WIDTH`). Otherwise,
-  // it goes in the hand's top right corner.
+  // `CLUE_BUTTON_COLUMN_HEIGHT`) or to the right of it (see `CLUE_BUTTON_COLUMN_WIDTH`). With the
+  // name above the cards, it goes at the right end of the name's row, as tall as the name.
   const buttonInColumn = props.stacked && props.nameColumnWidth !== undefined;
   const buttonBelowName = buttonInColumn && !props.clueButtonBesideName;
   const buttonBesideName = buttonInColumn && props.clueButtonBesideName;
@@ -1794,7 +1794,7 @@ function Hand({
   } else if (buttonBesideName) {
     buttonPlacement = "besideName";
   } else if (props.stacked) {
-    buttonPlacement = "corner";
+    buttonPlacement = "nameRow";
   }
   const turnWarningTag = seat.turnWarnings && (
     <TurnWarningTag
@@ -1810,7 +1810,6 @@ function Hand({
       }}
       placement={buttonPlacement}
       reducedMotion={props.reducedMotion}
-      top={getHandBoxTopPadding(props.cardWidth)}
     />
   );
 
@@ -1845,7 +1844,7 @@ function Hand({
       <div
         className={`tw:relative tw:flex tw:max-w-full tw:shrink-0 ${
           props.nameColumnWidth === undefined
-            ? "tw:items-center tw:gap-3"
+            ? "tw:items-center tw:gap-3 tw:self-stretch"
             : "tw:flex-col tw:items-start tw:gap-1"
         }`}
         style={{
@@ -1860,7 +1859,7 @@ function Hand({
         }}
       >
         {buttonBesideName && clueButton}
-        <div className="tw:flex tw:max-w-full">
+        <div className="tw:flex tw:max-w-full tw:min-w-0">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
             clue rail starts there. A click on a name lists the player's actions. */}
           <button
@@ -1904,6 +1903,13 @@ function Hand({
           underName={props.nameColumnWidth !== undefined}
         />
         {!buttonBelowName && turnWarningTag}
+        {/* The button is at the right end of the row, above the last card. Every hand keeps room
+            for it, so that a long name is drawn smaller in every hand alike. */}
+        {buttonPlacement === "nameRow" && (
+          <div className="tw:relative tw:ml-auto tw:aspect-square tw:shrink-0 tw:self-stretch">
+            {clueButton}
+          </div>
+        )}
       </div>
       <div
         className="tw:relative tw:flex"
@@ -1986,7 +1992,7 @@ function Hand({
           reducedMotion={props.reducedMotion}
         />
       )}
-      {!buttonInColumn && clueButton}
+      {buttonPlacement === "right" && clueButton}
       {chosen && props.clueMenu}
     </div>
   );

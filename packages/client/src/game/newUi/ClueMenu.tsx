@@ -794,10 +794,10 @@ export const CLUE_BUTTON_COLUMN_WIDTH =
 
 /**
  * Where a clue button sits: to the right of the hand, in the name column below the name or to the
- * right of it, or in the hand's top right corner.
+ * right of it, or at the right end of the name's row above the cards, as tall as the name.
  */
 export type ClueButtonPlacement =
-  "right" | "belowName" | "besideName" | "corner";
+  "right" | "belowName" | "besideName" | "nameRow";
 
 const CLUE_BUTTON_PLACEMENT_CLASS = {
   right:
@@ -805,7 +805,7 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
   belowName: "tw:absolute tw:z-20 tw:inset-0 tw:flex tw:items-end",
   besideName:
     "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
-  corner: "tw:absolute tw:z-20 tw:right-3",
+  nameRow: "tw:absolute tw:z-20 tw:inset-0",
 } as const satisfies Record<ClueButtonPlacement, string>;
 
 /**
@@ -813,41 +813,47 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
  * `getClueDrawerWidth`). In the phone layout, there is no room there. With the name beside the
  * cards, it sits in the name column, below the name, or to the right of the name when the cards are
- * too short for it below. With the name above the cards, it sits in the hand's top right corner,
- * beside the name. It is dim, so that the buttons of all the hands do not compete with the cards,
- * and bright while the pointer is over it. It fades in when it appears, such as when the viewer's
- * turn starts, and fades out when it goes, such as when its menu opens.
+ * too short for it below. With the name above the cards, it sits at the right end of the name's
+ * row, as tall as the name. It is dim, so that the buttons of all the hands do not compete with the
+ * cards, and bright while the pointer is over it. It fades in when it appears, such as when the
+ * viewer's turn starts, and fades out when it goes, such as when its menu opens.
  */
 export function ClueButton({
   name,
   placement,
-  top,
   reducedMotion,
   onOpen,
 }: {
   readonly name: string;
   readonly placement: ClueButtonPlacement;
-
-  /** In the hand's corner, the distance from the top of the hand to the top of the name. */
-  readonly top: number;
   readonly reducedMotion: boolean;
   readonly onOpen: () => void;
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   useFade(ref, reducedMotion);
-  const size =
-    placement === "right" ? CLUE_BUTTON_SIZE.WIDE : CLUE_BUTTON_SIZE.PHONE;
+  // In the name's row, the button fills the room that the row keeps for it (see "Hands.tsx").
+  let size: number | string = CLUE_BUTTON_SIZE.PHONE;
+  if (placement === "right") {
+    size = CLUE_BUTTON_SIZE.WIDE;
+  } else if (placement === "nameRow") {
+    size = "100%";
+  }
+  let iconClass = "tw:size-7";
+  if (placement === "right") {
+    iconClass = "tw:size-10";
+  } else if (placement === "nameRow") {
+    iconClass = "tw:size-[75%]";
+  }
 
   return (
     <div
       className={CLUE_BUTTON_PLACEMENT_CLASS[placement]}
       data-clue-button
       ref={ref}
-      style={placement === "corner" ? { top } : undefined}
     >
       {/* The dimming is on a layer of its own, because the button's press sets its own transition. */}
       <div
-        className={`tw:opacity-60 tw:transition-opacity tw:hover:opacity-100 ${HOVER_CLASS}`}
+        className={`tw:opacity-60 tw:transition-opacity tw:hover:opacity-100 ${placement === "nameRow" ? "tw:size-full" : ""} ${HOVER_CLASS}`}
       >
         <button
           aria-label={`Give ${name} a clue`}
@@ -860,9 +866,7 @@ export function ClueButton({
           }}
           type="button"
         >
-          <ClueTokenIcon
-            className={placement === "right" ? "tw:size-10" : "tw:size-7"}
-          />
+          <ClueTokenIcon className={iconClass} />
         </button>
       </div>
     </div>
