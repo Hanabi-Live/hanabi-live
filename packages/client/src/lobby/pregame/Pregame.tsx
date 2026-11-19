@@ -328,14 +328,11 @@ function BestScoreRow({
 }) {
   const best = bestScoreAt(bestScores, numPlayers);
   const perfect = best !== undefined && best.score === maxScore;
+  // Only the asterisk of a modified score needs an explanation.
   const tooltip =
-    best === undefined
-      ? `No ${numPlayers}-player games of this variant yet.`
-      : `${numPlayers}-player best score: ${best.score} / ${maxScore}.${
-          best.modified
-            ? ' The game used an option such as "One Extra Card", so the score does not count as a normal one.'
-            : ""
-        }`;
+    best?.modified === true
+      ? 'The game used an option such as "One Extra Card", so the score does not count as a normal one.'
+      : "";
 
   return (
     <div className="tw:flex tw:gap-2" ref={tooltipRef(tooltip)}>
