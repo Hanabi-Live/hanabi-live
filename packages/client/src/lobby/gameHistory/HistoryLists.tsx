@@ -117,7 +117,7 @@ export function HistoryList(): React.JSX.Element {
               {games.length > 0
                 && (total === undefined || games.length < total) && (
                   <button
-                    className={`button primary ${ROW_BUTTON}`}
+                    className={`button ${ROW_BUTTON}`}
                     disabled={loading}
                     id="lobby-history-show-more"
                     onClick={showMore}
