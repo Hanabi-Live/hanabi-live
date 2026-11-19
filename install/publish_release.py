@@ -46,8 +46,9 @@ def publish(directory, revision):
                     "Release history diverged.")
             promote = False
 
-    def gh(*arguments):
-        subprocess.run(["gh", "release", *arguments, "--repo", REPOSITORY], check=True)
+    def gh(*arguments, quiet=False):
+        subprocess.run(["gh", "release", *arguments, "--repo", REPOSITORY], check=True,
+                       stdout=subprocess.DEVNULL if quiet else None)
 
     existing = optional_release(github, f"/releases/tags/{tag}")
     if existing and not existing["draft"]:
@@ -59,8 +60,11 @@ def publish(directory, revision):
         if existing:
             require(existing["target_commitish"] == revision, "Existing draft identity differs.")
         else:
+            # A draft has no tag yet, so "gh" prints a temporary "untagged-" address. Only the
+            # address of the published release is useful.
             gh("create", tag, "--draft", "--target", revision,
-               "--title", f"Server {revision[:9]}", "--notes", "The release that runs on hanab.live.")
+               "--title", f"Server {revision[:9]}", "--notes", "The release that runs on hanab.live.",
+               quiet=True)
         gh("upload", tag, str(archive), str(sums), "--clobber")
         gh("edit", tag, "--draft=false", f"--latest={str(promote).lower()}")
         return
