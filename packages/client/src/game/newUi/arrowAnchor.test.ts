@@ -100,3 +100,20 @@ test("a right-click on a player's name points at the name", () => {
     findArrowAnchor(document, { playerIndex: 2 as PlayerIndex }, []),
   ).toBeUndefined();
 });
+
+test("a target in a hidden tab points at the tab", () => {
+  const tab = add(document.body, {
+    role: "tab",
+    "aria-controls": "status",
+    "aria-selected": "false",
+  });
+  const panel = add(document.body, {
+    id: "status",
+    role: "tabpanel",
+  });
+  const pace = add(panel, { "data-pace": "" });
+  expect(findArrowAnchor(document, "pace", [])).toBe(tab);
+
+  tab.setAttribute("aria-selected", "true");
+  expect(findArrowAnchor(document, "pace", [])).toBe(pace);
+});

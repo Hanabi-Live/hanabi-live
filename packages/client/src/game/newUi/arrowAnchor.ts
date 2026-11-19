@@ -85,9 +85,26 @@ export function getArrowTargetAt(element: Element): ArrowTarget | undefined {
 
 /**
  * Finds the element that the arrow points at. A played card under the top card of its stack, and a
- * stack base, point at the stack.
+ * stack base, point at the stack. A target in a tab that is not shown, such as the pace when the
+ * panel shows the logs, points at that tab.
  */
 export function findArrowAnchor(
+  root: ParentNode,
+  target: ArrowTarget,
+  deck: readonly CardState[],
+): Element | undefined {
+  const element = findTargetElement(root, target, deck);
+  const panel = element?.closest('[role="tabpanel"]');
+  if (panel === null || panel === undefined || panel.id === "") {
+    return element;
+  }
+  const tab = root.querySelector(
+    `[role="tab"][aria-controls="${CSS.escape(panel.id)}"]`,
+  );
+  return tab?.getAttribute("aria-selected") === "false" ? tab : element;
+}
+
+function findTargetElement(
   root: ParentNode,
   target: ArrowTarget,
   deck: readonly CardState[],
@@ -127,7 +144,7 @@ export function findArrowAnchor(
 
 /**
  * The box that the arrow points at, in the window's pixels. For "5 / 21", it is the box of the
- * first number.
+ * first number. For a tab, it is the whole tab.
  */
 export function measureArrowAnchor(
   anchor: Element,
@@ -138,6 +155,7 @@ export function measureArrowAnchor(
     first === null
     || typeof target !== "string"
     || !FIRST_NUMBER_ELEMENTS.has(target)
+    || anchor.getAttribute("role") === "tab"
   ) {
     return anchor.getBoundingClientRect();
   }
