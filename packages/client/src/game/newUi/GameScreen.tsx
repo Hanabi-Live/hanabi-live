@@ -100,7 +100,11 @@ import {
   toggleArrow,
 } from "./arrow.ts";
 import { getArrowTargetAt } from "./arrowAnchor.ts";
-import { isDragPointer, usesSpeedrunClicks } from "./cardClicks.ts";
+import {
+  getCardClickCommand,
+  isDragPointer,
+  usesSpeedrunClicks,
+} from "./cardClicks.ts";
 import {
   DISCARD_PLACE_PREFIX,
   HAND_PLACE_PREFIX,
@@ -926,6 +930,22 @@ export function GameScreen(): React.JSX.Element {
         },
   };
 
+  // A press with the main button picks up the card, unless the click does something else, such as
+  // Ctrl + click. Picking up the card replaces it on the screen, and then the browser loses the
+  // click.
+  function picksUpCard(event: React.PointerEvent, order: CardOrder): boolean {
+    return (
+      isDragPointer(event.pointerType)
+      && event.button === 0
+      && getCardClickCommand(
+        event,
+        order,
+        cardInput.current!.context,
+        speedrunClicks,
+      ) === undefined
+    );
+  }
+
   // Opens a player's clue menu, or closes it. The chosen clue stays when that player can get it.
   function openClueMenu(playerIndex: PlayerIndex | undefined) {
     chooseClueTarget(playerIndex);
@@ -1460,10 +1480,7 @@ export function GameScreen(): React.JSX.Element {
                           ? canDiscard
                           : undefined,
                         onPointerDown: (event) => {
-                          if (
-                            isDragPointer(event.pointerType)
-                            && event.button === 0
-                          ) {
+                          if (picksUpCard(event, deckOrder)) {
                             pressCard(deckOrder, event, {
                               discardAllowed: variant.hasInverted,
                             });
@@ -1600,11 +1617,7 @@ export function GameScreen(): React.JSX.Element {
                   nameColumnWidth={nameColumnWidth}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
-                    if (
-                      !canMoveCards
-                      || !isDragPointer(event.pointerType)
-                      || event.button !== 0
-                    ) {
+                    if (!canMoveCards || !picksUpCard(event, order)) {
                       return;
                     }
                     // The arrow would get in the way of the card, so it goes away when it points at
