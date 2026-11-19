@@ -362,28 +362,35 @@ select::picker-icon {
   display: none;
 }
 
+/* The list matches the suggestions of a text box (see "SuggestBox.tsx"). */
 select::picker(select) {
   background: var(--surface);
   border: solid 1px var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 10%),
+    0 4px 6px -4px rgb(0 0 0 / 10%);
   color: var(--text);
   margin-block: 4px;
-  padding-block: 0.25em;
+  padding: 4px;
 }
 
 select option {
   gap: 0.5em;
-  padding: 0.15em 1em 0.15em 0.75em;
+  padding: 0.3em 0.6em;
+  border-radius: var(--radius);
   background: none;
   color: var(--text);
   cursor: pointer;
 }
 
-select option:hover,
+select option:disabled {
+  cursor: default;
+}
+
+select option:not(:disabled):hover,
 select option:focus-visible {
   background: var(--row-hover-bg);
-  color: var(--menu-hover-text);
   outline: none;
 }
 

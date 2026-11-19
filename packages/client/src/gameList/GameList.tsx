@@ -19,6 +19,7 @@ import { getFadeStyle } from "../fade.ts";
 import { Pages, usePages } from "../publicPages/DataTable.tsx";
 import { Select } from "../Select.tsx";
 import { store } from "../store.ts";
+import { suggestVariants } from "../SuggestBox.tsx";
 import { tooltipRef } from "../tooltipRef.ts";
 import { useDelayedCallback } from "../useDelayedCallback.ts";
 import { WaitingCard } from "../WaitingCard.tsx";
@@ -33,7 +34,7 @@ import {
   Score,
   SHARED_REPLAY_TOOLTIP,
 } from "./gameSummary.tsx";
-import { NameFilter, suggestVariants } from "./NameFilter.tsx";
+import { NameFilter } from "./NameFilter.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
 

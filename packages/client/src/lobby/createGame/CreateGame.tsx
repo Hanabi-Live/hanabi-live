@@ -22,7 +22,7 @@ import {
   parseIntSafe,
 } from "complete-common";
 import equal from "fast-deep-equal";
-import { memo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   DIMMED_OPACITY,
@@ -42,6 +42,7 @@ import {
 } from "../../LengthCounter.tsx";
 import { creatingTableChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
+import { SuggestBox, suggestVariants } from "../../SuggestBox.tsx";
 import { Tooltip } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
@@ -78,8 +79,6 @@ const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 
 /** The choice of the first dropdown that switches to the search of every variant. */
 const SEARCH_VARIANTS = "Search custom variants...";
-
-const VARIANT_LIST_ID = "create-game-variant-dropdown2-list";
 
 export const DOCS_URL =
   "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs";
@@ -743,11 +742,9 @@ function VariantPicker({
       <div className="tw:relative tw:min-w-0 tw:flex-1">
         {searching ? (
           <>
-            <input
-              autoComplete="off"
+            <SuggestBox
               className="tw:pr-[2.75em]"
               id="create-game-variant-dropdown2"
-              list={VARIANT_LIST_ID}
               onBlur={(event) => {
                 // Show the start of a long name.
                 event.currentTarget.scrollLeft = 0;
@@ -755,8 +752,11 @@ function VariantPicker({
                   onChange(search.trim());
                 }
               }}
-              onChange={(event) => {
-                const name = event.target.value;
+              onPick={(name) => {
+                show(name);
+                onChange(name);
+              }}
+              onType={(name) => {
                 show(name);
                 if (BASIC_VARIANT_NAMES_SET.has(name)) {
                   onChange(name);
@@ -765,12 +765,12 @@ function VariantPicker({
                 }
               }}
               ref={searchRef}
-              type="text"
+              suggest={suggestVariants}
               value={search}
-            />
-            {/* Clicks go through the icon to the text box. */}
-            <i className="fas fa-search tw:pointer-events-none tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2" />
-            <VariantList />
+            >
+              {/* Clicks go through the icon to the text box. */}
+              <i className="fas fa-search tw:pointer-events-none tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2" />
+            </SuggestBox>
           </>
         ) : (
           <select
@@ -820,15 +820,6 @@ function VariantPicker({
     </div>
   );
 }
-
-/** The suggestions of the variant search. There are over 1000, so they render only once. */
-const VariantList = memo(() => (
-  <datalist id={VARIANT_LIST_ID}>
-    {VARIANT_NAMES.map((name) => (
-      <option key={name} value={name} />
-    ))}
-  </datalist>
-));
 
 function RowLabel({
   children,

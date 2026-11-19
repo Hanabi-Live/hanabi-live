@@ -19,7 +19,7 @@ const ITEM_CLASS_NAME = [
   "tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.6em] tw:rounded-[3px] tw:border-none",
   "tw:bg-transparent tw:px-[0.6em] tw:py-[0.4em] tw:text-left tw:whitespace-nowrap tw:no-underline",
   "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:[line-height:inherit] tw:text-(--text)",
-  "tw:hover:bg-(--surface-sunken) tw:hover:text-(--menu-hover-text)",
+  "tw:hover:bg-(--row-hover-bg) tw:hover:text-(--menu-hover-text)",
 ].join(" ");
 
 const ICON_CLASS_NAME = "tw:w-4 tw:text-center";
