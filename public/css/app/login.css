@@ -1,29 +1,10 @@
 /* The header bar has no buttons on the login screen, so it does not show. */
 #page-wrapper[data-login] {
-  isolation: isolate;
   padding-top: 0;
 }
 
 #page-wrapper[data-login] > #header {
   display: none;
-}
-
-/*
-  The felt is lightest behind the logo and the text under it, so the thin text is hard to read. This
-  shade darkens the top of the screen, so that the light falls lower, on the form.
-*/
-#page-wrapper[data-login]::before {
-  background: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 40%),
-    rgb(0 0 0 / 30%) 30%,
-    transparent 55%
-  );
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: fixed;
-  z-index: -1;
 }
 
 /* A tight shadow sharpens the edges of the thin letters. */

@@ -20,7 +20,7 @@
 
   /*
     Surfaces: the panels of the site are the deep green of the New UI's felt, and the fields and
-    lists in them are darker still. A box on the felt is glass instead (see "--box-bg").
+    lists in them are darker still. A box on the page is glass instead (see "--box-bg").
   */
   --surface: #0e2418;
   --surface-sunken: var(--surface-sunken-solid);
@@ -109,20 +109,28 @@
   --friend: hotpink;
   --dice-hover: #00cc00;
 
-  /* The header bar: the color of the New UI's bar along the bottom */
-  --header-bg: var(--game-screen-panel);
+  /*
+    The page behind the lobby and the other screens outside of a game: near-black with a little
+    green, and a faint light from the top. It is not the felt, so that the green of the selected
+    and running things stands out, and so that the felt of a game shows that you sat down at a
+    table.
+  */
+  --page-bg: #0b110e;
+  --page-light: #18241e;
+
+  /* The header bar: a step lighter than the page */
+  --header-bg: #121a16;
   --header-text: var(--game-screen-muted);
   --header-hotkey-line: var(--game-screen-line);
   /* The height of the header bar, which is fixed over the top of the page */
   --header-height: 3.25em;
 
   /*
-    A box on the felt, such as a panel of the lobby, is dark glass: the felt shows faintly through
-    it, blurred and less saturated, so that it reads as part of the table. A group of rows in it is
-    a light glass, and a field in the group is a step darker. A thin light outline shows where the
-    box ends, since the felt is dark at the edges of the screen.
+    A box on the page, such as a panel of the lobby, is light glass, so that it stands out from the
+    dark page. A group of rows in it is a dark glass, and a field in the group is a step darker. A
+    thin light outline shows where the box ends.
   */
-  --box-bg: rgb(6 14 10 / 62%);
+  --box-bg: rgb(255 255 255 / 4.5%);
   --box-panel: rgb(0 0 0 / 18%);
   --box-sunken: rgb(0 0 0 / 28%);
   --box-backdrop: blur(14px) saturate(60%);

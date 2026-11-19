@@ -64,6 +64,8 @@ of the repository.
   Options" heading shows the extra options.
 - In the list of games, shared replays are dim, so that the games in progress
   stand out. The status of each game is in the color of its row.
+- The lobby and the other pages outside of a game have a dark background instead
+  of the green felt. The felt is now only on the game table.
 
 ## November 18th, 2026
 

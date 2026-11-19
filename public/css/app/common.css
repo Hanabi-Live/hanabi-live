@@ -116,17 +116,27 @@ body,
   padding-top: var(--header-height);
 }
 
-/* The felt table of the New UI */
+/* The texture of the felt, blended faintly over the page, so that the page is not flat. */
 body {
-  background-color: var(--game-screen-bg);
-  background-image: var(--game-screen-table);
-  background-size: 512px, auto, auto;
-  background-blend-mode: overlay, normal, normal;
+  background-color: var(--page-bg);
+  background-image:
+    url("/public/img/felt.webp"),
+    radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      var(--page-light),
+      var(--page-bg)
+    );
+  background-size: 512px, auto;
+  background-blend-mode: overlay, normal;
   background-attachment: fixed;
 }
 
+/* The game screen is on the felt table. */
 body[data-screen="game"] {
   background-color: var(--game-bg);
+  background-image: var(--game-screen-table);
+  background-size: 512px, auto, auto;
+  background-blend-mode: overlay, normal, normal;
 }
 
 /*
