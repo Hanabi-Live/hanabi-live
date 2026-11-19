@@ -15,17 +15,17 @@
 :root {
   /* General colors */
   --game-bg: #00420f;
-  --surface: #fff;
-  --surface-sunken: #f8f8f8;
-  --surface-panel: #fafafa;
+  --surface: #eef2ee;
+  --surface-sunken: #e6ebe6;
+  --surface-panel: #e9eee9;
   --border: #e5e5e5;
   --border-panel: #ececec;
   /*
     The lightest gray with normal-text contrast on "--surface-sunken". Text that should look fainter
     can only be lighter in the dark theme.
   */
-  --text: #707070;
-  --text-strong: #646464;
+  --text: #666;
+  --text-strong: #585858;
   --text-label: var(--text);
   --text-on-accent: #fff;
   --text-faint: var(--text);
@@ -46,12 +46,12 @@
   --button-green-hover: #84c884;
   --checkbox-checked: #666;
   /* 3:1 contrast with "--surface-panel", so that an unchecked box is visible */
-  --checkbox-border: #8f8f8f;
-  --row-hover-bg: #e6e6e6;
+  --checkbox-border: #868686;
+  --row-hover-bg: #dbe1db;
   --button-alt-bg: transparent;
   /* Lights up like a row, and a step more when pressed. */
   --button-alt-hover-bg: var(--row-hover-bg);
-  --button-alt-active-bg: #d9d9d9;
+  --button-alt-active-bg: #ced5ce;
   --name-me: #e69500;
   --friend: hotpink;
   --name-hover: #3350cb;
@@ -70,7 +70,7 @@
   --table-sorted-bg: lightblue;
   --pregame-player-border: black;
   --menu-text: #555;
-  --menu-hover-bg: #eee;
+  --menu-hover-bg: var(--row-hover-bg);
   --menu-hover-text: #222;
   --chat-bg: transparent;
   --game-chat-bg: black;
