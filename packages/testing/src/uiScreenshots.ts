@@ -634,9 +634,15 @@ function getStates(): readonly State[] {
       name: "history",
       path: `/history/${USERNAME}`,
       loggedIn: false,
-      // Sort one column, so that the sort arrows show both states.
+      // Filter by a player count, so that the filters show a selected choice.
       prepare: async (page) => {
-        await page.locator("th[aria-sort]").first().click();
+        await page
+          .getByRole("button", {
+            name: "2",
+            exact: true,
+          })
+          .click();
+        await page.getByRole("button", { name: "Clear filters" }).waitFor();
       },
     },
     {

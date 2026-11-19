@@ -184,7 +184,7 @@ function Header({
   return (
     <th
       aria-sort={sort}
-      className={`tw:relative tw:cursor-pointer tw:whitespace-normal ${sort === "none" ? "" : "tw:font-bold tw:text-text-strong"} ${column.className ?? ""}`}
+      className={`tw:relative tw:cursor-pointer tw:whitespace-normal ${sort === "none" ? "" : "tw:font-bold tw:text-text"} ${column.className ?? ""}`}
       onClick={onSort}
       onKeyDown={(event) => {
         if (!(event.key === "Enter" || event.key === " ")) {

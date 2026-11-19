@@ -358,5 +358,9 @@ pub enum PublicPageTable {
         /// How many games reached each score. Only a seed's page has them.
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         frequencies: Vec<ScoreFrequency>,
+        /// The players whose games the page lists, whom each game leaves out of its teammates.
+        /// Only a player's history and tagged games have them.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        players: Vec<Username>,
     },
 }

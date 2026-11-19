@@ -1358,6 +1358,11 @@ export const publicPageTableSchema = z.discriminatedUnion("type", [
        */
       frequencies: z.array(scoreFrequencySchema).readonly().optional(),
       list: publicGameListSchema,
+      /**
+       * The players whose games the page lists, whom each game leaves out of its teammates.
+       * Only a player's history and tagged games have them.
+       */
+      players: z.array(z.string().min(1)).readonly().optional(),
       type: z.literal("games"),
     })
     .readonly(),

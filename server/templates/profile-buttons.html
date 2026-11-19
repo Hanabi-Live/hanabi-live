@@ -1,16 +1,16 @@
 {% if (name is defined and namesTitle is undefined) or singleMissingScores %}
-<ul class="actions fit" id="profile-buttons">
+<ul id="profile-buttons">
   <!-- Keep Jinja string literals intact rather than wrapping their contents. -->
   <!-- prettier-ignore -->
   {% for route, label, icon, selected_title in [
-    ["scores", "Scores & Statistics", "fa-chart-area", "Scores"],
-    ["history", "Full Game History", "fa-history", "History"],
-    ["missing-scores", "Missing Scores", "fa-question", "Missing Scores"],
-    ["tags", "Tagged Games", "fa-tag", "Tagged Games"]
+    ["scores", "Statistics", "fa-chart-area", "Scores"],
+    ["history", "History", "fa-history", "History"],
+    ["missing-scores", "Missing scores", "fa-question", "Missing Scores"],
+    ["tags", "Tagged games", "fa-tag", "Tagged Games"]
   ] %}
   <li>
     <!-- prettier-ignore -->
-    <a class="button fit icon {{ icon }}"
+    <a class="icon {{ icon }}"
       {% if title == selected_title %}aria-current="page"{% else %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}>{{ label }}</a>
   </li>
   {% endfor %}

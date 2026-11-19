@@ -20,6 +20,10 @@ of the repository.
   cursors have a matching style. Icons that had two meanings, such as the pause
   icon on "Return to Lobby", now each have one.
 - The site has only the dark theme. The "Dark mode" setting is gone.
+- A player's game history and tagged games are a list grouped by day. Each game
+  shows its score with a bar, the colors of its suits, how it ended, and the
+  other players. One bar above the list filters by variant, player count, and
+  score, and sorts the games. The links between a player's pages are tabs.
 
 ## November 18th, 2026
 

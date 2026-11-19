@@ -73,6 +73,8 @@ export const hanabiConfigBase = defineConfig(
       "complete/consistent-enum-values": "off",
       "complete/consistent-object-braces": "off",
       "complete/format-jsdoc-comments": "off",
+      // A schema nests as deeply as the Rust type that it comes from.
+      "unicorn/max-nested-calls": "off",
 
       // Names follow the Rust types, such as "CreateTableSettings".
       "unicorn/no-non-function-verb-prefix": "off",

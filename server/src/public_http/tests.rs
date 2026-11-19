@@ -291,8 +291,8 @@ fn formatted_templates_preserve_conditional_links() {
     let anchors = regex!(r"(?s)<a\b([^>]*)>(.*?)</a>");
     let tagged = anchors
         .captures_iter(&buttons)
-        .find(|link| link[2].trim() == "Tagged Games")
-        .expect("Tagged Games profile button");
+        .find(|link| link[2].trim() == "Tagged games")
+        .expect("Tagged games profile tab");
     assert!(tagged[1].contains(r#"aria-current="page""#));
     assert!(
         !tagged[1].contains("href="),

@@ -202,6 +202,7 @@ pub(super) async fn page(
                             list: PublicGameList::History,
                             api_path: api,
                             frequencies: Vec::new(),
+                            players: names.iter().cloned().map(Into::into).collect(),
                         },
                     )?;
                     if names.len() > 1 {
@@ -225,6 +226,7 @@ pub(super) async fn page(
                                 list: PublicGameList::Tags,
                                 api_path: api,
                                 frequencies: Vec::new(),
+                                players: vec![users[0].1.clone().into()],
                             },
                         )?;
                     }
@@ -262,6 +264,7 @@ pub(super) async fn page(
                     list: PublicGameList::Seed,
                     api_path: api,
                     frequencies: rows,
+                    players: Vec::new(),
                 },
             )?;
         }
@@ -288,6 +291,7 @@ pub(super) async fn page(
                         list: PublicGameList::Tag,
                         api_path: format!("{API_PREFIX}/tag/{}", encoded(&tag)),
                         frequencies: Vec::new(),
+                        players: Vec::new(),
                     },
                 )?;
             }
