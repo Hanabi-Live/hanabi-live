@@ -684,7 +684,7 @@ input[type="button"]:focus-visible,
 input[type="submit"].primary,
 .button.primary {
   background-color: var(--button-primary-bg);
-  color: var(--text-on-accent);
+  color: var(--button-primary-text);
 }
 
 input[type="submit"].primary:hover,
