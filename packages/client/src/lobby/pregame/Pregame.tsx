@@ -157,15 +157,11 @@ export function Pregame(): React.JSX.Element | undefined {
             />
           ))}
           {Array.from({ length: numOpenSeats }, (_, i) => i).map((i) => (
-            <li
-              className={[
-                "tw:flex tw:min-h-[3em] tw:items-center tw:justify-center tw:rounded-[5px]",
-                "tw:border tw:border-dashed tw:border-game-line/40 tw:text-game-muted",
-              ].join(" ")}
+            <OpenSeat
+              isNext={i === 0}
               key={`open-seat-${i}`}
-            >
-              Open seat
-            </li>
+              seat={game.players.length + i + 1}
+            />
           ))}
         </ol>
       </div>
@@ -202,14 +198,15 @@ function PlayerBox({
   return (
     <li
       className={[
-        "tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:p-[0.8em]",
+        "tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:bg-game-zone tw:p-[0.8em]",
         JOIN_CLASS,
         player.present ? "" : "tw:opacity-60",
       ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}
       style={fadeStyle}
     >
-      <p className="tw:m-0 tw:mb-2 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-2 tw:text-[1.15em]">
+      <p className="tw:m-0 tw:mb-2 tw:flex tw:flex-wrap tw:items-center tw:gap-x-2 tw:text-[1.15em]">
+        <SeatNumber seat={playerIndex + 1} />
         <strong>
           {isSpectator ? (
             <ShadowName
@@ -233,6 +230,69 @@ function PlayerBox({
         maxScore={maxScore}
         numPlayers={numPlayers}
       />
+    </li>
+  );
+}
+
+/**
+ * The number of a seat, which is its place in the turn order: a token in a well in the felt. The
+ * first seat takes the first turn, so it has the ring of the player whose turn it is.
+ */
+function SeatNumber({
+  empty = false,
+  seat,
+}: {
+  readonly empty?: boolean;
+  readonly seat: number;
+}) {
+  const first = seat === 1;
+  return (
+    <span
+      className={[
+        "tw:inline-flex tw:flex-none tw:items-center tw:justify-center tw:rounded-full",
+        "tw:border tw:font-bold tw:tabular-nums",
+        empty
+          ? "tw:size-[2.2em] tw:border-dashed tw:text-[1.1em] tw:opacity-70"
+          : "tw:size-[1.6em] tw:border-solid tw:bg-game-well tw:text-[0.8em]",
+        first
+          ? "tw:border-game-turn tw:text-game-turn"
+          : "tw:border-game-line/60",
+      ].join(" ")}
+      ref={tooltipRef(
+        first
+          ? "This seat takes the first turn."
+          : `Seat ${seat} in the turn order.`,
+      )}
+    >
+      {seat}
+    </span>
+  );
+}
+
+/**
+ * A seat that no one sits in yet: an empty well in the felt. The next seat to fill breathes, so
+ * that the eye finds where the next player will sit. The "Reduced motion" setting leaves it still.
+ */
+function OpenSeat({
+  isNext,
+  seat,
+}: {
+  readonly isNext: boolean;
+  readonly seat: number;
+}) {
+  const reducedMotion = useReducedMotion();
+  return (
+    <li className="tw:relative tw:flex tw:min-h-[3em] tw:flex-col tw:items-center tw:justify-center tw:gap-2 tw:rounded-[5px] tw:bg-game-well tw:p-[0.8em] tw:text-game-muted">
+      <span
+        className={[
+          "tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[5px] tw:border tw:border-dashed",
+          isNext
+            ? `tw:border-game-line ${reducedMotion ? "" : "tw:animate-pulse"}`
+            : "tw:border-game-line/40",
+        ].join(" ")}
+      />
+      <SeatNumber empty seat={seat} />
+      <span>Open seat</span>
     </li>
   );
 }
