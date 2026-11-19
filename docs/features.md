@@ -244,7 +244,7 @@ that have not been played yet and have only one copy remaining.)
 ## Custom Game Options
 
 - In a pre-game, the custom game options (if any) can be seen at the top of the
-  screen, under the name of the variant.
+  screen, under the name of the table.
 - In a game, the custom game (if any) can be seen by hovering over the deck.
 
 ### Variants
