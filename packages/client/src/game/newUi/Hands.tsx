@@ -29,7 +29,7 @@ import {
 import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
-import { CardNote, openCardNote } from "./CardNote.tsx";
+import { CardNote } from "./CardNote.tsx";
 import type { ClueButtonPlacement } from "./ClueMenu.tsx";
 import {
   CLUE_BUTTON_COLUMN_HEIGHT,
@@ -1239,9 +1239,9 @@ function hasMenuItems(
 }
 
 /**
- * The menu of a card in a hand. It holds what a touch screen cannot do with hover: playing or
- * discarding the card (`movable`), showing its holder's view of their hand, opening its bubble of
- * possible cards, and showing its notes.
+ * The menu of a card in a hand. It holds what a touch screen cannot do with hover: the card's
+ * notes, at its top, playing or discarding the card (`movable`), showing its holder's view of their
+ * hand, and opening its bubble of possible cards.
  */
 function CardMenu({
   order,
@@ -1257,6 +1257,14 @@ function CardMenu({
   const { holder } = items;
   const viewShown =
     holder !== undefined && props.empathyToggled.has(holder.playerIndex);
+  const noteHtml = props.notes.notesHtml.get(order);
+  // Showing the note reads it.
+  const unread = props.notes.unreadNotes.has(order);
+  useEffect(() => {
+    if (noteHtml !== undefined && unread) {
+      store.dispatch(newUiNoteRead(order));
+    }
+  }, [noteHtml, unread, order]);
   return (
     <Menu
       align="center"
@@ -1264,6 +1272,13 @@ function CardMenu({
       scrollIntoView
       side="below"
     >
+      {noteHtml !== undefined && (
+        <div
+          className="tw:max-w-72 tw:px-2 tw:py-1 tw:text-game-text tw:whitespace-normal"
+          // The notes are already escaped, as for the card's tooltip (see `getNotesHtml`).
+          dangerouslySetInnerHTML={{ __html: noteHtml }}
+        />
+      )}
       {movable && (
         <>
           <button
@@ -1320,26 +1335,6 @@ function CardMenu({
         >
           <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-th`} />
           Show possible cards
-        </button>
-      )}
-      {props.notes.notesHtml.has(order) && (
-        <button
-          className={MENU_ICON_ITEM_CLASS}
-          onClick={(event) => {
-            openCardNote(event.currentTarget);
-            if (props.notes.unreadNotes.has(order)) {
-              store.dispatch(newUiNoteRead(order));
-            }
-            props.onCloseCardMenu();
-          }}
-          role="menuitem"
-          type="button"
-        >
-          <i
-            aria-hidden="true"
-            className={`${MENU_ICON_CLASS} fa-sticky-note`}
-          />
-          Show notes
         </button>
       )}
     </Menu>

@@ -31,7 +31,7 @@ interface TooltipRefOptions {
 
   /**
    * Whether a tap on a touch screen opens the tooltip. Turn it off where a tap does something else,
-   * and open the tooltip with `openTooltip` instead.
+   * and open the tooltip with `openTooltipOnSide` instead.
    */
   readonly tapOpens?: boolean;
 }
@@ -112,17 +112,6 @@ export function tooltipRef(
       : `<span class="small-tooltip-text">${escapeHtml(text)}</span>`,
     options,
   );
-}
-
-/**
- * Opens the tooltip that a tooltip ref gave an element, until the next tap or click elsewhere. It
- * does nothing when the element has no tooltip.
- */
-export function openTooltip(element: HTMLElement): void {
-  const entry = elementTooltips.get(element);
-  if (entry !== undefined && entry.content !== "") {
-    entry.tooltip.openUntilClickElsewhere();
-  }
 }
 
 /**

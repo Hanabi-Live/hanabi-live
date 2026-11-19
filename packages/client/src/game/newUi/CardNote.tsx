@@ -9,7 +9,6 @@ import * as chat from "../../chat.ts";
 import { store } from "../../store.ts";
 import {
   closeTooltip,
-  openTooltip,
   openTooltipOnSide,
   tooltipRefHtml,
 } from "../../tooltipRef.ts";
@@ -110,14 +109,6 @@ export interface CardNotes {
   readonly onCloseNote: () => void;
 }
 
-/** Shows the notes of the card that an element is part of, until the next tap elsewhere. */
-export function openCardNote(element: Element): void {
-  const anchor = element.closest<HTMLElement>("[data-card-note]");
-  if (anchor !== null) {
-    openTooltip(anchor);
-  }
-}
-
 /**
  * Wraps a card. It shows the card's notes on hover, and the box to type the viewer's note in while
  * the viewer edits it.
@@ -146,7 +137,7 @@ export function CardNote({
   readonly touched?: boolean;
   /**
    * Whether a tap on a touch screen shows the notes. A card in a hand opens its menu instead, which
-   * shows them with `openCardNote`.
+   * shows them at its top.
    */
   readonly tapOpens?: boolean;
   readonly className?: string;

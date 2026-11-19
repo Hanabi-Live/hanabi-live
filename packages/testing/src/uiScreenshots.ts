@@ -1211,7 +1211,8 @@ function getStates(): readonly State[] {
       prepare: chooseClueForNextPlayer,
     },
     // The account taps its last card on its turn in a five-player game, which opens the card's
-    // menu. In the phone layout, the menu is at the edge of the window.
+    // menu. The card has a note, which shows above the card while the menu is open. In the phone
+    // layout, the menu is at the edge of the window.
     {
       name: "new-ui-card-menu",
       path: "/",
@@ -1220,6 +1221,9 @@ function getStates(): readonly State[] {
       setup: async (cast) => {
         const game = await cast.startBobsGame(5, undefined, NO_SPEEDRUN);
         await game.discardUntilAccountsTurn();
+      },
+      prepare: async (page) => {
+        await writeNote(page, ownCard(page, 3), "chop?");
       },
       hover: async (page) => {
         const card = ownCard(page, 3).getByRole("button").first();
