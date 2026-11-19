@@ -46,13 +46,18 @@ import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { CardClueMarker } from "./Card.tsx";
-import { CARD_CORNER_PER_WIDTH, CardFace } from "./Card.tsx";
+import {
+  CARD_CORNER_PER_WIDTH,
+  CARD_HEIGHT_PER_WIDTH,
+  CardFace,
+} from "./Card.tsx";
 import type { CardNotes } from "./CardNote.tsx";
 import { rightClickNote } from "./CardNote.tsx";
 import { CHAT_RAIL_WIDTH, ChatButton, ChatPanel } from "./ChatPanel.tsx";
 import type { LogTab } from "./ClueLog.tsx";
 import { CLUE_LOG_TAB, ClueLog } from "./ClueLog.tsx";
 import {
+  CLUE_BUTTON_COLUMN_HEIGHT,
   CLUE_BUTTON_COLUMN_WIDTH,
   ClueMenu,
   getClueDrawerWidth,
@@ -978,11 +983,9 @@ export function GameScreen(): React.JSX.Element {
     nameWidth,
     getClueDrawerWidth(variant),
   );
-  // In the phone layout, the name column also holds the clue buttons (see
-  // `CLUE_BUTTON_COLUMN_WIDTH`).
+  const phoneNameWidth = Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.PHONE);
   let nameColumnWidth: number | undefined = stacked
-    ? Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.PHONE)
-      + CLUE_BUTTON_COLUMN_WIDTH
+    ? phoneNameWidth
     : Math.min(nameWidth, NAME_COLUMN_MAX_WIDTH.WIDE);
   // In the phone layout, the page scrolls. The play stacks are at the top, and the hands fit in the
   // rest of the height of the table on the screen, with the same space below them as above the
@@ -1008,6 +1011,19 @@ export function GameScreen(): React.JSX.Element {
       stacked,
     );
   }
+  let handCardWidth = getHandCardWidthFor(nameColumnWidth);
+  // In the phone layout with the names beside the cards, the clue button goes below the name, so
+  // that the cards get the width that it would take. When the cards are shorter than the name and
+  // the button, the hands would be taller than the room for them. Then, the button goes to the
+  // right of the name.
+  const clueButtonBesideName =
+    stacked
+    && nameHeight + CLUE_BUTTON_COLUMN_HEIGHT
+      > handCardWidth * CARD_HEIGHT_PER_WIDTH;
+  if (clueButtonBesideName) {
+    nameColumnWidth = phoneNameWidth + CLUE_BUTTON_COLUMN_WIDTH;
+    handCardWidth = getHandCardWidthFor(nameColumnWidth);
+  }
   // In the phone layout, the cards on the table are no wider than the hand cards would be without
   // the play stacks above them. This keeps the stacks short, so that more hands fit below them.
   // (The hands without the stacks are used, since the size of the stacks changes the room for the
@@ -1018,7 +1034,6 @@ export function GameScreen(): React.JSX.Element {
         getHandCardWidthFor(undefined, phoneTableHeight),
       )
     : undefined;
-  let handCardWidth = getHandCardWidthFor(nameColumnWidth);
   if (stacked && handCardWidth < NAMES_BESIDE_CARDS_MIN_CARD_WIDTH) {
     const widthWithNamesAbove = getHandCardWidthFor(undefined);
     if (
@@ -1534,6 +1549,7 @@ export function GameScreen(): React.JSX.Element {
                   canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
+                  clueButtonBesideName={clueButtonBesideName}
                   clueMarkers={getClueMarkers(
                     shownClue,
                     visibleState.clues,

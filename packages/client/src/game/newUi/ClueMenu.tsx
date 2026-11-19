@@ -777,23 +777,34 @@ const CLUE_BUTTON_SIZE = {
 const CLUE_BUTTON_NAME_GAP = 8;
 
 /**
- * The width that the clue button takes in the name column, in the phone layout with the names
- * beside the cards. Every hand keeps it, so that the names line up and do not move when the buttons
- * show.
+ * The height that the clue button takes in the name column, below the name, in the phone layout
+ * with the names beside the cards. Every hand keeps it, so that the names line up and do not move
+ * when the buttons show.
+ */
+export const CLUE_BUTTON_COLUMN_HEIGHT =
+  CLUE_BUTTON_SIZE.PHONE + CLUE_BUTTON_NAME_GAP;
+
+/**
+ * The width that the clue button takes in the name column, to the right of the name, when the cards
+ * are too short for it below the name. Every hand keeps it, so that the names line up and do not
+ * move when the buttons show.
  */
 export const CLUE_BUTTON_COLUMN_WIDTH =
   CLUE_BUTTON_SIZE.PHONE + CLUE_BUTTON_NAME_GAP;
 
 /**
- * Where a clue button sits: to the right of the hand, in the name column to the right of the name,
- * or in the hand's top right corner.
+ * Where a clue button sits: to the right of the hand, in the name column below the name or to the
+ * right of it, or in the hand's top right corner.
  */
-export type ClueButtonPlacement = "right" | "column" | "corner";
+export type ClueButtonPlacement =
+  "right" | "belowName" | "besideName" | "corner";
 
 const CLUE_BUTTON_PLACEMENT_CLASS = {
   right:
     "tw:absolute tw:z-20 tw:inset-y-0 tw:left-full tw:flex tw:items-center tw:pl-2.5",
-  column: "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
+  belowName: "tw:absolute tw:z-20 tw:inset-0 tw:flex tw:items-end",
+  besideName:
+    "tw:absolute tw:z-20 tw:inset-y-0 tw:right-0 tw:flex tw:items-center",
   corner: "tw:absolute tw:z-20 tw:right-3",
 } as const satisfies Record<ClueButtonPlacement, string>;
 
@@ -801,11 +812,11 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
  * The button that opens the clue menu of a player. It shows beside their hand while the viewer can
  * clue them, in the room to the right of the hand that the hands leave for the menu (see
  * `getClueDrawerWidth`). In the phone layout, there is no room there. With the name beside the
- * cards, it sits in the name column, to the right of the name. With the name above the cards, it
- * sits in the hand's top right corner, beside the name. It is dim, so that the buttons of all the
- * hands do not compete with the cards, and bright while the pointer is over it. It fades in when it
- * appears, such as when the viewer's turn starts, and fades out when it goes, such as when its menu
- * opens.
+ * cards, it sits in the name column, below the name, or to the right of the name when the cards are
+ * too short for it below. With the name above the cards, it sits in the hand's top right corner,
+ * beside the name. It is dim, so that the buttons of all the hands do not compete with the cards,
+ * and bright while the pointer is over it. It fades in when it appears, such as when the viewer's
+ * turn starts, and fades out when it goes, such as when its menu opens.
  */
 export function ClueButton({
   name,

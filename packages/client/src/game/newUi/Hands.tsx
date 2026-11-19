@@ -32,6 +32,7 @@ import type { CardNotes } from "./CardNote.tsx";
 import { CardNote, openCardNote } from "./CardNote.tsx";
 import type { ClueButtonPlacement } from "./ClueMenu.tsx";
 import {
+  CLUE_BUTTON_COLUMN_HEIGHT,
   CLUE_BUTTON_COLUMN_WIDTH,
   ClueButton,
   ClueHandLayer,
@@ -138,6 +139,12 @@ interface HandsProps {
    * names beside the cards, the names sit above the cards instead, and this is `undefined`.
    */
   readonly nameColumnWidth: number | undefined;
+
+  /**
+   * In the phone layout with the names beside the cards, whether the clue buttons go to the right
+   * of the names, because the cards are too short for them below the names.
+   */
+  readonly clueButtonBesideName: boolean;
 
   /**
    * Whether the viewer can give a clue. Then, another player's hand shows their clue button, which
@@ -1688,12 +1695,17 @@ function Hand({
     || props.shownMover === seat.playerIndex;
 
   // In the phone layout, there is no room to the right of the hand for the clue button. With the
-  // name beside the cards, the name column keeps room for it (see `CLUE_BUTTON_COLUMN_WIDTH`).
-  // Otherwise, it goes in the hand's top right corner.
+  // name beside the cards, the name column keeps room for it below the name (see
+  // `CLUE_BUTTON_COLUMN_HEIGHT`) or to the right of it (see `CLUE_BUTTON_COLUMN_WIDTH`). Otherwise,
+  // it goes in the hand's top right corner.
   const buttonInColumn = props.stacked && props.nameColumnWidth !== undefined;
+  const buttonBelowName = buttonInColumn && !props.clueButtonBesideName;
+  const buttonBesideName = buttonInColumn && props.clueButtonBesideName;
   let buttonPlacement: ClueButtonPlacement = "right";
-  if (buttonInColumn) {
-    buttonPlacement = "column";
+  if (buttonBelowName) {
+    buttonPlacement = "belowName";
+  } else if (buttonBesideName) {
+    buttonPlacement = "besideName";
   } else if (props.stacked) {
     buttonPlacement = "corner";
   }
@@ -1745,10 +1757,10 @@ function Hand({
         }`}
         style={{
           width: props.nameColumnWidth,
-          paddingRight: buttonInColumn ? CLUE_BUTTON_COLUMN_WIDTH : undefined,
+          paddingRight: buttonBesideName ? CLUE_BUTTON_COLUMN_WIDTH : undefined,
         }}
       >
-        {buttonInColumn && clueButton}
+        {buttonBesideName && clueButton}
         <div className="tw:flex tw:max-w-full">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
             clue rail starts there. A click on a name lists the player's actions. */}
@@ -1791,6 +1803,15 @@ function Hand({
             underName={props.nameColumnWidth !== undefined}
             warning={seat.turnWarning}
           />
+        )}
+        {/* The negative margin cancels the column's gap, which the button's height includes. */}
+        {buttonBelowName && (
+          <div
+            className="tw:relative tw:-mt-1 tw:self-stretch"
+            style={{ height: CLUE_BUTTON_COLUMN_HEIGHT }}
+          >
+            {clueButton}
+          </div>
         )}
       </div>
       <div
