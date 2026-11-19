@@ -253,8 +253,8 @@ function sendText(room: ChatRoom, msgRaw: string) {
   // Stop browsing the typed history.
   typedChatHistoryBrowse = undefined;
 
-  // Check for chat commands.
-  const [firstArg, ...args] = msg.split(" ");
+  // Check for chat commands. Split on every kind of space, as the server does.
+  const [firstArg, ...args] = msg.split(/\s+/u);
   if (firstArg !== undefined && firstArg.startsWith("/")) {
     const command = trimPrefix(firstArg, "/").toLowerCase();
 

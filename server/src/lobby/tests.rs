@@ -459,6 +459,8 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         "/help",
         "/seed",
         "/id",
+        // The website did not see this command, because of the zero-width space before it.
+        "\u{200B}/pm Bob secret",
     ] {
         let result = run(&db.pool, &who, &[], "chat", json!({"text":text})).await;
         assert!(
@@ -467,6 +469,18 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
                 .all(|effect| matches!(effect, Effect::Publish(Publication::ToSelf(_))))
         );
     }
+    let result = run(
+        &db.pool,
+        &who,
+        &[],
+        "chat",
+        json!({"text":"\u{200B}/pm Bob secret","tableId":42}),
+    )
+    .await;
+    assert_eq!(
+        self_data(&result, "chat")["text"],
+        "The /pm command did not run, because the message has a hidden character. Type the command again."
+    );
     let result = run(
         &db.pool,
         &who,

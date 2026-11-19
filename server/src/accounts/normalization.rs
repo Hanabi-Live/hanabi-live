@@ -74,7 +74,9 @@ pub fn normalize_discord_chat(input: &str) -> Result<String, String> {
 }
 
 fn clean_chat(input: &str) -> Result<String, String> {
-    let cleaned = remove_disallowed_characters(input);
+    // Every other kind of space becomes a plain space, so that it still separates words.
+    let spaced = regex!(r"\s").replace_all(input, " ");
+    let cleaned = remove_disallowed_characters(&spaced);
     let message = cleaned.trim();
     if message.is_empty() {
         return Err("Chat messages cannot be blank.".into());
@@ -180,7 +182,13 @@ mod tests {
         assert!(validate_username("é\u{301}\u{301}\u{301}").is_err());
         assert_eq!(
             normalize_chat(" \tHello\nWorld\r "),
-            Ok("HelloWorld".into())
+            Ok("Hello World".into())
+        );
+        // A non-breaking or full-width space still separates words, such as a command from its
+        // first word.
+        assert_eq!(
+            normalize_chat("/w\u{a0}Bob\u{3000}hi"),
+            Ok("/w Bob hi".into())
         );
         assert_eq!(truncate_to_max_chars("éé", 1), "é");
         assert_eq!(truncate_to_max_chars("éé", 3), "éé");

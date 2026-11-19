@@ -477,6 +477,20 @@ pub async fn lobby_chat(
         Err(error) => return refused(error),
     };
     let command = ChatCommand::parse(&message);
+    // The website runs these commands itself, so one arrives here only when the website did not see
+    // it, such as behind a character that the server removes. It can hold a private message, so
+    // only its sender sees it.
+    if let Some(command) = &command
+        && matches!(command.kind, CommandKind::Website)
+    {
+        return Ok(Some(vec![notice(
+            &caller.name,
+            &format!(
+                "The /{} command did not run, because the message has a hidden character. Type the command again.",
+                command.name
+            ),
+        )]));
+    }
     match command
         .as_ref()
         .map(|command| (command.kind, command.args.is_empty()))
