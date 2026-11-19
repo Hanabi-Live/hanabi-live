@@ -223,6 +223,8 @@ constants! {
     @data pub const MAX_CLIENT_ERROR_STACK_LENGTH: usize = 4000;
     /// The URL path of the website's scripts. A client error report must come from one of them.
     @data pub const SCRIPTS_PATH: &str = "/public/js/bundles/";
+    /// The longest text that filters a player's game history, in characters.
+    @data pub const MAX_HISTORY_FILTER_LENGTH: usize = 100;
     /// The longest game tag, in characters.
     pub const MAX_TAG_LENGTH: usize = 100;
     /// The most tags that one player can add to one game.

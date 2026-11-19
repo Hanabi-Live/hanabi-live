@@ -154,6 +154,8 @@ that have not been played yet and have only one copy remaining.)
 
 - After a game is completed, it will be recorded in the database.
 - Players will be able to see their past games in the "Show History" screen.
+- The "Show History" screen groups the games by day, and can filter them by
+  variant or by the name of another player.
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
 - Profiles show the time spent playing, the time spent reviewing replays, and

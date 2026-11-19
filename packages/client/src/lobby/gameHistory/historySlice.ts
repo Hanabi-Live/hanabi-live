@@ -23,6 +23,12 @@ interface OtherScores {
 }
 type LobbyStatus = ServerEventData["lobbyStatus"];
 
+/** A page of our history, with the filter that the request named. */
+interface HistoryPage {
+  readonly filter: string;
+  readonly page: ReplyData["gameHistory"];
+}
+
 const gamesAdapter = createEntityAdapter({
   selectId: (game: GameSummary): number => game.gameId,
 });
@@ -38,6 +44,15 @@ interface HistoryState {
 
   /** Whether we are waiting for a page of our history. */
   readonly loading: boolean;
+
+  /**
+   * The text that finds the games to show, which the server matches against variants and the other
+   * players. It is empty to show every game.
+   */
+  readonly filter: string;
+
+  /** The number of games that the filter finds, or undefined until the server counts them. */
+  readonly matchingTotal: number | undefined;
 
   /** The seed whose other scores we show, and the pages of its games that the server sent. */
   readonly otherScores:
@@ -62,6 +77,8 @@ const initialState: HistoryState = {
   totalGames: undefined,
   totalGamesFailed: false,
   loading: false,
+  filter: "",
+  matchingTotal: undefined,
   otherScores: undefined,
 };
 
@@ -72,9 +89,36 @@ const historySlice = createSlice({
     historyRequested(state) {
       state.loading = true;
     },
-    historyReceived(state, action: PayloadAction<readonly GameSummary[]>) {
-      gamesAdapter.setMany(state.games, action.payload);
+    historyReceived(state, action: PayloadAction<HistoryPage>) {
+      const { filter, page } = action.payload;
+      // Ignore a late reply for a filter that we no longer show.
+      if (filter !== state.filter) {
+        return;
+      }
+      gamesAdapter.setMany(state.games, page.games);
+      state.matchingTotal = page.total;
       state.loading = false;
+    },
+    /** A failed request for a page of our history adds no games. */
+    historyFailed(state, action: PayloadAction<string>) {
+      if (action.payload === state.filter) {
+        state.loading = false;
+      }
+    },
+    /** We just finished a game. It is undefined when the filter does not find it. */
+    historyGameAdded(state, action: PayloadAction<GameSummary | undefined>) {
+      if (action.payload === undefined) {
+        return;
+      }
+      gamesAdapter.setOne(state.games, action.payload);
+      if (state.matchingTotal !== undefined) {
+        state.matchingTotal++;
+      }
+    },
+    historyFilterChanged(state, action: PayloadAction<string>) {
+      state.filter = action.payload;
+      state.matchingTotal = undefined;
+      gamesAdapter.removeAll(state.games);
     },
     totalGamesChanged(state, action: PayloadAction<number | undefined>) {
       state.totalGames = action.payload;
@@ -129,6 +173,9 @@ const historySlice = createSlice({
 export const {
   historyRequested,
   historyReceived,
+  historyFailed,
+  historyGameAdded,
+  historyFilterChanged,
   totalGamesChanged,
   lobbyStatusReceived,
   otherScoresRequested,
@@ -149,3 +196,12 @@ export const selectHistoryGames = createSelector(
   (games: readonly GameSummary[]): readonly GameSummary[] =>
     games.toSorted(compareGameHistory),
 );
+
+/**
+ * The number of games in our history, or the number that the filter finds. It is undefined until
+ * the server counts them.
+ */
+export function selectHistoryTotal(state: RootState): number | undefined {
+  const { totalGames, filter, matchingTotal } = state.history;
+  return filter === "" ? (totalGames ?? matchingTotal) : matchingTotal;
+}

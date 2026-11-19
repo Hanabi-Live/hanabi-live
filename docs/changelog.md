@@ -29,6 +29,9 @@ of the repository.
   statistics on separate lines, and a chart with a bar for every score and a
   line at the average. A click on a bar shows only the games with that score.
   The pages of players and seeds are narrower, so that their parts line up.
+- The lobby's history screen matches a player's history page: a list grouped by
+  day, with a score bar for each game. A box above it filters the games by
+  variant or by the name of another player.
 
 ## November 18th, 2026
 

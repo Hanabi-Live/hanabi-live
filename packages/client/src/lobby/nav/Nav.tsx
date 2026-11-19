@@ -2,13 +2,10 @@
 
 import { Children } from "react";
 import { PATH } from "../../constants.ts";
-import { globals } from "../../Globals.ts";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import type { RootState } from "../../store.ts";
 import { useAppSelector } from "../../store.ts";
-import { tooltipRef } from "../../tooltipRef.ts";
 import { showCreateGame } from "../createGame.ts";
-import { ShownGameCount } from "../gameHistory/HistoryLists.tsx";
 import * as history from "../history.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 import { signOut } from "../signOut.ts";
@@ -294,9 +291,6 @@ function PageNav() {
 function HistoryNav() {
   return (
     <NavList>
-      <li className={`${LIST_ITEM_CLASS_NAME} tw:mr-[0.375em]`}>
-        Shown games: <ShownGameCount /> / <TotalGames />
-      </li>
       <NavButton
         icon="fa-arrow-left"
         id="nav-buttons-history-return"
@@ -307,31 +301,6 @@ function HistoryNav() {
         </span>
       </NavButton>
     </NavList>
-  );
-}
-
-function TotalGames() {
-  const totalGames = useAppSelector((state) => state.history.totalGames);
-  const failed = useAppSelector((state) => state.history.totalGamesFailed);
-
-  if (totalGames !== undefined) {
-    return <>{totalGames}</>;
-  }
-
-  if (!failed) {
-    return <>loading...</>;
-  }
-
-  return (
-    <span
-      className="tw:cursor-pointer"
-      onClick={() => {
-        globals.conn?.send("lobbyLoad", {});
-      }}
-      ref={tooltipRef("Loading lobby statistics failed.")}
-    >
-      unavailable (click to retry)
-    </span>
   );
 }
 

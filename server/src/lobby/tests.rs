@@ -642,6 +642,61 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
 }
 
 #[tokio::test]
+async fn lobby_history_filter_finds_variants_and_other_players_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let a = db.user("Alice").await;
+    let b = db.user("Bob").await;
+    let own = game(&db, a, "p2v0s1", 20).await;
+    let shared = game(&db, a, "p2v0s2", 20).await;
+    sqlx::query!(
+        "INSERT INTO game_participants(game_id,user_id,seat) VALUES($1,$2,1)",
+        shared,
+        b
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let who = caller(a, "Alice");
+    let page = async |filter: &str| {
+        let result = run(
+            &db.pool,
+            &who,
+            &[],
+            "gameHistory",
+            json!({"offset":0,"limit":10,"filter":filter}),
+        )
+        .await;
+        let history = self_data(&result, "gameHistory");
+        let ids: Vec<i64> = history["games"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|game| game["gameId"].as_i64().unwrap())
+            .collect();
+        (ids, history["total"].as_i64().unwrap())
+    };
+    let (own, shared) = (i64::from(own), i64::from(shared));
+    // The variant's name, in any case.
+    assert_eq!(page("nO vAR").await, (vec![shared, own], 2));
+    assert_eq!(page("bo").await, (vec![shared], 1));
+    // Our own name finds nothing, and a wildcard is an ordinary character.
+    assert_eq!(page("ali").await, (vec![], 0));
+    assert_eq!(page("%").await, (vec![], 0));
+    assert_eq!(page(" ").await, (vec![shared, own], 2));
+    let too_long = "a".repeat(hanabi_protocol::MAX_HISTORY_FILTER_LENGTH + 1);
+    assert!(
+        ClientRequest::decode(
+            "gameHistory",
+            &json!({"offset":0,"limit":10,"filter":too_long})
+        )
+        .is_err()
+    );
+    db.close().await;
+}
+
+#[tokio::test]
 async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let Some(db) = TestDb::create().await else {
         return;

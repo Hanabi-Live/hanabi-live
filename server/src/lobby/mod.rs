@@ -13,8 +13,10 @@ pub use chat::{
     ChatCommand, Classification, CommandKind, GeneralResponse, LobbyChatLimit, RuntimeCommand,
     TableChatCommand, classify_chat, external_command, lobby_history, server_chat, too_quickly,
 };
+use history::{
+    HistoryFilter, filtered_history_count, filtered_history_ids, seed_game_count, seed_history_ids,
+};
 pub use history::{blocked_seeds, get_history, history_ids};
-use history::{seed_game_count, seed_history_ids};
 use relationships::Change;
 pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::get_settings;
@@ -215,9 +217,21 @@ pub async fn dispatch(
         ClientRequest::BlockRemove(request) => {
             relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
         }
-        ClientRequest::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
-            let ids = history_ids(pool, caller.user, offset.get(), limit.get()).await?;
-            let total = crate::database::game_count(pool, caller.user).await?;
+        ClientRequest::GameHistory(request) => {
+            let hanabi_protocol::PageRequest { offset, limit } = request.page;
+            let filter = request.filter.as_deref().and_then(HistoryFilter::new);
+            let (ids, total) = if let Some(filter) = filter {
+                (
+                    filtered_history_ids(pool, caller.user, &filter, offset.get(), limit.get())
+                        .await?,
+                    filtered_history_count(pool, caller.user, &filter).await?,
+                )
+            } else {
+                (
+                    history_ids(pool, caller.user, offset.get(), limit.get()).await?,
+                    crate::database::game_count(pool, caller.user).await?,
+                )
+            };
             vec![Effect::Reply(hanabi_protocol::reply::GAME_HISTORY.data(
                 hanabi_protocol::GamePage {
                     games: get_history(pool, &ids).await?,

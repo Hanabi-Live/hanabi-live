@@ -57,6 +57,7 @@ export const WEBSITE_CHAT_COMMANDS = [
 export const MAX_CLIENT_ERROR_MESSAGE_LENGTH = 1000;
 export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
 export const SCRIPTS_PATH = "/public/js/bundles/";
+export const MAX_HISTORY_FILTER_LENGTH = 100;
 export const MAX_TABLE_NAME_LENGTH = 45;
 export const SECONDS_PER_MINUTE = 60;
 export const IDLE_WARNING_MS = 300_000;
@@ -474,6 +475,22 @@ export const gameFinishedSchema = z
      * How the recipient views the shared replay, as `GameInit.mode` would show it.
      */
     view: sharedReplayViewSchema,
+  })
+  .readonly();
+
+/**
+ * A page of the player's own games, newest first.
+ */
+export const gameHistoryRequestSchema = z
+  .strictObject({
+    /**
+     * Only the games whose variant, or one of the other players, has a name that contains this
+     * text, ignoring case. At most `MAX_HISTORY_FILTER_LENGTH` characters. Absent or blank for
+     * every game.
+     */
+    filter: z.string().max(100).optional(),
+    limit: pageLimitSchema,
+    offset: countSchema,
   })
   .readonly();
 
@@ -980,13 +997,6 @@ export const noticeSchema = z
     latestVersion: z.string().min(1).optional(),
     message: z.string().min(1),
   })
-  .readonly();
-
-/**
- * A page of a list of games: in `gameHistory`, the player's own games, newest first.
- */
-export const pageRequestSchema = z
-  .strictObject({ limit: pageLimitSchema, offset: countSchema })
   .readonly();
 
 /**
@@ -2120,7 +2130,7 @@ export const CLIENT_REQUEST_SCHEMAS = {
   clientError: clientErrorRequestSchema,
   friendAdd: relationshipRequestSchema,
   friendRemove: relationshipRequestSchema,
-  gameHistory: pageRequestSchema,
+  gameHistory: gameHistoryRequestSchema,
   gameInitLoad: tableRefSchema,
   gameLoaded: tableRefSchema,
   gameStateLoad: tableRefSchema,

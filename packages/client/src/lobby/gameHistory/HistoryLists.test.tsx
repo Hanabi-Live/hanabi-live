@@ -9,6 +9,7 @@ import { usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { HistoryList, OtherScoresList } from "./HistoryLists.tsx";
 import {
+  historyFilterChanged,
   historyReceived,
   historyRequested,
   moreOtherScoresRequested,
@@ -18,6 +19,8 @@ import {
 } from "./historySlice.ts";
 
 vi.mock("../history.ts", () => ({
+  filterHistory: vi.fn(),
+  HISTORY_PAGE_SIZE: 10,
   hide: vi.fn(),
   showMore: vi.fn(),
   showMoreOtherScores: vi.fn(),
@@ -79,6 +82,11 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
+/** The IDs of the games in the history, from top to bottom. */
+function historyIds(): readonly string[] {
+  return screen.getAllByText(/^#\d+$/u).map((element) => element.textContent);
+}
+
 describe("HistoryList", () => {
   test("says that it is loading, then lists the newest games first", () => {
     store.dispatch(totalGamesChanged(2));
@@ -90,22 +98,62 @@ describe("HistoryList", () => {
 
     act(() => {
       store.dispatch(
-        historyReceived([
-          game(1, "2026-01-01T00:00:00.000Z"),
-          game(2, "2026-02-01T00:00:00.000Z"),
-        ]),
+        historyReceived({
+          filter: "",
+          page: {
+            games: [
+              game(1, "2026-01-01T00:00:00.000Z"),
+              game(2, "2026-02-01T00:00:00.000Z"),
+            ],
+            total: 2,
+          },
+        }),
       );
     });
 
-    expect(firstCells()).toStrictEqual(["#2", "#1"]);
+    expect(historyIds()).toStrictEqual(["#2", "#1"]);
     expect(screen.getAllByText("bob")).toHaveLength(2);
     // Every game is shown, so there is no more history to ask for.
-    expect(screen.queryByText("Show More History")).toBeNull();
+    expect(screen.queryByText(/more$/u)).toBeNull();
 
     act(() => {
       store.dispatch(totalGamesChanged(3));
     });
-    expect(screen.getByText("Show More History")).toBeDefined();
+    expect(screen.getByText("Showing 2 of 3 games")).toBeDefined();
+    expect(screen.getByText(/Show 1 more/u)).toBeDefined();
+  });
+
+  test("ignores a late reply for a filter that it no longer shows", () => {
+    store.dispatch(historyFilterChanged("bo"));
+    store.dispatch(historyFilterChanged("bob"));
+    renderComponent(<HistoryList />);
+
+    act(() => {
+      store.dispatch(
+        historyReceived({
+          filter: "bo",
+          page: {
+            games: [game(3, "2026-01-01T00:00:00.000Z")],
+            total: 1,
+          },
+        }),
+      );
+    });
+    expect(screen.getByText('No games match "bob".')).toBeDefined();
+
+    act(() => {
+      store.dispatch(
+        historyReceived({
+          filter: "bob",
+          page: {
+            games: [game(4, "2026-01-01T00:00:00.000Z")],
+            total: 1,
+          },
+        }),
+      );
+    });
+    expect(historyIds()).toStrictEqual(["#4"]);
+    expect(screen.getByText("1 game found")).toBeDefined();
   });
 });
 

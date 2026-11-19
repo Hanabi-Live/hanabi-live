@@ -18,6 +18,85 @@ pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) ->
     .await?)
 }
 
+/// What a filter of a player's game history finds: the games of the variants whose names contain
+/// its text, and the games with another player whose name contains it, ignoring case.
+pub struct HistoryFilter {
+    variant_ids: Vec<i16>,
+    /// A pattern for `ILIKE`, with the text's wildcard characters escaped.
+    player_pattern: String,
+}
+
+impl HistoryFilter {
+    /// Returns None for blank text, which finds every game.
+    pub fn new(text: &str) -> Option<Self> {
+        let text = text.trim();
+        if text.is_empty() {
+            return None;
+        }
+        let lowercase = text.to_lowercase();
+        let variant_ids = hanabi_engine::variants()
+            .iter()
+            .filter(|variant| variant.name.to_lowercase().contains(&lowercase))
+            .filter_map(|variant| i16::try_from(variant.id).ok())
+            .collect();
+        let mut player_pattern = String::from("%");
+        for c in text.chars() {
+            if matches!(c, '\\' | '%' | '_') {
+                player_pattern.push('\\');
+            }
+            player_pattern.push(c);
+        }
+        player_pattern.push('%');
+        Some(Self {
+            variant_ids,
+            player_pattern,
+        })
+    }
+}
+
+/// A page of the IDs of a player's games that a filter finds, newest first.
+pub async fn filtered_history_ids(
+    pool: &PgPool,
+    id: UserId,
+    filter: &HistoryFilter,
+    offset: i64,
+    amount: i64,
+) -> Result<Vec<i32>> {
+    Ok(sqlx::query_scalar!(
+        "SELECT p.game_id FROM game_participants p JOIN games g ON g.id=p.game_id
+         WHERE p.user_id=$1 AND (g.variant_id=ANY($2) OR EXISTS (
+             SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id
+             WHERE o.game_id=p.game_id AND o.user_id<>$1 AND u.username ILIKE $3))
+         ORDER BY p.game_id DESC LIMIT $4 OFFSET $5",
+        id.get(),
+        &filter.variant_ids,
+        filter.player_pattern,
+        amount,
+        offset
+    )
+    .fetch_all(pool)
+    .await?)
+}
+
+/// The number of a player's games that a filter finds.
+pub async fn filtered_history_count(
+    pool: &PgPool,
+    id: UserId,
+    filter: &HistoryFilter,
+) -> Result<i64> {
+    Ok(sqlx::query_scalar!(
+        "SELECT count(*) AS \"count!\" FROM game_participants p JOIN games g ON g.id=p.game_id
+         WHERE p.user_id=$1 AND (g.variant_id=ANY($2) OR EXISTS (
+             SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id
+             WHERE o.game_id=p.game_id AND o.user_id<>$1 AND u.username ILIKE $3))",
+        id.get(),
+        &filter.variant_ids,
+        filter.player_pattern
+    )
+    .fetch_one(pool)
+    .await?)
+}
+
 /// A page of the games on a seed: the games without rule options first, then the highest scores, then
 /// the earliest games.
 pub async fn seed_history_ids(

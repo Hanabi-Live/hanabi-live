@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.game_id FROM game_participants p JOIN games g ON g.id=p.game_id\n         WHERE p.user_id=$1 AND (g.variant_id=ANY($2) OR EXISTS (\n             SELECT 1 FROM game_participants o JOIN users u ON u.id=o.user_id\n             WHERE o.game_id=p.game_id AND o.user_id<>$1 AND u.username ILIKE $3))\n         ORDER BY p.game_id DESC LIMIT $4 OFFSET $5",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "game_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "game_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2Array",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "55c49a2274aa4c24429f27e523a788a1764f45878f40931123036a5eff2693c8"
+}

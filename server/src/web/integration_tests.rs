@@ -35,7 +35,7 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
         (
             1,
             json!({"offset":"bad","limit":10}),
-            "Invalid PageRequest payload at /offset",
+            "Invalid GameHistoryRequest payload at /offset",
         ),
         (
             2,

@@ -23,6 +23,7 @@ import { getFadeStyle } from "../fade.ts";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { usePages } from "./DataTable.tsx";
+import { END_CONDITION_TEXT, groupByDay, Score } from "./gameSummary.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
 import { SuitDots } from "./SuitDots.tsx";
 
@@ -32,7 +33,6 @@ type GamesTable = Extract<
 >;
 type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 type GameListColumn = z.infer<typeof gameListColumnSchema>;
-type EndCondition = GameSummary["endCondition"];
 
 /** How long to wait after the last keystroke in a filter box before applying it. */
 const FILTER_DELAY_MILLISECONDS = 300;
@@ -109,20 +109,6 @@ const SORT_CHOICES = [
 /** A link in a row, which sits above the link that covers the row. */
 const ROW_LINK =
   "tw:relative tw:z-10 tw:text-link tw:no-underline tw:hover:underline";
-
-/** How a game ended, when it did not end normally. */
-const END_CONDITION_TEXT = {
-  normal: undefined,
-  strikeout: "Struck out",
-  timeout: "Ran out of time",
-  terminatedByPlayer: "Terminated",
-  terminatedByVote: "Terminated by vote",
-  speedrunFail: "Speedrun failed",
-  idleTimeout: "Idle too long",
-  characterSoftlock: "Stuck",
-  allOrNothingFail: "Failed",
-  allOrNothingSoftlock: "Stuck",
-} as const satisfies Record<EndCondition, string | undefined>;
 
 function GameList({
   table,
@@ -448,22 +434,9 @@ function DayGroups({
     return list(games);
   }
 
-  const groups: Array<{ day: string; games: GameSummary[] }> = [];
-  for (const game of games) {
-    const day = dayName(new Date(game.finishedAt));
-    const last = groups.at(-1);
-    if (last?.day === day) {
-      last.games.push(game);
-    } else {
-      groups.push({
-        day,
-        games: [game],
-      });
-    }
-  }
   return (
     <>
-      {groups.map((group) => (
+      {groupByDay(games).map((group) => (
         <section key={group.day}>
           <h3 className="tw:m-0 tw:mt-6 tw:mb-1 tw:px-3 tw:text-[0.85em] tw:font-semibold tw:text-text-label tw:narrow-640:px-1">
             {group.day}
@@ -473,25 +446,6 @@ function DayGroups({
       ))}
     </>
   );
-}
-
-/** "Today", "Yesterday", or the date, with the year only when it is not this year. */
-function dayName(date: Date): string {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) {
-    return "Today";
-  }
-  if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday";
-  }
-  return date.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    ...(date.getFullYear() !== today.getFullYear() && { year: "numeric" }),
-  });
 }
 
 function GameRow({
@@ -624,37 +578,6 @@ function SeedResult({
       {others} {others === 1 ? "other" : "others"}
     </a>
   ) : null;
-}
-
-/** The score as a number over the variant's best score, with a bar that fills toward it. */
-function Score({
-  score,
-  max,
-}: {
-  readonly score: number;
-  readonly max: number;
-}) {
-  const perfect = score === max;
-  return (
-    <div className="tw:w-[4.25em]">
-      <div className="tw:flex tw:items-baseline tw:gap-1 tw:leading-none">
-        <span
-          className={`tw:text-[1.6em] tw:font-semibold tw:tabular-nums ${perfect ? "tw:text-[var(--button-primary-bg)]" : ""}`}
-        >
-          {score}
-        </span>
-        <span className="tw:text-[0.75em] tw:text-text-label tw:tabular-nums">
-          / {max}
-        </span>
-      </div>
-      <div className="tw:mt-1.5 tw:h-1 tw:overflow-hidden tw:rounded-full tw:bg-border">
-        <div
-          className={`tw:h-full tw:rounded-full ${perfect ? "tw:bg-[var(--button-primary-bg)]" : "tw:bg-green-text"}`}
-          style={{ width: `${(score * 100) / max}%` }}
-        />
-      </div>
-    </div>
-  );
 }
 
 /** The count of games, and the controls that move between pages when there are more. */

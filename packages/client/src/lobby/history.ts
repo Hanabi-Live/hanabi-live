@@ -1,12 +1,16 @@
 // Moving between the lobby and the screens that show past games and other scores.
 
+import type { GameSummary } from "@hanabi-live/data";
 import { DEFAULT_PAGE_LIMIT } from "@hanabi-live/data";
+import { getVariantById } from "@hanabi-live/game";
 import { HISTORY_HASH, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { screenChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import {
+  historyFailed,
+  historyFilterChanged,
   historyReceived,
   historyRequested,
   moreOtherScoresRequested,
@@ -21,7 +25,12 @@ import { Screen } from "./types/Screen.ts";
  * The number of games that each history or other scores request asks for, the same as a public
  * history page.
  */
-const HISTORY_PAGE_SIZE = DEFAULT_PAGE_LIMIT;
+export const HISTORY_PAGE_SIZE = DEFAULT_PAGE_LIMIT;
+
+/** How long to wait after the last keystroke in the filter box before applying it. */
+const FILTER_DELAY_MILLISECONDS = 300;
+
+let filterTimeout: ReturnType<typeof setTimeout> | undefined;
 
 export function show(requestHistory = true): void {
   store.dispatch(screenChanged(Screen.History));
@@ -45,17 +54,59 @@ export function showMore(): void {
 }
 
 function requestPage(offset: number) {
+  const { filter } = store.getState().history;
   store.dispatch(historyRequested());
   globals.connection.send(
     "gameHistory",
     {
       offset,
       limit: HISTORY_PAGE_SIZE,
+      ...(filter !== "" && { filter }),
     },
     (reply) => {
-      // A failed page adds no games.
-      store.dispatch(historyReceived(reply.ok ? reply.data.games : []));
+      store.dispatch(
+        reply.ok
+          ? historyReceived({
+              filter,
+              page: reply.data,
+            })
+          : historyFailed(filter),
+      );
     },
+  );
+}
+
+/** Shows only the games that the text finds, once the typing pauses. */
+export function filterHistory(text: string): void {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    const filter = text.trim();
+    if (filter === store.getState().history.filter) {
+      return;
+    }
+    store.dispatch(historyFilterChanged(filter));
+    requestPage(0);
+  }, FILTER_DELAY_MILLISECONDS);
+}
+
+/**
+ * Whether the filter of our history finds a game: whether the name of its variant or of one of the
+ * other players contains the filter, ignoring case. The server matches the same way.
+ */
+export function historyFilterFinds(
+  game: GameSummary,
+  filter: string,
+  username: string,
+): boolean {
+  if (filter === "") {
+    return true;
+  }
+  const text = filter.toLowerCase();
+  return (
+    getVariantById(game.options.variantId).name.toLowerCase().includes(text)
+    || game.playerNames.some(
+      (name) => name !== username && name.toLowerCase().includes(text),
+    )
   );
 }
 

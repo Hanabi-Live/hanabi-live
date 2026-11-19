@@ -1,23 +1,32 @@
 // The screens that show our past games and the other games on a seed.
 
 import type { GameSummary } from "@hanabi-live/data";
+import { MAX_HISTORY_FILTER_LENGTH } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
 import { getVariantById, secondsToClockString } from "@hanabi-live/game";
 import { Fragment } from "react";
 import { PATH } from "../../constants.ts";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
 import { globals } from "../../Globals.ts";
+import {
+  END_CONDITION_TEXT,
+  groupByDay,
+  Score,
+} from "../../publicPages/gameSummary.tsx";
+import { SuitDots } from "../../publicPages/SuitDots.tsx";
 import { useAppSelector } from "../../store.ts";
-import { tooltipRefHtml } from "../../tooltipRef.ts";
+import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { dateTimeFormatter } from "../../utils.ts";
 import {
+  filterHistory,
   hide,
+  HISTORY_PAGE_SIZE,
   showMore,
   showMoreOtherScores,
   showOtherScoresFromHistory,
 } from "../history.ts";
 import { replayVisibility } from "../replayVisibility.ts";
-import { selectHistoryGames, selectShownGameCount } from "./historySlice.ts";
+import { selectHistoryGames, selectHistoryTotal } from "./historySlice.ts";
 
 /** A game's players, which the server lists in seat order, in alphabetical order, ignoring case. */
 function alphabetical(names: readonly string[]): readonly string[] {
@@ -42,83 +51,169 @@ const BUTTON_ICON = "tw:relative tw:top-[0.22em] tw:text-[1.5em]";
 export function HistoryList(): React.JSX.Element {
   const games = useAppSelector(selectHistoryGames);
   const loading = useAppSelector((state) => state.history.loading);
-  const totalGames = useAppSelector((state) => state.history.totalGames);
+  const filter = useAppSelector((state) => state.history.filter);
+  const total = useAppSelector(selectHistoryTotal);
   const username = useAppSelector((state) => state.session.username);
 
-  if (games.length === 0) {
-    return (
-      <div className="tw:flex tw:h-full tw:items-center tw:justify-center">
-        <h3 className="tw:text-center" id="lobby-history-no">
-          {loading ? "Loading history..." : "No game history. Play some games!"}
-        </h3>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="tw:h-full tw:overflow-y-auto"
-      id="lobby-history-table-container"
-    >
-      <table>
-        <thead>
-          <tr>
-            <th>Game ID</th>
-            <th># of Players</th>
-            <th>Score</th>
-            <th>Variant</th>
-            <th>Options</th>
-            <th id="lobby-history-table-players">Other Players</th>
-            <th>Date Played</th>
-            <th>Watch Replay</th>
-            <th>Share Replay</th>
-            <th>Other Scores</th>
-          </tr>
-        </thead>
-        <tbody id="lobby-history-table-tbody">
-          {games.map((game) => (
-            <HistoryRow game={game} key={game.gameId} username={username} />
-          ))}
-        </tbody>
-      </table>
+    <div className="tw:flex tw:h-full tw:flex-col">
+      <div className="tw:mx-auto tw:flex tw:w-full tw:max-w-[64em] tw:flex-wrap tw:items-end tw:justify-between tw:gap-x-6 tw:gap-y-3 tw:border-b tw:border-border tw:pb-4">
+        <div>
+          <h2 className="tw:m-0 tw:text-[1.75em] tw:leading-tight">
+            Your games
+          </h2>
+          <div className="tw:text-[0.9em] tw:text-text-label">
+            <GameCount />
+          </div>
+        </div>
+        <HistoryFilter />
+      </div>
 
-      <div className="tw:text-center">
-        {(totalGames === undefined || games.length < totalGames) && (
-          <button
-            className="button"
-            id="lobby-history-show-more"
-            onClick={showMore}
-            style={{ marginRight: "2em" }}
-            type="submit"
-          >
-            <i className="fas fa-chevron-circle-down tw:mr-[0.625em]" />
-            Show More History
-          </button>
-        )}
-        <a
-          href={`${PATH.HISTORY}/${username}`}
-          id="lobby-history-show-all"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <button
-            className="button"
-            id="lobby-history-show-all-button"
-            type="button"
-          >
-            <i className="fas fa-list-alt tw:mr-[0.625em]" />
-            All History
-          </button>
-        </a>
+      <div
+        className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto"
+        id="lobby-history-table-container"
+      >
+        <div className="tw:mx-auto tw:max-w-[64em]">
+          {games.length === 0 ? (
+            <p
+              className="tw:my-10 tw:text-center tw:text-text-label"
+              id="lobby-history-no"
+            >
+              {historyEmptyText(loading, filter)}
+            </p>
+          ) : (
+            groupByDay(games).map((group) => (
+              <section key={group.day}>
+                <h3 className="tw:m-0 tw:mt-5 tw:mb-1 tw:px-3 tw:text-[0.85em] tw:font-semibold tw:text-text-label tw:narrow-640:px-1">
+                  {group.day}
+                </h3>
+                <ul className="tw:m-0 tw:list-none tw:p-0">
+                  {group.games.map((game) => (
+                    <HistoryRow
+                      game={game}
+                      key={game.gameId}
+                      username={username}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
+
+          <div className="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-x-6 tw:gap-y-3 tw:px-3 tw:text-[0.9em] tw:narrow-640:px-1">
+            <span className="tw:text-text-label">
+              {games.length > 0
+                && `Showing ${games.length}${total === undefined ? "" : ` of ${total}`} ${pluralGames(total ?? games.length)}`}
+            </span>
+            <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-5 tw:gap-y-3">
+              <a
+                href={`${PATH.HISTORY}/${username}`}
+                id="lobby-history-show-all"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Open on its own page
+              </a>
+              {games.length > 0
+                && (total === undefined || games.length < total) && (
+                  <button
+                    className={`button primary ${ROW_BUTTON}`}
+                    disabled={loading}
+                    id="lobby-history-show-more"
+                    onClick={showMore}
+                    type="button"
+                  >
+                    <i aria-hidden className="fas fa-chevron-down" />
+                    Show{" "}
+                    {total === undefined
+                      ? HISTORY_PAGE_SIZE
+                      : Math.min(HISTORY_PAGE_SIZE, total - games.length)}{" "}
+                    more
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/** The "Shown games" count on the history screen's navigation bar. */
-export function ShownGameCount(): React.JSX.Element {
-  return <>{useAppSelector(selectShownGameCount)}</>;
+/** What the history says when it shows no games. */
+function historyEmptyText(loading: boolean, filter: string): string {
+  if (loading) {
+    return "Loading history...";
+  }
+  return filter === ""
+    ? "No game history. Play some games!"
+    : `No games match "${filter}".`;
 }
+
+function pluralGames(count: number): string {
+  return count === 1 ? "game" : "games";
+}
+
+/** The number of games that we played, or that the filter finds. */
+function GameCount() {
+  const filter = useAppSelector((state) => state.history.filter);
+  const total = useAppSelector(selectHistoryTotal);
+  const failed = useAppSelector((state) => state.history.totalGamesFailed);
+
+  if (total !== undefined) {
+    return (
+      <>
+        {total} {pluralGames(total)}
+        {filter !== "" && " found"}
+      </>
+    );
+  }
+
+  if (filter !== "" || !failed) {
+    return <>Loading...</>;
+  }
+
+  return (
+    <span
+      className="tw:cursor-pointer"
+      onClick={() => {
+        globals.conn?.send("lobbyLoad", {});
+      }}
+      ref={tooltipRef("Loading lobby statistics failed.")}
+    >
+      Unavailable (click to retry)
+    </span>
+  );
+}
+
+/** A box that shows only the games of a variant or with a player. */
+function HistoryFilter() {
+  return (
+    <label className="tw:m-0 tw:flex tw:w-[18em] tw:max-w-full tw:items-center tw:text-[0.9em] tw:narrow-640:w-full">
+      <i
+        aria-hidden
+        className="fas fa-search tw:pointer-events-none tw:relative tw:left-[0.85em] tw:w-0 tw:text-text-label"
+      />
+      <input
+        aria-label="Filter by variant or player"
+        className="tw:h-[2.25em] tw:w-full tw:py-0 tw:pr-3 tw:pl-[2.25em] tw:text-[1em]"
+        id="lobby-history-filter"
+        maxLength={MAX_HISTORY_FILTER_LENGTH}
+        onChange={(event) => {
+          filterHistory(event.target.value);
+        }}
+        placeholder="Filter by variant or player"
+        type="text"
+      />
+    </label>
+  );
+}
+
+/** A button in a row of the history, or under it. */
+const ROW_BUTTON =
+  "tw:m-0 tw:inline-flex tw:h-[2.25em] tw:items-center tw:justify-center tw:gap-2 tw:px-3 tw:leading-none";
+
+/** A row's button that shows only an icon. */
+const ROW_ICON_BUTTON = `${ROW_BUTTON} tw:w-[2.25em] tw:px-0`;
 
 function HistoryRow({
   game,
@@ -127,55 +222,93 @@ function HistoryRow({
   readonly game: GameSummary;
   readonly username: string;
 }) {
-  const { numGamesOnSeed, seed } = game;
-  const otherGameCount = numGamesOnSeed - 1;
-  const hasOtherGames = otherGameCount > 0;
+  const variant = getVariantById(game.options.variantId);
+  const ending = END_CONDITION_TEXT[game.endCondition];
+  const otherGameCount = game.numGamesOnSeed - 1;
+  const teammates = alphabetical(game.playerNames).filter(
+    (name) => name !== username,
+  );
 
   return (
-    <tr>
-      <td>#{game.gameId}</td>
-      <td>{game.playerNames.length}</td>
-      <td>
-        {game.score}/{getVariantById(game.options.variantId).maxScore}
-      </td>
-      <td>{getVariantById(game.options.variantId).name}</td>
-      <td>
-        <HistoryOptions options={game.options} />
-      </td>
-      <td>
-        {alphabetical(game.playerNames)
-          .filter((name) => name !== username)
-          .join(", ")}
-      </td>
-      <td>{formatDate(game)}</td>
-      <td>
-        <ReplayButton gameId={game.gameId} visibility="solo" />
-      </td>
-      <td>
-        <ReplayButton gameId={game.gameId} visibility="shared" />
-      </td>
-      <td>
+    <li className="tw:flex tw:items-center tw:gap-5 tw:border-b tw:border-border tw:px-3 tw:py-3 tw:hover:bg-[var(--row-hover-bg)] tw:narrow-640:flex-wrap tw:narrow-640:items-start tw:narrow-640:gap-x-4 tw:narrow-640:gap-y-2 tw:narrow-640:px-1">
+      <Score max={variant.maxScore} score={game.score} />
+      <div className="tw:grid tw:min-w-0 tw:flex-1 tw:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] tw:items-center tw:gap-x-6 tw:gap-y-0.5 tw:narrow-980:grid-cols-1">
+        <div className="tw:min-w-0">
+          <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
+            <SuitDots suits={variant.suits} />
+            <span className="tw:truncate">{variant.name}</span>
+          </div>
+          <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:text-[0.8em] tw:text-text-label">
+            {ending !== undefined && <span>{ending}</span>}
+            <HistoryOptions options={game.options} />
+            <span className="tw:tabular-nums">
+              {timeFormatter.format(new Date(game.finishedAt))}
+            </span>
+            <span className="tw:tabular-nums">#{game.gameId}</span>
+          </div>
+        </div>
+        <div className="tw:min-w-0 tw:truncate tw:text-[0.9em]">
+          <span className="tw:text-text-label">with </span>
+          {teammates.join(", ")}
+        </div>
+      </div>
+      <div className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:narrow-640:basis-full tw:narrow-640:pl-[5.25em]">
         <button
-          className={
-            hasOtherGames ? "button fit tw:m-0" : "button fit tw:m-0 disabled"
-          }
-          id={`history-other-scores-${game.gameId}`}
-          onClick={
-            hasOtherGames
-              ? () => {
-                  showOtherScoresFromHistory(seed);
-                }
-              : undefined
-          }
+          className={`button ${ROW_BUTTON}`}
+          id={`replay-${game.gameId}`}
+          onClick={() => {
+            watchReplay(game.gameId, false);
+          }}
           type="button"
         >
-          <i className={`fas fa-chart-bar ${BUTTON_ICON} tw:mr-[0.4em]`} />
-          {otherGameCount}
+          <i aria-hidden className="fas fa-play" />
+          Replay
         </button>
-      </td>
-    </tr>
+        <button
+          aria-label="Watch in a shared replay"
+          className={`button ${ROW_ICON_BUTTON}`}
+          id={`shared-replay-${game.gameId}`}
+          onClick={() => {
+            watchReplay(game.gameId, true);
+          }}
+          ref={tooltipRef("Watch in a shared replay.")}
+          type="button"
+        >
+          <i aria-hidden className="fas fa-users" />
+        </button>
+        {/* The slot keeps its width, so that the buttons of every row line up. */}
+        <span className="tw:w-[6.5em] tw:narrow-640:w-auto">
+          {otherGameCount > 0 && (
+            <button
+              aria-label={`Other scores: ${otherGameCount}`}
+              className={`button ${ROW_BUTTON}`}
+              id={`history-other-scores-${game.gameId}`}
+              onClick={() => {
+                showOtherScoresFromHistory(game.seed);
+              }}
+              ref={tooltipRef("See the other games on this seed.")}
+              type="button"
+            >
+              <i aria-hidden className="fas fa-chart-bar" />
+              <span className="tw:tabular-nums">
+                {otherGameCount}
+                <span className="tw:narrow-640:hidden">
+                  {" "}
+                  {otherGameCount === 1 ? "other" : "others"}
+                </span>
+              </span>
+            </button>
+          )}
+        </span>
+      </div>
+    </li>
   );
 }
+
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  hour: "numeric",
+  minute: "2-digit",
+});
 
 export function OtherScoresList(): React.JSX.Element {
   const shown = useAppSelector((state) => state.history.otherScores);
@@ -252,7 +385,7 @@ function OtherScoreRow({
       <td>{emphasize(`#${game.gameId}`)}</td>
       <td>{emphasize(`${game.score}/${maxScore}`)}</td>
       <td>
-        <HistoryOptions options={game.options} />
+        <HistoryOptions emptyText="[none]" options={game.options} />
       </td>
       <td>{emphasize(alphabetical(game.playerNames).join(", "))}</td>
       <td>{emphasize(formatDate(game))}</td>
@@ -267,11 +400,20 @@ function OtherScoreRow({
   );
 }
 
-/** A few icons for the options of a game, with a tooltip that lists all of them. */
-function HistoryOptions({ options }: { readonly options: GameOptions }) {
+/**
+ * A few icons for the options of a game, with a tooltip that lists all of them. A game without
+ * options shows the empty text.
+ */
+function HistoryOptions({
+  options,
+  emptyText,
+}: {
+  readonly options: GameOptions;
+  readonly emptyText?: string;
+}) {
   const items = getOptionItems(options);
   if (items.length === 0) {
-    return <>[none]</>;
+    return emptyText === undefined ? null : <>{emptyText}</>;
   }
 
   const tooltip = items
@@ -368,19 +510,10 @@ function ReplayButton({
 }) {
   return (
     <button
-      className="button fit tw:m-0 history-table enter-history-game"
-      id={`replay-${gameId}`}
+      className="button fit tw:m-0"
+      id={`${visibility === "solo" ? "replay" : "shared-replay"}-${gameId}`}
       onClick={() => {
-        globals.connection.send("replayCreate", {
-          source: {
-            type: "saved",
-            gameId,
-          },
-          visibility: replayVisibility(visibility === "shared"),
-        });
-        if (visibility === "shared") {
-          hide();
-        }
+        watchReplay(gameId, visibility === "shared");
       }}
       type="button"
     >
@@ -389,6 +522,20 @@ function ReplayButton({
       />
     </button>
   );
+}
+
+/** Opens the replay of a game. We leave the history to watch a shared replay with others. */
+function watchReplay(gameId: number, shared: boolean) {
+  globals.connection.send("replayCreate", {
+    source: {
+      type: "saved",
+      gameId,
+    },
+    visibility: replayVisibility(shared),
+  });
+  if (shared) {
+    hide();
+  }
 }
 
 function formatDate(game: GameSummary): string {

@@ -54,7 +54,7 @@ macro_rules! request_contracts {
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
             ClientError "clientError" => ClientErrorRequest;
-            GameHistory "gameHistory" => PageRequest, reply GAME_HISTORY: GamePage;
+            GameHistory "gameHistory" => GameHistoryRequest, reply GAME_HISTORY: GamePage;
             SeedGames "seedGames" => SeedGamesRequest, reply SEED_GAMES: GamePage;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
