@@ -799,8 +799,7 @@ function VariantPicker({
                 {name}
               </option>
             ))}
-            {/* eslint-disable-next-line complete/require-ascii */}
-            <option disabled>───────────────</option>
+            <hr />
             <option value={SEARCH_VARIANTS}>{SEARCH_VARIANTS}</option>
           </select>
         )}

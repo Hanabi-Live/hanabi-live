@@ -23,7 +23,9 @@
     lists in them are darker still. A box on the felt is glass instead (see "--box-bg").
   */
   --surface: #0e2418;
-  --surface-sunken: #091a11;
+  --surface-sunken: var(--surface-sunken-solid);
+  /* The color of a field on a panel, which stays solid on the glass of a box */
+  --surface-sunken-solid: #091a11;
   /* A group of rows, such as the options on the Create Game page */
   --surface-panel: var(--surface-sunken);
   --border: #24452f;
@@ -86,6 +88,16 @@
 
   /* Lighter than a row, so that the row lights up under the pointer */
   --row-hover-bg: var(--game-screen-raised);
+
+  /*
+    A list that opens under a field: the options of a dropdown, and the suggestions of a text box
+    ("SuggestBox.tsx"). It hangs "--list-offset" below the field.
+  */
+  --list-offset: 4px;
+  --list-padding: 4px;
+  --list-row-padding: 0.375rem 0.625rem;
+  --list-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
   --menu-hover-text: #fff;
 
   /* Names */

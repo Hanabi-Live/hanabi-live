@@ -17,7 +17,7 @@ import type * as z from "zod";
 import { PATH } from "../constants.ts";
 import { getFadeStyle } from "../fade.ts";
 import { Pages, usePages } from "../publicPages/DataTable.tsx";
-import { Select } from "../Select.tsx";
+import { Select, SMALL_SELECT_CLASS } from "../Select.tsx";
 import { store } from "../store.ts";
 import { suggestVariants } from "../SuggestBox.tsx";
 import { tooltipRef } from "../tooltipRef.ts";
@@ -269,7 +269,7 @@ export function GameList({
         <label className="tw:m-0 tw:text-[1em] tw:ml-auto tw:flex tw:items-center tw:gap-2 tw:narrow-640:ml-0">
           <span className="tw:text-text-label">Sort</span>
           <Select
-            className="tw:h-8 tw:w-auto tw:py-0 tw:pr-10 tw:pl-3 tw:text-[1em] tw:leading-8"
+            className={SMALL_SELECT_CLASS}
             onChange={(event) => {
               change(() => {
                 setSortIndex(Number(event.target.value));

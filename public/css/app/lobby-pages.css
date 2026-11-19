@@ -96,11 +96,6 @@
   text-indent: 0;
 }
 
-.lobby-row select {
-  flex-shrink: 0;
-  width: auto;
-}
-
 /* The checkbox draws its box with a label that has no text, so give it the size of the box. */
 .lobby-row-checkbox {
   flex-shrink: 0;

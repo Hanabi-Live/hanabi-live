@@ -3,7 +3,7 @@
 
 import { PAGE_SIZES } from "@hanabi-live/data";
 import { useState } from "react";
-import { Select } from "../Select.tsx";
+import { Select, SMALL_SELECT_CLASS } from "../Select.tsx";
 import { useDelayedCallback } from "../useDelayedCallback.ts";
 
 /** The page size of "All", which only the tables whose rows are all in the page offer. */
@@ -232,7 +232,7 @@ function FilterControl({
   return (
     <Select
       aria-label={`Filter by ${name}`}
-      className="tw:h-auto tw:w-auto tw:max-w-[150px] tw:py-0 tw:pr-10 tw:pl-2"
+      className="tw:h-auto tw:max-w-[150px] tw:py-0 tw:pr-10 tw:pl-2"
       onChange={(event) => {
         onChange(event.target.value);
       }}
@@ -373,7 +373,7 @@ export function Pages({
       </button>
       <Select
         aria-label={`${other.charAt(0).toUpperCase()}${other.slice(1)} per page`}
-        className="tw:ml-4 tw:h-8 tw:w-auto tw:py-0 tw:pr-10 tw:pl-3 tw:text-[1em] tw:leading-8"
+        className={`tw:ml-4 ${SMALL_SELECT_CLASS}`}
         onChange={(event) => {
           onSize(
             event.target.value === ALL_ROWS_VALUE

@@ -339,7 +339,6 @@ select {
   background-position: calc(100% - 1em) center;
   height: 3em;
   padding-right: 3em;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -352,9 +351,14 @@ select::picker(select) {
   appearance: base-select;
 }
 
-/* Like the browser's own dropdown, which centers its text */
+/*
+  Like the browser's own dropdown, which centers its text, and cuts off a long option before the
+  arrow. Chrome draws the text in an element of its own, so "text-overflow" cannot reach it.
+*/
 select {
   display: flex;
+  overflow: clip;
+  overflow-clip-margin: content-box;
 }
 
 /* The select draws its own arrow, as its background image. */
@@ -362,30 +366,23 @@ select::picker-icon {
   display: none;
 }
 
-/* The list matches the suggestions of a text box (see "SuggestBox.tsx"). */
 select::picker(select) {
   background: var(--surface);
   border: solid 1px var(--border);
   border-radius: var(--radius);
-  box-shadow:
-    0 10px 15px -3px rgb(0 0 0 / 10%),
-    0 4px 6px -4px rgb(0 0 0 / 10%);
+  box-shadow: var(--list-shadow);
   color: var(--text);
-  margin-block: 4px;
-  padding: 4px;
+  margin-block: var(--list-offset);
+  padding: var(--list-padding);
 }
 
 select option {
   gap: 0.5em;
-  padding: 0.3em 0.6em;
+  padding: var(--list-row-padding);
   border-radius: var(--radius);
   background: none;
   color: var(--text);
   cursor: pointer;
-}
-
-select option:disabled {
-  cursor: default;
 }
 
 select option:not(:disabled):hover,
@@ -396,6 +393,36 @@ select option:focus-visible {
 
 select option::checkmark {
   color: var(--green-text);
+}
+
+/* A line between groups of options */
+select hr {
+  border: 0;
+  border-top: solid 1px var(--border);
+  margin: var(--list-padding) 0;
+}
+
+/* Chrome's buttons beside a number do not match the site. The arrow keys still change it. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/*
+  Chrome paints its own color under a field that it fills in, such as a saved password, and a page
+  cannot change it. A solid inset shadow covers it, so the field keeps the color of the site.
+*/
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: inset 0 0 0 100vmax var(--surface-sunken-solid);
+  caret-color: var(--text);
+}
+
+input:-webkit-autofill:focus {
+  box-shadow:
+    inset 0 0 0 100vmax var(--surface-sunken-solid),
+    0 0 0 2px var(--focus);
 }
 
 input[type="text"],

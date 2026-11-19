@@ -5,6 +5,10 @@
 import type { ComponentProps } from "react";
 import { Children, isValidElement } from "react";
 
+/** The classes of a small dropdown in a row of filters, which is as tall as the filters. */
+export const SMALL_SELECT_CLASS =
+  "tw:h-8 tw:py-0 tw:pr-10 tw:pl-3 tw:text-[1em] tw:leading-8";
+
 /** Use this instead of `<select>`, with the same props. */
 export function Select({
   className = "",

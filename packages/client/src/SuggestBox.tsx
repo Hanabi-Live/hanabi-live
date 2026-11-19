@@ -116,7 +116,7 @@ export function SuggestBox({
       {children}
       {suggest !== undefined && (
         <ul
-          className="tw:absolute tw:top-full tw:left-0 tw:z-20 tw:m-0 tw:mt-1 tw:w-max tw:max-w-[min(24em,calc(100vw-2em))] tw:min-w-full tw:list-none tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-1 tw:shadow-lg"
+          className="tw:absolute tw:top-full tw:left-0 tw:z-20 tw:m-0 tw:mt-(--list-offset) tw:w-max tw:max-w-[min(24em,calc(100vw-2em))] tw:min-w-full tw:list-none tw:rounded-[var(--radius)] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-(--list-padding) tw:shadow-(--list-shadow)"
           hidden={!shown}
           id={listId}
           role="listbox"
@@ -124,7 +124,7 @@ export function SuggestBox({
           {suggestions.map((name, index) => (
             <li
               aria-selected={index === active}
-              className={`tw:cursor-pointer tw:truncate tw:rounded-[var(--radius)] tw:px-2.5 tw:py-1.5 tw:hover:bg-[var(--row-hover-bg)] ${index === active ? "tw:bg-[var(--row-hover-bg)]" : ""}`}
+              className={`tw:cursor-pointer tw:truncate tw:rounded-[var(--radius)] tw:p-(--list-row-padding) tw:hover:bg-[var(--row-hover-bg)] ${index === active ? "tw:bg-[var(--row-hover-bg)]" : ""}`}
               id={`${listId}-${index}`}
               key={name}
               // The box would lose its focus on a click, and close the list before the click lands.
