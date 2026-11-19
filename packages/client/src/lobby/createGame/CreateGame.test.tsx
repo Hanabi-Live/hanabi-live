@@ -142,7 +142,7 @@ describe("CreateGame", () => {
     click("create-game-submit");
 
     expect(openErrors.get("create-game-seed")).toBe(
-      "You cannot have these characters in a seed: (space)",
+      '<span class="small-tooltip-text">You cannot have these characters in a seed: (space)</span>',
     );
     expect(send).not.toHaveBeenCalled();
     expect(hide).not.toHaveBeenCalled();
