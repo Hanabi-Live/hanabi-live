@@ -859,8 +859,12 @@ function useSteadyControlsHeight(
  * view, and only a short one needs tabs. The panel counts the replay controls with at least
  * `PANEL_REPLAY_CONTROLS_HEIGHT`, even when it does not show them. So the answer stays the same
  * when a replay starts or the game ends, and only the size of the column changes it. The panel has
- * the same width and contents with tabs and without them, and the two take the same part of the
- * column.
+ * the same width with tabs and without them, and the two take the same part of the column.
+ *
+ * The two layouts still measure a little differently. Without tabs, the chat button can make a row
+ * of the panel taller, and the two round to whole pixels in different ways. So at some sizes, each
+ * layout would choose the other one without end. Once the panel has tabs, it keeps them until the
+ * column gets another size.
  *
  * When even its tab is too short for the panel, the panel has `PANEL_SHORT_ATTRIBUTE`, so that the
  * game screen can move the bar back along the bottom.
@@ -872,6 +876,8 @@ function usePanelTabs(
   controls: RefObject<HTMLDivElement | null>,
 ): boolean {
   const [tabs, setTabs] = useState(false);
+  /** The size of the column when the panel got tabs, as "width,height". */
+  const tabsAt = useRef<string | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const content = status.current;
@@ -907,11 +913,18 @@ function usePanelTabs(
     const clueLog = tabbed ? null : footer.previousElementSibling;
     const top = clueLog instanceof HTMLElement ? clueLog : footer;
     const room = footer.offsetTop + footer.offsetHeight - top.offsetTop;
+    const column = footer.parentElement;
     const gap =
-      footer.parentElement === null
-        ? 0
-        : getPixels(getComputedStyle(footer.parentElement).rowGap);
-    setTabs(room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS));
+      column === null ? 0 : getPixels(getComputedStyle(column).rowGap);
+    const columnSize =
+      column === null ? "" : `${column.clientWidth},${column.clientHeight}`;
+    if (tabbed && tabsAt.current === columnSize) {
+      return;
+    }
+    const newTabs =
+      room - panelHeight - gap < getClueLogHeight(STACKED_CLUE_LOG_ROWS);
+    tabsAt.current = newTabs ? columnSize : undefined;
+    setTabs(newTabs);
   });
   return panel && tabs;
 }
@@ -991,14 +1004,6 @@ function useOwnRow(
   /** The width of the bar when the controls got a row of their own. */
   const ownRowWidth = useRef<number | undefined>(undefined);
 
-  /**
-   * Whether the controls just got a row of their own. The second row can change the bar's width,
-   * such as when the page gets a scroll bar. Then the controls keep the width that the bar has with
-   * two rows. Otherwise, they would leave their row because of a width change that their row
-   * caused, and the bar would switch between its two layouts without end.
-   */
-  const takeTwoRowWidth = useRef(false);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const group = controls.current;
@@ -1023,12 +1028,11 @@ function useOwnRow(
       footer.setAttribute(OWN_ROW_ATTRIBUTE, "");
     }
     footer.style.removeProperty("height");
-    if (overflows || (hadOwnRow && takeTwoRowWidth.current)) {
+    if (overflows) {
       ownRowWidth.current = footer.clientWidth;
     } else if (ownRowWidth.current !== footer.clientWidth) {
       ownRowWidth.current = undefined;
     }
-    takeTwoRowWidth.current = !hadOwnRow && overflows;
     setOwnRow(ownRowWidth.current !== undefined);
   });
   return ownRow;
