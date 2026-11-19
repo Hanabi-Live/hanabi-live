@@ -171,6 +171,40 @@ test("a tooltip too tall for both sides stays inside the window", () => {
   });
 });
 
+test("an open tooltip moves with its anchor when the window is resized", () => {
+  const anchor = dom.window.document.createElement("div");
+  let left = 100;
+  anchor.getBoundingClientRect = () => ({
+    x: left,
+    y: 300,
+    left,
+    top: 300,
+    right: left + 50,
+    bottom: 400,
+    width: 50,
+    height: 100,
+    toJSON: () => ({}),
+  });
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, {
+    content: '<div data-height="100"></div>',
+  });
+  tooltip.open();
+  const bubble = dom.window.document.querySelector<HTMLElement>(
+    ".tooltip-bubble:last-child",
+  )!;
+  const arrowX = bubble.style.getPropertyValue("--tooltip-arrow-x");
+
+  left = 300;
+  dom.window.dispatchEvent(new dom.window.Event("resize"));
+  // The bubble has no width in "jsdom", so it starts at the center of the anchor.
+  expect(bubble.style.left).toBe("325px");
+  expect(bubble.style.getPropertyValue("--tooltip-arrow-x")).toBe(arrowX);
+
+  tooltip.destroy();
+  anchor.remove();
+});
+
 test("a tooltip closes when its anchor is removed", async () => {
   const anchor = dom.window.document.createElement("div");
   dom.window.document.body.append(anchor);

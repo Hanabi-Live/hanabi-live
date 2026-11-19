@@ -164,6 +164,11 @@ export class Tooltip {
     }
   };
 
+  /** A resize of the window can move the anchor, so the open tooltip goes to it again. */
+  private readonly positionOnResize = () => {
+    this.position();
+  };
+
   constructor(anchor: HTMLElement, options: TooltipOptions) {
     this.anchor = anchor;
     this.target = options.target;
@@ -467,6 +472,11 @@ export class Tooltip {
       );
       this.bubble.showPopover();
       watchAnchor(this);
+      // The anchor can be in another window, such as the popped-out chat of the New UI.
+      (this.anchor.ownerDocument.defaultView ?? globalThis).addEventListener(
+        "resize",
+        this.positionOnResize,
+      );
     }
     // While the tooltip is open, the anchor has the "data-tooltip-open" attribute, so that it can
     // show that the tooltip is about it, such as with a frame (the Tailwind variant
@@ -509,6 +519,10 @@ export class Tooltip {
       { capture: true },
     );
     unwatchAnchor(this);
+    (this.anchor.ownerDocument.defaultView ?? globalThis).removeEventListener(
+      "resize",
+      this.positionOnResize,
+    );
     if (this.followFrame !== undefined) {
       (
         this.anchor.ownerDocument.defaultView ?? globalThis
