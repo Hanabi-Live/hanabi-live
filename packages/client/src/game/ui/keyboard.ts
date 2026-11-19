@@ -54,11 +54,14 @@ export function destroy(): void {
 }
 
 function keydown(event: KeyboardEvent) {
-  // Disable hotkeys if we not currently in a game, if we are editing a note, or if there's a
-  // visible modal. (Not being in a game should not be possible, as the handler gets unregistered
-  // upon going back to the lobby, but double check just in case.)
+  // Disable hotkeys if we not currently in a game, if the game's state has not arrived yet, if we
+  // are editing a note, or if there's a visible modal. (Not being in a game should not be possible,
+  // as the handler gets unregistered upon going back to the lobby, but double check just in case.)
+  // Until the state arrives, the ongoing game is the initial state, where the first player is to
+  // move, so that player would get the hotkeys for their turn.
   if (
     store.getState().session.screen !== Screen.Game
+    || globals.state.visibleState === undefined
     || globals.editingNote !== undefined
     || isModalVisible()
   ) {
