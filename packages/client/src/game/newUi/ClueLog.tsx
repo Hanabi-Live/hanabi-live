@@ -474,6 +474,11 @@ function ActionList({
               onClick={() => {
                 onShowSegment(entry.segment);
               }}
+              ref={tooltipRef(
+                entry.turn === undefined
+                  ? "This happened at the start of the game. Click to go to it."
+                  : `This happened on turn ${entry.turn}. Click to go to it.`,
+              )}
               style={{ lineHeight: `${ROW_LINE_HEIGHT}px` }}
               type="button"
             >
