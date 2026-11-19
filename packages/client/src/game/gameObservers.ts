@@ -4,6 +4,7 @@
 
 import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../Globals.ts";
+import * as startupScreen from "../startupScreen.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import * as gameSession from "./gameSession.ts";
 import { gameStateSource } from "./gameStateSource.ts";
@@ -93,6 +94,7 @@ function onShownChanged(shown: boolean) {
   }
 
   gameSession.finishLoading();
+  startupScreen.onGameShown();
   globals.connection.send("gameLoaded", {
     tableId: globals.joinedTableId,
   });

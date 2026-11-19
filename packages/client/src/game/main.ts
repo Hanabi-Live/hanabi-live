@@ -1,13 +1,20 @@
 // The Hanabi game UI.
 
 import { HISTORY_HASH, PATH } from "../constants.ts";
-import { fadeIn, hideElement } from "../elementVisibility.ts";
+import {
+  fadeIn,
+  hideElement,
+  holdElement,
+  releaseElement,
+  revealElement,
+} from "../elementVisibility.ts";
 import { globals } from "../Globals.ts";
 import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat.tsx";
 import * as lobbyPage from "../lobby/lobbyPage.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
 import { screenChanged } from "../sessionSlice.ts";
+import * as startupScreen from "../startupScreen.ts";
 import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
 import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
@@ -62,7 +69,12 @@ export function show(justStarted: boolean): void {
   screenBeforeGame = store.getState().session.screen;
   store.dispatch(screenChanged(Screen.Game));
   document.body.dataset["screen"] = "game";
-  hideElement(getHtmlElement("#page-wrapper")); // We can't fade this out as it will overlap
+  // When the page loads, the login screen's wait stays up while the game draws itself out of sight.
+  // "revealHeldGame" shows it.
+  const held = startupScreen.isWaitingForGame();
+  if (!held) {
+    hideElement(getHtmlElement("#page-wrapper")); // We can't fade this out as it will overlap
+  }
   store.dispatch(gameChatCleared()); // Clear the in-game chat box of any previous content
   document.body.addEventListener("contextmenu", preventContextMenu);
 
@@ -79,10 +91,23 @@ export function show(justStarted: boolean): void {
     fadeIn(getHtmlElement("#game"));
     globals.ui = new HanabiUi();
   }
+  if (held) {
+    holdElement(getHtmlElement("#game-new-ui"));
+    holdElement(getHtmlElement("#game"));
+  }
 
   // Request what we need to start drawing the UI, such as the number of players and the variant. We
   // request the game's state once the UI is drawn.
   loadGameInit(globals.connection, globals.joinedTableId);
+}
+
+/**
+ * Replaces the login screen with the game that `show` drew out of sight, once it shows its state.
+ */
+export function revealHeldGame(): void {
+  hideElement(getHtmlElement("#page-wrapper"));
+  revealElement(getHtmlElement("#game-new-ui"));
+  revealElement(getHtmlElement("#game"));
 }
 
 /**
@@ -144,6 +169,8 @@ export function closeGame(): void {
 
 /** Leaves the game screen for the screen that was open before it. */
 export function hide(): void {
+  // The game can close before it shows, such as when its table ends.
+  startupScreen.leave();
   modals.closeIdleWarning();
 
   // We could be going back to one of the history screens, since we can enter a solo replay from
@@ -167,6 +194,8 @@ export function hide(): void {
 
   newUi.unmount();
   closeGame();
+  releaseElement(getHtmlElement("#game-new-ui"));
+  releaseElement(getHtmlElement("#game"));
 
   hideElement(getHtmlElement("#game")); // We can't fade this out as it will overlap
   document.body.removeEventListener("contextmenu", preventContextMenu);

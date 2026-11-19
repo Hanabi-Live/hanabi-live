@@ -1,5 +1,11 @@
 import type { RefObject } from "react";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { onEscapeKey } from "./escapeKey.ts";
 
 /** The current time, updated at the given interval, for clocks that count down. */
@@ -17,7 +23,10 @@ export function useNow(intervalMilliseconds: number): number {
   return now;
 }
 
-/** The size of an element, which changes as the window does. */
+/**
+ * The size of an element, which changes as the window does. It is measured before the browser draws
+ * the element, so that the first frame does not show a layout for an element without a size.
+ */
 export function useElementSize(element: HTMLElement | null): {
   width: number;
   height: number;
@@ -26,17 +35,26 @@ export function useElementSize(element: HTMLElement | null): {
     width: 0,
     height: 0,
   });
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (element === null) {
       return undefined;
     }
 
-    const observer = new ResizeObserver(() => {
-      setSize({
-        width: element.clientWidth,
-        height: element.clientHeight,
-      });
-    });
+    const target = element;
+    function measure() {
+      const width = target.clientWidth;
+      const height = target.clientHeight;
+      setSize((previous) =>
+        previous.width === width && previous.height === height
+          ? previous
+          : {
+              width,
+              height,
+            },
+      );
+    }
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => {
       observer.disconnect();

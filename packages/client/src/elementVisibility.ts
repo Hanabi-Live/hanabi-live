@@ -6,6 +6,14 @@ import { store } from "./store.ts";
 
 const FADE_ANIMATION_ID = "fade";
 
+/** The style of an element that `holdElement` makes invisible. */
+const HELD_STYLE = {
+  opacity: "0",
+  "pointer-events": "none",
+  position: "fixed",
+  inset: "0",
+} as const;
+
 /**
  * Shows an element. An element that the "hidden" class hides shows as a block, as jQuery's `show`
  * did.
@@ -46,6 +54,10 @@ export function fadeIn(element: HTMLElement): void {
   }
 
   showElement(element);
+  playFadeIn(element);
+}
+
+function playFadeIn(element: HTMLElement) {
   if (getFadeTimeMs() === 0) {
     return;
   }
@@ -54,6 +66,40 @@ export function fadeIn(element: HTMLElement): void {
     easing: "ease-in-out",
   });
   animation.id = FADE_ANIMATION_ID;
+}
+
+/**
+ * Makes an element invisible over the whole window, and stops its fade, but keeps it in the layout,
+ * so that it can measure and draw itself before it shows. Opacity hides it, since a part inside it
+ * can make itself visible again with the "visibility" property.
+ */
+export function holdElement(element: HTMLElement): void {
+  stopFade(element);
+  for (const [property, value] of Object.entries(HELD_STYLE)) {
+    element.style.setProperty(property, value);
+  }
+}
+
+/** Fades in an element that `holdElement` made invisible. */
+export function revealElement(element: HTMLElement): void {
+  if (!isElementHeld(element)) {
+    return;
+  }
+
+  releaseElement(element);
+  stopFade(element);
+  playFadeIn(element);
+}
+
+/** Gives an element that `holdElement` made invisible its usual style, without a fade. */
+export function releaseElement(element: HTMLElement): void {
+  for (const property of Object.keys(HELD_STYLE)) {
+    element.style.removeProperty(property);
+  }
+}
+
+function isElementHeld(element: HTMLElement): boolean {
+  return element.style.opacity === HELD_STYLE.opacity;
 }
 
 export function fadeOut(element: HTMLElement): void {

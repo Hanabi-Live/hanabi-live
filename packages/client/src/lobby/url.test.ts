@@ -91,21 +91,25 @@ describe("replay URL loading", () => {
       },
     });
 
-    parseAndGoto(welcome());
+    parseAndGoto(welcome(), vi.fn<() => void>());
 
     const gameJson = replayGameSchema.parse(
       JSON.parse(expand(`${payload}${suffix}`)!),
     );
-    expect(send).toHaveBeenCalledWith("replayCreate", {
-      source: {
-        type: "imported",
-        game: {
-          ...gameJson,
-          seed,
+    expect(send).toHaveBeenCalledWith(
+      "replayCreate",
+      {
+        source: {
+          type: "imported",
+          game: {
+            ...gameJson,
+            seed,
+          },
         },
+        visibility,
       },
-      visibility,
-    });
+      expect.any(Function),
+    );
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJson",
       expand(`${payload}${suffix}`),
@@ -120,7 +124,7 @@ describe("replay URL loading", () => {
       value: new URL("https://hanab.live/lobby#history"),
     });
 
-    parseAndGoto(welcome());
+    parseAndGoto(welcome(), vi.fn<() => void>());
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(show).toHaveBeenCalledWith();
@@ -135,7 +139,7 @@ describe("replay URL loading", () => {
       value: new URL(url),
     });
 
-    parseAndGoto(welcome());
+    parseAndGoto(welcome(), vi.fn<() => void>());
 
     expect(show).not.toHaveBeenCalled();
     expect(showOtherScores).toHaveBeenCalledWith("p4v0s1");
@@ -152,12 +156,16 @@ describe("replay URL loading", () => {
       value: new URL(`https://hanab.live${pathname}`),
     });
 
-    parseAndGoto(welcome());
+    parseAndGoto(welcome(), vi.fn<() => void>());
 
-    expect(send).toHaveBeenCalledWith("tableSpectate", {
-      tableId: 123,
-      shadowingPlayerIndex,
-    });
+    expect(send).toHaveBeenCalledWith(
+      "tableSpectate",
+      {
+        tableId: 123,
+        shadowingPlayerIndex,
+      },
+      expect.any(Function),
+    );
   });
 
   const tableId = tableIdSchema.parse(123);
@@ -172,7 +180,7 @@ describe("replay URL loading", () => {
       value: new URL(`https://hanab.live${pathname}`),
     });
 
-    parseAndGoto(welcome(data));
+    parseAndGoto(welcome(data), vi.fn<() => void>());
 
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith(
@@ -186,6 +194,7 @@ describe("replay URL loading", () => {
           type: "solo",
         },
       }),
+      expect.any(Function),
     );
   });
 
@@ -220,10 +229,14 @@ describe("replay URL loading", () => {
       },
     });
 
-    parseAndGoto(welcome(data));
+    parseAndGoto(welcome(data), vi.fn<() => void>());
 
     expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith(command, commandData);
+    expect(send).toHaveBeenCalledWith(
+      command,
+      commandData,
+      expect.any(Function),
+    );
   });
 
   test.each(["/lobby", "/game/123", "/game/123/shadow/0"])(
@@ -235,10 +248,17 @@ describe("replay URL loading", () => {
         value: new URL(`https://hanab.live${pathname}`),
       });
 
-      parseAndGoto(welcome({ playingAtTables: [tableId] }));
+      parseAndGoto(
+        welcome({ playingAtTables: [tableId] }),
+        vi.fn<() => void>(),
+      );
 
       expect(send).toHaveBeenCalledTimes(1);
-      expect(send).toHaveBeenCalledWith("tableReattend", { tableId });
+      expect(send).toHaveBeenCalledWith(
+        "tableReattend",
+        { tableId },
+        expect.any(Function),
+      );
     },
   );
 
@@ -285,7 +305,7 @@ describe("table creation URL", () => {
         `https://hanab.live/create-table?variantName=${encodeURIComponent(variantName)}`,
       ),
     });
-    parseAndGoto(welcome({ username: "Alice" }));
+    parseAndGoto(welcome({ username: "Alice" }), vi.fn<() => void>());
   }
 
   test("names the variant by its ID", () => {
@@ -303,5 +323,36 @@ describe("table creation URL", () => {
     expect(modals.showWarning).toHaveBeenCalledWith(
       'The variant of "&lt;img src=x onerror=alert(1)&gt;" does not exist.',
     );
+  });
+});
+
+describe("going back to a table", () => {
+  const tableId = tableIdSchema.parse(123);
+
+  test("reports that we go to a table, and when the server refuses", () => {
+    vi.spyOn(globals.connection, "send").mockImplementation(
+      (_command, _data, onReply) => {
+        onReply?.({ ok: false });
+      },
+    );
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL("https://hanab.live/lobby"),
+    });
+    const onRefused = vi.fn<() => void>();
+
+    expect(
+      parseAndGoto(welcome({ playingAtTables: [tableId] }), onRefused),
+    ).toBe(true);
+    expect(onRefused).toHaveBeenCalledTimes(1);
+  });
+
+  test("reports that we stay in the lobby", () => {
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL("https://hanab.live/lobby"),
+    });
+
+    expect(parseAndGoto(welcome(), vi.fn<() => void>())).toBe(false);
   });
 });

@@ -25,36 +25,57 @@ import { getOtherScoresSeed } from "./historyHash.ts";
 import { expand } from "./hypoCompress.ts";
 import { replayVisibility } from "./replayVisibility.ts";
 
-export function parseAndGoto(data: ServerEventData["welcome"]): void {
+/** Gets the server's answer to a request to go to a table. */
+type OnReply = (reply: { readonly ok: boolean }) => void;
+
+/**
+ * Goes to the table or screen that the URL or the server names. Returns whether we asked the server
+ * to take us to a table. `onRefused` runs if the server refuses.
+ */
+export function parseAndGoto(
+  data: ServerEventData["welcome"],
+  onRefused: () => void,
+): boolean {
+  function onReply(reply: { readonly ok: boolean }) {
+    if (!reply.ok) {
+      onRefused();
+    }
+  }
+
   // A link to a specific game or replay takes precedence over returning to the table that we were
   // at before we disconnected. (Custom paths are disabled for first time users.)
-  if (!data.firstTimeUser && gotoPath(data)) {
-    return;
+  if (!data.firstTimeUser && gotoPath(data, onReply)) {
+    return true;
   }
 
   // Otherwise, go back to the table that we were at. Do nothing else for first time users or when
   // we restore a lobby history view.
-  if (
-    reconnectToTable(data)
-    || data.firstTimeUser
-    || restoreLobbyHistoryView()
-  ) {
-    return;
+  if (reconnectToTable(data, onReply)) {
+    return true;
+  }
+  if (data.firstTimeUser || restoreLobbyHistoryView()) {
+    return false;
   }
 
   // Otherwise, we will stay in the lobby.
   setBrowserAddressBarPath(PATH.LOBBY);
+  return false;
 }
 
 /** Returns whether the server informed us of a table that we were at and we went back to it. */
-function reconnectToTable(data: ServerEventData["welcome"]): boolean {
+function reconnectToTable(
+  data: ServerEventData["welcome"],
+  onReply: OnReply,
+): boolean {
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game.
   const firstTableId = data.playingAtTables[0];
   if (firstTableId !== undefined) {
-    globals.connection.send("tableReattend", {
-      tableId: firstTableId,
-    });
+    globals.connection.send(
+      "tableReattend",
+      { tableId: firstTableId },
+      onReply,
+    );
     return true;
   }
 
@@ -62,7 +83,7 @@ function reconnectToTable(data: ServerEventData["welcome"]): boolean {
   // spectate the newest one.
   const spectatedTable = data.spectatingAtTables[0];
   if (spectatedTable !== undefined) {
-    globals.connection.send("tableSpectate", spectatedTable);
+    globals.connection.send("tableSpectate", spectatedTable, onReply);
     return true;
   }
 
@@ -70,7 +91,7 @@ function reconnectToTable(data: ServerEventData["welcome"]): boolean {
 }
 
 /** Returns whether the URL path specifies somewhere to go and we went there. */
-function gotoPath(data: ServerEventData["welcome"]): boolean {
+function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
   // Automatically create a table if we are using a "/create-table" URL.
   if (globalThis.location.pathname === PATH.CREATE_TABLE) {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -116,25 +137,29 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       urlParams.get("replayTurn") ?? "",
     );
 
-    globals.connection.send("tableCreate", {
-      settings: {
-        name,
-        maxPlayers: DEFAULT_MAX_PLAYERS,
-        options: {
-          variantId: getVariant(variantName).id,
-          timeControl,
-          speedrun,
-          deckPlays,
-          emptyClues,
-          oneExtraCard,
-          oneLessCard,
-          allOrNothing,
-          detrimentalCharacters,
+    globals.connection.send(
+      "tableCreate",
+      {
+        settings: {
+          name,
+          maxPlayers: DEFAULT_MAX_PLAYERS,
+          options: {
+            variantId: getVariant(variantName).id,
+            timeControl,
+            speedrun,
+            deckPlays,
+            emptyClues,
+            oneExtraCard,
+            oneLessCard,
+            allOrNothing,
+            detrimentalCharacters,
+          },
+          ...(deal !== undefined && { deal }),
         },
-        ...(deal !== undefined && { deal }),
+        ...(password !== "" && { password }),
       },
-      ...(password !== "" && { password }),
-    });
+      onReply,
+    );
     return true;
   }
 
@@ -147,9 +172,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
     const tableId = parseIntSafe(preGameTableId);
     if (tableId !== undefined && tableId > 0) {
       if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
-        globals.connection.send("tableReattend", {
-          tableId,
-        });
+        globals.connection.send("tableReattend", { tableId }, onReply);
         return true;
       }
 
@@ -158,7 +181,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
         (table) => table.tableId === tableId,
       );
       if (spectatedTable !== undefined) {
-        globals.connection.send("tableSpectate", spectatedTable);
+        globals.connection.send("tableSpectate", spectatedTable, onReply);
         return true;
       }
 
@@ -166,10 +189,14 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       // will ignore it.
       const password =
         localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
-      globals.connection.send("tableJoin", {
-        tableId,
-        ...(password !== "" && { password }),
-      });
+      globals.connection.send(
+        "tableJoin",
+        {
+          tableId,
+          ...(password !== "" && { password }),
+        },
+        onReply,
+      );
       return true;
     }
   }
@@ -183,9 +210,7 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
     const tableId = parseIntSafe(gameTableId);
     if (tableId !== undefined && tableId > 0) {
       if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
-        globals.connection.send("tableReattend", {
-          tableId,
-        });
+        globals.connection.send("tableReattend", { tableId }, onReply);
         return true;
       }
 
@@ -201,10 +226,14 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
           shadowingPlayerIndex = shadowingPlayerIndexInt;
         }
       }
-      globals.connection.send("tableSpectate", {
-        tableId,
-        shadowingPlayerIndex,
-      });
+      globals.connection.send(
+        "tableSpectate",
+        {
+          tableId,
+          shadowingPlayerIndex,
+        },
+        onReply,
+      );
       return true;
     }
   }
@@ -219,16 +248,20 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
       const visibility = globalThis.location.pathname.includes("shared-")
         ? "shared"
         : "solo";
-      globals.connection.send("replayCreate", {
-        source: {
-          type: "saved",
-          gameId,
+      globals.connection.send(
+        "replayCreate",
+        {
+          source: {
+            type: "saved",
+            gameId,
+          },
+          // A link to a shared replay should join the one that people are already watching.
+          visibility: replayVisibility(visibility === "shared", {
+            joinExisting: true,
+          }),
         },
-        // A link to a shared replay should join the one that people are already watching.
-        visibility: replayVisibility(visibility === "shared", {
-          joinExisting: true,
-        }),
-      });
+        onReply,
+      );
       return true;
     }
   }
@@ -259,13 +292,17 @@ function gotoPath(data: ServerEventData["welcome"]): boolean {
     localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJsonString);
     localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
 
-    globals.connection.send("replayCreate", {
-      source: {
-        type: "imported",
-        game: gameJson,
+    globals.connection.send(
+      "replayCreate",
+      {
+        source: {
+          type: "imported",
+          game: gameJson,
+        },
+        visibility: replayVisibility(visibility === "shared"),
       },
-      visibility: replayVisibility(visibility === "shared"),
-    });
+      onReply,
+    );
     return true;
   }
 

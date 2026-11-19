@@ -16,6 +16,7 @@ import {
   usernameChanged,
 } from "../sessionSlice.ts";
 import * as sounds from "../sounds.ts";
+import * as startupScreen from "../startupScreen.ts";
 import { store } from "../store.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
@@ -99,6 +100,7 @@ lobbyCommands.set("tableJoined", (data) => {
 
   // Transition between screens.
   if (data.stage === "pregame") {
+    startupScreen.leave();
     pregame.show();
     return;
   }
@@ -154,6 +156,7 @@ lobbyCommands.set("tableRemoved", (data) => {
 // Received by the client upon initial connection.
 lobbyCommands.set("tableList", (data) => {
   store.dispatch(tablesListed(data.tables));
+  startupScreen.onTablesListed();
 });
 
 // Received by the client when a user connects or has a new status.
@@ -180,9 +183,20 @@ lobbyCommands.set("welcome", (data) => {
   store.dispatch(friendsChanged(data.friends));
   store.dispatch(blockedChanged(data.blocked));
 
-  lobbyLogin.hide(data.firstTimeUser);
+  // When the page loads, the login screen's wait stays up until the screen that we go to is ready.
+  // The server lists the tables right after this message. A first time user goes to the tutorial.
+  const pageLoad =
+    store.getState().login.page === "login" && !data.firstTimeUser;
+  if (pageLoad) {
+    startupScreen.wait("table");
+  } else {
+    lobbyLogin.hide(data.firstTimeUser);
+  }
 
   // Go to the table that we were at before we disconnected, or somewhere specific if we have
-  // entered a specific URL.
-  url.parseAndGoto(data);
+  // entered a specific URL. If the server refuses, we stay in the lobby.
+  const toTable = url.parseAndGoto(data, startupScreen.leave);
+  if (pageLoad && !toTable) {
+    startupScreen.wait("tables");
+  }
 });
