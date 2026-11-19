@@ -79,7 +79,7 @@ const ROW_CLASSES = {
   "unstarted-password":
     "tw:bg-lobby-table-unstarted-password tw:hover:bg-lobby-table-unstarted-password-hover tw:[--row-mark:var(--lobby-table-unstarted-password-mark)]",
   started: `tw:bg-lobby-table-started tw:hover:bg-lobby-table-started-hover tw:[--row-mark:var(--lobby-table-started-mark)] ${SPECTATE_CURSOR}`,
-  replay: `tw:bg-lobby-table-replay tw:hover:bg-lobby-table-replay-hover tw:[--row-mark:var(--lobby-table-replay-mark)] ${SPECTATE_CURSOR}`,
+  replay: `tw:bg-lobby-table-replay tw:hover:bg-lobby-table-replay-hover tw:text-(--lobby-table-replay-text) tw:[--row-mark:var(--lobby-table-replay-mark)] ${SPECTATE_CURSOR}`,
 } as const;
 
 export function TablesList(): React.JSX.Element {
@@ -217,7 +217,7 @@ function TableRowView({
           </Fragment>
         ))}
       </td>
-      <td className={COLUMNS.status.className}>
+      <td className={`tw:text-(--row-mark) ${COLUMNS.status.className}`}>
         {status}
         {table.phase.type !== "pregame"
           && hasFriends

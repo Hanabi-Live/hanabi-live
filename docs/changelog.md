@@ -62,6 +62,8 @@ of the repository.
 - The "Create Game" page is shorter, so it fits on more screens. The base time
   and the time per turn are on the "Timed" row, and a click on the "Extra
   Options" heading shows the extra options.
+- In the list of games, shared replays are dim, so that the games in progress
+  stand out. The status of each game is in the color of its row.
 
 ## November 18th, 2026
 

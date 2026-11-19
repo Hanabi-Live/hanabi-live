@@ -184,12 +184,14 @@
   --lobby-table-unstarted-password: rgb(255 107 107 / 12%);
   --lobby-table-unstarted-password-hover: rgb(255 107 107 / 21%);
   --lobby-table-unstarted-password-mark: var(--game-screen-error);
-  --lobby-table-started: rgb(111 207 122 / 11%);
-  --lobby-table-started-hover: rgb(111 207 122 / 20%);
+  --lobby-table-started: rgb(111 207 122 / 15%);
+  --lobby-table-started-hover: rgb(111 207 122 / 24%);
   --lobby-table-started-mark: var(--game-screen-green-text);
-  --lobby-table-replay: rgb(207 214 224 / 9%);
-  --lobby-table-replay-hover: rgb(207 214 224 / 17%);
-  --lobby-table-replay-mark: var(--game-screen-finished-replay);
+  /* A replay is darker than the panel, with dim text, so that the games in progress stand out. */
+  --lobby-table-replay: rgb(0 0 0 / 18%);
+  --lobby-table-replay-hover: rgb(207 214 224 / 6%);
+  --lobby-table-replay-mark: rgb(207 214 224 / 60%);
+  --lobby-table-replay-text: rgb(238 241 243 / 60%);
   /* The lines between the cells of a row */
   --lobby-table-cell-line: rgb(255 255 255 / 7%);
 

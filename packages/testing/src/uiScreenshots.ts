@@ -276,6 +276,9 @@ const TAG = "layered finesse";
 /** The accounts that watch the open table, and Bob's game. */
 const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 
+/** The accounts that play a game and review another in the lobby. */
+const LOBBY_GAME_NAMES = ["Mallory", "Nora", "Oscar", "Peggy"] as const;
+
 /** The account that owns the open table and plays Bob's game with the browser's account. */
 const BOB = "Bob";
 
@@ -2365,19 +2368,11 @@ async function closeTable(peers: readonly Peer[], tableId: number) {
   );
 }
 
-/**
- * Plays one turn of a game between two players and ends it, so that it is saved. The pages of tags
- * show it if it has the tag.
- */
-async function playGame(
-  alice: Peer,
-  bob: Peer,
-  suffix: string,
-  tag: boolean,
-): Promise<number> {
+/** Starts a game between two players. Returns the table and each player's seat. */
+async function startGame(alice: Peer, bob: Peer, name: string, suffix: string) {
   alice.send("tableCreate", {
     settings: {
-      name: "Seeded game",
+      name,
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {},
       deal: {
@@ -2393,6 +2388,24 @@ async function playGame(
   bob.send("tableJoin", { tableId });
   await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
   const seats = await startTable(alice, [alice, bob], tableId);
+  return {
+    tableId,
+    seats,
+  };
+}
+
+/**
+ * Plays one turn of a game between two players and ends it, so that it is saved. The pages of tags
+ * show it if it has the tag. The players leave its shared replay unless `stay` is set.
+ */
+async function playGame(
+  alice: Peer,
+  bob: Peer,
+  suffix: string,
+  tag: boolean,
+  stay = false,
+): Promise<number> {
+  const { tableId, seats } = await startGame(alice, bob, "Seeded game", suffix);
   const first = [...seats].find(([, index]) => index === 0)?.[0];
   assertDefined(first, "Neither player goes first.");
   const events = await loadEvents(first, tableId);
@@ -2423,7 +2436,9 @@ async function playGame(
     });
   }
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
-  await closeTable([bob, alice], tableId);
+  if (!stay) {
+    await closeTable([bob, alice], tableId);
+  }
   return finished.view.gameId;
 }
 
@@ -2459,6 +2474,7 @@ async function seed(address: string): Promise<Seed> {
   const tableId = await createBobsTable(bob, `${BOB}'s table`);
   bob.send("chat", { text: "Hello from the seeded lobby." });
   const spectators = await spectate(address, SPECTATOR_NAMES, tableId);
+  const lobbyPeers = await seedLobbyGames(address);
   const bot = await connect(address, "Robot", true);
   const cookie = await login(address, USERNAME);
 
@@ -2476,8 +2492,23 @@ async function seed(address: string): Promise<Seed> {
         peer.socket.close();
       }
     },
-    peers: [bob, ...spectators, bot],
+    peers: [bob, ...spectators, ...lobbyPeers, bot],
   };
+}
+
+/**
+ * Other accounts play a game and review another, so that the lobby shows a row of each kind. They
+ * stay until the end, and the lobby is the only screen that shows them.
+ */
+async function seedLobbyGames(address: string): Promise<readonly Peer[]> {
+  const [malloryName, noraName, oscarName, peggyName] = LOBBY_GAME_NAMES;
+  const mallory = await connect(address, malloryName);
+  const nora = await connect(address, noraName);
+  const oscar = await connect(address, oscarName);
+  const peggy = await connect(address, peggyName);
+  await startGame(mallory, nora, `${malloryName}'s table`, "lobby-game");
+  await playGame(oscar, peggy, "lobby-replay", false, true);
+  return [mallory, nora, oscar, peggy];
 }
 
 /**
