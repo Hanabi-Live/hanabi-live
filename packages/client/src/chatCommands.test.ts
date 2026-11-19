@@ -5,6 +5,10 @@ vi.mock("./chat.ts", () => ({
   SelfChatMessageType: {},
   sendSelfPmFromServer: vi.fn(),
   sendChat: vi.fn(),
+  getLastPrivateMessageSender: vi.fn(),
+}));
+vi.mock("./onlineUsers.ts", () => ({
+  findOnlineUser: (username: string) => ({ username }),
 }));
 vi.mock("./Globals.ts", () => ({
   globals: {},
@@ -17,7 +21,9 @@ vi.mock("./lobby/createReplayJson.ts", () => ({
 vi.mock("./game/main.ts", () => ({
   swapUi: vi.fn(),
 }));
-const { sendSelfPmFromServer } = await import("./chat.ts");
+const { getLastPrivateMessageSender, sendSelfPmFromServer } =
+  await import("./chat.ts");
+const { globals } = await import("./Globals.ts");
 const { swapUi } = await import("./game/main.ts");
 const { Screen } = await import("./lobby/types/Screen.ts");
 const { screenChanged } = await import("./sessionSlice.ts");
@@ -136,6 +142,40 @@ describe("/ui", () => {
     expect(swapUi).not.toHaveBeenCalled();
     expect(sendSelfPmFromServer).toHaveBeenCalledWith(
       "The /ui command works only in a game.",
+      undefined,
+      undefined,
+    );
+  });
+});
+
+describe("/r", () => {
+  test("sends a private message to the last player who sent us one", () => {
+    const send = vi.fn();
+    Object.assign(globals, {
+      connection: {
+        send,
+      },
+    });
+    vi.mocked(getLastPrivateMessageSender).mockReturnValue("Alice");
+    chatCommands.get("r")?.(undefined, ["hello", "there"]);
+    expect(send).toHaveBeenCalledWith("chatPm", {
+      text: "hello there",
+      recipient: "Alice",
+    });
+  });
+
+  test("only tells the player when no one has sent them a private message", () => {
+    const send = vi.fn();
+    Object.assign(globals, {
+      connection: {
+        send,
+      },
+    });
+    vi.mocked(getLastPrivateMessageSender).mockReturnValue(undefined);
+    chatCommands.get("r")?.(undefined, ["hello"]);
+    expect(send).not.toHaveBeenCalled();
+    expect(sendSelfPmFromServer).toHaveBeenCalledWith(
+      "No one has sent you a private message yet, so you cannot reply.",
       undefined,
       undefined,
     );

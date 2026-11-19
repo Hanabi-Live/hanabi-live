@@ -198,6 +198,7 @@ constants! {
         "msg",
         "pm",
         "pmhistory",
+        "r",
         "setleader",
         "setvariant",
         "suggest",

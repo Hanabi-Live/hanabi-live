@@ -36,6 +36,7 @@ export const WEBSITE_CHAT_COMMANDS = [
   "msg",
   "pm",
   "pmhistory",
+  "r",
   "setleader",
   "setvariant",
   "suggest",

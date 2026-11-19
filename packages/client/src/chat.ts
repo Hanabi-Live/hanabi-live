@@ -70,6 +70,11 @@ const emoteList: string[] = [];
 let chatLineNum = 1;
 const lobbyChatDeletionState = new LobbyChatDeletionState();
 let lastPrivateMessageSender: string | undefined;
+
+/** The player who sent us the last private message, whom "/r" replies to. */
+export function getLastPrivateMessageSender(): string | undefined {
+  return lastPrivateMessageSender;
+}
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 /**
@@ -202,14 +207,6 @@ function send(room: ChatRoom, element: HTMLInputElement) {
   }
 
   const msg = element.value.trim();
-
-  // Validate that they are accidentally broadcasting a private message reply.
-  if (msg.startsWith("/r ")) {
-    modals.showWarning(
-      "No-one has sent you a private message yet, so you cannot reply.",
-    );
-    return;
-  }
 
   // Keep a message that is too long, so that the player can shorten it.
   if (rejectTooLong(element, CHAT_LENGTH_LIMIT)) {

@@ -4,6 +4,7 @@ import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
 import {
+  getLastPrivateMessageSender,
   SelfChatMessageType,
   sendSelfPmFromServer,
   showPmHistory,
@@ -146,6 +147,24 @@ chatCommands.set("w", pm);
 chatCommands.set("whisper", pm);
 chatCommands.set("msg", pm);
 chatCommands.set("tell", pm);
+
+// /r [msg]
+chatCommands.set(
+  "r",
+  (tableId: TableId | undefined, args: readonly string[]) => {
+    const sender = getLastPrivateMessageSender();
+    if (sender === undefined) {
+      sendSelfPmFromServer(
+        "No one has sent you a private message yet, so you cannot reply.",
+        tableId,
+        SelfChatMessageType.Error,
+      );
+      return;
+    }
+
+    pm(tableId, [sender, ...args]);
+  },
+);
 
 /** The amount of private messages that "/pmhistory" requests when none is given. */
 const DEFAULT_PM_HISTORY_AMOUNT = 5;
