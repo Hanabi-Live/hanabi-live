@@ -25,9 +25,11 @@ runs:
       run: bun install --frozen-lockfile
       shell: bash # Composite jobs must specify the shell.
 
+    # The cache holds only "node_modules", so run the install scripts that write elsewhere, such as
+    # the Font Awesome copy in "public".
     - name: Restore repository lifecycle setup
       if: steps.dependencies.outputs.cache-hit == 'true'
-      run: bun run prepare
+      run: bun run prepare && bun run postinstall
       shell: bash
 
     - name: Cache the clean installation
