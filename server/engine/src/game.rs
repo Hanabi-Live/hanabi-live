@@ -280,7 +280,11 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                 || match clue.clue_type {
                     ClueType::Color => variant.color_clues_touch_nothing,
                     ClueType::Rank => variant.rank_clues_touch_nothing,
-                };
+                }
+                || (state.players[actor].is(Character::BlindSpot)
+                    && target == (actor + 1) % state.players.len())
+                || (state.players[actor].is(Character::Oblivious)
+                    && target == (actor + state.players.len() - 1) % state.players.len());
             let touches_a_card = touched_by(state, target, clue)
                 .iter()
                 .any(|&order| sees_card(state, actor, target, order));
