@@ -68,6 +68,8 @@ of the repository.
   of the green felt. The felt is now only on the game table.
 - On the "Settings" page, the list of H-Group levels is a grid of numbers, so it
   shows every level at once.
+- On phones, the buttons that switch between the parts of the lobby form one bar
+  with icons, and the online button shows how many people are online.
 
 ## November 18th, 2026
 

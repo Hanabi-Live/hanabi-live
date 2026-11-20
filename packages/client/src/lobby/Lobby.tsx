@@ -3,6 +3,11 @@
 // between the halves.
 
 import { useEffect } from "react";
+import { useReducedMotion } from "../fade.ts";
+import {
+  FADE_LAYER_PARENT_CLASS,
+  FadeLayer,
+} from "../game/newUi/FadeLayer.tsx";
 import { lobbyPanelChanged } from "../sessionSlice.ts";
 import type { RootState } from "../store.ts";
 import { store, useAppSelector } from "../store.ts";
@@ -16,6 +21,7 @@ import { TablesList } from "./tables/TablesList.tsx";
 import type { LobbyPanel } from "./types/LobbyPanel.ts";
 import { Screen } from "./types/Screen.ts";
 import { UsersList, UsersTitle } from "./users/UsersList.tsx";
+import { selectUserCount } from "./users/usersSlice.ts";
 
 /**
  * The classes of "#lobby", which the component renders into. The lobby fills the page below the
@@ -69,6 +75,7 @@ export function Lobby(): React.JSX.Element {
   const screen = useAppSelector((state) => state.session.screen);
   const panel = useAppSelector((state) => state.session.lobbyPanel);
   const full = useAppSelector(selectFullScreen);
+  const userCount = useAppSelector(selectUserCount);
   const inPregame = screen === Screen.PreGame;
 
   // The pre-game chat takes room from the lobby chat, which keeps it scrolled to the bottom.
@@ -189,37 +196,52 @@ export function Lobby(): React.JSX.Element {
         </div>
       </div>
 
-      <div
+      <nav
+        aria-label="Lobby panels"
         className={
-          full ? "tw:hidden" : "tw:mt-4 tw:hidden tw:h-[2em] tw:compact:block"
+          full
+            ? "tw:hidden"
+            : "tw:mt-4 tw:hidden tw:gap-1 tw:rounded-[calc(var(--radius)+4px)] tw:border tw:border-(--box-line) tw:bg-(--box-sunken) tw:p-1 tw:compact:flex"
         }
         id="lobby-small-screen-buttons"
+        role="tablist"
       >
-        <nav id="nav-bottom">
-          <ul className="tw:m-0 tw:block tw:list-none tw:pl-0">
-            <li className="tw:pl-0">
-              <PanelButton id="tables" panel="tables" shown>
-                {inPregame ? "Game" : "Tables"}
-              </PanelButton>{" "}
-              {/* Short, wide screens show the online users beside the chat. */}
-              <PanelButton
-                className="tw:short-530-wide:hidden"
-                id="online"
-                panel="online"
-                shown
-              >
-                Who&apos;s Online
-              </PanelButton>{" "}
-              <PanelButton id="chat" panel="chat" shown={!inPregame}>
-                Chat
-              </PanelButton>{" "}
-              <PanelButton id="game-chat" panel="gameChat" shown={inPregame}>
-                Pre-game Chat
-              </PanelButton>
-            </li>
-          </ul>
-        </nav>
-      </div>
+        <PanelButton
+          icon={inPregame ? "fa-users-rectangle" : "fa-table-cells-large"}
+          id="tables"
+          panel="tables"
+          shown
+        >
+          {inPregame ? "Game" : "Tables"}
+        </PanelButton>
+        {/* Short, wide screens show the online users beside the chat. */}
+        <PanelButton
+          className="tw:short-530-wide:hidden"
+          count={userCount}
+          icon="fa-user-group"
+          id="online"
+          panel="online"
+          shown
+        >
+          Online
+        </PanelButton>
+        <PanelButton
+          icon="fa-comments"
+          id="chat"
+          panel="chat"
+          shown={!inPregame}
+        >
+          Chat
+        </PanelButton>
+        <PanelButton
+          icon="fa-comments"
+          id="game-chat"
+          panel="gameChat"
+          shown={inPregame}
+        >
+          Chats
+        </PanelButton>
+      </nav>
 
       <div
         className={classes("row", HALF, !full && "tw:hidden")}
@@ -253,35 +275,78 @@ export function Lobby(): React.JSX.Element {
   );
 }
 
-/** A button that switches between the halves of the lobby on small screens. */
+/**
+ * A tab that switches between the halves of the lobby on small screens. The tabs share the width of
+ * the bar. The selected tab is a raised green key, which fades in, so that the eye follows the
+ * switch.
+ */
 function PanelButton({
   children,
   className,
+  count,
+  icon,
   id,
   panel,
   shown,
 }: {
   readonly children: React.ReactNode;
   readonly className?: string;
+  readonly count?: number;
+  readonly icon: string;
   readonly id: string;
   readonly panel: LobbyPanel;
   readonly shown: boolean;
 }) {
   const active = useAppSelector((state) => state.session.lobbyPanel === panel);
+  const reducedMotion = useReducedMotion();
   return (
-    <a
+    <button
+      aria-selected={active}
       className={classes(
-        "button small",
+        FADE_LAYER_PARENT_CLASS,
+        "tw:flex tw:min-h-11 tw:min-w-0 tw:flex-1 tw:cursor-pointer tw:flex-wrap tw:items-center tw:justify-center tw:gap-x-2 tw:gap-y-1 tw:rounded-(--radius) tw:border-0 tw:bg-transparent tw:px-2 tw:font-[inherit] tw:text-[0.95em] tw:leading-none tw:whitespace-nowrap",
+        // Narrow phones put the icon above the label, so that each label fits its third of the bar.
+        "tw:narrow-410:gap-x-1 tw:narrow-410:py-1.5 tw:narrow-410:text-[0.85em]",
+        "tw:transition-[color,translate] tw:duration-150 tw:active:translate-y-px",
+        active
+          ? "tw:text-text-on-accent"
+          : "tw:text-text-label tw:hover:text-text",
         className ?? false,
-        active && "tw:bg-(--green)",
         !shown && "tw:hidden",
       )}
       id={`lobby-toggle-show-${id}`}
       onClick={() => {
         store.dispatch(lobbyPanelChanged(panel));
       }}
+      role="tab"
+      type="button"
     >
-      {children}
-    </a>
+      <FadeLayer
+        className="tw:bg-green tw:shadow-(--button-key-shadow)"
+        reducedMotion={reducedMotion}
+        shown={active}
+      />
+      {!active && (
+        <span
+          aria-hidden="true"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-button-translucent tw:opacity-0 tw:transition-opacity tw:group-hover/layer:opacity-100"
+        />
+      )}
+      <i
+        aria-hidden="true"
+        className={`fas ${icon} tw:text-[1.05em] tw:narrow-410:basis-full tw:narrow-410:text-[1.2em]`}
+      />
+      <span className="tw:truncate">{children}</span>
+      {count !== undefined && (
+        <span
+          className={classes(
+            "tw:rounded-full tw:px-[0.5em] tw:py-[0.2em] tw:text-[0.8em] tw:tabular-nums",
+            active ? "tw:bg-black/25" : "tw:bg-button-translucent",
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
   );
 }
