@@ -531,7 +531,7 @@ additional UI elements are enabled:
   card is _Known Trash_. This will draw a special image on the card.
 - A note of "fix", "fixme", or "needs fix" can be written to indicate that the
   card needs to be given a "Fix Clue" at some point in the future. This will
-  draw a special image on the card.
+  draw a special image on the card, and the card will never be faded.
 - A note of "?" can be written to indicate that the card have uncertain
   information written on it. This will draw a special image on the card.
 - A note of "!" can be written to indicate that the card have certain

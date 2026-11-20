@@ -14,6 +14,7 @@ of the repository.
   whose rows look like the faces of cards.
 - The "Dark mode" setting is back. It shows the previous dark look, and it is
   saved to your account.
+- A card with a "fix" note is no longer faded, even when it is trash.
 
 ## November 19th, 2026
 

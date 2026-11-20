@@ -312,6 +312,7 @@ export function getCardView({
       && shouldFadeTrash({
         trash: status === CardStatus.Trash,
         markedTrash,
+        markedFix: noteMarks.includes("fix"),
         clued,
         positivelyClued: cardState.numPositiveClues > 0,
         note,
@@ -532,14 +533,16 @@ function getNoteBorder(
 }
 
 /**
- * Whether a trash card in a hand shows faded, on both game screens. A card that the viewer marked
- * as trash fades unless a clue touched it. Other trash fades only when nothing else marks the card
- * as worth a look: a clue, a note that calls it blank or chop moved, or a variant that hides what
- * was played.
+ * Whether a trash card in a hand shows faded, on both game screens. A card that shows the wrench
+ * from a note never fades, so that the mark stays easy to see. A card that the viewer marked as
+ * trash fades unless a clue touched it. Other trash fades only when nothing else marks the card as
+ * worth a look: a clue, a note that calls it blank or chop moved, or a variant that hides what was
+ * played.
  */
 export function shouldFadeTrash({
   trash,
   markedTrash,
+  markedFix,
   clued,
   positivelyClued,
   note,
@@ -547,14 +550,16 @@ export function shouldFadeTrash({
 }: {
   readonly trash: boolean;
   readonly markedTrash: boolean;
+  readonly markedFix: boolean;
   readonly clued: boolean;
   readonly positivelyClued: boolean;
   readonly note: Pick<CardNote, "blank" | "chopMoved">;
   readonly throwItInAHole: boolean;
 }): boolean {
   return (
-    (markedTrash && !positivelyClued)
-    || (trash && !clued && !note.blank && !note.chopMoved && !throwItInAHole)
+    !markedFix
+    && ((markedTrash && !positivelyClued)
+      || (trash && !clued && !note.blank && !note.chopMoved && !throwItInAHole))
   );
 }
 

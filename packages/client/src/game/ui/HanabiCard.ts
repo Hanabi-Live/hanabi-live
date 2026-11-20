@@ -410,6 +410,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
       trash:
         isTrash && !isCardPlayed(this.state) && !isCardDiscarded(this.state),
       markedTrash: this.trashcan.isVisible() === true,
+      markedFix: this.wrench.isVisible() === true,
       clued: isCardClued(this.state),
       positivelyClued: this.state.numPositiveClues > 0,
       note: this.note,

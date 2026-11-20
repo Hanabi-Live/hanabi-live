@@ -586,6 +586,7 @@ describe("shouldFadeTrash", () => {
   const plain = {
     trash: true,
     markedTrash: false,
+    markedFix: false,
     clued: false,
     positivelyClued: false,
     note: {
@@ -621,6 +622,23 @@ describe("shouldFadeTrash", () => {
       shouldFadeTrash({
         ...marked,
         positivelyClued: true,
+      }),
+    ).toBe(false);
+  });
+
+  test("never fades a card that shows the wrench", () => {
+    expect(
+      shouldFadeTrash({
+        ...plain,
+        markedFix: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldFadeTrash({
+        ...plain,
+        trash: false,
+        markedTrash: true,
+        markedFix: true,
       }),
     ).toBe(false);
   });
