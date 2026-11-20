@@ -738,6 +738,10 @@ export function GameScreen(): React.JSX.Element {
   }
   const shownClue = getClueForTurn(visibleState);
   const shownMove = getMoveForTurn(state);
+  const shownGameEnd = getShownGameEnd(state);
+  // On the turn on which the game ended, the end of the game takes the place of the last move, so
+  // the moved card has no outline.
+  const outlinedMove = shownGameEnd === undefined ? shownMove : undefined;
   const stacks = getStacks(state);
   const discardRows = getDiscardRows(state);
   const cardNotes: CardNotes = {
@@ -1231,7 +1235,7 @@ export function GameScreen(): React.JSX.Element {
         settings.hGroupConventions
         && visibleState.stats.doubleDiscardCard !== undefined
       }
-      movedCard={shownMove}
+      movedCard={outlinedMove}
       notes={cardNotes}
       onShowDiscard={showDiscard}
       realLifeMode={settings.realLifeMode}
@@ -1535,9 +1539,9 @@ export function GameScreen(): React.JSX.Element {
                   variant,
                   reducedMotion: settings.reducedMotion,
                 }}
-                gameEnd={getShownGameEnd(state)}
+                gameEnd={shownGameEnd}
                 hole={getHole(state)}
-                movedCard={shownMove}
+                movedCard={outlinedMove}
                 notes={cardNotes}
                 stacks={stacks}
                 // In the phone layout, the tokens are beside the discard pile instead.
