@@ -194,3 +194,29 @@ test.each(["3 Suits", "4 Suits", "No Variant", "6 Suits"])(
     );
   },
 );
+
+test("the clue token of a trash card does not fade with the card", () => {
+  const { container } = render(
+    <CardFace
+      clueMarker={{
+        marker: {
+          type: "rank",
+          label: "1",
+        },
+        touchedBefore: false,
+      }}
+      colorblindMode={false}
+      rank={1}
+      suitIndex={0}
+      trash
+      variant={getDefaultVariant()}
+      width={CARD_RECT.width}
+    />,
+  );
+
+  const face = container.querySelector<HTMLElement>("[data-card-face]");
+  expect(face?.style.opacity).not.toBe("1");
+  const marker = container.querySelector("[data-clue-marker]");
+  expect(marker).not.toBeNull();
+  expect(face?.contains(marker)).toBe(false);
+});

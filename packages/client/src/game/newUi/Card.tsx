@@ -2995,25 +2995,6 @@ export function CardFace({
             : getOpacityTransition(highlighted),
         }}
       />
-      {clueMarker !== undefined && (
-        <ClueMarker
-          hidden={clueMarkerHidden}
-          marker={clueMarker}
-          reducedMotion={reducedMotion}
-          width={width}
-        />
-      )}
-      {previewMarker !== undefined && (
-        // The token of another clue is a new element, so that it fades in and the old one fades
-        // out.
-        <ClueMarker
-          key={getClueMarkerLabel(previewMarker.marker)}
-          marker={previewMarker}
-          preview
-          reducedMotion={reducedMotion}
-          width={width}
-        />
-      )}
       {suit !== undefined && suit.clueColors.length > 1 && (
         <DualColorTriangles
           colorblindMode={colorblindMode}
@@ -3115,6 +3096,34 @@ export function CardFace({
         />
       )}
       {face}
+      {/* The clue tokens are outside of the face, so that they do not fade with a trash card. They
+          move with the face as it rises. The layer is there for every card, so that a token that
+          goes away can fade out in it. */}
+      <div
+        aria-hidden="true"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:transition-transform tw:duration-200 tw:ease-out"
+        style={{ transform: `translateY(${-raise}px)` }}
+      >
+        {clueMarker !== undefined && (
+          <ClueMarker
+            hidden={clueMarkerHidden}
+            marker={clueMarker}
+            reducedMotion={reducedMotion}
+            width={width}
+          />
+        )}
+        {previewMarker !== undefined && (
+          // The token of another clue is a new element, so that it fades in and the old one fades
+          // out.
+          <ClueMarker
+            key={getClueMarkerLabel(previewMarker.marker)}
+            marker={previewMarker}
+            preview
+            reducedMotion={reducedMotion}
+            width={width}
+          />
+        )}
+      </div>
     </div>
   );
 }
