@@ -16,17 +16,22 @@ import { newUiChatOpenChanged } from "./newUi/newUiSlice.ts";
 const DEFAULT_CHAT_MODAL_WIDTH_PERCENT = 20;
 const DEFAULT_CHAT_MODAL_HEIGHT_PERCENT = 50;
 
+/** The narrowest that the default chat modal gets, in pixels, so that it is usable on a phone. */
+const DEFAULT_CHAT_MODAL_MIN_WIDTH_PIXELS = 300;
+
 /** The gap between the default chat modal and the top and right edges, in percent of the page. */
 const DEFAULT_CHAT_MODAL_MARGIN_PERCENT = 1;
 
+const DEFAULT_CHAT_MODAL_WIDTH = `max(${DEFAULT_CHAT_MODAL_WIDTH_PERCENT}%, ${DEFAULT_CHAT_MODAL_MIN_WIDTH_PIXELS}px)`;
+
 const DEFAULT_CHAT_MODAL_SIZE = {
-  width: `${DEFAULT_CHAT_MODAL_WIDTH_PERCENT}%`,
+  width: DEFAULT_CHAT_MODAL_WIDTH,
   height: `${DEFAULT_CHAT_MODAL_HEIGHT_PERCENT}%`,
 } as const;
 
 const DEFAULT_CHAT_MODAL_POSITION = {
   top: `${DEFAULT_CHAT_MODAL_MARGIN_PERCENT}%`,
-  left: `${100 - DEFAULT_CHAT_MODAL_WIDTH_PERCENT - DEFAULT_CHAT_MODAL_MARGIN_PERCENT}%`,
+  left: `calc(${100 - DEFAULT_CHAT_MODAL_MARGIN_PERCENT}% - ${DEFAULT_CHAT_MODAL_WIDTH})`,
 } as const;
 
 /** The smallest size that the player can resize the chat modal to, in pixels. */
