@@ -2,20 +2,42 @@
 //! ".github/workflows/claude.yml"). The repository is public, so an issue holds only the release,
 //! the diagnostic ID, and the positions in the website's scripts. The error's message stays in the
 //! local logs, since the client wrote it.
+//!
+//! The server opens the issues as the "Hanabi Live Issues Bot" GitHub App, which needs the
+//! permission to write issues and an installation on the repository.
 use crate::errors::Report;
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
+use base64::{
+    Engine as _,
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+};
+use ring::{
+    rand::SystemRandom,
+    signature::{RSA_PKCS1_SHA256, RsaKeyPair},
+};
 use serde::Deserialize;
 use serde_json::json;
 use std::{
     collections::{HashMap, VecDeque},
     fmt::Write,
-    time::{Duration, Instant},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tokio::sync::mpsc;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
-/// The configuration value that holds a GitHub token that can write issues.
-const TOKEN: &str = "GITHUB_ISSUES_TOKEN";
+/// The configuration value that holds the ID of the GitHub App.
+pub const APP_ID: &str = "GITHUB_APP_ID";
+/// The configuration value that holds the path of the GitHub App's private key.
+pub const PRIVATE_KEY_FILE: &str = "GITHUB_APP_PRIVATE_KEY_FILE";
+
+/// How long a token that proves that the server is the app lasts. GitHub accepts at most 10
+/// minutes.
+const APP_TOKEN_LIFETIME: Duration = Duration::from_mins(9);
+/// How long before now an app token says that it was made, in case the server's clock is ahead of
+/// GitHub's.
+const CLOCK_DRIFT: Duration = Duration::from_mins(1);
+
+const API: &str = "https://api.github.com";
 
 const REPOSITORY: &str = "Hanabi-Live/hanabi-live";
 
@@ -52,7 +74,7 @@ pub struct Issues {
 }
 
 impl Issues {
-    /// Starts sending issues, unless the token is not configured or this is a development server.
+    /// Starts sending issues, unless the app is not configured or this is a development server.
     pub fn start(
         values: &HashMap<String, String>,
         development: bool,
@@ -60,12 +82,16 @@ impl Issues {
         tracker: &TaskTracker,
         shutdown: CancellationToken,
     ) -> Self {
-        let Some(token) = values
-            .get(TOKEN)
-            .map(|value| value.trim().to_owned())
-            .filter(|value| !value.is_empty() && !development)
-        else {
+        if development {
             return Self { queue: None };
+        }
+        let app = match App::read(values) {
+            Ok(Some(app)) => app,
+            Ok(None) => return Self { queue: None },
+            Err(error) => {
+                Report::from_error("Configuring the GitHub App", &error).log();
+                return Self { queue: None };
+            }
         };
         let (queue, mut errors) = mpsc::channel::<ClientError>(QUEUE);
         tracker.spawn(async move {
@@ -93,7 +119,7 @@ impl Issues {
                     continue;
                 };
                 if let Err(failure) =
-                    open_issue(&client, &token, &title, &issue_body(&error, &release)).await
+                    open_issue(&client, &app, &title, &issue_body(&error, &release)).await
                 {
                     Report::from_error("Opening a GitHub issue for a client error", &failure).log();
                 }
@@ -174,17 +200,121 @@ fn issue_body(error: &ClientError, release: &str) -> String {
     body
 }
 
+/// The GitHub App that opens the issues.
+struct App {
+    id: String,
+    key: RsaKeyPair,
+}
+
+impl App {
+    /// Reads the app's ID and private key, or returns `None` when neither is configured.
+    fn read(values: &HashMap<String, String>) -> Result<Option<Self>> {
+        let value = |key: &str| values.get(key).map(|v| v.trim()).filter(|v| !v.is_empty());
+        let (id, path) = match (value(APP_ID), value(PRIVATE_KEY_FILE)) {
+            (None, None) => return Ok(None),
+            (Some(id), Some(path)) => (id, path),
+            _ => bail!("{APP_ID} and {PRIVATE_KEY_FILE} must both be provided"),
+        };
+        let pem =
+            std::fs::read_to_string(path).with_context(|| format!("Reading {PRIVATE_KEY_FILE}"))?;
+        Ok(Some(Self {
+            id: id.to_owned(),
+            key: private_key(&pem)?,
+        }))
+    }
+
+    /// A token that proves that the server is the app (a JSON Web Token signed with its key).
+    fn app_token(&self) -> Result<String> {
+        let now = SystemTime::now().duration_since(UNIX_EPOCH)?;
+        let header = URL_SAFE_NO_PAD.encode(json!({ "alg": "RS256", "typ": "JWT" }).to_string());
+        let claims = URL_SAFE_NO_PAD.encode(
+            json!({
+                "iat": now.saturating_sub(CLOCK_DRIFT).as_secs(),
+                "exp": (now + APP_TOKEN_LIFETIME).as_secs(),
+                "iss": self.id,
+            })
+            .to_string(),
+        );
+        let message = format!("{header}.{claims}");
+        let mut signature = vec![0; self.key.public().modulus_len()];
+        self.key
+            .sign(
+                &RSA_PKCS1_SHA256,
+                &SystemRandom::new(),
+                message.as_bytes(),
+                &mut signature,
+            )
+            .map_err(|_| anyhow::anyhow!("Signing the GitHub App token failed"))?;
+        Ok(format!("{message}.{}", URL_SAFE_NO_PAD.encode(signature)))
+    }
+
+    /// A token that lets the app write the repository's issues for an hour.
+    async fn installation_token(&self, client: &reqwest::Client) -> Result<String> {
+        #[derive(Deserialize)]
+        struct Installation {
+            id: u64,
+        }
+        #[derive(Deserialize)]
+        struct Token {
+            token: String,
+        }
+        let app_token = self.app_token()?;
+        let installation: Installation = client
+            .get(format!("{API}/repos/{REPOSITORY}/installation"))
+            .bearer_auth(&app_token)
+            .header("Accept", "application/vnd.github+json")
+            .send()
+            .await?
+            .error_for_status()
+            .context("Finding the app's installation on the repository")?
+            .json()
+            .await?;
+        let token: Token = client
+            .post(format!(
+                "{API}/app/installations/{}/access_tokens",
+                installation.id
+            ))
+            .bearer_auth(&app_token)
+            .header("Accept", "application/vnd.github+json")
+            .send()
+            .await?
+            .error_for_status()
+            .context("Getting a token for the app's installation")?
+            .json()
+            .await?;
+        Ok(token.token)
+    }
+}
+
+/// Reads an RSA private key in PEM, such as the one that GitHub makes for an app (PKCS #1).
+fn private_key(pem: &str) -> Result<RsaKeyPair> {
+    let der = STANDARD
+        .decode(
+            pem.lines()
+                .filter(|line| !line.starts_with("-----"))
+                .collect::<String>(),
+        )
+        .context("The GitHub App's private key is not valid PEM")?;
+    let key = if pem.contains("BEGIN RSA PRIVATE KEY") {
+        RsaKeyPair::from_der(&der)
+    } else {
+        RsaKeyPair::from_pkcs8(&der)
+    };
+    key.map_err(|error| anyhow::anyhow!("The GitHub App's private key is not valid: {error}"))
+}
+
 #[derive(Deserialize)]
 struct Issue {
     title: String,
 }
 
 /// Opens the issue, unless an open issue already has its title, such as after a restart.
-async fn open_issue(client: &reqwest::Client, token: &str, title: &str, body: &str) -> Result<()> {
-    let url = format!("https://api.github.com/repos/{REPOSITORY}/issues");
+async fn open_issue(client: &reqwest::Client, app: &App, title: &str, body: &str) -> Result<()> {
+    let token = app.installation_token(client).await?;
+    let url = format!("{API}/repos/{REPOSITORY}/issues");
     let open: Vec<Issue> = client
         .get(format!("{url}?labels={LABEL}&state=open&per_page=100"))
-        .bearer_auth(token)
+        .bearer_auth(&token)
         .header("Accept", "application/vnd.github+json")
         .send()
         .await
@@ -199,7 +329,7 @@ async fn open_issue(client: &reqwest::Client, token: &str, title: &str, body: &s
     }
     client
         .post(&url)
-        .bearer_auth(token)
+        .bearer_auth(&token)
         .header("Accept", "application/vnd.github+json")
         .json(&json!({
             "title": title,

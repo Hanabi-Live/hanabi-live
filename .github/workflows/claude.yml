@@ -59,6 +59,8 @@ jobs:
       - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The server opens the issues for client errors as this GitHub App.
+          allowed_bots: hanabi-live-issues-bot
           claude_args: |
             --allowedTools "Bash(bash lint.sh:*),Bash(bash scripts/dev/generate-protocol.sh),Bash(bun:*),Bash(bunx:*),Bash(cargo:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(git fetch:*),Bash(git worktree:*)"
             --append-system-prompt "Follow AGENTS.md, except: never push to main, deploy, or connect to the production server. When asked to fix an issue, first decide whether it describes a real, reproducible problem with a clear fix. If it does not, reply explaining why and make no changes. Otherwise fix it on your branch, run bash lint.sh and the relevant tests, push, and open a pull request against main with gh pr create, using a Conventional Commits title and a body that says Fixes #<issue number>."

@@ -141,11 +141,16 @@ impl Config {
             "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
             "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
             "DISCORD_PING_CREW_ROLE_NAME",
-            "GITHUB_ISSUES_TOKEN",
+            crate::integrations::github::APP_ID,
+            crate::integrations::github::PRIVATE_KEY_FILE,
         ] {
             if let Some(value) = values.get(key).filter(|v| !v.is_empty()) {
                 integrations.insert(key.into(), value.clone());
             }
+        }
+        // Like the TLS files, the app's private key is relative to the repository's root.
+        if let Some(path) = integrations.get_mut(crate::integrations::github::PRIVATE_KEY_FILE) {
+            *path = root.join(path.trim()).display().to_string();
         }
         Ok(Self {
             root: root.to_path_buf(),
