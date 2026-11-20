@@ -310,7 +310,7 @@ function PanelButton({
         "tw:transition-[color,translate] tw:duration-150 tw:active:translate-y-px",
         active
           ? "tw:text-text-on-accent"
-          : "tw:text-text-label tw:hover:text-text",
+          : "tw:text-(--box-text-label) tw:hover:text-(--box-text)",
         className ?? false,
         !shown && "tw:hidden",
       )}
@@ -329,7 +329,7 @@ function PanelButton({
       {!active && (
         <span
           aria-hidden="true"
-          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-button-translucent tw:opacity-0 tw:transition-opacity tw:group-hover/layer:opacity-100"
+          className="tw:pointer-events-none tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-(--box-row-hover-bg) tw:opacity-0 tw:transition-opacity tw:group-hover/layer:opacity-100"
         />
       )}
       <i
@@ -341,7 +341,7 @@ function PanelButton({
         <span
           className={classes(
             "tw:rounded-full tw:px-[0.5em] tw:py-[0.2em] tw:text-[0.8em] tw:tabular-nums",
-            active ? "tw:bg-black/25" : "tw:bg-button-translucent",
+            active ? "tw:bg-black/25" : "tw:bg-(--box-line)",
           )}
         >
           {count}
