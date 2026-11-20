@@ -141,6 +141,10 @@ password). Choose an account that is not already in use. Do not change these
 accounts' passwords or delete them during cleanup. Keep test interactions
 confined to test accounts and their own tables.
 
+To check something on the production site (https://hanab.live), such as a replay
+that a player reports, sign in as `test` / `test`. Do not sign in as another
+account.
+
 When driving a browser, mute its audio (for Chromium, `--mute-audio`) unless you
 are debugging sound.
 
