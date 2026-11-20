@@ -89,7 +89,8 @@ function StepContent({
     fit = false,
   ) => (
     <a
-      className={`button${fit ? " fit" : ""} icon ${icon}`}
+      // On narrow screens, a long label wraps instead of running out of the button.
+      className={`button${fit ? " fit" : ""} icon ${icon} tw:narrow-736:h-auto tw:narrow-736:py-[0.75em] tw:narrow-736:leading-normal tw:narrow-736:whitespace-normal`}
       id={`tutorial-${id}`}
       onClick={() => {
         go(next);
@@ -444,7 +445,7 @@ function spaced(label: string): string {
   return ` ${label} `;
 }
 
-/** Two answers side by side. */
+/** Two answers side by side, or one above the other on narrow screens. */
 function Pair({
   left,
   right,
@@ -454,8 +455,10 @@ function Pair({
 }) {
   return (
     <div className="row">
-      <div className="col-6">{left}</div>
-      <div className="col-6">{right}</div>
+      <div className="col-6 tw:narrow-736:w-full">{left}</div>
+      <div className="col-6 tw:narrow-736:mt-4 tw:narrow-736:w-full">
+        {right}
+      </div>
     </div>
   );
 }
