@@ -347,10 +347,10 @@ type ClueBadgeView =
   | { readonly type: "fill"; readonly fill: string };
 
 /** How much of a suit's color tints a card face. The rest is white. */
-const FACE_TINT_PERCENT = 55;
+const FACE_TINT_PERCENT = 44;
 
 /** How much of a suit's color is in the rank and the possible ranks. The rest is black. */
-const INK_PERCENT = 88;
+const INK_PERCENT = 80;
 
 export interface CardFaceProps {
   readonly variant: Variant;
