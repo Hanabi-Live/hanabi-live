@@ -359,6 +359,11 @@ These options are on the "Settings" page.
   turn, or never.
 - You can play a sound when a timer is below 10 seconds, and set the volume.
 
+### Dark Mode
+
+- The "Dark mode" setting shows the lobby and the other pages outside of a game
+  in dark colors. It is saved to your account.
+
 ### New UI
 
 - The "New UI" setting shows games and replays in a redesigned game screen. It

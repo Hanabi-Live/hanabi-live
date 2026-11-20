@@ -29,6 +29,7 @@ import {
 } from "./sessionSlice.ts";
 import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
+import * as theme from "./theme.ts";
 import { escapeHtml, textToHtml } from "./utils.ts";
 
 const reconnectBackoff = new ReconnectBackoff();
@@ -287,6 +288,7 @@ function openConnection(isReconnect: boolean) {
       ) {
         globals.muted = data.muted;
         store.dispatch(settingsChanged(data.settings));
+        theme.setDarkMode(data.settings.darkMode);
         store.dispatch(friendsChanged(data.friends));
         store.dispatch(blockedChanged(data.blocked));
         const retained = globals.joinedTableId;

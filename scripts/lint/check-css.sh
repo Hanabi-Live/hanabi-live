@@ -17,6 +17,13 @@ CSS_DIR="$REPO_ROOT/public/css"
 TOKENS="$CSS_DIR/tokens.css"
 STYLESHEETS=("$CSS_DIR/defaults.css" "$CSS_DIR"/app/*.css "$CSS_DIR/overrides.css")
 
+# The dark theme only changes the values of the variables in "tokens.css", so that each rule has
+# one set of colors for both themes.
+if grep -n "data-theme" "${STYLESHEETS[@]}"; then
+  echo 'Error: Set dark theme colors as variables in "public/css/tokens.css", instead of in a rule for "[data-theme]".' >&2
+  exit 1
+fi
+
 # Media queries, including the Tailwind variants of the React components, use only the breakpoints
 # that "tokens.css" lists.
 TAILWIND="$REPO_ROOT/packages/client/src/tailwind.css"

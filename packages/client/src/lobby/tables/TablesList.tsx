@@ -65,13 +65,20 @@ const COLUMNS = {
 } as const;
 
 /**
- * The rows stand apart from each other, with lines between their cells. A line on the left of each
- * row and its taken seats show its kind, in the color of "--row-mark".
+ * Each row is filled in the color of its kind. Its status and its taken seats show its kind too, in
+ * the color of "--row-mark". Lines separate the cells. The theme sets the rest (see the
+ * "--lobby-table-*" colors): in the light theme, each row is pale with dark ink, like the face of a
+ * card, and the rows touch, with a line between them. In the dark theme, each row is a faint wash
+ * with a line of its color on its left, and the rows stand apart from each other.
  */
-const TABLE_CLASS_NAME =
-  "tw:mb-0 tw:border-separate tw:border-spacing-y-1 tw:[&>thead]:border-b-0 tw:[&>tbody>tr]:shadow-[inset_4px_0_0_var(--row-mark)] tw:[&>tbody>tr>td]:border-r tw:[&>tbody>tr>td:last-child]:border-r-0 tw:[&>tbody>tr>td]:border-(--lobby-table-cell-line)";
+const TABLE_CLASS_NAME = [
+  "tw:mb-0 tw:border-separate tw:border-spacing-x-0 tw:border-spacing-y-(--lobby-table-row-gap) tw:[&>thead]:border-b-0",
+  "tw:[&>tbody>tr]:border-0 tw:[&>tbody>tr]:font-normal tw:[&>tbody>tr]:text-(--lobby-table-text) tw:[&>tbody>tr]:shadow-[inset_var(--lobby-table-mark-width)_0_0_var(--row-mark)]",
+  "tw:[&>tbody>tr]:[--name-me:var(--pale-name-me)] tw:[&>tbody>tr]:[--friend:var(--pale-friend)] tw:[&>tbody>tr]:[--link:var(--pale-link)]",
+  "tw:[&>tbody>tr>td]:border-(--lobby-table-cell-line) tw:[&>tbody>tr>td]:border-r tw:[&>tbody>tr>td:last-child]:border-r-0 tw:[&>tbody>tr:not(:last-child)>td]:border-b-(length:--lobby-table-row-line-width)",
+].join(" ");
 
-/** The background and the mark of each kind of row. */
+/** The fill and the mark of each kind of row. */
 const ROW_CLASSES = {
   joined: `tw:bg-lobby-table-joined tw:hover:bg-lobby-table-joined-hover tw:[--row-mark:var(--lobby-table-joined-mark)] ${REJOIN_CURSOR}`,
   unstarted:
@@ -179,7 +186,7 @@ function TableRowView({
       }}
       ref={ref}
     >
-      <td className={COLUMNS.name.className}>
+      <td className={`tw:font-semibold ${COLUMNS.name.className}`}>
         {table.passwordProtected && table.phase.type === "pregame" && (
           // The key's solid head is on its right, so it needs more room than other icons.
           <i className="fas fa-key fa-sm tw:mr-2.5" />

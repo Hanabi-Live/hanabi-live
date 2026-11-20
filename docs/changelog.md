@@ -7,6 +7,14 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 20th, 2026
+
+- The lobby and the other pages outside of a game have a new look: pale green
+  panels with sharp edges on the felt of the game table, and a list of games
+  whose rows look like the faces of cards.
+- The "Dark mode" setting is back. It shows the previous dark look, and it is
+  saved to your account.
+
 ## November 19th, 2026
 
 - In the light theme, the lobby and other pages use a soft green-gray instead of

@@ -1,4 +1,7 @@
 #header {
+  --button-bg: var(--header-button-bg);
+  --button-hover-bg: var(--header-button-hover-bg);
+  --button-active-bg: var(--header-button-active-bg);
   background: var(--header-bg);
   box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
   color: var(--header-text);

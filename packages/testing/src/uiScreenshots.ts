@@ -8,6 +8,8 @@
 // Options:
 // - `--state <name>`: Only this state. Repeat it for more than one.
 // - `--width <pixels>`: Only this width. Repeat it for more than one.
+// - `--dark`: Show the dark theme, which the "Dark mode" setting turns on. The screenshots end in
+//   "-dark.png".
 // - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
 //   that ref, and take a screenshot with them wherever a difference shows.
 
@@ -3520,6 +3522,11 @@ async function createCast(
   };
 }
 
+/** Runs in the page. Shows the dark theme, as the "Dark mode" setting does. */
+function showDarkTheme() {
+  document.documentElement.dataset["theme"] = "dark";
+}
+
 /** Runs in the page. Loads a bundle in place of the page's stylesheets, or restores them. */
 async function useStylesheet(href: string | undefined) {
   for (const link of document.querySelectorAll<HTMLLinkElement>(
@@ -3628,6 +3635,7 @@ function compareStyles(compare: boolean): readonly string[] {
 interface Options {
   readonly states: readonly string[];
   readonly widths: readonly number[];
+  readonly dark: boolean;
   readonly compare: string | undefined;
 }
 
@@ -3641,6 +3649,9 @@ function parseOptions(): Options {
       width: {
         type: "string",
         multiple: true,
+      },
+      dark: {
+        type: "boolean",
       },
       compare: {
         type: "string",
@@ -3657,6 +3668,7 @@ function parseOptions(): Options {
   return {
     states: values.state ?? [],
     widths,
+    dark: values.dark ?? false,
     compare: values.compare,
   };
 }
@@ -3945,8 +3957,14 @@ async function captureState(
           ? page.hover(state.hover)
           : state.hover(page, cast));
       }
+      if (options.dark) {
+        await page.evaluate(showDarkTheme);
+      }
       await settle(page);
-      const file = path.join(OUTPUT_DIRECTORY, `${state.name}-${size.width}`);
+      const file = path.join(
+        OUTPUT_DIRECTORY,
+        `${state.name}-${size.width}${options.dark ? "-dark" : ""}`,
+      );
       // Animations that never end, such as a pulse, show their first frame.
       await page.screenshot({
         path: `${file}.png`,

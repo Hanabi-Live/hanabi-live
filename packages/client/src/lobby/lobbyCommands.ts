@@ -18,6 +18,7 @@ import {
 import * as sounds from "../sounds.ts";
 import * as startupScreen from "../startupScreen.ts";
 import { store } from "../store.ts";
+import * as theme from "../theme.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
@@ -172,6 +173,7 @@ lobbyCommands.set("welcome", (data) => {
   store.dispatch(usernameChanged(data.username)); // We might have logged-in with a different stylization
   globals.muted = data.muted;
   store.dispatch(settingsChanged(data.settings));
+  theme.setDarkMode(data.settings.darkMode);
   store.dispatch(friendsChanged(data.friends));
   store.dispatch(blockedChanged(data.blocked));
   store.dispatch(usersListed(data.users));

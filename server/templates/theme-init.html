@@ -1,0 +1,10 @@
+{# Applies the dark mode setting that this browser cached before the stylesheets
+load, so that the light theme does not show first. The cache key and value must
+match "packages/client/src/theme.ts". #}
+<script type="text/javascript">
+  try {
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.dataset.theme = "dark";
+    }
+  } catch (e) {}
+</script>

@@ -97,7 +97,7 @@ export function Pregame(): React.JSX.Element | undefined {
         >
           {game.settings.name}
         </h3>
-        <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-game-muted">
+        <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-baseline tw:gap-x-5 tw:gap-y-1 tw:text-text-label">
           <span id="lobby-pregame-variant">
             <i
               className={`fas fa-palette tw:text-center ${HEADER_ICON_CLASS}`}
@@ -123,7 +123,7 @@ export function Pregame(): React.JSX.Element | undefined {
           The row keeps its height with no spectators, so that the seats do not
           move when one joins.
         */}
-        <div className="tw:mt-2 tw:flex tw:min-h-[1.75em] tw:items-center tw:text-game-muted">
+        <div className="tw:mt-2 tw:flex tw:min-h-[1.75em] tw:items-center tw:text-text-label">
           {spectators.length > 0 && (
             <>
               <span
@@ -219,7 +219,7 @@ function PlayerBox({
   return (
     <li
       className={[
-        "tw:flex tw:flex-col tw:rounded-[5px] tw:border tw:border-solid tw:border-game-line/50 tw:bg-game-zone tw:p-[0.8em]",
+        "tw:flex tw:flex-col tw:rounded-[5px] tw:border tw:border-solid tw:border-border tw:bg-surface-panel tw:p-[0.8em]",
         JOIN_CLASS,
         player.present ? "" : "tw:opacity-60",
       ].join(" ")}
@@ -244,7 +244,7 @@ function PlayerBox({
             )}
           </strong>
           {!player.present && (
-            <span className="tw:flex-none tw:text-[0.8em] tw:text-game-muted">
+            <span className="tw:flex-none tw:text-[0.8em] tw:text-text-label">
               Away
             </span>
           )}
@@ -266,12 +266,12 @@ function PlayerBox({
 }
 
 /**
- * The number of a seat: a token in a well in the felt. It does not show the turn order, because the
- * server shuffles the seats when the game starts.
+ * The number of a seat: a token in a well. It does not show the turn order, because the server
+ * shuffles the seats when the game starts.
  */
 function SeatNumber({ seat }: { readonly seat: number }) {
   return (
-    <span className="tw:inline-flex tw:size-[1.6em] tw:flex-none tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-solid tw:border-game-line/60 tw:bg-game-well tw:text-[0.8em] tw:font-bold tw:tabular-nums">
+    <span className="tw:inline-flex tw:size-[1.6em] tw:flex-none tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-solid tw:border-border tw:bg-surface-sunken tw:text-[0.8em] tw:font-bold tw:tabular-nums">
       {seat}
     </span>
   );
@@ -293,7 +293,7 @@ function SpectatorChip({
   return (
     <li
       className={[
-        "tw:inline-flex tw:items-center tw:gap-[0.4em] tw:rounded-full tw:border tw:border-solid tw:border-game-line/40 tw:bg-game-well",
+        "tw:inline-flex tw:items-center tw:gap-[0.4em] tw:rounded-full tw:border tw:border-solid tw:border-border tw:bg-surface-sunken",
         "tw:py-[0.15em] tw:leading-[1.3]",
         shadowedName === undefined
           ? "tw:px-[0.7em]"
@@ -305,7 +305,7 @@ function SpectatorChip({
       <Name name={name} />
       {shadowedName !== undefined && (
         <span
-          className="tw:rounded-full tw:border tw:border-solid tw:border-game-line/60 tw:px-[0.6em] tw:text-[0.8em]"
+          className="tw:rounded-full tw:border tw:border-solid tw:border-border tw:px-[0.6em] tw:text-[0.8em]"
           ref={tooltipRef(`${name} views the game as ${shadowedName}.`)}
         >
           {shadowedName}
@@ -319,8 +319,8 @@ function SpectatorChip({
 const HAND_FAN_STEP_DEGREES = 8;
 
 /**
- * A seat that no one sits in yet: an empty well in the felt, with a hand of cards that waits face
- * down for its player.
+ * A seat that no one sits in yet: an empty well, with a hand of cards that waits face down for its
+ * player.
  */
 function OpenSeat({
   cardsPerHand,
@@ -330,7 +330,7 @@ function OpenSeat({
   readonly seat: number;
 }) {
   return (
-    <li className="tw:flex tw:min-h-[3em] tw:flex-col tw:items-center tw:justify-center tw:gap-2 tw:rounded-[5px] tw:border tw:border-dashed tw:border-game-line/40 tw:bg-game-well tw:p-[0.8em] tw:text-game-muted">
+    <li className="tw:flex tw:min-h-[3em] tw:flex-col tw:items-center tw:justify-center tw:gap-2 tw:rounded-[5px] tw:border tw:border-dashed tw:border-border tw:bg-surface-sunken tw:p-[0.8em] tw:text-text-label">
       <div className="tw:flex tw:h-[3.2em] tw:items-end tw:justify-center">
         {Array.from({ length: cardsPerHand }, (_, i) => i).map((i) => (
           <span
@@ -360,7 +360,7 @@ function StatRow({
 }) {
   return (
     <div className="tw:flex tw:gap-2">
-      <div className="tw:flex-1 tw:text-game-muted">{label}</div>
+      <div className="tw:flex-1 tw:text-text-label">{label}</div>
       <div className="tw:text-right">{value}</div>
     </div>
   );
@@ -386,7 +386,7 @@ function BestScoreRow({
 
   return (
     <div className="tw:flex tw:gap-2" ref={tooltipRef(tooltip)}>
-      <div className="tw:flex-1 tw:text-game-muted">
+      <div className="tw:flex-1 tw:text-text-label">
         Best score ({numPlayers}p)
       </div>
       <div

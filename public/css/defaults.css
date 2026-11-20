@@ -122,7 +122,7 @@ h2,
 h3,
 h4 {
   color: var(--text);
-  font-weight: 300;
+  font-weight: 600;
   line-height: 1em;
   margin: 0 0 0.5em 0;
 }
@@ -517,15 +517,31 @@ input::-webkit-calendar-picker-indicator {
 /* Box */
 
 .box {
+  --radius: var(--box-radius);
   border-radius: var(--radius);
   margin: 0 0 2em 0;
   padding: 3em;
   background: var(--box-bg);
   backdrop-filter: var(--box-backdrop);
   box-shadow: var(--box-shadow);
+  --surface: var(--box-surface);
   --surface-panel: var(--box-panel);
   --surface-sunken: var(--box-sunken);
+  --chat-bg: var(--box-chat-bg);
+  --surface-sunken-solid: var(--box-sunken-solid);
   --border: var(--box-line);
+  --text: var(--box-text);
+  --text-label: var(--box-text-label);
+  --text-faint: var(--box-text-faint);
+  --focus: var(--box-focus);
+  --row-hover-bg: var(--box-row-hover-bg);
+  --select-arrow: var(--box-select-arrow);
+  --name-me: var(--pale-name-me);
+  --friend: var(--pale-friend);
+  --link: var(--pale-link);
+  --green-text: var(--pale-green-text);
+  color: var(--text);
+  color-scheme: var(--box-color-scheme);
 }
 
 .box > :last-child {

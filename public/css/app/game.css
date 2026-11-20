@@ -72,10 +72,27 @@
 
 #game-chat-modal-white {
   /* It floats over the game, so it is solid, unlike the boxes on the felt. */
-  background: var(--surface);
-  backdrop-filter: none;
+  /* It keeps the dark colors of the game screen, not the light colors of a box on the page. */
+  --surface: inherit;
   --surface-panel: inherit;
   --surface-sunken: inherit;
+  --surface-sunken-solid: inherit;
+  --border: inherit;
+  --text: inherit;
+  --text-label: inherit;
+  --text-faint: inherit;
+  --focus: inherit;
+  --row-hover-bg: inherit;
+  --select-arrow: inherit;
+  --name-me: inherit;
+  --friend: inherit;
+  --link: inherit;
+  --green-text: inherit;
+  --chat-bg: inherit;
+  background: var(--surface);
+  backdrop-filter: none;
+  color: inherit;
+  color-scheme: dark;
   display: flex;
   flex-direction: column;
   width: calc(100% - 0.3em);

@@ -19,17 +19,17 @@
   color-scheme: dark;
 
   /*
-    Surfaces: the panels of the site, such as menus, tooltips, and modals, are the near-black of the
-    page (see "--page-bg"), and the fields and lists in them are darker still. A box on the page is
-    glass instead (see "--box-bg").
+    Surfaces: the panels of the site, such as menus, tooltips, and modals, are dark blue, and the
+    fields and lists in them are darker still. A box on the
+    page is pale green instead (see "--box-bg").
   */
-  --surface: #161d1a;
+  --surface: #1f2b47;
   --surface-sunken: var(--surface-sunken-solid);
-  /* The color of a field on a panel, which stays solid on the glass of a box */
-  --surface-sunken-solid: #0e1311;
+  /* The color of a field on a panel */
+  --surface-sunken-solid: #141d33;
   /* A group of rows, such as the options on the Create Game page */
   --surface-panel: var(--surface-sunken);
-  --border: #2b3430;
+  --border: #36446a;
 
   /* Text */
   --text: var(--game-screen-text);
@@ -48,9 +48,9 @@
   --green-tint: var(--game-screen-raised);
 
   /* Buttons */
-  --button-bg: var(--game-screen-raised);
-  --button-hover-bg: #2d6646;
-  --button-active-bg: #1f4b33;
+  --button-bg: #34477a;
+  --button-hover-bg: #3e5389;
+  --button-active-bg: #2b3c69;
   /*
     The main action of a page, such as "Create" on the Create Game page: brass with dark text. It is
     not green, so that it does not look like a selected option.
@@ -62,7 +62,7 @@
   --button-disabled-bg: #777;
   --button-disabled-text: #f5f5f5;
   /* A button that lies flat in a row until the pointer is over it */
-  --button-alt-active-bg: #2d6646;
+  --button-alt-active-bg: #3e5389;
   /*
     A button is a key: a light top edge and a dark lip under it. Pressing it pushes it down onto its
     lip, in "--button-press-duration". The pointer over it lifts it by 1px off a deeper lip. The lip
@@ -95,7 +95,7 @@
   --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23eef1f3' /%3E%3C/svg%3E");
 
   /* Lighter than a row, so that the row lights up under the pointer */
-  --row-hover-bg: #26302b;
+  --row-hover-bg: rgb(255 255 255 / 10%);
 
   /*
     A list that opens under a field: the options of a dropdown, and the suggestions of a text box
@@ -114,35 +114,63 @@
   --dice-hover: #00cc00;
 
   /*
-    The page behind the lobby and the other screens outside of a game: near-black with a little
-    green, and a faint light from the top. It is not the felt, so that the green of the selected
-    and running things stands out, and so that the felt of a game shows that you sat down at a
-    table.
+    The page behind the lobby and the other screens outside of a game: the felt of the New UI's
+    table (see "--game-screen-table").
   */
-  --page-bg: #0b110e;
-  --page-light: #18241e;
+  --page-bg: var(--game-bg);
+  --page-image: var(--game-screen-table);
 
-  /* The header bar: a step lighter than the page */
-  --header-bg: #121a16;
+  /*
+    The header bar: the dark felt of the New UI's bar along the bottom, with buttons of the same
+    green as the New UI's.
+  */
+  --header-bg: var(--game-screen-panel);
+  --header-button-bg: var(--game-screen-raised);
+  --header-button-hover-bg: #2d6646;
+  --header-button-active-bg: #1f4b33;
   --header-text: var(--game-screen-muted);
   --header-hotkey-line: var(--game-screen-line);
   /* The height of the header bar, which is fixed over the top of the page */
   --header-height: 3.25em;
 
   /*
-    A box on the page, such as a panel of the lobby, is light glass, so that it stands out from the
-    dark page. A group of rows in it is a dark glass, and a field in the group is a step darker. A
-    thin light outline shows where the box ends.
+    A box on the page, such as a panel of the lobby, is a pale green, with dark ink like the faces of
+    the cards. It sets its own colors for the text, the fields, and the lines in it (see ".box" in
+    "defaults.css"). A group of rows in it is a step darker, and a field in the group is a step darker.
   */
-  --box-bg: rgb(255 255 255 / 4.5%);
-  --box-panel: rgb(0 0 0 / 18%);
-  --box-sunken: rgb(0 0 0 / 28%);
-  /* The lines in a box, such as the outline of a field, which are neutral like the box */
-  --box-line: rgb(255 255 255 / 10%);
-  --box-backdrop: blur(14px) saturate(60%);
+  --box-bg: #d4ecd9;
+  --box-text: var(--card-ink);
+  --box-text-label: #3f5c47;
+  --box-text-faint: #557060;
+  --box-panel: #c1e0c8;
+  --box-sunken: #afd5b8;
+  --box-line: rgb(20 70 40 / 20%);
+  --box-focus: #4d6153;
+  --box-row-hover-bg: rgb(20 60 35 / 7%);
+  --box-backdrop: none;
+  /* The panels in a box, such as the options of a dropdown, are the color of the box. */
+  --box-surface: var(--box-bg);
+  --box-sunken-solid: var(--box-sunken);
+  --box-chat-bg: var(--box-panel);
+  --box-color-scheme: light;
+  /*
+    A box has sharp edges: small corners, and a hard dark edge under it, like a card lying on the
+    felt. The corners of the fields and the buttons in it are as small.
+  */
+  --box-radius: 2px;
   --box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 10px 30px rgb(0 0 0 / 35%);
+    0 0 0 1px rgb(0 0 0 / 20%), 0 3px 0 rgb(0 0 0 / 35%),
+    0 8px 18px rgb(0 0 0 / 25%);
+  /* The arrow of a dropdown in a box, in the color of "--box-text" */
+  --box-select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%231b242b' /%3E%3C/svg%3E");
+  /*
+    Names, links, and green text on a box or on the pale face of a game in the lobby: dark,
+    so that they show on it.
+  */
+  --pale-name-me: #b35900;
+  --pale-friend: #c2185b;
+  --pale-link: #1f4fbf;
+  --pale-green-text: #1f7535;
 
   /* The corner radius of panels, modals, tooltips, buttons, and form fields */
   --radius: 6px;
@@ -154,20 +182,19 @@
   --note-title-line: var(--border);
 
   /* Covers the page behind a modal */
-  --modal-backdrop: rgb(0 0 0 / 65%);
+  --modal-backdrop: rgb(5 10 25 / 70%);
   /*
-    A message modal lifts off of the dimmed page: it is lighter than the page, with a pale edge, a
-    light top edge, and a deep shadow. On the game screen, it is the green of the New UI's panels
-    instead (see "common.css").
+    A message modal lifts off of the dimmed page: it is the blue of the site's panels, with a
+    pale edge, a light top edge, and a deep shadow.
   */
-  --modal-message-bg: #1c2420;
+  --modal-message-bg: var(--surface);
   --modal-message-edge: rgb(255 255 255 / 14%);
   --modal-message-shadow:
     inset 0 1px 0 rgb(255 255 255 / 10%), 0 1.5em 4em rgb(0 0 0 / 60%);
   /* The options of the dialog that morphs a card */
 
-  /* The chat box, which the New UI gives a dark well */
-  --chat-bg: transparent;
+  /* The messages of a chat sit in a well, so that they stand apart from the panel. */
+  --chat-bg: var(--surface-panel);
 
   /* The classic game screen: its felt, and its chat */
   --game-bg: #00420f;
@@ -181,30 +208,36 @@
   --spinner-backdrop: rgba(0, 0, 0, 0.3);
 
   /*
-    The list of games in the lobby. Each kind of row is a faint wash of its color, with a bright
-    edge on its left, and its taken seats in that color too ("--lobby-table-joined-mark" and the
-    others). The colors are the New UI's: gold for the turn, green for a game, blue for the in-game
-    replay, violet for the finished replay, and red for an error.
+    The list of games in the lobby. Each row is the face of a card: pale, in the color of its kind,
+    with dark ink. Its status and its taken seats are a dark shade of that color
+    ("--lobby-table-joined-mark" and the others). The colors are the New UI's: gold for the turn,
+    green for a game, blue for the in-game replay, violet for the finished replay, and red for an
+    error.
   */
-  --lobby-table-joined: rgb(143 178 255 / 14%);
-  --lobby-table-joined-hover: rgb(143 178 255 / 24%);
-  --lobby-table-joined-mark: var(--game-screen-in-game-replay);
-  --lobby-table-unstarted: rgb(255 208 74 / 11%);
-  --lobby-table-unstarted-hover: rgb(255 208 74 / 20%);
-  --lobby-table-unstarted-mark: var(--game-screen-turn);
-  --lobby-table-unstarted-password: rgb(255 107 107 / 12%);
-  --lobby-table-unstarted-password-hover: rgb(255 107 107 / 21%);
-  --lobby-table-unstarted-password-mark: var(--game-screen-error);
-  --lobby-table-started: rgb(111 207 122 / 15%);
-  --lobby-table-started-hover: rgb(111 207 122 / 24%);
-  --lobby-table-started-mark: var(--game-screen-green-text);
-  --lobby-table-replay: rgb(185 166 255 / 12%);
-  --lobby-table-replay-hover: rgb(185 166 255 / 21%);
-  --lobby-table-replay-mark: var(--game-screen-finished-replay);
-  /* The text of a replay is a little dim, so that the games in progress stand out. */
-  --lobby-table-replay-text: rgb(238 241 243 / 88%);
-  /* The lines between the cells of a row */
-  --lobby-table-cell-line: rgb(255 255 255 / 7%);
+  --lobby-table-joined: #cdd9ff;
+  --lobby-table-joined-hover: #dde5ff;
+  --lobby-table-joined-mark: #2a4fbf;
+  --lobby-table-unstarted: #fbefb0;
+  --lobby-table-unstarted-hover: #fdf5cc;
+  --lobby-table-unstarted-mark: #855f00;
+  --lobby-table-unstarted-password: #f8c3c0;
+  --lobby-table-unstarted-password-hover: #fbd4d2;
+  --lobby-table-unstarted-password-mark: #b02a22;
+  --lobby-table-started: #a6dbaf;
+  --lobby-table-started-hover: #b9e4c0;
+  --lobby-table-started-mark: #1f7535;
+  --lobby-table-replay: #dccff7;
+  --lobby-table-replay-hover: #e7defa;
+  --lobby-table-replay-mark: #5b3cc4;
+  /* The text of a replay is a little faint, so that the games in progress stand out. */
+  --lobby-table-replay-text: rgb(27 36 43 / 78%);
+  --lobby-table-text: var(--card-ink);
+  /* The lines between the cells of a row, and between the rows, which touch */
+  --lobby-table-cell-line: rgb(27 36 43 / 12%);
+  --lobby-table-row-line-width: 1px;
+  --lobby-table-row-gap: 0;
+  /* The width of the line in the color of its kind on the left of a row */
+  --lobby-table-mark-width: 0;
 
   /* The login screen: its alert (based on the Bootstrap alert colors), and the text on the felt */
   --login-alert-bg: #3a2020;
@@ -311,4 +344,86 @@
   /* A sticky note on a card that has a note: pale paper, and the darker back of its folded corner. */
   --card-note: #fff1a6;
   --card-note-fold: #e6cf5c;
+}
+
+/*
+  The dark theme, which the "Dark mode" setting turns on (see "packages/client/src/theme.ts"). The
+  page is near-black with a little green, and a faint light from the top. A box on it is light glass,
+  and a row in the list of games is a faint wash of its color. Only the colors that differ from the
+  light theme are here.
+*/
+:root[data-theme="dark"] {
+  --surface: #161d1a;
+  --surface-sunken-solid: #0e1311;
+  --border: #2b3430;
+
+  --button-bg: var(--game-screen-raised);
+  --button-hover-bg: #2d6646;
+  --button-active-bg: #1f4b33;
+  --button-alt-active-bg: #2d6646;
+
+  --row-hover-bg: #26302b;
+
+  --page-bg: #0b110e;
+  --page-light: #18241e;
+  --page-image:
+    url("/public/img/felt.webp"),
+    radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      var(--page-light),
+      var(--page-bg)
+    );
+
+  --header-bg: #121a16;
+
+  --box-bg: rgb(255 255 255 / 4.5%);
+  --box-text: var(--game-screen-text);
+  --box-text-label: var(--game-screen-muted);
+  --box-text-faint: #9db8a6;
+  --box-panel: rgb(0 0 0 / 18%);
+  --box-sunken: rgb(0 0 0 / 28%);
+  --box-line: rgb(255 255 255 / 10%);
+  --box-focus: var(--game-screen-muted);
+  --box-row-hover-bg: var(--row-hover-bg);
+  --box-backdrop: blur(14px) saturate(60%);
+  --box-surface: var(--surface);
+  --box-sunken-solid: var(--surface-sunken-solid);
+  --box-chat-bg: transparent;
+  --box-color-scheme: dark;
+  --box-radius: var(--radius);
+  --box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 30px rgb(0 0 0 / 35%);
+  --box-select-arrow: var(--select-arrow);
+  --pale-name-me: var(--name-me);
+  --pale-friend: var(--friend);
+  --pale-link: var(--link);
+  --pale-green-text: var(--green-text);
+
+  --modal-backdrop: rgb(0 0 0 / 65%);
+  --modal-message-bg: #1c2420;
+
+  --chat-bg: transparent;
+
+  --lobby-table-joined: rgb(143 178 255 / 14%);
+  --lobby-table-joined-hover: rgb(143 178 255 / 24%);
+  --lobby-table-joined-mark: var(--game-screen-in-game-replay);
+  --lobby-table-unstarted: rgb(255 208 74 / 11%);
+  --lobby-table-unstarted-hover: rgb(255 208 74 / 20%);
+  --lobby-table-unstarted-mark: var(--game-screen-turn);
+  --lobby-table-unstarted-password: rgb(255 107 107 / 12%);
+  --lobby-table-unstarted-password-hover: rgb(255 107 107 / 21%);
+  --lobby-table-unstarted-password-mark: var(--game-screen-error);
+  --lobby-table-started: rgb(111 207 122 / 15%);
+  --lobby-table-started-hover: rgb(111 207 122 / 24%);
+  --lobby-table-started-mark: var(--game-screen-green-text);
+  --lobby-table-replay: rgb(185 166 255 / 12%);
+  --lobby-table-replay-hover: rgb(185 166 255 / 21%);
+  --lobby-table-replay-mark: var(--game-screen-finished-replay);
+  --lobby-table-replay-text: rgb(238 241 243 / 88%);
+  --lobby-table-text: var(--game-screen-text);
+  --lobby-table-cell-line: rgb(255 255 255 / 7%);
+  --lobby-table-row-line-width: 0;
+  --lobby-table-row-gap: 0.25em;
+  --lobby-table-mark-width: 4px;
 }

@@ -30,9 +30,10 @@ meaning is obvious from context can stay inline.
 Style React components with Tailwind utility classes (with the `tw:` prefix),
 not with new rules in `public/css`. Use the colors that
 `packages/client/src/tailwind.css` maps from `public/css/tokens.css` (such as
-`tw:bg-surface`). The redesigned game screen ("New UI") uses the
-`--game-screen-*` tokens. When a screen moves to React, delete the stylesheet
-rules that only that screen used.
+`tw:bg-surface`), so that both themes work. The redesigned game screen ("New
+UI") uses the `--game-screen-*` tokens, which the dark theme does not change.
+When a screen moves to React, delete the stylesheet rules that only that screen
+used.
 
 Do not use the HTML `title` attribute for tooltips. The browser draws it as a
 plain box that does not match the site's tooltips. Use the site's tooltip
@@ -121,15 +122,15 @@ To see or check the site's screens, use `bun run ui-screenshots`. Do not write a
 separate browser script. The command starts this checkout's server with a
 disposable database and seeded games, tables, and chat. It saves a screenshot of
 each state at several widths to `dist/ui-screenshots`. Use `--state` and
-`--width` to take fewer screenshots. For a CSS change, add
-`--compare <git ref>`: it reports every computed style that differs from the
-stylesheets of that ref. If a screen or state that you need is missing, add it
-to `packages/testing/src/uiScreenshots.ts`. Keep one state for each screen or
-main element. Do not commit a state that only checks one change, such as a
-variant of a screen that another state shows. Make each state set up what it
-shows, so that `--state` can run it alone. Mark it `isolated` unless it shows
-the lobby, so that it runs in parallel with its own accounts. Wait for what the
-page does, not for a fixed time.
+`--width` to take fewer screenshots, and `--dark` to show the dark theme. For a
+CSS change, add `--compare <git ref>`: it reports every computed style that
+differs from the stylesheets of that ref. If a screen or state that you need is
+missing, add it to `packages/testing/src/uiScreenshots.ts`. Keep one state for
+each screen or main element. Do not commit a state that only checks one change,
+such as a variant of a screen that another state shows. Make each state set up
+what it shows, so that `--state` can run it alone. Mark it `isolated` unless it
+shows the lobby, so that it runs in parallel with its own accounts. Wait for
+what the page does, not for a fixed time.
 
 The smallest supported width is 360px, the most common width of Android phones.
 Every screen must fit at that width without scrolling sideways. Narrower screens
