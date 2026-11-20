@@ -19,17 +19,17 @@
   color-scheme: dark;
 
   /*
-    Surfaces: the panels of the site, such as menus, tooltips, and modals, are dark blue, and the
-    fields and lists in them are darker still. A box on the
-    page is pale green instead (see "--box-bg").
+    Surfaces: the panels of the site, such as menus, tooltips, and modals, are the dark felt of the
+    New UI's panels, and the fields and lists in them are darker still. A box on the page is pale
+    green instead (see "--box-bg").
   */
-  --surface: #1f2b47;
+  --surface: var(--game-screen-panel);
   --surface-sunken: var(--surface-sunken-solid);
   /* The color of a field on a panel */
-  --surface-sunken-solid: #141d33;
+  --surface-sunken-solid: #0f2b1c;
   /* A group of rows, such as the options on the Create Game page */
   --surface-panel: var(--surface-sunken);
-  --border: #36446a;
+  --border: #2f5a41;
 
   /* Text */
   --text: var(--game-screen-text);
@@ -176,9 +176,9 @@
   --note-title-line: var(--border);
 
   /* Covers the page behind a modal */
-  --modal-backdrop: rgb(5 10 25 / 70%);
+  --modal-backdrop: rgb(0 24 5 / 70%);
   /*
-    A message modal lifts off of the dimmed page: it is the blue of the site's panels, with a
+    A message modal lifts off of the dimmed page: it is the green of the site's panels, with a
     pale edge, a light top edge, and a deep shadow.
   */
   --modal-message-bg: var(--surface);
@@ -187,8 +187,8 @@
     inset 0 1px 0 rgb(255 255 255 / 10%), 0 1.5em 4em rgb(0 0 0 / 60%);
   /* The options of the dialog that morphs a card */
 
-  /* The messages of a chat sit in a well, so that they stand apart from the panel. */
-  --chat-bg: var(--surface-panel);
+  /* The chat box. A box on the page gives it a well (see "--box-chat-bg"). */
+  --chat-bg: transparent;
 
   /* The classic game screen: its felt, and its chat */
   --game-bg: #00420f;
@@ -396,8 +396,6 @@
 
   --modal-backdrop: rgb(0 0 0 / 65%);
   --modal-message-bg: #1c2420;
-
-  --chat-bg: transparent;
 
   --lobby-table-joined: rgb(143 178 255 / 14%);
   --lobby-table-joined-hover: rgb(143 178 255 / 24%);
