@@ -71,6 +71,7 @@
     "build-client": "bash scripts/dev/build-client.sh",
     "build-critical-css": "bun packages/testing/src/runTests.ts critical-css --write",
     "build-standalone": "bash scripts/dev/build-standalone.sh",
+    "check-actions": "bash scripts/lint/check-actions.sh",
     "check-css": "bash scripts/lint/check-css.sh",
     "check-deployment": "bun ./packages/scripts/src/checkDeployment.ts",
     "check-emoji": "bun ./packages/scripts/src/checkEmoji.ts",

@@ -24,7 +24,7 @@ INPUTS = (
     "tsdoc.json",
     ".config",
     ".github/workflows/ci.yml",
-    ".github/workflows/setup-bun",
+    ".github/actions/setup-bun",
     "scripts/ci/typedoc_deployment.py",
 )
 

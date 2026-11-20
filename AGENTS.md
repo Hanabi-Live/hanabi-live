@@ -227,11 +227,11 @@ bash lint.sh
 ```
 
 This is the same entrypoint CI uses for TypeScript checks, Rust formatting,
-Clippy, Rust dependency checks, Prettier, spelling, ShellCheck, and repository
-consistency. CI runs the JavaScript and Rust checks in separate jobs; run the
-no-argument command above before pushing. It requires Bun, JavaScript
-dependencies, the pinned Rust toolchain, cargo-deny, cargo-machete, and
-ShellCheck, but no running PostgreSQL service.
+Clippy, Rust dependency checks, Prettier, spelling, ShellCheck, GitHub Actions
+workflows (actionlint), and repository consistency. CI runs the JavaScript and
+Rust checks in separate jobs; run the no-argument command above before pushing.
+It requires Bun, JavaScript dependencies, the pinned Rust toolchain, cargo-deny,
+cargo-machete, ShellCheck, and actionlint, but no running PostgreSQL service.
 
 Run it against the final changes, even if package-specific checks already
 passed. Fix any failures and rerun the full suite before pushing. If a required

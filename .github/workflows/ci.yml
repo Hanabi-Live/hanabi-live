@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup-bun
+      - uses: ./.github/actions/setup-bun
       - run: bash ./scripts/dev/build-client.sh
 
   lint:
@@ -34,8 +34,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup-bun
-      - uses: ./.github/workflows/setup-rust
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-rust
         id: setup-rust
         if: matrix.checks == 'rust'
       - name: Install the Rust dependency checkers
@@ -43,6 +43,18 @@ jobs:
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: cargo-deny@0.20.2,cargo-machete@0.9.2
+      - name: Install actionlint
+        if: matrix.checks == 'javascript'
+        env:
+          VERSION: 1.7.12
+          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          archive="actionlint_${VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/$archive"
+          echo "$SHA256  $archive" | sha256sum --check --strict
+          tar -xzf "$archive" actionlint
+          sudo install -m 755 actionlint /usr/local/bin/actionlint
+          rm "$archive" actionlint
       - name: Restore spelling file cache
         if: matrix.checks == 'javascript'
         id: cspell-cache
@@ -116,12 +128,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup-bun
+      - uses: ./.github/actions/setup-bun
 
       - name: Create the "version.js" file
         run: bash ./scripts/dev/set-version.sh
 
-      - uses: ./.github/workflows/setup-rust
+      - uses: ./.github/actions/setup-rust
         if: matrix.suite != 'client'
         with:
           cache-key: test-${{ matrix.suite }}
@@ -157,7 +169,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup-rust
+      - uses: ./.github/actions/setup-rust
       - name: Identify the SQLx cache platform
         id: platform
         run: |
@@ -213,7 +225,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/ci/typedoc_deployment.py prepare
-      - uses: ./.github/workflows/setup-bun
+      - uses: ./.github/actions/setup-bun
         if: steps.docs.outputs.changed == 'true'
 
       - name: Use TypeDoc to automatically generate documentation

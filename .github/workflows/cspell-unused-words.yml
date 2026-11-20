@@ -19,7 +19,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - uses: ./.github/workflows/setup-bun
+      - uses: ./.github/actions/setup-bun
       - name: Remove unused words
         id: cleanup
         run: |

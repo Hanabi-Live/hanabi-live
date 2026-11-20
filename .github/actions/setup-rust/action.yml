@@ -1,3 +1,6 @@
+name: Set up Rust
+description: Installs the pinned Rust toolchain, with a cache of Cargo's build files.
+
 inputs:
   cache-key:
     description: Separates the Cargo cache of jobs in one matrix, which share a job ID.

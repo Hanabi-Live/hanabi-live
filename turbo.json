@@ -57,6 +57,18 @@
       ],
       "outputs": []
     },
+    "//#check-actions": {
+      "inputs": [".github/**", "scripts/lint/check-actions.sh"],
+      "env": [
+        "CI",
+        "ImageOS",
+        "ImageVersion",
+        "RUNNER_ARCH",
+        "RUNNER_OS",
+        "SHELLCHECK_OPTS"
+      ],
+      "outputs": []
+    },
     "//#check-shellcheck": {
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/.husky/**"],
       "env": [

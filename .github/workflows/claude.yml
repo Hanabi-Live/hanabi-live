@@ -52,10 +52,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
-      - uses: ./.github/workflows/setup-bun
+      - uses: ./.github/actions/setup-bun
       - name: Create the "version.js" file
         run: bash ./scripts/dev/set-version.sh
-      - uses: ./.github/workflows/setup-rust
+      - uses: ./.github/actions/setup-rust
       - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1
         with:
           # Uses the Claude subscription of the account that made the token.
