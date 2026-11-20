@@ -165,6 +165,8 @@
   --pale-friend: #c2185b;
   --pale-link: #1f4fbf;
   --pale-green-text: #1f7535;
+  /* A faint wash of that green, such as the circle behind an icon on the Resources page */
+  --pale-green-tint: rgb(31 117 53 / 16%);
 
   /* The corner radius of panels, modals, tooltips, buttons, and form fields */
   --radius: 6px;
@@ -393,6 +395,7 @@
   --pale-friend: var(--friend);
   --pale-link: var(--link);
   --pale-green-text: var(--green-text);
+  --pale-green-tint: var(--green-tint);
 
   --modal-backdrop: rgb(0 0 0 / 65%);
   --modal-message-bg: #1c2420;
