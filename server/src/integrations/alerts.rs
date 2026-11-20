@@ -1,6 +1,5 @@
-//! Posts server failures and client errors to the Discord development channel. Only the server's
-//! operation and error code, or the client error's script position, the diagnostic ID, and the
-//! release leave the process; the details stay in the local logs.
+//! Posts server failures to the Discord development channel. Only the server's operation and error
+//! code, the diagnostic ID, and the release leave the process; the details stay in the local logs.
 use super::discord::Bridge;
 use crate::errors::Report;
 use std::{
@@ -14,8 +13,8 @@ use tokio_util::{sync::CancellationToken, task::TaskTracker};
 /// Repeats of the same failure are counted instead of posted until this much time has passed.
 const REPEAT_INTERVAL: Duration = Duration::from_mins(10);
 
-/// The most groups of repeats that are counted. Clients choose the groups of their errors, so
-/// a new group is dropped when this many were posted within `REPEAT_INTERVAL`.
+/// The most groups of repeats that are counted. A new group is dropped when this many were posted
+/// within `REPEAT_INTERVAL`.
 const MAX_GROUPS: usize = 200;
 
 /// The alerts queued before new ones are dropped.
@@ -126,24 +125,6 @@ impl Alerts {
         }
     }
 
-    /// Posts an error that a client did not catch, at `location` in one of the website's scripts.
-    /// The client wrote the message, so the alert leaves it out.
-    pub fn client_error(
-        &self,
-        location: &str,
-        message: &str,
-        translated: bool,
-        diagnostic_id: &str,
-    ) {
-        self.send(client_alert(
-            location,
-            message,
-            translated,
-            diagnostic_id,
-            &self.release,
-        ));
-    }
-
     fn send(&self, alert: Alert) {
         if let Some(queue) = &self.queue
             && let Err(error) = queue.try_send(alert)
@@ -168,28 +149,6 @@ fn server_alert(report: &Report, release: &str) -> Alert {
             report.code, report.operation, report.diagnostic_id
         ),
         diagnostic_id: report.diagnostic_id.clone(),
-    }
-}
-
-fn client_alert(
-    location: &str,
-    message: &str,
-    translated: bool,
-    diagnostic_id: &str,
-    release: &str,
-) -> Alert {
-    let translated = if translated {
-        " A translator had changed the page."
-    } else {
-        ""
-    };
-    Alert {
-        group: format!("client {location} {message}"),
-        summary: format!(
-            "Client error at `{location}` (release `{release}`, diagnostic ID `{diagnostic_id}`).\
-             {translated}"
-        ),
-        diagnostic_id: diagnostic_id.to_owned(),
     }
 }
 
@@ -263,34 +222,10 @@ mod tests {
     }
 
     #[test]
-    fn client_alerts_omit_the_message_and_group_by_position_and_message() {
-        let mut throttle = Throttle::default();
-        let start = Instant::now();
-        let location = "main.abc.min.js:880:251";
-        let message = throttle
-            .message(
-                &client_alert(location, "@everyone private text", true, "d1", "v1"),
-                start,
-            )
-            .unwrap();
-        assert!(message.contains(&format!("Client error at `{location}`")));
-        assert!(message.contains("`d1`"));
-        assert!(message.contains("A translator had changed the page."));
-        assert!(!message.contains("@everyone") && !message.contains("private text"));
-
-        let later = start + Duration::from_secs(1);
-        let repeat = client_alert(location, "@everyone private text", false, "d2", "v1");
-        assert!(throttle.message(&repeat, later).is_none());
-        let other = client_alert(location, "Another message", false, "d3", "v1");
-        assert!(throttle.message(&other, later).is_some());
-    }
-
-    #[test]
     fn new_groups_are_dropped_while_too_many_are_recent() {
         let mut throttle = Throttle::default();
         let start = Instant::now();
-        let alert =
-            |index: usize| client_alert("main.js:1:1", &index.to_string(), false, "d", "v1");
+        let alert = |index: usize| server_alert(&report(&index.to_string(), "error"), "v1");
         for index in 0..MAX_GROUPS {
             assert!(throttle.message(&alert(index), start).is_some());
         }

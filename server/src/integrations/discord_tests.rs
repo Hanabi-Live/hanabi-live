@@ -172,6 +172,13 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
             &fixture.app.background,
             fixture.app.lifecycle.shutdown().clone(),
         ),
+        issues: super::github::Issues::start(
+            &HashMap::new(),
+            true,
+            "test".into(),
+            &fixture.app.background,
+            fixture.app.lifecycle.shutdown().clone(),
+        ),
     };
     tokio::time::timeout(Duration::from_secs(2), async {
         integrations

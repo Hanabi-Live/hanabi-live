@@ -2,7 +2,9 @@ name: Claude
 
 # Runs Claude Code when someone with write access mentions @claude in an issue,
 # an issue or pull request comment, or a pull request review. The action rejects
-# mentions from users without write access.
+# mentions from users without write access. It also investigates each issue that
+# the server opens for a client error, which has the "client-error" label. Only
+# people with write access can add a label.
 on:
   issues:
     types: [opened]
@@ -19,6 +21,7 @@ permissions:
 jobs:
   claude:
     if: |
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'client-error')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -57,5 +60,8 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --allowedTools "Bash(bash lint.sh:*),Bash(bash scripts/dev/generate-protocol.sh),Bash(bun:*),Bash(bunx:*),Bash(cargo:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh issue view:*)"
+            --allowedTools "Bash(bash lint.sh:*),Bash(bash scripts/dev/generate-protocol.sh),Bash(bun:*),Bash(bunx:*),Bash(cargo:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(git fetch:*),Bash(git worktree:*)"
             --append-system-prompt "Follow AGENTS.md, except: never push to main, deploy, or connect to the production server. When asked to fix an issue, first decide whether it describes a real, reproducible problem with a clear fix. If it does not, reply explaining why and make no changes. Otherwise fix it on your branch, run bash lint.sh and the relevant tests, push, and open a pull request against main with gh pr create, using a Conventional Commits title and a body that says Fixes #<issue number>."
+          # An issue for a client error starts the investigation by itself. Other
+          # events wait for an @claude mention.
+          prompt: ${{ github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'client-error') && format('Investigate the client error in issue #{0}. Read it with gh issue view. It lists the release, which is a commit of this repository, and the positions in the minified scripts of the stack. To read the positions, fetch that commit with git fetch --depth=1 origin <release>, add a worktree for it with git worktree add, and run bun install --frozen-lockfile and bun run build-client there. Then map each position to its source line with the source map that the build wrote to public/js/bundles, using the source-map-js package. Find the cause in the code on main. If the cause and the fix are clear, fix it as for any other issue. Otherwise, comment on the issue with gh issue comment: give the decoded stack, what you found, and what is still unknown.', github.event.issue.number) || '' }}

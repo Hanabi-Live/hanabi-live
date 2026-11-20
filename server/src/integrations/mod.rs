@@ -3,6 +3,7 @@ pub mod alerts;
 pub mod discord;
 #[cfg(test)]
 mod discord_tests;
+pub mod github;
 
 use crate::{actors::HubCommand, lifecycle::Lifecycle, server_info::ServerInfo};
 use anyhow::Result;
@@ -36,6 +37,7 @@ pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
     discord_failed: bool,
     alerts: Arc<alerts::Alerts>,
+    issues: github::Issues,
 }
 
 impl Integrations {
@@ -68,10 +70,18 @@ impl Integrations {
         if let Some(bridge) = &discord {
             bridge.listen(alerts.clone());
         }
+        let issues = github::Issues::start(
+            values,
+            server.development,
+            server.release.clone(),
+            &server.background,
+            server.lifecycle.shutdown().clone(),
+        );
         Ok(Arc::new(Self {
             discord,
             discord_failed,
             alerts,
+            issues,
         }))
     }
 
@@ -79,15 +89,8 @@ impl Integrations {
         self.alerts.report(report);
     }
 
-    pub fn client_error(
-        &self,
-        location: &str,
-        message: &str,
-        translated: bool,
-        diagnostic_id: &str,
-    ) {
-        self.alerts
-            .client_error(location, message, translated, diagnostic_id);
+    pub fn client_error(&self, error: github::ClientError) {
+        self.issues.client_error(error);
     }
 
     /// The Discord bridge's status.

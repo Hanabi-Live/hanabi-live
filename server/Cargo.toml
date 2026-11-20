@@ -88,6 +88,11 @@ minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"
 regex = "1"
+reqwest = { version = "0.13", default-features = false, features = [
+  "form",
+  "json",
+  "rustls-no-provider"
+] }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
   "std",
@@ -133,11 +138,6 @@ url = "2"
 
 [dev-dependencies]
 rcgen = "0.14"
-reqwest = { version = "0.13", default-features = false, features = [
-  "form",
-  "json",
-  "rustls-no-provider"
-] }
 tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
 tokio-rustls = { version = "0.26", default-features = false, features = [
   "ring",

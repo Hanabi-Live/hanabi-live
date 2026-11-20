@@ -1,4 +1,4 @@
-//! Errors that the website did not catch. The server logs them and alerts its developers.
+//! Errors that the website did not catch. The server logs them and opens a GitHub issue for them.
 
 use super::App;
 use crate::{accounts::truncate_to_max_chars, transport::Session};
@@ -44,7 +44,8 @@ pub(super) fn record(app: &App, session: &Session, request: &ClientErrorRequest)
     }
     let message = truncate_to_max_chars(&request.message, MAX_CLIENT_ERROR_MESSAGE_LENGTH);
     let stack = truncate_to_max_chars(&request.stack, MAX_CLIENT_ERROR_STACK_LENGTH);
-    let Some(location) = script_location(stack) else {
+    let positions = script_positions(stack);
+    let Some(location) = positions.first().cloned() else {
         return;
     };
     let diagnostic_id = crate::errors::diagnostic_id();
@@ -62,22 +63,26 @@ pub(super) fn record(app: &App, session: &Session, request: &ClientErrorRequest)
         })
     );
     if let Some(integrations) = app.integrations.get() {
-        integrations.client_error(&location, message, request.translated, &diagnostic_id);
+        integrations.client_error(crate::integrations::github::ClientError {
+            positions,
+            translated: request.translated,
+            diagnostic_id,
+        });
     }
 }
 
-/// The first position in a stack trace that is in one of the website's scripts, such as
-/// "main.abc.min.js:880:251".
-fn script_location(stack: &str) -> Option<String> {
+/// The positions in a stack trace that are in the website's scripts, such as
+/// "main.abc.min.js:880:251", from the innermost frame.
+fn script_positions(stack: &str) -> Vec<String> {
     let pattern = regex!(&format!(
         r"{}([A-Za-z0-9._-]+\.js):(\d+):(\d+)",
         regex::escape(SCRIPTS_PATH)
     ));
-    let captures = pattern.captures(stack)?;
-    Some(format!(
-        "{}:{}:{}",
-        &captures[1], &captures[2], &captures[3]
-    ))
+    pattern
+        .captures_iter(stack)
+        .take(crate::integrations::github::MAX_STACK_POSITIONS)
+        .map(|captures| format!("{}:{}:{}", &captures[1], &captures[2], &captures[3]))
+        .collect()
 }
 
 #[cfg(test)]
@@ -85,23 +90,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn script_locations_come_only_from_the_website_scripts() {
+    fn script_positions_come_only_from_the_website_scripts() {
         let stack = "TypeError: x is undefined\n    \
             at chrome-extension://abc/inject.js:1:2\n    \
             at M9 (https://hanab.live/public/js/bundles/main.abc.min.js:880:251)\n    \
             at https://hanab.live/public/js/bundles/main.abc.min.js:1:2";
         assert_eq!(
-            script_location(stack).as_deref(),
-            Some("main.abc.min.js:880:251")
+            script_positions(stack),
+            ["main.abc.min.js:880:251", "main.abc.min.js:1:2"]
         );
         assert_eq!(
-            script_location("Error\n    at https://example.com/inject.js:1:2"),
-            None
+            script_positions("Error\n    at https://example.com/inject.js:1:2"),
+            Vec::<String>::new()
         );
-        // Only safe characters reach the alert.
+        // Only safe characters reach the issue.
         assert_eq!(
-            script_location("at /public/js/bundles/`@everyone`.js:1:2"),
-            None
+            script_positions("at /public/js/bundles/`@everyone`.js:1:2"),
+            Vec::<String>::new()
         );
     }
 }

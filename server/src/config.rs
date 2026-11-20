@@ -141,6 +141,7 @@ impl Config {
             "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
             "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
             "DISCORD_PING_CREW_ROLE_NAME",
+            "GITHUB_ISSUES_TOKEN",
         ] {
             if let Some(value) = values.get(key).filter(|v| !v.is_empty()) {
                 integrations.insert(key.into(), value.clone());
