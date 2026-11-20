@@ -158,13 +158,14 @@
   /* The arrow of a dropdown in a box, in the color of "--box-text" */
   --box-select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%231b242b' /%3E%3C/svg%3E");
   /*
-    Names, links, and green text on a box or on the pale face of a game in the lobby: dark,
+    Names, links, green text, and errors on a box or on the pale face of a game in the lobby: dark,
     so that they show on it.
   */
   --pale-name-me: #b35900;
   --pale-friend: #c2185b;
   --pale-link: #1f4fbf;
   --pale-green-text: #1f7535;
+  --pale-error: #b02a22;
   /* A faint wash of that green, such as the circle behind an icon on the Resources page */
   --pale-green-tint: rgb(31 117 53 / 16%);
 
@@ -395,6 +396,7 @@
   --pale-friend: var(--friend);
   --pale-link: var(--link);
   --pale-green-text: var(--green-text);
+  --pale-error: var(--error);
   --pale-green-tint: var(--green-tint);
 
   --modal-backdrop: rgb(0 0 0 / 65%);

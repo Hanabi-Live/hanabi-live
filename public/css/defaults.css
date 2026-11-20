@@ -540,6 +540,7 @@ input::-webkit-calendar-picker-indicator {
   --friend: var(--pale-friend);
   --link: var(--pale-link);
   --green-text: var(--pale-green-text);
+  --error: var(--pale-error);
   --green-tint: var(--pale-green-tint);
   color: var(--text);
   color-scheme: var(--box-color-scheme);

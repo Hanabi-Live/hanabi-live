@@ -88,6 +88,7 @@
   --friend: inherit;
   --link: inherit;
   --green-text: inherit;
+  --error: inherit;
   --chat-bg: inherit;
   background: var(--surface);
   backdrop-filter: none;
