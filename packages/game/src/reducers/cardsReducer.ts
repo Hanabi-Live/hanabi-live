@@ -353,7 +353,7 @@ function canPlayerSeeDrawnCard(
     }
 
     case "Oblivious": {
-      return drawLocation !== (playerIndex - 1) % numPlayers;
+      return drawLocation !== (playerIndex - 1 + numPlayers) % numPlayers;
     }
 
     case "Blind Spot": {
