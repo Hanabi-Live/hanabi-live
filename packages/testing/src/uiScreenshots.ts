@@ -2707,6 +2707,8 @@ async function createCast(
   let currentWatchedGame: WatchedGame | undefined;
   /** Closes the table of `openLockedTable`. */
   let closeLockedTable: (() => Promise<void>) | undefined;
+  /** Whether the browser's account has made a friend of a spectator of Bob's game. */
+  let hasFriend = false;
 
   async function connectPeer(username: string) {
     const peer = await connect(address, username);
@@ -2844,6 +2846,14 @@ async function createCast(
       tableId,
     );
     peers.push(...spectators);
+    // One spectator is a friend, so that the game screen shows a friend among the people watching.
+    if (!hasFriend) {
+      you.send("friendAdd", { username: name(SPECTATOR_NAMES[1]) });
+      // The server runs the requests of the lobby in order, so a reply to the next one shows that
+      // the friend is saved.
+      await you.request("chatPmHistory", { limit: 1 });
+      hasFriend = true;
+    }
     const [firstSpectator] = spectators;
     assertDefined(firstSpectator, "There is no spectator to see every card.");
     const viewer: Peer = firstSpectator;

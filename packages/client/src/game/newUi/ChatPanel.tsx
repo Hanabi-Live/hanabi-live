@@ -136,6 +136,19 @@ function setUpChatWindow(chatWindow: Window): () => void {
 /** The width of the thin rail of the collapsed chat. */
 export const CHAT_RAIL_WIDTH = 56;
 
+/** Our own name and our friends' names have their colors, as in the lobby. */
+function getSpectatorClassName(
+  spectator: string,
+  ourUsername: string,
+  friends: readonly string[],
+): string | undefined {
+  if (spectator === ourUsername) {
+    return "tw:text-name-me";
+  }
+
+  return friends.includes(spectator) ? "tw:text-friend" : undefined;
+}
+
 /**
  * The in-game chat, along the right edge of the screen. It shows the same chat box as the classic
  * screen's chat window, which keeps its emoji, commands, typing indicator, and history. When it is
@@ -152,6 +165,7 @@ export function ChatPanel({
   unread,
   spectators,
   ourUsername,
+  friends,
   spectatorsTooltip,
   reducedMotion,
 }: {
@@ -187,6 +201,9 @@ export function ChatPanel({
 
   /** Our own name, which the list of spectators shows in our color, as the tooltip does. */
   readonly ourUsername: string;
+
+  /** Our friends' names, which the list of spectators shows in the friend color. */
+  readonly friends: readonly string[];
 
   /** The tooltip of the spectator count, which lists the people watching, one per line. */
   readonly spectatorsTooltip: string;
@@ -285,11 +302,15 @@ export function ChatPanel({
                 {spectators.map((spectator, i) => (
                   <Fragment key={spectator}>
                     {i > 0 && ", "}
-                    {spectator === ourUsername ? (
-                      <span className="tw:text-name-me">{spectator}</span>
-                    ) : (
-                      spectator
-                    )}
+                    <span
+                      className={getSpectatorClassName(
+                        spectator,
+                        ourUsername,
+                        friends,
+                      )}
+                    >
+                      {spectator}
+                    </span>
                   </Fragment>
                 ))}
               </span>

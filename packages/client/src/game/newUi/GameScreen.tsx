@@ -249,6 +249,7 @@ export function GameScreen(): React.JSX.Element {
   const votes = useAppSelector((root) => root.game.votes);
   const connections = useAppSelector((root) => root.game.connections);
   const reconnecting = useAppSelector((root) => root.session.reconnecting);
+  const friends = useAppSelector((root) => root.session.friends);
   const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
   const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
@@ -1768,6 +1769,7 @@ export function GameScreen(): React.JSX.Element {
         </main>
 
         <ChatPanel
+          friends={friends}
           open={chatOpen}
           // Zen mode hides who is watching and the unread messages, as on the classic screen.
           ourUsername={metadata.ourUsername}
