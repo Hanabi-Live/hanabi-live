@@ -14,6 +14,7 @@ import { SoundType } from "./game/types/SoundType.ts";
 import { globals } from "./Globals.ts";
 import { lobbyCommands } from "./lobby/lobbyCommands.ts";
 import { loginFailed, loginStageChanged } from "./lobby/login/loginSlice.ts";
+import { returnedTableIdChanged } from "./lobby/pregame/pregameSlice.ts";
 import { tablesListed } from "./lobby/tables/tablesSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import { usersListed } from "./lobby/users/usersSlice.ts";
@@ -325,6 +326,9 @@ function openConnection(isReconnect: boolean) {
           }
           initCommands(conn);
         });
+        if (data.playingAtTables.includes(retained)) {
+          store.dispatch(returnedTableIdChanged(retained));
+        }
         conn.send(
           data.playingAtTables.includes(retained)
             ? "tableReattend"

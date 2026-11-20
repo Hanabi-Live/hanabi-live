@@ -14,7 +14,7 @@ import { tableChanged } from "../tables/tablesSlice.ts";
 import { userChanged } from "../users/usersSlice.ts";
 import { Pregame } from "./Pregame.tsx";
 import type { Game } from "./pregameSlice.ts";
-import { gameChanged } from "./pregameSlice.ts";
+import { gameChanged, returnedTableIdChanged } from "./pregameSlice.ts";
 
 const TABLE_ID = tableIdSchema.parse(5);
 
@@ -116,7 +116,12 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   store.dispatch(gameChanged(undefined));
+  store.dispatch(returnedTableIdChanged(undefined));
 });
+
+function getOurBox(): HTMLElement {
+  return document.querySelector<HTMLElement>("#lobby-pregame-player-3")!;
+}
 
 describe("Pregame", () => {
   test("shows the table, its players, and its spectators", () => {
@@ -165,5 +170,22 @@ describe("Pregame", () => {
       tableId: TABLE_ID,
       shadowingPlayerIndex: undefined,
     });
+  });
+
+  test("our seat pops in when we take it, but not when we go back to it", () => {
+    act(() => {
+      store.dispatch(
+        gameChanged({
+          ...game,
+          players: [...game.players, player(3, "me", true)],
+        }),
+      );
+    });
+    expect(getOurBox().style.transitionDuration).not.toBe("0s");
+
+    act(() => {
+      store.dispatch(returnedTableIdChanged(TABLE_ID));
+    });
+    expect(getOurBox().style.transitionDuration).toBe("0s");
   });
 });

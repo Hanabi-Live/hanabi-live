@@ -44,10 +44,14 @@ export function Pregame(): React.JSX.Element | undefined {
     game === undefined ? undefined : selectTable(state, game.tableId),
   );
   const reducedMotion = useReducedMotion();
+  const returnedTableId = useAppSelector(
+    (state) => state.pregame.returnedTableId,
+  );
   // The people who are at the table when we join it show at once, with the table. The people who
-  // come after them fade in, and so does our own seat, to show that we took it. The table's details
-  // come before the screen shows, and an element that stops being hidden plays its starting style
-  // again, so we wait for the screen.
+  // come after them fade in, and so does our own seat, to show that we took it. When we go back to
+  // a seat that we already had, it shows at once. The table's details come before the screen shows,
+  // and an element that stops being hidden plays its starting style again, so we wait for the
+  // screen.
   const shown = useAppSelector(
     (state) => state.session.screen === Screen.PreGame,
   );
@@ -159,7 +163,9 @@ export function Pregame(): React.JSX.Element | undefined {
             <PlayerBox
               fadeStyle={
                 player.username === username
-                  ? getFadeStyle(reducedMotion)
+                  ? getFadeStyle(
+                      reducedMotion || game.tableId === returnedTableId,
+                    )
                   : fadeStyle
               }
               isSpectator={isSpectator}

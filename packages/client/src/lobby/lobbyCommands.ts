@@ -23,6 +23,7 @@ import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
 import {
   gameChanged,
+  returnedTableIdChanged,
   startGameCooldownChanged,
 } from "./pregame/pregameSlice.ts";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice.ts";
@@ -127,6 +128,7 @@ lobbyCommands.set("tableLeft", (data) => {
     gameMain.hide();
   }
   globals.tableId = undefined;
+  store.dispatch(returnedTableIdChanged(undefined));
 });
 
 // Received by the client when a table is created or modified.

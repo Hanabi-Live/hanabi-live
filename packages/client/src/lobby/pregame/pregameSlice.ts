@@ -1,7 +1,7 @@
 // The table that we are at before its game starts: its players and options, its chat, and who is
 // typing there.
 
-import type { ServerEventData } from "@hanabi-live/data";
+import type { ServerEventData, TableId } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import { castDraft } from "immer";
@@ -23,6 +23,12 @@ interface PregameState {
 
   /** Whether the player count changed a short time ago, which disables "Start Game". */
   readonly startGameCooldown: boolean;
+
+  /**
+   * The table that we went back to, where we already had a seat. Our seat pops in only at a table
+   * where we take a seat.
+   */
+  readonly returnedTableId: TableId | undefined;
 }
 
 const initialState: PregameState = {
@@ -31,6 +37,7 @@ const initialState: PregameState = {
   typing: [],
   startGameSent: false,
   startGameCooldown: false,
+  returnedTableId: undefined,
 };
 
 const pregameSlice = createSlice({
@@ -65,6 +72,9 @@ const pregameSlice = createSlice({
     startGameCooldownChanged(state, action: PayloadAction<boolean>) {
       state.startGameCooldown = action.payload;
     },
+    returnedTableIdChanged(state, action: PayloadAction<TableId | undefined>) {
+      state.returnedTableId = action.payload;
+    },
   },
 });
 
@@ -77,5 +87,6 @@ export const {
   typingCleared,
   startGameSentChanged,
   startGameCooldownChanged,
+  returnedTableIdChanged,
 } = pregameSlice.actions;
 export const pregameReducer = pregameSlice.reducer;

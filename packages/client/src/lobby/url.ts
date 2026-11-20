@@ -16,6 +16,7 @@ import {
 } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import * as modals from "../modals.ts";
+import { store } from "../store.ts";
 import { escapeHtml, setBrowserAddressBarPath } from "../utils.ts";
 import { DEFAULT_TIME_CONTROL } from "./createGameForm.ts";
 import { readDeal } from "./deal.ts";
@@ -23,6 +24,7 @@ import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
 import { getOtherScoresSeed } from "./historyHash.ts";
 import { expand } from "./hypoCompress.ts";
+import { returnedTableIdChanged } from "./pregame/pregameSlice.ts";
 import { replayVisibility } from "./replayVisibility.ts";
 
 /** Gets the server's answer to a request to go to a table. */
@@ -71,6 +73,7 @@ function reconnectToTable(
   // reconnect to that game.
   const firstTableId = data.playingAtTables[0];
   if (firstTableId !== undefined) {
+    store.dispatch(returnedTableIdChanged(firstTableId));
     globals.connection.send(
       "tableReattend",
       { tableId: firstTableId },
@@ -172,6 +175,7 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
     const tableId = parseIntSafe(preGameTableId);
     if (tableId !== undefined && tableId > 0) {
       if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
+        store.dispatch(returnedTableIdChanged(tableIdSchema.parse(tableId)));
         globals.connection.send("tableReattend", { tableId }, onReply);
         return true;
       }
@@ -210,6 +214,7 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
     const tableId = parseIntSafe(gameTableId);
     if (tableId !== undefined && tableId > 0) {
       if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
+        store.dispatch(returnedTableIdChanged(tableIdSchema.parse(tableId)));
         globals.connection.send("tableReattend", { tableId }, onReply);
         return true;
       }

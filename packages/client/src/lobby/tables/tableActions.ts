@@ -4,6 +4,7 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../../Globals.ts";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
+import { returnedTableIdChanged } from "../pregame/pregameSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import type { Table } from "./tablesSlice.ts";
 
@@ -48,6 +49,7 @@ export function tableReattend(table: Table): void {
     return;
   }
 
+  store.dispatch(returnedTableIdChanged(table.tableId));
   globals.connection.send("tableReattend", {
     tableId: table.tableId,
   });
