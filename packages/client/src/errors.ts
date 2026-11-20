@@ -144,14 +144,11 @@ export function initErrorListener(): void {
     const formattedStackTrace = `<pre>${escapeHtml(stackTrace)}</pre>`;
 
     const reportInstructions = `
-      In order to make the website better, please report this error along with steps that you did to
-      cause it. You can report it:
-      <ul>
-        <li>in the lobby chat (worst option)</li>
-        <li>or in <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">the Hanab Discord server</a> (better option)</li>
-        <li>or on <a href="https://github.com/Hanabi-Live/hanabi-live" target="_blank" rel="noopener noreferrer">the GitHub repository</a> (best option)</li>
-      </ul>
-      When reporting, please copy/paste the stack-trace above as text, rather than showing a screenshot.
+      This error was sent to the developers automatically. If you know what you did to cause it,
+      please tell us in
+      <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">the Hanab Discord server</a>
+      or on
+      <a href="https://github.com/Hanabi-Live/hanabi-live" target="_blank" rel="noopener noreferrer">the GitHub repository</a>.
     `;
 
     const iosText = `You appear to be using an iPhone/iPad/iPod device (iOS). ${PROJECT_NAME} does not support Apple devices, so the above error might be an iOS-specific error. Please use a desktop PC to access the site, or refresh the page to try again`;

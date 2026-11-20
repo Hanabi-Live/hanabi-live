@@ -840,6 +840,18 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
+    // An error that the page did not catch shows its stack trace.
+    {
+      name: "error-modal",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      prepare: async (page) => {
+        await page.evaluate(dispatchUncaughtError);
+        await page.locator("#error-modal").waitFor();
+        await settle(page);
+      },
+    },
     {
       name: "chat-length-over-limit",
       path: "/",
@@ -3520,6 +3532,20 @@ async function createCast(
       currentWatchedGame = undefined;
     },
   };
+}
+
+/**
+ * Runs in the page. Sends an error event, as an error that the page did not catch does. Its stack
+ * trace is not in the website's scripts, so the page does not report it.
+ */
+function dispatchUncaughtError() {
+  const error = new TypeError("Cannot read properties of undefined");
+  globalThis.dispatchEvent(
+    new ErrorEvent("error", {
+      error,
+      message: error.message,
+    }),
+  );
 }
 
 /** Runs in the page. Shows the dark theme, as the "Dark mode" setting does. */
