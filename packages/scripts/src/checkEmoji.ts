@@ -3,11 +3,12 @@
 // directory, and that the Twitch, BetterTTV, and FrankerFaceZ directories hold exactly the global
 // emotes of those services, each showing the same pixels as the PNG that the service serves. It
 // exits with an error if any check fails. A service that cannot be reached is skipped with a
-// warning.
+// warning. So are emotes whose names differ only in case, on a file system that ignores case.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
 import { convertIndexedToRgb, decode } from "fast-png";
+import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -103,6 +104,12 @@ const SERVICES = [
 const specialEmotePaths: ReadonlyMap<string, string> = new Map(
   Object.entries(CHAT_SPECIAL_EMOTES),
 );
+const caseCollisions = getCaseCollisions();
+if (caseCollisions.size > 0) {
+  console.warn(
+    `Skipping these emotes, because this file system ignores case, so their files cannot be told apart: ${[...caseCollisions].join(", ")}`,
+  );
+}
 const emojiGroups = await readEmojiGroups();
 const emojiNames = [...emojiGroups.values()].flat();
 const orderFailures = [
@@ -148,6 +155,35 @@ const servicesMatch =
 console.log(
   `The emoji and emotes are in alphabetical order, no emoji is in two groups, and every emote list matches its directory.${servicesMatch}`,
 );
+
+/**
+ * Returns the paths (such as "twitch/O_O") of the emotes that share their file with another emote,
+ * because their names differ only in case and the file system ignores case. Twitch has such emotes,
+ * and macOS and Windows ignore case by default. On other file systems, it returns an empty set.
+ */
+function getCaseCollisions(): ReadonlySet<string> {
+  if (!existsSync(EMOTES_DIR.toUpperCase())) {
+    return new Set();
+  }
+
+  const lowerCaseCounts = new Map<string, number>();
+  const emotePaths = [
+    ...Object.entries(CHAT_EMOTES).flatMap(([category, emotes]) =>
+      emotes.map((emote) => `${category}/${emote}`),
+    ),
+    ...specialEmotePaths.values(),
+  ];
+  for (const emotePath of emotePaths) {
+    const key = emotePath.toLowerCase();
+    lowerCaseCounts.set(key, (lowerCaseCounts.get(key) ?? 0) + 1);
+  }
+
+  return new Set(
+    emotePaths.filter(
+      (emotePath) => (lowerCaseCounts.get(emotePath.toLowerCase()) ?? 0) > 1,
+    ),
+  );
+}
 
 /**
  * Checks that names are in case-insensitive alphabetical order, with names that differ only in case
@@ -270,7 +306,7 @@ async function checkCategory(
     }
   }
   for (const name of expected) {
-    if (!present.has(name)) {
+    if (!present.has(name) && !caseCollisions.has(`${category}/${name}`)) {
       problems.push(`"${category}/${name}${EMOTE_EXTENSION}" is missing.`);
     }
   }
@@ -436,7 +472,7 @@ async function checkImage(
 ): Promise<string | undefined> {
   const relativePath = `${emotePath}${EMOTE_EXTENSION}`;
   const file = Bun.file(path.join(EMOTES_DIR, relativePath));
-  if (!(await file.exists())) {
+  if (caseCollisions.has(emotePath) || !(await file.exists())) {
     // "checkDirectories" reports the missing file.
     return undefined;
   }
