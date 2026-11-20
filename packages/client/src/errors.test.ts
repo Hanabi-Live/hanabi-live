@@ -109,12 +109,26 @@ test("a ResizeObserver loop is not shown", () => {
   expect(showError).not.toHaveBeenCalled();
 });
 
-test("a Redux error from a reducer that is still running is not shown", () => {
+function useBrowser(userAgent: string) {
+  vi.stubGlobal("navigator", {
+    userAgent,
+    platform: "",
+  });
+}
+
+test("a Redux error from a reducer that is still running is not shown in Firefox only", () => {
+  const reentryError =
+    "Minified Redux error #9; visit https://redux.js.org/Errors?code=9 for the full message.";
   vi.mocked(showError).mockClear();
-  throwError(
-    "Minified Redux error #9; visit https://redux.js.org/Errors?code=9 for the full message.",
+  useBrowser(
+    "Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0",
   );
+  throwError(reentryError);
   expect(showError).not.toHaveBeenCalled();
   throwError("Minified Redux error #2; visit the site.");
   expect(showError).toHaveBeenCalledOnce();
+
+  useBrowser("Mozilla/5.0 (X11; Linux x86_64) Chrome/150.0.0.0 Safari/537.36");
+  throwError(reentryError);
+  expect(showError).toHaveBeenCalledTimes(2);
 });

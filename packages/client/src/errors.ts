@@ -29,9 +29,9 @@ const RESIZE_OBSERVER_LOOP_MESSAGE =
 
 /**
  * The minified Redux errors that mean that a reducer was still running when other code used the
- * store: #3 (`getState`), #6 (`unsubscribe`), and #9 (`dispatch`). Our reducers do not use the
- * store, so this happens only when Firefox runs other events in the middle of a reducer, such as
- * while its debugger is paused. They are harmless.
+ * store: #3 (`getState`), #6 (`unsubscribe`), and #9 (`dispatch`). Firefox can run other events in
+ * the middle of a reducer, such as while its debugger is paused. Then these errors are harmless, so
+ * they are ignored in Firefox only. In Chrome, they still show a bug in our code.
  */
 const REDUCER_REENTRY_ERROR = /^Minified Redux error #[369];/u;
 
@@ -130,7 +130,11 @@ export function initErrorListener(): void {
       return;
     }
     const error: unknown = errorEvent.error; // Cast from `any` to `unknown`.
-    if (error instanceof Error && REDUCER_REENTRY_ERROR.test(error.message)) {
+    if (
+      error instanceof Error
+      && REDUCER_REENTRY_ERROR.test(error.message)
+      && navigator.userAgent.includes("Firefox/")
+    ) {
       return;
     }
 
