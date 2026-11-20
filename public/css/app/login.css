@@ -7,11 +7,10 @@
   display: none;
 }
 
-/* A tight shadow sharpens the edges of the thin letters. */
 #main-login #title-sub {
   color: var(--login-text);
   font-size: 1.4em;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 60%);
+  text-shadow: var(--login-text-shadow);
 }
 
 #title-sub strong {
@@ -21,6 +20,7 @@
 .login-text {
   color: var(--login-text);
   text-align: center;
+  text-shadow: var(--login-text-shadow);
 }
 
 .login-header {

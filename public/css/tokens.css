@@ -243,7 +243,12 @@
   --login-alert-bg: #3a2020;
   --login-alert-border: #5a3030;
   --login-alert-text: #ffcccc;
-  --login-text: #f2f2f2;
+  --login-text: #fff;
+  /*
+    The shadow of the text on the felt: a tight shadow sharpens the edges of the thin letters, and a
+    wide, faint one darkens the felt behind them.
+  */
+  --login-text-shadow: 0 1px 2px rgb(0 0 0 / 55%), 0 0 12px rgb(0 0 0 / 35%);
 
   /* The lobby's custom cursors, with their hot spots */
   --cursor-rejoin: url("/public/img/cursors/rejoin.svg") 12 12, pointer;
