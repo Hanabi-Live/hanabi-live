@@ -24,7 +24,19 @@ export const MENU_BUTTON_CLASS =
  * edge. The gap between it and the button leaves room for its pointer.
  */
 const MENU_CLASS =
-  "tw:absolute tw:z-30 tw:flex tw:flex-col tw:gap-2 tw:rounded-game-panel tw:bg-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
+  "tw:absolute tw:z-30 tw:flex tw:flex-col tw:gap-2 tw:rounded-game-panel tw:p-2 tw:pb-3 tw:shadow-lg tw:ring-1 tw:ring-game-line";
+
+/**
+ * The color of a menu and of the inside of its pointer. A paper menu is white, like the notes in
+ * the card tooltips and the box to type a note in.
+ */
+const MENU_COLOR_CLASS = {
+  panel: "tw:bg-game-panel",
+  paper: "tw:bg-white",
+} as const;
+
+/** The gap between a menu and its button (`tw:mb-3` or `tw:mt-3`), in CSS pixels. */
+const MENU_GAP = 12;
 
 const MENU_SIDE_CLASS = {
   above: "tw:bottom-full tw:mb-3",
@@ -97,9 +109,59 @@ const MENU_WINDOW_MARGIN = 8;
  */
 const POINTER_SIDE_MARGIN = 8 + 20 / 2;
 
+/**
+ * The top and bottom of the area in which an element shows, in the window's pixels: the window, or
+ * a smaller area that scrolls, such as the hands on a phone.
+ */
+function getVisibleArea(element: HTMLElement): { top: number; bottom: number } {
+  let top = 0;
+  let bottom = globalThis.innerHeight;
+  for (
+    let ancestor = element.parentElement;
+    ancestor !== null;
+    ancestor = ancestor.parentElement
+  ) {
+    if (getComputedStyle(ancestor).overflowY === "visible") {
+      continue;
+    }
+
+    const rect = ancestor.getBoundingClientRect();
+    top = Math.max(top, rect.top);
+    bottom = Math.min(bottom, rect.bottom);
+  }
+  return {
+    top,
+    bottom,
+  };
+}
+
+/**
+ * The side of an element that a box of a height goes on, in the window's pixels: the side that it
+ * prefers if the box fits there, or else the other side if it fits there, or else the side with
+ * more room, as a tooltip does (see `Tooltip.position`).
+ */
+export function getSideWithRoom(
+  element: HTMLElement,
+  preferred: "above" | "below",
+  height: number,
+): "above" | "below" {
+  const rect = element.getBoundingClientRect();
+  const area = getVisibleArea(element);
+  const room = {
+    above: rect.top - area.top,
+    below: area.bottom - rect.bottom,
+  };
+  const other = preferred === "above" ? "below" : "above";
+  return room[preferred] >= height
+    || (room[other] < height && room[preferred] >= room[other])
+    ? preferred
+    : other;
+}
+
 export function Menu({
   align,
-  side = "above",
+  side: preferredSide = "above",
+  color = "panel",
   scrollIntoView = false,
   className,
   children,
@@ -110,7 +172,12 @@ export function Menu({
    * the button, but moves toward the middle of the menu to stay off of the menu's corners.
    */
   readonly align: "left" | "right" | "center";
+  /**
+   * The side of the button that the menu goes on. It goes on the other side when it does not fit in
+   * the window there, such as below a card at the bottom of the screen.
+   */
   readonly side?: "above" | "below";
+  readonly color?: keyof typeof MENU_COLOR_CLASS;
   /**
    * Whether the menu scrolls into view when it opens. Use it for a menu in an area that scrolls,
    * such as that of a card in the hands on a phone, where the menu can open past the area's edge.
@@ -166,6 +233,21 @@ export function Menu({
     }
   });
 
+  // The side is chosen when the menu opens, before the window shows it.
+  const [side, setSide] = useState(preferredSide);
+  useLayoutEffect(() => {
+    const element = ref.current!;
+    const button = layerRef.current!.parentElement!;
+    const nextSide = getSideWithRoom(
+      button,
+      preferredSide,
+      (element.offsetHeight + MENU_GAP + MENU_WINDOW_MARGIN) * getScreenScale(),
+    );
+    if (nextSide !== side) {
+      setSide(nextSide);
+    }
+  }, [preferredSide, side]);
+
   useLayoutEffect(() => {
     if (scrollIntoView) {
       ref.current?.scrollIntoView({
@@ -180,7 +262,7 @@ export function Menu({
   return (
     <div className={MENU_LAYER_CLASS} ref={layerRef}>
       <div
-        className={`${MENU_CLASS} ${MENU_SIDE_CLASS[side]} ${MENU_ALIGN_CLASS[align]} ${className}`}
+        className={`${MENU_CLASS} ${MENU_COLOR_CLASS[color]} ${MENU_SIDE_CLASS[side]} ${MENU_ALIGN_CLASS[align]} ${className}`}
         ref={ref}
         role="menu"
         style={shift.menu === 0 ? undefined : { marginLeft: shift.menu }}
@@ -188,7 +270,7 @@ export function Menu({
         {children}
       </div>
       <MenuPointer
-        insideClassName="tw:bg-game-panel"
+        insideClassName={MENU_COLOR_CLASS[color]}
         outlineClassName="tw:bg-game-line"
         shift={shift.pointer}
         side={side}

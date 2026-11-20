@@ -25,7 +25,12 @@ import {
 import { RIGHT_MOUSE_BUTTON } from "../ui/constants.ts";
 import * as notes from "../ui/notes.ts";
 import { getOpenPossibleCards, isHandCardBubbleBelow } from "./Card.tsx";
-import { MENU_LAYER_CLASS, MenuPointer, useMenuFade } from "./Menu.tsx";
+import {
+  getSideWithRoom,
+  MENU_LAYER_CLASS,
+  MenuPointer,
+  useMenuFade,
+} from "./Menu.tsx";
 import { useWindowSize } from "./hooks.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { getScreenScaleForWindow } from "./screenScale.ts";
@@ -45,6 +50,25 @@ const NOTE_EDITOR_SIDE_CLASS = {
   above: "tw:bottom-full tw:mb-3",
   below: "tw:top-full tw:mt-3",
 } as const;
+
+/**
+ * The size of a note's text in the card tooltips, in the CSS pixels of the zoomed screen. The
+ * tooltip is outside the zoomed screen, and its size comes from the page's text, which is smaller
+ * in a smaller window. Use it for notes on the screen, so that they have the same size.
+ */
+export function useNoteFontSize(): number {
+  const windowSize = useWindowSize();
+  const screenScale = getScreenScaleForWindow(
+    windowSize.width,
+    windowSize.height,
+  );
+  return (
+    (pixels(getComputedStyle(document.body).fontSize)
+      * TOOLTIP_FONT_SIZE_IN_EMS
+      * LARGE_TEXT_SCALE)
+    / screenScale
+  );
+}
 
 /**
  * Applies a right-click on a card to its note. It returns whether the viewer now types in the note,
@@ -240,32 +264,6 @@ export function CardNote({
   );
 }
 
-/**
- * The top and bottom of the area in which an element shows, in the window's pixels: the window, or
- * a smaller area that scrolls, such as the hands on a phone.
- */
-function getVisibleArea(element: HTMLElement): { top: number; bottom: number } {
-  let top = 0;
-  let bottom = globalThis.innerHeight;
-  for (
-    let ancestor = element.parentElement;
-    ancestor !== null;
-    ancestor = ancestor.parentElement
-  ) {
-    if (getComputedStyle(ancestor).overflowY === "visible") {
-      continue;
-    }
-
-    const rect = ancestor.getBoundingClientRect();
-    top = Math.max(top, rect.top);
-    bottom = Math.min(bottom, rect.bottom);
-  }
-  return {
-    top,
-    bottom,
-  };
-}
-
 /** The closest element around an element that scrolls up and down, such as the hands on a phone. */
 function getScrollArea(element: HTMLElement): HTMLElement | undefined {
   for (
@@ -302,10 +300,7 @@ function NoteEditor({
   // The box is centered on its card, but moves sideways to stay in the window, such as for a play
   // stack at the edge of the screen. It moves again when the window changes size.
   const windowSize = useWindowSize();
-  const screenScale = getScreenScaleForWindow(
-    windowSize.width,
-    windowSize.height,
-  );
+  const noteFontSize = useNoteFontSize();
   const [shift, setShift] = useState(0);
   const [side, setSide] = useState<"above" | "below">("above");
 
@@ -344,18 +339,12 @@ function NoteEditor({
     // after this runs when the window changes size.
     const scale = rect.width / NOTE_EDITOR_WIDTH;
 
-    // The box goes above the card if it fits there, or else below it if it fits there, or else on
-    // the side with more room, as the note's tooltip does (see `Tooltip.position`).
-    const cardRect = card.getBoundingClientRect();
-    const area = getVisibleArea(card);
-    const needed =
-      rect.height + (NOTE_EDITOR_GAP + NOTE_EDITOR_WINDOW_MARGIN) * scale;
-    const roomBelow = area.bottom - cardRect.bottom;
-    const roomAbove = cardRect.top - area.top;
-    const nextSide =
-      roomAbove >= needed || (roomBelow < needed && roomAbove >= roomBelow)
-        ? "above"
-        : "below";
+    // The box goes above the card if it fits there, as the note's tooltip does.
+    const nextSide = getSideWithRoom(
+      card,
+      "above",
+      rect.height + (NOTE_EDITOR_GAP + NOTE_EDITOR_WINDOW_MARGIN) * scale,
+    );
     if (nextSide !== side) {
       setSide(nextSide);
     }
@@ -485,16 +474,7 @@ function NoteEditor({
             }}
             ref={inputRef}
             spellCheck={false}
-            // The text is the size of the note in its tooltip. The tooltip is outside the zoomed
-            // screen, and its size comes from the page's text, which is smaller in a smaller
-            // window.
-            style={{
-              fontSize:
-                (pixels(getComputedStyle(document.body).fontSize)
-                  * TOOLTIP_FONT_SIZE_IN_EMS
-                  * LARGE_TEXT_SCALE)
-                / screenScale,
-            }}
+            style={{ fontSize: noteFontSize }}
             type="text"
           />
           <LengthCounter input={inputRef} limit={notes.NOTE_LENGTH_LIMIT} />

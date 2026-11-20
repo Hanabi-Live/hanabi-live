@@ -26,11 +26,12 @@ import {
   ClueToken,
   describeCard,
   getClueTokenSize,
+  isHandCardBubbleBelow,
 } from "./Card.tsx";
 import { getPointerType, isDragClick } from "./cardClicks.ts";
 import { HAND_PLACE_PREFIX } from "./cardMotion.ts";
 import type { CardNotes } from "./CardNote.tsx";
-import { CardNote } from "./CardNote.tsx";
+import { CardNote, useNoteFontSize } from "./CardNote.tsx";
 import type { ClueButtonPlacement } from "./ClueMenu.tsx";
 import {
   CLUE_BUTTON_COLUMN_HEIGHT,
@@ -53,6 +54,7 @@ import {
   HOVER_CLASS,
   MENU_ICON_CLASS,
   MENU_ICON_ITEM_CLASS,
+  MENU_ITEM_CLASS,
   RAISED_BUTTON_CLASS,
 } from "./surfaces.ts";
 import type { CardView, TurnWarning } from "./tableView.ts";
@@ -1202,6 +1204,7 @@ function useNotePopup(
   props: HandsProps,
 ): {
   readonly popupOpen: boolean;
+  readonly popupSide: "above" | "below" | undefined;
   readonly containerRef: React.RefObject<HTMLDivElement | null>;
 } {
   const popupOpen = props.popupCard === order;
@@ -1216,8 +1219,24 @@ function useNotePopup(
     [onClosePopup],
   );
   useCloseOnOutsideClick(popupOpen, containerRef, setOpen);
+
+  // The popup goes on the side of the card where holding the card shows its notes: the other side
+  // from its bubble of possible cards (see `CardNote`). The notes then show in the same place in
+  // both ways. The side is set before the popup shows, so that it does not fade in on one side and
+  // then move to the other.
+  const [popupSide, setPopupSide] = useState<"above" | "below">();
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!popupOpen || container === null) {
+      setPopupSide(undefined);
+      return;
+    }
+    setPopupSide(isHandCardBubbleBelow(container) ? "above" : "below");
+  }, [popupOpen]);
+
   return {
     popupOpen,
+    popupSide,
     containerRef,
   };
 }
@@ -1235,13 +1254,16 @@ function hasNotePopup(order: CardOrder, props: HandsProps): boolean {
  */
 function NotePopup({
   order,
+  side,
   props,
 }: {
   readonly order: CardOrder;
+  readonly side: "above" | "below";
   readonly props: HandsProps;
 }): React.JSX.Element {
   const noteHtml = props.notes.notesHtml.get(order);
   const { onEditNote } = props;
+  const noteFontSize = useNoteFontSize();
   // Showing the note reads it.
   const unread = props.notes.unreadNotes.has(order);
   useEffect(() => {
@@ -1249,23 +1271,27 @@ function NotePopup({
       store.dispatch(newUiNoteRead(order));
     }
   }, [noteHtml, unread, order]);
+  // It is white, with the notes at the size of the card's tooltip, so that it looks like the
+  // tooltip that hover and holding the card show, with a button added.
   return (
     <Menu
       align="center"
       className="tw:min-w-40 tw:whitespace-nowrap"
+      color="paper"
       scrollIntoView
-      side="below"
+      side={side}
     >
       {noteHtml !== undefined && (
         <div
-          className="tw:max-w-72 tw:px-2 tw:py-1 tw:text-game-text tw:whitespace-normal"
+          className="tw:max-w-72 tw:px-2 tw:py-1 tw:text-card-ink tw:whitespace-normal"
           // The notes are already escaped, as for the card's tooltip (see `getNotesHtml`).
           dangerouslySetInnerHTML={{ __html: noteHtml }}
+          style={{ fontSize: noteFontSize }}
         />
       )}
       {onEditNote !== undefined && (
         <button
-          className={MENU_ICON_ITEM_CLASS}
+          className={`tw:flex tw:items-center tw:gap-2.5 ${MENU_ITEM_CLASS} tw:bg-game-raised tw:text-game-text tw:enabled:hover:brightness-110`}
           onClick={() => {
             onEditNote(order);
           }}
@@ -1302,7 +1328,7 @@ function MovableCard({
   readonly props: HandsProps;
   readonly children?: React.ReactNode;
 }): React.JSX.Element {
-  const { popupOpen, containerRef } = useNotePopup(order, props);
+  const { popupOpen, popupSide, containerRef } = useNotePopup(order, props);
   const hasPopup = hasNotePopup(order, props);
 
   return (
@@ -1339,7 +1365,9 @@ function MovableCard({
         {face}
       </button>
       {children}
-      {popupOpen && hasPopup && <NotePopup order={order} props={props} />}
+      {popupOpen && hasPopup && popupSide !== undefined && (
+        <NotePopup order={order} props={props} side={popupSide} />
+      )}
     </div>
   );
 }
@@ -1364,7 +1392,7 @@ function TappableCard({
   readonly overlay?: React.ReactNode;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
-  const { popupOpen, containerRef } = useNotePopup(order, props);
+  const { popupOpen, popupSide, containerRef } = useNotePopup(order, props);
   const tappable = !props.speedrunClicks && hasNotePopup(order, props);
 
   return (
@@ -1392,7 +1420,9 @@ function TappableCard({
         {children}
       </div>
       {overlay}
-      {popupOpen && tappable && <NotePopup order={order} props={props} />}
+      {popupOpen && tappable && popupSide !== undefined && (
+        <NotePopup order={order} props={props} side={popupSide} />
+      )}
     </div>
   );
 }
