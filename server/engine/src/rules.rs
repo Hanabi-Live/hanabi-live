@@ -209,19 +209,10 @@ pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &Engin
     if !state.options.detrimental_characters || !state.players[player].is(Character::Follower) {
         return false;
     }
-    let v = variant_for(state);
-    let size = int(v.ranks.len());
     let reached = state
-        .stacks
+        .deck
         .iter()
-        .enumerate()
-        .filter(|&(suit, &stack)| match (stack, state.stack_starts[suit]) {
-            (Some(stack), Some(start)) if v.sudoku => {
-                (stack - start + size) % size >= (card.rank - start + size) % size
-            }
-            _ if v.sudoku => false,
-            _ => stack.is_some_and(|stack| stack >= card.rank),
-        })
+        .filter(|played| played.played && played.rank == card.rank)
         .count();
     reached < FOLLOWER_MIN_STACKS
 }
