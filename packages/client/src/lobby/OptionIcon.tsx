@@ -10,9 +10,7 @@ export function OptionIcon({
     readonly icon: string;
   };
 }): React.JSX.Element {
-  const ref = tooltipRefHtml(tooltip, {
-    instant: true,
-  });
+  const ref = tooltipRefHtml(tooltip);
 
   return (
     <li className="tw:mr-2 tw:inline-block tw:pl-0">
