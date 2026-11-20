@@ -58,7 +58,8 @@ jobs:
       - uses: ./.github/workflows/setup-rust
       - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Uses the Claude subscription of the account that made the token.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The server opens the issues for client errors as this GitHub App.
           allowed_bots: hanabi-live-issues-bot
           claude_args: |
