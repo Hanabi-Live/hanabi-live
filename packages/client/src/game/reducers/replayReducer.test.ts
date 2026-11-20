@@ -385,6 +385,33 @@ describe("replayReducer", () => {
     });
   });
 
+  test("a follower with no turn of its own takes the leader's turn", () => {
+    const state = replayReducer(
+      {
+        ...testState.replay,
+        segment: undefined,
+        shared: {
+          segment: 1,
+          useSharedSegments: true,
+          leader: "leader",
+          amLeader: false,
+          replayStartedAt: "2026-01-01T00:00:00.000Z",
+          spoilerFree: false,
+          canPlayAgain: false,
+          restartDeclined: [],
+          hypothetical: undefined,
+        },
+      },
+      {
+        type: "replaySharedSegment",
+        segment: 2,
+      },
+      metadata,
+    );
+    expect(state.segment).toBe(2);
+    expect(state.shared?.segment).toBe(2);
+  });
+
   test("rejects a segment that is not an integer", () => {
     expect(() =>
       replayReducer(

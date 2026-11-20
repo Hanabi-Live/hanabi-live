@@ -42,6 +42,33 @@ function replayReducerFunction(
     return;
   }
 
+  // A follower can have no turn of its own, which has happened right after a game ended (for an
+  // unknown reason). The leader's turn then becomes the follower's turn, so the screen follows the
+  // leader again.
+  if (action.type === "replaySharedSegment") {
+    assertDefined(
+      state.shared,
+      `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+    );
+
+    if (!Number.isSafeInteger(action.segment)) {
+      throw new TypeError(
+        `The "${action.type}" action segment was not an integer.`,
+      );
+    }
+
+    if (action.segment < 0) {
+      throw new Error(`The "${action.type}" action segment was less than 0.`);
+    }
+
+    state.shared.segment = action.segment;
+
+    if (state.shared.useSharedSegments || state.segment === undefined) {
+      state.segment = action.segment;
+    }
+    return;
+  }
+
   // Validate current state
   const { segment } = state;
   if (segment === undefined) {
@@ -71,31 +98,6 @@ function replayReducerFunction(
         throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
       state.segment = action.segment;
-
-      break;
-    }
-
-    case "replaySharedSegment": {
-      assertDefined(
-        state.shared,
-        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
-      );
-
-      if (!Number.isSafeInteger(action.segment)) {
-        throw new TypeError(
-          `The "${action.type}" action segment was not an integer.`,
-        );
-      }
-
-      if (action.segment < 0) {
-        throw new Error(`The "${action.type}" action segment was less than 0.`);
-      }
-
-      state.shared.segment = action.segment;
-
-      if (state.shared.useSharedSegments) {
-        state.segment = action.segment;
-      }
 
       break;
     }
