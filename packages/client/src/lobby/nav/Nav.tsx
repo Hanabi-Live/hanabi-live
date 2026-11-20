@@ -126,7 +126,7 @@ function LobbyNav() {
       >
         <span className="tw:narrow-530:hidden">
           <Hotkey>N</Hotkey>ew
-          <span className="tw:narrow-1280:hidden"> Game</span>
+          <span className="tw:narrow-980:hidden"> Game</span>
         </span>
       </NavButton>
       <NavButton
@@ -147,7 +147,7 @@ function LobbyNav() {
         onClick={watchReplay.show}
       >
         <span className="tw:narrow-530:hidden">
-          <span className="tw:narrow-1280:hidden">Watch </span>Repl
+          <span className="tw:narrow-980:hidden">Watch </span>Repl
           <Hotkey>a</Hotkey>y
         </span>
       </NavButton>
