@@ -28,7 +28,7 @@ const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 const BUTTON_CLASS_NAME = [
   "button tw:relative tw:ml-2 tw:inline-block tw:h-[2em] tw:rounded-(--radius) tw:px-4 tw:text-game-text",
   "tw:leading-[2em]",
-  "tw:narrow-1280:px-2",
+  "tw:narrow-1280:px-2 tw:narrow-410:ml-1",
 ].join(" ");
 
 /**
@@ -42,6 +42,9 @@ const HELP_COLOR_CLASS_NAME = "tw:bg-(--green) tw:hover:bg-(--green-hover)";
 
 const ICON_CLASS_NAME =
   "tw:relative tw:top-[0.05em] tw:mr-[0.3em] tw:narrow-840:mr-0";
+
+/** An icon whose label "LobbyLabel" hides. */
+const LOBBY_ICON_CLASS_NAME = "tw:narrow-980:mr-0";
 
 const PLAYING_AT_TABLE_TOOLTIP =
   "You are already playing at a table. Leave it or finish its game before you create a new one.";
@@ -120,81 +123,90 @@ function LobbyNav() {
       <NavButton
         disabled={creatingTable || playingAtTable}
         icon="fa-plus"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-create-game"
         onClick={showCreateGame}
         tooltip={playingAtTable ? PLAYING_AT_TABLE_TOOLTIP : undefined}
       >
-        <span className="tw:narrow-530:hidden">
-          <Hotkey>N</Hotkey>ew
-          <span className="tw:narrow-980:hidden"> Game</span>
-        </span>
+        <LobbyLabel>
+          <Hotkey>N</Hotkey>ew Game
+        </LobbyLabel>
       </NavButton>
       <NavButton
-        className="tw:narrow-530:hidden"
         icon="fa-rectangle-list"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-history"
         onClick={() => {
           history.show();
         }}
       >
-        <span className="tw:narrow-530:hidden">
+        <LobbyLabel>
           <Hotkey>H</Hotkey>istory
-        </span>
+        </LobbyLabel>
       </NavButton>
       <NavButton
         icon="fa-arrow-rotate-left"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-replay"
         onClick={watchReplay.show}
       >
-        <span className="tw:narrow-530:hidden">
-          <span className="tw:narrow-980:hidden">Watch </span>Repl
-          <Hotkey>a</Hotkey>y
-        </span>
+        <LobbyLabel>
+          Watch Repl<Hotkey>a</Hotkey>y
+        </LobbyLabel>
       </NavButton>
       <NavButton
-        className="tw:narrow-640:hidden"
         icon="fa-compass"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-resources"
         onClick={() => {
           lobbyPage.show("resources");
         }}
       >
-        <span className="tw:narrow-840:hidden">Resources</span>
+        <LobbyLabel>Resources</LobbyLabel>
       </NavButton>
       <NavButton
         icon="fa-gear"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-settings"
         onClick={() => {
           lobbyPage.show("settings");
         }}
       >
-        <span className="tw:narrow-840:hidden">
+        <LobbyLabel>
           <Hotkey>S</Hotkey>ettings
-        </span>
+        </LobbyLabel>
       </NavButton>
       <li className={LIST_ITEM_CLASS_NAME}>
         <a
-          className={`${BUTTON_CLASS_NAME} ${HELP_COLOR_CLASS_NAME} tw:narrow-530:hidden`}
+          className={`${BUTTON_CLASS_NAME} ${HELP_COLOR_CLASS_NAME}`}
           href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md"
           id="nav-buttons-lobby-help"
           rel="noopener noreferrer"
           target="_blank"
         >
-          <i className={`fas fa-circle-question ${ICON_CLASS_NAME}`} />{" "}
-          <span className="tw:narrow-840:hidden">Help</span>
+          <i
+            className={`fas fa-circle-question ${ICON_CLASS_NAME} ${LOBBY_ICON_CLASS_NAME}`}
+          />{" "}
+          <LobbyLabel>Help</LobbyLabel>
         </a>
       </li>
       <NavButton
         icon="fa-power-off"
+        iconClassName={LOBBY_ICON_CLASS_NAME}
         id="nav-buttons-lobby-sign-out"
         onClick={signOut}
       >
-        <span className="tw:narrow-840:hidden">
+        <LobbyLabel>
           Sign <Hotkey>O</Hotkey>ut
-        </span>
+        </LobbyLabel>
       </NavButton>
     </NavList>
   );
+}
+
+/** The lobby's buttons show only their icons on screens at most 980px wide. */
+function LobbyLabel({ children }: { readonly children: React.ReactNode }) {
+  return <span className="tw:narrow-980:hidden">{children}</span>;
 }
 
 function PregameNav() {
@@ -358,6 +370,7 @@ function NavButton({
   className,
   disabled = false,
   icon,
+  iconClassName = "",
   id,
   onClick,
   tooltip,
@@ -367,6 +380,8 @@ function NavButton({
   readonly disabled?: boolean;
   /** A Font Awesome class, such as "fa-play", or an icon element. */
   readonly icon: string | React.JSX.Element;
+  /** More classes for an icon that is a Font Awesome class. */
+  readonly iconClassName?: string;
   readonly id: string;
   readonly onClick: () => void;
   /** Plain text that the button shows in the site's tooltip. */
@@ -388,7 +403,7 @@ function NavButton({
         ref={tooltipRef(tooltip)}
       >
         {typeof icon === "string" ? (
-          <i className={`fas ${icon} ${ICON_CLASS_NAME}`} />
+          <i className={`fas ${icon} ${ICON_CLASS_NAME} ${iconClassName}`} />
         ) : (
           icon
         )}{" "}
