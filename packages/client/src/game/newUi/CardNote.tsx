@@ -282,10 +282,11 @@ function getScrollArea(element: HTMLElement): HTMLElement | undefined {
 }
 
 /**
- * The box to type a note in, below its card, with a pointer at the card. It is above the card when
- * there is no room below it, such as for the hand at the bottom of the screen, so that the player
- * can see what they type. Enter saves the note. Escape, or a click elsewhere, closes the box
- * without saving it, as on the classic screen.
+ * The box to type a note in, above its card, with a pointer at the card. It is below the card when
+ * there is no room above it, such as for the hand at the top of the screen, so that the player can
+ * see what they type. It prefers the same side as the card's note tooltip, so that the note does
+ * not jump to the other side of the card when the player edits it. Enter saves the note. Escape, or
+ * a click elsewhere, closes the box without saving it, as on the classic screen.
  */
 function NoteEditor({
   order,
@@ -298,15 +299,15 @@ function NoteEditor({
   const layerRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  // The box is centered below its card, but moves sideways to stay in the window, such as for a
-  // play stack at the edge of the screen. It moves again when the window changes size.
+  // The box is centered on its card, but moves sideways to stay in the window, such as for a play
+  // stack at the edge of the screen. It moves again when the window changes size.
   const windowSize = useWindowSize();
   const screenScale = getScreenScaleForWindow(
     windowSize.width,
     windowSize.height,
   );
   const [shift, setShift] = useState(0);
-  const [side, setSide] = useState<"above" | "below">("below");
+  const [side, setSide] = useState<"above" | "below">("above");
 
   // The box also moves when what scrolls around it changes size, which can happen a frame after the
   // window changes size, such as when the hands on a phone fit themselves to the new width.
@@ -343,7 +344,8 @@ function NoteEditor({
     // after this runs when the window changes size.
     const scale = rect.width / NOTE_EDITOR_WIDTH;
 
-    // The box goes below the card if it fits there, or else on the side with more room.
+    // The box goes above the card if it fits there, or else below it if it fits there, or else on
+    // the side with more room, as the note's tooltip does (see `Tooltip.position`).
     const cardRect = card.getBoundingClientRect();
     const area = getVisibleArea(card);
     const needed =
@@ -351,7 +353,9 @@ function NoteEditor({
     const roomBelow = area.bottom - cardRect.bottom;
     const roomAbove = cardRect.top - area.top;
     const nextSide =
-      roomBelow >= needed || roomBelow >= roomAbove ? "below" : "above";
+      roomAbove >= needed || (roomBelow < needed && roomAbove >= roomBelow)
+        ? "above"
+        : "below";
     if (nextSide !== side) {
       setSide(nextSide);
     }
