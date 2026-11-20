@@ -28,7 +28,7 @@ const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 const BUTTON_CLASS_NAME = [
   "button tw:relative tw:ml-2 tw:inline-block tw:h-[2em] tw:rounded-(--radius) tw:px-4 tw:text-game-text",
   "tw:leading-[2em]",
-  "tw:narrow-1280:px-2 tw:narrow-410:ml-1",
+  "tw:narrow-1080:px-2 tw:narrow-410:ml-1",
 ].join(" ");
 
 /**
