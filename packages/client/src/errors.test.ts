@@ -108,3 +108,13 @@ test("a ResizeObserver loop is not shown", () => {
   );
   expect(showError).not.toHaveBeenCalled();
 });
+
+test("a Redux error from a reducer that is still running is not shown", () => {
+  vi.mocked(showError).mockClear();
+  throwError(
+    "Minified Redux error #9; visit https://redux.js.org/Errors?code=9 for the full message.",
+  );
+  expect(showError).not.toHaveBeenCalled();
+  throwError("Minified Redux error #2; visit the site.");
+  expect(showError).toHaveBeenCalledOnce();
+});

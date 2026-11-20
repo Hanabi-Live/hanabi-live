@@ -28,6 +28,14 @@ const RESIZE_OBSERVER_LOOP_MESSAGE =
   "ResizeObserver loop completed with undelivered notifications.";
 
 /**
+ * The minified Redux errors that mean that a reducer was still running when other code used the
+ * store: #3 (`getState`), #6 (`unsubscribe`), and #9 (`dispatch`). Our reducers do not use the
+ * store, so this happens only when Firefox runs other events in the middle of a reducer, such as
+ * while its debugger is paused. They are harmless.
+ */
+const REDUCER_REENTRY_ERROR = /^Minified Redux error #[369];/u;
+
+/**
  * The most calls that a stack trace names. Chrome names only 10 by default, which can leave out the
  * code that caused the error. The server cuts a stack trace that is too long.
  */
@@ -119,6 +127,10 @@ export function initErrorListener(): void {
       return;
     }
     if (errorEvent.message === RESIZE_OBSERVER_LOOP_MESSAGE) {
+      return;
+    }
+    const error: unknown = errorEvent.error; // Cast from `any` to `unknown`.
+    if (error instanceof Error && REDUCER_REENTRY_ERROR.test(error.message)) {
       return;
     }
 
