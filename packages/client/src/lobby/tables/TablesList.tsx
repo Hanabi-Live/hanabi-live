@@ -186,7 +186,7 @@ function TableRowView({
       }}
       ref={ref}
     >
-      <td className={`tw:font-semibold ${COLUMNS.name.className}`}>
+      <td className={COLUMNS.name.className}>
         {table.passwordProtected && table.phase.type === "pregame" && (
           // The key's solid head is on its right, so it needs more room than other icons.
           <i className="fas fa-key fa-sm tw:mr-2.5" />
