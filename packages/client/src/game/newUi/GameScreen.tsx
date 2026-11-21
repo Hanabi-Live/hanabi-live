@@ -196,9 +196,9 @@ const PANEL_CARD_WIDTH = 82;
  * The width of the screen, in its own CSS pixels (see "screenScale.ts"), from which the bar along
  * the bottom has room for one row in every game: the widest bar is a shared replay that we lead,
  * with the "Play again" button, and the longest names (see `VARIANT_NAME_MAX_WIDTH` in
- * "StatusStrip.tsx"). The bar shares this width with the chat's rail, or with the open chat. When
- * the bar has less room, it is a panel in the right column, so that it never needs a second row. A
- * full-screen 16:9 window is 1600px wide in these pixels, so it keeps the bar along the bottom.
+ * "StatusStrip.tsx"). The bar spans the whole screen, below the chat. On a narrower screen, the bar
+ * is a panel in the right column, so that it never needs a second row. A full-screen 16:9 window is
+ * 1600px wide in these pixels, so it keeps the bar along the bottom.
  */
 const BAR_ONE_ROW_WIDTH = 1600;
 
@@ -446,26 +446,24 @@ export function GameScreen(): React.JSX.Element {
   );
 
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
-  // In the wide layout, the bar is along the bottom of the screen in one row while it has the room
-  // of `BAR_ONE_ROW_WIDTH` and the cards keep a width of at least `PANEL_CARD_WIDTH`. Otherwise, it
-  // moves to a panel at the bottom of the right column, so that the hands get the whole height of
-  // the screen. So the bar along the bottom never needs a second row. Only the size of the window,
-  // the players, and the chat decide where the bar is, not what the bar holds. So the bar does not
-  // move when a replay starts, a hypothetical starts, or the game ends. In the panel, the panel and
-  // the clue log share one box with tabs when the column is short (see "StatusStrip.tsx").
-  const mainRef = useRef<HTMLElement>(null);
+  // In the wide layout, the bar is along the bottom of the screen in one row while the screen is at
+  // least `BAR_ONE_ROW_WIDTH` wide and the cards keep a width of at least `PANEL_CARD_WIDTH`.
+  // Otherwise, it moves to a panel at the bottom of the right column, so that the hands get the
+  // whole height of the screen. So the bar along the bottom never needs a second row. Only the size
+  // of the window, the players, and the chat decide where the bar is, not what the bar holds. So
+  // the bar does not move when a replay starts, a hypothetical starts, or the game ends. In the
+  // panel, the panel and the clue log share one box with tabs when the column is short (see
+  // "StatusStrip.tsx").
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const main = mainRef.current;
     const previousScreenWidth = screenWidth.current;
     screenWidth.current = root?.clientWidth;
     if (
       narrowWindow
       || root === null
-      || main === null
       || tableElement === null
       || playAreaElement === null
       || handsElement === null
@@ -520,11 +518,9 @@ export function GameScreen(): React.JSX.Element {
       nameHeight,
       false,
     );
-    // The bar along the bottom has the width of the table's side of the screen, and the rail of the
-    // collapsed chat beside it.
-    const barRoom =
-      main.clientWidth + (sidePanel || !railShown ? 0 : CHAT_RAIL_WIDTH);
-    setSidePanel(barRoom < BAR_ONE_ROW_WIDTH || cardWidth < PANEL_CARD_WIDTH);
+    setSidePanel(
+      root.clientWidth < BAR_ONE_ROW_WIDTH || cardWidth < PANEL_CARD_WIDTH,
+    );
   });
 
   // In the wide layout of a 2-player game, the clue menu of the lowest hand opens below it when the
@@ -1399,10 +1395,7 @@ export function GameScreen(): React.JSX.Element {
           playZoneRef={playZoneRef}
           reducedMotion={settings.reducedMotion}
         />
-        <main
-          className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
-          ref={mainRef}
-        >
+        <main className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
           <div
             className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:pb-5 tw:phone:flex-col tw:phone:justify-start tw:phone:overflow-y-auto tw:phone:px-(--phone-side-padding)"
             ref={setTableElement}
