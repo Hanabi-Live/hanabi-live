@@ -1,5 +1,5 @@
 import { defaultSettings } from "@hanabi-live/data";
-import { getDefaultVariant } from "@hanabi-live/game";
+import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import type Konva from "konva";
 import { describe, expect, test, vi } from "vitest";
 import { settingsChanged } from "../../sessionSlice.ts";
@@ -26,7 +26,7 @@ const { globals } = await import("./UiGlobals.ts");
 const { set } = await import("./arrows.ts");
 
 describe("clue arrow suit pips", () => {
-  test("clears a reused color pip for a Quacker clue and a highlight", () => {
+  test("clears a reused color pip for a Duck clue and a highlight", () => {
     let pipVisible = false;
     const suitPip = {
       sceneFunc: vi.fn(),
@@ -87,10 +87,6 @@ describe("clue arrow suit pips", () => {
           batchDraw: vi.fn(),
         },
       },
-      // Character ID 34 is Quacker; player 1 has no character.
-      metadata: {
-        characterAssignments: [34, undefined],
-      },
       variant,
       state: {
         finished: false,
@@ -106,11 +102,13 @@ describe("clue arrow suit pips", () => {
     set(0, deck, 1, clue, false, true);
     expect(pipVisible).toBe(true);
 
-    // Reuse exactly the same arrow for a Quacker clue.
-    set(0, deck, 0, clue, false, true);
+    // Reuse exactly the same arrow for a Duck clue.
+    Object.assign(globals, { variant: getVariant("Duck (5 Suits)") });
+    set(0, deck, 1, clue, false, true);
     expect(pipVisible).toBe(false);
 
     // Regular clues still render their suit pip when appropriate.
+    Object.assign(globals, { variant });
     set(0, deck, 1, clue, false, true);
     expect(pipVisible).toBe(true);
 

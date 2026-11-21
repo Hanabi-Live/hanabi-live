@@ -1,9 +1,7 @@
 use anyhow::{Context, Result, ensure};
-pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
-use hanabi_engine::{Character, ClueType};
 use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
+pub use hanabi_engine::{DeckCard as Card, Options};
 use hanabi_engine::{PlayerAction, RecordedAction};
-use hanabi_protocol::{CharacterAssignment, ClueRank, ColorIndex};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
 
@@ -180,7 +178,6 @@ impl Game {
             player_names: vec!["Alice".into(), "Bob".into()],
             seed: None,
             deck: Some(deck),
-            characters: None,
             interpretation: hanabi_engine::Interpretation::Live,
         })
     }
@@ -290,37 +287,6 @@ pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> St
     };
     format!("p{num_players}v{variant_id}{letter}")
 }
-/// A character's catalog entry.
-pub fn catalog_character(
-    character: Character,
-) -> Result<&'static hanabi_protocol::CatalogCharacter> {
-    hanabi_engine::characters()
-        .iter()
-        .find(|c| c.name == character.name())
-        .with_context(|| format!("{} is missing from the catalog", character.name()))
-}
-
-/// The wire form of a character and the value that it was assigned, which the character's kind
-/// makes a clue color or a rank.
-pub fn character_assignment(
-    character: Character,
-    assigned: Option<i32>,
-) -> Result<CharacterAssignment> {
-    let character_id = catalog_character(character)?.id;
-    let missing = || format!("{} has no valid assigned value", character.name());
-    Ok(match character.assigned_value_type() {
-        None => CharacterAssignment::Plain { character_id },
-        Some(ClueType::Color) => CharacterAssignment::Color {
-            character_id,
-            color: assigned.and_then(ColorIndex::new).with_context(missing)?,
-        },
-        Some(ClueType::Rank) => CharacterAssignment::Rank {
-            character_id,
-            rank: assigned.and_then(ClueRank::new).with_context(missing)?,
-        },
-    })
-}
-
 /// The deck that a seed deals in a variant, by card order.
 pub fn seeded_deck(id: i32, seed: &str) -> Result<Vec<hanabi_protocol::CardIdentity>> {
     hanabi_engine::create_shuffled_deck(hanabi_engine::get_variant_by_id(u32::try_from(id)?)?, seed)

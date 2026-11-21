@@ -87,16 +87,6 @@ describe("getStartingPace", () => {
       ),
     ).toBe(19);
   });
-
-  test("returns 7 for 5-player No Variant with a Contrarian character", () => {
-    expect(
-      getStartingPace(
-        getStartingDeckSize(5, CARDS_PER_HAND_4_PLAYER, DEFAULT_VARIANT),
-        DEFAULT_VARIANT.suits.length * 5,
-        2,
-      ),
-    ).toBe(7);
-  });
 });
 
 describe("getMinEfficiency", () => {
@@ -134,12 +124,6 @@ describe("getMinEfficiency", () => {
     expect(
       getMinEfficiency(4, 4, CLUE_STARVED_VARIANT, CARDS_PER_HAND_4_PLAYER),
     ).toBeCloseTo(1.58);
-  });
-
-  test("returns about 25/19 for 5-player No Variant with a Contrarian detrimental character", () => {
-    expect(
-      getMinEfficiency(5, 2, DEFAULT_VARIANT, CARDS_PER_HAND_4_PLAYER),
-    ).toBeCloseTo(25 / 19);
   });
 });
 

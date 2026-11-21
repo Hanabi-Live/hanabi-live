@@ -117,7 +117,6 @@ export function createJsonFromReplay(tableId: TableId | undefined): void {
       variantId: currentState().metadata.options.variantId,
     },
     notes: [],
-    characters: [],
     ...(unchanged
       && currentState().metadata.seed !== undefined && {
         seed: currentState().metadata.seed,

@@ -137,13 +137,6 @@ export function getGameInfoTooltip(): string {
     content += tooltipItem(OptionIcons.AllOrNothing, "All or Nothing");
   }
 
-  if (globals.options.detrimentalCharacters) {
-    content += tooltipItem(
-      OptionIcons.DetrimentalCharacters,
-      "Detrimental Characters",
-    );
-  }
-
   content += "</ul>";
 
   return content;

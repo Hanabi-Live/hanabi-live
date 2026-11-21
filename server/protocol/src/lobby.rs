@@ -259,7 +259,6 @@ pub struct GameOptions {
     pub one_extra_card: bool,
     pub one_less_card: bool,
     pub all_or_nothing: bool,
-    pub detrimental_characters: bool,
 }
 
 /// Must match `hanabi_engine::Options::default()`; a server test checks this.
@@ -274,7 +273,6 @@ impl Default for GameOptions {
             one_extra_card: false,
             one_less_card: false,
             all_or_nothing: false,
-            detrimental_characters: false,
         }
     }
 }
@@ -316,8 +314,8 @@ pub enum Deal {
         #[schemars(length(min = 1))]
         suffix: String,
     },
-    /// A finished game that the table plays again with its deal, seats, characters, and options,
-    /// which replace the others.
+    /// A finished game that the table plays again with its deal, seats, and options, which
+    /// replace the others.
     Replay {
         game_id: GameId,
         /// The turn that the game starts from. Absent starts from the first turn.
@@ -558,7 +556,6 @@ named_enum! {
         SavedGameInconsistentPlayers => "savedGameInconsistentPlayers",
         SavedGameInvalidAction => "savedGameInvalidAction",
         SavedGameInvalidSeed => "savedGameInvalidSeed",
-        SavedGameInvalidCharacter => "savedGameInvalidCharacter",
         SavedGameUnknownVariant => "savedGameUnknownVariant",
         ServerDataInvalid => "serverDataInvalid",
         // A command or request that arrives while the server starts or drains.

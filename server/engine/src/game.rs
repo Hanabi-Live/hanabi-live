@@ -1,21 +1,14 @@
 use crate::{
-    ActionRejected, AssignedCharacter, Character, CharacterState, Clue, ClueType, CompletionTiming,
-    EndCondition, EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation,
-    Options, PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED,
-    assign_characters,
-    characters::{
-        character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
-        needs_second_action, validate_character_action, validate_character_clue,
-        validate_character_discard, validate_character_play,
-    },
-    create_shuffled_deck, get_variant, index,
+    ActionRejected, Clue, ClueType, CompletionTiming, EndCondition, EngineCard, EngineEvent,
+    EnginePlayer, EngineState, GameSetup, Interpretation, Options, PlayerAction, RecordedAction,
+    StackDirection, Termination, create_shuffled_deck, get_variant, index, int,
     rules::{
-        calculate_max_score, clue_cost, clue_cost_for, draw_card, follower_misplays,
-        has_remaining_play, remove_card, sees_card, touched_by, try_play, variant_for,
+        calculate_max_score, clue_cost, clue_cost_for, draw_card, has_remaining_play, remove_card,
+        touched_by, try_play, variant_for,
     },
     types::{GameEnd, Move, reject, seat, target_card},
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Result, ensure};
 use hanabi_protocol::{
     GameOverTurn, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
     START_CARD_RANK,
@@ -87,45 +80,16 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
                 && matches!(c.rank, MIN_RANK..=MAX_RANK | START_CARD_RANK)),
         "The prepared deck contains invalid card identities."
     );
-    // Every player has a character when detrimental characters are on, and none otherwise.
-    let assigned: Vec<Option<AssignedCharacter>> = if setup.options.detrimental_characters {
-        let characters = match setup.characters {
-            Some(c) => c,
-            None => assign_characters(
-                variant,
-                setup.seed.as_deref().unwrap_or(UNSEEDED),
-                &setup.player_names,
-            )?,
-        };
-        ensure!(
-            characters.len() == setup.player_names.len(),
-            "Invalid prepared character assignments."
-        );
-        characters.into_iter().map(Some).collect()
-    } else {
-        vec![None; setup.player_names.len()]
-    };
     let players = setup
         .player_names
         .into_iter()
-        .zip(assigned)
         .enumerate()
-        .map(|(index, (name, c))| {
-            let character_state = c
-                .map(|c| {
-                    let character =
-                        Character::from_name(&c.name).context("Unknown character assignment.")?;
-                    CharacterState::new(character, c.metadata, variant)
-                })
-                .transpose()?;
-            Ok(EnginePlayer {
-                name,
-                index,
-                character_state,
-                hand: vec![],
-            })
+        .map(|(index, name)| EnginePlayer {
+            name,
+            index,
+            hand: vec![],
         })
-        .collect::<Result<_>>()?;
+        .collect();
     let mut state = EngineState {
         active_player_index: 0,
         options: setup.options,
@@ -144,7 +108,6 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
                 played: false,
                 failed: false,
                 cannot_be_played: false,
-                insistent_touched: false,
             })
             .collect(),
         deck_index: 0,
@@ -166,7 +129,6 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
             })
             .collect(),
         turn: 0,
-        turns_inverted: false,
         clue_tokens: MAX_CLUES * clue_cost_for(variant),
         score: 0,
         max_score: variant.max_score,
@@ -215,7 +177,6 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
     if actor != state.active_player_index {
         return reject("It is not your turn, so you cannot perform an action.");
     }
-    validate_character_action(state, actor, *action)?;
     let variant = variant_for(state);
     match Move::of(*action) {
         Move::Card { order, play } => {
@@ -224,7 +185,6 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                 && order == state.deck_index;
             let in_hand = state.players[actor].hand.contains(&order);
             if play {
-                validate_character_play(state, actor, order)?;
                 if !deck_move && !in_hand {
                     return reject("You cannot play a card that is not in your hand.");
                 }
@@ -243,7 +203,6 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                         "You cannot discard while the team has {MAX_CLUES} clues."
                     ));
                 }
-                validate_character_discard(state, actor)?;
             }
         }
         Move::Clue { target, clue } => {
@@ -275,16 +234,12 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                     "You cannot give two clues of the same time in a row in this variant.",
                 );
             }
-            validate_character_clue(state, actor, target, clue)?;
             let may_touch_nothing = state.options.empty_clues
                 || match clue.clue_type {
                     ClueType::Color => variant.color_clues_touch_nothing,
                     ClueType::Rank => variant.rank_clues_touch_nothing,
                 };
-            let touches_a_card = touched_by(state, target, clue)
-                .iter()
-                .any(|&order| sees_card(state, actor, target, order));
-            if !touches_a_card && !may_touch_nothing {
+            if touched_by(state, target, clue).is_empty() && !may_touch_nothing {
                 return Err(ActionRejected {
                     message: "You cannot give a clue that touches 0 cards in the hand.".into(),
                     silent: state.options.speedrun,
@@ -315,9 +270,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
 }
 fn play(state: &mut EngineState, player: usize, order: usize) {
     state.actions.push(RecordedAction::Play(target_card(order)));
-    // Stack direction/start changes precede Follower's forced failure.
-    let playable = try_play(state, order);
-    if !playable || follower_misplays(state, player, &state.deck[order]) {
+    if !try_play(state, order) {
         state.deck[order].failed = true;
         state.strikes += 1;
         discard(state, player, order);
@@ -369,18 +322,17 @@ fn give_clue(
         list: touched.clone(),
         turn: state.turn,
     });
-    character_post_clue(state, actor, target, clue, &touched);
 }
 
 fn check_end(state: &mut EngineState) -> bool {
     use EndCondition::{
-        AllOrNothingFail, AllOrNothingSoftlock, CharacterSoftlock, IdleTimeout, Normal,
-        SpeedrunFail, Strikeout, TerminatedByPlayer, TerminatedByVote, Timeout,
+        AllOrNothingFail, AllOrNothingSoftlock, IdleTimeout, Normal, SpeedrunFail, Strikeout,
+        TerminatedByPlayer, TerminatedByVote, Timeout,
     };
     if state.end.is_some_and(|end| {
         matches!(
             end.condition,
-            Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout | CharacterSoftlock
+            Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout
         )
     }) {
         return true;
@@ -411,23 +363,20 @@ fn check_end(state: &mut EngineState) -> bool {
 fn finish_action(
     state: &mut EngineState,
     actor: usize,
-    action: RecordedAction,
     timing: Option<CompletionTiming>,
     votes: Option<Vec<usize>>,
 ) {
-    character_post_action(state, actor, action);
-    if has_taken_last_turn(state) {
+    // A player who has taken their last turn can no longer play the cards in their hand.
+    if state
+        .end_turn
+        .is_some_and(|end_turn| end_turn != state.turn + int(state.players.len()) + 1)
+    {
         for &order in &state.players[actor].hand {
             state.deck[order].cannot_be_played = true;
         }
     }
-    if !needs_second_action(state, actor, action) {
-        state.turn += 1;
-        let n = state.players.len();
-        state.active_player_index =
-            (state.active_player_index + if state.turns_inverted { n - 1 } else { 1 }) % n;
-    }
-    check_character_softlock(state);
+    state.turn += 1;
+    state.active_player_index = (state.active_player_index + 1) % state.players.len();
     let game_over = check_end(state);
     if game_over && let Some(end) = state.end {
         state.events.push(EngineEvent::GameOver {
@@ -515,7 +464,7 @@ pub fn apply_action(
             }
         }
     }
-    finish_action(state, actor, RecordedAction::from(*action), timing, None);
+    finish_action(state, actor, timing, None);
     Ok(())
 }
 
@@ -584,12 +533,6 @@ pub fn terminate_game(
     if let (Some(player), Some(t)) = (timed_out, &mut timing) {
         t.player_times[player] = 0;
     }
-    finish_action(
-        state,
-        termination.actor_index,
-        action,
-        timing,
-        termination.votes,
-    );
+    finish_action(state, termination.actor_index, timing, termination.votes);
     Ok(())
 }

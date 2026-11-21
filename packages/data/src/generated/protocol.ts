@@ -4,10 +4,7 @@ import {
   authorNotesSchema,
   cardIdentitySchema,
   cardOrderSchema,
-  characterIdSchema,
-  clueRankSchema,
   clueSchema,
-  colorIndexSchema,
   endConditionSchema,
   gameEventSchema,
   gameOptionsSchema,
@@ -481,30 +478,6 @@ export const gameFinishedSchema = z
   .readonly();
 
 /**
- * A player's detrimental character, in a game and in the replay format, with the value that some
- * characters are assigned. Every player has one when detrimental characters are on.
- */
-const characterAssignmentSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({ characterId: characterIdSchema, type: z.literal("plain") })
-    .readonly(),
-  z
-    .strictObject({
-      characterId: characterIdSchema,
-      color: colorIndexSchema,
-      type: z.literal("color"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      characterId: characterIdSchema,
-      rank: clueRankSchema,
-      type: z.literal("rank"),
-    })
-    .readonly(),
-]);
-
-/**
  * How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
  * the recipient sees the game from.
  */
@@ -570,10 +543,6 @@ const viewModeSchema = z.discriminatedUnion("type", [
  */
 export const gameInitSchema = z
   .strictObject({
-    /**
-     * Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
-     */
-    characters: z.array(characterAssignmentSchema).max(6).readonly(),
     /**
      * Whether the table chose its deal, so that the deck does not count down to a new seed.
      */
@@ -838,7 +807,6 @@ export const noticeCodeSchema = z.enum([
   "savedGameInconsistentPlayers",
   "savedGameInvalidAction",
   "savedGameInvalidSeed",
-  "savedGameInvalidCharacter",
   "savedGameUnknownVariant",
   "serverDataInvalid",
   "serverDraining",
@@ -1551,11 +1519,6 @@ export const replayGameSchema = z
   .strictObject({
     actions: z.array(replayGameActionSchema).max(512).readonly().optional(),
     /**
-     * One for each player when `detrimentalCharacters` is on, and empty otherwise. Empty with the
-     * option on deals them from the seed.
-     */
-    characters: z.array(characterAssignmentSchema).max(6).readonly().optional(),
-    /**
      * The deck, by card order. Empty deals the seed's deck.
      */
     deck: z.array(cardIdentitySchema).max(60).readonly().optional(),
@@ -1655,7 +1618,6 @@ const createTableSettingsSchema = z
     options: gameOptionsSchema.prefault({
       allOrNothing: false,
       deckPlays: false,
-      detrimentalCharacters: false,
       emptyClues: false,
       oneExtraCard: false,
       oneLessCard: false,
@@ -1692,7 +1654,6 @@ export const settingsSchema = z
       options: {
         allOrNothing: false,
         deckPlays: false,
-        detrimentalCharacters: false,
         emptyClues: false,
         oneExtraCard: false,
         oneLessCard: false,

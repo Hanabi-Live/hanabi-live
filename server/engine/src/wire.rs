@@ -65,12 +65,6 @@ pub fn wire_event(event: &EngineEvent) -> GameEvent {
             suit_index,
             rank,
         } => GameEvent::Play(card_event(player_index, order, suit_index, rank)),
-        E::CardIdentity {
-            player_index,
-            order,
-            suit_index,
-            rank,
-        } => GameEvent::CardIdentity(card_event(player_index, order, suit_index, rank)),
         E::Discard {
             player_index,
             order,

@@ -1,15 +1,10 @@
 import { assertDefined } from "complete-common";
-import { charactersInit } from "./charactersInit.ts";
 import { colorsInit } from "./colorsInit.ts";
 import { DEFAULT_VARIANT_NAME } from "./generated/protocol.ts";
-import type { Character } from "./interfaces/Character.ts";
 import type { Suit } from "./interfaces/Suit.ts";
 import type { Variant } from "./interfaces/Variant.ts";
 import { suitsInit } from "./suitsInit.ts";
 import { variantsInit } from "./variantsInit.ts";
-
-/** Indexed by character ID. */
-const CHARACTERS_MAP = charactersInit();
 
 /** Indexed by color name. */
 export const COLORS_MAP = colorsInit();
@@ -71,18 +66,4 @@ export function getDefaultVariant(): Variant {
 
 export function doesVariantExist(variantName: string): boolean {
   return VARIANTS_MAP_BY_NAME.has(variantName);
-}
-
-export function getCharacter(characterId: number): Character {
-  const character = CHARACTERS_MAP.get(characterId);
-  assertDefined(
-    character,
-    `Failed to find the character corresponding to ID ${characterId} in the "CHARACTERS" map.`,
-  );
-
-  return character;
-}
-
-export function getCharacters(): readonly Character[] {
-  return [...CHARACTERS_MAP.values()];
 }

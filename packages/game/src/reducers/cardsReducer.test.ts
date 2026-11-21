@@ -7,7 +7,6 @@ import type { CardState } from "../interfaces/CardState.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import { getDefaultMetadata } from "../metadata.ts";
 import {
-  actionCardIdentity,
   colorClue,
   discard,
   draw,
@@ -685,99 +684,6 @@ describe("cardsReducer", () => {
       expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
 
-    test("does not eliminate that possibility on Slow-Witted cards", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, undefined, 33],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      // P2 draws a yellow 1.
-      const gameStateDrawP2 = getGameStateWithHands([[], [], [0]]);
-      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metadata);
-
-      // P1 draws a red 5.
-      const gameStateDrawP1 = getGameStateWithHands([[], [1], [0]]);
-      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metadata);
-
-      // The remaining card cannot be a red 5 but the other player doesn't know that.
-      expect(isRedFivePossible(deck[0]!)).toBe(false);
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
-    });
-
-    test("does not eliminate that possibility on Oblivious cards for next player", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, undefined, 30],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      // P2 draws a yellow 1.
-      const gameStateDrawP2 = getGameStateWithHands([[], [], [0]]);
-      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metadata);
-
-      // P1 draws a red 5.
-      const gameStateDrawP1 = getGameStateWithHands([[], [1], [0]]);
-      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metadata);
-
-      // The remaining card cannot be a red 5 but the other player doesn't know that.
-      expect(isRedFivePossible(deck[0]!)).toBe(false);
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
-    });
-
-    test("does eliminate that possibility on Oblivious cards for previous player", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, 30, undefined],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      // P1 draws a yellow 1.
-      const gameStateDrawP2 = getGameStateWithHands([[], [0], []]);
-      deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metadata);
-
-      // P2 draws a red 5.
-      const gameStateDrawP1 = getGameStateWithHands([[], [0], [1]]);
-      deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metadata);
-
-      // Expect the remaining card to not have a possibility for a red 5.
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
-    });
-
-    test("does not eliminate that possibility on Blind Spot cards for previous player", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, 29, undefined],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      // P1 draws a yellow 1.
-      const gameStateDrawP2 = getGameStateWithHands([[], [0], []]);
-      deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP2, metadata);
-
-      // P2 draws a red 5.
-      const gameStateDrawP1 = getGameStateWithHands([[], [0], [1]]);
-      deck = cardsReducer(deck, draw(2, 1, 0, 5), gameStateDrawP1, metadata);
-
-      // The remaining card cannot be a red 5 but the other player doesn't know that.
-      expect(isRedFivePossible(deck[0]!)).toBe(false);
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
-    });
-
-    test("does eliminate that possibility on Blind Spot cards for next player", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, undefined, 29],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
-      // P2 draws a yellow 1.
-      const gameStateDrawP2 = getGameStateWithHands([[], [], [0]]);
-      deck = cardsReducer(deck, draw(2, 0, 1, 1), gameStateDrawP2, metadata);
-
-      // P1 draws a red 5.
-      const gameStateDrawP1 = getGameStateWithHands([[], [1], [0]]);
-      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, metadata);
-
-      // Expect the remaining card to not a possibility for a red 5.
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
-    });
-
     test("eliminates possibilities from previously drawn cards", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P0 draws a red 5.
@@ -952,38 +858,6 @@ describe("cardsReducer", () => {
         expect(isPossibleViaEmpathy(deck[3]!, 3, 5)).toBe(false);
         expect(isPossibleViaEmpathy(deck[3]!, 4, 5)).toBe(false);
       });
-    });
-  });
-
-  describe("cardIdentity", () => {
-    test("eliminates a possibility on Slow-Witted cards", () => {
-      const metadata = {
-        ...DEFAULT_METADATA,
-        characterAssignments: [undefined, undefined, 33],
-      } as const;
-      let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
-
-      // P2 draws a yellow 1.
-      const gameStateDrawY1 = getGameStateWithHands([[], [], [0]]);
-      deck = cardsReducer(deck, draw(2, 0, 1, 5), gameStateDrawY1, metadata);
-
-      // P1 draws a red 5.
-      const gameStateDrawR5 = getGameStateWithHands([[], [1], [0]]);
-      deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawR5, metadata);
-
-      // P1 draws a yellow 2.
-      const gameStateDrawY2 = getGameStateWithHands([[], [2, 1], [0]]);
-      deck = cardsReducer(deck, draw(1, 2, 1, 1), gameStateDrawY2, metadata);
-
-      deck = cardsReducer(
-        deck,
-        actionCardIdentity(1, 1, 0, 5),
-        gameStateDrawY2,
-        metadata,
-      );
-
-      // Expect the Slow-Witted card to remove a possibility for a red 5.
-      expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(false);
     });
   });
 

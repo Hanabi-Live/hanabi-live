@@ -6,12 +6,11 @@ import type {
   ClueRank,
   ClueType,
   Color,
-  PlayerIndex,
   StateClue,
   Variant,
 } from "@hanabi-live/game";
-import { getCharacterNameForPlayer, isDualColor } from "@hanabi-live/game";
-import { currentState, currentVariant } from "../gameSession.ts";
+import { isDualColor } from "@hanabi-live/game";
+import { currentVariant } from "../gameSession.ts";
 import type { CardClueMarker, ClueMarkerView, ColorSymbol } from "./Card.tsx";
 import { getRankClueLabel } from "./Card.tsx";
 
@@ -60,28 +59,19 @@ export function getColorSymbol(
 }
 
 /**
- * How a clue shows on a token. Duck clues and the clues of a Quacker (until the game ends) hide the
- * clue, so they show a duck. "Cow & Pig" clues show only the clue's type: a cow with a badge of
- * every color for a color, and a pig with a "#" badge for a rank. These rules hold for every
- * viewer, even when the server sends spectators and replays the real clue.
+ * How a clue shows on a token. Duck clues hide the clue, so they show a duck. "Cow & Pig" clues
+ * show only the clue's type: a cow with a badge of every color for a color, and a pig with a "#"
+ * badge for a rank. These rules hold for every viewer, even when the server sends spectators and
+ * replays the real clue.
  */
 function getMarker(
   visibleType: ClueType | undefined,
   color: Color | undefined,
   rank: ClueRank | undefined,
-  giver: PlayerIndex | undefined,
   colorblindMode: boolean,
 ): ClueMarkerView {
   const variant = currentVariant();
-  const giverCharacterName = getCharacterNameForPlayer(
-    giver,
-    currentState().metadata.characterAssignments,
-  );
-  if (
-    visibleType === undefined
-    || variant.duck
-    || (giverCharacterName === "Quacker" && !currentState().finished)
-  ) {
+  if (visibleType === undefined || variant.duck) {
     return {
       type: "sound",
       emoji: QUACK_EMOJI,
@@ -125,12 +115,11 @@ function getMarker(
 /** How the clue being chosen shows on the cards that it would touch. */
 export function getPreviewMarker(
   clue: Clue,
-  giver: PlayerIndex | undefined,
   colorblindMode: boolean,
 ): ClueMarkerView {
   return clue.type === "color"
-    ? getMarker("color", clue.value, undefined, giver, colorblindMode)
-    : getMarker("rank", undefined, clue.value, giver, colorblindMode);
+    ? getMarker("color", clue.value, undefined, colorblindMode)
+    : getMarker("rank", undefined, clue.value, colorblindMode);
 }
 
 /** How a clue shows on the arrows and beside the name of the player who gave it. */
@@ -144,29 +133,16 @@ export function getClueMarker(
         "color",
         currentVariant().clueColors[clue.color],
         undefined,
-        clue.giver,
         colorblindMode,
       );
     }
 
     case "rank": {
-      return getMarker(
-        "rank",
-        undefined,
-        clue.rank,
-        clue.giver,
-        colorblindMode,
-      );
+      return getMarker("rank", undefined, clue.rank, colorblindMode);
     }
 
     case undefined: {
-      return getMarker(
-        clue.visibleType,
-        undefined,
-        undefined,
-        clue.giver,
-        colorblindMode,
-      );
+      return getMarker(clue.visibleType, undefined, undefined, colorblindMode);
     }
   }
 }

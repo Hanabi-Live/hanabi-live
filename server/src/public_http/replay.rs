@@ -81,31 +81,6 @@ pub(super) async fn export(
         one_extra_card: row.one_extra_card,
         one_less_card: row.one_less_card,
         all_or_nothing: row.all_or_nothing,
-        detrimental_characters: row.detrimental_characters,
-    };
-    let characters = if row.detrimental_characters {
-        let mut characters = Vec::new();
-        for p in &players {
-            let invalid = || {
-                export_failure(
-                    hanabi_protocol::NoticeCode::SavedGameInvalidCharacter,
-                    "The saved game's character is not in the catalog, or has an invalid value",
-                    id,
-                )
-            };
-            let character = p
-                .character_id
-                .and_then(|character| catalog::character(i64::from(character)))
-                .and_then(hanabi_engine::Character::from_name)
-                .ok_or_else(invalid)?;
-            characters.push(
-                crate::game::character_assignment(character, p.assigned_metadata.map(i32::from))
-                    .map_err(|_| invalid())?,
-            );
-        }
-        characters
-    } else {
-        Vec::new()
     };
     let actions = archive
         .actions
@@ -129,7 +104,6 @@ pub(super) async fn export(
         } else {
             vec![]
         },
-        characters,
         seed: Some(row.seed.into()),
     })
 }

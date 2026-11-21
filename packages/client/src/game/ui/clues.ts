@@ -59,13 +59,10 @@ export function checkLegal(): void {
     {
       clue: clueButton.clue,
       numTouched: touchedAtLeastOneCard ? 1 : 0,
-      giverIndex: globals.metadata.ourPlayerIndex,
-      receiverIndex: who,
       lastClueType: globals.state.visibleState!.clues.at(-1)?.type,
     },
     globals.variant,
     globals.options,
-    globals.metadata.characterAssignments,
   );
 
   globals.elements.giveClueButton!.setEnabled(enabled);

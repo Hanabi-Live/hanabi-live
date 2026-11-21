@@ -141,19 +141,6 @@
     []
   ],
 
-  // "characters" is an array of character objects, containing the "Detrimental Character"
-  // specification for each player. "Detrimental Characters" is an optional setting used on the
-  // website that is based on a post from Sean McCarthy:
-  // https://boardgamegeek.com/thread/1688194/hanabi-characters-variant
-  // This field is optional.
-  "characters": [
-    { "name": "Fuming", "metadata": 2 },
-    { "name": "Dumbfounded", "metadata": 3 },
-    { "name": "Conservative", "metadata": -1 },
-    { "name": "Greedy", "metadata": -1 },
-    { "name": "Picky", "metadata": -1 }
-  ],
-
   // "gameId" is an integer that corresponds to the database ID of the game on the "Hanab Live"
   // website. This field is optional.
   "gameId": 12345,

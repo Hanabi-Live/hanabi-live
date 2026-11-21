@@ -6,7 +6,6 @@ import type { PlayerIndex } from "./types/PlayerIndex.ts";
 import type { Rank } from "./types/Rank.ts";
 import type { SuitIndex } from "./types/SuitIndex.ts";
 import type {
-  ActionCardIdentity,
   ActionClue,
   ActionDiscard,
   ActionDraw,
@@ -117,24 +116,6 @@ export function play(
 ): ActionPlay {
   return {
     type: "play",
-    playerIndex,
-    order: order as CardOrder,
-    ...identityField({
-      suitIndex,
-      rank,
-    }),
-  };
-}
-
-/** Helper functions to build a `ActionCardIdentity` with a compact syntax. For use in tests. */
-export function actionCardIdentity(
-  playerIndex: PlayerIndex,
-  order: number, // We do not want to force the consumer to brand their numbers.
-  suitIndex: SuitIndex,
-  rank: Rank,
-): ActionCardIdentity {
-  return {
-    type: "cardIdentity",
     playerIndex,
     order: order as CardOrder,
     ...identityField({

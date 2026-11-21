@@ -3,20 +3,12 @@
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { getVariantById } from "../gameData.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import type { TurnState } from "../interfaces/TurnState.ts";
 import { isInitialDealFinished } from "../rules/deck.ts";
-import {
-  getEndTurn,
-  getNextPlayerIndex,
-  shouldEndTurnAfterClue,
-  shouldEndTurnAfterDraw,
-  shouldPlayOrderInvert,
-} from "../rules/turn.ts";
+import { getEndTurn, getNextPlayerIndex } from "../rules/turn.ts";
 import type { GameAction } from "../types/gameActions.ts";
-import { getCharacterNameForPlayer } from "./reducerHelpers.ts";
 
 export function turnReducer(
   turn: TurnState,
@@ -35,12 +27,6 @@ function turnReducerFunction(
   gameState: GameState,
   metadata: GameMetadata,
 ) {
-  const variant = getVariantById(metadata.options.variantId);
-  const characterName = getCharacterNameForPlayer(
-    turn.currentPlayerIndex,
-    metadata.characterAssignments,
-  );
-
   switch (action.type) {
     case "play": {
       turn.cardsPlayedOrDiscardedThisTurn++;
@@ -50,12 +36,7 @@ function turnReducerFunction(
           turn.segment++;
         }
 
-        nextTurn(
-          turn,
-          gameState.cardsRemainingInTheDeck,
-          characterName,
-          metadata,
-        );
+        nextTurn(turn, gameState.cardsRemainingInTheDeck, metadata);
       }
 
       break;
@@ -64,54 +45,26 @@ function turnReducerFunction(
     case "discard":
     case "misplay": {
       turn.cardsPlayedOrDiscardedThisTurn++;
-      if (action.type === "discard") {
-        turn.cardsDiscardedThisTurn++;
-      }
 
       if (gameState.cardsRemainingInTheDeck === 0) {
         if (turn.segment !== undefined) {
           turn.segment++;
         }
 
-        if (
-          shouldEndTurnAfterDraw(
-            turn.cardsPlayedOrDiscardedThisTurn,
-            turn.cardsDiscardedThisTurn,
-            characterName,
-            gameState.clueTokens,
-            variant,
-          )
-        ) {
-          nextTurn(
-            turn,
-            gameState.cardsRemainingInTheDeck,
-            characterName,
-            metadata,
-          );
-        }
+        nextTurn(turn, gameState.cardsRemainingInTheDeck, metadata);
       }
 
       break;
     }
 
     case "clue": {
-      turn.cluesGivenThisTurn++;
-
       assertDefined(
         turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
 
       turn.segment++;
-
-      if (shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterName)) {
-        nextTurn(
-          turn,
-          gameState.cardsRemainingInTheDeck,
-          characterName,
-          metadata,
-        );
-      }
+      nextTurn(turn, gameState.cardsRemainingInTheDeck, metadata);
       break;
     }
 
@@ -123,29 +76,11 @@ function turnReducerFunction(
         ) {
           turn.segment = 0;
         }
-      } else {
-        // We do not want to increment the segment if we are drawing the final card of the deck in
-        // order to perform a bottom-deck blind-play.
-        if (turn.cardsPlayedOrDiscardedThisTurn > 0) {
-          turn.segment++;
-        }
-
-        if (
-          shouldEndTurnAfterDraw(
-            turn.cardsPlayedOrDiscardedThisTurn,
-            turn.cardsDiscardedThisTurn,
-            characterName,
-            gameState.clueTokens,
-            variant,
-          )
-        ) {
-          nextTurn(
-            turn,
-            gameState.cardsRemainingInTheDeck,
-            characterName,
-            metadata,
-          );
-        }
+      } else if (turn.cardsPlayedOrDiscardedThisTurn > 0) {
+        // The turn ends when a card is drawn after a play or a discard. A draw of the final card of
+        // the deck to perform a bottom-deck blind-play comes before the play, so it does not.
+        turn.segment++;
+        nextTurn(turn, gameState.cardsRemainingInTheDeck, metadata);
       }
 
       break;
@@ -200,19 +135,12 @@ function turnReducerFunction(
 function nextTurn(
   state: Draft<TurnState>,
   deckSize: number,
-  characterName: string,
   metadata: GameMetadata,
 ) {
   state.turnNum++;
-
-  if (shouldPlayOrderInvert(characterName)) {
-    state.playOrderInverted = !state.playOrderInverted;
-  }
-
   state.currentPlayerIndex = getNextPlayerIndex(
     state.currentPlayerIndex,
     metadata.options.numPlayers,
-    state.playOrderInverted,
   );
 
   if (deckSize === 0 && state.endTurnNum === undefined) {
@@ -220,6 +148,4 @@ function nextTurn(
   }
 
   state.cardsPlayedOrDiscardedThisTurn = 0;
-  state.cardsDiscardedThisTurn = 0;
-  state.cluesGivenThisTurn = 0;
 }

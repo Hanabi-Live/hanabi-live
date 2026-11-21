@@ -225,7 +225,6 @@ fn play_game(index: usize, variant_name: &str) -> anyhow::Result<Game> {
             .collect(),
         seed: Some(seed.clone()),
         deck: Some(create_shuffled_deck(variant, &seed)),
-        characters: None,
         interpretation: hanabi_engine::Interpretation::Live,
         options: options.clone(),
     })?;

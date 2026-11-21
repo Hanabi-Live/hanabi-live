@@ -37,7 +37,6 @@ export const END_CONDITION_TEXT = {
   terminatedByVote: "Terminated by vote",
   speedrunFail: "Speedrun failed",
   idleTimeout: "Idle too long",
-  characterSoftlock: "Stuck",
   allOrNothingFail: "Failed",
   allOrNothingSoftlock: "Stuck",
 } as const satisfies Record<EndCondition, string | undefined>;
@@ -206,12 +205,6 @@ function getOptionItems(
     items.push({
       icon: OptionIcons.AllOrNothing,
       text: "All or Nothing",
-    });
-  }
-  if (options.detrimentalCharacters) {
-    items.push({
-      icon: OptionIcons.DetrimentalCharacters,
-      text: "Detrimental Characters",
     });
   }
   return items;

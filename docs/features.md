@@ -333,16 +333,6 @@ that have not been played yet and have only one copy remaining.)
 - (This is the fourth
   [official variant](https://github.com/hanabi/hanabi.github.io/blob/main/misc/rules.md#multicolor-variants).)
 
-### Detrimental Character Assignments
-
-- Each game has the option to enable "Detrimental Character Assignments". When
-  enabled, it will restrict players in additional ways beyond the normal rules.
-- The characters are loosely based on
-  [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant)
-  from Sean McCarthy on the Board Game Geek forums.
-- More information on the characters are listed on
-  [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/characters.md).
-
 ### Password-Protected Games
 
 - Each game has the option to be created with a password.
@@ -916,8 +906,8 @@ The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or
 `score`. Seed lists filter by `gameId` or `score`, and the other lists by any
 column. A sort by `score` puts the games with an option that changes the score
-(Bottom-Deck Blind-Plays, Empty Clues, One Extra Card, One Less Card, All or
-Nothing, or Detrimental Characters) after the other games.
+(Bottom-Deck Blind-Plays, Empty Clues, One Extra Card, One Less Card, or All or
+Nothing) after the other games.
 
 `filter[variant]` finds the games whose variant's name contains its text, and
 `filter[player]` finds the games with a player whose name contains each of its

@@ -130,8 +130,6 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
     const oneExtraCard = urlParams.get("oneExtraCard") === "true";
     const oneLessCard = urlParams.get("oneLessCard") === "true";
     const allOrNothing = urlParams.get("allOrNothing") === "true";
-    const detrimentalCharacters =
-      urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
     // A blank seed deals one that none of the players have played.
     const deal = readDeal(
@@ -155,7 +153,6 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
             oneExtraCard,
             oneLessCard,
             allOrNothing,
-            detrimentalCharacters,
           },
           ...(deal !== undefined && { deal }),
         },

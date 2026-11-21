@@ -597,7 +597,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           maxPlayers: 6,
           options: {
             variantId: getVariant("Rainbow (6 Suits)").id,
-            detrimentalCharacters: true,
             oneLessCard: true,
             emptyClues: true,
           },
@@ -648,11 +647,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(game.init.playerNames).toHaveLength(6);
         expect(game.init.options).toMatchObject({
           variantId: getVariant("Rainbow (6 Suits)").id,
-          detrimentalCharacters: true,
           oneLessCard: true,
           emptyClues: true,
         });
-        expect(game.init.characters).toHaveLength(6);
         const hand = game.history.events.filter(
           (event) =>
             event.type === "draw"
@@ -758,7 +755,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const original = games[0];
         assertDefined(original, "Missing original player bootstrap.");
         expect(imported.init.options).toMatchObject(original.init.options);
-        expect(imported.init.characters).toEqual(original.init.characters);
         expect(
           imported.history.events
             .filter((event) => event.type === "draw")
@@ -846,7 +842,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
               turn: importedPhase.sharedReplay.turn,
             },
           });
-          expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.events).toEqual(imported.history.events);
           returningObserver.send("tableLeave", {
             tableId: pending.tableId,

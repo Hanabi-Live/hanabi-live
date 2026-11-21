@@ -139,17 +139,6 @@ pub(super) async fn load_replay(
     *options = historical.game.options.clone();
     extra.custom_seed = historical.seed;
     extra.custom_num_players = Some(options.num_players);
-    extra.custom_characters = historical
-        .game
-        .players
-        .iter()
-        .map(|p| {
-            p.character().map(|c| hanabi_engine::AssignedCharacter {
-                name: c.name().into(),
-                metadata: p.assigned_value(),
-            })
-        })
-        .collect();
     extra.custom_actions.clone_from(&historical.game.actions);
     Ok(())
 }
@@ -264,11 +253,6 @@ pub(super) fn option_changes(
             "All or Nothing",
             options.all_or_nothing,
             current.all_or_nothing,
-        ),
-        (
-            "Detrimental Characters",
-            options.detrimental_characters,
-            current.detrimental_characters,
         ),
     ] {
         if proposed != previous {

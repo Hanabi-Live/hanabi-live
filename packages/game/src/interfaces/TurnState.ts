@@ -2,11 +2,9 @@ import type { PlayerIndex } from "../types/PlayerIndex.ts";
 
 export interface TurnState {
   /**
-   * "segment" mostly corresponds to the turn, with some exceptions:
-   * 1) Some Detrimental Characters can take two actions, and each action should be on a separate
-   *    replay segment.
-   * 2) The server sends the total amount of time that each player took at the end of the game; this
-   *    should exist on a separate replay segment to avoid cluttering the final action of the game.
+   * "segment" mostly corresponds to the turn. The exception is the total amount of time that each
+   * player took, which the server sends at the end of the game. It is on a separate replay segment
+   * to avoid cluttering the final action of the game.
    *
    * The client makes a copy of the entire game state whenever "segment" changes.
    *
@@ -22,9 +20,6 @@ export interface TurnState {
    */
   readonly currentPlayerIndex: PlayerIndex | undefined;
 
-  readonly playOrderInverted: boolean;
   readonly endTurnNum: number | undefined;
   readonly cardsPlayedOrDiscardedThisTurn: number;
-  readonly cardsDiscardedThisTurn: number;
-  readonly cluesGivenThisTurn: number;
 }

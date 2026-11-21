@@ -322,8 +322,7 @@
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
+          "allOrNothing": false
         }
       }
     },
@@ -552,8 +551,7 @@
             "emptyClues": false,
             "oneExtraCard": false,
             "oneLessCard": false,
-            "allOrNothing": false,
-            "detrimentalCharacters": false
+            "allOrNothing": false
           }
         }
       }
@@ -625,7 +623,6 @@
             "oneExtraCard": false,
             "oneLessCard": false,
             "allOrNothing": false,
-            "detrimentalCharacters": false,
             "timeControl": {
               "baseSeconds": 300,
               "perTurnSeconds": 10
@@ -680,8 +677,7 @@
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
+          "allOrNothing": false
         }
       }
     },
@@ -744,8 +740,7 @@
             "emptyClues": false,
             "oneExtraCard": false,
             "oneLessCard": false,
-            "allOrNothing": false,
-            "detrimentalCharacters": false
+            "allOrNothing": false
           }
         }
       },
@@ -950,8 +945,7 @@
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
+          "allOrNothing": false
         }
       }
     },

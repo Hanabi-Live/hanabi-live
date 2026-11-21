@@ -370,7 +370,45 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 /// The formats that older servers wrote, each with the format after it and the upgrade between
 /// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
 /// only once no deployed server writes its format. Format 21 is the oldest that a server reads.
-const UPGRADES: &[(&str, &str, Upgrade)] = &[];
+const UPGRADES: &[(&str, &str, Upgrade)] =
+    &[("hanabi-live-21", "hanabi-live-22", without_characters)];
+
+/// Format 21 kept the Detrimental Characters option, a table's characters to play again, and each
+/// game's characters. The server no longer has their rules, so a table that uses them cannot be
+/// read.
+fn without_characters(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    fn remove(value: &mut Value) -> Result<()> {
+        match value {
+            Value::Object(fields) => {
+                ensure!(
+                    fields
+                        .remove("detrimentalCharacters")
+                        .is_none_or(|on| on == false),
+                    "Detrimental Characters were removed"
+                );
+                ensure!(
+                    fields
+                        .remove("customCharacters")
+                        .is_none_or(|characters| characters.is_null()),
+                    "Detrimental Characters were removed"
+                );
+                fields.values_mut().try_for_each(remove)
+            }
+            Value::Array(items) => items.iter_mut().try_for_each(remove),
+            _ => Ok(()),
+        }
+    }
+    remove(head)?;
+    if let Some(Value::Object(setup)) = head.pointer_mut("/phase/snapshot/game/setup") {
+        ensure!(
+            setup
+                .remove("characters")
+                .is_none_or(|characters| characters.is_null()),
+            "Detrimental Characters were removed"
+        );
+    }
+    Ok(())
+}
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
 /// `head` holds the game's start.

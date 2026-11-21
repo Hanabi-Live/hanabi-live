@@ -40,7 +40,6 @@ const EXTRA_OPTION_NAMES = [
   "oneExtraCard",
   "oneLessCard",
   "allOrNothing",
-  "detrimentalCharacters",
 ] as const satisfies readonly ExtraOption[];
 
 /** The clock that a timed table has unless its creator chooses another. */

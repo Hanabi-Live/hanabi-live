@@ -1242,8 +1242,8 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
     let outcome = async {
         let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES('Replayed game',2,0,true,120,20,false,false,false,false,false,false,false,'p2v0s1',0,3,4,NOW(),NOW())
+             all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             VALUES('Replayed game',2,0,true,120,20,false,false,false,false,false,false,'p2v0s1',0,3,4,NOW(),NOW())
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
@@ -1289,8 +1289,8 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
     let outcome = async {
         let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES('Linked game',2,0,false,NULL,NULL,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
+             all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             VALUES('Linked game',2,0,false,NULL,NULL,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
@@ -2718,9 +2718,9 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
     let outcome = async {
         let games: Vec<i32> = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
              SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,NULL,NULL,
-             n IN (8,9),false,false,false,false,false,false,
+             n IN (8,9),false,false,false,false,false,
              'stats-'||n,CASE WHEN n IN (1,8) THEN 25 ELSE 0 END,30,
              CASE n WHEN 3 THEN 2 WHEN 4 THEN 3 WHEN 5 THEN 4 WHEN 6 THEN 6
                     WHEN 7 THEN 10 WHEN 9 THEN 5 ELSE 1 END,NOW(),NOW()
@@ -3716,75 +3716,6 @@ async fn a_link_to_an_ended_table_forgets_it_without_a_warning() -> Result<()> {
 }
 
 #[tokio::test]
-async fn saved_characters_store_none_as_null() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
-        return Ok(());
-    };
-    let outcome = async {
-        for characters in [true, false] {
-            let id = h
-                .create(
-                    0,
-                    "Characters",
-                    json!({"options":{"detrimentalCharacters":characters}}),
-                )
-                .await?;
-            h.send(1, "tableJoin", json!({"tableId":id})).await?;
-            h.start(0, id).await?;
-            h.receive_game(0).await?;
-            let (table, _) = h.snapshot(id).await?;
-            let expected = table
-                .game()
-                .context("Missing game")?
-                .game
-                .players
-                .iter()
-                .map(|p| {
-                    let character = p
-                        .character()
-                        .map(|c| {
-                            Ok::<_, anyhow::Error>(i16::try_from(
-                                crate::game::catalog_character(c)?.id.get(),
-                            )?)
-                        })
-                        .transpose()?;
-                    let metadata = p.assigned_value().map(i16::try_from).transpose()?;
-                    Ok((character, metadata))
-                })
-                .collect::<Result<Vec<_>>>()?;
-            ensure!(
-                expected.iter().all(|(c, _)| c.is_some() == characters),
-                "Unexpected characters: {expected:?}"
-            );
-            h.send(0, "tableTerminate", json!({"tableId":id})).await?;
-            h.barrier(0).await?;
-            let saved = sqlx::query!(
-                "SELECT p.character_id,p.assigned_metadata FROM game_participants p
-                 JOIN games g ON g.id=p.game_id WHERE g.detrimental_characters=$1 ORDER BY p.seat",
-                characters
-            )
-            .fetch_all(&h.store.primary)
-            .await?
-            .into_iter()
-            .map(|r| (r.character_id, r.assigned_metadata))
-            .collect::<Vec<_>>();
-            ensure!(
-                saved == expected,
-                "Saved characters {saved:?} instead of {expected:?}"
-            );
-            h.send(0, "tableLeave", json!({"tableId":id})).await?;
-            h.send(1, "tableLeave", json!({"tableId":id})).await?;
-            h.barrier(0).await?;
-            h.barrier(1).await?;
-        }
-        Ok(())
-    }
-    .await;
-    h.close().await?;
-    outcome
-}
-
-#[tokio::test]
 async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
@@ -4121,7 +4052,6 @@ async fn actors_run_multiplayer_variants_and_recover_all_runtime_mutations() -> 
                         "variantId": 51,
                         "timeControl": {"baseSeconds": 120, "perTurnSeconds": 20},
                         "oneExtraCard": true,
-                        "detrimentalCharacters": true,
                     },
                 }),
             )

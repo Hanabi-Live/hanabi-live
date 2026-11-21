@@ -3,7 +3,7 @@
 //!
 //! `create_game` takes already ordered seats and an optional already ordered
 //! deck. `prepare_game_order` supports lobby deck/seat shuffling on a shared
-//! RNG stream; character assignment intentionally starts an independent stream.
+//! RNG stream.
 //! `apply_action` and `terminate_game` change the state in place and append
 //! their events to it. A rejected action or termination leaves the state as it
 //! was. Both are deterministic, so a game can be stored as its setup and the
@@ -17,8 +17,6 @@
 //! timing. Custom engine decks can be shorter than a catalog deck (the separate
 //! public replay-import validator may impose stricter import requirements).
 mod catalog;
-mod character;
-mod characters;
 mod game;
 mod recipe;
 mod rules;
@@ -31,7 +29,6 @@ mod random;
 
 pub use anyhow::Result;
 pub use catalog::*;
-pub use character::{Character, CharacterState};
 pub use game::*;
 pub use rules::{
     calculate_max_score, clue_cost, clue_cost_for, has_remaining_play, touched_orders,

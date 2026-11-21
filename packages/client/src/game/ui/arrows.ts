@@ -4,7 +4,6 @@
 import type { Clue, HiddenClue, PlayerIndex, Suit } from "@hanabi-live/game";
 import {
   EVEN_RANK_CLUE,
-  getCharacterNameForPlayer,
   isCardDiscarded,
   isCardInPlayerHand,
   isCardPlayed,
@@ -203,16 +202,8 @@ export function set(
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given.
-    const giverCharacterName = getCharacterNameForPlayer(
-      giverPlayerIndex,
-      globals.metadata.characterAssignments,
-    );
     const visibleType = clue.type ?? clue.visibleType;
-    if (
-      visibleType === undefined
-      || globals.variant.duck
-      || (giverCharacterName === "Quacker" && !globals.state.finished)
-    ) {
+    if (visibleType === undefined || globals.variant.duck) {
       // Do not show the circle in variants where the clue types are supposed to be hidden.
       arrow.circle.hide();
       arrow.text.hide();

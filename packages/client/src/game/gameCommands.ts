@@ -3,7 +3,7 @@
 // such as for in-game replays.
 
 import type { ReplyData, ServerEventData, TableId } from "@hanabi-live/data";
-import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
+import type { GameMetadata, Options } from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getEndGameLength,
@@ -13,8 +13,6 @@ import {
   toGameAction,
   toHypotheticalAction,
 } from "@hanabi-live/game";
-import type { Tuple } from "complete-common";
-import { newArray } from "complete-common";
 import type { Connection } from "../Connection.ts";
 import { globals as lobbyGlobals } from "../Globals.ts";
 import { sendSelfPmFromServer } from "../chat.ts";
@@ -567,16 +565,6 @@ function setUrl(tableId: number, data: GameInit) {
   );
 }
 
-/** The clue color index or rank that a character was assigned, if it has one. */
-function assignedValue(
-  character: GameInit["characters"][number],
-): number | undefined {
-  if (character.type === "color") {
-    return character.color;
-  }
-  return character.type === "rank" ? character.rank : undefined;
-}
-
 function initStateStore(data: GameInit) {
   const variant = getVariantById(data.options.variantId);
 
@@ -586,20 +574,8 @@ function initStateStore(data: GameInit) {
     numPlayers: playerNames.length,
   };
 
-  // The list is empty unless detrimental characters are on.
-  let characterAssignments = data.characters.map(
-    (character) => character.characterId,
-  ) as Tuple<number | undefined, NumPlayers> | [];
-
-  if (characterAssignments.length === 0) {
-    characterAssignments = newArray(options.numPlayers, undefined) as Tuple<
-      number | undefined,
-      NumPlayers
-    >;
-  }
-
   // Create the state store (using the Redux library).
-  const endGameLength = getEndGameLength(options, characterAssignments);
+  const endGameLength = getEndGameLength(options);
   const cardsPerHand = getCardsPerHand(options);
   const minEfficiency = getMinEfficiency(
     options.numPlayers,
@@ -614,13 +590,6 @@ function initStateStore(data: GameInit) {
     playerNames,
     ourPlayerIndex:
       "ourPlayerIndex" in data.mode ? data.mode.ourPlayerIndex : undefined,
-    characterAssignments,
-    characterMetadata: toPlayerTuple(
-      data.characters.length === 0
-        ? newArray(options.numPlayers, undefined)
-        : data.characters.map(assignedValue),
-      "character metadata entries",
-    ),
 
     minEfficiency,
     hardVariant,

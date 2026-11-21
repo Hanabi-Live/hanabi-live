@@ -1,4 +1,4 @@
-use crate::game::{AssignedCharacter, Game, Options};
+use crate::game::{Game, Options};
 use anyhow::{Context, Result, ensure};
 use hanabi_engine::EndCondition;
 use hanabi_engine::RecordedAction;
@@ -18,7 +18,7 @@ use std::{
 };
 use time::OffsetDateTime;
 
-pub const FORMAT: &str = "hanabi-live-21";
+pub const FORMAT: &str = "hanabi-live-22";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -54,7 +54,6 @@ impl Player {
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
     pub custom_actions: Vec<RecordedAction>,
-    pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,
     /// The seed that the table requested, without the player count and variant that prefix it.
@@ -727,7 +726,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         one_extra_card,
         one_less_card,
         all_or_nothing,
-        detrimental_characters,
         // Tables report their name and player limit apart from their options.
         table_name: _,
         max_players: _,
@@ -744,7 +742,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         one_extra_card: *one_extra_card,
         one_less_card: *one_less_card,
         all_or_nothing: *all_or_nothing,
-        detrimental_characters: *detrimental_characters,
     }
 }
 
@@ -759,7 +756,6 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<O
         one_extra_card,
         one_less_card,
         all_or_nothing,
-        detrimental_characters,
     } = options;
     let variant = hanabi_engine::get_variant_by_id(variant_id.get())?;
     Ok(Options {
@@ -774,7 +770,6 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<O
         one_extra_card: *one_extra_card,
         one_less_card: *one_less_card,
         all_or_nothing: *all_or_nothing,
-        detrimental_characters: *detrimental_characters,
         table_name: None,
         max_players: None,
     })

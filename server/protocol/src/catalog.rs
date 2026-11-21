@@ -1,4 +1,4 @@
-//! The game catalog: the records of variants, suits, colors, and characters.
+//! The game catalog: the records of variants, suits, and colors.
 
 #[cfg_attr(
     not(test),
@@ -165,23 +165,5 @@ catalog_entry! {
         flag funnels,
         flag chimneys,
         flag sudoku,
-    }
-}
-
-catalog_entry! {
-    /// An entry in `characters.json`: a detrimental character.
-    #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-    #[serde(rename_all = "camelCase", deny_unknown_fields)]
-    pub struct CatalogCharacter {
-        #[schemars(length(min = 1))]
-        pub name: String,
-        /// The first character has an ID of 0.
-        pub id: CharacterId,
-        #[schemars(length(min = 1))]
-        pub description: String,
-        #[schemars(length(min = 1))]
-        pub emoji: String,
-        /// Excluded from two-player games.
-        flag not_two_player,
     }
 }

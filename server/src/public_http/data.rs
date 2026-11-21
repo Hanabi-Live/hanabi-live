@@ -7,15 +7,16 @@ use sqlx::{Postgres, QueryBuilder};
 
 const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
     g.time_base,g.time_per_turn,g.speedrun,g.deck_plays,g.empty_clues,
-    g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
+    g.one_extra_card,g.one_less_card,g.all_or_nothing,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
 const SORTABLE_COLUMNS: &[Column] = &[Column::GameId, Column::NumPlayers, Column::Score];
 
 /// Whether a game has an option that changes its score: the options of
-/// `crate::model::ScoreModifier`, which keep a score from counting as a normal one, and
-/// Detrimental Characters. False sorts first.
-const MODIFIED_SCORE: &str = "(g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card OR g.all_or_nothing OR g.detrimental_characters)";
+/// `crate::model::ScoreModifier`, which keep a score from counting as a normal one. False sorts
+/// first.
+const MODIFIED_SCORE: &str =
+    "(g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card OR g.all_or_nothing)";
 
 const fn column_field(column: Column) -> &'static str {
     match column {

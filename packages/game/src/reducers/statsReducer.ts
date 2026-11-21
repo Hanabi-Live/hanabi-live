@@ -107,10 +107,7 @@ function statsReducerFunction(
     }
   }
 
-  const numEndGameTurns = getEndGameLength(
-    metadata.options,
-    metadata.characterAssignments,
-  );
+  const numEndGameTurns = getEndGameLength(metadata.options);
 
   // Handle max score calculation.
   if (

@@ -185,12 +185,6 @@ wire_integer! {
 }
 
 wire_integer! {
-    /// A detrimental character's number in `characters.json`. The database stores it as a
-    /// `SMALLINT`.
-    CharacterId(pub(crate) u32), 0, i16::MAX, brand = "CharacterId"
-}
-
-wire_integer! {
     /// A request's ID, which the client chooses and the server's reply repeats.
     RequestId(pub(crate) u64), 1, MAX_SAFE_INTEGER, brand = "RequestId"
 }

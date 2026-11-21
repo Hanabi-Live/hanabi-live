@@ -1,7 +1,7 @@
 // The list of clues in the top-right-hand corner of the game UI.
 
 import type { CardOrder, StateClue, Variant } from "@hanabi-live/game";
-import { getCharacterNameForPlayer, getClueName } from "@hanabi-live/game";
+import { getClueName } from "@hanabi-live/game";
 import { useState } from "react";
 import { useAppSelector } from "../../../store.ts";
 import {
@@ -78,7 +78,6 @@ export function ClueLog({
   );
   const metadata = useAppSelector((state) => state.game.current?.metadata);
   const playerNames = metadata?.playerNames ?? [];
-  const characterAssignments = metadata?.characterAssignments ?? [];
 
   const entryWidth = (CLUE_LOG.w - TEXT_INSET * 2) * stageWidth;
   const entryHeight = ENTRY_HEIGHT * stageHeight;
@@ -120,11 +119,7 @@ export function ClueLog({
             // scroll out of the log.
             key={firstIndex + i}
             match={getMatch(clue, hoveredCardOrder)}
-            name={getClueName(
-              clue,
-              variant,
-              getCharacterNameForPlayer(clue.giver, characterAssignments),
-            )}
+            name={getClueName(clue, variant)}
             showNegativeMarker={colorblindMode}
             targetName={playerNames[clue.target] ?? ""}
             width={entryWidth}
