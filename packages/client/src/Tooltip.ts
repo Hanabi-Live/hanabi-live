@@ -126,6 +126,12 @@ interface TooltipOptions {
    * it for a tooltip that shows the anchor's full text.
    */
   readonly onlyWhenTruncated?: boolean;
+
+  /**
+   * Returns the side of the anchor that the tooltip goes on when it has room there. The tooltip
+   * asks each time that it opens. By default, it goes on the top.
+   */
+  readonly side?: (anchor: HTMLElement) => TooltipSide;
 }
 
 /** A side of the anchor that a tooltip goes on. */
@@ -135,6 +141,7 @@ export class Tooltip {
   private readonly anchor: HTMLElement;
   private readonly target: string | undefined;
   private readonly onlyWhenTruncated: boolean;
+  private readonly getSide: ((anchor: HTMLElement) => TooltipSide) | undefined;
   private readonly bubble = document.createElement("div");
   private readonly box = document.createElement("div");
   private content: Node | string = "";
@@ -149,8 +156,11 @@ export class Tooltip {
   private readonly hoverListeners = new AbortController();
   /** Whether the tooltip waits for the pointer to rest on its anchor (see `openOnHover`). */
   private openOnHoverDelayed = false;
-  /** The side of the anchor that the tooltip goes on when it has room there (see `openOnSide`). */
-  private side: TooltipSide = "top";
+  /**
+   * The side of the anchor that the tooltip goes on when it has room there, in place of the usual
+   * side (see `openOnSide`).
+   */
+  private side: TooltipSide | undefined;
   /** An element that the tooltip goes past when it is on the other side (see `openOnSide`). */
   private avoid: Element | undefined;
 
@@ -173,6 +183,7 @@ export class Tooltip {
     this.anchor = anchor;
     this.target = options.target;
     this.onlyWhenTruncated = options.onlyWhenTruncated === true;
+    this.getSide = options.side;
 
     this.bubble.className = "tooltip-bubble";
     this.bubble.popover = "manual";
@@ -241,17 +252,18 @@ export class Tooltip {
     const roomAbove = anchor.top - WINDOW_MARGIN_IN_PIXELS;
     const roomBelow =
       anchorWindow.innerHeight - WINDOW_MARGIN_IN_PIXELS - anchor.bottom;
-    const roomOnSide = this.side === "top" ? roomAbove : roomBelow;
-    const roomAcross = this.side === "top" ? roomBelow : roomAbove;
-    const otherSide = this.side === "top" ? "bottom" : "top";
+    const preferredSide = this.side ?? this.getSide?.(this.anchor) ?? "top";
+    const roomOnSide = preferredSide === "top" ? roomAbove : roomBelow;
+    const roomAcross = preferredSide === "top" ? roomBelow : roomAbove;
+    const otherSide = preferredSide === "top" ? "bottom" : "top";
     const side =
       height <= roomOnSide || (height > roomAcross && roomOnSide >= roomAcross)
-        ? this.side
+        ? preferredSide
         : otherSide;
     this.bubble.dataset["side"] = side;
 
     // On the other side, the tooltip goes past the element that it avoids, which is there.
-    if (side !== this.side && this.avoid?.isConnected === true) {
+    if (side !== preferredSide && this.avoid?.isConnected === true) {
       const avoided = this.avoid.getBoundingClientRect();
       if (side === "top") {
         anchor.top = Math.min(anchor.top, avoided.top - gap);
@@ -508,7 +520,7 @@ export class Tooltip {
   }
 
   close(): void {
-    this.side = "top";
+    this.side = undefined;
     this.avoid = undefined;
     clearTimeout(this.openingTimeout);
     this.openingTimeout = undefined;

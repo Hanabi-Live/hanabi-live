@@ -4,6 +4,7 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LengthCounter, rejectTooLong } from "../../LengthCounter.tsx";
+import type { TooltipSide } from "../../Tooltip.ts";
 import {
   LARGE_TEXT_SCALE,
   FONT_SIZE_IN_EMS as TOOLTIP_FONT_SIZE_IN_EMS,
@@ -183,6 +184,7 @@ export function CardNote({
       instant: true,
       target: "[data-card-face]",
       tapOpens,
+      side: getNoteSide,
     },
   );
   useLayoutEffect(() => {
@@ -262,6 +264,17 @@ export function CardNote({
       {editing && <NoteEditor onClose={cardNotes.onCloseNote} order={order} />}
     </div>
   );
+}
+
+/**
+ * The side of a card that its note goes on. A card in a hand shows it on the same side as its
+ * bubble of possible cards, so that the viewer looks in one place for what they know about the
+ * card. Other cards have no bubble, so their notes go on the top, as other tooltips do.
+ */
+function getNoteSide(anchor: HTMLElement): TooltipSide {
+  return anchor.closest("[data-hand]") !== null && isHandCardBubbleBelow(anchor)
+    ? "bottom"
+    : "top";
 }
 
 /** The closest element around an element that scrolls up and down, such as the hands on a phone. */

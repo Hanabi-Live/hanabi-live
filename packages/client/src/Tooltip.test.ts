@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
+import type { TooltipSide } from "./Tooltip.ts";
 import { pauseHoverTooltips, Tooltip } from "./Tooltip.ts";
 
 const WINDOW_HEIGHT = 600;
@@ -115,7 +116,12 @@ afterAll(() => {
 });
 
 /** Opens a tooltip of the given height beside an anchor from "top" to "bottom". */
-function openTooltip(top: number, bottom: number, height: number) {
+function openTooltip(
+  top: number,
+  bottom: number,
+  height: number,
+  side?: TooltipSide,
+) {
   const anchor = dom.window.document.createElement("div");
   anchor.getBoundingClientRect = () => ({
     x: 100,
@@ -131,6 +137,7 @@ function openTooltip(top: number, bottom: number, height: number) {
   dom.window.document.body.append(anchor);
   const tooltip = new Tooltip(anchor, {
     content: `<div data-height="${height}"></div>`,
+    side: side === undefined ? undefined : () => side,
   });
   tooltip.open();
 
@@ -158,6 +165,14 @@ test("a tooltip opens below an anchor near the top of the window", () => {
   expect(openTooltip(50, 150, 200)).toStrictEqual({
     side: "bottom",
     top: 150,
+    room: "",
+  });
+});
+
+test("a tooltip opens on the side that it prefers when it fits there", () => {
+  expect(openTooltip(300, 400, 100, "bottom")).toStrictEqual({
+    side: "bottom",
+    top: 400,
     room: "",
   });
 });

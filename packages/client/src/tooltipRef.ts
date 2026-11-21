@@ -37,6 +37,9 @@ interface TooltipRefOptions {
    * and open the tooltip with `openTooltipOnSide` instead.
    */
   readonly tapOpens?: boolean;
+
+  /** Returns the side of the element that the tooltip prefers (see `TooltipOptions`). */
+  readonly side?: (element: HTMLElement) => TooltipSide;
 }
 
 /** The tooltip of each element, which lasts while the element has a tooltip ref. */
@@ -66,6 +69,7 @@ export function tooltipRefHtml(
         content: "",
         target: options.target,
         onlyWhenTruncated: options.onlyWhenTruncated,
+        side: options.side,
       });
       tooltip.openOnHover(options.instant !== true, options.tapOpens !== false);
       entry = {
