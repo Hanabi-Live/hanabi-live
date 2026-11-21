@@ -916,6 +916,45 @@ function getStates(): readonly State[] {
       },
     },
     {
+      // The variant builder, with two special suits that it combines into one variant.
+      name: "create-game-variant-builder",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+        await page.click('button[aria-label="Build a variant"]');
+        const builder = page.locator("#create-game-variant-builder");
+        await builder
+          .getByRole("button", {
+            name: "6",
+            exact: true,
+          })
+          .click();
+        await builder
+          .getByRole("button", {
+            name: "Rainbow",
+            exact: true,
+          })
+          .click();
+        await builder
+          .getByRole("button", {
+            name: "Black",
+            exact: true,
+          })
+          .click();
+        await page
+          .locator("#create-game-variant-dropdown2")
+          .and(page.locator('[value="Black & Rainbow (6 Suits)"]'))
+          .waitFor();
+        await settle(page);
+      },
+      // The form remembers its variant, which the other states need to be the default.
+      cleanup: async (page) => {
+        await page.fill("#create-game-variant-dropdown2", "No Variant");
+        await settle(page);
+      },
+    },
+    {
       name: "watch-replay",
       path: "/",
       loggedIn: true,

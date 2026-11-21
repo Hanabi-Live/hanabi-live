@@ -62,6 +62,7 @@ import {
 import * as lobbyPage from "../lobbyPage.ts";
 import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
+import { VariantBuilder } from "./VariantBuilder.tsx";
 
 /**
  * The website offers over 1000 variants. To prevent confusion, the first dropdown only shows the
@@ -279,6 +280,7 @@ export function CreateGame(): React.JSX.Element {
   // From the click on the submit button until the server answers. The page stays open, so that a
   // refusal keeps what the user entered.
   const [waiting, setWaiting] = useState(false);
+  const [building, setBuilding] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
@@ -427,6 +429,10 @@ export function CreateGame(): React.JSX.Element {
               />
             </div>
             <VariantPicker
+              building={building}
+              onBuild={() => {
+                setBuilding(!building);
+              }}
               onChange={(variantName) => {
                 change({ variantName }, true);
               }}
@@ -436,6 +442,16 @@ export function CreateGame(): React.JSX.Element {
               variantName={form.variantName}
             />
           </li>
+          {building && (
+            <li className="lobby-row" id="create-game-variant-builder">
+              <VariantBuilder
+                onPick={(variantName) => {
+                  change({ variantName }, true);
+                }}
+                variantName={form.variantName}
+              />
+            </li>
+          )}
           <li className="lobby-row">
             <RowLabel htmlFor="createTableMaxPlayers" icon="fa-users">
               Max Players
@@ -646,10 +662,15 @@ export function CreateGame(): React.JSX.Element {
  * that is not basic, and goes back to the dropdown when a basic variant is chosen.
  */
 function VariantPicker({
+  building,
+  onBuild,
   onChange,
   onSearch,
   variantName,
 }: {
+  /** Whether the variant builder is open. */
+  readonly building: boolean;
+  readonly onBuild: () => void;
   /** A variant was chosen, which the form remembers. */
   readonly onChange: (variantName: string) => void;
   /** The search changed, which may not be a variant yet. */
@@ -662,11 +683,34 @@ function VariantPicker({
   const [search, setSearch] = useState(variantName);
   const selectRef = useRef<HTMLSelectElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  /** Whether the next switch between the dropdown and the search takes the focus. */
+  const focusOnSwitch = useRef(true);
+
+  // The variant builder chooses a variant without the field, which shows it. The focus stays on the
+  // builder.
+  useEffect(() => {
+    if (variantName === search || !doesVariantExist(variantName)) {
+      return;
+    }
+    setSearch(variantName);
+    const nextSearching = !BASIC_VARIANT_NAMES_SET.has(variantName);
+    if (nextSearching === searching) {
+      return;
+    }
+    focusOnSwitch.current = false;
+    setSearching(nextSearching);
+    // Only a variant from outside the field changes it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variantName]);
 
   // The page starts with the focus on the variant, and it stays there when the search starts or
   // ends. The search is selected, so that typing replaces it. A text box scrolls to the end of what
   // is selected, so it scrolls back to show the start of a long name.
   useEffect(() => {
+    if (!focusOnSwitch.current) {
+      focusOnSwitch.current = true;
+      return;
+    }
     if (searching) {
       const input = searchRef.current!;
       input.focus();
@@ -764,6 +808,17 @@ function VariantPicker({
           <i className="fas fa-dice" id="dice" />
         </button>
       )}
+      <button
+        aria-controls="create-game-variant-builder"
+        aria-expanded={building}
+        aria-label="Build a variant"
+        className={`tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:hover:text-(--dice-hover) ${building ? "tw:text-green" : "tw:text-green-text"}`}
+        onClick={onBuild}
+        ref={tooltipRef("Build a variant from its suits and rules")}
+        type="button"
+      >
+        <i className="fas fa-sliders" />
+      </button>
     </div>
   );
 }
