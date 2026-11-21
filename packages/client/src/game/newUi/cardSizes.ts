@@ -22,10 +22,14 @@ import {
   TABLE_TOKENS_HEIGHT,
 } from "./SharedCards.tsx";
 
-/** The smallest and largest card in a hand, in CSS pixels of width. */
+/**
+ * The smallest and largest card in a hand, in CSS pixels of width. The largest is about the size of
+ * a hand in a five-player game on a full-screen window, so that games with fewer players do not get
+ * much larger cards. It is also close to the largest card on the play stacks.
+ */
 const HAND_CARD_WIDTH = {
   MIN: 36,
-  MAX: 150,
+  MAX: 100,
 } as const;
 
 /**
