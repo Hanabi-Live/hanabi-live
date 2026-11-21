@@ -63,12 +63,14 @@ CREATE TABLE users (
 
 /**
  * The recipe of each variant ID, such as "r-y-g-b-p" for "No Variant". Games name their variant by
- * ID, so an ID must keep its recipe. The server adds new variants from the catalog at startup.
+ * ID, so an ID must keep its recipe. The server adds new variants from the catalog at startup, and
+ * records their names.
  */
 DROP TABLE IF EXISTS variants CASCADE;
 CREATE TABLE variants (
     id      SMALLINT  PRIMARY KEY,
-    recipe  TEXT      NOT NULL  UNIQUE
+    recipe  TEXT      NOT NULL  UNIQUE,
+    name    TEXT      NULL      UNIQUE /* NULL until the server records it. */
 );
 
 /* User stats are per variant. */

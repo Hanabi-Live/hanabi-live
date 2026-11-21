@@ -83,16 +83,19 @@ async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
         .await?)
 }
 
-/// Adds the catalog's new variants to the `variants` table, and checks that each variant ID keeps
-/// its recipe. Games name their variant by ID, so a new recipe for an ID would change the rules of
-/// its old games.
+/// Adds the catalog's new variants to the `variants` table, records the name of each, and checks
+/// that each variant ID keeps its recipe. Games name their variant by ID, so a new recipe for an ID
+/// would change the rules of its old games. A name can change, so the catalog's name replaces the
+/// recorded one.
 pub(crate) async fn record_variants(primary: &PgPool) -> Result<()> {
     let catalog = hanabi_engine::variants();
     let mut ids = Vec::with_capacity(catalog.len());
     let mut recipes = Vec::with_capacity(catalog.len());
+    let mut names = Vec::with_capacity(catalog.len());
     for variant in catalog {
         ids.push(i16::try_from(variant.id)?);
         recipes.push(variant.recipe.clone());
+        names.push(variant.name.clone());
     }
     sqlx::query!(
         "INSERT INTO variants (id, recipe)
@@ -124,6 +127,16 @@ pub(crate) async fn record_variants(primary: &PgPool) -> Result<()> {
             )
         );
     }
+    sqlx::query!(
+        "UPDATE variants SET name = catalog.name
+         FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, name)
+         WHERE variants.id = catalog.id AND variants.name IS DISTINCT FROM catalog.name",
+        &ids,
+        &names
+    )
+    .execute(primary)
+    .await
+    .context("Failed to record the variant names")?;
     Ok(())
 }
 
@@ -997,6 +1010,37 @@ mod tests {
             error.to_string().contains("Variant 0 (No Variant)"),
             "{error:#}"
         );
+        Ok(())
+    }
+    #[tokio::test]
+    async fn startup_records_the_name_of_each_variant() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        // A database from before names, and a name that the catalog changed since.
+        sqlx::query!("UPDATE variants SET name = NULL WHERE id <> 1")
+            .execute(&db.pool)
+            .await?;
+        sqlx::query!("UPDATE variants SET name = 'Six Suits' WHERE id = 1")
+            .execute(&db.pool)
+            .await?;
+        record_variants(&db.pool).await?;
+        let recorded: std::collections::HashMap<i16, Option<String>> =
+            sqlx::query!("SELECT id, name FROM variants")
+                .fetch_all(&db.pool)
+                .await?
+                .into_iter()
+                .map(|row| (row.id, row.name))
+                .collect();
+        for variant in hanabi_engine::variants() {
+            let id = i16::try_from(variant.id)?;
+            ensure!(
+                recorded.get(&id) == Some(&Some(variant.name.clone())),
+                "Variant {id} was recorded as {:?}, not {}",
+                recorded.get(&id),
+                variant.name
+            );
+        }
         Ok(())
     }
     #[tokio::test]

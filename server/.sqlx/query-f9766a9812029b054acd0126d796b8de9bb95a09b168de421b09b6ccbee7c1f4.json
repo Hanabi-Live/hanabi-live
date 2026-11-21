@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variants SET name = catalog.name\n         FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, name)\n         WHERE variants.id = catalog.id AND variants.name IS DISTINCT FROM catalog.name",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f9766a9812029b054acd0126d796b8de9bb95a09b168de421b09b6ccbee7c1f4"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variants SET name = NULL WHERE id <> 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d27d8be16be633b2927832c71c307adcbb4005e3bafa4ab4ac5199cd7e2097b1"
+}
