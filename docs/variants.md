@@ -416,7 +416,7 @@ The pips that are assigned to each suit is documented on the
   clue must be a number clue, the third clue must be a color clue, and so forth.
 - This variant was invented by Jake Stiles.
 
-### Cow & Pig
+### Cow and Pig
 
 - When players give a clue, they point at the cards clued, but say "moo" if it
   is a color clue, and "oink" if it is a rank clue.
@@ -539,7 +539,7 @@ The pips that are assigned to each suit is documented on the
 - Color Mute
 - Number Mute
 - Alternating Clues
-- Cow & Pig
+- Cow and Pig
 - Duck
 - Odds and Evens
 - Synesthesia

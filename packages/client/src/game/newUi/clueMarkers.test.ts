@@ -75,8 +75,8 @@ describe("getClueMarker", () => {
     expect(getClueMarker(colorClue(0), false).type).toBe("color");
   });
 
-  test("shows only the clue's type in Cow & Pig", () => {
-    setGame(getVariant("Cow & Pig (6 Suits)"));
+  test("shows only the clue's type in Cow and Pig", () => {
+    setGame(getVariant("Cow and Pig (6 Suits)"));
     expect(getClueMarker(colorClue(1), false)).toMatchObject({
       type: "sound",
       emoji: MOO_EMOJI,

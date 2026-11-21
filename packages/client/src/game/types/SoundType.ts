@@ -71,10 +71,10 @@ export enum SoundType {
   // Clue Sounds
   // -----------
 
-  /** For "Cow & Pig" variants. */
+  /** For "Cow and Pig" variants. */
   Moo = "turn-moo",
 
-  /** For "Cow & Pig" variants. */
+  /** For "Cow and Pig" variants. */
   Oink = "turn-oink",
 
   /** For "Duck" variants. */

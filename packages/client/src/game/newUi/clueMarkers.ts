@@ -61,7 +61,7 @@ export function getColorSymbol(
 
 /**
  * How a clue shows on a token. Duck clues and the clues of a Quacker (until the game ends) hide the
- * clue, so they show a duck. "Cow & Pig" clues show only the clue's type: a cow with a badge of
+ * clue, so they show a duck. "Cow and Pig" clues show only the clue's type: a cow with a badge of
  * every color for a color, and a pig with a "#" badge for a rank. These rules hold for every
  * viewer, even when the server sends spectators and replays the real clue.
  */

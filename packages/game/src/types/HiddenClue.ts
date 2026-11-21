@@ -10,13 +10,13 @@ export type WireClue = z.output<typeof clueSchema>;
 
 /**
  * A clue whose value the server hides from players and shadows, but whose touched-card list it
- * sends. Duck clues and the clues of a Quacker also hide the type. "Cow & Pig" clues keep it.
+ * sends. Duck clues and the clues of a Quacker also hide the type. "Cow and Pig" clues keep it.
  * Ordinary spectators and completed replay histories receive the original clue instead.
  */
 export interface HiddenClue {
   readonly type: undefined;
   readonly value: undefined;
 
-  /** The clue's type, when the recipient may see it ("Cow & Pig"). */
+  /** The clue's type, when the recipient may see it ("Cow and Pig"). */
   readonly visibleType: ClueType | undefined;
 }

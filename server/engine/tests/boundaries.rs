@@ -638,3 +638,10 @@ fn synesthesia_touches_white_but_not_null_by_rank() {
         assert!(!is_card_touched(variant, ClueType::Color, green, 4, 2));
     }
 }
+
+#[test]
+fn an_old_variant_name_finds_the_renamed_variant() {
+    let variant = get_variant("Cow & Pig (5 Suits)").unwrap();
+    assert_eq!(variant.name, "Cow and Pig (5 Suits)");
+    assert!(get_variant("Cow & Pig").is_err());
+}

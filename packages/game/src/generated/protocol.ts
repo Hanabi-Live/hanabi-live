@@ -318,7 +318,7 @@ export const turnSchema = z.number().int().min(0).max(512);
 
 /**
  * A clue as the recipient of an event sees it: its type, and its value unless the variant hides
- * the value from them, as "Cow & Pig" does.
+ * the value from them, as "Cow and Pig" does.
  */
 export const visibleClueSchema = z.discriminatedUnion("type", [
   z

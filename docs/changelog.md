@@ -14,6 +14,7 @@ of the repository.
   text.
 - In a replay, `Shift + Left` and `Shift + Right` go back or forward one full
   rotation, the same as `[` and `]`.
+- The "Cow & Pig" variants are now named "Cow and Pig".
 
 ## November 20th, 2026
 

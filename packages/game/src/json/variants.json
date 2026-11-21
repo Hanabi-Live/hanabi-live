@@ -16324,28 +16324,28 @@
   {
     "id": 98,
     "recipe": "r-y-g-b-p-t_cowpig",
-    "name": "Cow & Pig (6 Suits)",
+    "name": "Cow and Pig (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
     "cowAndPig": true
   },
   {
     "id": 99,
     "recipe": "r-y-g-b-p_cowpig",
-    "name": "Cow & Pig (5 Suits)",
+    "name": "Cow and Pig (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
     "cowAndPig": true
   },
   {
     "id": 100,
     "recipe": "r-y-g-b_cowpig",
-    "name": "Cow & Pig (4 Suits)",
+    "name": "Cow and Pig (4 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue"],
     "cowAndPig": true
   },
   {
     "id": 101,
     "recipe": "r-g-b_cowpig",
-    "name": "Cow & Pig (3 Suits)",
+    "name": "Cow and Pig (3 Suits)",
     "suits": ["Red", "Green", "Blue"],
     "cowAndPig": true
   },

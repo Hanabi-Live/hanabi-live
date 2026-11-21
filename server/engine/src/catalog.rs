@@ -256,6 +256,10 @@ pub fn variants() -> &'static [Variant] {
     })
 }
 
+/// Old variant names, each with the new one: live tables, links, and bots can still use an old name.
+/// Each entry replaces the start of a name.
+const RENAMED_VARIANTS: &[(&str, &str)] = &[("Cow & Pig (", "Cow and Pig (")];
+
 pub fn get_variant(name: &str) -> Result<&'static Variant> {
     static INDEX: OnceLock<HashMap<&'static str, usize>> = OnceLock::new();
     let index = INDEX.get_or_init(|| {
@@ -265,8 +269,12 @@ pub fn get_variant(name: &str) -> Result<&'static Variant> {
             .map(|(i, v)| (v.name.as_str(), i))
             .collect()
     });
+    let renamed = RENAMED_VARIANTS
+        .iter()
+        .find_map(|(old, new)| name.strip_prefix(old).map(|rest| format!("{new}{rest}")));
     index
         .get(name)
+        .or_else(|| renamed.and_then(|renamed| index.get(renamed.as_str())))
         .map(|i| &variants()[*i])
         .ok_or_else(|| anyhow!("Unknown game variant: {name}"))
 }

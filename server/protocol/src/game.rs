@@ -191,7 +191,7 @@ pub enum Clue {
 }
 
 /// A clue as the recipient of an event sees it: its type, and its value unless the variant hides
-/// the value from them, as "Cow & Pig" does.
+/// the value from them, as "Cow and Pig" does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum VisibleClue {

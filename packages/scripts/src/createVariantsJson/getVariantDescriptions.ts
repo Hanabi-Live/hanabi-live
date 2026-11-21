@@ -943,7 +943,7 @@ function getCowAndPigVariants(
   const variantDescriptions: VariantDescription[] = [];
 
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Cow & Pig (${numSuits} Suits)`;
+    const variantName = `Cow and Pig (${numSuits} Suits)`;
     variantDescriptions.push({
       name: variantName,
       suits: basicVariantSuits[numSuits],

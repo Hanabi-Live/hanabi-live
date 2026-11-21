@@ -22,7 +22,7 @@ fn projection_hides_what_players_and_shadows_may_not_see_of_a_clue() -> Result<(
     for (variant_name, quacker, visible) in [
         ("No Variant", false, Visible::All),
         ("Duck (5 Suits)", false, Visible::Nothing),
-        ("Cow & Pig (5 Suits)", false, Visible::Type),
+        ("Cow and Pig (5 Suits)", false, Visible::Type),
         ("No Variant", true, Visible::Nothing),
     ] {
         let mut state = create_game(GameSetup {

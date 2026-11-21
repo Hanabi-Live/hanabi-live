@@ -226,7 +226,7 @@ export function set(
           // The circle for color clues should have a black border and a fill matching the color.
           arrow.circle.stroke("black");
           if (clue.type === undefined || globals.variant.cowAndPig) {
-            // The specific clue color is hidden in "Cow & Pig" variants.
+            // The specific clue color is hidden in "Cow and Pig" variants.
             arrow.circle.fill("white");
           } else {
             const clueColor = clue.value;
@@ -264,7 +264,7 @@ export function set(
         }
 
         case "rank": {
-          // The specific clue rank is hidden in "Cow & Pig" variants.
+          // The specific clue rank is hidden in "Cow and Pig" variants.
           let text = "#";
           if (clue.type === "rank" && !globals.variant.cowAndPig) {
             text = clue.value.toString();
