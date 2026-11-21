@@ -1594,6 +1594,7 @@ export function DiscardPile({
   onShowDiscard,
   reducedMotion,
   movedCard,
+  moverName,
 }: {
   readonly rows: ReadonlyArray<readonly DiscardView[]>;
   readonly variant: Variant;
@@ -1617,6 +1618,9 @@ export function DiscardPile({
 
   /** The card discarded or misplayed on the last move, if there was one. */
   readonly movedCard: MovedCard | undefined;
+
+  /** The name of the player who moved the card, if a player held it. */
+  readonly moverName: string | undefined;
 }): React.JSX.Element {
   const showNoDiscard = atMaxClues && !realLifeMode;
   const showDoubleDiscard = doubleDiscard && !atMaxClues && !realLifeMode;
@@ -1632,6 +1636,18 @@ export function DiscardPile({
     cards.push(card);
     discarded.set(key, cards);
   }
+
+  const movedDiscard = rows
+    .flat()
+    .find((card) => card.order === movedCard?.order);
+  const lastMoveText =
+    movedCard === undefined || movedDiscard === undefined
+      ? undefined
+      : getDiscardMoveText(
+          movedCard,
+          moverName,
+          describeCard(variant, movedDiscard.suitIndex, movedDiscard.rank),
+        );
 
   return (
     <section
@@ -1749,6 +1765,14 @@ export function DiscardPile({
           </div>
         ))}
       </div>
+      {/* The line always keeps its room, so that the grid does not move when a card is
+          discarded. */}
+      <p
+        className="tw:relative tw:m-0 tw:mt-2 tw:truncate tw:text-sm tw:leading-5 tw:text-game-text"
+        style={{ minHeight: COMPACT_DISCARD_LINE_HEIGHT }}
+      >
+        {lastMoveText}
+      </p>
       {zoneState === "blocked" && <NoEntrySign reducedMotion={reducedMotion} />}
       <ZoneLabel
         reducedMotion={reducedMotion}
@@ -1771,6 +1795,28 @@ export function DiscardPile({
 /** The size of a box of the compact discard pile, in CSS pixels. */
 const COMPACT_DISCARD_BOX_WIDTH = 15;
 const COMPACT_DISCARD_BOX_HEIGHT = 20;
+
+/** The height of the line below the compact discard pile, in CSS pixels. */
+const COMPACT_DISCARD_LINE_HEIGHT = 20;
+
+/**
+ * The line below the compact discard pile about the card discarded or misplayed on the last move,
+ * such as "Bob discarded Red 2 from slot 3 (clued)".
+ */
+function getDiscardMoveText(
+  movedCard: MovedCard,
+  moverName: string | undefined,
+  cardName: string,
+): string {
+  const misplayed = movedCard.label === "misplayed";
+  if (moverName === undefined || movedCard.slot === undefined) {
+    return `${misplayed ? "Misplayed" : "Discarded"}: ${cardName}`;
+  }
+  const verb = misplayed ? "misplayed" : "discarded";
+  const note =
+    misplayed || movedCard.label === undefined ? "" : ` (${movedCard.label})`;
+  return `${moverName} ${verb} ${cardName} from slot ${movedCard.slot}${note}`;
+}
 
 /** The fill of a suit's boxes in the compact discard pile. */
 function getSuitSwatch(suit: Suit, colorblindMode: boolean): string {

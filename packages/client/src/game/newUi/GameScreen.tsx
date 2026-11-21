@@ -1180,6 +1180,11 @@ export function GameScreen(): React.JSX.Element {
         && visibleState.stats.doubleDiscardCard !== undefined
       }
       movedCard={outlinedMove}
+      moverName={
+        outlinedMove?.player === undefined
+          ? undefined
+          : metadata.playerNames[outlinedMove.player]
+      }
       onShowDiscard={showDiscard}
       realLifeMode={settings.realLifeMode}
       reducedMotion={settings.reducedMotion}
