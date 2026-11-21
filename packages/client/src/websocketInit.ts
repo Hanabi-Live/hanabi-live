@@ -481,6 +481,11 @@ function gameCallback<Command extends ServerEvent>(
     ) {
       return;
     }
+    // A message from a table that we left can arrive after we open another game. Its events do not
+    // fit this game, such as a clue to a seat that this game does not have.
+    if ("tableId" in data && data.tableId !== globals.tableId) {
+      return;
+    }
     if (commandName !== "gameState" && gameSession.isLoading()) {
       return;
     }
