@@ -7,6 +7,12 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 21st, 2026
+
+- In a chat box with text in it, the up arrow and down arrow first move to the
+  start or end of the text, as in Discord. The down arrow no longer removes the
+  text.
+
 ## November 20th, 2026
 
 - The lobby and the other pages outside of a game have a new look: pale green

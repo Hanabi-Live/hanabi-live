@@ -2,7 +2,13 @@
 
 import type { ServerEventData } from "@hanabi-live/data";
 import { chatIdSchema, tableIdSchema } from "@hanabi-live/data";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { add, removeDeletedLobbyMessage } from "../../chat.ts";
@@ -126,5 +132,24 @@ describe("LobbyChat", () => {
       "second",
       "psst",
     ]);
+  });
+
+  test("moves the caret before browsing the typed history, and never clears typed text", () => {
+    const input =
+      document.querySelector<HTMLInputElement>("#lobby-chat-input")!;
+    fireEvent.input(input, {
+      target: {
+        value: "draft",
+      },
+    });
+    input.setSelectionRange(2, 2);
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(input.value).toBe("draft");
+    expect(input.selectionStart).toBe(5);
+
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    expect(input.value).toBe("draft");
+    expect(input.selectionStart).toBe(0);
   });
 });

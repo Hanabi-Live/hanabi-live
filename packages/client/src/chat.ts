@@ -350,16 +350,35 @@ function historyMatchNext(current: string, older: boolean): string | undefined {
   return browse.prefix;
 }
 
+/**
+ * When typed text is shown (not a history entry), the up arrow first moves the caret to the start
+ * of the text, as in Discord. Only a second press browses the history.
+ */
 function arrowUp(element: HTMLInputElement) {
-  const retrievedHistory = historyMatchNext(element.value, true);
-  // Set the chat input box to what we last typed.
-  element.value = retrievedHistory ?? "";
+  if (
+    typedChatHistoryBrowse === undefined
+    && (element.selectionStart !== 0 || element.selectionEnd !== 0)
+  ) {
+    element.setSelectionRange(0, 0);
+    return;
+  }
+
+  element.value = historyMatchNext(element.value, true) ?? element.value;
 }
 
+/**
+ * When typed text is shown (not a history entry), the down arrow only moves the caret to the end of
+ * the text. It never removes the text.
+ */
 function arrowDown(element: HTMLInputElement) {
   const retrievedHistory = historyMatchNext(element.value, false);
-  // Set the chat input box to what we last typed.
-  element.value = retrievedHistory ?? "";
+  if (retrievedHistory === undefined) {
+    const end = element.value.length;
+    element.setSelectionRange(end, end);
+    return;
+  }
+
+  element.value = retrievedHistory;
 }
 
 /** Completes the final word of a text box. Shift-tab goes backwards through the matches. */
