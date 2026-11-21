@@ -174,13 +174,15 @@ function keydown(event: KeyboardEvent) {
   }
 
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat or if a
-  // modifier key is pressed.
+  // modifier key is pressed. Shift is allowed only with the left and right arrows, which then move
+  // by a full rotation.
+  const isLeftOrRight = event.key === "ArrowLeft" || event.key === "ArrowRight";
   if (
-    isGameChatInputFocused()
-    || event.ctrlKey
-    || event.shiftKey
+    event.ctrlKey
     || event.altKey
     || event.metaKey
+    || (!isLeftOrRight && event.shiftKey)
+    || isGameChatInputFocused()
   ) {
     return;
   }
@@ -234,13 +236,21 @@ function keydown(event: KeyboardEvent) {
     switch (event.key) {
       case "ArrowLeft": {
         event.preventDefault();
-        replay.back();
+        if (event.shiftKey) {
+          replay.backRound();
+        } else {
+          replay.back();
+        }
         return;
       }
 
       case "ArrowRight": {
         event.preventDefault();
-        replay.forward();
+        if (event.shiftKey) {
+          replay.forwardRound();
+        } else {
+          replay.forward();
+        }
         return;
       }
 
@@ -276,6 +286,8 @@ function keydown(event: KeyboardEvent) {
         break;
       }
     }
+  } else if (event.shiftKey) {
+    return;
   } else if (event.key === "ArrowLeft") {
     event.preventDefault();
     hypothetical.sendHypotheticalBack();

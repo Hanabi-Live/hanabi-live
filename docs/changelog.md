@@ -12,6 +12,8 @@ of the repository.
 - In a chat box with text in it, the up arrow and down arrow first move to the
   start or end of the text, as in Discord. The down arrow no longer removes the
   text.
+- In a replay, `Shift + Left` and `Shift + Right` go back or forward one full
+  rotation, the same as `[` and `]`.
 
 ## November 20th, 2026
 

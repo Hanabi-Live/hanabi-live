@@ -716,8 +716,8 @@ use these numbers to make the best move for the current situation.
 - In a replay:
   - Rewind back one turn: `Left`
   - Fast-forward one turn: `Right`
-  - Rewind one full rotation: `[`
-  - Fast-forward one full rotation: `]`
+  - Rewind one full rotation: `[` or `Shift + Left`
+  - Fast-forward one full rotation: `]` or `Shift + Right`
   - Go to the beginning: `Home`
   - Go to the end: `End`
   - Enter a hypothetical: `Page Up`
