@@ -1079,7 +1079,7 @@ const MIN_RANK_OUTLINE = 2;
 const RANK_SHADOW = "drop-shadow(0 1px 1px rgb(0 0 0 / 50%))";
 
 /**
- * How opaque a suit or a rank that the note rules out is, and a card in the bubble of possible
+ * How opaque a suit or a rank that the card cannot be is, and a card in the bubble of possible
  * cards that the card cannot be.
  */
 const RULED_OUT_OPACITY = 0.2;
@@ -1117,9 +1117,9 @@ const SEEN_SLASH = {
  * place, so that the others do not move when the holder learns more.
  */
 function getRuledOutOpacity(by: RuledOutBy | undefined): number {
-  // The note is the holder's own guess, so its suits and ranks fade. A suit or a rank that the seen
-  // cards rule out has a slash instead (see `SeenSlash`).
-  return by === "note" ? RULED_OUT_OPACITY : 1;
+  // A suit or a rank that the seen cards rule out also has a slash, which does not fade (see
+  // `SeenSlash`). The note is only the holder's own guess, so its suits and ranks only fade.
+  return by === undefined ? 1 : RULED_OUT_OPACITY;
 }
 
 /**
@@ -1170,7 +1170,7 @@ function SuitChip({
   pip,
   cell,
   width,
-  fadeRuledOut = false,
+  slashHidden = false,
 }: {
   readonly variant: Variant;
   readonly pip: SuitPipView;
@@ -1179,10 +1179,10 @@ function SuitChip({
   readonly width: number;
 
   /**
-   * Whether the suit fades whatever ruled it out, with no slash. The bubble of possible cards uses
-   * it, since each of its cards already says what ruled it out.
+   * Whether the suit has no slash when seen cards rule it out. It still fades. The bubble of
+   * possible cards uses it, since each of its cards already says what ruled it out.
    */
-  readonly fadeRuledOut?: boolean;
+  readonly slashHidden?: boolean;
 }): React.JSX.Element | undefined {
   const suit = variant.suits[pip.suitIndex];
   if (suit === undefined) {
@@ -1204,10 +1204,7 @@ function SuitChip({
         style={{
           width: chip,
           height: chip,
-          opacity:
-            fadeRuledOut && pip.ruledOutBy !== undefined
-              ? RULED_OUT_OPACITY
-              : getRuledOutOpacity(pip.ruledOutBy),
+          opacity: getRuledOutOpacity(pip.ruledOutBy),
           boxShadow: pip.positive ? getPositiveRing(width) : undefined,
         }}
       >
@@ -1220,7 +1217,7 @@ function SuitChip({
           variant={variant}
         />
       </span>
-      {!fadeRuledOut && (
+      {!slashHidden && (
         <SeenSlash by={pip.ruledOutBy} kind="suit" size={chip} />
       )}
     </span>
@@ -2128,9 +2125,9 @@ function PossibleCardsGrid({
           {bubble.suits.map((suit) => [
             <SuitChip
               cell={unit * POSSIBLE_CARDS.pip}
-              fadeRuledOut
               key={`${suit.suitIndex}-pip`}
               pip={suit}
+              slashHidden
               variant={variant}
               width={unit / getScreenScale()}
             />,
