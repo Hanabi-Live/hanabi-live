@@ -23,13 +23,12 @@ import {
 } from "./SharedCards.tsx";
 
 /**
- * The smallest and largest card in a hand, in CSS pixels of width. The largest is about the size of
- * a hand in a five-player game on a full-screen window, so that games with fewer players do not get
- * much larger cards. It is also close to the largest card on the play stacks.
+ * The smallest and largest card in a hand, in CSS pixels of width. The largest keeps the cards of a
+ * game with few players from growing much larger than those of a five-player game.
  */
 const HAND_CARD_WIDTH = {
   MIN: 36,
-  MAX: 100,
+  MAX: 125,
 } as const;
 
 /**
