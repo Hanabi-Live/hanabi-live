@@ -1670,17 +1670,12 @@ export function DiscardPile({
         style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       >
         {variant.suits.map((suit, suitIndex) => (
-          <div
-            className="tw:grid tw:items-center tw:gap-1"
-            key={suit.name}
-            style={{
-              gridTemplateColumns: `${COMPACT_DISCARD_BOX_HEIGHT}px repeat(${variant.ranks.length}, minmax(0, 1fr))`,
-            }}
-          >
+          <div className="tw:flex tw:items-center tw:gap-1" key={suit.name}>
             <span
               aria-hidden="true"
-              className="tw:flex tw:items-center tw:justify-center tw:rounded-sm tw:text-xs tw:leading-none tw:font-bold tw:text-card-ink"
+              className="tw:mr-1 tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:rounded-sm tw:text-xs tw:leading-none tw:font-bold tw:text-card-ink"
               style={{
+                width: COMPACT_DISCARD_BOX_HEIGHT,
                 height: COMPACT_DISCARD_BOX_HEIGHT,
                 background: getSuitSwatch(suit, colorblindMode),
                 fontFamily: SUIT_LETTER_FONT_FAMILY,
@@ -1690,67 +1685,66 @@ export function DiscardPile({
                 ? getSuitAbbreviationForVariant(suit, variant)
                 : ""}
             </span>
-            {variant.ranks.map((rank) => {
+            {variant.ranks.flatMap((rank) => {
               const copies = getNumCopiesOfCard(suit, rank, variant);
               const cards = discarded.get(`${suitIndex}-${rank}`) ?? [];
               const left = copies - cards.length;
-              let outline = "tw:outline-transparent";
-              if (left <= 0) {
-                outline = "tw:outline-game-error";
-              } else if (left === 1 && cards.length > 0) {
-                outline = "tw:outline-game-caution";
-              }
-              return (
-                <div
-                  className={`tw:flex tw:items-center tw:justify-center tw:gap-0.5 tw:rounded-sm tw:bg-black/25 tw:py-0.5 tw:outline-2 tw:outline-solid ${outline}`}
-                  key={rank}
-                >
-                  {[...eRange(Math.max(copies, cards.length))].map((i) => {
-                    const card = cards[i];
-                    const label = getRankLabel(rank);
-                    if (card === undefined) {
-                      return (
-                        <span
-                          aria-hidden="true"
-                          className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[3px] tw:border tw:border-solid tw:border-game-text/30 tw:text-sm tw:leading-none tw:font-bold tw:text-game-text/45"
-                          key={i}
-                          style={{
-                            width: COMPACT_DISCARD_BOX_WIDTH,
-                            height: COMPACT_DISCARD_BOX_HEIGHT,
-                          }}
-                        >
-                          {label}
-                        </span>
-                      );
-                    }
-                    const moved = movedCard?.order === card.order;
-                    return (
-                      <button
-                        aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                        className={`tw:relative tw:box-border tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[3px] tw:border-0 tw:p-0 tw:text-sm tw:leading-none tw:font-bold tw:text-card-ink ${HOVER_CLASS} ${
-                          moved
-                            ? "tw:outline-2 tw:outline-offset-1 tw:outline-white tw:outline-solid"
-                            : ""
-                        }`}
-                        data-card-order={card.order}
-                        data-card-place={`${DISCARD_PLACE_PREFIX}${suitIndex}-${rank}-${i}`}
-                        key={card.order}
-                        onClick={() => {
-                          onShowDiscard(card.order);
-                        }}
-                        style={{
-                          width: COMPACT_DISCARD_BOX_WIDTH,
-                          height: COMPACT_DISCARD_BOX_HEIGHT,
-                          background: getSuitSwatch(suit, colorblindMode),
-                        }}
-                        type="button"
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              );
+              // The last copy left of a card has a white edge. When no copy is left, the discarded
+              // copies have a red outline.
+              const lastCopy = left === 1 && cards.length > 0;
+              const gone = left <= 0;
+              const label = getRankLabel(rank);
+              return [...eRange(Math.max(copies, cards.length))].map((i) => {
+                const card = cards[i];
+                const boxStyle = {
+                  minWidth: COMPACT_DISCARD_BOX_WIDTH,
+                  height: COMPACT_DISCARD_BOX_HEIGHT,
+                };
+                if (card === undefined) {
+                  return (
+                    <span
+                      aria-hidden="true"
+                      className={`tw:box-border tw:flex tw:flex-1 tw:items-center tw:justify-center tw:rounded-[3px] tw:border tw:border-solid tw:text-sm tw:leading-none tw:font-bold ${
+                        lastCopy
+                          ? "tw:border-white tw:text-white"
+                          : "tw:border-game-text/30 tw:text-game-text/45"
+                      }`}
+                      key={`${rank}-${i}`}
+                      style={boxStyle}
+                    >
+                      {label}
+                    </span>
+                  );
+                }
+                const moved = movedCard?.order === card.order;
+                let outline = "";
+                if (moved) {
+                  outline =
+                    "tw:outline-2 tw:outline-offset-1 tw:outline-white tw:outline-solid";
+                } else if (gone) {
+                  outline =
+                    "tw:outline-2 tw:outline-offset-1 tw:outline-game-error tw:outline-solid";
+                }
+                return (
+                  <button
+                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                    className={`tw:relative tw:box-border tw:flex tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[3px] tw:border-0 tw:p-0 tw:text-sm tw:leading-none tw:font-bold tw:text-card-ink ${HOVER_CLASS} ${outline}`}
+                    data-card-order={card.order}
+                    data-card-place={`${DISCARD_PLACE_PREFIX}${suitIndex}-${rank}-${i}`}
+                    key={card.order}
+                    onClick={() => {
+                      onShowDiscard(card.order);
+                    }}
+                    style={{
+                      ...boxStyle,
+                      background: getSuitSwatch(suit, colorblindMode),
+                    }}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                );
+              });
             })}
           </div>
         ))}
