@@ -1,9 +1,9 @@
 // Takes screenshots of the site's screens at several widths. It starts this checkout's server with
 // a disposable database and seeds it through the client protocol, so that every run sees the same
 // pages. Run it through "runTests.ts", which provides the database and builds the server and a
-// development client: `bun run ui-screenshots [options]`. An error or warning in a page, or a New
-// UI game screen whose hands, play stacks, and discard pile do not line up at the top, fails the
-// run.
+// development client: `bun run ui-screenshots [options]`. An error or warning in a page, a New UI
+// game screen whose hands, play stacks, and discard pile do not line up at the top, or a New UI bar
+// along the bottom of the screen with two rows, fails the run.
 
 // Options:
 // - `--state <name>`: Only this state. Repeat it for more than one.
@@ -3703,8 +3703,8 @@ interface Results {
   /** The lines of the comparison report. */
   readonly comparison: string[];
   /**
-   * The errors and warnings of the pages, and the screens whose columns do not line up. They fail
-   * the run.
+   * The errors and warnings of the pages, and the screens whose layout breaks a rule. They fail the
+   * run.
    */
   readonly errors: string[];
 }
@@ -3796,6 +3796,16 @@ function getColumnTops():
     stacks: stacks.getBoundingClientRect().top,
     discardPile: discardPile.getBoundingClientRect().top,
   };
+}
+
+/**
+ * Runs in the page. Whether the New UI's bar along the bottom of the screen has a second row, for
+ * the replay controls. Outside the phone layout, the bar must keep one row: when it has no room for
+ * one, the status panel in the right column shows instead.
+ */
+function hasTwoRowBar(): boolean {
+  const bar = document.querySelector("footer[data-own-row]");
+  return bar !== null && bar.closest("[data-phone-layout]") === null;
 }
 
 /** How far apart, in CSS pixels, the tops of the New UI's columns can be and still line up. */
@@ -4005,6 +4015,11 @@ async function captureState(
       ) {
         results.errors.push(
           `${state.name} ${size.width}: The tops of the hands (${tops.hands.toFixed(1)}px), the play stacks (${tops.stacks.toFixed(1)}px), and the discard pile (${tops.discardPile.toFixed(1)}px) do not line up.`,
+        );
+      }
+      if (await page.evaluate(hasTwoRowBar)) {
+        results.errors.push(
+          `${state.name} ${size.width}: The bar along the bottom of the screen has two rows.`,
         );
       }
       for (const overflow of await page.evaluate(

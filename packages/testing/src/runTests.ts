@@ -258,9 +258,9 @@ const SUITES = [
 /**
  * The "ui-screenshots" options of the "ui-layout" suite: New UI games, where "ui-screenshots"
  * checks that the hands, the play stacks, and the discard pile line up at the top in the wide
- * layout, and that no element sticks out of its box. The games have two and five players, one is a
- * replay, and one is a shared replay, which has the most controls. The smallest width (360px) has
- * the least room.
+ * layout, that the bar along the bottom keeps one row, and that no element sticks out of its box.
+ * The games have two and five players, one is a replay, and one is a shared replay, which has the
+ * most controls. The smallest width (360px) has the least room.
  */
 const UI_LAYOUT_ARGS = [
   "--state",
