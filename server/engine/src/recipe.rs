@@ -1,11 +1,13 @@
 //! Builds a variant's catalog entry from its recipe. `hanabi_protocol::Recipe` reads the text; this
 //! module looks up its suits and applies its modifiers.
 
-use crate::catalog::Suit;
+use crate::catalog::{Suit, Variant, is_card_touched, num_copies_of_card};
+use crate::{ClueType, int};
 use anyhow::{Result, anyhow, bail, ensure};
 use hanabi_protocol::{
     EVEN_RANK_CLUE, MAX_RANK, MIN_RANK, ODD_RANK_CLUE, RECIPE_CRITICAL_RANK, RECIPE_DECEPTIVE_RANK,
-    RECIPE_SCARCE_RANK, RECIPE_SUIT_FLAG_SEPARATOR, RankRule, Recipe, RecipeFlag, SuitFlag,
+    RECIPE_MODIFIER_SEPARATOR, RECIPE_SCARCE_RANK, RECIPE_SUIT_FLAG_SEPARATOR, RankRule, Recipe,
+    RecipeFlag, SuitFlag,
 };
 use serde_json::{Map, Value, json};
 use std::collections::HashMap;
@@ -146,6 +148,15 @@ pub(crate) fn catalog_fields(recipe: &str, suits: &RecipeSuits) -> Result<Map<St
         .collect::<Result<Vec<_>>>()
         .map_err(|error| anyhow!("Recipe \"{recipe}\": {error}"))?;
     let num_suits = names.len();
+    for (index, suit) in parsed.suits.iter().enumerate() {
+        ensure!(
+            parsed.suits[..index]
+                .iter()
+                .all(|other| other.id != suit.id),
+            "Recipe \"{recipe}\" has the suit \"{}\" twice",
+            suit.id
+        );
+    }
     set("suits", json!(names))?;
 
     for modifier in &parsed.ranks {
@@ -204,6 +215,10 @@ pub(crate) fn catalog_fields(recipe: &str, suits: &RecipeSuits) -> Result<Map<St
             RecipeFlag::Chimneys => set("chimneys", json!(true))?,
             RecipeFlag::Sudoku => {
                 set("sudoku", json!(true))?;
+                ensure!(
+                    num_suits <= usize::try_from(MAX_RANK)?,
+                    "Recipe \"{recipe}\" has Sudoku with more than {MAX_RANK} suits, but a Sudoku stack has one rank for each suit"
+                );
                 // A Sudoku stack has one card of each rank for each suit.
                 let stack_size = i32::try_from(num_suits)?;
                 if stack_size != MAX_RANK {
@@ -217,6 +232,139 @@ pub(crate) fn catalog_fields(recipe: &str, suits: &RecipeSuits) -> Result<Map<St
         }
     }
     Ok(fields)
+}
+
+/// What a variant does in a game. Two variants that do the same thing have the same behavior, even
+/// when their rules are written differently.
+#[derive(PartialEq, Eq)]
+struct Behavior {
+    ranks: Vec<i32>,
+    /// The copies of each card, by suit and then by rank.
+    copies: Vec<usize>,
+    /// Whether each suit plays from the top down.
+    reversed: Vec<bool>,
+    num_clue_colors: usize,
+    clue_ranks: Vec<i32>,
+    /// Whether each clue touches each card, by clue, then suit, then rank.
+    touches: Vec<bool>,
+    /// How much of a clue the other players see: all of it, its type, or nothing.
+    hidden: u8,
+    clue_starved: bool,
+    alternating_clues: bool,
+    up_or_down: bool,
+    throw_it_in_a_hole: bool,
+    sudoku: bool,
+}
+
+impl Behavior {
+    fn of(variant: &Variant) -> Self {
+        let clues: Vec<(ClueType, i32)> = (0..variant.clue_colors.len())
+            .map(|color| (ClueType::Color, int(color)))
+            .chain(
+                variant
+                    .clue_ranks
+                    .iter()
+                    .map(|&rank| (ClueType::Rank, rank)),
+            )
+            .collect();
+        let mut copies = Vec::new();
+        let mut touches = Vec::new();
+        for (index, suit) in variant.suits.iter().enumerate() {
+            for &rank in &variant.ranks {
+                copies.push(num_copies_of_card(variant, suit, rank));
+                for &(clue_type, value) in &clues {
+                    touches.push(is_card_touched(variant, clue_type, value, index, rank));
+                }
+            }
+        }
+        Self {
+            ranks: variant.ranks.clone(),
+            copies,
+            reversed: variant
+                .suits
+                .iter()
+                .map(|suit| suit.reversed && !variant.up_or_down)
+                .collect(),
+            num_clue_colors: variant.clue_colors.len(),
+            clue_ranks: variant.clue_ranks.clone(),
+            touches,
+            hidden: if variant.duck {
+                2
+            } else {
+                u8::from(variant.cow_and_pig)
+            },
+            clue_starved: variant.clue_starved,
+            alternating_clues: variant.alternating_clues,
+            up_or_down: variant.up_or_down,
+            throw_it_in_a_hole: variant.throw_it_in_a_hole,
+            sudoku: variant.sudoku,
+        }
+    }
+}
+
+/// Checks that the parts of a variant's recipe work together, and that each modifier changes the
+/// game. Otherwise, two recipes would describe the same game. `build` builds the variant of a
+/// recipe without these checks.
+pub(crate) fn check_rules(
+    variant: &Variant,
+    build: impl Fn(&str) -> Result<Variant>,
+) -> Result<()> {
+    let v = variant;
+    let recipe = &v.recipe;
+    let has_rank_clue_rule =
+        v.special_rank_all_clue_ranks || v.special_rank_no_clue_ranks || v.special_rank_deceptive;
+    for (broken, problem) in [
+        (
+            v.sudoku && v.has_reversed_suits(),
+            "Sudoku cannot have reversed suits or Up or Down",
+        ),
+        (
+            v.up_or_down && v.suits.iter().any(|suit| suit.reversed),
+            "In Up or Down, a reversed suit is the same as a normal one",
+        ),
+        (
+            v.clue_colors.is_empty() && v.clue_ranks.is_empty(),
+            "There are no clues to give",
+        ),
+        (
+            v.alternating_clues && (v.clue_colors.is_empty() || v.clue_ranks.is_empty()),
+            "Alternating Clues needs color clues and rank clues",
+        ),
+        (
+            v.synesthesia && v.color_clues_touch_nothing,
+            "Synesthesia needs color clues that touch cards",
+        ),
+        (
+            v.rank_clues_touch_nothing && (v.odds_and_evens || has_rank_clue_rule),
+            "Rank clues touch nothing, so a rule for which cards they touch changes nothing",
+        ),
+        (
+            (v.funnels || v.chimneys) && (v.odds_and_evens || has_rank_clue_rule),
+            "Funnels and Chimneys decide which cards a rank clue touches, so no other rule may",
+        ),
+    ] {
+        ensure!(!broken, "Recipe \"{recipe}\": {problem}.");
+    }
+
+    // The modifiers come after the suits, and none of them contains the separator.
+    let tokens: Vec<&str> = recipe.split(RECIPE_MODIFIER_SEPARATOR).collect();
+    let behavior = Behavior::of(v);
+    for index in 1..tokens.len() {
+        let without = tokens
+            .iter()
+            .enumerate()
+            .filter(|&(other, _)| other != index)
+            .map(|(_, token)| *token)
+            .collect::<Vec<_>>()
+            .join(RECIPE_MODIFIER_SEPARATOR);
+        if build(&without).is_ok_and(|other| Behavior::of(&other) == behavior) {
+            bail!(
+                "Recipe \"{recipe}\": \"{}\" changes nothing.",
+                tokens[index]
+            );
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -238,6 +386,11 @@ mod tests {
             // There is no dark Red.
             "r.dark-g-b",
             "r-g-b-x",
+            // A suit may appear once, even with other flags.
+            "r-g-r",
+            "r-g-b-ra-ra.dark",
+            // A Sudoku stack has one rank for each suit, and there are only five ranks.
+            "r-y-g-b-p-ra_sudoku",
         ] {
             assert!(
                 catalog_fields(recipe, &suits).is_err(),
@@ -245,5 +398,47 @@ mod tests {
             );
         }
         Ok(())
+    }
+    #[test]
+    fn rejects_parts_that_break_the_game_or_change_nothing() {
+        for recipe in [
+            "r-y-g-b-p_1ra_hole",
+            "r-y-g-b-p.rev_1scarce",
+            "r-y-g-b-p_cb_nb",
+            "r-y-g-b-ra_4crit_updown_hole",
+            "r-y-g-b-p_starved_alt_duck_funnels",
+            "r-y-g-b_sudoku",
+        ] {
+            if let Err(error) = crate::variant_from_recipe(recipe, 0, recipe) {
+                panic!("{recipe} was rejected: {error}");
+            }
+        }
+        for (recipe, problem) in [
+            // Sudoku plays each stack up from any rank, so it cannot play one down.
+            ("r-y-g-b-p.rev_sudoku", "Sudoku cannot"),
+            ("r-y-g-b-p_updown_sudoku", "Sudoku cannot"),
+            // Up or Down plays every suit both ways.
+            ("r-y-g-b-p.rev_updown", "In Up or Down"),
+            ("r-y-g-b-p_cm_nm", "no clues"),
+            ("r-y-g-b-p_nm_alt", "Alternating Clues"),
+            ("r-y-g-b-p_cb_syn", "Synesthesia"),
+            ("r-y-g-b-p_nb_oe", "Rank clues touch nothing"),
+            ("r-y-g-b-p_1pi_nb", "Rank clues touch nothing"),
+            ("r-y-g-b-p_oe_funnels", "Funnels and Chimneys"),
+            ("r-y-g-b-p_1de_chimneys", "Funnels and Chimneys"),
+            ("r-y-g-b-p_funnels_chimneys", "\"chimneys\" changes nothing"),
+            ("r-y-g-b-p_cowpig_duck", "\"cowpig\" changes nothing"),
+            ("r-y-g-b-p_cb_cm", "\"cb\" changes nothing"),
+            ("r-y-g-b-p_1scarce_updown", "\"1scarce\" changes nothing"),
+            // Each dark suit already has one copy of each card.
+            ("ra.dark-pi.dark-wh.dark_4crit", "\"4crit\" changes nothing"),
+            // A Sudoku stack of four suits has no fives.
+            ("r-y-g-b_5ra_sudoku", "\"5ra\" changes nothing"),
+        ] {
+            let error = crate::variant_from_recipe(recipe, 0, recipe)
+                .err()
+                .unwrap_or_else(|| panic!("{recipe} was accepted"));
+            assert!(error.to_string().contains(problem), "{recipe}: {error}");
+        }
     }
 }

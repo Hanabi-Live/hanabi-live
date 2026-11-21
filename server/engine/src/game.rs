@@ -56,7 +56,13 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
             .is_none_or(|n| (options.num_players..=MAX_PLAYERS).contains(&n)),
         "Invalid player capacity."
     );
-    get_variant(&options.variant_name)?;
+    let variant = get_variant(&options.variant_name)?;
+    let cards = crate::deck_size(variant);
+    ensure!(
+        cards >= options.num_players * hand_size(options),
+        "This variant has {cards} cards, too few for {} players.",
+        options.num_players
+    );
     Ok(())
 }
 

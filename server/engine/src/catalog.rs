@@ -1,6 +1,6 @@
 use crate::recipe::{self, RecipeSuits};
 use crate::{ClueType, int};
-use anyhow::{Result, anyhow};
+use anyhow::{Result, anyhow, ensure};
 use hanabi_protocol::{
     CatalogColor, CatalogSuit, CatalogVariant, EVEN_RANK_CLUE, MAX_RANK, MIN_RANK, ODD_RANK_CLUE,
     START_CARD_RANK,
@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::{
     collections::{HashMap, HashSet},
-    sync::OnceLock,
+    sync::{OnceLock, RwLock},
 };
 
 pub use hanabi_protocol::CatalogCharacter as Character;
@@ -224,19 +224,52 @@ pub(crate) fn suits_by_id() -> Vec<(String, Suit)> {
     .collect()
 }
 
+/// The suits that recipes use: by name, including each suit's reversed version, and by ID.
+struct RecipeData {
+    by_name: HashMap<String, Suit>,
+    by_id: RecipeSuits,
+}
+
+fn recipe_data() -> &'static RecipeData {
+    static DATA: OnceLock<RecipeData> = OnceLock::new();
+    DATA.get_or_init(|| {
+        let suits_by_id = suits_by_id();
+        let by_id = RecipeSuits::new(&suits_by_id).unwrap_or_else(|error| {
+            panic!("suits.json: {error:#}");
+        });
+        let mut by_name = HashMap::new();
+        for (_, mut suit) in suits_by_id {
+            by_name.insert(suit.name.clone(), suit.clone());
+            suit.reversed = true;
+            by_name.insert(format!("{} Reversed", suit.name), suit);
+        }
+        RecipeData { by_name, by_id }
+    })
+}
+
+/// Builds the variant that a recipe describes, without checking that its parts work together.
+fn build_variant(recipe: &str, id: u32, name: &str) -> Result<Variant> {
+    let data = recipe_data();
+    let mut fields = recipe::catalog_fields(recipe, &data.by_id)?;
+    fields.insert("id".into(), id.into());
+    fields.insert("recipe".into(), recipe.into());
+    fields.insert("name".into(), name.into());
+    let entry: CatalogVariant = hanabi_protocol::decode(&Value::Object(fields))?;
+    Ok(variant(entry, &data.by_name))
+}
+
+/// The variant that a recipe describes. It fails for a recipe whose parts do not work together, or
+/// that has a modifier that changes nothing.
+pub fn variant_from_recipe(recipe: &str, id: u32, name: &str) -> Result<Variant> {
+    let variant = build_variant(recipe, id, name)?;
+    recipe::check_rules(&variant, |other| build_variant(other, id, name))?;
+    Ok(variant)
+}
+
 pub fn variants() -> &'static [Variant] {
     static DATA: OnceLock<Vec<Variant>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let suits_by_id = suits_by_id();
-        let recipe_suits = RecipeSuits::new(&suits_by_id).unwrap_or_else(|error| {
-            panic!("suits.json: {error:#}");
-        });
-        let mut suits = HashMap::new();
-        for (_, mut suit) in suits_by_id {
-            suits.insert(suit.name.clone(), suit.clone());
-            suit.reversed = true;
-            suits.insert(format!("{} Reversed", suit.name), suit);
-        }
+        let data = recipe_data();
         let mut recipes = HashSet::new();
         catalog::<CatalogVariant>(
             "variants.json",
@@ -244,13 +277,17 @@ pub fn variants() -> &'static [Variant] {
         )
         .into_iter()
         .map(|entry| {
-            check_recipe(&entry, &recipe_suits);
+            check_recipe(&entry, &data.by_id);
             assert!(
                 recipes.insert(entry.recipe.clone()),
                 "variants.json: two variants have the recipe \"{}\"",
                 entry.recipe
             );
-            variant(entry, &suits)
+            let (id, name) = (entry.id.get(), entry.name.clone());
+            let variant = variant(entry, &data.by_name);
+            recipe::check_rules(&variant, |other| build_variant(other, id, &name))
+                .unwrap_or_else(|error| panic!("variants.json: {name}: {error:#}"));
+            variant
         })
         .collect()
     })
@@ -276,7 +313,42 @@ pub fn get_variant(name: &str) -> Result<&'static Variant> {
         .get(name)
         .or_else(|| renamed.and_then(|renamed| index.get(renamed.as_str())))
         .map(|i| &variants()[*i])
+        .or_else(|| added_variants().read().ok()?.get(name).copied())
         .ok_or_else(|| anyhow!("Unknown game variant: {name}"))
+}
+
+/// The variants outside the catalog that `add_variant` added, by name.
+fn added_variants() -> &'static RwLock<HashMap<String, &'static Variant>> {
+    static ADDED: OnceLock<RwLock<HashMap<String, &'static Variant>>> = OnceLock::new();
+    ADDED.get_or_init(RwLock::default)
+}
+
+/// Adds a variant outside the catalog, such as one from `variant_from_recipe`, so that games can
+/// use it by name. Adding the same variant again does nothing. It fails for a name that another
+/// variant has.
+pub fn add_variant(variant: Variant) -> Result<&'static Variant> {
+    let same = |existing: &Variant| {
+        ensure!(
+            existing.recipe == variant.recipe && existing.id == variant.id,
+            "Another variant is named {}",
+            variant.name
+        );
+        Ok(())
+    };
+    if let Some(existing) = variants().iter().find(|v| v.name == variant.name) {
+        same(existing)?;
+        return Ok(existing);
+    }
+    let mut added = added_variants()
+        .write()
+        .map_err(|_| anyhow!("The added variants are poisoned"))?;
+    if let Some(existing) = added.get(&variant.name) {
+        same(existing)?;
+        return Ok(existing);
+    }
+    let leaked: &'static Variant = Box::leak(Box::new(variant));
+    added.insert(leaked.name.clone(), leaked);
+    Ok(leaked)
 }
 pub fn get_variant_by_id(id: u32) -> Result<&'static Variant> {
     variants()
@@ -286,6 +358,20 @@ pub fn get_variant_by_id(id: u32) -> Result<&'static Variant> {
 }
 pub fn variant_names() -> impl Iterator<Item = &'static str> {
     variants().iter().map(|v| v.name.as_str())
+}
+
+/// The number of cards in a variant's deck.
+pub fn deck_size(variant: &Variant) -> usize {
+    variant
+        .suits
+        .iter()
+        .flat_map(|suit| {
+            variant
+                .ranks
+                .iter()
+                .map(move |&rank| num_copies_of_card(variant, suit, rank))
+        })
+        .sum()
 }
 
 pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
