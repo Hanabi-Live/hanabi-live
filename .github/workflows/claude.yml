@@ -60,6 +60,7 @@ jobs:
         with:
           # Uses the Claude subscription of the account that made the token.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
           # The server opens the issues for client errors as this GitHub App.
           allowed_bots: hanabi-live-issues-bot
           claude_args: |
