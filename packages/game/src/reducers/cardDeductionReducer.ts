@@ -24,7 +24,6 @@ export function cardDeductionReducer(
   metadata: GameMetadata,
 ): readonly CardState[] {
   switch (action.type) {
-    case "cardIdentity":
     case "clue":
     case "discard":
     case "misplay":
@@ -436,10 +435,10 @@ function getCardPossibilitiesForPlayer(
   }
 
   // This is an unrevealed card outside of the players hand but not revealed to them. That can
-  // happen with something like a detrimental character (such as Slow-Witted) or a variant (such as
-  // Throw It in a Hole). We can't use our best (empathy) guess, because it might be in our own hand
-  // and we might know more about the card then the other player does. We know the other player at
-  // least knows about the clues for it, so we will use that set of possibilities.
+  // happen with a variant such as Throw It in a Hole. We can't use our best (empathy) guess,
+  // because it might be in our own hand and we might know more about the card then the other player
+  // does. We know the other player at least knows about the clues for it, so we will use that set
+  // of possibilities.
   return card.possibleCardsFromClues;
 }
 

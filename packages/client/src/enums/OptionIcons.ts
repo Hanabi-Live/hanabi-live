@@ -8,7 +8,6 @@ export enum OptionIcons {
   OneExtraCard = "fas fa-circle-plus",
   OneLessCard = "fas fa-circle-minus",
   AllOrNothing = "fas fa-layer-group",
-  DetrimentalCharacters = "fas fa-face-flushed",
   Seed = "fas fa-seedling",
   Replay = "fas fa-arrow-rotate-left",
 }

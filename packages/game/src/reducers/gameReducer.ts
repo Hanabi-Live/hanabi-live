@@ -463,8 +463,7 @@ function gameReducerFunction(
     case "noteList":
     case "noteListPlayer":
     case "receiveNote":
-    case "turn":
-    case "cardIdentity": {
+    case "turn": {
       break;
     }
   }

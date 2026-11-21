@@ -14,7 +14,6 @@ import type {
 import {
   StackDirection,
   getCardSlot,
-  getCharacterNameForPlayer,
   getClueName,
   getDeckPossibilities,
   getGoesFirstText,
@@ -580,18 +579,14 @@ export function getActionLogEntries(state: State): readonly ActionLogEntry[] {
 
 /** The clues of the game so far, for the clue log. */
 export function getClueLogEntries(state: State): readonly ClueLogEntry[] {
-  const { playerNames, characterAssignments } = state.metadata;
+  const { playerNames } = state.metadata;
   const { colorblindMode } = store.getState().session.settings;
   return state.visibleState!.clues.map((clue) => ({
     segment: clue.segment,
     turn: clue.segment + 1,
     giverName: playerNames[clue.giver] ?? "",
     targetName: playerNames[clue.target] ?? "",
-    clueName: getClueName(
-      clue,
-      currentVariant(),
-      getCharacterNameForPlayer(clue.giver, characterAssignments),
-    ),
+    clueName: getClueName(clue, currentVariant()),
     marker: getClueMarker(clue, colorblindMode),
     touchedCards: clue.list,
     missedCards: clue.negativeList,

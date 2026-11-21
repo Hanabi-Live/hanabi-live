@@ -86,7 +86,6 @@ const MAIN_PAGE_PARAMETERS: &[&str] = &[
     // The table settings of a "/create-table" link.
     "allOrNothing",
     "deckPlays",
-    "detrimentalCharacters",
     "emptyClues",
     "name",
     "oneExtraCard",

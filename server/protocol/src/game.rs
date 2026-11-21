@@ -249,8 +249,7 @@ pub struct TurnEvent {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClueEvent {
-    /// Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
-    /// clue from a Quacker.
+    /// Absent when the recipient may not see even the clue's type, as in a "Duck" variant.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clue: Option<VisibleClue>,
     /// The player who gives the clue.
@@ -295,7 +294,6 @@ pub struct PlayerTimesEvent {
 pub enum GameEvent {
     Draw(CardEvent),
     Play(CardEvent),
-    CardIdentity(CardEvent),
     Discard(CardEvent),
     /// A play that fails, which discards the card and adds a strike.
     Misplay(CardEvent),
@@ -362,41 +360,6 @@ pub enum GamePhase {
         #[serde(skip_serializing_if = "Option::is_none")]
         shared_replay: Option<SharedReplayState>,
     },
-}
-
-/// A player's detrimental character, in a game and in the replay format, with the value that some
-/// characters are assigned. Every player has one when detrimental characters are on.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase",
-    deny_unknown_fields
-)]
-pub enum CharacterAssignment {
-    /// A character without an assigned value.
-    Plain { character_id: CharacterId },
-    /// A character that is assigned a clue color, such as Fuming. The color is an index into the
-    /// variant's clue colors.
-    Color {
-        character_id: CharacterId,
-        color: ColorIndex,
-    },
-    /// A character that is assigned a rank, such as Awkward.
-    Rank {
-        character_id: CharacterId,
-        rank: ClueRank,
-    },
-}
-
-impl CharacterAssignment {
-    pub const fn character_id(self) -> CharacterId {
-        match self {
-            Self::Plain { character_id }
-            | Self::Color { character_id, .. }
-            | Self::Rank { character_id, .. } => character_id,
-        }
-    }
 }
 
 /// How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
@@ -466,9 +429,6 @@ pub struct GameInit {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub finished_at: Option<Timestamp>,
     pub options: GameOptions,
-    /// Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
-    #[schemars(length(max = MAX_PLAYERS))]
-    pub characters: Vec<CharacterAssignment>,
 }
 
 /// How the recipient views a shared replay. It does not change while they watch it. What
@@ -520,7 +480,6 @@ pub enum EndCondition {
     TerminatedByPlayer,
     SpeedrunFail,
     IdleTimeout,
-    CharacterSoftlock,
     AllOrNothingFail,
     AllOrNothingSoftlock,
     TerminatedByVote,

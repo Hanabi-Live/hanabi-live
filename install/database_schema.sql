@@ -168,7 +168,7 @@ CREATE TABLE games (
     one_extra_card          BOOLEAN      NOT NULL,
     one_less_card           BOOLEAN      NOT NULL,
     all_or_nothing          BOOLEAN      NOT NULL,
-    detrimental_characters  BOOLEAN      NOT NULL,
+    detrimental_characters  BOOLEAN      NOT NULL  DEFAULT FALSE, /* Unused; to be dropped. */
 
     /* For example, "p2v0s1". */
     seed                    TEXT         NOT NULL,
@@ -195,8 +195,8 @@ CREATE TABLE game_participants (
     game_id               INTEGER   NOT NULL,
     user_id               INTEGER   NOT NULL,
     seat                  SMALLINT  NOT NULL, /* 0-indexed. Orders the players and assigns their notes. */
-    character_id          SMALLINT,           /* NULL when the player has no character. */
-    assigned_metadata     SMALLINT,           /* NULL when the character has no assigned metadata. */
+    character_id          SMALLINT,           /* Unused; to be dropped. */
+    assigned_metadata     SMALLINT,           /* Unused; to be dropped. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)

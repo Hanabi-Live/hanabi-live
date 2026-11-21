@@ -1,12 +1,7 @@
 use crate::{
-    AssignedCharacter, Character, DeckCard, Variant, characters, int, num_copies_of_card,
+    DeckCard, Variant, num_copies_of_card,
     random::{GoRandom, seed_hash},
 };
-use anyhow::{Result, ensure};
-use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS};
-
-/// The highest rank a Dumbfounded or Awkward character is assigned, which leaves out the top rank.
-const MAX_CHARACTER_RANK: i32 = MAX_RANK - 1;
 
 pub fn create_deck(variant: &Variant) -> Vec<DeckCard> {
     let mut deck = Vec::new();
@@ -56,46 +51,4 @@ pub fn prepare_game_order<T>(
     if shuffle_players {
         rng.shuffle(players);
     }
-}
-
-pub fn assign_characters(
-    variant: &Variant,
-    seed: &str,
-    players: &[String],
-) -> Result<Vec<AssignedCharacter>> {
-    ensure!(
-        hanabi_protocol::is_player_count(players.len()),
-        "Character assignments require {MIN_PLAYERS} to {MAX_PLAYERS} players."
-    );
-    let mut rng = GoRandom::new(seed_hash(seed));
-    let catalog = characters();
-    let mut assigned: Vec<AssignedCharacter> = vec![];
-    for _ in players {
-        let character = loop {
-            let candidate = &catalog[rng.index(catalog.len())];
-            if (players.len() != MIN_PLAYERS || !candidate.not_two_player)
-                && assigned.iter().all(|c| c.name != candidate.name)
-            {
-                break candidate;
-            }
-        };
-        let metadata = match Character::from_name(&character.name) {
-            Some(Character::Fuming | Character::Inept) => {
-                ensure!(
-                    !variant.clue_colors.is_empty(),
-                    "Character requires clue colors"
-                );
-                Some(int(rng.index(variant.clue_colors.len())))
-            }
-            Some(Character::Dumbfounded | Character::Awkward) => {
-                Some(int(rng.index(usize::try_from(MAX_CHARACTER_RANK)?)) + 1)
-            }
-            _ => None,
-        };
-        assigned.push(AssignedCharacter {
-            name: character.name.clone(),
-            metadata,
-        });
-    }
-    Ok(assigned)
 }

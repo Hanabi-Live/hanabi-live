@@ -80,10 +80,7 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
     cardsPerHand,
     variant,
   );
-  const endGameLength = getEndGameLength(
-    metadata.options,
-    metadata.characterAssignments,
-  );
+  const endGameLength = getEndGameLength(metadata.options);
   const pace = getStartingPace(startingDeckSize, maxScore, endGameLength);
   const paceRisk = getPaceRisk(pace, options.numPlayers);
   const scorePerStack = playStacks.map((playStack) => playStack.length);

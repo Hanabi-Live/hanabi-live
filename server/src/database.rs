@@ -85,9 +85,8 @@ mod tests {
         let id = sqlx::query_scalar!(
             "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
              deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
-             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
-             datetime_finished)
-             VALUES('Counts',$1,0,false,NULL,NULL,$2,false,false,false,false,false,false,
+             seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             VALUES('Counts',$1,0,false,NULL,NULL,$2,false,false,false,false,false,
              'counts-'||gen_random_uuid(),0,1,$3,NOW(),NOW()) RETURNING id",
             i16::try_from(players.len()).unwrap(),
             speedrun,

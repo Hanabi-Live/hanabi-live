@@ -264,7 +264,6 @@ impl TableActor {
                 player_names: players.iter().map(|p| p.name.clone()).collect(),
                 seed: Some(seed),
                 deck: Some(deck),
-                characters: extra.custom_characters.clone(),
                 interpretation: Interpretation::Live,
             },
             emulated,

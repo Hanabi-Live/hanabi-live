@@ -1,4 +1,3 @@
-use crate::CharacterState;
 use hanabi_protocol::{
     CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     PlayerIndex, TargetCard,
@@ -21,7 +20,6 @@ pub struct Options {
     pub one_extra_card: bool,
     pub one_less_card: bool,
     pub all_or_nothing: bool,
-    pub detrimental_characters: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -42,7 +40,6 @@ impl Default for Options {
             one_extra_card: false,
             one_less_card: false,
             all_or_nothing: false,
-            detrimental_characters: false,
             table_name: None,
             max_players: None,
         }
@@ -68,19 +65,6 @@ pub struct DeckCard {
     pub rank: i32,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AssignedCharacter {
-    pub name: String,
-    /// Absent when the character has no assigned metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<i32>,
-}
-
-/// What shuffles the characters of a game without a seed that names none, so that they stay the
-/// same each time the game is replayed.
-pub const UNSEEDED: &str = "JSON";
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameSetup {
@@ -91,9 +75,6 @@ pub struct GameSetup {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     pub deck: Option<Vec<DeckCard>>,
-    /// Each player's character, when detrimental characters are on. Absent deals them from the
-    /// seed.
-    pub characters: Option<Vec<AssignedCharacter>>,
     #[serde(default)]
     pub interpretation: Interpretation,
 }
@@ -236,16 +217,12 @@ pub struct EngineCard {
     pub played: bool,
     pub failed: bool,
     pub cannot_be_played: bool,
-    pub insistent_touched: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EnginePlayer {
     pub name: String,
     pub index: usize,
-    /// The player's detrimental character and what it remembers. `None` when the player has no
-    /// character.
-    pub character_state: Option<CharacterState>,
     pub hand: Vec<usize>,
 }
 
@@ -283,13 +260,6 @@ pub enum EngineEvent {
         rank: Option<i32>,
     },
     Play {
-        player_index: usize,
-        order: usize,
-        /// `None` in the events of a recipient who may not see the card.
-        suit_index: Option<usize>,
-        rank: Option<i32>,
-    },
-    CardIdentity {
         player_index: usize,
         order: usize,
         /// `None` in the events of a recipient who may not see the card.
@@ -357,7 +327,6 @@ pub struct EngineState {
     pub stack_starts: Vec<Option<i32>>,
     pub play_stack_directions: Vec<StackDirection>,
     pub turn: i32,
-    pub turns_inverted: bool,
     pub active_player_index: usize,
     pub clue_tokens: i32,
     pub score: i32,

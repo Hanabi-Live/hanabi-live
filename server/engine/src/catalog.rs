@@ -13,8 +13,6 @@ use std::{
     sync::OnceLock,
 };
 
-pub use hanabi_protocol::CatalogCharacter as Character;
-
 /// A suit as the rules use it. The game library derives the same values in `suitsInit.ts`.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -87,16 +85,6 @@ fn catalog<T: hanabi_protocol::JsonSchema + DeserializeOwned + 'static>(
             hanabi_protocol::decode(entry).unwrap_or_else(|error| panic!("{file}: {error:#}"))
         })
         .collect()
-}
-
-pub fn characters() -> &'static [Character] {
-    static DATA: OnceLock<Vec<Character>> = OnceLock::new();
-    DATA.get_or_init(|| {
-        catalog(
-            "characters.json",
-            include_str!("../../../packages/game/src/json/characters.json"),
-        )
-    })
 }
 
 fn suit(entry: CatalogSuit, colors: &[CatalogColor]) -> Suit {

@@ -556,8 +556,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     let historical:i32=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
          speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-         all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         VALUES('Authored history',3,1,true,180,30,false,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
+         all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+         VALUES('Authored history',3,1,true,180,30,false,false,true,false,false,false,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
     let participant: i32 = sqlx::query_scalar!(
         "INSERT INTO game_participants(game_id,user_id,seat)
          VALUES($1,$2,0) RETURNING id",

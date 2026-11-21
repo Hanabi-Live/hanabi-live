@@ -144,7 +144,7 @@ describe("server game events", () => {
 describe("card identities", () => {
   test("every identity names a suit and a rank", () => {
     const learned = event({
-      type: "cardIdentity",
+      type: "draw",
       playerIndex: 0,
       order: 0,
       identity: {
@@ -152,8 +152,8 @@ describe("card identities", () => {
         rank: 7,
       },
     });
-    expect(learned.type === "cardIdentity" && learned.identity).toBeTruthy();
-    if (learned.type === "cardIdentity" && learned.identity !== undefined) {
+    expect(learned.type === "draw" && learned.identity).toBeTruthy();
+    if (learned.type === "draw" && learned.identity !== undefined) {
       expect(toCardIdentity(learned.identity)).toEqual({
         suitIndex: 2,
         rank: 7,
@@ -161,7 +161,7 @@ describe("card identities", () => {
     }
     expect(() =>
       event({
-        type: "cardIdentity",
+        type: "draw",
         playerIndex: 0,
         order: 0,
         identity: {

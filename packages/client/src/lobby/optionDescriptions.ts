@@ -86,14 +86,6 @@ export function getOptionDescriptions(
     });
   }
 
-  if (options.detrimentalCharacters) {
-    descriptions.push({
-      name: "characters",
-      icon: OptionIcons.DetrimentalCharacters,
-      tooltip: "The <strong>Detrimental Characters</strong> option is enabled.",
-    });
-  }
-
   const { deal } = settings;
   if (deal?.type === "seed") {
     descriptions.push({

@@ -1557,10 +1557,6 @@ const RESULT_FACES = {
     icon: "fa-bed",
     caption: ["Idle"],
   },
-  characterSoftlock: {
-    icon: "fa-lock",
-    caption: ["No", "clues"],
-  },
   allOrNothingFail: {
     icon: "fa-circle-xmark",
     caption: ["Not", "perfect"],

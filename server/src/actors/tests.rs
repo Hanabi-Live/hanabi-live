@@ -264,7 +264,6 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.one_less_card = true;
     options.all_or_nothing = true;
     options.speedrun = true;
-    options.detrimental_characters = true;
     let extra = ExtraOptions {
         set_seed_suffix: Some("match-1".into()),
         replay: Some(crate::model::TableReplay {
@@ -286,7 +285,6 @@ fn option_summaries_include_only_changes_and_escape_values() {
         "One Less Card",
         "All or Nothing",
         "Speedrun",
-        "Detrimental Characters",
     ] {
         assert!(summary.contains(&format!("\n{label}: Yes")));
     }

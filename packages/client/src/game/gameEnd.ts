@@ -131,10 +131,6 @@ function getGameOverSummary(
       return "Idle for too long";
     }
 
-    case "characterSoftlock": {
-      return `${playerName} had no clues`;
-    }
-
     case "allOrNothingFail": {
       return "All or Nothing failed";
     }
@@ -185,10 +181,6 @@ function getGameOverDescription(
 
     case "idleTimeout": {
       return "Players were idle for too long.";
-    }
-
-    case "characterSoftlock": {
-      return `${playerName} was left with 0 clues.`;
     }
 
     // The game ends as soon as the maximum score drops below a perfect score.

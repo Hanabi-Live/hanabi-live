@@ -1,7 +1,7 @@
 use hanabi_engine::*;
 use serde_json::json;
 
-fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSetup {
+fn setup(options: Options) -> GameSetup {
     GameSetup {
         player_names: (0..options.num_players)
             .map(|i| format!("Player{i}"))
@@ -9,12 +9,11 @@ fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSe
         options,
         seed: Some("p2v0s1".into()),
         deck: None,
-        characters,
         interpretation: Interpretation::Live,
     }
 }
 fn standard() -> EngineState {
-    create_game(setup(Options::default(), None)).expect("the default options are valid")
+    create_game(setup(Options::default())).expect("the default options are valid")
 }
 /// A game after an action or termination applied to a copy of it, and the events that it added.
 #[derive(Debug)]
@@ -65,18 +64,6 @@ fn parsed(action_type: RecordedActionType, target: i32, value: i32) -> Option<Pl
 }
 fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
     parsed(action_type, target, value).expect("a valid action")
-}
-/// A character for a seat that the test does not look at. No test plays from that seat's slot 1, so
-/// its rule never applies.
-const NEUTRAL: &str = "Hesitant";
-fn assignments(names: &[&str]) -> Vec<AssignedCharacter> {
-    names
-        .iter()
-        .map(|name| AssignedCharacter {
-            name: (*name).into(),
-            metadata: None,
-        })
-        .collect()
 }
 #[test]
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
@@ -154,44 +141,7 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
 }
 
 #[test]
-fn termination_uses_requesting_character_and_explicit_timing() {
-    let state = create_game(setup(
-        Options {
-            num_players: 3,
-            detrimental_characters: true,
-            ..Options::default()
-        },
-        Some(assignments(&[NEUTRAL, "Contrarian", "Stubborn"])),
-    ))
-    .unwrap();
-    let ended = terminated(
-        &state,
-        Termination {
-            actor_index: 1,
-            condition: EndCondition::TerminatedByPlayer,
-            player_index: Some(1),
-            votes: None,
-        },
-        None,
-    )
-    .unwrap();
-    assert!(ended.state.turns_inverted);
-    assert_eq!(ended.state.active_player_index, 2);
-    assert_eq!(
-        ended.state.players[2].character_state,
-        Some(CharacterState::Stubborn {
-            previous_action: Some(RecordedActionType::GameOver)
-        })
-    );
-    assert!(
-        applied(
-            &ended.state,
-            0,
-            action(RecordedActionType::Play, 0, 0),
-            None
-        )
-        .is_err()
-    );
+fn termination_uses_explicit_timing() {
     let state = standard();
     let timing = Some(CompletionTiming {
         player_times: vec![1234, -1234],
@@ -268,52 +218,23 @@ fn termination_uses_requesting_character_and_explicit_timing() {
 
 #[test]
 fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
-    let state = create_game(setup(
-        Options {
-            detrimental_characters: true,
-            ..Options::default()
-        },
-        Some(assignments(&["Slow-Witted", NEUTRAL])),
-    ))
-    .unwrap();
+    let state = standard();
     let visible =
         events_for_recipient(&state, Recipient::Player { player_index: 0 }, None).unwrap();
     let mut draws = 0;
-    let mut revealed = vec![];
     for e in &visible {
-        match e {
-            EngineEvent::Draw {
-                rank, suit_index, ..
-            } => {
-                draws += 1;
-                assert_eq!((*rank, *suit_index), (None, None));
-            }
-            EngineEvent::CardIdentity {
-                player_index: 1,
-                order,
-                rank,
-                ..
-            } => {
-                assert!(rank.is_some());
-                revealed.push(*order);
-            }
-            EngineEvent::CardIdentity {
-                player_index: 0,
-                rank,
-                suit_index,
-                ..
-            } => assert_eq!((*rank, *suit_index), (None, None)),
-            _ => {}
+        if let EngineEvent::Draw {
+            player_index,
+            rank,
+            suit_index,
+            ..
+        } = e
+        {
+            draws += 1;
+            assert_eq!(*player_index == 0, (*rank, *suit_index) == (None, None));
         }
     }
     assert_eq!(draws, 10);
-    assert_eq!(revealed, vec![5, 6, 7, 8]);
-    assert!(
-        applied(&state, 0, action(RecordedActionType::RankClue, 1, 4), None)
-            .unwrap_err()
-            .to_string()
-            .contains("touches 0 cards")
-    );
     assert_eq!(
         visible,
         events_for_recipient(
@@ -362,7 +283,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
             rank: 1,
         },
     ];
-    let mut input = setup(Options::default(), None);
+    let mut input = setup(Options::default());
     input.seed = None;
     input.deck = Some(deck.clone());
     input.interpretation = Interpretation::Recorded;
@@ -406,17 +327,14 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
             rank: 6,
         }],
     ] {
-        let mut input = setup(Options::default(), None);
+        let mut input = setup(Options::default());
         input.deck = Some(deck);
         assert!(create_game(input).is_err());
     }
-    let mut input = setup(
-        Options {
-            variant_name: "Sudoku (5 Suits)".into(),
-            ..Options::default()
-        },
-        None,
-    );
+    let mut input = setup(Options {
+        variant_name: "Sudoku (5 Suits)".into(),
+        ..Options::default()
+    });
     input.deck = Some(vec![DeckCard {
         suit_index: 0,
         rank: 7,
@@ -468,84 +386,14 @@ fn first_accepted(
 }
 
 #[test]
-fn long_character_histories_are_bounded() {
-    for (variant_name, partner) in [
-        ("6 Suits", "Panicky"),
-        ("Up or Down (6 Suits)", "Slow-Witted"),
-        ("Reversed (6 Suits)", "Panicky"),
-        ("Throw It in a Hole (6 Suits)", "Panicky"),
-        ("Clue Starved (6 Suits)", "Slow-Witted"),
-    ] {
-        let v = get_variant(variant_name).unwrap();
-        let mut deck = create_shuffled_deck(v, "p2v0s1");
-        let first = deck
-            .iter()
-            .position(|c| c.rank == if v.suits[c.suit_index].reversed { 5 } else { 1 })
-            .unwrap();
-        deck.swap(0, first);
-        let mut input = setup(
-            Options {
-                variant_name: variant_name.into(),
-                empty_clues: true,
-                detrimental_characters: true,
-                ..Options::default()
-            },
-            Some(assignments(&["Genius", partner])),
-        );
-        input.deck = Some(deck);
-        let mut state = create_game(input).unwrap();
-        for _ in 0..129 {
-            if state.end.is_some() {
-                break;
-            }
-            let p = &state.players[state.active_player_index];
-            let clues = vec![
-                action(RecordedActionType::ColorClue, 1 - int(p.index), 0),
-                action(RecordedActionType::RankClue, 1 - int(p.index), 1),
-            ];
-            let discards: Vec<_> = p
-                .hand
-                .iter()
-                .filter(|o| **o != 0)
-                .map(|o| action(RecordedActionType::Discard, int(*o), 0))
-                .collect();
-            let candidates = if p.is(Character::Panicky) {
-                [discards, clues].concat()
-            } else {
-                [clues, discards].concat()
-            };
-            let before = potential(&state);
-            state = first_accepted(&state, candidates, false);
-            assert!(potential(&state) <= before - 1.0, "{variant_name}");
-            assert_eq!(state.score, 0);
-        }
-        assert_eq!(
-            state.end.map(|end| end.condition),
-            Some(EndCondition::Normal),
-            "{variant_name}"
-        );
-        assert_eq!(state.deck_index, state.deck.len());
-        assert!(state.actions.len() > 60 && state.turn < int(state.actions.len()));
-        assert!(
-            state.actions.len() <= 2 * state.deck.len() + 9
-                && state.events.len() <= 8 * state.deck.len() + 31
-        );
-    }
-}
-
-#[test]
 fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
-    let mut input = setup(
-        Options {
-            variant_name: "6 Suits".into(),
-            all_or_nothing: true,
-            empty_clues: true,
-            one_extra_card: true,
-            detrimental_characters: true,
-            ..Options::default()
-        },
-        Some(assignments(&["Slow-Witted", NEUTRAL])),
-    );
+    let mut input = setup(Options {
+        variant_name: "6 Suits".into(),
+        all_or_nothing: true,
+        empty_clues: true,
+        one_extra_card: true,
+        ..Options::default()
+    });
     let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1");
     deck.sort_by_key(|c| (c.rank, c.suit_index));
     input.deck = Some(deck);
@@ -583,13 +431,10 @@ fn sudoku_max_score_counts_only_cards_reachable_from_distinct_starts() {
         ("Sudoku (4 Suits)", vec![3], 6),
         ("Sudoku (4 Suits)", vec![1, 4], 3),
     ] {
-        let mut state = create_game(setup(
-            Options {
-                variant_name: name.into(),
-                ..Options::default()
-            },
-            None,
-        ))
+        let mut state = create_game(setup(Options {
+            variant_name: name.into(),
+            ..Options::default()
+        }))
         .unwrap();
         for card in &mut state.deck {
             card.discarded = discarded.contains(&card.rank);
@@ -604,13 +449,10 @@ fn sudoku_max_score_counts_only_cards_reachable_from_distinct_starts() {
 
 #[test]
 fn sudoku_started_stack_cannot_count_available_ranks_before_its_start() {
-    let mut state = create_game(setup(
-        Options {
-            variant_name: "Sudoku (5 Suits)".into(),
-            ..Options::default()
-        },
-        None,
-    ))
+    let mut state = create_game(setup(Options {
+        variant_name: "Sudoku (5 Suits)".into(),
+        ..Options::default()
+    }))
     .unwrap();
     state.stack_starts[0] = Some(3);
     for card in &mut state.deck {

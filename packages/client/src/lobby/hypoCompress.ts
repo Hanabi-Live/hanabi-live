@@ -186,7 +186,6 @@ export function expand(data: string): string | undefined {
     options: {
       variantId: variant.id,
     },
-    characters: [],
     notes: [],
     ...(seed !== "" && { seed }),
   };

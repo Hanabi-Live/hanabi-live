@@ -127,13 +127,6 @@ const EXTRA_OPTION_ROWS = [
     label: "All or Nothing",
     help: `${DOCS_URL}/features.md#all-or-nothing`,
   },
-  {
-    option: "detrimentalCharacters",
-    id: "createTableDetrimentalCharacters",
-    icon: "fa-face-flushed",
-    label: "Detrimental Characters",
-    help: `${DOCS_URL}/characters.md`,
-  },
 ] as const satisfies ReadonlyArray<{
   readonly option: ExtraOption;
   readonly id: string;

@@ -7,6 +7,12 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## December 3rd, 2026
+
+- Detrimental Characters were removed, as announced in
+  [the Fall 2026 roadmap](https://github.com/Hanabi-Live/hanabi-live/issues/3225).
+  Their games were deleted, and they no longer count in anyone's statistics.
+
 ## November 21st, 2026
 
 - In a chat box with text in it, the up arrow and down arrow first move to the

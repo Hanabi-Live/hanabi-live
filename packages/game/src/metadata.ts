@@ -1,5 +1,4 @@
 import type { Tuple } from "complete-common";
-import { newArray } from "complete-common";
 import { DEFAULT_PLAYER_NAMES } from "./constants.ts";
 import { getVariant } from "./gameData.ts";
 import { DEFAULT_VARIANT_NAME } from "./generated/protocol.ts";
@@ -31,15 +30,7 @@ export function getDefaultMetadata(
     string,
     NumPlayers
   >;
-  const characterAssignments = newArray(numPlayers, undefined) as Tuple<
-    number | undefined,
-    NumPlayers
-  >;
-  const characterMetadata = newArray(numPlayers, undefined) as Tuple<
-    number | undefined,
-    NumPlayers
-  >;
-  const endGameLength = getEndGameLength(options, characterAssignments);
+  const endGameLength = getEndGameLength(options);
   const cardsPerHand = getCardsPerHand(options);
   const minEfficiency = getMinEfficiency(
     numPlayers,
@@ -54,8 +45,6 @@ export function getDefaultMetadata(
     options,
     playerNames,
     ourPlayerIndex: 0,
-    characterAssignments,
-    characterMetadata,
 
     minEfficiency,
     hardVariant,

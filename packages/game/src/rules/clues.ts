@@ -9,17 +9,14 @@ import {
   START_CARD_RANK,
 } from "../generated/protocol.ts";
 import type { Color } from "../interfaces/Color.ts";
-import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { Suit } from "../interfaces/Suit.ts";
 import type { Variant } from "../interfaces/Variant.ts";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
 import type { Clue } from "../types/Clue.ts";
 import { newColorClue, newRankClue } from "../types/Clue.ts";
 import type { ClueRank } from "../types/ClueRank.ts";
 import type { ClueType } from "../types/ClueType.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
-import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
 import type { ActionClue } from "../types/gameActions.ts";
@@ -42,7 +39,6 @@ export function getVisibleClueType(
 export function getClueName(
   clue: MsgClue | HiddenClue,
   variant: Variant,
-  characterName: string,
 ): string {
   if (variant.cowAndPig) {
     switch (getVisibleClueType(clue)) {
@@ -60,7 +56,7 @@ export function getClueName(
     }
   }
 
-  if (characterName === "Quacker" || clue.type === undefined || variant.duck) {
+  if (clue.type === undefined || variant.duck) {
     return "Quack";
   }
 
@@ -266,17 +262,7 @@ export function isCardTouchedByClueRank(
   return clueRank === cardRank;
 }
 
-export function shouldApplyClue(
-  giverPlayerIndex: PlayerIndex,
-  metadata: GameMetadata,
-  variant: Variant,
-): boolean {
-  const giverCharacterName = getCharacterNameForPlayer(
-    giverPlayerIndex,
-    metadata.characterAssignments,
-  );
-
-  return (
-    !variant.cowAndPig && !variant.duck && giverCharacterName !== "Quacker"
-  );
+/** Whether a clue's receiver learns from it which cards it touches and what it says. */
+export function shouldApplyClue(variant: Variant): boolean {
+  return !variant.cowAndPig && !variant.duck;
 }

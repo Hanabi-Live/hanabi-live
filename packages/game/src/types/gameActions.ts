@@ -15,7 +15,6 @@ import type { MsgClue } from "./MsgClue.ts";
  * a card will not automatically draw a card for the player.)
  */
 export type GameAction =
-  | ActionCardIdentity
   | ActionClue
   | ActionDiscard
   | ActionDraw
@@ -49,8 +48,6 @@ type Event<Type extends GameEvent["type"]> = Readonly<
   Extract<GameEvent, { type: Type }>
 >;
 
-/** Used to implement the "Slow-Witted" detrimental character. */
-export type ActionCardIdentity = Event<"cardIdentity">;
 export type ActionDiscard = Event<"discard">;
 export type ActionDraw = Event<"draw">;
 

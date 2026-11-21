@@ -9,9 +9,8 @@ import { getNextPlayerIndex } from "./turn.ts";
 
 /**
  * Whether the game ends in this state, mirroring `check_end` in the server engine. (Terminations
- * and character-specific endings are decided by the server alone.) By default, a card in a hand
- * could be played when any of its possible identities is playable; `isPlayable` can decide this
- * instead.
+ * are decided by the server alone.) By default, a card in a hand could be played when any of its
+ * possible identities is playable; `isPlayable` can decide this instead.
  */
 export function isGameOver(
   gameState: GameState,
@@ -28,8 +27,7 @@ export function isGameOver(
 ): boolean {
   const { options } = metadata;
   const variant = getVariantById(options.variantId);
-  const { turnNum, currentPlayerIndex, playOrderInverted, endTurnNum } =
-    gameState.turn;
+  const { turnNum, currentPlayerIndex, endTurnNum } = gameState.turn;
   if (currentPlayerIndex === undefined) {
     return true;
   }
@@ -67,11 +65,7 @@ export function isGameOver(
       return false;
     }
 
-    playerIndex = getNextPlayerIndex(
-      playerIndex,
-      options.numPlayers,
-      playOrderInverted,
-    );
+    playerIndex = getNextPlayerIndex(playerIndex, options.numPlayers);
   }
 
   return true;

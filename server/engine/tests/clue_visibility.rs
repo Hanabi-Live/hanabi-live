@@ -19,30 +19,20 @@ enum Visible {
 
 #[test]
 fn projection_hides_what_players_and_shadows_may_not_see_of_a_clue() -> Result<()> {
-    for (variant_name, quacker, visible) in [
-        ("No Variant", false, Visible::All),
-        ("Duck (5 Suits)", false, Visible::Nothing),
-        ("Cow & Pig (5 Suits)", false, Visible::Type),
-        ("No Variant", true, Visible::Nothing),
+    for (variant_name, visible) in [
+        ("No Variant", Visible::All),
+        ("Duck (5 Suits)", Visible::Nothing),
+        ("Cow & Pig (5 Suits)", Visible::Type),
     ] {
         let mut state = create_game(GameSetup {
             player_names: vec!["Alice".into(), "Bob".into(), "Carol".into()],
             options: Options {
                 num_players: 3,
                 variant_name: variant_name.into(),
-                detrimental_characters: quacker,
                 ..Options::default()
             },
             seed: Some("p3v0s17".into()),
             deck: None,
-            characters: quacker.then(|| {
-                (0..3)
-                    .map(|_| AssignedCharacter {
-                        name: "Quacker".into(),
-                        metadata: None,
-                    })
-                    .collect()
-            }),
             interpretation: Interpretation::Live,
         })?;
         for kind in [RecordedActionType::ColorClue, RecordedActionType::RankClue] {

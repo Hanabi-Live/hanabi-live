@@ -1,4 +1,4 @@
-use crate::{Character, EngineEvent, EngineState, rules::variant_for};
+use crate::{EngineEvent, EngineState, rules::variant_for};
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 
@@ -41,8 +41,6 @@ pub fn events_for_recipient(
     let Some(index) = index else {
         return Ok(events.to_vec());
     };
-    let player = &state.players[index];
-    let count = state.players.len();
     Ok(events
         .iter()
         .cloned()
@@ -51,37 +49,16 @@ pub fn events_for_recipient(
                 EngineEvent::Clue {
                     clue: clue @ Some(_),
                     clue_type,
-                    giver,
                     ..
                 } => {
                     let variant = variant_for(state);
-                    let quacker = state.options.detrimental_characters
-                        && state.players[*giver].is(Character::Quacker);
-                    if variant.duck || quacker {
+                    if variant.duck {
                         *clue = None;
                     } else if variant.cow_and_pig {
                         *clue_type = clue.take().map(|clue| clue.clue_type);
                     }
                 }
                 EngineEvent::Draw {
-                    player_index,
-                    suit_index,
-                    rank,
-                    ..
-                } => {
-                    let hidden = *player_index == index
-                        || (state.options.detrimental_characters
-                            && (player.is(Character::SlowWitted)
-                                || (player.is(Character::BlindSpot)
-                                    && *player_index == (index + 1) % count)
-                                || (player.is(Character::Oblivious)
-                                    && *player_index == (index + count - 1) % count)));
-                    if hidden {
-                        *suit_index = None;
-                        *rank = None;
-                    }
-                }
-                EngineEvent::CardIdentity {
                     player_index,
                     suit_index,
                     rank,

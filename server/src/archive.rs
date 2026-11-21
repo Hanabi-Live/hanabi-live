@@ -7,7 +7,7 @@ use crate::{
 };
 use anyhow::{Context, Result, anyhow, ensure};
 use hanabi_engine::{
-    AssignedCharacter, EndCondition, GameSetup, Interpretation, RecordedAction, RecordedActionType,
+    EndCondition, GameSetup, Interpretation, RecordedAction, RecordedActionType,
     recorded_action_type,
 };
 use hanabi_protocol::{
@@ -23,7 +23,8 @@ use time::OffsetDateTime;
 mod tests;
 
 /// The number that the database stores for an end condition, in `games.end_condition` and as a game
-/// over's value in `game_actions`. Changing a number requires a migration.
+/// over's value in `game_actions`. Changing a number requires a migration. 7 was the softlock of a
+/// Detrimental Characters game.
 pub(crate) const fn end_condition_to_db(condition: EndCondition) -> i16 {
     match condition {
         EndCondition::Normal => 1,
@@ -32,7 +33,6 @@ pub(crate) const fn end_condition_to_db(condition: EndCondition) -> i16 {
         EndCondition::TerminatedByPlayer => 4,
         EndCondition::SpeedrunFail => 5,
         EndCondition::IdleTimeout => 6,
-        EndCondition::CharacterSoftlock => 7,
         EndCondition::AllOrNothingFail => 8,
         EndCondition::AllOrNothingSoftlock => 9,
         EndCondition::TerminatedByVote => 10,
@@ -48,7 +48,6 @@ pub(crate) fn end_condition_from_db(value: i32) -> Result<EndCondition> {
         4 => EndCondition::TerminatedByPlayer,
         5 => EndCondition::SpeedrunFail,
         6 => EndCondition::IdleTimeout,
-        7 => EndCondition::CharacterSoftlock,
         8 => EndCondition::AllOrNothingFail,
         9 => EndCondition::AllOrNothingSoftlock,
         10 => EndCondition::TerminatedByVote,
@@ -61,10 +60,6 @@ pub(crate) struct ArchivePlayer {
     pub user_id: i32,
     pub name: String,
     pub seat: i16,
-    /// Absent when the player has no character.
-    pub character_id: Option<i16>,
-    /// Absent when the player's character has no assigned metadata.
-    pub assigned_metadata: Option<i16>,
 }
 
 /// An action as `game_actions` stores it: NULL for a game over's target when no player caused it,
@@ -164,7 +159,6 @@ pub struct GameRecord {
     pub one_extra_card: bool,
     pub one_less_card: bool,
     pub all_or_nothing: bool,
-    pub detrimental_characters: bool,
     pub seed: String,
     pub score: i16,
     pub num_turns: i16,
@@ -217,8 +211,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
     let Some(row) = sqlx::query!(
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
-          'user_id',p.user_id,'name',u.username,'seat',p.seat,
-          'character_id',p.character_id,'assigned_metadata',p.assigned_metadata)
+          'user_id',p.user_id,'name',u.username,'seat',p.seat)
           ORDER BY p.seat) FROM game_participants p JOIN users u ON u.id=p.user_id
           WHERE p.game_id=g.id),'[]'::jsonb) AS \"archive_players!: Json<Vec<ArchivePlayer>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
@@ -272,9 +265,7 @@ pub(crate) async fn replay(
     );
     let rows = archive.players;
     ensure!(rows.len() == options.num_players, "Invalid replay roster");
-    let detrimental = options.detrimental_characters;
     let mut players = vec![];
-    let mut characters = vec![];
     let mut notes = vec![vec![String::new(); deck.len() + variant.suits.len()]; rows.len()];
     for (seat, r) in rows.iter().enumerate() {
         ensure!(
@@ -287,20 +278,6 @@ pub(crate) async fn replay(
             bot: false,
             stats: zero_stats(),
         });
-        if detrimental {
-            let character = r
-                .character_id
-                .and_then(|id| {
-                    hanabi_engine::characters()
-                        .iter()
-                        .find(|c| i16::try_from(c.id.get()).ok() == Some(id))
-                })
-                .context("Missing or unknown stored character")?;
-            characters.push(AssignedCharacter {
-                name: character.name.clone(),
-                metadata: r.assigned_metadata.map(i32::from),
-            });
-        }
     }
     for note in archive.notes {
         let cell = notes
@@ -319,7 +296,6 @@ pub(crate) async fn replay(
             player_names: players.iter().map(|p| p.name.clone()).collect(),
             seed: Some(row.seed.clone()),
             deck: Some(deck),
-            characters: detrimental.then_some(characters),
             interpretation: Interpretation::Recorded,
         },
         &archive.actions,
@@ -378,29 +354,21 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.get(), &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds.get())).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds.get())).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)", id.get(), &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds.get())).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds.get())).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
-    let mut character_ids = vec![];
-    let mut assigned_metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
-        let (character_id, assigned) = character_columns(&s.game.players[seat])?;
         users.push(p.user()?.get());
         seats.push(i16::try_from(seat)?);
-        character_ids.push(character_id);
-        assigned_metadata.push(assigned);
     }
     let participants = sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_id,assigned_metadata)
-         SELECT $1,p.user_id,p.seat,p.character_id,p.assigned_metadata
-         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
-         AS p(user_id,seat,character_id,assigned_metadata)
+        "INSERT INTO game_participants(game_id,user_id,seat)
+         SELECT $1,p.user_id,p.seat
+         FROM UNNEST($2::integer[],$3::smallint[]) AS p(user_id,seat)
          RETURNING id,seat",
         id.get(),
         &users,
-        &seats,
-        &character_ids as &[Option<i16>],
-        &assigned_metadata as &[Option<i16>]
+        &seats
     )
     .fetch_all(&mut **tx)
     .await?;
@@ -480,19 +448,6 @@ async fn count_game(
     Ok(())
 }
 
-/// A player's character and its assigned metadata, as the `character_id` and `assigned_metadata`
-/// columns store them, with `None` for none.
-fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16>, Option<i16>)> {
-    let character_id = player
-        .character()
-        .map(|c| {
-            Ok::<_, anyhow::Error>(i16::try_from(crate::game::catalog_character(c)?.id.get())?)
-        })
-        .transpose()?;
-    let metadata = player.assigned_value().map(i16::try_from).transpose()?;
-    Ok((character_id, metadata))
-}
-
 impl GameRecord {
     /// The game's clock, or `None` when the game is untimed.
     pub fn time_control(&self) -> Result<Option<hanabi_protocol::TimeControl>> {
@@ -521,7 +476,6 @@ pub fn options(row: &GameRecord) -> Result<Options> {
         one_extra_card: row.one_extra_card,
         one_less_card: row.one_less_card,
         all_or_nothing: row.all_or_nothing,
-        detrimental_characters: row.detrimental_characters,
         table_name: None,
         max_players: None,
     })

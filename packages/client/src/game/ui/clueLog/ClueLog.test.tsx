@@ -47,7 +47,6 @@ function renderLog(
     },
     metadata: {
       playerNames: ["Alice", "Bob"],
-      characterAssignments: [undefined, undefined],
     },
   } as unknown as State;
   render(

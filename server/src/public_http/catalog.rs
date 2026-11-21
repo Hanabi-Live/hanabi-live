@@ -9,12 +9,6 @@ pub(super) fn variant(id: i64) -> Option<&'static Variant> {
     let id = u32::try_from(id).ok()?;
     hanabi_engine::get_variant_by_id(id).ok()
 }
-pub(super) fn character(id: i64) -> Option<&'static str> {
-    hanabi_engine::characters()
-        .iter()
-        .find(|character| i64::from(character.id.get()) == id)
-        .map(|character| character.name.as_str())
-}
 pub(super) fn names() -> VariantNames {
     VariantNames(
         variants()

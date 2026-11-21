@@ -7,7 +7,6 @@ import type {
 } from "@hanabi-live/game";
 import {
   canCardPossiblyBeFromCluesOnly,
-  getCharacterNameForPlayer,
   getVariantById,
   getVisibleClueType,
   isCardClued,
@@ -90,17 +89,6 @@ export function getSoundType(
       if (visibleType === undefined) {
         return SoundType.Quack;
       }
-      if (metadata.options.detrimentalCharacters) {
-        const giverCharacterName = getCharacterNameForPlayer(
-          action.playerIndex,
-          metadata.characterAssignments,
-        );
-
-        if (giverCharacterName === "Quacker") {
-          return SoundType.Quack;
-        }
-      }
-
       if (variant.cowAndPig) {
         switch (visibleType) {
           case "color": {

@@ -8,7 +8,6 @@ import {
 import { getVariantById } from "../gameData.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { Variant } from "../interfaces/Variant.ts";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
 import type { EndCondition } from "../types/EndCondition.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
@@ -73,17 +72,8 @@ export function getClueText(
   }
 
   // First, handle the case of clue text in some special variants.
-  const characterName = getCharacterNameForPlayer(
-    action.playerIndex,
-    metadata.characterAssignments,
-  );
-  if (
-    characterName === "Quacker"
-    || action.clue.type === undefined
-    || variant.cowAndPig
-    || variant.duck
-  ) {
-    const actionName = getClueActionName(action.clue, variant, characterName);
+  if (action.clue.type === undefined || variant.cowAndPig || variant.duck) {
+    const actionName = getClueActionName(action.clue, variant);
     const targetSuffix = target.endsWith("s") ? "'" : "'s";
 
     // Create a list of slot numbers that correspond to the cards touched.
@@ -103,7 +93,7 @@ export function getClueText(
   }
 
   // Handle the default case of a normal clue.
-  let clueName = getClueName(action.clue, variant, characterName);
+  let clueName = getClueName(action.clue, variant);
   if (action.orders.length !== 1) {
     clueName += "s";
   }
@@ -114,7 +104,6 @@ export function getClueText(
 function getClueActionName(
   msgClue: MsgClue | HiddenClue,
   variant: Variant,
-  characterName: string,
 ): string {
   const visibleType = getVisibleClueType(msgClue);
   if (visibleType === undefined) {
@@ -132,7 +121,7 @@ function getClueActionName(
     }
   }
 
-  return characterName === "Quacker" || variant.duck ? "quacks" : "clues";
+  return variant.duck ? "quacks" : "clues";
 }
 
 export function getGameOverText(
@@ -172,10 +161,6 @@ export function getGameOverText(
 
     case "idleTimeout": {
       return "Players were idle for too long.";
-    }
-
-    case "characterSoftlock": {
-      return `${playerName} was left with 0 clues!`;
     }
 
     case "allOrNothingFail": {

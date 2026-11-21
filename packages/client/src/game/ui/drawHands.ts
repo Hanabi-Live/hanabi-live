@@ -1,5 +1,5 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
-import { MAX_PLAYERS, getCardsPerHand, getCharacter } from "@hanabi-live/game";
+import { MAX_PLAYERS, getCardsPerHand } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
 import { store } from "../../store.ts";
@@ -12,15 +12,11 @@ import {
   CARD_H,
   CARD_W,
   CLUE_LOG,
-  FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
   INDICATOR_OPACITY,
   OFF_BLACK,
   QUARTER_TURN_DEGREES,
-  TEXT_SHADOW,
 } from "./constants.ts";
-import { TextWithTooltip } from "./controls/TextWithTooltip.ts";
-import { initKonvaTooltips } from "./konvaTooltips.ts";
 
 interface HandConfig {
   x: number;
@@ -194,12 +190,6 @@ const BGA_TURN_RECT = {
   cornerRadius: 0.1,
 } as const;
 
-/**
- * The size of the detrimental character icon, which is centered on the corner of a player's name
- * frame, in fractions of the stage's width and height. The emoji fills the icon's height.
- */
-const CHARACTER_ICON_SIZE = 0.03;
-
 /** In the Keldon layout, the width of a hand that does not span the board, as with 4 players. */
 const KELDON_NARROW_HAND_W = 0.34;
 
@@ -337,9 +327,6 @@ const BGA_HANDS = {
   /** The gap between a hand and the name frame below it, in fractions of the stage height. */
   nameFrameGapY: 0.01,
 } as const;
-
-/** The tooltip for a player with no character, which can happen when debugging. */
-const UNASSIGNED_CHARACTER_TOOLTIP = "<strong>n/a</strong>";
 
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
@@ -871,82 +858,7 @@ export function drawHands(winW: number, winH: number): void {
       i as PlayerIndex,
     );
     globals.layers.UI.add(globals.elements.nameFrames[i]);
-
-    drawDetrimentalCharacters(winW, winH, numPlayers, i, j);
   }
-}
-
-// Draw the "Detrimental Character Assignments" icon and tooltip.
-function drawDetrimentalCharacters(
-  winW: number,
-  winH: number,
-  numPlayers: NumPlayers,
-  i: number,
-  j: number,
-) {
-  let playerNamePos = namePos;
-  if (!store.getState().session.settings.keldonMode) {
-    playerNamePos = namePosBga;
-  }
-
-  if (!globals.options.detrimentalCharacters) {
-    return;
-  }
-
-  const characterId = globals.metadata.characterAssignments[i];
-  const character =
-    characterId === undefined ? undefined : getCharacter(characterId);
-
-  const iconW = CHARACTER_ICON_SIZE * winW;
-  const iconH = CHARACTER_ICON_SIZE * winH;
-  const charIcon = new TextWithTooltip({
-    width: iconW,
-    height: iconH,
-    x: playerNamePos[numPlayers]![j]!.x * winW - iconW / 2,
-    y: playerNamePos[numPlayers]![j]!.y * winH - iconH / 2,
-    fontSize: iconH,
-    fontFamily: FONT_FAMILY,
-    align: "center",
-    text: character?.emoji ?? "",
-    fill: "yellow",
-    ...TEXT_SHADOW,
-    listening: true,
-  });
-  charIcon.emoji = true; // Mark that this is a text element containing only emoji
-  globals.layers.UI.add(charIcon);
-
-  charIcon.tooltipName = `character-assignment-${i}`;
-  const metadata = globals.metadata.characterMetadata[i];
-  if (character === undefined) {
-    charIcon.tooltipContent = UNASSIGNED_CHARACTER_TOOLTIP;
-  } else {
-    const tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-    charIcon.tooltipContent =
-      metadata === undefined
-        ? tooltipContent
-        : fillCharacterMetadata(tooltipContent, metadata);
-  }
-  initKonvaTooltips(charIcon, false, true);
-}
-
-/** Replaces the placeholder in a character's description with the value it was assigned. */
-function fillCharacterMetadata(description: string, metadata: number): string {
-  if (description.includes("[random color]")) {
-    return description.replace(
-      "[random color]",
-      globals.variant.clueColors[metadata]!.name.toLowerCase(),
-    );
-  }
-  if (description.includes("[random number]")) {
-    return description.replace("[random number]", metadata.toString());
-  }
-  if (description.includes("[random suit]")) {
-    return description.replace(
-      "[random suit]",
-      globals.variant.suits[metadata]!.displayName,
-    );
-  }
-  return description;
 }
 
 function isHandReversed(j: number) {

@@ -800,7 +800,6 @@ mod tests {
             player_names: players.iter().map(|p| p.name.clone()).collect(),
             seed: Some("p2v0s1".into()),
             deck: None,
-            characters: None,
             interpretation: Interpretation::Live,
         })?;
         play(&mut game)?;
@@ -940,6 +939,45 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn checkpoints_of_format_21_lose_their_characters_or_cannot_be_read() -> Result<()> {
+        let mut table = pregame(TableId::new(1).unwrap());
+        terminal(&mut table)?;
+        table.convert_to_replay()?;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| {
+                let mut part = part.clone();
+                if key == "game/start" {
+                    let mut start: Value = serde_json::from_str(&part)?;
+                    start["setup"]["characters"] = Value::Null;
+                    start["setup"]["options"]["detrimentalCharacters"] = json!(false);
+                    part = start.to_string();
+                }
+                Ok((key.clone(), part))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        // Format 21 wrote the option and the characters to play again, as the deployed server does.
+        let format_21 = |characters: bool| -> Result<String> {
+            let mut head: Value = serde_json::from_str(&encoded.head)?;
+            head["format"] = json!("hanabi-live-21");
+            head["phase"]["snapshot"]["format"] = json!("hanabi-live-21");
+            head["options"]["detrimentalCharacters"] = json!(characters);
+            head["extra"]["customCharacters"] = Value::Null;
+            Ok(head.to_string())
+        };
+        let decoded = crate::checkpoint::decode(&format_21(false)?, &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        ensure!(
+            crate::checkpoint::decode(&format_21(true)?, &parts).is_err(),
+            "A table with Detrimental Characters was read"
+        );
+        Ok(())
+    }
+    #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId::new(1).unwrap());
         terminal(&mut table)?;
@@ -1053,9 +1091,9 @@ mod tests {
         let result = async {
             sqlx::query!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
                  speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-                 all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+                 all_or_nothing,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
                  SELECT 'Recovery stats',2,0,false,NULL,NULL,false,false,false,false,false,
-                 false,false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
+                 false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
                  FROM generate_series(1,2) n")
             .execute(&store.primary)
             .await?;
@@ -1377,9 +1415,9 @@ mod tests {
             )]
             sqlx::raw_sql(
                 "INSERT INTO games(id,name,num_players,variant_id,timed,speedrun,deck_plays,
-                 empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+                 empty_clues,one_extra_card,one_less_card,all_or_nothing,
                  seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-                 SELECT n,'Seeds',2,0,false,false,false,false,false,false,false,false,
+                 SELECT n,'Seeds',2,0,false,false,false,false,false,false,false,
                  'p2v0s'||n,0,30,1,NOW(),NOW() FROM generate_series(1,2) n;
                  INSERT INTO game_participants(game_id,user_id,seat) VALUES(1,1,0),(2,2,0);",
             )

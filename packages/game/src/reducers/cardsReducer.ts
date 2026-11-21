@@ -5,7 +5,6 @@ import {
   assertDefined,
   eRange,
   newArray,
-  tupleKeys,
 } from "complete-common";
 import { getVariantById } from "../gameData.ts";
 import { MAX_PLAYERS } from "../generated/protocol.ts";
@@ -14,10 +13,8 @@ import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import { msgClueToClue, shouldApplyClue } from "../rules/clues.ts";
 import { isCardOnChop } from "../rules/hand.ts";
-import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters.ts";
 import type { CardOrder } from "../types/CardOrder.ts";
 import type { NumPlayers } from "../types/NumPlayers.ts";
-import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
 import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
@@ -25,7 +22,6 @@ import type { GameAction } from "../types/gameActions.ts";
 import { cardDeductionReducer } from "./cardDeductionReducer.ts";
 import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer.ts";
 import { getInitialCardState } from "./initialStates/initialCardState.ts";
-import { getCharacterNameForPlayer } from "./reducerHelpers.ts";
 
 export function cardsReducer(
   deck: readonly CardState[],
@@ -40,48 +36,6 @@ export function cardsReducer(
   ) as unknown as typeof game.hands;
 
   switch (action.type) {
-    /**
-     * If we are in a game with a "Slow-Witted" character, the server will announce the identities
-     * of the cards that slide from slot 1 to slot 2.
-     *
-     * { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
-     */
-    case "cardIdentity": {
-      const { order } = action;
-      let card = getCard(deck, order);
-      card = {
-        ...card,
-        revealedToPlayer: cardIdentityRevealedToPlayer(
-          card,
-          metadata.characterAssignments,
-        ),
-      };
-      newDeck[order] = card;
-      if (
-        !shouldSeeSlot2CardIdentity(metadata)
-        || action.playerIndex === metadata.ourPlayerIndex
-        || action.identity === undefined
-      ) {
-        // Otherwise, the server scrubs the identity from cards that slide from slot 1 to slot 2 in
-        // our own hand in order to prevent leaking information.
-        break;
-      }
-
-      if (card.suitIndex !== undefined && card.rank !== undefined) {
-        // We already know the full identity of this card, so we can safely ignore this action.
-        break;
-      }
-
-      newDeck[order] = {
-        ...card,
-        suitIndex: action.identity.suitIndex,
-        rank: action.identity.rank,
-        possibleCards: [[action.identity.suitIndex, action.identity.rank]],
-      };
-
-      break;
-    }
-
     case "clue": {
       const clue =
         action.clue.type === undefined
@@ -97,10 +51,7 @@ export function cardsReducer(
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
-        if (
-          clue === undefined
-          || !shouldApplyClue(action.playerIndex, metadata, variant)
-        ) {
+        if (clue === undefined || !shouldApplyClue(variant)) {
           return;
         }
 
@@ -254,7 +205,6 @@ export function cardsReducer(
         revealedToPlayer: drawnCardRevealedToPlayer(
           action.playerIndex,
           game.hands.length,
-          metadata.characterAssignments,
         ),
         possibleCards,
         // The segment will be undefined during the initial deal.
@@ -288,82 +238,14 @@ export function cardsReducer(
 // Helpers
 // -------
 
-function cardIdentityRevealedToPlayer(
-  card: CardState,
-  characterAssignments: GameMetadata["characterAssignments"],
-): readonly boolean[] {
-  const revealedToPlayer: boolean[] = [];
-
-  for (const playerIndex of tupleKeys(characterAssignments)) {
-    const characterName = getCharacterNameForPlayer(
-      playerIndex,
-      characterAssignments,
-    );
-    if (characterName === "Slow-Witted" && playerIndex !== card.location) {
-      revealedToPlayer.push(true);
-    } else {
-      const previouslyRevealed = card.revealedToPlayer[playerIndex] ?? false;
-      revealedToPlayer.push(previouslyRevealed);
-    }
-  }
-
-  return revealedToPlayer;
-}
-
+/** Every player except the one who draws a card sees it. */
 function drawnCardRevealedToPlayer(
   drawLocation: number,
   numPlayers: NumPlayers,
-  characterAssignments: Readonly<Array<number | undefined>>,
 ): readonly boolean[] {
-  const revealedToPlayer: boolean[] = [];
-
-  for (const i of eRange(numPlayers)) {
-    const playerIndex = i as PlayerIndex;
-    revealedToPlayer.push(
-      canPlayerSeeDrawnCard(
-        playerIndex,
-        drawLocation,
-        numPlayers,
-        characterAssignments,
-      ),
-    );
-  }
-
-  return revealedToPlayer;
-}
-
-function canPlayerSeeDrawnCard(
-  playerIndex: PlayerIndex,
-  drawLocation: number,
-  numPlayers: NumPlayers,
-  characterAssignments: Readonly<Array<number | undefined>>,
-): boolean {
-  if (playerIndex === drawLocation) {
-    return false;
-  }
-
-  const characterName = getCharacterNameForPlayer(
-    playerIndex,
-    characterAssignments,
+  return [...eRange(numPlayers)].map(
+    (playerIndex) => playerIndex !== drawLocation,
   );
-
-  switch (characterName) {
-    case "Slow-Witted": {
-      return false;
-    }
-
-    case "Oblivious": {
-      return drawLocation !== (playerIndex - 1) % numPlayers;
-    }
-
-    case "Blind Spot": {
-      return drawLocation !== (playerIndex + 1) % numPlayers;
-    }
-
-    default: {
-      return true;
-    }
-  }
 }
 
 function getCard(deck: readonly CardState[], order: CardOrder): CardState {

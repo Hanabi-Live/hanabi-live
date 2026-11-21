@@ -760,13 +760,10 @@ export function GameScreen(): React.JSX.Element {
       {
         clue: choice,
         numTouched: getTouched(target, choice).length,
-        giverIndex: actingPlayerIndex,
-        receiverIndex: target,
         lastClueType: visibleState.clues.at(-1)?.type,
       },
       variant,
       options,
-      metadata.characterAssignments,
     );
   }
   const touched = getTouched(menuTarget, clue);
@@ -789,11 +786,7 @@ export function GameScreen(): React.JSX.Element {
     if (clue === undefined) {
       return new Map<CardOrder, CardClueMarker>();
     }
-    const marker = getPreviewMarker(
-      clue,
-      actingPlayerIndex,
-      settings.colorblindMode,
-    );
+    const marker = getPreviewMarker(clue, settings.colorblindMode);
     const touchedBefore = getCardsTouchedBefore(visibleState.clues);
     return new Map(
       touched.map((order) => [

@@ -1,14 +1,9 @@
 use crate::{
-    Character, CharacterState, Clue, EngineCard, EngineEvent, EngineState, PlayerAction,
-    StackDirection, Variant, get_variant, int, is_card_touched, types::Move,
+    Clue, EngineEvent, EngineState, PlayerAction, StackDirection, Variant, get_variant, int,
+    is_card_touched, types::Move,
 };
 use hanabi_protocol::{MAX_RANK, MIN_RANK, START_CARD_RANK};
 use std::collections::HashSet;
-
-/// The turns left after the last card is drawn when a Contrarian plays.
-const CONTRARIAN_FINAL_TURNS: i32 = 2;
-/// The fewest stacks that must reach a card's rank before a Follower can play it.
-const FOLLOWER_MIN_STACKS: usize = 2;
 
 pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
     get_variant(&state.options.variant_name).expect("validated engine variant")
@@ -52,19 +47,6 @@ pub(crate) fn touched_by(state: &EngineState, target: usize, clue: Clue) -> Vec<
         .collect()
 }
 
-pub(crate) fn sees_card(state: &EngineState, viewer: usize, holder: usize, order: usize) -> bool {
-    if !state.options.detrimental_characters {
-        return true;
-    }
-    let n = state.players.len();
-    match state.players[viewer].character() {
-        Some(Character::BlindSpot) if holder == (viewer + 1) % n => false,
-        Some(Character::Oblivious) if holder == (viewer + n - 1) % n => false,
-        Some(Character::SlowWitted) => state.players[holder].hand.last() != Some(&order),
-        _ => true,
-    }
-}
-
 pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
     if state.deck_index >= state.deck.len() {
         return;
@@ -78,29 +60,9 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         suit_index: Some(card.suit_index),
         rank: Some(card.rank),
     });
-    if state.options.detrimental_characters
-        && state.players[player].hand.len() > 1
-        && state.players.iter().any(|p| p.is(Character::SlowWitted))
-    {
-        let hand = &state.players[player].hand;
-        let previous = &state.deck[hand[hand.len() - 2]];
-        state.events.push(EngineEvent::CardIdentity {
-            player_index: player,
-            order: previous.order,
-            suit_index: Some(previous.suit_index),
-            rank: Some(previous.rank),
-        });
-    }
     if state.deck_index == state.deck.len() && !state.options.all_or_nothing {
-        // Each player gets one more turn, unless a Contrarian shortens the final round.
-        let final_turns = if state.options.detrimental_characters
-            && state.players.iter().any(|p| p.is(Character::Contrarian))
-        {
-            CONTRARIAN_FINAL_TURNS
-        } else {
-            int(state.players.len())
-        };
-        state.end_turn = Some(state.turn + final_turns + 1);
+        // Each player gets one more turn.
+        state.end_turn = Some(state.turn + int(state.players.len()) + 1);
     }
 }
 
@@ -111,16 +73,6 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
         .position(|&o| o == order)
         .expect("validated hand card");
     hand.remove(index);
-    if state.options.detrimental_characters && state.deck[order].insistent_touched {
-        for &remaining in hand.iter() {
-            state.deck[remaining].insistent_touched = false;
-        }
-        for player in &mut state.players {
-            if let Some(CharacterState::Insistent { cluing }) = &mut player.character_state {
-                *cluing = false;
-            }
-        }
-    }
 }
 
 fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
@@ -203,27 +155,6 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
         }
     }
     true
-}
-
-pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &EngineCard) -> bool {
-    if !state.options.detrimental_characters || !state.players[player].is(Character::Follower) {
-        return false;
-    }
-    let v = variant_for(state);
-    let size = int(v.ranks.len());
-    let reached = state
-        .stacks
-        .iter()
-        .enumerate()
-        .filter(|&(suit, &stack)| match (stack, state.stack_starts[suit]) {
-            (Some(stack), Some(start)) if v.sudoku => {
-                (stack - start + size) % size >= (card.rank - start + size) % size
-            }
-            _ if v.sudoku => false,
-            _ => stack.is_some_and(|stack| stack >= card.rank),
-        })
-        .count();
-    reached < FOLLOWER_MIN_STACKS
 }
 
 fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {

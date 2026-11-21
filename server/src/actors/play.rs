@@ -570,20 +570,6 @@ impl TableActor {
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),
-                characters: if s.game.options.detrimental_characters {
-                    s.game
-                        .players
-                        .iter()
-                        .map(|p| {
-                            crate::game::character_assignment(
-                                p.character().context("A player has no character")?,
-                                p.assigned_value(),
-                            )
-                        })
-                        .collect::<anyhow::Result<_>>()?
-                } else {
-                    vec![]
-                },
             };
             Some(hanabi_protocol::reply::GAME_INIT.data(init))
         } else {

@@ -19,7 +19,6 @@ export const ODD_RANK_CLUE = 1;
 export const EVEN_RANK_CLUE = 2;
 export const MAX_CLUES = 8;
 export const MAX_STRIKES = 3;
-export const PANICKY_MAX_CLUES = 4;
 export const MAX_DECK_SIZE = 60;
 export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 
@@ -43,36 +42,6 @@ export const authorNotesSchema = z
     notes: notesSchema,
     spectator: z.boolean(),
     username: z.string().min(1),
-  })
-  .readonly();
-
-/**
- * A detrimental character's number in `characters.json`. The database stores it as a
- * `SMALLINT`.
- */
-export const characterIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(32_767)
-  .brand<"CharacterId">();
-
-/**
- * An entry in `characters.json`: a detrimental character.
- */
-export const catalogCharacterSchema = z
-  .strictObject({
-    description: z.string().min(1),
-    emoji: z.string().min(1),
-    /**
-     * The first character has an ID of 0.
-     */
-    id: characterIdSchema,
-    name: z.string().min(1),
-    /**
-     * Excluded from two-player games.
-     */
-    notTwoPlayer: z.literal(true).optional(),
   })
   .readonly();
 
@@ -280,7 +249,6 @@ export const endConditionSchema = z.enum([
   "terminatedByPlayer",
   "speedrunFail",
   "idleTimeout",
-  "characterSoftlock",
   "allOrNothingFail",
   "allOrNothingSoftlock",
   "terminatedByVote",
@@ -366,17 +334,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       identity: cardIdentitySchema.optional(),
       order: cardOrderSchema,
       playerIndex: playerIndexSchema,
-      type: z.literal("cardIdentity"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Absent when the recipient may not see the card.
-       */
-      identity: cardIdentitySchema.optional(),
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
       type: z.literal("discard"),
     })
     .readonly(),
@@ -394,8 +351,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
-       * clue from a Quacker.
+       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant.
        */
       clue: visibleClueSchema.optional(),
       /**
@@ -483,7 +439,6 @@ export const gameOptionsSchema = z
   .strictObject({
     allOrNothing: z.boolean().prefault(false),
     deckPlays: z.boolean().prefault(false),
-    detrimentalCharacters: z.boolean().prefault(false),
     emptyClues: z.boolean().prefault(false),
     oneExtraCard: z.boolean().prefault(false),
     oneLessCard: z.boolean().prefault(false),
@@ -559,8 +514,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
-       * clue from a Quacker.
+       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant.
        */
       clue: visibleClueSchema.optional(),
       /**

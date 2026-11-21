@@ -37,10 +37,7 @@ const GAME_TOOLTIP_NAMES = [
 
 /** The name of an in-game tooltip. A card's tooltip holds its note. */
 export type GameTooltipName =
-  | (typeof GAME_TOOLTIP_NAMES)[number]
-  | `card-${number}`
-  | `character-assignment-${number}`
-  | `player-${number}`;
+  (typeof GAME_TOOLTIP_NAMES)[number] | `card-${number}` | `player-${number}`;
 
 /** The in-game tooltips, which last for the whole session. */
 const gameTooltips = new Map<GameTooltipName, GameTooltip>();
@@ -58,7 +55,6 @@ export function initGame(): void {
 
   for (const i of eRange(MAX_PLAYERS)) {
     createGameTooltip(`player-${i}`, { centered: true });
-    createGameTooltip(`character-assignment-${i}`, { centered: true });
   }
 
   // Stack bases have notes in some variants, so they have note tooltips too.
