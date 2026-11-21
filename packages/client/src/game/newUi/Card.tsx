@@ -2200,7 +2200,7 @@ function rankColumnOrder(rank: Rank): number {
  * Returns the colors of a card face for a suit, or the colors of an unknown card. The colors that
  * come from the theme are classes, since the theme does not define them as CSS variables.
  */
-function getFaceColors(
+export function getFaceColors(
   variant: Variant,
   suit: Suit | undefined,
   rank: Rank | undefined,
@@ -2309,7 +2309,7 @@ const SUIT_LETTER_MEASURE_FONT_SIZE = 100;
  * The font of the suit's letter in color-blind mode. Its brush strokes look like the shapes of the
  * ranks. "public/css/app/common.css" loads it.
  */
-export const SUIT_LETTER_FONT_FAMILY = "Kalam";
+const SUIT_LETTER_FONT_FAMILY = "Kalam";
 
 /**
  * The width of the suit's letter until the browser measures it, in the card's units. It is about

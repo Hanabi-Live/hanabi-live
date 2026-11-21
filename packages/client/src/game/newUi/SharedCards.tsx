@@ -8,7 +8,6 @@ import type {
 } from "@hanabi-live/game";
 import {
   getNumCopiesOfCard,
-  getSuitAbbreviationForVariant,
   getTotalCardsInDeck,
   MAX_CLUES,
   MAX_STRIKES,
@@ -38,9 +37,9 @@ import {
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
   describeCard,
+  getFaceColors,
   getRankLabel,
   PossibleCardsBubble,
-  SUIT_LETTER_FONT_FAMILY,
 } from "./Card.tsx";
 import { isDragClick } from "./cardClicks.ts";
 import {
@@ -58,7 +57,6 @@ import { Menu } from "./Menu.tsx";
 import { getColorTransition, getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
 import {
-  HOVER_CLASS,
   MENU_ICON_CLASS,
   MENU_ICON_ITEM_CLASS,
   WELL_CLASS,
@@ -1637,6 +1635,14 @@ export function DiscardPile({
     discarded.set(key, cards);
   }
 
+  // Each rank's column is as wide as the most copies of it in a suit, so that the ranks line up.
+  const rankColumns = variant.ranks.map((rank) => {
+    const copies = Math.max(
+      ...variant.suits.map((suit) => getNumCopiesOfCard(suit, rank, variant)),
+    );
+    return MINI_CARD.width + (copies - 1) * MINI_CARD.step;
+  });
+
   const movedDiscard = rows
     .flat()
     .find((card) => card.order === movedCard?.order);
@@ -1686,81 +1692,111 @@ export function DiscardPile({
         style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       >
         {variant.suits.map((suit, suitIndex) => (
-          <div className="tw:flex tw:items-center tw:gap-1" key={suit.name}>
-            <span
-              aria-hidden="true"
-              className="tw:mr-1 tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:rounded-sm tw:text-xs tw:leading-none tw:font-bold tw:text-card-ink"
-              style={{
-                width: COMPACT_DISCARD_BOX_HEIGHT,
-                height: COMPACT_DISCARD_BOX_HEIGHT,
-                background: getSuitSwatch(suit, colorblindMode),
-                fontFamily: SUIT_LETTER_FONT_FAMILY,
-              }}
-            >
-              {colorblindMode
-                ? getSuitAbbreviationForVariant(suit, variant)
-                : ""}
+          <div
+            className="tw:grid tw:items-center tw:justify-between"
+            key={suit.name}
+            style={{
+              gridTemplateColumns: `${MINI_CARD.height}px ${rankColumns
+                .map((width) => `${width}px`)
+                .join(" ")}`,
+            }}
+          >
+            <span aria-hidden="true" className="tw:flex tw:justify-center">
+              <Pip size={MINI_CARD.height - 2} suit={suit} variant={variant} />
             </span>
-            {variant.ranks.flatMap((rank) => {
+            {variant.ranks.map((rank) => {
               const copies = getNumCopiesOfCard(suit, rank, variant);
               const cards = discarded.get(`${suitIndex}-${rank}`) ?? [];
               const left = copies - cards.length;
-              // The last copy left of a card has a white edge. When no copy is left, the discarded
-              // copies have a red outline.
               const lastCopy = left === 1 && cards.length > 0;
               const gone = left <= 0;
               const label = getRankLabel(rank);
-              return [...eRange(Math.max(copies, cards.length))].map((i) => {
-                const card = cards[i];
-                const boxStyle = {
-                  minWidth: COMPACT_DISCARD_BOX_WIDTH,
-                  height: COMPACT_DISCARD_BOX_HEIGHT,
-                };
-                if (card === undefined) {
-                  return (
+              const faceColors = getFaceColors(
+                variant,
+                suit,
+                rank,
+                colorblindMode,
+              );
+              const suitColor = colorblindMode
+                ? suit.fillColorblind
+                : suit.fill;
+              const count = Math.max(copies, cards.length);
+              return (
+                <div
+                  className="tw:relative tw:flex"
+                  key={rank}
+                  style={{ height: MINI_CARD.height }}
+                >
+                  {[...eRange(count)].map((i) => {
+                    // The copies still in play come first, and the discarded copies lie on top of
+                    // them, as cards dropped on a pile do.
+                    const card = cards[i - (count - cards.length)];
+                    const cardStyle: React.CSSProperties = {
+                      width: MINI_CARD.width,
+                      height: MINI_CARD.height,
+                      marginLeft:
+                        i === 0 ? 0 : MINI_CARD.step - MINI_CARD.width,
+                      paddingLeft: MINI_CARD.rankInset,
+                      zIndex: i,
+                    };
+                    if (card === undefined) {
+                      // A copy still in play is only its faint rank. The last copy left has the
+                      // outline of a card in its suit's color, since it must not be discarded.
+                      return (
+                        <span
+                          aria-hidden="true"
+                          className={`tw:relative tw:box-border tw:flex tw:items-center tw:rounded-[3px] tw:border-solid tw:text-[15px] tw:leading-none tw:font-extrabold ${
+                            lastCopy ? "tw:border-2" : "tw:text-game-text/30"
+                          }`}
+                          key={`empty-${i}`}
+                          style={{
+                            ...cardStyle,
+                            ...(lastCopy && {
+                              borderColor: suitColor,
+                              color: suitColor,
+                            }),
+                          }}
+                        >
+                          {label}
+                        </span>
+                      );
+                    }
+                    const moved = movedCard?.order === card.order;
+                    return (
+                      <button
+                        aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                        className={`tw:relative tw:box-border tw:flex tw:cursor-pointer tw:items-center tw:rounded-[3px] tw:border-0 tw:p-0 tw:text-[15px] tw:leading-none tw:font-extrabold tw:shadow-[-1px_0_2px_rgb(0_0_0/45%)] tw:ring-1 tw:ring-black/45 tw:transition-transform tw:hover:-translate-y-1 tw:focus-visible:-translate-y-1 ${faceColors.className} ${
+                          moved
+                            ? "tw:-translate-y-1 tw:outline-2 tw:outline-offset-1 tw:outline-white tw:outline-solid"
+                            : ""
+                        }`}
+                        data-card-order={card.order}
+                        data-card-place={`${DISCARD_PLACE_PREFIX}${suitIndex}-${rank}-${i}`}
+                        key={card.order}
+                        onClick={() => {
+                          onShowDiscard(card.order);
+                        }}
+                        style={{
+                          ...cardStyle,
+                          paddingLeft: MINI_CARD.rankInset,
+                          background: faceColors.background,
+                          color: faceColors.ink,
+                        }}
+                        type="button"
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                  {gone && (
+                    // Every copy is discarded, so a line strikes out the rank.
                     <span
                       aria-hidden="true"
-                      className={`tw:box-border tw:flex tw:flex-1 tw:items-center tw:justify-center tw:rounded-[3px] tw:border tw:border-solid tw:text-sm tw:leading-none tw:font-bold ${
-                        lastCopy
-                          ? "tw:border-white tw:text-white"
-                          : "tw:border-game-text/30 tw:text-game-text/45"
-                      }`}
-                      key={`${rank}-${i}`}
-                      style={boxStyle}
-                    >
-                      {label}
-                    </span>
-                  );
-                }
-                const moved = movedCard?.order === card.order;
-                let outline = "";
-                if (moved) {
-                  outline =
-                    "tw:outline-2 tw:outline-offset-1 tw:outline-white tw:outline-solid";
-                } else if (gone) {
-                  outline =
-                    "tw:outline-2 tw:outline-offset-1 tw:outline-game-error tw:outline-solid";
-                }
-                return (
-                  <button
-                    aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                    className={`tw:relative tw:box-border tw:flex tw:flex-1 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[3px] tw:border-0 tw:p-0 tw:text-sm tw:leading-none tw:font-bold tw:text-card-ink ${HOVER_CLASS} ${outline}`}
-                    data-card-order={card.order}
-                    data-card-place={`${DISCARD_PLACE_PREFIX}${suitIndex}-${rank}-${i}`}
-                    key={card.order}
-                    onClick={() => {
-                      onShowDiscard(card.order);
-                    }}
-                    style={{
-                      ...boxStyle,
-                      background: getSuitSwatch(suit, colorblindMode),
-                    }}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                );
-              });
+                      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:-right-1 tw:-left-1 tw:z-20 tw:h-0.5 tw:-rotate-12 tw:rounded-full tw:bg-game-error tw:shadow-[0_0_0_1px_rgb(0_0_0/50%)]"
+                    />
+                  )}
+                </div>
+              );
             })}
           </div>
         ))}
@@ -1792,9 +1828,17 @@ export function DiscardPile({
   );
 }
 
-/** The size of a box of the compact discard pile, in CSS pixels. */
-const COMPACT_DISCARD_BOX_WIDTH = 15;
-const COMPACT_DISCARD_BOX_HEIGHT = 20;
+/**
+ * The small cards of the compact discard pile, in CSS pixels. The copies of a rank overlap like a
+ * fanned hand, so `step` is how far each copy is from the one before it. The rank sits at the left
+ * edge of each card, so that the next copy does not cover it.
+ */
+const MINI_CARD = {
+  width: 20,
+  height: 26,
+  step: 13,
+  rankInset: 3,
+} as const;
 
 /** The height of the line below the compact discard pile, in CSS pixels. */
 const COMPACT_DISCARD_LINE_HEIGHT = 20;
@@ -1816,14 +1860,6 @@ function getDiscardMoveText(
   const note =
     misplayed || movedCard.label === undefined ? "" : ` (${movedCard.label})`;
   return `${moverName} ${verb} ${cardName} from slot ${movedCard.slot}${note}`;
-}
-
-/** The fill of a suit's boxes in the compact discard pile. */
-function getSuitSwatch(suit: Suit, colorblindMode: boolean): string {
-  if (suit.fillColors !== undefined) {
-    return `linear-gradient(135deg, ${suit.fillColors.join(", ")})`;
-  }
-  return colorblindMode ? suit.fillColorblind : suit.fill;
 }
 
 /**
