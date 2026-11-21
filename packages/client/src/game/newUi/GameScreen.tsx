@@ -261,7 +261,7 @@ export function GameScreen(): React.JSX.Element {
   const stacked = narrowWindow;
   // Whether the wide layout's bar is a panel in the right column (see "setSidePanel").
   const [sidePanel, setSidePanel] = useState(false);
-  const panel = !stacked && sidePanel;
+  const panel = !stacked;
   // A tap on a card in a hand opens its note popup, since a touch screen has no hover or
   // right-click. A tap on the deck, when its card can be played, opens its menu. Dragging a card
   // plays or discards it.
@@ -1180,7 +1180,6 @@ export function GameScreen(): React.JSX.Element {
         && visibleState.stats.doubleDiscardCard !== undefined
       }
       movedCard={outlinedMove}
-      notes={cardNotes}
       onShowDiscard={showDiscard}
       realLifeMode={settings.realLifeMode}
       reducedMotion={settings.reducedMotion}

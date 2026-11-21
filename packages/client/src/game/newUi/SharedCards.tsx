@@ -37,10 +37,9 @@ import {
   CARD_CORNER_PER_WIDTH,
   CARD_HEIGHT_PER_WIDTH,
   CardFace,
-  CORNER_INSET_PER_WIDTH,
   describeCard,
+  getRankLabel,
   PossibleCardsBubble,
-  RANK_BOTTOM_PER_WIDTH,
   SUIT_LETTER_FONT_FAMILY,
 } from "./Card.tsx";
 import { isDragClick } from "./cardClicks.ts";
@@ -54,7 +53,7 @@ import { CardNote } from "./CardNote.tsx";
 import { ClueTokenIcon } from "./ClueTokenIcon.tsx";
 import { DROP_ZONE_FADE_MILLISECONDS } from "./DropZones.tsx";
 import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
-import { useCloseOnOutsideClick, useElementSize } from "./hooks.ts";
+import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu } from "./Menu.tsx";
 import { getColorTransition, getOpacityTransition, useFade } from "./motion.ts";
 import { Pip } from "./Pip.tsx";
@@ -65,15 +64,6 @@ import {
   WELL_CLASS,
 } from "./surfaces.ts";
 import type { PossibleCardsView } from "./tableView.ts";
-
-/** How far each discarded card covers the one before it in its row, as a fraction of its width. */
-const DISCARD_OVERLAP_PER_WIDTH = 0.4;
-
-/**
- * The space between the bottom of a discarded card's rank and the row below it, as a fraction of
- * the card's width.
- */
-const DISCARD_ROW_GAP_PER_WIDTH = 0.04;
 
 /** The padding inside the play stacks' box, in CSS pixels. */
 export const PLAY_STACKS_PADDING = 8;
@@ -280,112 +270,6 @@ export interface DiscardView {
   readonly order: CardOrder;
   readonly suitIndex: SuitIndex | undefined;
   readonly rank: Rank | undefined;
-}
-
-/**
- * The column of each discarded card, so that cards of the same rank line up in every row. Each rank
- * of the variant gets a column for each copy that a suit can have of it, so that no card moves when
- * another card is discarded. Cards of unknown rank go last. The rows are already in order of rank.
- */
-/**
- * The part of a card in the discard pile that the cards after it leave uncovered, from its top-left
- * corner, in CSS pixels. The next card in its row covers its right side, and the first row below
- * that has a card over it covers its bottom.
- */
-function getVisibleDiscardSize(
-  rows: ReadonlyArray<readonly DiscardView[]>,
-  columns: ReadonlyMap<CardOrder, number>,
-  rowIndex: number,
-  index: number,
-  sizes: {
-    readonly cardWidth: number;
-    readonly cardHeight: number;
-    readonly cardStep: number;
-    readonly rowStep: number;
-  },
-): { readonly width: number; readonly height: number } {
-  const { cardWidth, cardHeight, cardStep, rowStep } = sizes;
-  const row = rows[rowIndex] ?? [];
-  const card = row[index];
-  const column = card === undefined ? 0 : (columns.get(card.order) ?? 0);
-  const next = row[index + 1];
-  const width =
-    next === undefined
-      ? cardWidth
-      : Math.min(
-          cardWidth,
-          ((columns.get(next.order) ?? 0) - column) * cardStep,
-        );
-
-  let height = cardHeight;
-  for (let below = rowIndex + 1; below < rows.length; below++) {
-    const covers = (rows[below] ?? []).some(
-      (other) =>
-        Math.abs((columns.get(other.order) ?? 0) - column) * cardStep
-        < cardWidth,
-    );
-    if (covers) {
-      height = Math.min(cardHeight, (below - rowIndex) * rowStep);
-      break;
-    }
-  }
-
-  return {
-    width,
-    height,
-  };
-}
-
-function getDiscardColumns(
-  rows: ReadonlyArray<readonly DiscardView[]>,
-  variant: Variant,
-): {
-  readonly columns: ReadonlyMap<CardOrder, number>;
-  readonly numColumns: number;
-} {
-  const widths = new Map<Rank | undefined, number>(
-    variant.ranks.map((rank) => [
-      rank,
-      Math.max(
-        ...variant.suits.map((suit) => getNumCopiesOfCard(suit, rank, variant)),
-      ),
-    ]),
-  );
-  // A row can show more cards of a rank than a suit has, such as cards of unknown rank.
-  for (const row of rows) {
-    const counts = new Map<Rank | undefined, number>();
-    for (const card of row) {
-      counts.set(card.rank, (counts.get(card.rank) ?? 0) + 1);
-    }
-    for (const [rank, count] of counts) {
-      widths.set(rank, Math.max(widths.get(rank) ?? 0, count));
-    }
-  }
-
-  const ranks = [...widths.keys()].toSorted(
-    (a, b) => (a ?? Number.MAX_SAFE_INTEGER) - (b ?? Number.MAX_SAFE_INTEGER),
-  );
-  const firstColumns = new Map<Rank | undefined, number>();
-  let numColumns = 0;
-  for (const rank of ranks) {
-    firstColumns.set(rank, numColumns);
-    numColumns += widths.get(rank) ?? 0;
-  }
-
-  const columns = new Map<CardOrder, number>();
-  for (const row of rows) {
-    const counts = new Map<Rank | undefined, number>();
-    for (const card of row) {
-      const count = counts.get(card.rank) ?? 0;
-      counts.set(card.rank, count + 1);
-      columns.set(card.order, (firstColumns.get(card.rank) ?? 0) + count);
-    }
-  }
-
-  return {
-    columns,
-    numColumns,
-  };
 }
 
 /**
@@ -1708,7 +1592,6 @@ export function DiscardPile({
   doubleDiscard,
   realLifeMode,
   onShowDiscard,
-  notes,
   reducedMotion,
   movedCard,
 }: {
@@ -1730,34 +1613,30 @@ export function DiscardPile({
   /** Whether the "Real life mode" setting is on, which leaves out the borders of the pile. */
   readonly realLifeMode: boolean;
   readonly onShowDiscard: (order: CardOrder) => void;
-  readonly notes: CardNotes;
   readonly reducedMotion: boolean;
 
   /** The card discarded or misplayed on the last move, if there was one. */
   readonly movedCard: MovedCard | undefined;
 }): React.JSX.Element {
-  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const showNoDiscard = atMaxClues && !realLifeMode;
   const showDoubleDiscard = doubleDiscard && !atMaxClues && !realLifeMode;
 
-  // As on the classic screen, each row covers all of the row above but its ranks.
-  const rowStep =
-    cardWidth * (RANK_BOTTOM_PER_WIDTH + DISCARD_ROW_GAP_PER_WIDTH);
-  const rowsHeight = height + (variant.suits.length - 1) * rowStep;
-  const [rowsElement, setRowsElement] = useState<HTMLDivElement | null>(null);
-  const rowsWidth = useElementSize(rowsElement).width;
-  const { columns, numColumns } = getDiscardColumns(rows, variant);
-  const maxCardStep = cardWidth * (1 - DISCARD_OVERLAP_PER_WIDTH);
-  // Before the rows are measured, their width is 0.
-  const cardStep =
-    rowsWidth === 0 || numColumns <= 1
-      ? maxCardStep
-      : Math.min(maxCardStep, (rowsWidth - cardWidth) / (numColumns - 1));
+  // The discarded cards of each suit and rank, in the order of the pile.
+  const discarded = new Map<string, DiscardView[]>();
+  for (const card of rows.flat()) {
+    if (card.suitIndex === undefined || card.rank === undefined) {
+      continue;
+    }
+    const key = `${card.suitIndex}-${card.rank}`;
+    const cards = discarded.get(key) ?? [];
+    cards.push(card);
+    discarded.set(key, cards);
+  }
 
   return (
     <section
       aria-label="Discards"
-      className="tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-game-panel tw:px-4.5 tw:py-4"
+      className="tw:relative tw:box-border tw:flex tw:flex-col tw:rounded-game-panel tw:px-3 tw:py-2.5"
       // A right-click beside the cards points the arrow at the pile (see "arrowAnchor.ts").
       data-discard-pile
       ref={tooltipRefHtml(
@@ -1773,135 +1652,108 @@ export function DiscardPile({
         } ${zoneState === "idle" ? "" : "tw:opacity-0"}`}
         style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       />
-      {/* A faint trash can behind the cards names the pile without a heading. At max clues, a
-          sign in the color of clues takes its place, to show that no one can discard. */}
       {showNoDiscard ? (
-        <NoDiscardSign reducedMotion={reducedMotion} size={cardWidth * 1.5} />
+        <NoDiscardSign reducedMotion={reducedMotion} size={cardWidth} />
       ) : (
+        // The arrow points at the pile's trash can (see "arrowAnchor.ts"). It is too faint to show
+        // behind the grid, so it only marks the pile's center.
         <i
           aria-hidden="true"
-          className={`fas fa-trash-can tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:text-game-text ${
-            isRefusing(zoneState) ? "tw:opacity-10" : "tw:opacity-20"
-          } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
+          className="fas fa-trash-can tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:opacity-0"
           data-discard-pile-icon
-          style={{
-            fontSize: cardWidth * 1.125,
-            transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
-          }}
         />
       )}
       <div
-        className={`tw:relative tw:flex ${
+        className={`tw:relative tw:flex tw:flex-col tw:gap-1 ${
           isRefusing(zoneState) ? "tw:opacity-60" : ""
         } ${reducedMotion ? "" : "tw:transition-opacity tw:ease-out"}`}
-        style={{
-          height: rowsHeight,
-          transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms`,
-        }}
+        style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       >
-        {colorblindMode && (
-          <DiscardRowLetters
-            cardWidth={cardWidth}
-            rows={rows}
-            rowStep={rowStep}
-            variant={variant}
-          />
-        )}
-        <div
-          className="tw:relative tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
-          ref={setRowsElement}
-        >
-          {rows.map((row, rowIndex) => (
-            <div
-              className="tw:flex"
-              key={row[0]?.order}
+        {variant.suits.map((suit, suitIndex) => (
+          <div
+            className="tw:grid tw:items-center tw:gap-1"
+            key={suit.name}
+            style={{
+              gridTemplateColumns: `${COMPACT_DISCARD_BOX_HEIGHT}px repeat(${variant.ranks.length}, minmax(0, 1fr))`,
+            }}
+          >
+            <span
+              aria-hidden="true"
+              className="tw:flex tw:items-center tw:justify-center tw:rounded-sm tw:text-xs tw:leading-none tw:font-bold tw:text-card-ink"
               style={{
-                marginTop: rowIndex === 0 ? 0 : rowStep - height,
+                height: COMPACT_DISCARD_BOX_HEIGHT,
+                background: getSuitSwatch(suit, colorblindMode),
+                fontFamily: SUIT_LETTER_FONT_FAMILY,
               }}
             >
-              {row.map((card, i) => {
-                const column = columns.get(card.order) ?? 0;
-                const previousCard = row[i - 1];
-                const previousColumn =
-                  previousCard === undefined
-                    ? undefined
-                    : (columns.get(previousCard.order) ?? 0);
-                const moved = movedCard?.order === card.order;
-                return (
-                  <CardNote
-                    className="tw:shrink-0"
-                    key={card.order}
-                    notes={notes}
-                    order={card.order}
-                    style={{
-                      marginLeft:
-                        previousColumn === undefined
-                          ? column * cardStep
-                          : (column - previousColumn) * cardStep - cardWidth,
-                    }}
-                  >
-                    <button
-                      aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                      className={`tw:relative tw:block tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform ${HOVER_CLASS} tw:hover:-translate-y-1.5 tw:focus-visible:-translate-y-1.5`}
-                      data-card-order={card.order}
-                      data-card-place={`${DISCARD_PLACE_PREFIX}${rowIndex}-${i}`}
-                      onClick={() => {
-                        onShowDiscard(card.order);
-                      }}
-                      style={{
-                        borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
-                      }}
-                      type="button"
-                    >
-                      <CardFace
-                        colorblindMode={colorblindMode}
-                        note={notes.notesHtml.has(card.order)}
-                        noteUnread={notes.unreadNotes.has(card.order)}
-                        rank={card.rank}
-                        suitIndex={card.suitIndex}
-                        suitLetterHidden
-                        variant={variant}
-                        width={cardWidth}
-                      />
-                      {moved && (
-                        // The moved card stays under the cards that cover it, so that their ranks
-                        // still show. Its outline goes around the part of it that shows, over the
-                        // cards around it.
+              {colorblindMode
+                ? getSuitAbbreviationForVariant(suit, variant)
+                : ""}
+            </span>
+            {variant.ranks.map((rank) => {
+              const copies = getNumCopiesOfCard(suit, rank, variant);
+              const cards = discarded.get(`${suitIndex}-${rank}`) ?? [];
+              const left = copies - cards.length;
+              let outline = "tw:outline-transparent";
+              if (left <= 0) {
+                outline = "tw:outline-game-error";
+              } else if (left === 1 && cards.length > 0) {
+                outline = "tw:outline-game-caution";
+              }
+              return (
+                <div
+                  className={`tw:flex tw:items-center tw:justify-center tw:gap-0.5 tw:rounded-sm tw:bg-black/25 tw:py-0.5 tw:outline-2 tw:outline-solid ${outline}`}
+                  key={rank}
+                >
+                  {[...eRange(Math.max(copies, cards.length))].map((i) => {
+                    const card = cards[i];
+                    const label = getRankLabel(rank);
+                    if (card === undefined) {
+                      return (
                         <span
                           aria-hidden="true"
-                          className="tw:pointer-events-none tw:absolute tw:top-0 tw:left-0 tw:z-10 tw:outline-4 tw:outline-offset-4 tw:outline-white tw:outline-solid"
-                          data-moved-card-marker
+                          className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[3px] tw:border tw:border-solid tw:border-game-text/30 tw:text-sm tw:leading-none tw:font-bold tw:text-game-text/45"
+                          key={i}
                           style={{
-                            ...getVisibleDiscardSize(
-                              rows,
-                              columns,
-                              rowIndex,
-                              i,
-                              {
-                                cardWidth,
-                                cardHeight: height,
-                                cardStep,
-                                rowStep,
-                              },
-                            ),
-                            borderRadius: cardWidth * CARD_CORNER_PER_WIDTH,
+                            width: COMPACT_DISCARD_BOX_WIDTH,
+                            height: COMPACT_DISCARD_BOX_HEIGHT,
                           }}
-                        />
-                      )}
-                      {moved && movedCard.slot !== undefined && (
-                        <SlotTab
-                          cardWidth={cardWidth}
-                          label={movedCard.label}
-                          slot={movedCard.slot}
-                        />
-                      )}
-                    </button>
-                  </CardNote>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+                        >
+                          {label}
+                        </span>
+                      );
+                    }
+                    const moved = movedCard?.order === card.order;
+                    return (
+                      <button
+                        aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
+                        className={`tw:relative tw:box-border tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[3px] tw:border-0 tw:p-0 tw:text-sm tw:leading-none tw:font-bold tw:text-card-ink ${HOVER_CLASS} ${
+                          moved
+                            ? "tw:outline-2 tw:outline-offset-1 tw:outline-white tw:outline-solid"
+                            : ""
+                        }`}
+                        data-card-order={card.order}
+                        data-card-place={`${DISCARD_PLACE_PREFIX}${suitIndex}-${rank}-${i}`}
+                        key={card.order}
+                        onClick={() => {
+                          onShowDiscard(card.order);
+                        }}
+                        style={{
+                          width: COMPACT_DISCARD_BOX_WIDTH,
+                          height: COMPACT_DISCARD_BOX_HEIGHT,
+                          background: getSuitSwatch(suit, colorblindMode),
+                        }}
+                        type="button"
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
       {zoneState === "blocked" && <NoEntrySign reducedMotion={reducedMotion} />}
       <ZoneLabel
@@ -1922,55 +1774,16 @@ export function DiscardPile({
   );
 }
 
-/** The size of a suit's letter before its row of discards, per the height of a card's rank. */
-const DISCARD_ROW_LETTER_FONT_PER_RANK_HEIGHT = 1.3;
+/** The size of a box of the compact discard pile, in CSS pixels. */
+const COMPACT_DISCARD_BOX_WIDTH = 15;
+const COMPACT_DISCARD_BOX_HEIGHT = 20;
 
-/**
- * In colorblind mode, the letter of each row's suit, level with the ranks of its cards. The cards
- * leave out the letter, since each card covers all of the card before it but its rank.
- */
-function DiscardRowLetters({
-  rows,
-  variant,
-  cardWidth,
-  rowStep,
-}: {
-  readonly rows: ReadonlyArray<readonly DiscardView[]>;
-  readonly variant: Variant;
-  readonly cardWidth: number;
-  readonly rowStep: number;
-}): React.JSX.Element {
-  const rankTop = cardWidth * CORNER_INSET_PER_WIDTH;
-  const rankHeight = cardWidth * RANK_BOTTOM_PER_WIDTH - rankTop;
-  return (
-    <div
-      aria-hidden="true"
-      className="tw:flex tw:shrink-0 tw:flex-col tw:pr-1.5"
-    >
-      {rows.map((row) => {
-        const suitIndex = row[0]?.suitIndex;
-        const suit =
-          suitIndex === undefined ? undefined : variant.suits[suitIndex];
-        return (
-          <div
-            className="tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:leading-none tw:font-bold tw:text-game-text"
-            key={row[0]?.order}
-            style={{
-              height: rankHeight,
-              marginTop: rankTop,
-              marginBottom: rowStep - rankTop - rankHeight,
-              fontFamily: SUIT_LETTER_FONT_FAMILY,
-              fontSize: rankHeight * DISCARD_ROW_LETTER_FONT_PER_RANK_HEIGHT,
-            }}
-          >
-            {suit === undefined
-              ? ""
-              : getSuitAbbreviationForVariant(suit, variant)}
-          </div>
-        );
-      })}
-    </div>
-  );
+/** The fill of a suit's boxes in the compact discard pile. */
+function getSuitSwatch(suit: Suit, colorblindMode: boolean): string {
+  if (suit.fillColors !== undefined) {
+    return `linear-gradient(135deg, ${suit.fillColors.join(", ")})`;
+  }
+  return colorblindMode ? suit.fillColorblind : suit.fill;
 }
 
 /**

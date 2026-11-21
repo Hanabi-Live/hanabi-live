@@ -192,7 +192,7 @@ function getFacePips(rank: Rank | undefined): readonly FacePip[] {
  * How far the rank and the badges in the corners of a card are from its edges, as a fraction of its
  * width. It is the same from the side and from the top, so the corners look even.
  */
-export const CORNER_INSET_PER_WIDTH = 0.09;
+const CORNER_INSET_PER_WIDTH = 0.09;
 
 /**
  * The box around every rank shape, relative to the origin of its path, in the card's own units. The
@@ -220,7 +220,7 @@ const RANK_CORNER_OFFSET = {
  * How far the bottom of the rank in a card's corner is from the card's top edge, as a fraction of
  * its width.
  */
-export const RANK_BOTTOM_PER_WIDTH =
+const RANK_BOTTOM_PER_WIDTH =
   (RANK_CORNER_OFFSET.y + RANK_SHAPE_BOX.bottom + RANK_OUTLINE_WIDTH / 2)
   / CARD_W;
 
@@ -2237,7 +2237,7 @@ function getFaceColors(
   };
 }
 
-function getRankLabel(rank: Rank): string {
+export function getRankLabel(rank: Rank): string {
   return rank === START_CARD_RANK ? START_CARD_RANK_LABEL : rank.toString();
 }
 
