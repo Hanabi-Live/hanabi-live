@@ -1123,8 +1123,8 @@ function getRuledOutOpacity(by: RuledOutBy | undefined): number {
 }
 
 /**
- * The slash over a suit or a rank when the holder sees every copy of the cards that it would make.
- * It is `size` wide and tall.
+ * The slash over a suit or a rank when the holder sees every copy of the cards that it would make,
+ * and over such a card in the bubble of possible cards. It is `size` wide and tall.
  */
 function SeenSlash({
   by,
@@ -1170,19 +1170,12 @@ function SuitChip({
   pip,
   cell,
   width,
-  slashHidden = false,
 }: {
   readonly variant: Variant;
   readonly pip: SuitPipView;
   readonly cell: number;
   /** The width of the card. */
   readonly width: number;
-
-  /**
-   * Whether the suit has no slash when seen cards rule it out. It still fades. The bubble of
-   * possible cards uses it, since each of its cards already says what ruled it out.
-   */
-  readonly slashHidden?: boolean;
 }): React.JSX.Element | undefined {
   const suit = variant.suits[pip.suitIndex];
   if (suit === undefined) {
@@ -1217,9 +1210,7 @@ function SuitChip({
           variant={variant}
         />
       </span>
-      {!slashHidden && (
-        <SeenSlash by={pip.ruledOutBy} kind="suit" size={chip} />
-      )}
+      <SeenSlash by={pip.ruledOutBy} kind="suit" size={chip} />
     </span>
   );
 }
@@ -1447,14 +1438,8 @@ const POSSIBLE_CARDS = {
   /** The space between small cards. */
   gap: 0.05,
   padding: 0.12,
-  /**
-   * The width of the icon in the corner of a card that the card cannot be. The two cards are
-   * narrower than the note, since they are taller than they are wide.
-   */
-  removedIcon: {
-    seen: 0.09,
-    note: 0.1,
-  },
+  /** The width of the note icon in the corner of a card that the note rules out. */
+  noteIcon: 0.1,
 } as const;
 
 /**
@@ -1532,124 +1517,81 @@ function PossibleCard({
 }
 
 /**
- * A card that the clues allow, but that the card cannot be: a faded small card with an icon in its
- * corner that says what ruled it out.
+ * A card that the clues allow, but that the card cannot be: a faded small card. It has a slash when
+ * the holder sees every copy of it, as a suit or a rank on the card does, and a note icon in its
+ * corner when the note rules it out.
  */
 function RemovedCard({
   by,
   unit,
   ...cardProps
 }: {
-  readonly by: "seen" | "note";
+  readonly by: RuledOutBy;
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   readonly suitIndex: SuitIndex;
   readonly rank: Rank;
   readonly unit: number;
 }): React.JSX.Element {
-  const icon = unit * POSSIBLE_CARDS.removedIcon[by];
   return (
-    <span className="tw:relative tw:block">
+    <span className="tw:relative tw:flex tw:items-center tw:justify-center">
       <span className="tw:block" style={{ opacity: RULED_OUT_OPACITY }}>
         <PossibleCard unit={unit} {...cardProps} />
       </span>
-      {/* The icon's edges meet the card's edges, so that it never covers the next card. */}
-      <span
-        className="tw:absolute tw:right-0 tw:bottom-0"
-        style={{ opacity: REMOVED_BY_ICON_OPACITY }}
-      >
-        <RemovedByIcon by={by} size={icon} />
-      </span>
+      <SeenSlash by={by} kind="suit" size={unit * POSSIBLE_CARDS.cardWidth} />
+      {by === "note" && (
+        // The icon's edges meet the card's edges, so that it never covers the next card.
+        <span
+          className="tw:absolute tw:right-0 tw:bottom-0"
+          style={{ opacity: NOTE_ICON_OPACITY }}
+        >
+          <NoteIcon size={unit * POSSIBLE_CARDS.noteIcon} />
+        </span>
+      )}
     </span>
   );
 }
 
-/** How opaque the icon on a card that the card cannot be is. It fades less than the card. */
-const REMOVED_BY_ICON_OPACITY = 0.66;
+/** How opaque the note icon on a card that the note rules out is. It fades less than the card. */
+const NOTE_ICON_OPACITY = 0.66;
 
-/** The width of the outline of the icons, in their drawing's units. */
-const REMOVED_BY_ICON_STROKE = 9;
+/** The width of the outline of the note icon, in its drawing's units. */
+const NOTE_ICON_STROKE = 9;
 
 /**
- * The box around each icon's shape and its outline, in its drawing's units. The icon is drawn in
- * this box, so that the shape touches the edges of the icon.
+ * The box around the note icon's shape and its outline, in its drawing's units. The icon is drawn
+ * in this box, so that the shape touches the edges of the icon.
  */
-const REMOVED_BY_ICON_BOUNDS = {
-  // The back card's corner is at x 10 and y 6, and the front card's corner is at x 86 and y 94.
-  seen: {
-    left: 10 - REMOVED_BY_ICON_STROKE / 2,
-    top: 6 - REMOVED_BY_ICON_STROKE / 2,
-    right: 86 + REMOVED_BY_ICON_STROKE / 2,
-    bottom: 94 + REMOVED_BY_ICON_STROKE / 2,
-  },
-  note: {
-    left: 8 - REMOVED_BY_ICON_STROKE / 2,
-    top: 8 - REMOVED_BY_ICON_STROKE / 2,
-    right: 92 + REMOVED_BY_ICON_STROKE / 2,
-    bottom: 92 + REMOVED_BY_ICON_STROKE / 2,
-  },
+const NOTE_ICON_BOUNDS = {
+  left: 8 - NOTE_ICON_STROKE / 2,
+  top: 8 - NOTE_ICON_STROKE / 2,
+  right: 92 + NOTE_ICON_STROKE / 2,
+  bottom: 92 + NOTE_ICON_STROKE / 2,
 } as const;
 
-/**
- * Two stacked cards when the holder sees every copy of the card elsewhere, or a note for the note
- * on the card. It is `size` wide, and as tall as its shape. (It is not an eye, since an eye already
- * means spectators and a player's view of a hand.)
- */
-function RemovedByIcon({
-  by,
-  size,
-}: {
-  readonly by: "seen" | "note";
-  readonly size: number;
-}): React.JSX.Element {
-  const bounds = REMOVED_BY_ICON_BOUNDS[by];
-  const boxWidth = bounds.right - bounds.left;
-  const boxHeight = bounds.bottom - bounds.top;
+/** A note, for the note on the card. It is `size` wide and tall. */
+function NoteIcon({ size }: { readonly size: number }): React.JSX.Element {
+  const { left, top, right, bottom } = NOTE_ICON_BOUNDS;
   return (
     <svg
       aria-hidden="true"
       className="tw:block"
-      height={(size * boxHeight) / boxWidth}
-      viewBox={`${bounds.left} ${bounds.top} ${boxWidth} ${boxHeight}`}
+      height={size}
+      viewBox={`${left} ${top} ${right - left} ${bottom - top}`}
       width={size}
     >
-      {by === "seen" ? (
-        <>
-          <rect
-            className="tw:fill-card-unknown tw:stroke-card-ink"
-            height={66}
-            rx={6}
-            strokeWidth={REMOVED_BY_ICON_STROKE}
-            width={50}
-            x={10}
-            y={6}
-          />
-          <rect
-            className="tw:fill-white tw:stroke-card-ink"
-            height={66}
-            rx={6}
-            strokeWidth={REMOVED_BY_ICON_STROKE}
-            width={50}
-            x={36}
-            y={28}
-          />
-        </>
-      ) : (
-        <>
-          <path
-            className="tw:fill-card-note tw:stroke-card-ink"
-            d="M 8 8 H 92 V 68 L 68 92 H 8 Z"
-            strokeLinejoin="round"
-            strokeWidth={REMOVED_BY_ICON_STROKE}
-          />
-          <path
-            className="tw:stroke-card-ink/70"
-            d="M 26 34 H 74 M 26 56 H 58"
-            strokeLinecap="round"
-            strokeWidth={11}
-          />
-        </>
-      )}
+      <path
+        className="tw:fill-card-note tw:stroke-card-ink"
+        d="M 8 8 H 92 V 68 L 68 92 H 8 Z"
+        strokeLinejoin="round"
+        strokeWidth={NOTE_ICON_STROKE}
+      />
+      <path
+        className="tw:stroke-card-ink/70"
+        d="M 26 34 H 74 M 26 56 H 58"
+        strokeLinecap="round"
+        strokeWidth={11}
+      />
     </svg>
   );
 }
@@ -2127,7 +2069,6 @@ function PossibleCardsGrid({
               cell={unit * POSSIBLE_CARDS.pip}
               key={`${suit.suitIndex}-pip`}
               pip={suit}
-              slashHidden
               variant={variant}
               width={unit / getScreenScale()}
             />,
