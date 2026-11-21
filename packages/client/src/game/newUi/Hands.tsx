@@ -46,14 +46,13 @@ import {
 } from "./FadeLayer.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
 import { Menu, MENU_BUTTON_CLASS } from "./Menu.tsx";
-import { getVisibilityTransition, useFade } from "./motion.ts";
+import { getVisibilityTransition } from "./motion.ts";
 import { newUiNoteRead } from "./newUiSlice.ts";
 import { measure } from "./screenScale.ts";
 import { SendingMark } from "./SendingMark.tsx";
 import {
   HOVER_CLASS,
   MENU_ICON_CLASS,
-  MENU_ICON_ITEM_CLASS,
   MENU_ITEM_CLASS,
   RAISED_BUTTON_CLASS,
 } from "./surfaces.ts";
@@ -248,23 +247,13 @@ interface HandsProps {
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
 
-  /**
-   * Clicking the viewer's own name lists their actions, as on the classic screen. Clicking another
-   * name opens a menu that also turns on that player's view (see `NameMenu`).
-   */
+  /** Clicking a player's name lists their actions, as on the classic screen. */
   readonly onShowPlayerLog: (playerIndex: PlayerIndex) => void;
-
-  /** The player whose name menu is open. */
-  readonly nameMenuSeat: PlayerIndex | undefined;
-  readonly onNameMenu: (playerIndex: PlayerIndex | undefined) => void;
 
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
-   * player. A hand shows it while the viewer holds the pointer down on it, or after the viewer
-   * turns it on from the menu of its player's name (`onToggleEmpathy`), until they turn it off.
+   * player. A hand shows it while the viewer holds the pointer down on it.
    */
-  readonly empathyToggled: ReadonlySet<PlayerIndex>;
-  readonly onToggleEmpathy: (playerIndex: PlayerIndex) => void;
   /** `byFinger` is whether a finger holds the hand, not a mouse or a pen. */
   readonly onHoldEmpathy: (
     playerIndex: PlayerIndex | undefined,
@@ -559,35 +548,9 @@ const BRAIN_FOLDS =
 const BRAIN_FILL = "#f7a1bd";
 const BRAIN_FOLD_COLOR = "#9c2f55";
 
-/** The brain that marks a player's view of their hand: pink, with a dark outline. */
-function BrainIcon({
-  className,
-}: {
-  readonly className: string;
-}): React.JSX.Element {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 32 32">
-      <path
-        d={BRAIN_OUTLINE}
-        fill={BRAIN_FILL}
-        stroke="black"
-        strokeLinejoin="round"
-        strokeWidth={1.6}
-      />
-      <path
-        d={BRAIN_FOLDS}
-        fill="none"
-        stroke={BRAIN_FOLD_COLOR}
-        strokeLinecap="round"
-        strokeWidth={1.3}
-      />
-    </svg>
-  );
-}
-
 /**
  * The cursor over another player's cards, where holding the mouse button down shows their view of
- * them: the same brain, which shows on any card. It points with its center.
+ * them: a pink brain with a dark outline, which shows on any card. It points with its center.
  */
 const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 32 32'><path d='${BRAIN_OUTLINE}' fill='${BRAIN_FILL}' stroke='black' stroke-width='1.6' stroke-linejoin='round'/><path d='${BRAIN_FOLDS}' fill='none' stroke='${BRAIN_FOLD_COLOR}' stroke-width='1.3' stroke-linecap='round'/></svg>`,
@@ -1744,19 +1707,6 @@ function Hand({
   const canClueSeat = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canClueSeat && props.clueTarget === seat.playerIndex;
 
-  const nameMenuOpen = props.nameMenuSeat === seat.playerIndex;
-  const nameRef = useRef<HTMLDivElement>(null);
-  const { onNameMenu } = props;
-  const setNameMenuOpen = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        onNameMenu(undefined);
-      }
-    },
-    [onNameMenu],
-  );
-  useCloseOnOutsideClick(nameMenuOpen, nameRef, setNameMenuOpen);
-
   let boxClass =
     "tw:bg-black/12 tw:inset-ring-1 tw:inset-ring-game-raised tw:inset-shadow-[0_2px_6px_rgb(0_0_0/35%)]";
   if (seat.active) {
@@ -1880,24 +1830,15 @@ function Hand({
         }}
       >
         {buttonBesideName && clueButton}
-        <div
-          className="tw:relative tw:flex tw:max-w-full tw:min-w-0"
-          ref={nameRef}
-        >
+        <div className="tw:relative tw:flex tw:max-w-full tw:min-w-0">
           {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
-            clue rail starts there. A click on the viewer's own name lists their actions. A click
-            on another name opens its menu (see `NameMenu`). */}
+            clue rail starts there. A click on the name lists the player's actions. */}
           <button
-            aria-expanded={seat.you ? undefined : nameMenuOpen}
-            aria-haspopup={seat.you ? "dialog" : "menu"}
+            aria-haspopup="dialog"
             className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${MENU_BUTTON_CLASS}`}
             data-name-chip={seat.playerIndex}
             onClick={() => {
-              if (seat.you) {
-                props.onShowPlayerLog(seat.playerIndex);
-              } else {
-                props.onNameMenu(nameMenuOpen ? undefined : seat.playerIndex);
-              }
+              props.onShowPlayerLog(seat.playerIndex);
             }}
             type="button"
           >
@@ -1918,7 +1859,6 @@ function Hand({
             )}
             <NameChip seat={seat} />
           </button>
-          {nameMenuOpen && <NameMenu props={props} seat={seat} />}
         </div>
         {buttonBelowName && (
           <ClueButtonSlot>
@@ -2020,16 +1960,6 @@ function Hand({
           The clue touched no cards
         </span>
       )}
-      {!seat.you && props.empathyToggled.has(seat.playerIndex) && (
-        <ViewBadge
-          name={seat.name}
-          onHide={() => {
-            props.onToggleEmpathy(seat.playerIndex);
-          }}
-          playerIndex={seat.playerIndex}
-          reducedMotion={props.reducedMotion}
-        />
-      )}
       {props.sendingClueTarget === seat.playerIndex && (
         <SendingMark
           label="Sending your clue"
@@ -2042,88 +1972,6 @@ function Hand({
         && clueButton}
       {chosen && props.clueMenu}
     </div>
-  );
-}
-
-/**
- * The menu of another player's name. It turns their view of their hand on or off until the viewer
- * turns it off again, which holding the hand down does only while it lasts. It also lists their
- * actions.
- */
-function NameMenu({
-  seat,
-  props,
-}: {
-  readonly seat: Seat;
-  readonly props: HandsProps;
-}): React.JSX.Element {
-  const viewShown = props.empathyToggled.has(seat.playerIndex);
-  return (
-    <Menu
-      align="left"
-      className="tw:min-w-40 tw:whitespace-nowrap"
-      scrollIntoView
-      side="below"
-    >
-      <button
-        className={MENU_ICON_ITEM_CLASS}
-        onClick={() => {
-          props.onNameMenu(undefined);
-          props.onToggleEmpathy(seat.playerIndex);
-        }}
-        role="menuitem"
-        type="button"
-      >
-        <BrainIcon className="tw:-mx-px tw:size-4 tw:shrink-0" />
-        {viewShown ? "Hide" : "Show"} {seat.name}&apos;s view
-      </button>
-      <button
-        className={MENU_ICON_ITEM_CLASS}
-        onClick={() => {
-          props.onNameMenu(undefined);
-          props.onShowPlayerLog(seat.playerIndex);
-        }}
-        role="menuitem"
-        type="button"
-      >
-        <i aria-hidden="true" className={`${MENU_ICON_CLASS} fa-list`} />
-        {seat.name}&apos;s actions
-      </button>
-    </Menu>
-  );
-}
-
-/**
- * The badge of a hand that shows its player's view after the viewer turned it on in the menu of its
- * player's name. It sits on the hand's top edge, where a tap turns the view off again. It fades in
- * and out as the cards under it change (see `ViewFade`).
- */
-function ViewBadge({
-  name,
-  playerIndex,
-  onHide,
-  reducedMotion,
-}: {
-  readonly name: string;
-  readonly playerIndex: PlayerIndex;
-  readonly onHide: () => void;
-  readonly reducedMotion: boolean;
-}): React.JSX.Element {
-  const ref = useRef<HTMLButtonElement>(null);
-  useFade(ref, reducedMotion);
-  return (
-    <button
-      aria-label={`Hide ${name}'s view`}
-      className="tw:absolute tw:top-0 tw:right-3 tw:z-10 tw:flex tw:max-w-[60%] tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:rounded-full tw:border-0 tw:bg-game-panel tw:py-0.5 tw:pr-2.5 tw:pl-1.5 tw:text-[13px] tw:font-semibold tw:text-game-text tw:shadow-md tw:ring-1 tw:ring-game-line tw:hover:brightness-125"
-      data-empathy-shown={playerIndex}
-      onClick={onHide}
-      ref={ref}
-      type="button"
-    >
-      <BrainIcon className="tw:size-5 tw:shrink-0" />
-      <span className="tw:truncate">{name}&apos;s view</span>
-      <i aria-hidden="true" className="fas fa-xmark tw:text-game-muted" />
-    </button>
   );
 }
 

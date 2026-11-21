@@ -269,9 +269,6 @@ export function GameScreen(): React.JSX.Element {
   const togglePopup = useCallback((order: CardOrder) => {
     setPopupCard((current) => (current === order ? undefined : order));
   }, []);
-  // The player whose name menu is open.
-  const [nameMenuSeat, setNameMenuSeat] = useState<PlayerIndex>();
-
   // The player whose clue menu is open, and the clue chosen in it.
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
   // In a 2-player game, the other player's clue menu opens by itself on each turn, until the viewer
@@ -325,11 +322,7 @@ export function GameScreen(): React.JSX.Element {
     [],
   );
 
-  // The hands that show their player's view of them: those that the viewer turned on from a card's
-  // menu, and the one that the viewer holds the pointer down on.
-  const [empathyToggled, setEmpathyToggled] = useState<
-    ReadonlySet<PlayerIndex>
-  >(new Set());
+  // The hand that shows its player's view of it, while the viewer holds the pointer down on it.
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
   const [fingerHold, setFingerHold] = useState(false);
   // The log that the box of logs shows.
@@ -630,7 +623,7 @@ export function GameScreen(): React.JSX.Element {
   const empathyPlayers = new Set<PlayerIndex>(
     globalEmpathy
       ? metadata.playerNames.map((_name, i) => i as PlayerIndex)
-      : empathyToggled,
+      : [],
   );
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
@@ -1572,7 +1565,6 @@ export function GameScreen(): React.JSX.Element {
                   colorblindMode={settings.colorblindMode}
                   draggedCard={held?.order}
                   draggingCard={draggingCard && cardInHand}
-                  empathyToggled={empathyToggled}
                   emptyClueTarget={
                     shownClue !== undefined && shownClue.list.length === 0
                       ? shownClue.target
@@ -1583,7 +1575,6 @@ export function GameScreen(): React.JSX.Element {
                   hidden={paused && !inReplay}
                   movableCards={movableCards}
                   nameColumnWidth={nameColumnWidth}
-                  nameMenuSeat={nameMenuSeat}
                   notes={cardNotes}
                   onCardPointerDown={(event, order) => {
                     if (!canMoveCards || !picksUpCard(event, order)) {
@@ -1615,20 +1606,8 @@ export function GameScreen(): React.JSX.Element {
                     setHeldEmpathy(playerIndex);
                     setFingerHold(playerIndex !== undefined && byFinger);
                   }}
-                  onNameMenu={setNameMenuSeat}
                   onPause={pause}
                   onShowPlayerLog={setLogSeat}
-                  onToggleEmpathy={(playerIndex) => {
-                    setEmpathyToggled((current) => {
-                      const next = new Set(current);
-                      if (next.has(playerIndex)) {
-                        next.delete(playerIndex);
-                      } else {
-                        next.add(playerIndex);
-                      }
-                      return next;
-                    });
-                  }}
                   pauseAction={getPauseAction(state)}
                   popupCard={popupCard}
                   previewing={previewing}
