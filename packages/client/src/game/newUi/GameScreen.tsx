@@ -87,12 +87,7 @@ import {
   PlayArea,
   TableTokens,
 } from "./SharedCards.tsx";
-import {
-  BAR_HEIGHT,
-  PANEL_SHORT_ATTRIBUTE,
-  REPLAY_BAR_HEIGHT,
-  StatusStrip,
-} from "./StatusStrip.tsx";
+import { BAR_HEIGHT, StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import {
   canDrawArrowNow,
@@ -192,8 +187,8 @@ const PHONE_TABLE_GAP = 16;
 
 /**
  * The bar moves into the panel of the right column when the hand cards would be narrower than this
- * with the bar (see "barElement"). It is the width that the check finds for a five-player game on a
- * window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
+ * with the bar (see "setSidePanel"). It is the width that the check finds for a five-player game on
+ * a window that is 1920px wide and at least 900px tall, so that such a window keeps the bar.
  */
 const PANEL_CARD_WIDTH = 82;
 
@@ -201,9 +196,9 @@ const PANEL_CARD_WIDTH = 82;
  * The width of the screen, in its own CSS pixels (see "screenScale.ts"), from which the bar along
  * the bottom has room for one row in every game: the widest bar is a shared replay that we lead,
  * with the "Play again" button, and the longest names (see `VARIANT_NAME_MAX_WIDTH` in
- * "StatusStrip.tsx"). On a narrower screen, the bar is a panel in the right column, so that it
- * never needs a second row. A full-screen 16:9 window is 1600px wide in these pixels, so it keeps
- * the bar along the bottom.
+ * "StatusStrip.tsx"). The bar shares this width with the chat's rail, or with the open chat. When
+ * the bar has less room, it is a panel in the right column, so that it never needs a second row. A
+ * full-screen 16:9 window is 1600px wide in these pixels, so it keeps the bar along the bottom.
  */
 const BAR_ONE_ROW_WIDTH = 1600;
 
@@ -261,7 +256,7 @@ export function GameScreen(): React.JSX.Element {
   const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
   // The phone layout: the columns stack, and the page scrolls.
   const stacked = narrowWindow;
-  // Whether the wide layout's bar is a panel in the right column (see "barElement").
+  // Whether the wide layout's bar is a panel in the right column (see "setSidePanel").
   const [sidePanel, setSidePanel] = useState(false);
   const panel = !stacked && sidePanel;
   // A tap on a card in a hand opens its note popup, since a touch screen has no hover or
@@ -451,29 +446,26 @@ export function GameScreen(): React.JSX.Element {
   );
 
   const chatBeside = !chatOverlay && chatOpen && !chatPoppedOut;
-  // In the wide layout, the bar is along the bottom of the screen in one row while the screen is at
-  // least `BAR_ONE_ROW_WIDTH` wide and the cards keep a width of at least `PANEL_CARD_WIDTH`.
-  // Otherwise, it moves to a panel at the bottom of the right column, so that the hands get the
-  // whole height of the screen. Only the size of the window, the players, and the chat decide where
-  // the bar is, not what the bar holds. So the bar does not move when a replay starts, a
-  // hypothetical starts, or the game ends. In the panel, the panel and the clue log share one box
-  // with tabs when the column is short (see "StatusStrip.tsx"). When even the panel's tab is too
-  // short for it, the bar goes back along the bottom, until the window or the chat changes. There,
-  // the replay controls may need a row of their own, so the bar keeps the height of that layout
-  // (see `REPLAY_BAR_HEIGHT`).
-  const [barElement, setBarElement] = useState<HTMLElement | null>(null);
-  /** The size of the screen at which the panel was too short, as "sizeKey" in the effect below. */
-  const panelShortAt = useRef<string>(undefined);
+  // In the wide layout, the bar is along the bottom of the screen in one row while it has the room
+  // of `BAR_ONE_ROW_WIDTH` and the cards keep a width of at least `PANEL_CARD_WIDTH`. Otherwise, it
+  // moves to a panel at the bottom of the right column, so that the hands get the whole height of
+  // the screen. So the bar along the bottom never needs a second row. Only the size of the window,
+  // the players, and the chat decide where the bar is, not what the bar holds. So the bar does not
+  // move when a replay starts, a hypothetical starts, or the game ends. In the panel, the panel and
+  // the clue log share one box with tabs when the column is short (see "StatusStrip.tsx").
+  const mainRef = useRef<HTMLElement>(null);
   /** The width of the screen at the last render, to tell when the window gets narrower. */
   const screenWidth = useRef<number | undefined>(undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- It measures the layout after every render, and sets the state only when it changes.
   useLayoutEffect(() => {
     const root = rootRef.current;
+    const main = mainRef.current;
     const previousScreenWidth = screenWidth.current;
     screenWidth.current = root?.clientWidth;
     if (
       narrowWindow
       || root === null
+      || main === null
       || tableElement === null
       || playAreaElement === null
       || handsElement === null
@@ -511,22 +503,6 @@ export function GameScreen(): React.JSX.Element {
       return;
     }
 
-    // The panel is too short only when the sizes that the screen drew it with are its real sizes.
-    // Right after the bar moves, they are the sizes of the layout before.
-    const sizeKey = [root.clientWidth, root.clientHeight, chatBeside].join(",");
-    if (
-      sidePanel
-      && barElement?.hasAttribute(PANEL_SHORT_ATTRIBUTE) === true
-      && tableSize.width === tableElement.clientWidth
-      && tableSize.height === tableElement.clientHeight
-      && playAreaSize.width === playAreaElement.clientWidth
-      && handsSize.height === handsHeight
-    ) {
-      panelShortAt.current = sizeKey;
-      setSidePanel(false);
-      return;
-    }
-
     // The size of the hands with the bar along the bottom. The panel gives the hands the height of
     // the bar. It also hides the rail of the collapsed chat, which gives the table its width. The
     // check counts the rail, so that its width does not move the bar back.
@@ -544,37 +520,12 @@ export function GameScreen(): React.JSX.Element {
       nameHeight,
       false,
     );
-    setSidePanel(
-      panelShortAt.current !== sizeKey
-        && (root.clientWidth < BAR_ONE_ROW_WIDTH
-          || cardWidth < PANEL_CARD_WIDTH),
-    );
+    // The bar along the bottom has the width of the table's side of the screen, and the rail of the
+    // collapsed chat beside it.
+    const barRoom =
+      main.clientWidth + (sidePanel || !railShown ? 0 : CHAT_RAIL_WIDTH);
+    setSidePanel(barRoom < BAR_ONE_ROW_WIDTH || cardWidth < PANEL_CARD_WIDTH);
   });
-
-  // On a screen too narrow for the bar in one row, the bar along the bottom keeps the room of its
-  // tallest layout below the table. When the bar is shorter, the felt fills the rest. The observer
-  // runs before the browser draws the new size, so the table never shows at another size. A new
-  // width of the screen also gives the bar a new width, so the observer runs then too.
-  const mainRef = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    const main = mainRef.current;
-    if (main === null || barElement === null || panel || stacked) {
-      return undefined;
-    }
-    const observer = new ResizeObserver(() => {
-      const root = rootRef.current;
-      const reserved =
-        root === null || root.clientWidth >= BAR_ONE_ROW_WIDTH
-          ? 0
-          : REPLAY_BAR_HEIGHT - barElement.offsetHeight;
-      main.style.paddingBottom = `${Math.max(0, reserved)}px`;
-    });
-    observer.observe(barElement);
-    return () => {
-      observer.disconnect();
-      main.style.removeProperty("padding-bottom");
-    };
-  }, [barElement, panel, rootRef, stacked]);
 
   // In the wide layout of a 2-player game, the clue menu of the lowest hand opens below it when the
   // table has room for it there. Then it covers nothing. The hand's clue button goes below it too.
@@ -1266,7 +1217,7 @@ export function GameScreen(): React.JSX.Element {
   );
 
   // The bar is along the bottom of the screen, or in a panel at the bottom of the right column (see
-  // "barElement").
+  // "setSidePanel").
   const statusStrip = (
     <StatusStrip
       chatButton={
@@ -1308,7 +1259,6 @@ export function GameScreen(): React.JSX.Element {
       minEfficiency={metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)}
       mode={getScreenMode(state)}
       onEfficiencyClick={askForEfficiency}
-      onFooter={setBarElement}
       onLobby={backToLobby}
       onLogTab={setLogTab}
       onTurnClick={replay.promptTurn}

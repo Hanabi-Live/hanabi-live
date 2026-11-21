@@ -52,7 +52,6 @@ function renderStrip(score: number, maxScore: number) {
       minEfficiency="1.00"
       mode={undefined}
       onEfficiencyClick={vi.fn<() => void>()}
-      onFooter={vi.fn<(element: HTMLElement | null) => void>()}
       onLobby={vi.fn<() => void>()}
       onLogTab={vi.fn<() => void>()}
       onTurnClick={vi.fn<() => void>()}

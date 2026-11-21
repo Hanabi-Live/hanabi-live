@@ -157,8 +157,6 @@ interface StatusStripProps {
    * of the screen (see "GameScreen.tsx").
    */
   readonly panel: boolean;
-  /** Receives the bar's element, so that the game screen can measure it. */
-  readonly onFooter: (element: HTMLElement | null) => void;
 
   /**
    * The clue log, which is above the panel. When the column is short, the two share one box with
@@ -795,12 +793,6 @@ function useClosingControls(
 /** The ID of the panel's tab when it shares one box with the logs. */
 const STATUS_TAB = "status-panel-tab";
 
-/**
- * The attribute of the panel when the column is too short for it, even with tabs (see
- * "GameScreen.tsx").
- */
-export const PANEL_SHORT_ATTRIBUTE = "data-panel-short";
-
 /** The rows of clues that the clue log keeps above the panel, before the two share tabs. */
 const STACKED_CLUE_LOG_ROWS = 4;
 
@@ -860,8 +852,7 @@ function useSteadyControlsHeight(
  * layout would choose the other one without end. Once the panel has tabs, it keeps them until the
  * column gets another size.
  *
- * When even its tab is too short for the panel, the panel has `PANEL_SHORT_ATTRIBUTE`, so that the
- * game screen can move the bar back along the bottom.
+ * When even its tab is too short for the panel, the tab scrolls.
  */
 function usePanelTabs(
   footer: HTMLElement | null,
@@ -894,11 +885,6 @@ function usePanelTabs(
       + Math.max(group?.offsetHeight ?? 0, PANEL_REPLAY_CONTROLS_HEIGHT)
       + parts.length * getPixels(getComputedStyle(content).rowGap);
     const tabbed = Object.hasOwn(footer.dataset, "tabbed");
-    // With tabs, the contents fill their tab.
-    footer.toggleAttribute(
-      PANEL_SHORT_ATTRIBUTE,
-      tabbed && content.clientHeight < contentHeight,
-    );
     const footerStyle = getComputedStyle(footer);
     const panelHeight =
       contentHeight
@@ -932,13 +918,6 @@ export const BAR_HEIGHT = 76;
  * `BAR_ONE_ROW_WIDTH` in "GameScreen.tsx").
  */
 const VARIANT_NAME_MAX_WIDTH = 160;
-
-/**
- * The height of the bar along the bottom of the screen when the replay controls have a row of their
- * own: the controls (55px, since `tw:h-11` is in "em" at their 20px text), the padding above them
- * (9px, from `tw:pt-2.5` at the bar's text), and the row under them, which keeps the bar's height.
- */
-export const REPLAY_BAR_HEIGHT = 55 + 9 + BAR_HEIGHT;
 
 /**
  * The attribute that gives the replay controls a row of their own. The bar's styles for that layout
@@ -1171,21 +1150,13 @@ export function StatusStrip({
   reducedMotion,
   mode,
   panel,
-  onFooter,
   clueLog,
   logTab,
   onLogTab,
 }: StatusStripProps): React.JSX.Element {
   const reservedTurn = Math.max(lastTurn ?? turn, FIRST_TWO_DIGIT_NUMBER);
   const reservedScore = Math.max(score, FIRST_TWO_DIGIT_NUMBER);
-  const [footer, setFooterState] = useState<HTMLElement | null>(null);
-  const setFooter = useCallback(
-    (element: HTMLElement | null) => {
-      setFooterState(element);
-      onFooter(element);
-    },
-    [onFooter],
-  );
+  const [footer, setFooter] = useState<HTMLElement | null>(null);
   const inReplay = replayControls !== undefined;
   useModeFade(footer, mode, reducedMotion);
   const [closingControls, closeControls] = useClosingControls(
@@ -1477,7 +1448,7 @@ export function StatusStrip({
     // so that each group reads as one.
     const status = (
       <div
-        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:h-full" : ""}`}
+        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:min-h-full" : ""}`}
         data-panel-status
         ref={statusRef}
       >
@@ -1559,7 +1530,7 @@ export function StatusStrip({
         </div>
         <div className="tw:grid tw:min-h-0 tw:flex-1 tw:grid-cols-[minmax(0,1fr)] tw:grid-rows-[minmax(0,1fr)]">
           <div
-            className={`tw:col-start-1 tw:row-start-1 ${tab === STATUS_TAB ? "" : "tw:invisible"}`}
+            className={`tw:col-start-1 tw:row-start-1 tw:overflow-y-auto ${tab === STATUS_TAB ? "" : "tw:invisible"}`}
             id={STATUS_TAB}
             role="tabpanel"
             style={getTabPanelStyle(tab === STATUS_TAB, reducedMotion)}
