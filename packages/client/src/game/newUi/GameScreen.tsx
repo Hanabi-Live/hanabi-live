@@ -245,8 +245,11 @@ export function GameScreen(): React.JSX.Element {
   const connections = useAppSelector((root) => root.game.connections);
   const reconnecting = useAppSelector((root) => root.session.reconnecting);
   const friends = useAppSelector((root) => root.session.friends);
-  const chatOpen = useAppSelector((root) => root.newUi.chatOpen);
-  const chatPoppedOut = useAppSelector((root) => root.newUi.chatPoppedOut);
+  // A solo replay has no one to chat with, so it has no chat, as on the classic screen.
+  const hasChat = state?.finished !== true || state.replay.shared !== undefined;
+  const chatOpen = useAppSelector((root) => root.newUi.chatOpen) && hasChat;
+  const chatPoppedOut =
+    useAppSelector((root) => root.newUi.chatPoppedOut) && hasChat;
   const chatUnread = useAppSelector((root) => root.gameChat.unread);
   const zenOn = useAppSelector((root) => root.gameChat.zen);
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
@@ -497,7 +500,7 @@ export function GameScreen(): React.JSX.Element {
     // The size of the hands with the bar along the bottom. The panel gives the hands the height of
     // the bar. It also hides the rail of the collapsed chat, which gives the table its width. The
     // check counts the rail, so that its width does not move the bar back.
-    const railShown = !chatOpen || chatPoppedOut;
+    const railShown = hasChat && (!chatOpen || chatPoppedOut);
     const barRowWidth =
       rowWidth - (sidePanel && railShown ? CHAT_RAIL_WIDTH : 0);
     const barHandsHeight = handsHeight - (sidePanel ? BAR_HEIGHT : 0);
@@ -1210,15 +1213,17 @@ export function GameScreen(): React.JSX.Element {
   const statusStrip = (
     <StatusStrip
       chatButton={
-        <ChatButton
-          className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:text-card-ink ${RAISED_BUTTON_CLASS}`}
-          open={chatOpen}
-          poppedOut={chatPoppedOut}
-          pressedClassName="tw:bg-game-text tw:group-hover/layer:bg-white"
-          unread={zen ? 0 : chatUnread}
-          zen={zen}
-          zenAvailable={!state.finished}
-        />
+        hasChat && (
+          <ChatButton
+            className={`tw:size-9 ${BOTTOM_BAR_BUTTON_COLOR_CLASS} tw:text-game-text tw:aria-pressed:text-card-ink ${RAISED_BUTTON_CLASS}`}
+            open={chatOpen}
+            poppedOut={chatPoppedOut}
+            pressedClassName="tw:bg-game-text tw:group-hover/layer:bg-white"
+            unread={zen ? 0 : chatUnread}
+            zen={zen}
+            zenAvailable={!state.finished}
+          />
+        )
       }
       clueLog={clueLog}
       colorblindMode={settings.colorblindMode}
@@ -1690,23 +1695,25 @@ export function GameScreen(): React.JSX.Element {
           <LeaderDirection state={state} />
         </main>
 
-        <ChatPanel
-          friends={friends}
-          open={chatOpen}
-          // Zen mode hides who is watching and the unread messages, as on the classic screen.
-          ourUsername={metadata.ourUsername}
-          overlay={chatOverlay}
-          poppedOut={chatPoppedOut}
-          railHidden={panel}
-          reducedMotion={settings.reducedMotion}
-          spectators={
-            zen ? [] : spectators.map((spectator) => spectator.username)
-          }
-          spectatorsTooltip={getSpectatorsTooltip(spectators, state.finished)}
-          unread={zen ? 0 : chatUnread}
-          zen={zen}
-          zenAvailable={!state.finished}
-        />
+        {hasChat && (
+          <ChatPanel
+            friends={friends}
+            open={chatOpen}
+            // Zen mode hides who is watching and the unread messages, as on the classic screen.
+            ourUsername={metadata.ourUsername}
+            overlay={chatOverlay}
+            poppedOut={chatPoppedOut}
+            railHidden={panel}
+            reducedMotion={settings.reducedMotion}
+            spectators={
+              zen ? [] : spectators.map((spectator) => spectator.username)
+            }
+            spectatorsTooltip={getSpectatorsTooltip(spectators, state.finished)}
+            unread={zen ? 0 : chatUnread}
+            zen={zen}
+            zenAvailable={!state.finished}
+          />
+        )}
       </div>
 
       {!panel && statusStrip}
