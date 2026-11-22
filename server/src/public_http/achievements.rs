@@ -8,7 +8,7 @@ use hanabi_protocol::{
     Achievement, AchievementId, Count, DEFAULT_VARIANT_ID, DEFAULT_VARIANT_NAME,
 };
 
-/// The wins in No Variant that unlock the "No Variant Winner" achievement.
+/// The wins in No Variant that unlock the "I've Got the Hang of This" achievement.
 pub(super) const NO_VARIANT_WINS_GOAL: i64 = 10;
 
 /// A player's progress toward each achievement.
@@ -45,7 +45,7 @@ async fn no_variant_wins(state: &PublicState, user: i32) -> Result<Achievement> 
     let progress = i64::try_from(wins.len())?;
     Ok(Achievement {
         id: AchievementId::NoVariantWins,
-        name: "No Variant Winner".into(),
+        name: "I've Got the Hang of This".into(),
         description: format!(
             "Get the max score in {NO_VARIANT_WINS_GOAL} games of {DEFAULT_VARIANT_NAME}."
         ),
