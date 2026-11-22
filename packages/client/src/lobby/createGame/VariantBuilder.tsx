@@ -18,6 +18,7 @@ import {
   getParts,
   getRecipe,
   getSuitDescription,
+  getVariantName,
   REVERSED_DESCRIPTION,
   RULE_RANKS,
   SCARCE_ONES_DESCRIPTION,
@@ -96,7 +97,7 @@ export function VariantBuilder({
   const deckIds = getDeckSuitIds(choice);
   const deck =
     catalogName === undefined
-      ? getDeckVariant(choice, "New variant")
+      ? getDeckVariant(choice, getVariantName(choice))
       : getVariant(catalogName);
 
   return (
@@ -113,8 +114,7 @@ export function VariantBuilder({
         />
         {catalogName === undefined && (
           <p className="tw:m-0 tw:text-text-label">
-            The server checks the rules when it creates the game. Recipe:{" "}
-            <code>{recipe}</code>
+            The server checks the rules when it creates the game.
           </p>
         )}
       </div>

@@ -7,6 +7,7 @@ import {
   getParts,
   getRecipe,
   getSuitDescription,
+  getVariantName,
   setNumSuits,
   setSpecialRank,
   toggleFlag,
@@ -61,6 +62,9 @@ describe("variant builder", () => {
       "r-y-g-b-bk.rev-ra_3pi_1scarce_duck_funnels",
     );
     expect(getCatalogName(getRecipe(combined))).toBeUndefined();
+    expect(getVariantName(combined)).toBe(
+      "Pink-Threes & Scarce Ones & Duck & Funnels & Black Reversed & Rainbow (6 Suits)",
+    );
   });
 
   test("ends every reversal when Up or Down turns on", () => {

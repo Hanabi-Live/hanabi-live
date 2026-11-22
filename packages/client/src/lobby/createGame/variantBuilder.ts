@@ -660,6 +660,52 @@ export function getCatalogName(recipe: string): string | undefined {
   return catalogByRecipe.get(recipe);
 }
 
+/** The words for the ranks in a variant's name, such as "Ones" in "Pink-Ones". */
+const RANK_WORDS = ["Ones", "Twos", "Threes", "Fours", "Fives"] as const;
+
+function getRankWord(rank: number): string {
+  return RANK_WORDS[rank - 1] ?? `${rank}s`;
+}
+
+/**
+ * The name that the server gives a variant that the catalog does not have. It names the rules in
+ * the order of the recipe, then each suit other than the normal ones, then the number of suits,
+ * such as "Pink-Ones & Throw It in a Hole & Black & Rainbow (6 Suits)". A reversed suit is named
+ * even when it is a normal one, such as "Purple Reversed".
+ */
+export function getVariantName(choice: Choice): string {
+  const names: string[] = [];
+  const { specialRank } = choice;
+  if (specialRank !== undefined) {
+    const rule = getParts().specialRanks.find(
+      ({ code }) => code === specialRank.code,
+    );
+    const ruleName = (rule?.name ?? specialRank.code).replaceAll(" ", "-");
+    names.push(`${ruleName}-${getRankWord(specialRank.rank)}`);
+  }
+  if (choice.criticalRank !== undefined) {
+    names.push(`Critical ${getRankWord(choice.criticalRank)}`);
+  }
+  if (choice.scarceOnes) {
+    names.push(`Scarce ${getRankWord(1)}`);
+  }
+  for (const flag of recipeFlagSchema.options) {
+    if (choice.flags.has(flag)) {
+      names.push(FLAGS[flag].name);
+    }
+  }
+  for (const id of getDeckSuitIds(choice)) {
+    const reversed = choice.reversed.has(id);
+    if (!reversed && NORMAL_SUIT_IDS.has(id)) {
+      continue;
+    }
+    const name = getSuitsById().get(id)?.name ?? id;
+    names.push(reversed ? `${name}${SUIT_REVERSED_SUFFIX}` : name);
+  }
+  const suits = `${choice.numSuits} ${choice.numSuits === 1 ? "Suit" : "Suits"}`;
+  return names.length === 0 ? suits : `${names.join(" & ")} (${suits})`;
+}
+
 /**
  * A variant that has the deck of a choice, for drawing its cards. It leaves out the choice's rules,
  * since the server decides them.
