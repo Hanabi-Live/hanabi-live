@@ -186,8 +186,8 @@ function psqlCommand(env: ReadonlyMap<string, string>): readonly string[] {
 
 /**
  * Every checkout shares one PostgreSQL volume, so a migration that another checkout applied can
- * differ from this checkout's file with the same number, and a database that an old checkout
- * created can be older than this checkout's migration baseline.
+ * differ from this checkout's file with the same number or be newer than every file in it, and a
+ * database that an old checkout created can be older than this checkout's migration baseline.
  */
 function explainReset(env: ReadonlyMap<string, string>, reason: string) {
   const user = setting(env, "DB_USER", "hanabiuser");
@@ -250,6 +250,11 @@ async function migrate(env: ReadonlyMap<string, string>): Promise<boolean> {
       );
     } else if (migrated.errors.includes("older than baseline")) {
       explainReset(env, "It is too old for this checkout to migrate.");
+    } else if (migrated.errors.includes("refusing a downgrade")) {
+      explainReset(
+        env,
+        "Another checkout applied a migration that this checkout does not have.",
+      );
     }
     return false;
   }
