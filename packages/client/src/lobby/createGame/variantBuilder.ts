@@ -161,7 +161,7 @@ const CLUE_FLAGS = new ReadonlySet<RecipeFlag>([
 ]);
 
 /** The groups of suits that the builder shows, in order. */
-export type SuitGroup = "special" | "dark" | "other" | "ambiguous";
+export type SuitGroup = "special" | "dark" | "ambiguous";
 
 /** A suit that a player can add to a deck. */
 interface SuitPart {
@@ -241,7 +241,7 @@ function readParts(): Parts {
     suits.push({
       id,
       suit,
-      group: getSuitGroup(id, suit),
+      group: getSuitGroup(id),
     });
 
     // A rank can be touched as a suit that clues touch in a special way, as the engine allows.
@@ -386,14 +386,12 @@ function sharesColors(suit: Suit): boolean {
   );
 }
 
-function getSuitGroup(id: string, suit: Suit): SuitGroup {
+function getSuitGroup(id: string): SuitGroup {
   if (id.endsWith(DARK_SUFFIX)) {
     return "dark";
   }
-  if (SPECIAL_SUIT_IDS.has(id)) {
-    return "special";
-  }
-  return sharesColors(suit) ? "ambiguous" : "other";
+  // Every other suit takes the clues of other colors, such as Tomato (Red).
+  return SPECIAL_SUIT_IDS.has(id) ? "special" : "ambiguous";
 }
 
 /** The suit without its dark version, so that a deck has each suit once. */
@@ -509,12 +507,9 @@ export function getChoice(recipe: string): Choice {
   };
 }
 
-/** The groups whose suits come first in a recipe, such as the suits of a themed set. */
-const LEADING_GROUPS = new ReadonlySet<SuitGroup>(["ambiguous", "other"]);
-
 /**
- * Suits in the order of their recipes, as the catalog writes them: other and ambiguous suits first,
- * such as the suits of a themed set, then the special and dark suits. Each group keeps the order of
+ * Suits in the order of their recipes, as the catalog writes them: ambiguous suits first, such as
+ * the suits of a themed set, then the special and dark suits. Each group keeps the order of
  * `Parts`.
  */
 function sortSuits(ids: readonly string[]): readonly string[] {
@@ -522,8 +517,7 @@ function sortSuits(ids: readonly string[]): readonly string[] {
   const order = suits.map(({ id }) => id);
   function getKey(id: string): number {
     const group = suits.find((part) => part.id === id)?.group;
-    const groupStart =
-      group !== undefined && LEADING_GROUPS.has(group) ? 0 : order.length;
+    const groupStart = group === "ambiguous" ? 0 : order.length;
     return groupStart + order.indexOf(id);
   }
   return ids.toSorted((a, b) => getKey(a) - getKey(b));
