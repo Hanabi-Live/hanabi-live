@@ -204,73 +204,27 @@ describe("CreateGame", () => {
     });
   });
 
-  test("searching for a basic variant goes back to the dropdown", () => {
+  test("the curated menu chooses a variant, which the dropdown then shows", () => {
     showPage();
-    fireEvent.change(getInput("create-game-variant-dropdown1"), {
+    const dropdown = getInput("create-game-variant-dropdown1");
+    fireEvent.change(dropdown, {
       target: {
-        value: "Search custom variants...",
+        value: "Other curated variants",
       },
     });
-    fireEvent.change(getInput("create-game-variant-dropdown2"), {
-      target: {
-        value: "6 Suits",
-      },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Pink (5 Suits)" }));
 
-    expect(getInput("create-game-variant-dropdown1").value).toBe("6 Suits");
+    expect(dropdown.value).toBe("Pink (5 Suits)");
     expect(
       store.getState().session.settings.createTable.options.variantId,
-    ).toBe(getVariant("6 Suits").id);
-  });
-
-  test("the variant search opens its list on a click, not when the page opens", () => {
-    store.dispatch(
-      settingsChanged({
-        ...defaultSettings,
-        createTable: {
-          ...defaultSettings.createTable,
-          options: {
-            ...defaultSettings.createTable.options,
-            variantId: getVariant("Rainbow (5 Suits)").id,
-          },
-        },
-      }),
-    );
-    showPage();
-    const search = getInput("create-game-variant-dropdown2");
-    expect(document.activeElement).toBe(search);
-    expect(search.ariaExpanded).toBe("false");
-
-    click("create-game-variant-dropdown2");
-    expect(search.ariaExpanded).toBe("true");
-  });
-
-  test("the variant builder keeps working while the player types a search", () => {
-    showPage();
-    fireEvent.change(getInput("create-game-variant-dropdown1"), {
-      target: {
-        value: "Search custom variants...",
-      },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));
-    fireEvent.change(getInput("create-game-variant-dropdown2"), {
-      target: {
-        value: "n",
-      },
-    });
-
-    expect(document.querySelector("#create-game-variant-builder")).not.toBe(
+    ).toBe(getVariant("Pink (5 Suits)").id);
+    expect(screen.queryByRole("list", { name: "Other curated variants" })).toBe(
       null,
     );
   });
 
   test("a deck card's menu reverses its suit, and Escape closes it", () => {
     showPage();
-    fireEvent.change(getInput("create-game-variant-dropdown1"), {
-      target: {
-        value: "Search custom variants...",
-      },
-    });
     fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));
     fireEvent.click(screen.getByRole("button", { name: "Red" }));
 

@@ -266,6 +266,8 @@ that have not been played yet and have only one copy remaining.)
 
 - The server implements several variants, which are listed on
   [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/variants.md).
+- When you create a game, the variant dropdown lists the basic variants. "Other
+  curated variants" opens a menu of variants that players know to be fun.
 - When you create a game, the sliders button beside the variant opens the
   variant builder. Turn on the suits and the rules that you want, such as Black,
   Rainbow, and Throw It in a Hole, in any combination. The builder makes the

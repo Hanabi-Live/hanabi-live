@@ -23,6 +23,7 @@ import {
 } from "complete-common";
 import equal from "fast-deep-equal";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   DIMMED_OPACITY,
@@ -42,7 +43,7 @@ import {
 } from "../../LengthCounter.tsx";
 import { creatingTableChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
-import { SuggestBox, suggestVariants } from "../../SuggestBox.tsx";
+import { Tooltip } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { WaitingLabel, getWaitingButtonClass } from "../../WaitingCard.tsx";
 import { CheckedInput } from "../CheckedInput.tsx";
@@ -62,23 +63,23 @@ import {
 import * as lobbyPage from "../lobbyPage.ts";
 import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
+import { CURATED_VARIANT_NAMES } from "./curatedVariants.ts";
 import { VariantBuilder } from "./VariantBuilder.tsx";
 
 /**
- * The website offers over 1000 variants. To prevent confusion, the first dropdown only shows the
- * basic ones. Its last choice searches all of them.
+ * The website offers thousands of variants. To prevent confusion, the dropdown only shows the basic
+ * ones. Its last choice opens a menu of curated variants, and the variant builder makes the rest.
  */
 const BASIC_VARIANT_NAMES = [
   "No Variant",
-  "6 Suits",
-  "Black (6 Suits)",
-  "Rainbow (6 Suits)",
+  "Black (5 Suits)",
+  "Rainbow (5 Suits)",
 ] as const;
 
 const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 
-/** The choice of the first dropdown that switches to the search of every variant. */
-const SEARCH_VARIANTS = "Search custom variants...";
+/** The choice of the dropdown that opens the menu of curated variants. */
+const CURATED_VARIANTS = "Other curated variants";
 
 export const DOCS_URL =
   "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs";
@@ -442,9 +443,6 @@ export function CreateGame(): React.JSX.Element {
               onChange={(variantName) => {
                 change({ variantName }, true);
               }}
-              onSearch={(variantName) => {
-                change({ variantName }, false);
-              }}
               variantName={form.variantName}
             />
           </li>
@@ -666,14 +664,13 @@ export function CreateGame(): React.JSX.Element {
 }
 
 /**
- * The basic variants in a dropdown, or a search of every variant. The search shows for a variant
- * that is not basic, and goes back to the dropdown when a basic variant is chosen.
+ * The basic variants in a dropdown. Its last choice opens a menu of curated variants. A variant
+ * from elsewhere, such as the variant builder, shows as the dropdown's first choice.
  */
 function VariantPicker({
   building,
   onBuild,
   onChange,
-  onSearch,
   variantName,
 }: {
   /** Whether the variant builder is open. */
@@ -681,141 +678,80 @@ function VariantPicker({
   readonly onBuild: () => void;
   /** A variant was chosen, which the form remembers. */
   readonly onChange: (variantName: string) => void;
-  /** The search changed, which may not be a variant yet. */
-  readonly onSearch: (variantName: string) => void;
   readonly variantName: string;
 }) {
-  const [searching, setSearching] = useState(
-    () => !BASIC_VARIANT_NAMES_SET.has(variantName),
-  );
-  const [search, setSearch] = useState(variantName);
   const selectRef = useRef<HTMLSelectElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-  /** Whether the next switch between the dropdown and the search takes the focus. */
-  const focusOnSwitch = useRef(true);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [menu] = useState(() => document.createElement("div"));
+  const menuRef = useRef<Tooltip>(null);
 
-  // The variant builder chooses a variant without the field, which shows it. The focus stays on the
-  // builder.
+  // The page starts with the focus on the variant.
   useEffect(() => {
-    if (variantName === search || !doesVariantExist(variantName)) {
-      return;
-    }
-    setSearch(variantName);
-    const nextSearching = !BASIC_VARIANT_NAMES_SET.has(variantName);
-    if (nextSearching === searching) {
-      return;
-    }
-    focusOnSwitch.current = false;
-    setSearching(nextSearching);
-    // Only a variant from outside the field changes it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variantName]);
+    selectRef.current!.focus();
+  }, []);
 
-  // The page starts with the focus on the variant, and it stays there when the search starts or
-  // ends. The search is selected, so that typing replaces it. A text box scrolls to the end of what
-  // is selected, so it scrolls back to show the start of a long name.
   useEffect(() => {
-    if (!focusOnSwitch.current) {
-      focusOnSwitch.current = true;
-      return;
-    }
-    if (searching) {
-      const input = searchRef.current!;
-      input.focus();
-      input.select();
-      input.scrollLeft = 0;
-    } else {
-      selectRef.current!.focus();
-    }
-  }, [searching]);
+    const tooltip = new Tooltip(anchorRef.current!, {
+      content: menu,
+      interactive: true,
+    });
+    menuRef.current = tooltip;
+    return () => {
+      tooltip.destroy();
+    };
+  }, [menu]);
 
-  /** Shows a variant. A basic one goes back to the dropdown. */
-  function show(name: string) {
-    setSearch(name);
-    if (BASIC_VARIANT_NAMES_SET.has(name)) {
-      setSearching(false);
-    }
+  function closeMenu() {
+    menuRef.current?.close();
+    selectRef.current?.focus();
   }
+
+  const other =
+    !BASIC_VARIANT_NAMES_SET.has(variantName) && doesVariantExist(variantName);
 
   return (
     <div className={`tw:flex tw:items-center tw:gap-[0.9em] ${FIELD_WIDTH}`}>
-      <div className="tw:relative tw:min-w-0 tw:flex-1">
-        {searching ? (
-          <>
-            <SuggestBox
-              className="tw:pr-[2.75em]"
-              id="create-game-variant-dropdown2"
-              onBlur={(event) => {
-                // Show the start of a long name.
-                event.currentTarget.scrollLeft = 0;
-                if (doesVariantExist(search.trim())) {
-                  onChange(search.trim());
-                }
-              }}
-              onPick={(name) => {
-                show(name);
-                onChange(name);
-              }}
-              onType={(name) => {
-                show(name);
-                if (BASIC_VARIANT_NAMES_SET.has(name)) {
-                  onChange(name);
-                } else {
-                  onSearch(name);
-                }
-              }}
-              ref={searchRef}
-              suggest={suggestVariants}
-              value={search}
-            >
-              {/* Clicks go through the icon to the text box. */}
-              <i className="fas fa-magnifying-glass tw:pointer-events-none tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2" />
-            </SuggestBox>
-          </>
-        ) : (
-          <select
-            className="tw:w-full"
-            id="create-game-variant-dropdown1"
-            onChange={(event) => {
-              if (event.target.value === SEARCH_VARIANTS) {
-                setSearch("");
-                setSearching(true);
-              } else {
-                onChange(event.target.value);
-              }
-            }}
-            ref={selectRef}
-            value={
-              BASIC_VARIANT_NAMES_SET.has(variantName)
-                ? variantName
-                : DEFAULT_VARIANT_NAME
+      <div className="tw:min-w-0 tw:flex-1" ref={anchorRef}>
+        <select
+          className="tw:w-full"
+          id="create-game-variant-dropdown1"
+          onChange={(event) => {
+            if (event.target.value === CURATED_VARIANTS) {
+              // The dropdown keeps showing the variant, since its value does not change.
+              menuRef.current?.openUntilClickElsewhere();
+              menu.querySelector<HTMLElement>("button")?.focus();
+            } else {
+              onChange(event.target.value);
             }
-          >
-            {BASIC_VARIANT_NAMES.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-            <hr />
-            <option value={SEARCH_VARIANTS}>{SEARCH_VARIANTS}</option>
-          </select>
-        )}
-      </div>
-      {searching && (
-        <button
-          aria-label="Choose a random variant"
-          className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
-          onClick={() => {
-            const name = getRandomArrayElement(VARIANT_NAMES);
-            show(name);
-            onChange(name);
           }}
-          ref={tooltipRef("Choose a random variant")}
-          type="button"
+          ref={selectRef}
+          value={
+            other || BASIC_VARIANT_NAMES_SET.has(variantName)
+              ? variantName
+              : DEFAULT_VARIANT_NAME
+          }
         >
-          <i className="fas fa-dice" id="dice" />
-        </button>
-      )}
+          {other && <option value={variantName}>{variantName}</option>}
+          {BASIC_VARIANT_NAMES.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+          <hr />
+          <option value={CURATED_VARIANTS}>{CURATED_VARIANTS}</option>
+        </select>
+      </div>
+      <button
+        aria-label="Choose a random variant"
+        className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
+        onClick={() => {
+          onChange(getRandomArrayElement(VARIANT_NAMES));
+        }}
+        ref={tooltipRef("Choose a random variant")}
+        type="button"
+      >
+        <i className="fas fa-dice" id="dice" />
+      </button>
       <button
         aria-controls="create-game-variant-builder"
         aria-expanded={building}
@@ -827,7 +763,64 @@ function VariantPicker({
       >
         <i className="fas fa-sliders" />
       </button>
+      {createPortal(
+        <CuratedVariantMenu
+          onClose={closeMenu}
+          onPick={(name) => {
+            closeMenu();
+            onChange(name);
+          }}
+          variantName={variantName}
+        />,
+        menu,
+      )}
     </div>
+  );
+}
+
+/** The menu of curated variants, which opens from the dropdown in the site's tooltip. */
+function CuratedVariantMenu({
+  onClose,
+  onPick,
+  variantName,
+}: {
+  readonly onClose: () => void;
+  readonly onPick: (variantName: string) => void;
+  readonly variantName: string;
+}) {
+  return (
+    // Escape closes the menu, and the focus goes back to the dropdown.
+    <ul
+      aria-label={CURATED_VARIANTS}
+      className="tw:m-0 tw:list-none tw:p-0"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") {
+          return;
+        }
+
+        event.stopPropagation();
+        onClose();
+      }}
+    >
+      {CURATED_VARIANT_NAMES.map((name) => (
+        <li key={name}>
+          <button
+            aria-current={name === variantName ? "true" : undefined}
+            className="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.6em] tw:rounded-[3px] tw:border-none tw:bg-transparent tw:px-[0.6em] tw:py-[0.3em] tw:text-left tw:whitespace-nowrap tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:text-(--text) tw:hover:bg-(--row-hover-bg) tw:hover:text-(--menu-hover-text)"
+            onClick={() => {
+              onPick(name);
+            }}
+            type="button"
+          >
+            <i
+              aria-hidden
+              className={`fas fa-check tw:w-4 tw:text-center ${name === variantName ? "" : "tw:invisible"}`}
+            />
+            {name}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

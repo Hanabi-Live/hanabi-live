@@ -888,18 +888,13 @@ function getStates(): readonly State[] {
       },
     },
     {
-      // The extra options, the search for a variant, a clock, a dimmed option, and two errors.
+      // The extra options, a clock, a dimmed option, and two errors.
       name: "create-game-extra-options",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
         await clickNav(page, "create-game");
         await page.click("#create-game-show-extra-options");
-        await page.selectOption(
-          "#create-game-variant-dropdown1",
-          "Search custom variants...",
-        );
-        await page.fill("#create-game-variant-dropdown2", LONG_VARIANT_NAME);
         await page.click('label[for="createTableTimed"]');
         await page.fill("#createTableTimeBaseMinutes", "0");
         await page.click('label[for="createTableOneExtraCard"]');
@@ -911,7 +906,23 @@ function getStates(): readonly State[] {
         await page.fill("#createTableTimeBaseMinutes", "2");
         await page.click('label[for="createTableTimed"]');
         await page.click('label[for="createTableOneExtraCard"]');
-        await page.fill("#create-game-variant-dropdown2", "No Variant");
+        await settle(page);
+      },
+    },
+    {
+      // The menu of curated variants, which opens from the variant dropdown.
+      name: "create-game-curated-variants",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+        await page.selectOption(
+          "#create-game-variant-dropdown1",
+          "Other curated variants",
+        );
+        await page
+          .getByRole("list", { name: "Other curated variants" })
+          .waitFor();
         await settle(page);
       },
     },
@@ -942,10 +953,11 @@ function getStates(): readonly State[] {
             exact: true,
           })
           .click();
+        // The dropdown shows the variant that the builder chose.
         await page
-          .locator("#create-game-variant-dropdown2")
-          .and(page.locator('[value="Black & Rainbow (6 Suits)"]'))
-          .waitFor();
+          .locator("#create-game-variant-dropdown1")
+          .locator('option[value="Black & Rainbow (6 Suits)"]')
+          .waitFor({ state: "attached" });
         // The menu of a deck card, which makes its suit dark or reversed. The deck comes before the
         // suit buttons of the same name.
         await builder
@@ -961,7 +973,7 @@ function getStates(): readonly State[] {
       },
       // The form remembers its variant, which the other states need to be the default.
       cleanup: async (page) => {
-        await page.fill("#create-game-variant-dropdown2", "No Variant");
+        await page.selectOption("#create-game-variant-dropdown1", "No Variant");
         await settle(page);
       },
     },
