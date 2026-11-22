@@ -1,6 +1,7 @@
 // The achievements on a player's profile: what each one asks for, and how far the player has come.
 
 import type { publicPageTableSchema } from "@hanabi-live/data";
+import { MIN_ACHIEVEMENT_PLAYERS } from "@hanabi-live/data";
 import type * as z from "zod";
 
 type ScoresTable = Extract<
@@ -74,6 +75,11 @@ export function Achievements({
   return (
     <section className="tw:mb-6">
       <h3>Achievements</h3>
+      <p className="tw:mb-3 tw:text-[0.85em] tw:leading-snug tw:text-text-label">
+        Only games with {MIN_ACHIEVEMENT_PLAYERS} or more players count. Games
+        with an option, such as &quot;One Extra Card&quot;, or with detrimental
+        characters do not count.
+      </p>
       <div className="tw:grid tw:grid-cols-[repeat(auto-fill,minmax(min(100%,20em),1fr))] tw:gap-3">
         {achievements.map((achievement) => (
           <AchievementCard achievement={achievement} key={achievement.id} />

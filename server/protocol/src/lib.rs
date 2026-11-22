@@ -125,6 +125,9 @@ constants! {
     pub(crate) const MAX_SEAT: usize = MAX_PLAYERS - 1;
     /// The player limit of a table whose creator did not choose one.
     @data pub const DEFAULT_MAX_PLAYERS: u8 = 5;
+    /// The fewest players that a game needs to count toward an achievement. Games with 2 players are
+    /// too easy.
+    @data pub const MIN_ACHIEVEMENT_PLAYERS: u8 = 3;
     /// The variant of a game or table that does not choose one.
     @game pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
     /// The ID of `DEFAULT_VARIANT_NAME` in `variants.json`.

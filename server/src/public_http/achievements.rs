@@ -4,11 +4,9 @@ use super::{AGGREGATE_STATEMENT_TIMEOUT, PublicState, Result, catalog, scan};
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
 use hanabi_engine::EndCondition;
-use hanabi_protocol::{Achievement, AchievementId, Count, DEFAULT_VARIANT_NAME};
-
-/// The fewest players that a game needs to count toward an achievement. Games with 2 players are
-/// too easy.
-const MIN_PLAYERS: i16 = 3;
+use hanabi_protocol::{
+    Achievement, AchievementId, Count, DEFAULT_VARIANT_NAME, MIN_ACHIEVEMENT_PLAYERS,
+};
 
 /// The wins that unlock most achievements.
 const WINS: i64 = 10;
@@ -211,8 +209,8 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
 /// A player's progress toward each achievement.
 ///
 /// A win is a game that reached the max score without an option that changes the game, such as
-/// "One Extra Card" or detrimental characters, and with at least `MIN_PLAYERS` players. Speedruns
-/// and timed games count.
+/// "One Extra Card" or detrimental characters, and with at least `MIN_ACHIEVEMENT_PLAYERS`
+/// players. Speedruns and timed games count.
 pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<Achievement>> {
     // One row for each variant of each group: its ID and max score, and the wins that the group
     // needs in it. Each group's variants are a range of these rows.
@@ -263,7 +261,7 @@ pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<A
         &rows,
         &limits,
         normal_end,
-        MIN_PLAYERS,
+        i16::from(MIN_ACHIEVEMENT_PLAYERS),
     )
     .fetch_all(&mut *transaction)
     .await

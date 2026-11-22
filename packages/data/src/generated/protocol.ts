@@ -25,6 +25,7 @@ import {
 import * as z from "zod";
 
 export const DEFAULT_MAX_PLAYERS = 5;
+export const MIN_ACHIEVEMENT_PLAYERS = 3;
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
 export const MAX_NOTE_LENGTH = 300;
