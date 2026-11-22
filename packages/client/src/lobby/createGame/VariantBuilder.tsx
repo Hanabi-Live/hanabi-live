@@ -42,8 +42,12 @@ const SUIT_GROUPS = [
     label: "Dark suits",
   },
   {
-    group: "otherColors",
-    label: "Other colors",
+    group: "other",
+    label: "Other suits",
+  },
+  {
+    group: "ambiguous",
+    label: "Ambiguous suits",
   },
 ] as const satisfies ReadonlyArray<{
   readonly group: SuitGroup;
@@ -129,11 +133,15 @@ export function VariantBuilder({
         ))}
       </PartRow>
 
-      {SUIT_GROUPS.map(({ group, label }) => (
-        <PartRow key={group} label={label}>
-          {parts.suits
-            .filter((part) => part.group === group)
-            .map(({ id, suit }) => (
+      {SUIT_GROUPS.map(({ group, label }) => {
+        const groupSuits = parts.suits.filter((part) => part.group === group);
+        // A group can have no suits, such as "Other suits" while every other suit shares a color.
+        if (groupSuits.length === 0) {
+          return undefined;
+        }
+        return (
+          <PartRow key={group} label={label}>
+            {groupSuits.map(({ id, suit }) => (
               <Chip
                 enabled={choice.suits.includes(id) || canAddSuit(choice, id)}
                 key={id}
@@ -146,8 +154,9 @@ export function VariantBuilder({
                 tooltip={getSuitDescription(suit)}
               />
             ))}
-        </PartRow>
-      ))}
+          </PartRow>
+        );
+      })}
 
       <PartRow label="Reversed suits">
         {deckIds.map((id, index) => (

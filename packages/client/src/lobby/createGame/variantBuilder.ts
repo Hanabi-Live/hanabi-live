@@ -161,7 +161,7 @@ const CLUE_FLAGS = new ReadonlySet<RecipeFlag>([
 ]);
 
 /** The groups of suits that the builder shows, in order. */
-export type SuitGroup = "special" | "dark" | "otherColors";
+export type SuitGroup = "special" | "dark" | "other" | "ambiguous";
 
 /** A suit that a player can add to a deck. */
 interface SuitPart {
@@ -241,7 +241,7 @@ function readParts(): Parts {
     suits.push({
       id,
       suit,
-      group: getSuitGroup(id),
+      group: getSuitGroup(id, suit),
     });
 
     // A rank can be touched as a suit that clues touch in a special way, as the engine allows.
@@ -302,17 +302,10 @@ const MAX_NAMED_SUITS = 3;
  * the suits apart. A dark suit takes the color of its light suit, so it is left out.
  */
 function getSharedColorText(suit: Suit): string | undefined {
-  const colors = suit.clueColors.map(({ name }) => name);
-  if (
-    suit.allClueColors
-    || suit.noClueColors
-    || suit.prism
-    || suit.oneOfEach
-    || colors.length === 0
-    || colors.includes(suit.name)
-  ) {
+  if (!sharesColors(suit)) {
     return undefined;
   }
+  const colors = suit.clueColors.map(({ name }) => name);
   const ranks = getRankText(suit, "its cards");
   const [color] = colors;
   if (color === undefined || colors.length > 1) {
@@ -376,11 +369,31 @@ export function getCriticalDescription(rank: number): string {
 
 export const SCARCE_ONES_DESCRIPTION = "Each suit has two 1s instead of three.";
 
-function getSuitGroup(id: string): SuitGroup {
+/**
+ * Whether a suit takes the clues of colors other than its own, such as Tomato (Red), so that its
+ * color clues also touch other suits. A dark suit takes the color of its light suit, so it does not
+ * count.
+ */
+function sharesColors(suit: Suit): boolean {
+  const colors = suit.clueColors.map(({ name }) => name);
+  return (
+    !suit.allClueColors
+    && !suit.noClueColors
+    && !suit.prism
+    && !suit.oneOfEach
+    && colors.length > 0
+    && !colors.includes(suit.name)
+  );
+}
+
+function getSuitGroup(id: string, suit: Suit): SuitGroup {
   if (id.endsWith(DARK_SUFFIX)) {
     return "dark";
   }
-  return SPECIAL_SUIT_IDS.has(id) ? "special" : "otherColors";
+  if (SPECIAL_SUIT_IDS.has(id)) {
+    return "special";
+  }
+  return sharesColors(suit) ? "ambiguous" : "other";
 }
 
 /** The suit without its dark version, so that a deck has each suit once. */
@@ -496,14 +509,21 @@ export function getChoice(recipe: string): Choice {
   };
 }
 
+/** The groups whose suits come first in a recipe, such as the suits of a themed set. */
+const LEADING_GROUPS = new ReadonlySet<SuitGroup>(["ambiguous", "other"]);
+
 /**
- * Suits in the order of their recipes, as the catalog writes them: other colors first, such as the
- * colors of a themed set, then the special and dark suits. Each group keeps the order of `Parts`.
+ * Suits in the order of their recipes, as the catalog writes them: other and ambiguous suits first,
+ * such as the suits of a themed set, then the special and dark suits. Each group keeps the order of
+ * `Parts`.
  */
 function sortSuits(ids: readonly string[]): readonly string[] {
-  const order = getParts().suits.map(({ id }) => id);
+  const { suits } = getParts();
+  const order = suits.map(({ id }) => id);
   function getKey(id: string): number {
-    const groupStart = getSuitGroup(id) === "otherColors" ? 0 : order.length;
+    const group = suits.find((part) => part.id === id)?.group;
+    const groupStart =
+      group !== undefined && LEADING_GROUPS.has(group) ? 0 : order.length;
     return groupStart + order.indexOf(id);
   }
   return ids.toSorted((a, b) => getKey(a) - getKey(b));
