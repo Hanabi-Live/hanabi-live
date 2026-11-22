@@ -77,8 +77,7 @@ export function Achievements({
       <h3>Achievements</h3>
       <p className="tw:mb-3 tw:text-[0.85em] tw:leading-snug tw:text-text-label">
         Only games with {MIN_ACHIEVEMENT_PLAYERS} or more players count. Games
-        with an option, such as &quot;One Extra Card&quot;, or with detrimental
-        characters do not count.
+        with an option, such as &quot;One Extra Card&quot;, do not count.
       </p>
       <div className="tw:grid tw:grid-cols-[repeat(auto-fill,minmax(min(100%,20em),1fr))] tw:gap-3">
         {achievements.map((achievement) => (
