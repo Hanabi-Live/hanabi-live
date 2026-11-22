@@ -269,6 +269,9 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
             goal: WINS,
         },
     },
+    players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
+    players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
+    players(AchievementId::FivePlayers10Wins, "High Five", 5),
     Definition {
         id: AchievementId::NoVariant100Wins,
         name: "Core Mastery",
@@ -383,9 +386,6 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         VariantRule::ThrowItInAHole,
     ),
     rule(AchievementId::Sudoku10Wins, "Gridlock", VariantRule::Sudoku),
-    players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
-    players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
-    players(AchievementId::FivePlayers10Wins, "High Five", 5),
     Definition {
         id: AchievementId::NoVariant5Streak,
         name: "On a Roll",
@@ -1124,14 +1124,27 @@ mod tests {
             [(1, first.clone()), (1, three.clone())]
         );
         let mut connection = pool.acquire().await.unwrap();
+        let of = |achievements: &[Achievement], id: AchievementId| {
+            achievements
+                .iter()
+                .find(|achievement| achievement.id == id)
+                .unwrap()
+                .clone()
+        };
         let alice = achievements(&mut connection, 1).await.unwrap();
+        let alice_first = of(&alice, AchievementId::NoVariant10Wins);
         assert_eq!(
-            alice[0].date_unlocked.as_ref().unwrap().as_str(),
+            alice_first.date_unlocked.as_ref().unwrap().as_str(),
             "2026-01-11T01:00:00.000Z"
         );
         // Alice, Bob, Dave, Erin, and Frank each have the streak, and only Alice has 10 wins.
-        assert!((alice[0].unlocked_percentage - 100.0 / 5.0).abs() < 1e-9);
-        assert!(alice[1].unlocked_percentage.abs() < f64::EPSILON);
+        assert!((alice_first.unlocked_percentage - 100.0 / 5.0).abs() < 1e-9);
+        assert!(
+            of(&alice, AchievementId::NoVariant100Wins)
+                .unlocked_percentage
+                .abs()
+                < f64::EPSILON
+        );
         // Bob wins 5 more games with Alice. After the games, both of them have the achievement,
         // and Alice has 15 wins.
         win(pool, 11, 5, &[2, 1, 7]).await;
@@ -1146,10 +1159,14 @@ mod tests {
             ]
         );
         let bob = achievements(&mut connection, 2).await.unwrap();
-        assert_eq!(bob[0].progress.get(), WINS);
-        assert_eq!(bob[1].progress.get(), WINS);
+        let bob_first = of(&bob, AchievementId::NoVariant10Wins);
+        assert_eq!(bob_first.progress.get(), WINS);
+        assert_eq!(
+            of(&bob, AchievementId::NoVariant100Wins).progress.get(),
+            WINS
+        );
         // Gina now has the streak too, and Bob has 10 wins.
-        assert!((bob[0].unlocked_percentage - 100.0 * 2.0 / 6.0).abs() < 1e-9);
+        assert!((bob_first.unlocked_percentage - 100.0 * 2.0 / 6.0).abs() < 1e-9);
         drop(connection);
         db.close().await;
     }

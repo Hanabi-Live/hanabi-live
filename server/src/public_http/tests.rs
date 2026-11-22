@@ -982,12 +982,20 @@ async fn profile_counts_wins_toward_achievements() {
     assert_eq!(status, StatusCode::OK, "{body}");
     let scores = serde_json::from_str::<Value>(&body).unwrap();
     hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
-    let achievement = &scores["achievements"][0];
+    let of = |scores: &Value, id: &str| {
+        scores["achievements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|achievement| achievement["id"] == id)
+            .unwrap()
+            .clone()
+    };
+    let achievement = of(&scores, "noVariant10Wins");
     assert_eq!(achievement["progress"], 10);
     assert_eq!(achievement["dateUnlocked"], "2026-02-18T01:00:00.000Z");
     // The 11 wins count toward the next achievement, which they do not unlock.
-    let achievement = &scores["achievements"][1];
-    assert_eq!(achievement["id"], "noVariant100Wins");
+    let achievement = of(&scores, "noVariant100Wins");
     assert_eq!(achievement["progress"], 11);
     assert!(achievement.get("dateUnlocked").is_none());
     // A game with another number of players does not break a streak, even in the same variant.
