@@ -4,7 +4,7 @@
   html5up.net | @ajlkn
   Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html lang="en">
+<html lang="en" {% block html_attributes %}{% endblock %}>
   <head>
     <title>
       {% if isDev %} Test {% else %} {{ projectName }} {% if title != "Main" %}
@@ -70,6 +70,7 @@
       sizes="16x16"
       href="/public/img/favicon-16x16.png"
     />
+    {% block head %}{% endblock %}
   </head>
 
   <body>

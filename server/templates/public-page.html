@@ -1,4 +1,11 @@
-{% extends "layout.html" %}{% block body %}
+{% extends "layout.html" %}{# A player's pages keep room for the scroll bar from
+the first paint, so that a page does not move sideways when it grows taller than
+the window, or when another tab is shorter. The stylesheet that has the page's
+other rules can load after the first paint. #}{% block html_attributes %}{% if
+name is defined and namesTitle is undefined %}style="scrollbar-gutter: stable"{%
+endif %}{% endblock %}{% block head %}{% if table or page == "password-reset"
+%}{% include "public-page-scripts.html" %}{% endif %}{% endblock %}{% block body
+%}
 <div id="page-wrapper">
   <header id="header">
     <h1><a href="/">{% include "logo.html" %}</a></h1>
@@ -54,5 +61,4 @@
     </div>
   </section>
 </div>
-{% if table or page == "password-reset" %}{% include "public-page-scripts.html"
-%}{% endif %} {% endblock %}
+{% endblock %}

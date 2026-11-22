@@ -1,8 +1,18 @@
+<!--
+  The script draws the page's content. It blocks the first paint until it has run, so that the page
+  appears with its content, instead of without it for a moment. It is in the head, since only a
+  script there can block the first paint, and "defer" runs it once the page is parsed.
+-->
 {% if isDev %} {% include "vite-dev.html" %}
 <script
   type="module"
+  blocking="render"
   src="http://localhost:5173/src/publicPages/index.tsx"
 ></script>
 {% else %}
-<script src="/public/js/bundles/public-pages.min.js?{{ version }}"></script>
+<script
+  defer
+  blocking="render"
+  src="/public/js/bundles/public-pages.min.js?{{ version }}"
+></script>
 {% endif %}

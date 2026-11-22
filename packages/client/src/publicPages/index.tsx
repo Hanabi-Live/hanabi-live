@@ -10,6 +10,7 @@ import "../zodConfig.ts"; // eslint-disable-line import-x/no-unassigned-import
 
 import { publicPageTableSchema } from "@hanabi-live/data";
 import { StrictMode } from "react";
+import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { loadCachedReducedMotion } from "../reducedMotionCache.ts";
 import { store } from "../store.ts";
@@ -43,11 +44,16 @@ function renderTable() {
     JSON.parse(container.dataset["table"] ?? ""),
   );
 
-  createRoot(container).render(
-    <StrictMode>
-      <PublicPageTable table={table} />
-    </StrictMode>,
-  );
+  // Draw at once, while the script still blocks the first paint (see "public-page-scripts.html"),
+  // so that the page appears with its content.
+  const root = createRoot(container);
+  flushSync(() => {
+    root.render(
+      <StrictMode>
+        <PublicPageTable table={table} />
+      </StrictMode>,
+    );
+  });
 }
 
 /**

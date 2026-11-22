@@ -1,4 +1,5 @@
-{% extends "layout.html" %}{% block body %}
+{% extends "layout.html" %}{% block head %}{% include "public-page-scripts.html"
+%}{% endblock %}{% block body %}
 
 <div id="page-wrapper">
   <!-- Header -->
@@ -21,4 +22,4 @@
   </section>
 </div>
 
-{% include "public-page-scripts.html" %} {% endblock %}
+{% endblock %}
