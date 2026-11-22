@@ -229,7 +229,8 @@ async fn reject_get_bodies(request: Request, next: Next) -> Response {
 }
 
 /// Posts HTTP server errors to the error alerts. Error responses carry their report (see
-/// `Report::response`), so only failures the server reported are posted.
+/// `Report::response`), so only failures the server reported are posted. A drain cancels the
+/// running lobby reads on purpose, so those cancellations are not posted.
 async fn alert_server_errors(
     State(app): State<Arc<App>>,
     request: Request,
@@ -238,6 +239,8 @@ async fn alert_server_errors(
     let response = next.run(request).await;
     if response.status().is_server_error()
         && let Some(report) = response.extensions().get::<crate::errors::Report>()
+        && !(report.code == hanabi_protocol::NoticeCode::DatabaseQueryCancelled
+            && app.lifecycle.read_shutdown.is_cancelled())
     {
         app.alert(report);
     }
