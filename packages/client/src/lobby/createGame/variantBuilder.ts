@@ -279,7 +279,9 @@ function readParts(): Parts {
 
 /** What a suit does in a game, for its tooltip. */
 export function getSuitDescription(suit: Suit): string {
-  const sentences = [getClueText(suit, "its cards")];
+  const sentences = [
+    getSharedColorText(suit) ?? getClueText(suit, "its cards"),
+  ];
   if (suit.oneOfEach) {
     sentences.push("It has one card of each rank, so every card is critical.");
   }
@@ -291,27 +293,71 @@ export function getSuitDescription(suit: Suit): string {
   return sentences.join(" ");
 }
 
+/** The most suits that share a color that a tooltip names. */
+const MAX_NAMED_SUITS = 3;
+
+/**
+ * For a suit that takes the clues of colors other than its own, such as Tomato (Red) or Tangerine
+ * (Red and Yellow), why a variant uses it: color clues touch other suits too, so they do not tell
+ * the suits apart. A dark suit takes the color of its light suit, so it is left out.
+ */
+function getSharedColorText(suit: Suit): string | undefined {
+  const colors = suit.clueColors.map(({ name }) => name);
+  if (
+    suit.allClueColors
+    || suit.noClueColors
+    || suit.prism
+    || suit.oneOfEach
+    || colors.length === 0
+    || colors.includes(suit.name)
+  ) {
+    return undefined;
+  }
+  const ranks = getRankText(suit, "its cards");
+  const [color] = colors;
+  if (color === undefined || colors.length > 1) {
+    return `${joinNames(colors)} clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can. ${ranks}`;
+  }
+  const others = [...getSuitsById().values()]
+    .filter(
+      (other) =>
+        other.name !== suit.name
+        && !other.oneOfEach
+        && other.clueColors.length === 1
+        && other.clueColors[0]?.name === color,
+    )
+    .slice(0, MAX_NAMED_SUITS)
+    .map(({ name }) => name);
+  const shade = color.toLowerCase();
+  return `${color} clues touch its cards, and the cards of other ${shade} suits, such as ${joinNames(others)}. With two ${shade} suits in a game, a ${color} clue cannot tell them apart, so the players must find the suit another way. ${ranks}`;
+}
+
 /** Which clues touch the cards of a suit, as sentences about `cards`, such as "its cards". */
 function getClueText(suit: Suit, cards: string): string {
-  let colors: string;
+  return `${getColorText(suit, cards)} ${getRankText(suit, cards)}`;
+}
+
+function getColorText(suit: Suit, cards: string): string {
   if (suit.allClueColors) {
-    colors = `Every color clue touches ${cards}.`;
-  } else if (suit.noClueColors) {
-    colors = `No color clue touches ${cards}.`;
-  } else if (suit.prism) {
-    colors = `Each color touches one rank of ${cards}: the first color the 1s, the second color the 2s, and so on.`;
-  } else {
-    colors = `${joinNames(suit.clueColors.map(({ name }) => name))} clues touch ${cards}.`;
+    return `Every color clue touches ${cards}.`;
   }
-  let ranks: string;
+  if (suit.noClueColors) {
+    return `No color clue touches ${cards}.`;
+  }
+  if (suit.prism) {
+    return `Each color touches one rank of ${cards}: the first color the 1s, the second color the 2s, and so on.`;
+  }
+  return `${joinNames(suit.clueColors.map(({ name }) => name))} clues touch ${cards}.`;
+}
+
+function getRankText(suit: Suit, cards: string): string {
   if (suit.allClueRanks) {
-    ranks = `Every rank clue touches ${cards}.`;
-  } else if (suit.noClueRanks) {
-    ranks = `No rank clue touches ${cards}.`;
-  } else {
-    ranks = `Rank clues touch ${cards} as usual.`;
+    return `Every rank clue touches ${cards}.`;
   }
-  return `${colors} ${ranks}`;
+  if (suit.noClueRanks) {
+    return `No rank clue touches ${cards}.`;
+  }
+  return `Rank clues touch ${cards} as usual.`;
 }
 
 /** Names joined as in a sentence, such as "Red, Yellow, and Blue". */
