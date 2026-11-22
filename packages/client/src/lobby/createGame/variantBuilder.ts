@@ -65,24 +65,86 @@ const SPECIAL_SUIT_IDS = new ReadonlySet([
 const DARK_SUFFIX = `${RECIPE_SUIT_FLAG_SEPARATOR}dark`;
 const REVERSED_FLAG = "rev";
 
-/** The rules that take no rank, with their names, in the order that a recipe writes them. */
-const FLAG_NAMES = {
-  starved: "Clue Starved",
-  cb: "Color Blind",
-  nb: "Number Blind",
-  cm: "Color Mute",
-  nm: "Number Mute",
-  alt: "Alternating Clues",
-  cowpig: "Cow and Pig",
-  duck: "Duck",
-  oe: "Odds and Evens",
-  syn: "Synesthesia",
-  updown: "Up or Down",
-  hole: "Throw It in a Hole",
-  funnels: "Funnels",
-  chimneys: "Chimneys",
-  sudoku: "Sudoku",
-} as const satisfies Record<RecipeFlag, string>;
+/** The rules that take no rank, with their names and what they do. */
+const FLAGS = {
+  starved: {
+    name: "Clue Starved",
+    description:
+      "A discard or a finished stack gives back half a clue. The team still starts with 8 clues.",
+  },
+  cb: {
+    name: "Color Blind",
+    description:
+      "Color clues touch no cards. A player can give a color clue that touches nothing.",
+  },
+  nb: {
+    name: "Number Blind",
+    description:
+      "Rank clues touch no cards. A player can give a rank clue that touches nothing.",
+  },
+  cm: {
+    name: "Color Mute",
+    description: "No one can give a color clue.",
+  },
+  nm: {
+    name: "Number Mute",
+    description: "No one can give a rank clue.",
+  },
+  alt: {
+    name: "Alternating Clues",
+    description:
+      "After the first clue, each clue must be of the other type than the clue before it: color, then rank, then color.",
+  },
+  cowpig: {
+    name: "Cow and Pig",
+    description:
+      'A clue shows the cards that it touches, and only "moo" for a color clue or "oink" for a rank clue.',
+  },
+  duck: {
+    name: "Duck",
+    description:
+      'A clue shows the cards that it touches, and only "quack". It does not tell its color or rank.',
+  },
+  oe: {
+    name: "Odds and Evens",
+    description:
+      'The only rank clues are "odd", which touches 1s, 3s, and 5s, and "even", which touches 2s and 4s.',
+  },
+  syn: {
+    name: "Synesthesia",
+    description:
+      "There are no rank clues. Each color clue also touches one rank: the first color touches the 1s, the second color the 2s, and so on.",
+  },
+  updown: {
+    name: "Up or Down",
+    description:
+      "Each stack starts with a 1, a 5, or a START card, and goes up or down from there. Each suit has one 1 and one START card.",
+  },
+  hole: {
+    name: "Throw It in a Hole",
+    description:
+      "Played cards stay face down, so the score shows only at the end. A 5 gives back no clue. Three strikes end the game.",
+  },
+  funnels: {
+    name: "Funnels",
+    description: "A rank clue also touches every card of a lower rank.",
+  },
+  chimneys: {
+    name: "Chimneys",
+    description: "A rank clue also touches every card of a higher rank.",
+  },
+  sudoku: {
+    name: "Sudoku",
+    description:
+      "A stack can start at any rank and wraps around, but no two stacks start at the same rank. Each card has two copies, and there are as many ranks as suits.",
+  },
+} as const satisfies Record<
+  RecipeFlag,
+  {
+    readonly name: string;
+    readonly description: string;
+  }
+>;
 
 /** The flags about clues. The others change how cards are played. */
 const CLUE_FLAGS = new ReadonlySet<RecipeFlag>([
@@ -114,11 +176,13 @@ interface SpecialRankRule {
   /** The suit's ID, or the code of Deceptive. */
   readonly code: string;
   readonly name: string;
+  readonly description: string;
 }
 
 export interface FlagPart {
   readonly flag: RecipeFlag;
   readonly name: string;
+  readonly description: string;
 }
 
 /** The parts that a variant can have. */
@@ -190,17 +254,20 @@ function readParts(): Parts {
       specialRanks.push({
         code: id,
         name: suit.displayName,
+        description: `The cards of one rank are touched like ${suit.displayName} cards. ${getClueText(suit, "them")}`,
       });
     }
   }
   specialRanks.push({
     code: RECIPE_DECEPTIVE_RANK,
     name: "Deceptive",
+    description:
+      "The clue of their own rank does not touch the cards of one rank. Instead, one other rank clue touches each of them: the lowest for the first suit, the next for the second suit, and so on.",
   });
 
   const flags = recipeFlagSchema.options.map((flag) => ({
     flag,
-    name: FLAG_NAMES[flag],
+    ...FLAGS[flag],
   }));
   return {
     suits,
@@ -209,6 +276,59 @@ function readParts(): Parts {
     playFlags: flags.filter(({ flag }) => !CLUE_FLAGS.has(flag)),
   };
 }
+
+/** What a suit does in a game, for its tooltip. */
+export function getSuitDescription(suit: Suit): string {
+  const sentences = [getClueText(suit, "its cards")];
+  if (suit.oneOfEach) {
+    sentences.push("It has one card of each rank, so every card is critical.");
+  }
+  if (suit.inverted) {
+    sentences.push(
+      "Playing one of its cards discards it, and discarding one plays it.",
+    );
+  }
+  return sentences.join(" ");
+}
+
+/** Which clues touch the cards of a suit, as sentences about `cards`, such as "its cards". */
+function getClueText(suit: Suit, cards: string): string {
+  let colors: string;
+  if (suit.allClueColors) {
+    colors = `Every color clue touches ${cards}.`;
+  } else if (suit.noClueColors) {
+    colors = `No color clue touches ${cards}.`;
+  } else if (suit.prism) {
+    colors = `Each color touches one rank of ${cards}: the first color the 1s, the second color the 2s, and so on.`;
+  } else {
+    colors = `${joinNames(suit.clueColors.map(({ name }) => name))} clues touch ${cards}.`;
+  }
+  let ranks: string;
+  if (suit.allClueRanks) {
+    ranks = `Every rank clue touches ${cards}.`;
+  } else if (suit.noClueRanks) {
+    ranks = `No rank clue touches ${cards}.`;
+  } else {
+    ranks = `Rank clues touch ${cards} as usual.`;
+  }
+  return `${colors} ${ranks}`;
+}
+
+/** Names joined as in a sentence, such as "Red, Yellow, and Blue". */
+function joinNames(names: readonly string[]): string {
+  return names.length <= 2
+    ? names.join(" and ")
+    : `${names.slice(0, -1).join(", ")}, and ${names.at(-1)}`;
+}
+
+export const REVERSED_DESCRIPTION =
+  "The suit plays from 5 down to 1. It has one 1 and three 5s.";
+
+export function getCriticalDescription(rank: number): string {
+  return `Each suit has one ${rank}, so every ${rank} is critical.`;
+}
+
+export const SCARCE_ONES_DESCRIPTION = "Each suit has two 1s instead of three.";
 
 function getSuitGroup(id: string): SuitGroup {
   if (id.endsWith(DARK_SUFFIX)) {

@@ -6,16 +6,21 @@ import { getVariant, MAX_SUITS, VALID_SUIT_INDEXES } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type { Choice, FlagPart, SuitGroup } from "./variantBuilder.ts";
 import {
   canAddSuit,
   getCatalogName,
   getChoice,
+  getCriticalDescription,
   getDeckSuitIds,
   getDeckVariant,
   getParts,
   getRecipe,
+  getSuitDescription,
+  REVERSED_DESCRIPTION,
   RULE_RANKS,
+  SCARCE_ONES_DESCRIPTION,
   setNumSuits,
   setSpecialRank,
   toggleCriticalRank,
@@ -138,6 +143,7 @@ export function VariantBuilder({
                 }}
                 pressed={choice.suits.includes(id)}
                 suit={suit}
+                tooltip={getSuitDescription(suit)}
               />
             ))}
         </PartRow>
@@ -156,12 +162,13 @@ export function VariantBuilder({
             }}
             pressed={choice.reversed.has(id)}
             suit={deck.suits[index]}
+            tooltip={REVERSED_DESCRIPTION}
           />
         ))}
       </PartRow>
 
       <PartRow label="Special rank">
-        {parts.specialRanks.map(({ code, name }) => (
+        {parts.specialRanks.map(({ code, name, description }) => (
           <Chip
             enabled
             key={code}
@@ -172,6 +179,7 @@ export function VariantBuilder({
               choose(toggleSpecialRule(choice, code));
             }}
             pressed={choice.specialRank?.code === code}
+            tooltip={description}
           />
         ))}
       </PartRow>
@@ -188,6 +196,7 @@ export function VariantBuilder({
                 choose(setSpecialRank(choice, rank));
               }}
               pressed={choice.specialRank?.rank === rank}
+              tooltip={`The rule above changes the ${rank}s.`}
             />
           ))}
         </PartRow>
@@ -203,6 +212,7 @@ export function VariantBuilder({
               choose(toggleCriticalRank(choice, rank));
             }}
             pressed={choice.criticalRank === rank}
+            tooltip={getCriticalDescription(rank)}
           />
         ))}
         <Chip
@@ -212,6 +222,7 @@ export function VariantBuilder({
             choose(toggleScarceOnes(choice));
           }}
           pressed={choice.scarceOnes}
+          tooltip={SCARCE_ONES_DESCRIPTION}
         />
       </PartRow>
 
@@ -244,7 +255,7 @@ function FlagRow({
 }) {
   return (
     <PartRow label={label}>
-      {flags.map(({ flag, name }) => (
+      {flags.map(({ flag, name, description }) => (
         <Chip
           enabled
           key={flag}
@@ -253,6 +264,7 @@ function FlagRow({
             choose(toggleFlag(choice, flag));
           }}
           pressed={choice.flags.has(flag)}
+          tooltip={description}
         />
       ))}
     </PartRow>
@@ -327,6 +339,7 @@ function Chip({
   onClick,
   pressed,
   suit,
+  tooltip,
 }: {
   readonly enabled: boolean;
   readonly label: string;
@@ -335,6 +348,8 @@ function Chip({
   readonly onClick: () => void;
   readonly pressed: boolean;
   readonly suit?: Suit | undefined;
+  /** What the part does. The tooltip waits for the pointer to rest on the chip. */
+  readonly tooltip?: string;
 }) {
   return (
     <button
@@ -347,6 +362,7 @@ function Chip({
       }`}
       disabled={!enabled}
       onClick={onClick}
+      ref={tooltipRef(tooltip)}
       type="button"
     >
       {suit !== undefined && (

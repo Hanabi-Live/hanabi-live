@@ -1,4 +1,4 @@
-import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
+import { getSuit, getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import type { Choice } from "./variantBuilder.ts";
 import {
@@ -6,6 +6,7 @@ import {
   getChoice,
   getParts,
   getRecipe,
+  getSuitDescription,
   setNumSuits,
   setSpecialRank,
   toggleFlag,
@@ -87,5 +88,17 @@ describe("variant builder", () => {
     expect(
       [...parts.clueFlags, ...parts.playFlags].map(({ name }) => name),
     ).toContain("Cow and Pig");
+  });
+
+  test("describes each suit from its rules", () => {
+    expect(getSuitDescription(getSuit("Rainbow"))).toBe(
+      "Every color clue touches its cards. Rank clues touch its cards as usual.",
+    );
+    expect(getSuitDescription(getSuit("Black"))).toBe(
+      "Black clues touch its cards. Rank clues touch its cards as usual. It has one card of each rank, so every card is critical.",
+    );
+    expect(getSuitDescription(getSuit("Tangerine"))).toBe(
+      "Red and Yellow clues touch its cards. Rank clues touch its cards as usual.",
+    );
   });
 });
