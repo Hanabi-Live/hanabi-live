@@ -105,26 +105,16 @@ export function VariantBuilder({
       </div>
 
       <PartRow label="Suits">
-        <Chip
-          enabled
-          label="Any"
-          onClick={() => {
-            choose({
-              ...choice,
-              numSuits: undefined,
-            });
-          }}
-          pressed={choice.numSuits === undefined}
-        />
         {catalog.suitCounts.map((numSuits) => (
           <Chip
             enabled={canHaveSuits(catalog, choice, numSuits)}
             key={numSuits}
             label={numSuits.toString()}
             onClick={() => {
+              // A second click removes the count, which matches any count.
               choose({
                 ...choice,
-                numSuits,
+                numSuits: choice.numSuits === numSuits ? undefined : numSuits,
               });
             }}
             pressed={choice.numSuits === numSuits}
