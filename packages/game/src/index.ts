@@ -30,6 +30,7 @@ export type * from "./interfaces/TurnState.ts";
 export type * from "./interfaces/Variant.ts";
 export type * from "./interfaces/VariantDescription.ts";
 export type * from "./interfaces/VariantJson.ts";
+export type * from "./interfaces/VariantRules.ts";
 export * from "./metadata.ts";
 export * from "./notes.ts";
 export * from "./reducers/cardDeductionReducer.ts";

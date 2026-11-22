@@ -4,6 +4,9 @@ import {
   authorNotesSchema,
   cardIdentitySchema,
   cardOrderSchema,
+  catalogColorSchema,
+  catalogSuitSchema,
+  catalogVariantSchema,
   characterIdSchema,
   clueRankSchema,
   clueSchema,
@@ -505,6 +508,24 @@ const characterAssignmentSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * The rules of a variant, from which a client builds it: its entry, as `variants.json` writes
+ * it, and the entries of the suits and colors that it uses. A client needs no catalog to build it.
+ */
+const variantRulesSchema = z
+  .strictObject({
+    /**
+     * The colors that the suits and the clues use.
+     */
+    colors: z.array(catalogColorSchema).readonly(),
+    /**
+     * Each suit of the variant once, without its reversed version, which the client derives.
+     */
+    suits: z.array(catalogSuitSchema).min(1).max(6).readonly(),
+    variant: catalogVariantSchema,
+  })
+  .readonly();
+
+/**
  * How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
  * the recipient sees the game from.
  */
@@ -592,6 +613,10 @@ export const gameInitSchema = z
      */
     seed: z.string().min(1).optional(),
     startedAt: z.iso.datetime({ precision: 3 }),
+    /**
+     * The rules of the variant that `options.variantId` names.
+     */
+    variant: variantRulesSchema,
   })
   .readonly();
 

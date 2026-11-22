@@ -3,7 +3,7 @@ use crate::{ClueType, int};
 use anyhow::{Result, anyhow, ensure};
 use hanabi_protocol::{
     CatalogColor, CatalogSuit, CatalogVariant, EVEN_RANK_CLUE, MAX_RANK, MIN_RANK, ODD_RANK_CLUE,
-    START_CARD_RANK,
+    START_CARD_RANK, VariantRules,
 };
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -209,19 +209,32 @@ fn check_recipe(entry: &CatalogVariant, suits: &RecipeSuits) {
     );
 }
 
+fn catalog_colors() -> &'static [CatalogColor] {
+    static DATA: OnceLock<Vec<CatalogColor>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        catalog(
+            "colors.json",
+            include_str!("../../../packages/game/src/json/colors.json"),
+        )
+    })
+}
+
+fn catalog_suits() -> &'static [CatalogSuit] {
+    static DATA: OnceLock<Vec<CatalogSuit>> = OnceLock::new();
+    DATA.get_or_init(|| {
+        catalog(
+            "suits.json",
+            include_str!("../../../packages/game/src/json/suits.json"),
+        )
+    })
+}
+
 /// The suits of `suits.json`, each with its ID.
 pub(crate) fn suits_by_id() -> Vec<(String, Suit)> {
-    let colors: Vec<CatalogColor> = catalog(
-        "colors.json",
-        include_str!("../../../packages/game/src/json/colors.json"),
-    );
-    catalog::<CatalogSuit>(
-        "suits.json",
-        include_str!("../../../packages/game/src/json/suits.json"),
-    )
-    .into_iter()
-    .map(|entry| (entry.id.clone(), suit(entry, &colors)))
-    .collect()
+    catalog_suits()
+        .iter()
+        .map(|entry| (entry.id.clone(), suit(entry.clone(), catalog_colors())))
+        .collect()
 }
 
 /// The suits that recipes use: by name, including each suit's reversed version, and by ID.
@@ -256,6 +269,48 @@ fn build_variant(recipe: &str, id: u32, name: &str) -> Result<Variant> {
     fields.insert("name".into(), name.into());
     let entry: CatalogVariant = hanabi_protocol::decode(&Value::Object(fields))?;
     Ok(variant(entry, &data.by_name))
+}
+
+/// The variant's entry as `variants.json` writes it, from its recipe.
+fn catalog_entry(variant: &Variant) -> Result<CatalogVariant> {
+    let mut fields = recipe::catalog_fields(&variant.recipe, &recipe_data().by_id)?;
+    fields.insert("id".into(), variant.id.into());
+    fields.insert("recipe".into(), variant.recipe.as_str().into());
+    fields.insert("name".into(), variant.name.as_str().into());
+    hanabi_protocol::decode(&Value::Object(fields))
+}
+
+/// The rules that a client builds a variant from. See `VariantRules`.
+pub fn variant_rules(variant: &Variant) -> Result<VariantRules> {
+    let mut suits: Vec<CatalogSuit> = Vec::new();
+    for suit in &variant.suits {
+        if suits.iter().all(|entry| entry.name != suit.name) {
+            let entry = catalog_suits()
+                .iter()
+                .find(|entry| entry.name == suit.name)
+                .ok_or_else(|| anyhow!("There is no suit named {}", suit.name))?;
+            suits.push(entry.clone());
+        }
+    }
+    // A suit takes the color of its own name, unless it lists its clue colors.
+    let used: HashSet<&str> = suits
+        .iter()
+        .flat_map(|entry| {
+            std::iter::once(entry.name.as_str())
+                .chain(entry.clue_colors.iter().flatten().map(String::as_str))
+        })
+        .chain(variant.clue_colors.iter().map(String::as_str))
+        .collect();
+    let colors = catalog_colors()
+        .iter()
+        .filter(|color| used.contains(color.name.as_str()))
+        .cloned()
+        .collect();
+    Ok(VariantRules {
+        variant: catalog_entry(variant)?,
+        suits,
+        colors,
+    })
 }
 
 /// The variant that a recipe describes. It fails for a recipe whose parts do not work together, or

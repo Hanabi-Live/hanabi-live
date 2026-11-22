@@ -3,13 +3,16 @@ import type { catalogColorSchema } from "./generated/protocol.ts";
 import type { Color } from "./interfaces/Color.ts";
 import colorsJson from "./json/colors.json" with { type: "json" };
 
-export function colorsInit(): ReadonlyMap<string, Color> {
+/**
+ * The colors of `colors.json`, or of the entries given, such as the colors of a variant's rules
+ * from the server.
+ */
+export function colorsInit(
+  // A test validates the file against the server's catalog contract.
+  entries: ReadonlyArray<z.infer<typeof catalogColorSchema>> = colorsJson,
+): ReadonlyMap<string, Color> {
   const colors = new Map<string, Color>();
 
-  // A test validates the file against the server's catalog contract.
-  const entries = colorsJson as ReadonlyArray<
-    z.infer<typeof catalogColorSchema>
-  >;
   for (const colorJson of entries) {
     const { fill, name } = colorJson;
 

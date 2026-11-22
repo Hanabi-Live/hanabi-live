@@ -114,6 +114,19 @@ catalog_entry! {
     }
 }
 
+/// The rules of a variant, from which a client builds it: its entry, as `variants.json` writes
+/// it, and the entries of the suits and colors that it uses. A client needs no catalog to build it.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct VariantRules {
+    pub variant: CatalogVariant,
+    /// Each suit of the variant once, without its reversed version, which the client derives.
+    #[schemars(length(min = 1, max = MAX_SUITS))]
+    pub suits: Vec<CatalogSuit>,
+    /// The colors that the suits and the clues use.
+    pub colors: Vec<CatalogColor>,
+}
+
 catalog_entry! {
     /// An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
     #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
