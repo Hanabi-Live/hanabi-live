@@ -571,7 +571,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "/tags/Alice",
         "/seed/same",
         "/tag/mine",
-        "/missing-scores/Alice/2",
         "/shared-missing-scores/2/Alice/Bob",
     ] {
         let (status, body) = request(app.clone(), path).await;
@@ -591,7 +590,11 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(page_table(&body)["list"], "history");
     // A max score with an option that makes it easier is missing, and names the option.
     let missing_no_variant = async || {
-        let (_, body) = request(app.clone(), "/missing-scores/Alice/2").await;
+        let (_, body) = request(
+            app.clone(),
+            "/shared-missing-scores/2/Alice/Bob?excludePlayers=Bob",
+        )
+        .await;
         page_table(&body)["rows"]
             .as_array()
             .unwrap()
@@ -649,7 +652,11 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             .map(|row| row["variantName"].clone())
             .collect()
     };
-    let (_, body) = request(app.clone(), "/missing-scores/Alice/2").await;
+    let (_, body) = request(
+        app.clone(),
+        "/shared-missing-scores/2/Alice/Bob?excludePlayers=Bob",
+    )
+    .await;
     assert!(!missing_variants(&body).contains(&json!("No Variant")));
     let (_, body) = request(
         app.clone(),
@@ -715,11 +722,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/scores/Alice?api=1", 400, "takes no value"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
         ("/lobby?login=", 400, "cannot be empty"),
-        (
-            "/missing-scores/Alice?excludePlayers=Bob",
-            400,
-            "takes no parameters",
-        ),
         ("/api/v1/seed/no-games/stats", 404, "has no games"),
         (
             format!("/api/v1/seed/same?limit={}", MAX_API_PAGE_LIMIT + 1).as_str(),

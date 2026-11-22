@@ -1,13 +1,10 @@
-// The filters of the missing scores pages. They are query parameters, which keeps the URL
+// The filters of the shared missing scores page. They are query parameters, which keeps the URL
 // shareable, so the page reloads to apply them.
 
 import type { publicPageTableSchema } from "@hanabi-live/data";
-import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
-import { iRange } from "complete-common";
 import { useState } from "react";
 import type * as z from "zod";
 import { getFadeStyle, useRevealClassName } from "../fade.ts";
-import { Select } from "../Select.tsx";
 import { store } from "../store.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 
@@ -15,65 +12,17 @@ type Filters = Extract<
   z.infer<typeof publicPageTableSchema>,
   { type: "missingScores" }
 >["filters"];
-type SharedFilters = Extract<Filters, { type: "shared" }>;
 
+/**
+ * The page can leave out some of its players, some variants, and the max scores outside of a range
+ * of efficiencies. For example,
+ * "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5".
+ */
 export function MissingScoresFilters({
   filters,
 }: {
   readonly filters: Filters;
 }): React.JSX.Element {
-  return filters.type === "player" ? (
-    <PlayerCountFilter filters={filters} />
-  ) : (
-    <SharedFiltersForm filters={filters} />
-  );
-}
-
-/** A player's page shows the variants at one player count, or at all of them. */
-function PlayerCountFilter({
-  filters,
-}: {
-  readonly filters: Extract<Filters, { type: "player" }>;
-}) {
-  const item = "tw:h-12 tw:leading-12";
-  return (
-    <>
-      <ul className="horizontal">
-        <li className={item}>Filter by # of Players</li>
-        <li className={item}>
-          <Select
-            aria-label="Number of players"
-            defaultValue={filters.numPlayers ?? ""}
-            onChange={(event) => {
-              const path = `/missing-scores/${encodeURIComponent(filters.name)}`;
-              const { value } = event.target;
-              globalThis.location.assign(
-                value === "" ? path : `${path}/${value}`,
-              );
-            }}
-          >
-            <option value="">-</option>
-            {Array.from(iRange(MIN_PLAYERS, MAX_PLAYERS), (players) => (
-              <option key={players} value={players}>
-                {players}-Players
-              </option>
-            ))}
-          </Select>
-        </li>
-      </ul>
-      <br />
-      <br />
-      <br />
-    </>
-  );
-}
-
-/**
- * The page of several players can leave out some of them, some variants, and the max scores outside
- * of a range of efficiencies. For example,
- * "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5".
- */
-function SharedFiltersForm({ filters }: { readonly filters: SharedFilters }) {
   const [open, setOpen] = useState(filters.active);
   const filtersClass = useRevealClassName(open);
   const [included, setIncluded] = useState(

@@ -1331,33 +1331,20 @@ const missingScoresPlayerSchema = z
 
 /**
  * The filters of a missing scores page. They are query parameters, so the page reloads to apply
- * them.
+ * them. The text filters are as the address gives them.
  */
-const missingScoresFiltersSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      name: z.string().min(1),
-      /**
-       * Absent when the page shows every player count.
-       */
-      numPlayers: numPlayersSchema.optional(),
-      type: z.literal("player"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Whether any filter leaves out a player, a variant, or an efficiency.
-       */
-      active: z.boolean(),
-      excludeVariants: z.string(),
-      maxEfficiency: z.string(),
-      minEfficiency: z.string(),
-      players: z.array(missingScoresPlayerSchema).readonly(),
-      type: z.literal("shared"),
-    })
-    .readonly(),
-]);
+const missingScoresFiltersSchema = z
+  .strictObject({
+    /**
+     * Whether any filter leaves out a player, a variant, or an efficiency.
+     */
+    active: z.boolean(),
+    excludeVariants: z.string(),
+    maxEfficiency: z.string(),
+    minEfficiency: z.string(),
+    players: z.array(missingScoresPlayerSchema).readonly(),
+  })
+  .readonly();
 
 /**
  * A list of games on a public page, which the page loads from the matching `/api/v1` route.

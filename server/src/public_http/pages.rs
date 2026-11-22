@@ -142,24 +142,24 @@ pub(super) async fn page(
                 .map_or_else(HttpError::json, |game| Json(game).into_response()));
         }
         "password-reset" => v["title"] = json!("Password Reset"),
-        "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
-            let shared = mode == "shared-missing-scores";
-            let n = params.get("numPlayers").and_then(|n| integer(n));
-            if shared {
-                if n.is_none() {
-                    return Err(HttpError::bad(
-                        "You must first specify the number of players.",
-                    ));
-                }
-                if !n.is_some_and(hanabi_protocol::is_player_count) {
-                    return Err(HttpError::bad(format!(
-                        "Number of players must be between {} and {}.",
-                        hanabi_protocol::MIN_PLAYERS,
-                        hanabi_protocol::MAX_PLAYERS
-                    )));
-                }
+        "shared-missing-scores" => {
+            let Some(n) = params.get("numPlayers").and_then(|n| integer(n)) else {
+                return Err(HttpError::bad(
+                    "You must first specify the number of players.",
+                ));
+            };
+            if !hanabi_protocol::is_player_count(n) {
+                return Err(HttpError::bad(format!(
+                    "Number of players must be between {} and {}.",
+                    hanabi_protocol::MIN_PLAYERS,
+                    hanabi_protocol::MAX_PLAYERS
+                )));
             }
-            let users = data::players(&state, &params, shared || mode == "history").await?;
+            let users = data::players(&state, &params, true).await?;
+            return missing(&state, users, n, &q).await;
+        }
+        "scores" | "profile" | "history" | "tags" => {
+            let users = data::players(&state, &params, mode == "history").await?;
             v["name"] = json!(users[0].1);
             match mode {
                 "scores" | "profile" => {
@@ -205,7 +205,8 @@ pub(super) async fn page(
                             json!(format!("Game History for {}", names_title(&names)));
                     }
                 }
-                "tags" => {
+                // The tagged games.
+                _ => {
                     let api = format!("{API_PREFIX}/tags/{}", encoded(&users[0].1));
                     if api_redirect {
                         return Ok(Redirect::permanent(&api).into_response());
@@ -226,16 +227,6 @@ pub(super) async fn page(
                             },
                         )?;
                     }
-                }
-                _ => {
-                    return missing(
-                        &state,
-                        users,
-                        shared,
-                        n.filter(|n| hanabi_protocol::is_player_count(*n)),
-                        &q,
-                    )
-                    .await;
                 }
             }
         }
@@ -317,16 +308,6 @@ fn percentage(n: i64, total: i64) -> f64 {
         0.0
     } else {
         float(n) * 100.0 / float(total)
-    }
-}
-/// The decimal places that a percentage is shown with.
-const PERCENTAGE_DECIMALS: usize = 1;
-/// A percentage as the pages show it, without a fraction of zeros.
-fn format_percentage(percentage: f64) -> String {
-    let s = format!("{percentage:.PERCENTAGE_DECIMALS$}");
-    match s.split_once('.') {
-        Some((whole, fraction)) if fraction.bytes().all(|b| b == b'0') => whole.to_owned(),
-        _ => s,
     }
 }
 fn duration(seconds: i64) -> String {
@@ -640,16 +621,6 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<MaxScoreSummary> 
     })
 }
 
-/// A player's max scores as their profile shows them, with rounded percentages.
-fn summary_value(summary: &MaxScoreSummary) -> Result<Value> {
-    let mut v = serde_json::to_value(summary)?;
-    v["percentage"] = json!(format_percentage(summary.percentage));
-    for (row, count) in summary.per_type.iter().enumerate() {
-        v["perType"][row]["percentage"] = json!(format_percentage(count.percentage));
-    }
-    Ok(v)
-}
-
 /// The most comma-separated names that a missing-scores filter, such as `excludeVariants`, takes.
 pub(super) const MAX_FILTER_TERMS: usize = 100;
 /// The most characters that a missing-scores filter, such as `excludeVariants`, takes.
@@ -658,17 +629,15 @@ pub(super) const MAX_FILTER_LENGTH: usize = 1000;
 async fn missing(
     state: &PublicState,
     users: Vec<(i32, String)>,
-    shared: bool,
-    num_players: Option<i64>,
+    num_players: i64,
     q: &Query,
 ) -> Result<Response> {
-    if shared && users.len() < hanabi_protocol::MIN_PLAYERS {
+    if users.len() < hanabi_protocol::MIN_PLAYERS {
         return Err(HttpError::not_found(format!(
             "You must specify at least {} players.",
             hanabi_protocol::MIN_PLAYERS
         )));
     }
-    // Only the shared page takes these parameters, so they are absent from the others.
     let terms = |key| -> Result<Vec<String>> {
         let value = q.nonempty(key).map_err(HttpError::bad)?.unwrap_or("");
         let terms: Vec<&str> = value
@@ -717,14 +686,6 @@ async fn missing(
     if statistics.is_empty() {
         return Err(HttpError::bad("You can not exclude every player."));
     }
-    let counts = num_players.map_or_else(
-        || {
-            (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                .filter_map(|p| i64::try_from(p).ok())
-                .collect::<Vec<_>>()
-        },
-        |p| vec![p],
-    );
     // Each variant name is normalized once, not once for each term and player count.
     let variants: Vec<_> = catalog::variants()
         .iter()
@@ -734,89 +695,74 @@ async fn missing(
         })
         .collect();
     let mut rows = Vec::new();
-    for p in counts {
-        for variant in variants.iter().copied() {
-            let name = variant.name.as_str();
-            let id = i64::from(variant.id);
-            let max = i64::from(variant.max_score);
-            let seat_count = usize::try_from(p)? - hanabi_protocol::MIN_PLAYERS;
-            // The highest score among the users, with the fewest options that make it easier.
-            let mut best: Option<(i16, i16)> = None;
-            for score in statistics
-                .iter()
-                .filter_map(|s| s.get(&id)?.best_scores()[seat_count])
-            {
-                if best
-                    .is_none_or(|best| score.0 > best.0 || (score.0 == best.0 && score.1 < best.1))
-                {
-                    best = Some(score);
-                }
+    let p = num_players;
+    for variant in variants.iter().copied() {
+        let name = variant.name.as_str();
+        let id = i64::from(variant.id);
+        let max = i64::from(variant.max_score);
+        let seat_count = usize::try_from(p)? - hanabi_protocol::MIN_PLAYERS;
+        // The highest score among the users, with the fewest options that make it easier.
+        let mut best: Option<(i16, i16)> = None;
+        for score in statistics
+            .iter()
+            .filter_map(|s| s.get(&id)?.best_scores()[seat_count])
+        {
+            if best.is_none_or(|best| score.0 > best.0 || (score.0 == best.0 && score.1 < best.1)) {
+                best = Some(score);
             }
-            if best.is_some_and(|(score, modifier)| i64::from(score) == max && modifier == 0) {
-                continue;
-            }
-            let cards = i64::try_from(hanabi_engine::create_deck(variant).len())?;
-            let hand = i64::try_from(hanabi_engine::normal_hand_size(usize::try_from(p)?))?;
-            let stacks = i64::try_from(variant.suits.len())?;
-            let multiplier = i64::from(hanabi_engine::clue_cost_for(variant));
-            let finished = if variant.throw_it_in_a_hole {
-                0
-            } else {
-                stacks - p / i64::from(variant.stack_size) - 1
-            };
-            let clues = (i64::from(hanabi_protocol::MAX_CLUES) * multiplier + finished + cards
-                - (hand - 1) * p
-                - max)
-                / multiplier;
-            let efficiency = float(max) / float(clues);
-            // Filter on the value that is shown, so the bounds match what the user reads.
-            let shown = format!("{efficiency:.EFFICIENCY_DECIMALS$}");
-            let rounded: f64 = shown.parse()?;
-            if bounds[0].is_some_and(|min| rounded < min)
-                || bounds[1].is_some_and(|max| rounded > max)
-            {
-                continue;
-            }
-            rows.push(MissingScore {
-                variant_name: name.to_owned(),
-                num_players: NumPlayers::try_from(p)?,
-                score: best.map(|(score, _)| Score::try_from(score)).transpose()?,
-                max_score: Score::try_from(max)?,
-                modifier: best.and_then(|(_, modifier)| shown_modifier(modifier)),
-                efficiency: shown,
-                difficulty: if efficiency < HARD_EFFICIENCY {
-                    Difficulty::Normal
-                } else if efficiency < VERY_HARD_EFFICIENCY {
-                    Difficulty::Hard
-                } else {
-                    Difficulty::VeryHard
-                },
-            });
         }
+        if best.is_some_and(|(score, modifier)| i64::from(score) == max && modifier == 0) {
+            continue;
+        }
+        let cards = i64::try_from(hanabi_engine::create_deck(variant).len())?;
+        let hand = i64::try_from(hanabi_engine::normal_hand_size(usize::try_from(p)?))?;
+        let stacks = i64::try_from(variant.suits.len())?;
+        let multiplier = i64::from(hanabi_engine::clue_cost_for(variant));
+        let finished = if variant.throw_it_in_a_hole {
+            0
+        } else {
+            stacks - p / i64::from(variant.stack_size) - 1
+        };
+        let clues = (i64::from(hanabi_protocol::MAX_CLUES) * multiplier + finished + cards
+            - (hand - 1) * p
+            - max)
+            / multiplier;
+        let efficiency = float(max) / float(clues);
+        // Filter on the value that is shown, so the bounds match what the user reads.
+        let shown = format!("{efficiency:.EFFICIENCY_DECIMALS$}");
+        let rounded: f64 = shown.parse()?;
+        if bounds[0].is_some_and(|min| rounded < min) || bounds[1].is_some_and(|max| rounded > max)
+        {
+            continue;
+        }
+        rows.push(MissingScore {
+            variant_name: name.to_owned(),
+            num_players: NumPlayers::try_from(p)?,
+            score: best.map(|(score, _)| Score::try_from(score)).transpose()?,
+            max_score: Score::try_from(max)?,
+            modifier: best.and_then(|(_, modifier)| shown_modifier(modifier)),
+            efficiency: shown,
+            difficulty: if efficiency < HARD_EFFICIENCY {
+                Difficulty::Normal
+            } else if efficiency < VERY_HARD_EFFICIENCY {
+                Difficulty::Hard
+            } else {
+                Difficulty::VeryHard
+            },
+        });
     }
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
-    let filters = if shared {
-        MissingScoresFilters::Shared {
-            players,
-            exclude_variants: q.get("excludeVariants").unwrap_or("").to_owned(),
-            min_efficiency: q.get("minEfficiency").unwrap_or("").to_owned(),
-            max_efficiency: q.get("maxEfficiency").unwrap_or("").to_owned(),
-            active: !excluded_players.is_empty()
-                || !excluded_variants.is_empty()
-                || bounds.iter().any(Option::is_some),
-        }
-    } else {
-        MissingScoresFilters::Player {
-            name: users[0].1.as_str().into(),
-            num_players: num_players.map(NumPlayers::try_from).transpose()?,
-        }
+    let filters = MissingScoresFilters {
+        players,
+        exclude_variants: q.get("excludeVariants").unwrap_or("").to_owned(),
+        min_efficiency: q.get("minEfficiency").unwrap_or("").to_owned(),
+        max_efficiency: q.get("maxEfficiency").unwrap_or("").to_owned(),
+        active: !excluded_players.is_empty()
+            || !excluded_variants.is_empty()
+            || bounds.iter().any(Option::is_some),
     };
-    let mut v = json!({"title":"Missing Scores","name":users[0].1,
-        "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
-        "singleMissingScores":!shared});
-    if !shared {
-        v["summary"] = summary_value(&score_summary(state, users[0].0).await?)?;
-    }
+    let mut v = json!({"title":"Missing Scores",
+        "namesTitle":format!("Missing Scores for {}",names_title(&names))});
     set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)
 }

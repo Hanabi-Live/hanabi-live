@@ -50,7 +50,7 @@ table.history {
    the tabs in the lobby). */
 #profile-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   margin: 0 0 1em 0;
   padding: 0;
   list-style: none;
@@ -101,7 +101,9 @@ table.history {
 }
 
 @media screen and (max-width: 530px) {
-  #profile-buttons {
-    grid-template-columns: repeat(2, 1fr);
+  /* The icons go above the labels, so that the three tabs fit on one line. */
+  #profile-buttons i {
+    display: block;
+    margin: 0 0 0.3em 0;
   }
 }

@@ -698,11 +698,6 @@ function getStates(): readonly State[] {
       },
     },
     {
-      name: "missing-scores",
-      path: `/missing-scores/${USERNAME}`,
-      loggedIn: false,
-    },
-    {
       name: "shared-missing-scores",
       path: `/shared-missing-scores/2/${USERNAME}/Bob`,
       loggedIn: false,

@@ -14,31 +14,6 @@
         <section class="box">
           <h2 class="align-center">{{ namesTitle }}</h2>
 
-          {% if singleMissingScores %} {% include "profile-buttons.html" %}
-          <h3>Current Max Scores:</h3>
-          <table class="history plain">
-            <thead>
-              <tr>
-                {% for players in [2,3,4,5,6] %}
-                <th class="center">{{ players }}-player</th>
-                {% endfor %}
-                <th class="center">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {% for row in summary.perType %}
-                <td class="center">
-                  {{ row.total }} &nbsp;({{ row.percentage }}%)
-                </td>
-                {% endfor %}
-                <td class="center">
-                  {{ summary.total }} &nbsp;({{ summary.percentage }}%)
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {% endif %}
           <div id="public-page-table" data-table="{{ table }}"></div>
         </section>
       </div>

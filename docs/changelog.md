@@ -17,6 +17,7 @@ of the repository.
   as "One Extra Card" or detrimental characters, do not count. Each achievement
   shows how many of the players with an achievement have it.
 - Profiles no longer show the table of best scores on each variant.
+- Profiles no longer have the "Missing scores" tab.
 
 ## November 21st, 2026
 

@@ -320,28 +320,16 @@ pub struct MissingScoresPlayer {
 }
 
 /// The filters of a missing scores page. They are query parameters, so the page reloads to apply
-/// them.
+/// them. The text filters are as the address gives them.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
-pub enum MissingScoresFilters {
-    /// A player's own page, which shows one player count or all of them.
-    #[serde(rename_all = "camelCase")]
-    Player {
-        name: Username,
-        /// Absent when the page shows every player count.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        num_players: Option<NumPlayers>,
-    },
-    /// The page of several players. The text filters are as the address gives them.
-    #[serde(rename_all = "camelCase")]
-    Shared {
-        players: Vec<MissingScoresPlayer>,
-        exclude_variants: String,
-        min_efficiency: String,
-        max_efficiency: String,
-        /// Whether any filter leaves out a player, a variant, or an efficiency.
-        active: bool,
-    },
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MissingScoresFilters {
+    pub players: Vec<MissingScoresPlayer>,
+    pub exclude_variants: String,
+    pub min_efficiency: String,
+    pub max_efficiency: String,
+    /// Whether any filter leaves out a player, a variant, or an efficiency.
+    pub active: bool,
 }
 
 named_enum! {

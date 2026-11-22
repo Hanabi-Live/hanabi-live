@@ -150,12 +150,11 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     ] {
         router = router.route(path, get(pages::main_page));
     }
-    for root in ["scores", "profile", "tags", "missing-scores"] {
+    for root in ["scores", "profile", "tags"] {
         router = router
             .route(&format!("/{root}"), get(pages::page))
             .route(&format!("/{root}/{{player1}}"), get(pages::page));
     }
-    router = router.route("/missing-scores/{player1}/{numPlayers}", get(pages::page));
     for (root, param) in [("seed", "seed"), ("tag", "tag"), ("export", "databaseId")] {
         router = router
             .route(&format!("/{root}"), get(pages::page))
