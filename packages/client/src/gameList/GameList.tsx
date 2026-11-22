@@ -357,6 +357,11 @@ interface RowContext {
   readonly frequencies: readonly ScoreFrequency[];
   /** Whether a row shows the date beside the time, when no heading above it shows the day. */
   readonly withDate: boolean;
+  /**
+   * Whether a row that shows the date can also show a year, because a game is not from this year.
+   * Then every row makes room for it, so that the columns line up.
+   */
+  readonly withYear: boolean;
 }
 
 /** The games, under a heading for each day when they are in the order that they were played. */
@@ -364,13 +369,17 @@ function DayGroups({
   games,
   showDays,
   ...rest
-}: Omit<RowContext, "withDate"> & {
+}: Omit<RowContext, "withDate" | "withYear"> & {
   readonly games: readonly GameSummary[];
   readonly showDays: boolean;
 }) {
+  const thisYear = new Date().getFullYear();
   const context = {
     ...rest,
     withDate: !showDays,
+    withYear: games.some(
+      (game) => new Date(game.finishedAt).getFullYear() !== thisYear,
+    ),
   };
   function list(rows: readonly GameSummary[]) {
     return (
@@ -412,6 +421,7 @@ function GameRow({
   );
   const ending = END_CONDITION_TEXT[game.endCondition];
   const beaten = percentile(game.score, context.frequencies);
+  const finishedAt = new Date(game.finishedAt);
 
   return (
     <li className="tw:flex tw:items-center tw:gap-5 tw:border-b tw:border-border tw:px-3 tw:py-3 tw:hover:bg-[var(--row-hover-bg)] tw:narrow-640:flex-wrap tw:narrow-640:items-start tw:narrow-640:gap-x-4 tw:narrow-640:gap-y-2 tw:narrow-640:px-1">
@@ -463,13 +473,16 @@ function GameRow({
         {/* Each row is its own grid, so the time has a fixed width. Otherwise a wider time, such as
             "12:28 AM", would move the columns of its row. */}
         <span
-          className={`tw:text-right tw:text-[0.9em] tw:text-text-label tw:tabular-nums tw:narrow-640:w-auto ${context.withDate ? "tw:w-[9em]" : "tw:w-[4.75em]"}`}
+          className={`tw:text-right tw:text-[0.9em] tw:text-text-label tw:tabular-nums tw:narrow-640:w-auto ${dateWidth(context)}`}
           ref={tooltipRef(displayTime(game.finishedAt))}
         >
-          {new Date(game.finishedAt).toLocaleString(undefined, {
+          {finishedAt.toLocaleString(undefined, {
             ...(context.withDate && {
               month: "short",
               day: "numeric",
+              ...(finishedAt.getFullYear() !== new Date().getFullYear() && {
+                year: "numeric",
+              }),
             }),
             hour: "numeric",
             minute: "2-digit",
@@ -484,6 +497,14 @@ function GameRow({
       <GameButtons actions={context.actions} game={game} list={context.list} />
     </li>
   );
+}
+
+/** The width of the time column, which fits the widest time that a row of the list can show. */
+function dateWidth(context: RowContext): string {
+  if (!context.withDate) {
+    return "tw:w-[4.75em]";
+  }
+  return context.withYear ? "tw:w-[11.5em]" : "tw:w-[9em]";
 }
 
 /** Links to the history of each player. */
