@@ -9,7 +9,6 @@ import { getVariantById } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import type * as z from "zod";
 import { tooltipRef } from "../tooltipRef.ts";
-import { SuitDots } from "./SuitDots.tsx";
 
 type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 type SeedStatistics = z.infer<typeof seedStatisticsSchema>;
@@ -49,10 +48,7 @@ export function SeedSummary({
   return (
     <>
       <div className="tw:text-center">
-        <h2 className="tw:mb-1 tw:flex tw:items-center tw:justify-center tw:gap-3">
-          <SuitDots size="0.45em" suits={variant.suits} />
-          {variant.name}
-        </h2>
+        <h2 className="tw:mb-1">{variant.name}</h2>
         <p className="tw:m-0 tw:text-text-label">
           {statistics.numPlayers} players, seed {seed}
         </p>

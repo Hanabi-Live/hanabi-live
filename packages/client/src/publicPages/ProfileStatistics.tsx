@@ -6,7 +6,6 @@ import { MIN_ACHIEVEMENT_PLAYERS, SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import { getVariantById } from "@hanabi-live/game";
 import { HOUR_IN_MILLISECONDS, SECOND_IN_MILLISECONDS } from "complete-common";
 import type * as z from "zod";
-import { SuitDots } from "../gameList/SuitDots.tsx";
 import { tooltipRef } from "../tooltipRef.ts";
 
 type PlayerStatistics = z.infer<typeof playerStatisticsSchema>;
@@ -57,11 +56,8 @@ function StreakDetail({
 }): React.JSX.Element {
   const variant = getVariantById(streak.variantId);
   return (
-    <span className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
-      <SuitDots size="0.5em" suits={variant.suits} />
-      <span className="tw:min-w-0">
-        {variant.name}, {streak.numPlayers} players
-      </span>
+    <span>
+      {variant.name}, {streak.numPlayers} players
     </span>
   );
 }
