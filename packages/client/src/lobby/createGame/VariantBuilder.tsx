@@ -112,11 +112,6 @@ export function VariantBuilder({
           upOrDown={choice.flags.has("updown")}
           variant={deck}
         />
-        {catalogName === undefined && (
-          <p className="tw:m-0 tw:text-text-label">
-            The server checks the rules when it creates the game.
-          </p>
-        )}
       </div>
       {!choice.flags.has("updown") && (
         <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
