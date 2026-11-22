@@ -19,7 +19,10 @@ type ProfileTable = Extract<
 >;
 type Achievement = ProfileTable["achievements"][number];
 
-/** The variant whose suits each achievement shows: every suit of it, or only its last suit. */
+/**
+ * What each achievement shows: the suits of a variant (every suit of it, or only its last suit), or
+ * one person for each player.
+ */
 const ACHIEVEMENT_CARDS = {
   noVariant10Wins: {
     variant: "No Variant",
@@ -69,10 +72,23 @@ const ACHIEVEMENT_CARDS = {
     variant: "Black (5 Suits)",
     allSuits: false,
   },
+  threePlayers10Wins: {
+    players: 3,
+  },
+  fourPlayers10Wins: {
+    players: 4,
+  },
+  fivePlayers10Wins: {
+    players: 5,
+  },
 } as const satisfies Record<
   Achievement["id"],
-  { readonly variant: string; readonly allSuits: boolean }
+  | { readonly variant: string; readonly allSuits: boolean }
+  | { readonly players: number }
 >;
+
+/** The most people in a row of an achievement's players. */
+const MAX_PLAYERS_PER_ROW = 3;
 
 /** The width of a card, in CSS pixels. */
 const CARD_WIDTH = 32;
@@ -148,28 +164,57 @@ function SuitCard({
   );
 }
 
-/** The cards of an achievement: one card of its suit, or a fan of every suit of its variant. */
+/**
+ * One person for each player, in rows of at most `MAX_PLAYERS_PER_ROW`, with the longer row on top.
+ */
+function Players({ players }: { readonly players: number }): React.JSX.Element {
+  const rows = Math.ceil(players / MAX_PLAYERS_PER_ROW);
+  const top = Math.ceil(players / rows);
+  const counts = rows === 1 ? [players] : [top, players - top];
+  return (
+    <div className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:text-[1.15em] tw:leading-none tw:text-[var(--button-primary-bg)]">
+      {counts.map((count, row) => (
+        <div className="tw:flex tw:gap-1" key={row}>
+          {Array.from({ length: count }, (_person, index) => (
+            <i className="fas fa-user" key={index} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The art of an achievement: one card of its suit, a fan of every suit of its variant, or its
+ * players.
+ */
 function AchievementCards({
   achievement,
 }: {
   readonly achievement: Achievement;
 }): React.JSX.Element {
-  const { variant: variantName, allSuits } = ACHIEVEMENT_CARDS[achievement.id];
+  const art = ACHIEVEMENT_CARDS[achievement.id];
+  const unlocked = achievement.dateUnlocked !== undefined;
+  const artClassName = `tw:relative tw:flex tw:shrink-0 tw:items-center tw:justify-center ${unlocked ? "" : "tw:opacity-45 tw:grayscale"}`;
+  const artStyle = {
+    width: ART_WIDTH,
+    height: CARD_WIDTH * CARD_HEIGHT_PER_WIDTH + 6,
+  };
+  if ("players" in art) {
+    return (
+      <div aria-hidden="true" className={artClassName} style={artStyle}>
+        <Players players={art.players} />
+      </div>
+    );
+  }
+  const { variant: variantName, allSuits } = art;
   const variant = getVariant(variantName);
   const suitIndexes = allSuits
     ? variant.suits.map((_suit, index) => index)
     : [variant.suits.length - 1];
   const middle = (suitIndexes.length - 1) / 2;
-  const unlocked = achievement.dateUnlocked !== undefined;
   return (
-    <div
-      aria-hidden="true"
-      className={`tw:relative tw:flex tw:shrink-0 tw:items-center tw:justify-center ${unlocked ? "" : "tw:opacity-45 tw:grayscale"}`}
-      style={{
-        width: ART_WIDTH,
-        height: CARD_WIDTH * CARD_HEIGHT_PER_WIDTH + 6,
-      }}
-    >
+    <div aria-hidden="true" className={artClassName} style={artStyle}>
       {suitIndexes.map((suitIndex, index) => (
         <SuitCard
           key={suitIndex}

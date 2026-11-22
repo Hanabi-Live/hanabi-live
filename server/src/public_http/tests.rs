@@ -889,8 +889,9 @@ async fn profile_counts_wins_toward_achievements() {
     // Games 1 to 9 are wins in No Variant (variant 0). Game 10 uses "One Extra Card", game 11 has
     // detrimental characters, and game 12 does not reach the max score. Game 13 is a win in Rainbow
     // (5 Suits) (variant 16). Games 14 and 16 are wins in Rainbow (6 Suits) and Rainbow (4 Suits)
-    // (variants 3 and 17), which do not count. Game 19 is a win in Pink (5 Suits) (variant 107).
-    // Game 20 is a win in No Variant with 2 players, which does not count.
+    // (variants 3 and 17), which do not count toward Rainbow. Game 19 is a win in Pink (5 Suits)
+    // (variant 107) with 4 players. Game 20 is a win in No Variant with 2 players, which does not
+    // count. The wins with 3 players are games 1 to 9, 13, 14, and 16.
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -901,7 +902,7 @@ async fn profile_counts_wins_toward_achievements() {
         INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',CASE WHEN id=20 THEN 2 ELSE 3 END,variant,false,NULL,NULL,false,false,false,id=10,
+        SELECT id,'test',CASE id WHEN 20 THEN 2 WHEN 19 THEN 4 ELSE 3 END,variant,false,NULL,NULL,false,false,false,id=10,
           false,false,id=11,
           's'||id,score,10,1,
           '2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
@@ -921,16 +922,26 @@ async fn profile_counts_wins_toward_achievements() {
     let table = page_table(&body);
     let shown = table["achievements"].as_array().unwrap();
     assert_eq!(shown.len(), crate::achievements::ACHIEVEMENTS.len());
-    // The two No Variant achievements, Rainbow, and Pink. The others have no wins.
-    let progress = [9, 9, 1, 1];
-    for (index, achievement) in shown.iter().enumerate() {
-        let expected = progress.get(index).copied().unwrap_or(0);
+    // The achievements with wins. The others have none.
+    let progress = HashMap::from([
+        ("noVariant10Wins", 9),
+        ("noVariant100Wins", 9),
+        ("rainbow10Wins", 1),
+        ("pink10Wins", 1),
+        ("threePlayers10Wins", 10),
+        ("fourPlayers10Wins", 1),
+    ]);
+    for achievement in shown {
+        let id = achievement["id"].as_str().unwrap();
+        let expected = progress.get(id).copied().unwrap_or(0);
         assert_eq!(achievement["progress"], expected, "{achievement}");
-        assert!(achievement.get("dateUnlocked").is_none());
+        // The tenth win with 3 players is game 13.
+        if id == "threePlayers10Wins" {
+            assert_eq!(achievement["dateUnlocked"], "2026-01-14T01:00:00.000Z");
+        } else {
+            assert!(achievement.get("dateUnlocked").is_none(), "{achievement}");
+        }
     }
-    assert_eq!(shown[0]["id"], "noVariant10Wins");
-    assert_eq!(shown[2]["id"], "rainbow10Wins");
-    assert_eq!(shown[3]["id"], "pink10Wins");
     // The tenth win unlocks the first achievement, and later wins do not move the date.
     #[expect(
         clippy::disallowed_methods,

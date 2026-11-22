@@ -1101,6 +1101,9 @@ const achievementIdSchema = z.enum([
   "lightPink10Wins",
   "prism10Wins",
   "darkSuitsWins",
+  "threePlayers10Wins",
+  "fourPlayers10Wins",
+  "fivePlayers10Wins",
 ]);
 
 /**

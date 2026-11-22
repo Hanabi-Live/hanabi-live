@@ -233,6 +233,9 @@ named_enum! {
         LightPink10Wins => "lightPink10Wins",
         Prism10Wins => "prism10Wins",
         DarkSuitsWins => "darkSuitsWins",
+        ThreePlayers10Wins => "threePlayers10Wins",
+        FourPlayers10Wins => "fourPlayers10Wins",
+        FivePlayers10Wins => "fivePlayers10Wins",
     }
 }
 

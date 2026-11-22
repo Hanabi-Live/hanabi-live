@@ -23,7 +23,7 @@ const WINS: i64 = 10;
 const SYNC_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_mins(2);
 
 /// A variant that an achievement counts the wins in.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Variant {
     NoVariant,
     /// The 5-suit variant of a suit, such as "Pink (5 Suits)". Games with 6 suits take too long to
@@ -40,10 +40,27 @@ impl Variant {
     }
 }
 
+/// The games whose wins count toward an achievement.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Games {
+    Variant(Variant),
+    /// The games of every variant with this many players.
+    Players(u8),
+}
+
+impl Games {
+    fn description(self) -> String {
+        match self {
+            Self::Variant(variant) => format!("games of {}", variant.name()),
+            Self::Players(players) => format!("games with {players} players"),
+        }
+    }
+}
+
 /// What an achievement asks for.
 pub(crate) enum Rule {
-    /// A number of wins in a variant.
-    Wins { variant: Variant, goal: i64 },
+    /// A number of wins.
+    Wins { games: Games, goal: i64 },
     /// One win in the 5-suit variant of each suit, such as each dark suit.
     OneWinEach {
         /// What the suits are, such as "dark suit".
@@ -53,16 +70,18 @@ pub(crate) enum Rule {
 }
 
 impl Rule {
-    fn variants(&self) -> Vec<Variant> {
+    /// The games whose wins the rule counts. `OneWinEach` needs a win in each of them.
+    fn games(&self) -> Vec<Games> {
         match self {
-            Self::Wins { variant, .. } => vec![*variant],
-            Self::OneWinEach { suits, .. } => {
-                suits.iter().map(|&suit| Variant::FiveSuits(suit)).collect()
-            }
+            Self::Wins { games, .. } => vec![*games],
+            Self::OneWinEach { suits, .. } => suits
+                .iter()
+                .map(|&suit| Games::Variant(Variant::FiveSuits(suit)))
+                .collect(),
         }
     }
 
-    /// The wins in each of the rule's variants that the rule needs.
+    /// The wins in each of the rule's games that the rule needs.
     const fn wins_per_variant(&self) -> i64 {
         match self {
             Self::Wins { goal, .. } => *goal,
@@ -72,8 +91,8 @@ impl Rule {
 
     fn description(&self) -> String {
         match self {
-            Self::Wins { variant, goal } => {
-                format!("Get the max score in {goal} games of {}.", variant.name())
+            Self::Wins { games, goal } => {
+                format!("Get the max score in {goal} {}.", games.description())
             }
             Self::OneWinEach { kind, suits } => format!(
                 "Get the max score in a 5-suit game with each {kind}: {}",
@@ -95,7 +114,19 @@ const fn special_suit(id: AchievementId, name: &'static str, suit: &'static str)
         id,
         name,
         rule: Rule::Wins {
-            variant: Variant::FiveSuits(suit),
+            games: Games::Variant(Variant::FiveSuits(suit)),
+            goal: WINS,
+        },
+    }
+}
+
+/// An achievement for `WINS` wins with a number of players.
+const fn players(id: AchievementId, name: &'static str, players: u8) -> Definition {
+    Definition {
+        id,
+        name,
+        rule: Rule::Wins {
+            games: Games::Players(players),
             goal: WINS,
         },
     }
@@ -107,7 +138,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         id: AchievementId::NoVariant10Wins,
         name: "I've Got the Hang of This",
         rule: Rule::Wins {
-            variant: Variant::NoVariant,
+            games: Games::Variant(Variant::NoVariant),
             goal: WINS,
         },
     },
@@ -115,7 +146,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         id: AchievementId::NoVariant100Wins,
         name: "Core Mastery",
         rule: Rule::Wins {
-            variant: Variant::NoVariant,
+            games: Games::Variant(Variant::NoVariant),
             goal: 100,
         },
     },
@@ -152,45 +183,44 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
             ],
         },
     },
+    players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
+    players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
+    players(AchievementId::FivePlayers10Wins, "High Five", 5),
 ];
 
-/// The variants that the achievements count, as the queries take them. Each variant is a row,
-/// numbered from 1. A threshold asks for the time of a row's nth win: the first one for every row,
-/// so that the query returns the row's count of wins, and the one that reaches each goal.
-struct VariantRows {
-    names: Vec<String>,
+/// The games that the achievements count, as the queries take them. Each `Games` is a row,
+/// numbered from 1. The queries match a game to a row by its variant and max score, and by its
+/// player count when the row has one (0 matches any count). A threshold asks for the time of a
+/// row's nth win: the first one for every row, so that the query returns the row's count of wins,
+/// and the one that reaches each goal.
+struct QueryRows {
+    games: Vec<Games>,
     variant_ids: Vec<i16>,
     max_scores: Vec<i16>,
+    player_counts: Vec<i16>,
+    rows: Vec<i64>,
     threshold_rows: Vec<i64>,
     thresholds: Vec<i64>,
 }
 
-impl VariantRows {
+impl QueryRows {
     fn new() -> Result<Self> {
         let mut rows = Self {
-            names: Vec::new(),
+            games: Vec::new(),
             variant_ids: Vec::new(),
             max_scores: Vec::new(),
+            player_counts: Vec::new(),
+            rows: Vec::new(),
             threshold_rows: Vec::new(),
             thresholds: Vec::new(),
         };
         let mut wins: HashMap<i64, Vec<i64>> = HashMap::new();
         for achievement in ACHIEVEMENTS {
-            for variant in achievement.rule.variants() {
-                let row = rows.row(&variant.name()).map_or_else(
-                    || {
-                        let name = variant.name();
-                        let variant = hanabi_engine::variants()
-                            .iter()
-                            .find(|v| v.name == name)
-                            .with_context(|| format!("The catalog has no variant named: {name}"))?;
-                        rows.names.push(name);
-                        rows.variant_ids.push(i16::try_from(variant.id)?);
-                        rows.max_scores.push(i16::try_from(variant.max_score)?);
-                        Ok::<_, anyhow::Error>(i64::try_from(rows.names.len())?)
-                    },
-                    Ok,
-                )?;
+            for games in achievement.rule.games() {
+                let row = match rows.row(games) {
+                    Some(row) => row,
+                    None => rows.add(games)?,
+                };
                 let needed = wins.entry(row).or_insert_with(|| vec![1]);
                 needed.push(achievement.rule.wins_per_variant());
             }
@@ -206,9 +236,36 @@ impl VariantRows {
         Ok(rows)
     }
 
-    /// The row of a variant, numbered from 1.
-    fn row(&self, name: &str) -> Option<i64> {
-        let index = self.names.iter().position(|row| row == name)?;
+    /// Adds a row for `games`, and returns its number.
+    fn add(&mut self, games: Games) -> Result<i64> {
+        self.games.push(games);
+        let row = i64::try_from(self.games.len())?;
+        let (variants, players): (Vec<_>, _) = match games {
+            Games::Variant(variant) => {
+                let name = variant.name();
+                let variant = hanabi_engine::variants()
+                    .iter()
+                    .find(|v| v.name == name)
+                    .with_context(|| format!("The catalog has no variant named: {name}"))?;
+                (vec![variant], 0)
+            }
+            Games::Players(players) => (
+                hanabi_engine::variants().iter().collect(),
+                i16::from(players),
+            ),
+        };
+        for variant in variants {
+            self.variant_ids.push(i16::try_from(variant.id)?);
+            self.max_scores.push(i16::try_from(variant.max_score)?);
+            self.player_counts.push(players);
+            self.rows.push(row);
+        }
+        Ok(row)
+    }
+
+    /// The row of `games`, numbered from 1.
+    fn row(&self, games: Games) -> Option<i64> {
+        let index = self.games.iter().position(|row| *row == games)?;
         i64::try_from(index + 1).ok()
     }
 }
@@ -257,7 +314,7 @@ fn collect(found: impl Iterator<Item = (i32, i64, i64, i64, OffsetDateTime)>) ->
 }
 
 /// The wins of the players in `users`. The query starts from each player's games.
-async fn wins_of(connection: &mut PgConnection, rows: &VariantRows, users: &[i32]) -> Result<Wins> {
+async fn wins_of(connection: &mut PgConnection, rows: &QueryRows, users: &[i32]) -> Result<Wins> {
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "SELECT x.user_id AS \"user_id!\",x.row AS \"row!\",x.wins AS \"wins!\",x.n AS \"n!\",
@@ -268,15 +325,19 @@ async fn wins_of(connection: &mut PgConnection, rows: &VariantRows, users: &[i32
                AS n,
              count(*) OVER (PARTITION BY p.user_id,v.row) AS wins
            FROM game_participants p JOIN games g ON g.id=p.game_id
-           JOIN unnest($2::smallint[],$3::smallint[]) WITH ORDINALITY AS v(variant_id,max_score,row)
+           JOIN unnest($2::smallint[],$3::smallint[],$4::smallint[],$5::bigint[])
+             AS v(variant_id,max_score,num_players,row)
              ON v.variant_id=g.variant_id AND v.max_score=g.score
-           WHERE p.user_id=ANY($1) AND g.end_condition=$4 AND g.num_players>=$5
+             AND (v.num_players=0 OR v.num_players=g.num_players)
+           WHERE p.user_id=ANY($1) AND g.end_condition=$6 AND g.num_players>=$7
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
-         ) x JOIN unnest($6::bigint[],$7::bigint[]) AS t(row,n) ON t.row=x.row AND t.n=x.n",
+         ) x JOIN unnest($8::bigint[],$9::bigint[]) AS t(row,n) ON t.row=x.row AND t.n=x.n",
         users,
         &rows.variant_ids,
         &rows.max_scores,
+        &rows.player_counts,
+        &rows.rows,
         normal_end,
         i16::from(MIN_ACHIEVEMENT_PLAYERS),
         &rows.threshold_rows,
@@ -289,9 +350,9 @@ async fn wins_of(connection: &mut PgConnection, rows: &VariantRows, users: &[i32
     })))
 }
 
-/// The wins of every player. The query starts from the games in the achievements' variants, which
-/// is faster than starting from each player's games.
-async fn all_wins(connection: &mut PgConnection, rows: &VariantRows) -> Result<Wins> {
+/// The wins of every player. The query starts from the games that the achievements count, which is
+/// faster than starting from each player's games.
+async fn all_wins(connection: &mut PgConnection, rows: &QueryRows) -> Result<Wins> {
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "SELECT x.user_id AS \"user_id!\",x.row AS \"row!\",x.wins AS \"wins!\",x.n AS \"n!\",
@@ -301,15 +362,19 @@ async fn all_wins(connection: &mut PgConnection, rows: &VariantRows) -> Result<W
              row_number() OVER (PARTITION BY p.user_id,v.row ORDER BY g.datetime_finished,g.id)
                AS n,
              count(*) OVER (PARTITION BY p.user_id,v.row) AS wins
-           FROM unnest($1::smallint[],$2::smallint[]) WITH ORDINALITY AS v(variant_id,max_score,row)
+           FROM unnest($1::smallint[],$2::smallint[],$3::smallint[],$4::bigint[])
+             AS v(variant_id,max_score,num_players,row)
            JOIN games g ON g.variant_id=v.variant_id AND g.score=v.max_score
+             AND (v.num_players=0 OR v.num_players=g.num_players)
            JOIN game_participants p ON p.game_id=g.id
-           WHERE g.end_condition=$3 AND g.num_players>=$4
+           WHERE g.end_condition=$5 AND g.num_players>=$6
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
-         ) x JOIN unnest($5::bigint[],$6::bigint[]) AS t(row,n) ON t.row=x.row AND t.n=x.n",
+         ) x JOIN unnest($7::bigint[],$8::bigint[]) AS t(row,n) ON t.row=x.row AND t.n=x.n",
         &rows.variant_ids,
         &rows.max_scores,
+        &rows.player_counts,
+        &rows.rows,
         normal_end,
         i16::from(MIN_ACHIEVEMENT_PLAYERS),
         &rows.threshold_rows,
@@ -331,16 +396,16 @@ struct Standing {
 
 fn progress(
     achievement: &Definition,
-    rows: &VariantRows,
+    rows: &QueryRows,
     wins: Option<&HashMap<i64, VariantWins>>,
 ) -> Standing {
-    let of = |variant: Variant| {
-        rows.row(&variant.name())
+    let of = |games: Games| {
+        rows.row(games)
             .and_then(|row| wins.and_then(|wins| wins.get(&row)))
     };
     match achievement.rule {
-        Rule::Wins { variant, goal } => {
-            let wins = of(variant);
+        Rule::Wins { games, goal } => {
+            let wins = of(games);
             Standing {
                 progress: wins.map_or(0, |wins| wins.count.min(goal)),
                 goal,
@@ -348,12 +413,12 @@ fn progress(
             }
         }
         Rule::OneWinEach { .. } => {
-            let variants = achievement.rule.variants();
-            let firsts: Vec<_> = variants
+            let games = achievement.rule.games();
+            let firsts: Vec<_> = games
                 .iter()
-                .filter_map(|&variant| of(variant)?.times.get(&1).copied())
+                .filter_map(|&games| of(games)?.times.get(&1).copied())
                 .collect();
-            let goal = i64::try_from(variants.len()).unwrap_or(i64::MAX);
+            let goal = i64::try_from(games.len()).unwrap_or(i64::MAX);
             let progress = i64::try_from(firsts.len()).unwrap_or(i64::MAX);
             Standing {
                 progress,
@@ -398,7 +463,7 @@ pub(crate) async fn achievements(
     connection: &mut PgConnection,
     user: i32,
 ) -> Result<Vec<Achievement>> {
-    let rows = VariantRows::new()?;
+    let rows = QueryRows::new()?;
     let wins = wins_of(connection, &rows, &[user]).await?;
     let rarities = rarities(connection).await?;
     ACHIEVEMENTS
@@ -429,7 +494,7 @@ pub(crate) async fn achievements(
 /// `None`.
 async fn write(
     connection: &mut PgConnection,
-    rows: &VariantRows,
+    rows: &QueryRows,
     users: Option<&[i32]>,
     wins: &Wins,
 ) -> Result<()> {
@@ -471,7 +536,7 @@ async fn write(
 
 /// Writes the unlocked achievements of the players in `users`, after they finished a game.
 pub(crate) async fn refresh(pool: &PgPool, users: &[i32]) -> Result<()> {
-    let rows = VariantRows::new()?;
+    let rows = QueryRows::new()?;
     let mut transaction = pool.begin().await?;
     // The lock keeps a refresh and the startup sync from writing a player's unlocks from older
     // wins after the other one wrote newer ones.
@@ -486,7 +551,7 @@ pub(crate) async fn refresh(pool: &PgPool, users: &[i32]) -> Result<()> {
 /// rules.
 pub(crate) async fn sync(pool: &PgPool) -> Result<()> {
     let started = std::time::Instant::now();
-    let rows = VariantRows::new()?;
+    let rows = QueryRows::new()?;
     let mut transaction = pool.begin().await?;
     sqlx::query_scalar!(
         "SELECT set_config('statement_timeout',$1,true)",
@@ -581,8 +646,13 @@ mod tests {
         win(pool, 1, 5, &[1, 2, 4]).await;
         win(pool, 6, 5, &[1, 5, 6]).await;
         sync(pool).await.unwrap();
+        // Alice's wins have 3 players, so she also has the achievement for 3 players.
         let first = AchievementId::NoVariant10Wins.name().to_owned();
-        assert_eq!(unlocked(pool).await, [(1, first.clone())]);
+        let three = AchievementId::ThreePlayers10Wins.name().to_owned();
+        assert_eq!(
+            unlocked(pool).await,
+            [(1, first.clone()), (1, three.clone())]
+        );
         let mut connection = pool.acquire().await.unwrap();
         let alice = achievements(&mut connection, 1).await.unwrap();
         assert_eq!(
@@ -595,7 +665,15 @@ mod tests {
         // and Alice has 15 wins.
         win(pool, 11, 5, &[2, 1, 7]).await;
         refresh(pool, &[2, 1, 7]).await.unwrap();
-        assert_eq!(unlocked(pool).await, [(1, first.clone()), (2, first)]);
+        assert_eq!(
+            unlocked(pool).await,
+            [
+                (1, first.clone()),
+                (1, three.clone()),
+                (2, first),
+                (2, three)
+            ]
+        );
         let bob = achievements(&mut connection, 2).await.unwrap();
         assert_eq!(bob[0].progress.get(), WINS);
         assert_eq!(bob[1].progress.get(), WINS);
