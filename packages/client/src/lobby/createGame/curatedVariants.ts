@@ -17,7 +17,7 @@ export const CURATED_VARIANT_GROUPS = [
     label: "Special suits",
     swatches: true,
     recipes: [
-      "r-y-g-b-bk", // Black (5 Suits)
+      "r-y-g-b-p-bk", // Black (6 Suits)
       "r-y-g-b-ra", // Rainbow (5 Suits)
       "r-y-g-b-pi", // Pink (5 Suits)
       "r-y-g-b-wh", // White (5 Suits)
@@ -34,16 +34,16 @@ export const CURATED_VARIANT_GROUPS = [
     label: "Dark suits",
     swatches: true,
     recipes: [
-      "r-y-g-b-ra.dark", // Dark Rainbow (5 Suits)
-      "r-y-g-b-pi.dark", // Dark Pink (5 Suits)
-      "r-y-g-b-wh.dark", // Gray (5 Suits)
-      "r-y-g-b-br.dark", // Dark Brown (5 Suits)
-      "r-y-g-b-om.dark", // Dark Omni (5 Suits)
-      "r-y-g-b-nu.dark", // Dark Null (5 Suits)
-      "r-y-g-b-brra.dark", // Cocoa Rainbow (5 Suits)
-      "r-y-g-b-whpi.dark", // Gray Pink (5 Suits)
-      "r-y-g-b-pr.dark", // Dark Prism (5 Suits)
-      "r-y-g-b-or.dark", // Dark Orange (5 Suits)
+      "r-y-g-b-p-ra.dark", // Dark Rainbow (6 Suits)
+      "r-y-g-b-p-pi.dark", // Dark Pink (6 Suits)
+      "r-y-g-b-p-wh.dark", // Gray (6 Suits)
+      "r-y-g-b-p-br.dark", // Dark Brown (6 Suits)
+      "r-y-g-b-p-om.dark", // Dark Omni (6 Suits)
+      "r-y-g-b-p-nu.dark", // Dark Null (6 Suits)
+      "r-y-g-b-p-brra.dark", // Cocoa Rainbow (6 Suits)
+      "r-y-g-b-p-whpi.dark", // Gray Pink (6 Suits)
+      "r-y-g-b-p-pr.dark", // Dark Prism (6 Suits)
+      "r-y-g-b-p-or.dark", // Dark Orange (6 Suits)
     ],
   },
   {
