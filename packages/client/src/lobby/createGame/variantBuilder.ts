@@ -539,10 +539,7 @@ function sortSuits(ids: readonly string[]): readonly string[] {
   return ids.toSorted((a, b) => getKey(a) - getKey(b));
 }
 
-/**
- * Whether the deck can take this suit: it has room, or the suit takes the place of its other
- * version.
- */
+/** Whether the deck can take this suit: it has room, or it already has a version of the suit. */
 export function canAddSuit(choice: Choice, id: string): boolean {
   const base = getBaseId(id);
   return (
@@ -552,20 +549,20 @@ export function canAddSuit(choice: Choice, id: string): boolean {
 }
 
 /**
- * Adds a suit, or removes it. A suit takes the place of its other version, such as Dark Rainbow of
- * Rainbow. A full deck grows by one suit, up to the most that a deck has.
+ * Adds a suit, or removes it. A suit counts as in the deck while either of its versions is, such as
+ * Rainbow while Dark Rainbow is, so a click removes that version. A full deck grows by one suit, up
+ * to the most that a deck has.
  */
 export function toggleSuit(choice: Choice, id: string): Choice {
-  if (choice.suits.includes(id)) {
+  const present = getChosenVersion(choice, id);
+  if (present !== undefined) {
     return {
       ...choice,
-      suits: choice.suits.filter((other) => other !== id),
-      reversed: without(choice.reversed, id),
+      suits: choice.suits.filter((other) => other !== present),
+      reversed: without(choice.reversed, present),
     };
   }
-  const base = getBaseId(id);
-  const kept = choice.suits.filter((other) => getBaseId(other) !== base);
-  const suits = sortSuits([...kept, id]);
+  const suits = sortSuits([...choice.suits, id]);
   return withSuits(
     {
       ...choice,
@@ -574,6 +571,52 @@ export function toggleSuit(choice: Choice, id: string): Choice {
     },
     choice,
   );
+}
+
+/** The version of a suit that the choice has, such as "ra.dark" for "ra", if any. */
+export function getChosenVersion(
+  choice: Choice,
+  id: string,
+): string | undefined {
+  const base = getBaseId(id);
+  return choice.suits.find((other) => getBaseId(other) === base);
+}
+
+/** The ID of the dark version of a suit, or of the light version of a dark suit, if it has one. */
+export function getOtherVersion(id: string): string | undefined {
+  const other = id.endsWith(DARK_SUFFIX)
+    ? id.slice(0, -DARK_SUFFIX.length)
+    : `${id}${DARK_SUFFIX}`;
+  return getSuitsById().has(other) ? other : undefined;
+}
+
+export function isDark(id: string): boolean {
+  return id.endsWith(DARK_SUFFIX);
+}
+
+/**
+ * Swaps a suit of the deck for its dark version, or back. It stays reversed if it was. A suit
+ * without another version stays as it is.
+ */
+export function toggleDark(choice: Choice, id: string): Choice {
+  const other = getOtherVersion(id);
+  if (other === undefined || !choice.suits.includes(id)) {
+    return choice;
+  }
+  const reversed = new Set(choice.reversed);
+  if (reversed.delete(id)) {
+    reversed.add(other);
+  }
+  return {
+    ...choice,
+    suits: sortSuits(choice.suits.map((suit) => (suit === id ? other : suit))),
+    reversed,
+  };
+}
+
+/** The name of a suit, by its ID, such as "Gray" for "wh.dark". */
+export function getSuitName(id: string): string {
+  return getSuitsById().get(id)?.name ?? id;
 }
 
 /** Changes the number of suits. It cannot be fewer than the chosen suits. */

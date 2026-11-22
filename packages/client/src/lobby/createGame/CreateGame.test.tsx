@@ -248,6 +248,26 @@ describe("CreateGame", () => {
     );
   });
 
+  test("a deck card's menu reverses its suit, and Escape closes it", () => {
+    showPage();
+    fireEvent.change(getInput("create-game-variant-dropdown1"), {
+      target: {
+        value: "Search custom variants...",
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Red" }));
+
+    const menu = screen.getByRole("dialog", { name: "Red" });
+    expect(menu.textContent).toContain("Red has no dark version.");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Reversed/u }));
+    const card = screen.getByRole("button", { name: "Red Reversed" });
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBe(null);
+    expect(document.activeElement).toBe(card);
+  });
+
   test("a guest suggests the options of the table to its owner", () => {
     store.dispatch(screenChanged(Screen.PreGame));
     globals.tableId = TABLE_ID;

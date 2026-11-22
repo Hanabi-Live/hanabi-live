@@ -946,6 +946,16 @@ function getStates(): readonly State[] {
           .locator("#create-game-variant-dropdown2")
           .and(page.locator('[value="Black & Rainbow (6 Suits)"]'))
           .waitFor();
+        // The menu of a deck card, which makes its suit dark or reversed. The deck comes before the
+        // suit buttons of the same name.
+        await builder
+          .getByRole("button", {
+            name: "Rainbow",
+            exact: true,
+          })
+          .first()
+          .click();
+        await builder.getByRole("dialog").waitFor();
         await settle(page);
       },
       // The form remembers its variant, which the other states need to be the default.

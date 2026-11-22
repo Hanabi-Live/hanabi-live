@@ -9,7 +9,7 @@ import {
   MAX_SUITS,
   VALID_SUIT_INDEXES,
 } from "@hanabi-live/game";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
@@ -24,20 +24,25 @@ import {
   canAddSuit,
   getCatalogName,
   getChoice,
+  getChosenVersion,
   getCriticalDescription,
   getDeckSuitIds,
   getDeckVariant,
+  getOtherVersion,
   getParts,
   getRecipe,
   getReverseBlocker,
   getSuitDescription,
+  getSuitName,
   getVariantName,
+  isDark,
   REVERSED_DESCRIPTION,
   RULE_RANKS,
   SCARCE_ONES_DESCRIPTION,
   setNumSuits,
   setSpecialRank,
   toggleCriticalRank,
+  toggleDark,
   toggleFlag,
   toggleReversed,
   toggleScarceOnes,
@@ -50,10 +55,6 @@ const SUIT_GROUPS = [
   {
     group: "special",
     label: "Special suits",
-  },
-  {
-    group: "dark",
-    label: "Dark suits",
   },
   {
     group: "ambiguous",
@@ -130,20 +131,27 @@ export function VariantBuilder({
     <div className="tw:flex tw:w-full tw:flex-col tw:gap-[0.9em]">
       <div className="tw:flex tw:flex-wrap tw:items-end tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
         <Deck
-          ids={deckIds}
-          onReverse={(id) => {
-            choose(toggleReversed(choice, id));
+          actions={{
+            onToggleDark: (id) => {
+              choose(toggleDark(choice, id));
+            },
+            onToggleReversed: (id) => {
+              choose(toggleReversed(choice, id));
+            },
+            onRemove: (id) => {
+              choose(toggleSuit(choice, id));
+            },
           }}
+          chosen={choice.suits}
+          ids={deckIds}
           reverseBlocker={getReverseBlocker(choice)}
           reversed={choice.reversed}
           variant={deck}
         />
       </div>
-      {getReverseBlocker(choice) === undefined && (
-        <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
-          Click a card to reverse its suit.
-        </p>
-      )}
+      <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
+        Click a card to make it dark or reversed.
+      </p>
 
       <PartRow label="Suits">
         {SUIT_COUNTS.map((numSuits) => (
@@ -165,15 +173,19 @@ export function VariantBuilder({
             .filter((part) => part.group === group)
             .map(({ id, suit }) => (
               <Chip
-                enabled={choice.suits.includes(id) || canAddSuit(choice, id)}
+                enabled={canAddSuit(choice, id)}
                 key={id}
                 label={suit.name}
                 onClick={() => {
                   choose(toggleSuit(choice, id));
                 }}
-                pressed={choice.suits.includes(id)}
+                pressed={getChosenVersion(choice, id) !== undefined}
                 suit={suit}
-                tooltip={getSuitDescription(suit)}
+                tooltip={`${getSuitDescription(suit)}${
+                  getOtherVersion(id) === undefined
+                    ? ""
+                    : " Click its card in the deck to make it dark."
+                }`}
               />
             ))}
         </PartRow>
@@ -285,20 +297,32 @@ function FlagRow({
   );
 }
 
-/** The width of each card of the deck, in CSS pixels. */
-const DECK_CARD_WIDTH = 40;
+/** The width of each card of the deck, in CSS pixels. Six of them fit at the narrowest width. */
+const DECK_CARD_WIDTH = 36;
 
 /** The variant's suits, drawn as the cards of a game, without ranks. */
+/** What a deck card's menu can change about its suit. */
+interface DeckActions {
+  readonly onToggleDark: (id: string) => void;
+  readonly onToggleReversed: (id: string) => void;
+  readonly onRemove: (id: string) => void;
+}
+
 function Deck({
+  actions,
+  chosen,
   ids,
-  onReverse,
   reversed,
   reverseBlocker,
   variant,
 }: {
+  readonly actions: DeckActions;
+  /**
+   * The suits that the player picked, which the menu can remove. The normal suits fill the rest.
+   */
+  readonly chosen: readonly string[];
   /** The ID of each suit of the deck, in order. */
   readonly ids: readonly string[];
-  readonly onReverse: (id: string) => void;
   readonly reversed: ReadonlySet<string>;
   /** The rule that stops a suit from being reversed, such as "Up or Down". */
   readonly reverseBlocker: RecipeFlag | undefined;
@@ -307,41 +331,84 @@ function Deck({
   const colorblindMode = useAppSelector(
     (state) => state.session.settings.colorblindMode,
   );
+  const [openId, setOpenId] = useState<string | undefined>();
+  const cardRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  // A dark swap changes the suit's ID, so the menu follows it to the new card.
+  const menuActions: DeckActions = {
+    ...actions,
+    onToggleDark: (id) => {
+      actions.onToggleDark(id);
+      setOpenId(getOtherVersion(id) ?? id);
+    },
+  };
+
+  function close(returnFocus: boolean) {
+    if (returnFocus && openId !== undefined) {
+      cardRefs.current.get(openId)?.focus();
+    }
+    setOpenId(undefined);
+  }
+
   return (
     <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
       <div className="tw:flex tw:gap-[0.3em]" role="group">
         {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
           const id = ids[suitIndex];
-          const name = variant.suits[suitIndex]?.displayName ?? "";
-          const isReversed = id !== undefined && reversed.has(id);
-          const blocked = reverseBlocker !== undefined;
+          if (id === undefined) {
+            return undefined;
+          }
+          const isReversed = reversed.has(id);
+          const name = `${getSuitName(id)}${isReversed ? " Reversed" : ""}`;
+          const open = openId === id;
+          const tooltip = tooltipRefHtml(
+            open
+              ? ""
+              : `<strong>${escapeHtml(name)}</strong><br>Click to make it dark or reversed.`,
+          );
           return (
-            // A disabled button gets no pointer events, so this one only looks disabled, to keep
-            // its tooltip.
-            <button
-              aria-disabled={blocked}
-              aria-label={`${name} Reversed`}
-              aria-pressed={isReversed}
-              className={`tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none ${blocked ? "tw:cursor-not-allowed" : "tw:hover:-translate-y-[2px]"}`}
-              key={suitIndex}
-              onClick={() => {
-                if (!blocked && id !== undefined) {
-                  onReverse(id);
-                }
-              }}
-              ref={tooltipRefHtml(
-                `<strong>${escapeHtml(isReversed ? `${name} Reversed` : name)}</strong><br>${escapeHtml(getReverseTooltip(reverseBlocker, isReversed))}`,
+            <span className="tw:relative" key={id}>
+              <button
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                aria-label={name}
+                className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none tw:hover:-translate-y-[2px]"
+                onClick={() => {
+                  setOpenId(open ? undefined : id);
+                }}
+                ref={(element) => {
+                  if (element === null) {
+                    cardRefs.current.delete(id);
+                  } else {
+                    cardRefs.current.set(id, element);
+                  }
+                  return tooltip(element);
+                }}
+                type="button"
+              >
+                <CardFace
+                  colorblindMode={colorblindMode}
+                  rank={undefined}
+                  suitIndex={suitIndex}
+                  variant={variant}
+                  width={DECK_CARD_WIDTH}
+                />
+              </button>
+              {open && (
+                <SuitMenu
+                  actions={menuActions}
+                  // Cards on the right half open their menu to the left, so that it stays on a
+                  // narrow screen.
+                  alignRight={suitIndex >= variant.suits.length / 2}
+                  id={id}
+                  name={name}
+                  onClose={close}
+                  removable={chosen.includes(id)}
+                  reverseBlocker={reverseBlocker}
+                  reversed={isReversed}
+                />
               )}
-              type="button"
-            >
-              <CardFace
-                colorblindMode={colorblindMode}
-                rank={undefined}
-                suitIndex={suitIndex}
-                variant={variant}
-                width={DECK_CARD_WIDTH}
-              />
-            </button>
+            </span>
           );
         })}
       </div>
@@ -350,19 +417,172 @@ function Deck({
   );
 }
 
-function getReverseTooltip(
+/** The menu of a deck card: whether its suit is dark or reversed, and whether it stays. */
+function SuitMenu({
+  actions,
+  alignRight,
+  id,
+  name,
+  onClose,
+  removable,
+  reverseBlocker,
+  reversed,
+}: {
+  readonly actions: DeckActions;
+  readonly alignRight: boolean;
+  readonly id: string;
+  readonly name: string;
+  /** Closes the menu. `returnFocus` moves the focus back to the card. */
+  readonly onClose: (returnFocus: boolean) => void;
+  readonly removable: boolean;
+  readonly reverseBlocker: RecipeFlag | undefined;
+  readonly reversed: boolean;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  // The listeners below last while the menu is open, so they read the latest callback here.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const otherVersion = getOtherVersion(id);
+  const dark = isDark(id);
+  const darkId = dark ? id : otherVersion;
+  const lightName = getSuitName(dark ? (otherVersion ?? id) : id);
+
+  // The first control takes the focus. A click outside, or Escape, closes the menu.
+  useEffect(() => {
+    menuRef.current
+      ?.querySelector<HTMLElement>("input:not(:disabled), button")
+      ?.focus();
+    function onPointerDown(event: PointerEvent) {
+      const menu = menuRef.current;
+      const card = menu?.parentElement;
+      if (
+        card !== null
+        && card !== undefined
+        && !card.contains(event.target as Node)
+      ) {
+        onCloseRef.current(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      event.stopPropagation();
+      onCloseRef.current(true);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  return (
+    <div
+      aria-label={name}
+      className={`tw:absolute tw:top-full tw:z-10 tw:mt-[0.4em] tw:flex tw:w-max tw:max-w-[16em] tw:flex-col tw:gap-[0.5em] tw:rounded-[0.4em] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-[0.7em] tw:shadow-[0_4px_12px_rgb(0_0_0/0.25)] tw:transition-opacity tw:starting:opacity-0 ${alignRight ? "tw:right-0" : "tw:left-0"}`}
+      ref={menuRef}
+      role="dialog"
+    >
+      <strong>{name}</strong>
+      <MenuCheckbox
+        checked={dark}
+        disabledReason={
+          darkId === undefined ? `${lightName} has no dark version.` : undefined
+        }
+        label={getDarkLabel(darkId)}
+        note="One card of each rank."
+        onChange={() => {
+          actions.onToggleDark(id);
+        }}
+      />
+      <MenuCheckbox
+        checked={reversed}
+        disabledReason={getReverseBlockReason(reverseBlocker)}
+        label="Reversed"
+        note={REVERSED_DESCRIPTION}
+        onChange={() => {
+          actions.onToggleReversed(id);
+        }}
+      />
+      {removable && (
+        <button
+          className="tw:cursor-pointer tw:self-start tw:border-none tw:bg-transparent tw:p-0 tw:text-green-text tw:underline"
+          onClick={() => {
+            onClose(false);
+            actions.onRemove(id);
+          }}
+          type="button"
+        >
+          Remove from deck
+        </button>
+      )}
+    </div>
+  );
+}
+
+function MenuCheckbox({
+  checked,
+  disabledReason,
+  label,
+  note,
+  onChange,
+}: {
+  readonly checked: boolean;
+  /** Why the box cannot change, if it cannot. */
+  readonly disabledReason: string | undefined;
+  readonly label: string;
+  /** What the box does, under its label. */
+  readonly note: string;
+  readonly onChange: () => void;
+}) {
+  const disabled = disabledReason !== undefined;
+  const id = useId();
+  // The site's stylesheet draws the box from the label that follows the input.
+  return (
+    <div className={disabled ? "tw:opacity-60" : undefined}>
+      <input
+        checked={checked}
+        disabled={disabled}
+        id={id}
+        onChange={onChange}
+        type="checkbox"
+      />
+      <label
+        className={disabled ? "tw:cursor-not-allowed" : undefined}
+        htmlFor={id}
+      >
+        <span className="tw:block tw:leading-[1.8em]">{label}</span>
+        <span className="tw:block tw:text-[0.85em] tw:leading-snug tw:text-text-label">
+          {disabledReason ?? note}
+        </span>
+      </label>
+    </div>
+  );
+}
+
+/** The label of the dark box, with the dark suit's own name when it has one, such as Gray. */
+function getDarkLabel(darkId: string | undefined): string {
+  if (darkId === undefined) {
+    return "Dark";
+  }
+  const darkName = getSuitName(darkId);
+  return darkName.startsWith("Dark ") ? "Dark" : `Dark (${darkName})`;
+}
+
+function getReverseBlockReason(
   blocker: RecipeFlag | undefined,
-  reversed: boolean,
-): string {
+): string | undefined {
   if (blocker === "updown") {
-    return "In Up or Down, every suit can go up or down, so no suit can be reversed.";
+    return "In Up or Down, every suit can go up or down.";
   }
   if (blocker === "sudoku") {
-    return "In Sudoku, every stack goes up, so no suit can be reversed.";
+    return "In Sudoku, every stack goes up.";
   }
-  return reversed
-    ? "Click to play this suit from 1 up to 5 again."
-    : `Click to reverse this suit. ${REVERSED_DESCRIPTION}`;
+  return undefined;
 }
 
 /** A suit's color, or the stripes of its colors for a suit with several, such as Rainbow. */

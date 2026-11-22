@@ -4,6 +4,7 @@ import type { Choice } from "./variantBuilder.ts";
 import {
   getCatalogName,
   getChoice,
+  getOtherVersion,
   getParts,
   getRecipe,
   getReverseBlocker,
@@ -11,6 +12,7 @@ import {
   getVariantName,
   setNumSuits,
   setSpecialRank,
+  toggleDark,
   toggleFlag,
   toggleReversed,
   toggleScarceOnes,
@@ -95,9 +97,17 @@ describe("variant builder", () => {
     const dark = build(
       FIVE_SUITS,
       (c) => toggleSuit(c, "ra"),
-      (c) => toggleSuit(c, "ra.dark"),
+      (c) => toggleReversed(c, "ra"),
+      (c) => toggleDark(c, "ra"),
     );
     expect(dark.suits).toEqual(["ra.dark"]);
+    expect(getRecipe(dark)).toBe("r-y-g-b-ra.dark.rev");
+    expect(getRecipe(toggleDark(dark, "ra.dark"))).toBe("r-y-g-b-ra.rev");
+    // The chip of Rainbow removes Dark Rainbow.
+    expect(toggleSuit(dark, "ra").suits).toEqual([]);
+    // Red has no dark version.
+    expect(getOtherVersion("r")).toBeUndefined();
+    expect(toggleDark(FIVE_SUITS, "r")).toBe(FIVE_SUITS);
 
     const full = build(
       getChoice("r"),
