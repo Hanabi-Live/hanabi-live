@@ -307,15 +307,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         return;
     };
     let app = router(db.pool.clone(), &config());
-    let stat_pattern =
-        regex!(r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#);
-    let normalize = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
-    let stats_values = |html: &str| {
-        stat_pattern
-            .captures_iter(html)
-            .map(|item| normalize(&item[2]))
-            .collect::<Vec<_>>()
-    };
     #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES
@@ -624,16 +615,17 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .unwrap();
     // A player's time counts each game once rather than once per player.
     let (_, body) = request(app.clone(), "/scores/Alice").await;
-    let values = stats_values(&body);
+    let statistics = &page_table(&body)["statistics"];
     assert_eq!(
-        values[1..5],
         [
-            "2 (1 normally finished)",
-            "2 hours and 0 minutes",
-            "1",
-            "1 hour and 0 minutes",
+            &statistics["numGamesTotal"],
+            &statistics["numGamesNormal"],
+            &statistics["timePlayedSeconds"],
+            &statistics["numGamesSpeedrun"],
+            &statistics["timePlayedSpeedrunSeconds"],
         ],
-        "{values:?}"
+        [&json!(2), &json!(1), &json!(7200), &json!(1), &json!(3600)],
+        "{statistics}"
     );
     let (status, body) = request(
         app.clone(),

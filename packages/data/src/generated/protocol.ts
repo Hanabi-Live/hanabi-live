@@ -1399,7 +1399,8 @@ export const publicPageTableSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       achievements: z.array(achievementSchema).readonly(),
-      type: z.literal("achievements"),
+      statistics: playerStatisticsSchema,
+      type: z.literal("profile"),
     })
     .readonly(),
   z

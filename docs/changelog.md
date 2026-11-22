@@ -18,6 +18,8 @@ of the repository.
   shows how many of the players with an achievement have it.
 - Profiles no longer show the table of best scores on each variant.
 - Profiles no longer have the "Missing scores" tab.
+- Profiles show their statistics in two short lists, games and time. Each
+  achievement shows the cards of its suit, in color once it is unlocked.
 
 ## November 21st, 2026
 

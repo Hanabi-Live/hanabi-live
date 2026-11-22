@@ -134,7 +134,7 @@ pub(super) async fn page(
     };
     // Redirects to the page's JSON API.
     let api_redirect = q.flag("api").map_err(HttpError::bad)?;
-    let mut v = json!({"title":"History","page":mode,"stats":{}});
+    let mut v = json!({"title":"History","page":mode});
     match mode {
         "export" => {
             return Ok(replay::export(&state, &params)
@@ -172,10 +172,15 @@ pub(super) async fn page(
                     }
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let (statistics, joined) = player_statistics(&state, users[0].0).await?;
-                    v["stats"] = statistics_value(&statistics, joined);
+                    let statistics = player_statistics(&state, users[0].0).await?;
                     let achievements = achievements(&state, users[0].0).await?;
-                    set_table(&mut v, &PublicPageTable::Achievements { achievements })?;
+                    set_table(
+                        &mut v,
+                        &PublicPageTable::Profile {
+                            statistics,
+                            achievements,
+                        },
+                    )?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -310,12 +315,6 @@ fn percentage(n: i64, total: i64) -> f64 {
         float(n) * 100.0 / float(total)
     }
 }
-fn duration(seconds: i64) -> String {
-    match u64::try_from(seconds) {
-        Ok(0) | Err(_) => "-".into(),
-        Ok(seconds) => crate::lifecycle::duration(seconds),
-    }
-}
 pub(super) fn possessive(name: &str) -> String {
     if name.ends_with(['s', 'S']) {
         format!("{name}'")
@@ -341,12 +340,8 @@ const SEED_AVERAGES_LIFETIME: std::time::Duration = if cfg!(test) {
 } else {
     std::time::Duration::from_mins(5)
 };
-/// A player's game counts, time played, and the date they joined. The date is also returned as a
-/// time, so that the profile can show it in words.
-async fn player_statistics(
-    state: &PublicState,
-    user: i32,
-) -> Result<(PlayerStatistics, time::OffsetDateTime)> {
+/// A player's game counts, time played, and the date they joined.
+async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStatistics> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
@@ -371,7 +366,7 @@ async fn player_statistics(
     )
     .fetch_one(&state.pool)
     .await?;
-    let statistics = PlayerStatistics {
+    Ok(PlayerStatistics {
         num_games_normal: Count::try_from(row.normal)?,
         num_games_other: Count::try_from(row.other)?,
         num_games_total: Count::try_from(row.normal + row.other)?,
@@ -385,28 +380,6 @@ async fn player_statistics(
                 .saturating_add(account.seconds_reviewing),
         )?,
         date_joined: account.datetime_created.into(),
-    };
-    Ok((statistics, account.datetime_created))
-}
-
-/// A player's statistics as their profile shows them, with durations and the joined date in words.
-fn statistics_value(statistics: &PlayerStatistics, date: time::OffsetDateTime) -> Value {
-    let suffix = match date.day() {
-        1 | 21 | 31 => "st",
-        2 | 22 => "nd",
-        3 | 23 => "rd",
-        _ => "th",
-    };
-    json!({
-        "numGamesNormal": statistics.num_games_normal,
-        "numGamesOther": statistics.num_games_other,
-        "numGamesTotal": statistics.num_games_total,
-        "numGamesSpeedrun": statistics.num_games_speedrun,
-        "timePlayed": duration(statistics.time_played_seconds.get()),
-        "timePlayedSpeedrun": duration(statistics.time_played_speedrun_seconds.get()),
-        "timeReviewed": duration(statistics.time_reviewed_seconds.get()),
-        "timeTotal": duration(statistics.time_total_seconds.get()),
-        "dateJoined": format!("{} {}{}, {}", date.month(), date.day(), suffix, date.year()),
     })
 }
 
@@ -416,7 +389,7 @@ pub(super) async fn player_scores(
     user: i32,
     name: &str,
 ) -> Result<PlayerScores> {
-    let (statistics, _) = player_statistics(state, user).await?;
+    let statistics = player_statistics(state, user).await?;
     Ok(PlayerScores {
         name: name.into(),
         statistics,

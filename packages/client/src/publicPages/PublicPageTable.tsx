@@ -3,6 +3,7 @@ import type * as z from "zod";
 import { GameList } from "../gameList/GameList.tsx";
 import { Achievements } from "./Achievements.tsx";
 import { MissingScoresTable } from "./MissingScoresTable.tsx";
+import { ProfileStatistics } from "./ProfileStatistics.tsx";
 
 export function PublicPageTable({
   table,
@@ -10,8 +11,13 @@ export function PublicPageTable({
   readonly table: z.infer<typeof publicPageTableSchema>;
 }): React.JSX.Element {
   switch (table.type) {
-    case "achievements": {
-      return <Achievements achievements={table.achievements} />;
+    case "profile": {
+      return (
+        <>
+          <ProfileStatistics statistics={table.statistics} />
+          <Achievements achievements={table.achievements} />
+        </>
+      );
     }
 
     case "missingScores": {

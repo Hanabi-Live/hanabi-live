@@ -1,8 +1,3 @@
-.stat-description {
-  display: inline-block;
-  width: 19em;
-}
-
 /* History Pages */
 /* Space between the header bar and the box */
 .history-page {
@@ -30,19 +25,6 @@ table.history {
 .history th.center,
 .history td.center {
   text-align: center;
-}
-
-.history-bullets {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  width: 100%;
-  align-items: flex-start;
-  justify-content: space-around;
-}
-
-.history-bullets ul {
-  flex-direction: column;
 }
 
 /* The links between a player's pages are tabs. The tab of the current page has a brass line under

@@ -346,8 +346,11 @@ named_enum! {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum PublicPageTable {
-    /// A player's achievements, on their profile.
-    Achievements { achievements: Vec<Achievement> },
+    /// A player's profile: their game counts, their time, and their achievements.
+    Profile {
+        statistics: PlayerStatistics,
+        achievements: Vec<Achievement>,
+    },
     /// The max scores that one or more players are missing.
     MissingScores {
         rows: Vec<MissingScore>,

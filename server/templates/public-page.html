@@ -35,51 +35,7 @@
           </p>
           <div id="password-reset"></div>
           <p class="align-center"><a href="/">Back to Hanab Live</a></p>
-          {% else %} {% if page == "scores" %}
-          <div class="history-bullets">
-            <ul>
-              {% if stats.dateJoined %}
-              <li>
-                <span class="stat-description">Date joined:</span> {{
-                stats.dateJoined }}
-              </li>
-              {% endif %}
-              <li>
-                <span class="stat-description"
-                  >Games played (in non-speedruns):</span
-                >
-                {{ stats.numGamesTotal }} ({{ stats.numGamesNormal }} normally
-                finished)
-              </li>
-              <li>
-                <span class="stat-description"
-                  >Time spent playing (in non-speedruns):</span
-                >
-                {{ stats.timePlayed }}
-              </li>
-              <li>
-                <span class="stat-description"
-                  >Games played (in speedruns):</span
-                >
-                {{ stats.numGamesSpeedrun }}
-              </li>
-              <li>
-                <span class="stat-description"
-                  >Time spent playing (in speedruns):</span
-                >
-                {{ stats.timePlayedSpeedrun }}
-              </li>
-              <li>
-                <span class="stat-description">Time spent reviewing:</span>
-                {{ stats.timeReviewed }}
-              </li>
-              <li>
-                <span class="stat-description">Total time spent:</span> {{
-                stats.timeTotal }}
-              </li>
-            </ul>
-          </div>
-          {% endif %} {% if page in ["tags", "tag"] %}
+          {% else %} {% if page in ["tags", "tag"] %}
           <h3 class="align-center">
             {% if total == 0 %}{% if page == "tags" %}No tagged games.{% else
             %}No games played.{% endif %}{% else %}Total games:
