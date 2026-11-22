@@ -9,8 +9,8 @@ of the repository.
 
 ## November 22nd, 2026
 
-- Profiles now show achievements. The first one, "I've Got the Hang of This", is
-  for getting the max score in 10 games of No Variant.
+- Profiles now show achievements: "I've Got the Hang of This" and "Core
+  Mastery", for getting the max score in 10 and 100 games of No Variant.
 
 ## November 21st, 2026
 

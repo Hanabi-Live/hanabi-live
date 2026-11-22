@@ -248,7 +248,8 @@ pub struct PlayerScores {
 named_enum! {
     /// An achievement that a player can unlock.
     pub enum AchievementId {
-        NoVariantWins => "noVariantWins",
+        NoVariant10Wins => "noVariant10Wins",
+        NoVariant100Wins => "noVariant100Wins",
     }
 }
 

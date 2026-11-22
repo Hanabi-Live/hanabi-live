@@ -921,12 +921,15 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
     let app = router(db.pool.clone(), &config());
     let (status, body) = request(app.clone(), "/profile/Alice").await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    let achievement = &page_table(&body)["achievements"][0];
-    assert_eq!(achievement["id"], "noVariantWins");
-    assert_eq!(achievement["progress"], 9);
-    assert_eq!(achievement["goal"], achievements::NO_VARIANT_WINS_GOAL);
-    assert!(achievement.get("dateUnlocked").is_none());
-    // The tenth win unlocks it, and later wins do not move the date.
+    let table = page_table(&body);
+    for (index, (_, _, goal)) in achievements::NO_VARIANT_WIN_ACHIEVEMENTS.iter().enumerate() {
+        let achievement = &table["achievements"][index];
+        assert_eq!(achievement["progress"], 9);
+        assert_eq!(achievement["goal"], *goal);
+        assert!(achievement.get("dateUnlocked").is_none());
+    }
+    assert_eq!(table["achievements"][0]["id"], "noVariant10Wins");
+    // The tenth win unlocks the first achievement, and later wins do not move the date.
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -951,5 +954,10 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
     let achievement = &scores["achievements"][0];
     assert_eq!(achievement["progress"], 10);
     assert_eq!(achievement["dateUnlocked"], "2026-02-14T01:00:00.000Z");
+    // The 11 wins count toward the next achievement, which they do not unlock.
+    let achievement = &scores["achievements"][1];
+    assert_eq!(achievement["id"], "noVariant100Wins");
+    assert_eq!(achievement["progress"], 11);
+    assert!(achievement.get("dateUnlocked").is_none());
     db.close().await;
 }
