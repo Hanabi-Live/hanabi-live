@@ -19,9 +19,9 @@ pub use seeds::blocked_seeds;
 pub use settings::get_settings;
 use settings::set_settings;
 
-use crate::routing::{Route, route};
+use crate::routing::{LobbyRequest, route};
 use crate::transport::{Identity, Outgoing};
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use hanabi_protocol::ClientRequest;
 use hanabi_protocol::UserId;
 use std::sync::Arc;
@@ -149,14 +149,12 @@ pub async fn dispatch(
     rendered: Option<&str>,
     message: ClientRequest,
 ) -> Result<Option<Vec<Effect>>> {
-    ensure!(
-        matches!(route(&message), Route::Lobby | Route::TableChat(_)),
-        "The lobby does not run {}",
-        message.name()
-    );
+    let request = route(&message)
+        .lobby()
+        .with_context(|| format!("The lobby does not run {}", message.name()))?;
     ensure!(caller.user.get() > 0, "Invalid caller");
-    let effects = match message {
-        ClientRequest::Settings(request) => {
+    let effects = match request {
+        LobbyRequest::Settings(request) => {
             set_settings(pool, caller.user, &request.settings, &request.cleared).await?;
             let mut effects = vec![];
             if let Some(conventions) = request.settings.h_group_conventions {
@@ -165,7 +163,7 @@ pub async fn dispatch(
             if let Some(level) = request.settings.h_group_level {
                 effects.push(Publication::HGroupLevel(Some(level)).into());
             }
-            for setting in request.cleared {
+            for setting in &request.cleared {
                 match setting {
                     hanabi_protocol::OptionalSetting::HGroupLevel => {
                         effects.push(Publication::HGroupLevel(None).into());
@@ -174,10 +172,10 @@ pub async fn dispatch(
             }
             effects
         }
-        ClientRequest::UserInactive(request) => {
+        LobbyRequest::UserInactive(request) => {
             vec![Publication::Inactive(request.inactive).into()]
         }
-        ClientRequest::Chat(request) => {
+        LobbyRequest::Chat(request) => {
             return chat::lobby_chat(
                 pool,
                 secret,
@@ -189,32 +187,32 @@ pub async fn dispatch(
             .await;
         }
 
-        ClientRequest::ChatPm(request) => {
+        LobbyRequest::ChatPm(request) => {
             chat::private_message(pool, caller, online, &request.text, &request.recipient).await?
         }
-        ClientRequest::ChatPmHistory(request) => {
-            chat::private_history(pool, caller, &request).await?
+        LobbyRequest::ChatPmHistory(request) => {
+            chat::private_history(pool, caller, request).await?
         }
-        ClientRequest::LinkList(_) => relationships::linked_list(pool, caller).await?,
-        ClientRequest::FriendAdd(request) => {
+        LobbyRequest::LinkList => relationships::linked_list(pool, caller).await?,
+        LobbyRequest::FriendAdd(request) => {
             relationships::relationship(pool, caller, Change::Friend, &request.username).await?
         }
-        ClientRequest::FriendRemove(request) => {
+        LobbyRequest::FriendRemove(request) => {
             relationships::relationship(pool, caller, Change::Unfriend, &request.username).await?
         }
-        ClientRequest::LinkAdd(request) => {
+        LobbyRequest::LinkAdd(request) => {
             relationships::relationship(pool, caller, Change::Link, &request.username).await?
         }
-        ClientRequest::LinkRemove(request) => {
+        LobbyRequest::LinkRemove(request) => {
             relationships::relationship(pool, caller, Change::Unlink, &request.username).await?
         }
-        ClientRequest::BlockAdd(request) => {
+        LobbyRequest::BlockAdd(request) => {
             relationships::relationship(pool, caller, Change::Block, &request.username).await?
         }
-        ClientRequest::BlockRemove(request) => {
+        LobbyRequest::BlockRemove(request) => {
             relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
         }
-        ClientRequest::TagSearch(request) => {
+        LobbyRequest::TagSearch(request) => {
             let tag = match crate::model::normalize_tag(request.tag.as_str()) {
                 Ok(tag) => tag,
                 Err(message) => return refused(message),
@@ -235,7 +233,6 @@ pub async fn dispatch(
                 &format!("Games matching \"{tag}\": {list}"),
             )]
         }
-        _ => unreachable!("the route check admits only lobby commands"),
     };
     Ok(Some(effects))
 }

@@ -35,15 +35,81 @@ use axum::{
 use serde::Serialize;
 use std::{collections::BTreeMap, net::SocketAddr, sync::Arc};
 
+/// A restriction that an administrator puts on an account's IP address.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Restriction {
+    Ban,
+    Mute,
+}
+
+/// A command of the localhost operations interface.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Command {
+    Restrict(Restriction),
+    GracefulRestart,
+    GracefulStop,
+    Metrics,
+    Version,
+}
+
+impl Command {
+    const ALL: [Self; 6] = [
+        Self::Restrict(Restriction::Ban),
+        Self::Restrict(Restriction::Mute),
+        Self::GracefulRestart,
+        Self::GracefulStop,
+        Self::Metrics,
+        Self::Version,
+    ];
+
+    const fn path(self) -> &'static str {
+        match self {
+            Self::Restrict(Restriction::Ban) => "/ban",
+            Self::Restrict(Restriction::Mute) => "/mute",
+            Self::GracefulRestart => "/gracefulRestart",
+            Self::GracefulStop => "/gracefulStop",
+            Self::Metrics => "/metrics",
+            Self::Version => "/version",
+        }
+    }
+
+    fn from_path(path: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|command| command.path() == path)
+    }
+
+    /// Whether the command changes state.
+    const fn changes_state(self) -> bool {
+        !matches!(self, Self::Metrics | Self::Version)
+    }
+
+    /// Whether the command waits for the lifecycle to admit it. A graceful restart checks the
+    /// lifecycle itself.
+    const fn admitted(self) -> bool {
+        matches!(self, Self::Restrict(_) | Self::GracefulStop)
+    }
+
+    /// The query parameters that the command takes, and the fields of its form body, if it takes
+    /// one.
+    const fn accepted(self) -> (&'static [&'static str], Option<&'static [&'static str]>) {
+        match self {
+            Self::Restrict(_) => (&[], Some(&["username"])),
+            Self::GracefulRestart | Self::GracefulStop => (&["message"], None),
+            Self::Metrics | Self::Version => (&[], None),
+        }
+    }
+}
+
 pub fn router(control: Arc<Control>) -> Router {
     let mut router = Router::new();
-    // Commands that change state take only POST, so that a page cannot send them with a link or an
-    // image.
-    for path in ["/ban", "/mute", "/gracefulRestart", "/gracefulStop"] {
-        router = router.route(path, post(handle));
-    }
-    for path in ["/metrics", "/version"] {
-        router = router.route(path, get(handle));
+    for command in Command::ALL {
+        // Commands that change state take only POST, so that a page cannot send them with a link
+        // or an image.
+        let method = if command.changes_state() {
+            post(handle)
+        } else {
+            get(handle)
+        };
+        router = router.route(command.path(), method);
     }
     router
         .fallback(|| async { (StatusCode::NOT_FOUND, "Not found.\n") })
@@ -66,9 +132,6 @@ fn loopback_host(host: &[u8]) -> bool {
     matches!(authority.host(), "localhost" | "127.0.0.1" | "[::1]")
 }
 
-fn mutating(path: &str) -> bool {
-    matches!(path, "/ban" | "/mute" | "/gracefulStop")
-}
 async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next) -> Response {
     let peer = request.extensions().get::<ConnectInfo<SocketAddr>>();
     // A page on another domain can resolve that domain to this machine (DNS rebinding). Its
@@ -86,7 +149,7 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
     let response = if browser || !peer.is_some_and(|p| p.0.ip().is_loopback()) {
         (StatusCode::FORBIDDEN,"Browser or non-loopback requests are not allowed on the localhost operations interface.\n").into_response()
     } else {
-        let admission = if mutating(request.uri().path()) {
+        let admission = if Command::from_path(request.uri().path()).is_some_and(Command::admitted) {
             Some(control.lifecycle.admit_operation().await)
         } else {
             None
@@ -148,14 +211,11 @@ fn downtime_message(query: &Query) -> Result<Option<String>> {
     Ok(Some(message.to_owned()))
 }
 async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result<Response> {
-    let path = request.uri().path().to_owned();
-    // Each command takes exactly these query parameters, and a form body only if it lists fields.
-    let (accepted_query, accepted_body): (&[&str], Option<&[&str]>) = match path.as_str() {
-        "/ban" | "/mute" => (&[], Some(&["username"])),
-        "/gracefulRestart" | "/gracefulStop" => (&["message"], None),
-        "/metrics" | "/version" => (&[], None),
-        _ => return Err(HttpError::not_found("Not found.\n")),
+    let Some(command) = Command::from_path(request.uri().path()) else {
+        return Err(HttpError::not_found("Not found.\n"));
     };
+    // Each command takes exactly these query parameters, and a form body only if it lists fields.
+    let (accepted_query, accepted_body) = command.accepted();
     let query =
         Query::parse(request.uri().query(), accepted_query).map_err(|message| bad(&message))?;
     let body = to_bytes(request.into_body(), crate::query::MAX_FORM_BODY_BYTES)
@@ -175,9 +235,9 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         None if body.is_empty() => Query::default(),
         None => return Err(bad("This command takes no body.")),
     };
-    match path.as_str() {
-        "/ban" | "/mute" => return user_action(&control, &path, &body).await,
-        "/gracefulRestart" => {
+    match command {
+        Command::Restrict(restriction) => return restrict(&control, restriction, &body).await,
+        Command::GracefulRestart => {
             if control.lifecycle.phase() == Phase::Starting {
                 return Err(HttpError::Refused(
                     StatusCode::SERVICE_UNAVAILABLE,
@@ -193,14 +253,13 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
                 )?))
                 .await?;
         }
-        "/gracefulStop" => control.graceful_stop(downtime_message(&query)?).await?,
-        "/metrics" => return metrics_report(&control).await,
-        "/version" => return Ok(format!("{}\n", control.version).into_response()),
-        _ => unreachable!("Every command is listed above"),
+        Command::GracefulStop => control.graceful_stop(downtime_message(&query)?).await?,
+        Command::Metrics => return metrics_report(&control).await,
+        Command::Version => return Ok(format!("{}\n", control.version).into_response()),
     }
     Ok("success\n".into_response())
 }
-async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Response> {
+async fn restrict(control: &Control, restriction: Restriction, body: &Query) -> Result<Response> {
     let name = body
         .get("username")
         .filter(|v| !v.is_empty())
@@ -218,41 +277,46 @@ async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Resp
     let id: i32 = account.id;
     let username: String = account.username.clone();
     let ip: String = account.last_ip.clone();
-    let result = if path == "/ban" {
-        sqlx::query!(
-            "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
-            &ip,
-            id
-        )
-        .execute(&control.pool)
-        .await
-    } else {
-        sqlx::query!(
-            "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
-            &ip,
-            id
-        )
-        .execute(&control.pool)
-        .await
+    let result = match restriction {
+        Restriction::Ban => {
+            sqlx::query!(
+                "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+                &ip,
+                id
+            )
+            .execute(&control.pool)
+            .await
+        }
+        Restriction::Mute => {
+            sqlx::query!(
+                "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+                &ip,
+                id
+            )
+            .execute(&control.pool)
+            .await
+        }
     };
     let inserted = result.map_err(anyhow::Error::from)?.rows_affected() > 0;
     if !inserted {
         return Ok(format!(
             "User \"{username}\" has an IP of \"{ip}\", but it is already {}.\n",
-            if path == "/ban" { "banned" } else { "muted" }
+            match restriction {
+                Restriction::Ban => "banned",
+                Restriction::Mute => "muted",
+            }
         )
         .into_response());
     }
     control
-        .operation(if path == "/ban" {
-            Operation::Ban {
+        .operation(match restriction {
+            Restriction::Ban => Operation::Ban {
                 user_id: UserId::try_from(id)?,
                 ip: ip.clone(),
-            }
-        } else {
-            Operation::Mute {
+            },
+            Restriction::Mute => Operation::Mute {
                 user_id: UserId::try_from(id)?,
-            }
+            },
         })
         .await?;
     Ok("success\n".into_response())

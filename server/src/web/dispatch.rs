@@ -241,7 +241,7 @@ pub(super) async fn dispatch(
         "This session was replaced or disconnected. Reconnect before sending commands."
     );
     let mut measurement = crate::metrics::COMMAND_METRICS.start(message.name());
-    if route == Route::Connection {
+    if matches!(route, Route::Connection) {
         session.emit(&frame(
             hanabi_protocol::event::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading {},
@@ -250,7 +250,7 @@ pub(super) async fn dispatch(
         measurement.success();
         return Ok(None);
     }
-    let message = if matches!(route, Route::Lobby | Route::TableChat(_)) {
+    let message = if route.lobby().is_some() {
         let outcome = request(user, |reply| user::UserCommand::Lobby {
             session: session.clone(),
             message: Box::new(message),
