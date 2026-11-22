@@ -194,7 +194,7 @@ export function VariantBuilder({
               <Chip
                 enabled={canAddSuit(choice, id)}
                 key={id}
-                label={suit.name}
+                label={suit.displayName}
                 onClick={() => {
                   choose(toggleSuit(choice, id));
                 }}

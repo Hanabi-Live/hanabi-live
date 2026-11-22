@@ -162,7 +162,7 @@ const CLUE_FLAGS = new ReadonlySet<RecipeFlag>([
 
 /** The groups of suits that the builder shows, in order. */
 export type SuitGroup =
-  "special" | "dark" | "ambiguous" | "dualColor" | "matryoshka";
+  "hidden" | "special" | "dark" | "ambiguous" | "dualColor" | "matryoshka";
 
 /** A suit that a player can add to a deck. */
 interface SuitPart {
@@ -336,7 +336,7 @@ function getSharedColorText(suit: Suit): string | undefined {
             .toSorted()
             .join(",") === key,
       )
-      .map(({ name }) => name);
+      .map(({ displayName }) => displayName);
     const twinText =
       twins.length === 0
         ? ""
@@ -352,7 +352,7 @@ function getSharedColorText(suit: Suit): string | undefined {
         && other.clueColors[0]?.name === color,
     )
     .slice(0, MAX_NAMED_SUITS)
-    .map(({ name }) => name);
+    .map(({ displayName }) => displayName);
   const shade = color.toLowerCase();
   return `${color} clues touch its cards, and the cards of other ${shade} suits, such as ${joinNames(others)}. With two ${shade} suits in a game, a ${color} clue cannot tell them apart, so the players must find the suit another way.${ranks}`;
 }
@@ -429,6 +429,9 @@ function getSuitGroup(id: string, suit: Suit): SuitGroup {
   if (SPECIAL_SUIT_IDS.has(id)) {
     return "special";
   }
+  if (HIDDEN_SUIT_IDS.has(id)) {
+    return "hidden";
+  }
   // Every other suit takes the clues of other colors: one, such as Tomato (Red), or several, such
   // as Tangerine (Red and Yellow).
   if (MATRYOSHKA_SUIT_IDS.has(id)) {
@@ -436,6 +439,12 @@ function getSuitGroup(id: string, suit: Suit): SuitGroup {
   }
   return suit.clueColors.length > 1 ? "dualColor" : "ambiguous";
 }
+
+/**
+ * The suits that the builder does not offer, though it reads them in a catalog recipe. These shades
+ * of the "Extremely Ambiguous" set play exactly like Sky, Berry, and Navy, whose names they show.
+ */
+const HIDDEN_SUIT_IDS = new ReadonlySet(["berryea", "navyea", "skyea"]);
 
 /** The suits of the Matryoshka set, which nest one inside the next: Yam has 2 colors, Taupe 6. */
 const MATRYOSHKA_SUIT_IDS = new ReadonlySet([
@@ -590,7 +599,10 @@ function sortSuits(ids: readonly string[]): readonly string[] {
     const suit = getSuitsById().get(id);
     const group = suit === undefined ? undefined : getSuitGroup(id, suit);
     const leads =
-      group === "ambiguous" || group === "dualColor" || group === "matryoshka";
+      group === "ambiguous"
+      || group === "hidden"
+      || group === "dualColor"
+      || group === "matryoshka";
     return (leads ? 0 : order.length) + order.indexOf(id);
   }
   return ids.toSorted((a, b) => getKey(a) - getKey(b));
@@ -672,8 +684,9 @@ export function toggleDark(choice: Choice, id: string): Choice {
 }
 
 /** The name of a suit, by its ID, such as "Gray" for "wh.dark". */
+/** The name of a suit as a game shows it, such as "Ice" for the suit "Ice EA". */
 export function getSuitName(id: string): string {
-  return getSuitsById().get(id)?.name ?? id;
+  return getSuitsById().get(id)?.displayName ?? id;
 }
 
 /** What a suit does in a game, by its ID. See `getSuitDescription`. */
@@ -928,7 +941,7 @@ export function getVariantName(choice: Choice): string {
     if (!reversed && NORMAL_SUIT_IDS.has(id)) {
       continue;
     }
-    const name = getSuitsById().get(id)?.name ?? id;
+    const name = getSuitName(id);
     names.push(reversed ? `${name}${SUIT_REVERSED_SUFFIX}` : name);
   }
   const suits = `${choice.numSuits} ${choice.numSuits === 1 ? "Suit" : "Suits"}`;
