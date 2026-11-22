@@ -128,7 +128,7 @@ function Toast({
 
   return (
     <button
-      className="tw:pointer-events-auto tw:flex tw:w-full tw:cursor-pointer tw:[font:inherit] tw:[letter-spacing:inherit] tw:items-center tw:gap-3 tw:rounded-lg tw:border tw:border-l-4 tw:border-border tw:border-l-[var(--button-primary-bg)] tw:bg-surface-panel tw:p-2.5 tw:text-left tw:text-text tw:shadow-[0_6px_18px_rgb(0_0_0/0.35)]"
+      className="tw:pointer-events-auto tw:flex tw:w-full tw:cursor-pointer tw:[font:inherit] tw:[letter-spacing:inherit] tw:items-center tw:gap-3 tw:rounded-lg tw:border-2 tw:border-[var(--button-primary-bg)] tw:bg-surface-panel tw:p-2.5 tw:text-left tw:text-text tw:shadow-[0_6px_18px_rgb(0_0_0/0.35)]"
       onClick={close}
       onMouseEnter={() => {
         setHovered(true);
