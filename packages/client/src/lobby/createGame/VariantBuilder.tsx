@@ -106,6 +106,10 @@ export function VariantBuilder({
   }
 
   const deckIds = getDeckSuitIds(choice);
+  const specialRule = parts.specialRanks.find(
+    ({ code }) => code === choice.specialRank?.code,
+  );
+  const removesRankClue = specialRule?.removesRankClue === true;
   const deck =
     catalogName === undefined
       ? getDeckVariant(choice, getVariantName(choice))
@@ -181,7 +185,7 @@ export function VariantBuilder({
         ))}
       </PartRow>
 
-      {choice.specialRank !== undefined && (
+      {specialRule !== undefined && (
         <PartRow label="Which rank">
           {RULE_RANKS.map((rank) => (
             <Chip
@@ -193,7 +197,9 @@ export function VariantBuilder({
                 choose(setSpecialRank(choice, rank));
               }}
               pressed={choice.specialRank?.rank === rank}
-              tooltip={`The rule above changes the ${rank}s.`}
+              tooltip={`The rule above changes the ${rank}s.${
+                removesRankClue ? ` There is no ${rank} clue.` : ""
+              }`}
             />
           ))}
         </PartRow>

@@ -177,6 +177,11 @@ interface SpecialRankRule {
   readonly code: string;
   readonly name: string;
   readonly description: string;
+  /**
+   * Whether the variant has no clue for the rank, as the engine decides: a rank that every rank
+   * clue touches, or none, or that Deceptive touches with other clues.
+   */
+  readonly removesRankClue: boolean;
 }
 
 export interface FlagPart {
@@ -250,19 +255,22 @@ function readParts(): Parts {
       || suit.allClueRanks
       || suit.noClueColors
       || suit.noClueRanks;
-    if (special && !suit.oneOfEach && !suit.prism && !suit.inverted) {
-      specialRanks.push({
-        code: id,
-        name: suit.displayName,
-        description: `The cards of one rank are touched like ${suit.displayName} cards. ${getClueText(suit, "them")}`,
-      });
+    if (!special || suit.oneOfEach || suit.prism || suit.inverted) {
+      continue;
     }
+    const removesRankClue = suit.allClueRanks || suit.noClueRanks;
+    specialRanks.push({
+      code: id,
+      name: suit.displayName,
+      description: `The cards of one rank are touched like ${suit.displayName} cards. ${getClueText(suit, "them")}${removesRankClue ? ` ${NO_RANK_CLUE}` : ""}`,
+      removesRankClue,
+    });
   }
   specialRanks.push({
     code: RECIPE_DECEPTIVE_RANK,
     name: "Deceptive",
-    description:
-      "The clue of their own rank does not touch the cards of one rank. Instead, one other rank clue touches each of them: the lowest for the first suit, the next for the second suit, and so on.",
+    description: `The clue of their own rank does not touch the cards of one rank. Instead, one other rank clue touches each of them: the lowest for the first suit, the next for the second suit, and so on. ${NO_RANK_CLUE}`,
+    removesRankClue: true,
   });
 
   const flags = recipeFlagSchema.options.map((flag) => ({
@@ -359,6 +367,9 @@ function joinNames(names: readonly string[]): string {
     ? names.join(" and ")
     : `${names.slice(0, -1).join(", ")}, and ${names.at(-1)}`;
 }
+
+/** Says that a special rank takes away the clue of its own rank. */
+const NO_RANK_CLUE = "There is no clue for that rank.";
 
 export const REVERSED_DESCRIPTION =
   "Reverse suits play from 5 down to 1. They have one 1 and three 5s.";
