@@ -216,11 +216,10 @@ impl<'a> ChatCommand<'a> {
 
     pub fn classification(&self) -> Classification {
         match self.kind {
+            // A table command in the lobby only tells its sender to use it at a table.
             CommandKind::Token
             | CommandKind::Runtime(RuntimeCommand::Uptime)
-            | CommandKind::Table(TableChatCommand::Seed | TableChatCommand::Id) => {
-                Classification::Private
-            }
+            | CommandKind::Table(_) => Classification::Private,
             CommandKind::Reply(response) if response.private => Classification::Private,
             CommandKind::Unknown => Classification::Unknown,
             _ => Classification::Public,
@@ -285,12 +284,11 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<Ext
     }
     let response = match command.general_response() {
         Some(GeneralResponse::Public(response)) => response,
-        Some(GeneralResponse::Private(_)) => return Ok(None),
         Some(GeneralResponse::Runtime { command, args }) => {
             return Ok(Some(ExternalReply::Runtime { command, args }));
         }
-        // Only the table commands are public and have no general response.
-        None => TABLE_ONLY_RESPONSE.into(),
+        // Every public command has a public or runtime response.
+        Some(GeneralResponse::Private(_)) | None => return Ok(None),
     };
     Ok(Some(ExternalReply::Saved(
         server_chat(pool, &response).await?,
@@ -535,10 +533,7 @@ pub async fn lobby_chat(
                 runtime = Some(Effect::RuntimeChat { command, args });
             }
             None if matches!(command.kind, CommandKind::Table(_)) => {
-                if command.classification() == Classification::Private {
-                    return Ok(Some(vec![notice(&caller.name, TABLE_ONLY_RESPONSE)]));
-                }
-                public_response = Some(TABLE_ONLY_RESPONSE.into());
+                return Ok(Some(vec![notice(&caller.name, TABLE_ONLY_RESPONSE)]));
             }
             None => {
                 return Ok(Some(vec![notice(

@@ -633,9 +633,10 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         0
     );
     send(&mut alice, 5, "chat", json!({"text":"/findvariant"})).await;
-    let _ = receive(&mut alice, "chat").await;
+    let reply = receive(&mut alice, "chat").await;
+    assert_eq!(reply["kind"]["recipient"], "Alicè");
     assert_eq!(
-        receive(&mut alice, "chat").await["text"],
+        reply["text"],
         "You can only perform this command while in a game."
     );
     send(
