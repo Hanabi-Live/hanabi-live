@@ -900,6 +900,7 @@ async fn profile_counts_wins_toward_achievements() {
     // detrimental characters, and game 12 does not reach the max score. Game 13 is a win in Rainbow
     // (5 Suits) (variant 16). Games 14 and 16 are wins in Rainbow (6 Suits) and Rainbow (4 Suits)
     // (variants 3 and 17), which do not count. Game 19 is a win in Pink (5 Suits) (variant 107).
+    // Game 20 is a win in No Variant with 2 players, which does not count.
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -910,15 +911,16 @@ async fn profile_counts_wins_toward_achievements() {
         INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',2,variant,false,NULL,NULL,false,false,false,id=10,false,false,id=11,
+        SELECT id,'test',CASE WHEN id=20 THEN 2 ELSE 3 END,variant,false,NULL,NULL,false,false,false,id=10,
+          false,false,id=11,
           's'||id,score,10,1,
           '2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
           '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
         FROM (SELECT id,0 AS variant,CASE WHEN id=12 THEN 20 ELSE 25 END AS score
           FROM generate_series(1,12) id
-          UNION ALL VALUES(13,16,25),(14,3,30),(16,17,20),(19,107,25)) AS g(id,variant,score);
+          UNION ALL VALUES(13,16,25),(14,3,30),(16,17,20),(19,107,25),(20,0,25)) AS g(id,variant,score);
         INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id WHERE id<>15;
-        INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0);",
+        INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0),(20,1,0);",
     )
     .execute(&db.pool)
     .await
@@ -952,7 +954,7 @@ async fn profile_counts_wins_toward_achievements() {
         "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',2,0,false,NULL,NULL,false,false,false,false,false,false,false,'s'||id,25,10,
+        SELECT id,'test',3,0,false,NULL,NULL,false,false,false,false,false,false,false,'s'||id,25,10,
           1,'2026-02-01T00:00:00Z'::timestamptz+make_interval(days=>id),
           '2026-02-01T01:00:00Z'::timestamptz+make_interval(days=>id)
         FROM generate_series(17,18) id;
@@ -1016,7 +1018,7 @@ async fn profile_unlocks_the_dark_suits_achievement_with_a_win_in_each() {
               deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
               detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
               datetime_finished)
-            SELECT id,'test',2,variant,false,NULL,NULL,false,false,false,false,false,false,false,
+            SELECT id,'test',3,variant,false,NULL,NULL,false,false,false,false,false,false,false,
               's'||id,25,10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
               '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
             FROM (VALUES{values}) AS g(id,variant);

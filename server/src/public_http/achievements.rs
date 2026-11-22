@@ -6,6 +6,10 @@ use anyhow::Context as _;
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{Achievement, AchievementId, Count, DEFAULT_VARIANT_NAME};
 
+/// The fewest players that a game needs to count toward an achievement. Games with 2 players are
+/// too easy.
+const MIN_PLAYERS: i16 = 3;
+
 /// The wins that unlock most achievements.
 const WINS: i64 = 10;
 
@@ -207,7 +211,8 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
 /// A player's progress toward each achievement.
 ///
 /// A win is a game that reached the max score without an option that changes the game, such as
-/// "One Extra Card" or detrimental characters. Speedruns and timed games count.
+/// "One Extra Card" or detrimental characters, and with at least `MIN_PLAYERS` players. Speedruns
+/// and timed games count.
 pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<Achievement>> {
     // One row for each variant of each group: its ID and max score, and the wins that the group
     // needs in it. Each group's variants are a range of these rows.
@@ -248,7 +253,7 @@ pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<A
            JOIN unnest($2::smallint[],$3::smallint[],$4::int[],$5::bigint[])
              AS v(variant_id,max_score,row,most)
              ON v.variant_id=g.variant_id AND v.max_score=g.score
-           WHERE p.user_id=$1 AND g.end_condition=$6
+           WHERE p.user_id=$1 AND g.end_condition=$6 AND g.num_players>=$7
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
          ) w WHERE w.n<=w.most ORDER BY w.row,w.n",
@@ -258,6 +263,7 @@ pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<A
         &rows,
         &limits,
         normal_end,
+        MIN_PLAYERS,
     )
     .fetch_all(&mut *transaction)
     .await
