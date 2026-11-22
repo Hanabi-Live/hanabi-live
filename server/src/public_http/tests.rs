@@ -927,20 +927,17 @@ async fn profile_counts_wins_toward_achievements() {
     let (status, body) = request(app.clone(), "/profile/Alice").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let table = page_table(&body);
-    let expected = achievements::WIN_GROUPS
-        .iter()
-        .zip([9, 1, 1].into_iter().chain(std::iter::repeat(0)))
-        .flat_map(|(group, wins)| {
-            group
-                .achievements
-                .iter()
-                .map(move |achievement| (achievement.goal, wins))
-        });
     let shown = table["achievements"].as_array().unwrap();
-    assert_eq!(shown.len(), expected.clone().count());
-    for (achievement, (goal, wins)) in shown.iter().zip(expected) {
-        assert_eq!(achievement["progress"], wins, "{achievement}");
-        assert_eq!(achievement["goal"], goal, "{achievement}");
+    let total: usize = achievements::WIN_GROUPS
+        .iter()
+        .map(|group| group.achievements.len())
+        .sum();
+    assert_eq!(shown.len(), total);
+    // The two No Variant achievements, Rainbow, and Pink. The others have no wins.
+    let progress = [9, 9, 1, 1];
+    for (index, achievement) in shown.iter().enumerate() {
+        let expected = progress.get(index).copied().unwrap_or(0);
+        assert_eq!(achievement["progress"], expected, "{achievement}");
         assert!(achievement.get("dateUnlocked").is_none());
     }
     assert_eq!(shown[0]["id"], "noVariant10Wins");
@@ -976,5 +973,106 @@ async fn profile_counts_wins_toward_achievements() {
     assert_eq!(achievement["id"], "noVariant100Wins");
     assert_eq!(achievement["progress"], 11);
     assert!(achievement.get("dateUnlocked").is_none());
+    db.close().await;
+}
+
+#[tokio::test]
+async fn profile_unlocks_the_dark_suits_achievement_with_a_win_in_each() {
+    let Some(db) = crate::accounts::test_support::TestDb::create().await else {
+        return;
+    };
+    let dark_variants: Vec<i16> = [
+        "Black",
+        "Dark Rainbow",
+        "Dark Pink",
+        "Gray",
+        "Dark Brown",
+        "Dark Omni",
+        "Dark Null",
+        "Cocoa Rainbow",
+        "Gray Pink",
+        "Dark Prism",
+    ]
+    .iter()
+    .map(|suit| {
+        let name = format!("{suit} (5 Suits)");
+        let variant = hanabi_engine::variants()
+            .iter()
+            .find(|variant| variant.name == name)
+            .unwrap();
+        i16::try_from(variant.id).unwrap()
+    })
+    .collect();
+    // Game N is a win in the Nth dark variant, on day N. Game 1 has a second win (game 11), on day
+    // 11, which does not count again. The last dark variant has no win yet.
+    let games = |rows: &[(usize, i16)]| {
+        let values = rows
+            .iter()
+            .map(|(id, variant)| format!("({id},{variant})"))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+              deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+              detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
+              datetime_finished)
+            SELECT id,'test',2,variant,false,NULL,NULL,false,false,false,false,false,false,false,
+              's'||id,25,10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
+              '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
+            FROM (VALUES{values}) AS g(id,variant);
+            INSERT INTO game_participants(game_id,user_id,seat)
+            SELECT id,1,0 FROM (VALUES{values}) AS g(id,variant);"
+        )
+    };
+    let mut first: Vec<(usize, i16)> = dark_variants[..dark_variants.len() - 1]
+        .iter()
+        .enumerate()
+        .map(|(index, &variant)| (index + 1, variant))
+        .collect();
+    first.push((11, dark_variants[0]));
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+        "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+          VALUES(1,'Alice','alice','test','127.0.0.1');
+        {}",
+        games(&first)
+    )))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let app = router(db.pool.clone(), &config());
+    let dark = |scores: &Value| {
+        scores["achievements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|achievement| achievement["id"] == "darkSuitsWins")
+            .unwrap()
+            .clone()
+    };
+    let (_, body) = request(app.clone(), "/api/v1/scores/Alice").await;
+    let achievement = dark(&serde_json::from_str(&body).unwrap());
+    assert_eq!(achievement["progress"], dark_variants.len() - 1);
+    assert_eq!(achievement["goal"], dark_variants.len());
+    assert!(achievement.get("dateUnlocked").is_none());
+    // A win in the last dark variant, on day 12, unlocks it.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(sqlx::AssertSqlSafe(games(&[(
+        12,
+        *dark_variants.last().unwrap(),
+    )])))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, body) = request(app, "/api/v1/scores/Alice").await;
+    let achievement = dark(&serde_json::from_str(&body).unwrap());
+    assert_eq!(achievement["progress"], dark_variants.len());
+    assert_eq!(achievement["dateUnlocked"], "2026-01-13T01:00:00.000Z");
     db.close().await;
 }

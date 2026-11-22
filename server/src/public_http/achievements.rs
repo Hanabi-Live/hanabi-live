@@ -9,13 +9,45 @@ use hanabi_protocol::{Achievement, AchievementId, Count, DEFAULT_VARIANT_NAME};
 /// The wins that unlock most achievements.
 const WINS: i64 = 10;
 
-/// An achievement for a number of wins.
+/// What an achievement asks for.
+pub(super) enum Goal {
+    /// A number of wins, in any of the group's variants.
+    Wins(i64),
+    /// One win in each of the group's variants.
+    OneWinEach,
+}
+
+impl Goal {
+    /// The wins in each of the group's variants that the goal needs.
+    const fn wins_per_variant(&self) -> i64 {
+        match self {
+            Self::Wins(wins) => *wins,
+            Self::OneWinEach => 1,
+        }
+    }
+}
+
+/// An achievement for winning games.
 pub(super) struct WinAchievement {
     pub id: AchievementId,
     pub name: &'static str,
-    /// The wins that unlock the achievement.
-    pub goal: i64,
+    pub goal: Goal,
 }
+
+/// The dark suits whose 5-suit variants count toward the dark suits achievement. Dark Orange is left
+/// out, as Orange is left out of the special suit achievements.
+const DARK_SUITS: [&str; 10] = [
+    "Black",
+    "Dark Rainbow",
+    "Dark Pink",
+    "Gray",
+    "Dark Brown",
+    "Dark Omni",
+    "Dark Null",
+    "Cocoa Rainbow",
+    "Gray Pink",
+    "Dark Prism",
+];
 
 /// The variants whose wins count toward a group of achievements.
 pub(super) enum WinVariants {
@@ -23,17 +55,40 @@ pub(super) enum WinVariants {
     /// The 5-suit variant of a special suit, such as "Pink (5 Suits)". Games with 6 suits take too
     /// long to count.
     SpecialSuit(&'static str),
+    /// The 5-suit variant of each dark suit.
+    DarkSuits,
 }
 
 impl WinVariants {
     fn names(&self) -> Vec<String> {
         match self {
             Self::NoVariant => vec![DEFAULT_VARIANT_NAME.to_owned()],
-            Self::SpecialSuit(suit) => {
-                vec![format!("{suit} (5 Suits)")]
-            }
+            Self::SpecialSuit(suit) => vec![five_suits(suit)],
+            Self::DarkSuits => DARK_SUITS.iter().map(|suit| five_suits(suit)).collect(),
         }
     }
+
+    /// What an achievement of this group asks for, in words.
+    fn description(&self, goal: &Goal) -> String {
+        match (self, goal) {
+            (Self::DarkSuits, Goal::OneWinEach) => format!(
+                "Get the max score in a 5-suit game with each dark suit: {}",
+                DARK_SUITS.join(", ")
+            ),
+            (_, Goal::OneWinEach) => format!(
+                "Get the max score in a game of each variant: {}",
+                self.names().join(", ")
+            ),
+            (_, Goal::Wins(wins)) => format!(
+                "Get the max score in {wins} games of {}.",
+                self.names().join(" or ")
+            ),
+        }
+    }
+}
+
+fn five_suits(suit: &str) -> String {
+    format!("{suit} (5 Suits)")
 }
 
 /// Achievements that count the wins in the same variants.
@@ -58,12 +113,12 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
             WinAchievement {
                 id: AchievementId::NoVariant10Wins,
                 name: "I've Got the Hang of This",
-                goal: WINS,
+                goal: Goal::Wins(WINS),
             },
             WinAchievement {
                 id: AchievementId::NoVariant100Wins,
                 name: "Core Mastery",
-                goal: 100,
+                goal: Goal::Wins(100),
             },
         ],
     },
@@ -72,7 +127,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Rainbow10Wins,
             name: "Rainbow Wrangler",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -80,7 +135,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Pink10Wins,
             name: "Tickled Pink",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -88,7 +143,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::White10Wins,
             name: "Whiteout",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -96,7 +151,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Brown10Wins,
             name: "Brown Belt",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -104,7 +159,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Omni10Wins,
             name: "Omnipotent",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -112,7 +167,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Null10Wins,
             name: "Null and Void",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -120,7 +175,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::MuddyRainbow10Wins,
             name: "Stuck in the Mud",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -128,7 +183,7 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::LightPink10Wins,
             name: "Light Touch",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
     special_suit(
@@ -136,9 +191,17 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
         &[WinAchievement {
             id: AchievementId::Prism10Wins,
             name: "Prismatic",
-            goal: WINS,
+            goal: Goal::Wins(WINS),
         }],
     ),
+    WinGroup {
+        variants: WinVariants::DarkSuits,
+        achievements: &[WinAchievement {
+            id: AchievementId::DarkSuitsWins,
+            name: "Lights Out",
+            goal: Goal::OneWinEach,
+        }],
+    },
 ];
 
 /// A player's progress toward each achievement.
@@ -146,52 +209,53 @@ pub(super) const WIN_GROUPS: &[WinGroup] = &[
 /// A win is a game that reached the max score without an option that changes the game, such as
 /// "One Extra Card" or detrimental characters. Speedruns and timed games count.
 pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<Achievement>> {
-    // One row for each variant: its ID and max score, its group, and the wins that the group needs.
+    // One row for each variant of each group: its ID and max score, and the wins that the group
+    // needs in it. Each group's variants are a range of these rows.
     let mut variant_ids = Vec::new();
     let mut max_scores = Vec::new();
-    let mut groups = Vec::new();
     let mut limits = Vec::new();
-    let mut descriptions = Vec::new();
-    for (index, group) in WIN_GROUPS.iter().enumerate() {
-        let names = group.variants.names();
+    let mut ranges = Vec::new();
+    for group in WIN_GROUPS {
         let most_wins = group
             .achievements
             .iter()
-            .map(|achievement| achievement.goal)
+            .map(|achievement| achievement.goal.wins_per_variant())
             .max()
             .unwrap_or_default();
-        for name in &names {
+        let start = variant_ids.len();
+        for name in group.variants.names() {
             let variant = catalog::variants()
                 .iter()
-                .find(|variant| variant.name == *name)
+                .find(|variant| variant.name == name)
                 .with_context(|| format!("The catalog has no variant named: {name}"))?;
             variant_ids.push(i16::try_from(variant.id)?);
             max_scores.push(i16::try_from(variant.max_score)?);
-            groups.push(i32::try_from(index)?);
             limits.push(most_wins);
         }
-        descriptions.push(names.join(" or "));
+        ranges.push(start..variant_ids.len());
     }
+    let rows: Vec<i32> = (0..variant_ids.len())
+        .map(i32::try_from)
+        .collect::<std::result::Result<_, _>>()?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let mut transaction = scan(state).await?;
-    // The times of each group's first wins, up to its largest goal. The win that reaches a goal is
-    // when the player unlocked its achievement.
-    let rows = sqlx::query!(
-        "SELECT w.grp AS \"grp!\",w.datetime_finished AS \"datetime_finished!\" FROM (
-           SELECT v.grp,v.most,g.datetime_finished,
-             row_number() OVER (PARTITION BY v.grp ORDER BY g.datetime_finished,g.id) AS n
+    // The times of the first wins in each row's variant, up to the wins that its group needs.
+    let wins = sqlx::query!(
+        "SELECT w.row AS \"row!\",w.datetime_finished AS \"datetime_finished!\" FROM (
+           SELECT v.row,v.most,g.datetime_finished,
+             row_number() OVER (PARTITION BY v.row ORDER BY g.datetime_finished,g.id) AS n
            FROM game_participants p JOIN games g ON g.id=p.game_id
            JOIN unnest($2::smallint[],$3::smallint[],$4::int[],$5::bigint[])
-             AS v(variant_id,max_score,grp,most)
+             AS v(variant_id,max_score,row,most)
              ON v.variant_id=g.variant_id AND v.max_score=g.score
            WHERE p.user_id=$1 AND g.end_condition=$6
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
-         ) w WHERE w.n<=w.most ORDER BY w.grp,w.n",
+         ) w WHERE w.n<=w.most ORDER BY w.row,w.n",
         user,
         &variant_ids,
         &max_scores,
-        &groups,
+        &rows,
         &limits,
         normal_end,
     )
@@ -199,25 +263,45 @@ pub(super) async fn achievements(state: &PublicState, user: i32) -> Result<Vec<A
     .await
     .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
     transaction.commit().await?;
-    let mut wins = vec![Vec::new(); WIN_GROUPS.len()];
-    for row in rows {
-        wins[usize::try_from(row.grp)?].push(row.datetime_finished);
+    let mut wins_by_row = vec![Vec::new(); variant_ids.len()];
+    for win in wins {
+        wins_by_row[usize::try_from(win.row)?].push(win.datetime_finished);
     }
     let mut achievements = Vec::new();
-    for ((group, wins), variants) in WIN_GROUPS.iter().zip(wins).zip(descriptions) {
-        let num_wins = i64::try_from(wins.len())?;
+    for (group, range) in WIN_GROUPS.iter().zip(ranges) {
+        let variant_wins = &wins_by_row[range];
         for achievement in group.achievements {
-            let goal = achievement.goal;
+            // How far the player has come, the goal, and when the player reached it.
+            let (progress, goal, date) = match achievement.goal {
+                Goal::Wins(goal) => {
+                    let mut wins: Vec<_> = variant_wins.iter().flatten().copied().collect();
+                    wins.sort_unstable();
+                    let date = usize::try_from(goal - 1)
+                        .ok()
+                        .and_then(|index| wins.get(index))
+                        .copied();
+                    (i64::try_from(wins.len())?.min(goal), goal, date)
+                }
+                Goal::OneWinEach => {
+                    let firsts: Vec<_> = variant_wins
+                        .iter()
+                        .filter_map(|wins| wins.first())
+                        .collect();
+                    let goal = i64::try_from(variant_wins.len())?;
+                    let progress = i64::try_from(firsts.len())?;
+                    let date = (progress == goal)
+                        .then(|| firsts.iter().max().copied().copied())
+                        .flatten();
+                    (progress, goal, date)
+                }
+            };
             achievements.push(Achievement {
                 id: achievement.id,
                 name: achievement.name.into(),
-                description: format!("Get the max score in {goal} games of {variants}."),
-                progress: Count::try_from(num_wins.min(goal))?,
+                description: group.variants.description(&achievement.goal),
+                progress: Count::try_from(progress)?,
                 goal: Count::try_from(goal)?,
-                date_unlocked: usize::try_from(goal - 1)
-                    .ok()
-                    .and_then(|index| wins.get(index))
-                    .map(|&date| date.into()),
+                date_unlocked: date.map(Into::into),
             });
         }
     }

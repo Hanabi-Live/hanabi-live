@@ -259,6 +259,7 @@ named_enum! {
         MuddyRainbow10Wins => "muddyRainbow10Wins",
         LightPink10Wins => "lightPink10Wins",
         Prism10Wins => "prism10Wins",
+        DarkSuitsWins => "darkSuitsWins",
     }
 }
 

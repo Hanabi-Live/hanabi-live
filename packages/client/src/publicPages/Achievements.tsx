@@ -34,7 +34,9 @@ function AchievementCard({
       </div>
       <div className="tw:min-w-0 tw:flex-1">
         <div className="tw:font-semibold">{name}</div>
-        <div className="tw:text-[0.85em] tw:text-text-label">{description}</div>
+        <div className="tw:text-[0.85em] tw:leading-snug tw:text-text-label">
+          {description}
+        </div>
         {unlocked ? (
           <div className="tw:mt-1 tw:text-[0.85em] tw:text-green-text">
             {unlockedText(dateUnlocked)}
