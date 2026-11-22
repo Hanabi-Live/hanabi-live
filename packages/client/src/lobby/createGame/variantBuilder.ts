@@ -161,7 +161,8 @@ const CLUE_FLAGS = new ReadonlySet<RecipeFlag>([
 ]);
 
 /** The groups of suits that the builder shows, in order. */
-export type SuitGroup = "special" | "dark" | "ambiguous" | "multiColor";
+export type SuitGroup =
+  "special" | "dark" | "ambiguous" | "dualColor" | "matryoshka";
 
 /** A suit that a player can add to a deck. */
 interface SuitPart {
@@ -278,7 +279,13 @@ function readParts(): Parts {
     ...FLAGS[flag],
   }));
   return {
-    suits,
+    // The builder shows each group in a row of its own, so their order in the list does not matter.
+    suits: [
+      ...suits.filter(({ group }) => group !== "dualColor"),
+      ...suits
+        .filter(({ group }) => group === "dualColor")
+        .toSorted(compareDualColors),
+    ],
     specialRanks,
     clueFlags: flags.filter(({ flag }) => CLUE_FLAGS.has(flag)),
     playFlags: flags.filter(({ flag }) => !CLUE_FLAGS.has(flag)),
@@ -406,7 +413,38 @@ function getSuitGroup(id: string, suit: Suit): SuitGroup {
   }
   // Every other suit takes the clues of other colors: one, such as Tomato (Red), or several, such
   // as Tangerine (Red and Yellow).
-  return suit.clueColors.length > 1 ? "multiColor" : "ambiguous";
+  if (MATRYOSHKA_SUIT_IDS.has(id)) {
+    return "matryoshka";
+  }
+  return suit.clueColors.length > 1 ? "dualColor" : "ambiguous";
+}
+
+/** The suits of the Matryoshka set, which nest one inside the next: Yam has 2 colors, Taupe 6. */
+const MATRYOSHKA_SUIT_IDS = new ReadonlySet([
+  "beatnik",
+  "geas",
+  "plum",
+  "taupe",
+  "yam",
+]);
+
+/** The position of each color in "colors.json", such as 0 for Red and 1 for Yellow. */
+function getColorIndex(name: string): number {
+  return [...COLORS_MAP.keys()].indexOf(name);
+}
+
+/**
+ * Sorts the dual-color suits by their colors, so that the suits that share a color sit together,
+ * such as the suits with Red first.
+ */
+function compareDualColors(a: SuitPart, b: SuitPart): number {
+  const [a1 = 0, a2 = 0] = a.suit.clueColors.map(({ name }) =>
+    getColorIndex(name),
+  );
+  const [b1 = 0, b2 = 0] = b.suit.clueColors.map(({ name }) =>
+    getColorIndex(name),
+  );
+  return a1 === b1 ? a2 - b2 : a1 - b1;
 }
 
 /** The suit without its dark version, so that a deck has each suit once. */
@@ -528,13 +566,14 @@ export function getChoice(recipe: string): Choice {
  * order of `Parts`.
  */
 function sortSuits(ids: readonly string[]): readonly string[] {
-  const { suits } = getParts();
-  const order = suits.map(({ id }) => id);
+  // The order of "suits.json", not the order that the builder shows the suits in.
+  const order = [...getSuitsById().keys()];
   function getKey(id: string): number {
-    const group = suits.find((part) => part.id === id)?.group;
-    const groupStart =
-      group === "ambiguous" || group === "multiColor" ? 0 : order.length;
-    return groupStart + order.indexOf(id);
+    const suit = getSuitsById().get(id);
+    const group = suit === undefined ? undefined : getSuitGroup(id, suit);
+    const leads =
+      group === "ambiguous" || group === "dualColor" || group === "matryoshka";
+    return (leads ? 0 : order.length) + order.indexOf(id);
   }
   return ids.toSorted((a, b) => getKey(a) - getKey(b));
 }
