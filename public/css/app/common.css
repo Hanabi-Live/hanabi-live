@@ -44,7 +44,9 @@
 
 /*
   Semibold and bold, from the "@fontsource/source-sans-pro" package (version 5.3.0). Each script
-  is in its own file, which the browser loads only when a page uses it.
+  is in its own file, which the browser loads only when a page uses it. The files are hinted with
+  ttfautohint. Without hinting, Chrome on Linux rounds each letter's width up, which leaves gaps,
+  such as after a "t".
 */
 @font-face {
   font-family: "Source Sans Pro";
