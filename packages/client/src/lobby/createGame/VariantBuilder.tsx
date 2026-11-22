@@ -200,11 +200,7 @@ export function VariantBuilder({
                 }}
                 pressed={getChosenVersion(choice, id) !== undefined}
                 suit={suit}
-                tooltip={`${getSuitDescription(suit)}${
-                  getOtherVersion(id) === undefined
-                    ? ""
-                    : " Click its card in the deck to make it dark."
-                }`}
+                tooltip={getSuitDescription(suit)}
               />
             ))}
         </PartRow>
