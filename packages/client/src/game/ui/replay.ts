@@ -447,7 +447,12 @@ export function goTo(turnString: string): void {
 // --------------------------------
 
 export function toggleSharedSegments(): void {
-  if (globals.state.replay.shared === undefined) {
+  // The reducer rejects this action when we are not in a replay. This can happen in a shared replay
+  // where a follower has no turn of its own.
+  if (
+    globals.state.replay.shared === undefined
+    || globals.state.replay.segment === undefined
+  ) {
     return;
   }
 
