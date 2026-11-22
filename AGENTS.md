@@ -168,7 +168,10 @@ the state that you need has fewer players, add a 5-player state to
 
 When running in WSL, the host app cannot display screenshots that you send it.
 Open each one that you show in its Windows app instead:
-`explorer.exe "$(wslpath -w <file>)"`.
+`f="$(realpath <file>)" && test -f "$f" && explorer.exe "$(wslpath -w "$f")"`.
+When `explorer.exe` cannot open a path, it opens the Documents folder and gives
+no error. Thus, check that the file exists, and do not use a file name that has
+a comma.
 
 ## Delivering changes
 

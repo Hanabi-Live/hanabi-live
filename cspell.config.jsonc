@@ -205,6 +205,7 @@
     "rcgen",
     "RDONLY",
     "readelf",
+    "realpath",
     "reattend",
     "reattending",
     "regclass",
