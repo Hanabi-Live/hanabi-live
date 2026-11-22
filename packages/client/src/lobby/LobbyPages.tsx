@@ -48,11 +48,12 @@ export function LobbyPages(): React.JSX.Element | undefined {
   }
 
   // Unlike the other boxes of the lobby, a page fits its content and scrolls when it is taller than
-  // the lobby.
+  // the lobby. The page keeps room for its scroll bar, so that its content does not move when the
+  // bar appears, such as when Create Game opens the variant builder.
   const { id, Page, width } = PAGES[page];
   return (
     <section
-      className={`box lobby-page tw:mx-auto tw:my-0 tw:h-auto tw:max-h-full tw:overflow-y-auto tw:p-6 ${width}`}
+      className={`box lobby-page tw:mx-auto tw:my-0 tw:h-auto tw:max-h-full tw:overflow-y-auto tw:p-6 tw:[scrollbar-gutter:stable] ${width}`}
       id={id}
       key={page}
     >
