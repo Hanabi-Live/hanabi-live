@@ -52,6 +52,10 @@ const SUIT_GROUPS = [
     group: "ambiguous",
     label: "Ambiguous suits",
   },
+  {
+    group: "multiColor",
+    label: "Multi-color suits",
+  },
 ] as const satisfies ReadonlyArray<{
   readonly group: SuitGroup;
   readonly label: string;
