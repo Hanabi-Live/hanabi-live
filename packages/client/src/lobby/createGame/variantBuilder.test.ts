@@ -67,10 +67,12 @@ describe("variant builder", () => {
     );
   });
 
-  test("turns off Cow and Pig when Duck turns on, and the other way", () => {
+  test("turns off a rule that cannot be on with the one that turns on", () => {
     const duck = toggleFlag(toggleFlag(FIVE_SUITS, "cowpig"), "duck");
     expect([...duck.flags]).toEqual(["duck"]);
     expect([...toggleFlag(duck, "cowpig").flags]).toEqual(["cowpig"]);
+    const chimneys = toggleFlag(toggleFlag(FIVE_SUITS, "funnels"), "chimneys");
+    expect([...chimneys.flags]).toEqual(["chimneys"]);
   });
 
   test("ends every reversal when Up or Down turns on", () => {

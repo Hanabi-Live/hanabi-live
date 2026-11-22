@@ -632,11 +632,14 @@ export function toggleScarceOnes(choice: Choice): Choice {
 
 /**
  * Rules that cannot be on together, each with the rule that it turns off. Duck hides all of a clue,
- * so Cow and Pig, which hides only its value, would change nothing.
+ * so Cow and Pig, which hides only its value, would change nothing. Funnels and Chimneys each
+ * decide which cards a rank clue touches.
  */
 const EXCLUSIVE_FLAGS = new ReadonlyMap<RecipeFlag, RecipeFlag>([
+  ["chimneys", "funnels"],
   ["cowpig", "duck"],
   ["duck", "cowpig"],
+  ["funnels", "chimneys"],
 ]);
 
 /**
