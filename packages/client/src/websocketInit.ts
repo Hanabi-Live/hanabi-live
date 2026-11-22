@@ -314,6 +314,16 @@ function openConnection(isReconnect: boolean) {
           if (!isCurrentConnection(conn) || !gameSession.isOpen()) {
             return;
           }
+          // The game can open again while we reconnect, such as for another table. Then this state
+          // does not fit it, and the game asks for its own state once the server describes it.
+          if (
+            state.tableId !== globals.tableId
+            || store.getState().game.current === undefined
+          ) {
+            finishReconnecting(conn);
+            initCommands(conn);
+            return;
+          }
           if (endedAfterDescribed(state)) {
             reopenGame();
             finishReconnecting(conn);
