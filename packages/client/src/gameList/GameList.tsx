@@ -423,7 +423,7 @@ function GameRow({
         <div className="tw:min-w-0 tw:narrow-640:basis-full">
           {/* The games on a seed share its variant, which the top of the page shows. */}
           {context.list === "seed" ? (
-            <div className="tw:truncate">
+            <div className="tw:break-words">
               <PlayerLinks
                 inLobby={context.actions !== undefined}
                 names={game.playerNames}
@@ -454,7 +454,7 @@ function GameRow({
           )}
         </div>
         {context.list !== "seed" && (
-          <div className="tw:min-w-0 tw:truncate tw:text-[0.9em] tw:narrow-640:max-w-full">
+          <div className="tw:min-w-0 tw:break-words tw:text-[0.9em] tw:leading-snug tw:narrow-640:max-w-full">
             {teammates.length < game.playerNames.length && (
               <span className="tw:text-text-label">with </span>
             )}
