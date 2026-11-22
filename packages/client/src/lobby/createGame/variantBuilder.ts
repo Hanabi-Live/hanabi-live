@@ -720,6 +720,43 @@ export function setSpecialRank(choice: Choice, rank: number): Choice {
       };
 }
 
+/** How many copies of a rank a suit of the deck has, as the engine counts them. */
+function getCopies(choice: Choice, id: string, rank: number): number {
+  const upOrDown = choice.flags.has("updown");
+  const reversed = choice.reversed.has(id) && !upOrDown;
+  if (getSuitsById().get(id)?.oneOfEach === true) {
+    return 1;
+  }
+  if (choice.flags.has("sudoku")) {
+    return 2;
+  }
+  if (rank === 1) {
+    if (upOrDown || reversed) {
+      return 1;
+    }
+    return choice.scarceOnes ? 2 : 3;
+  }
+  if (rank === RULE_RANKS.at(-1)) {
+    return reversed ? 3 : 1;
+  }
+  return 2;
+}
+
+/**
+ * Whether a critical rank changes the deck: some suit has more than one copy of the rank. For
+ * example, every 5 already has one copy, unless its suit is reversed or the variant is Sudoku.
+ */
+export function canBeCritical(choice: Choice, rank: number): boolean {
+  return getDeckSuitIds(choice).some((id) => getCopies(choice, id, rank) > 1);
+}
+
+/** Why a critical rank would change nothing in a deck. */
+export function getCriticalBlockReason(rank: number): string {
+  return rank === RULE_RANKS.at(-1)
+    ? `Every ${rank} is already critical. Critical ${rank}s changes only a deck with a reversed suit, or Sudoku.`
+    : `Every ${rank} is already critical in this deck.`;
+}
+
 export function toggleCriticalRank(choice: Choice, rank: number): Choice {
   return {
     ...choice,

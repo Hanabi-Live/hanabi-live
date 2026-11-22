@@ -23,9 +23,11 @@ import type {
 } from "./variantBuilder.ts";
 import {
   canAddSuit,
+  canBeCritical,
   getCatalogName,
   getChoice,
   getChosenVersion,
+  getCriticalBlockReason,
   getCriticalDescription,
   getDeckSuitIds,
   getDeckVariant,
@@ -107,7 +109,16 @@ export function VariantBuilder({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variantName]);
 
-  function choose(next: Choice) {
+  function choose(changed: Choice) {
+    // A change can leave the critical rank with nothing to change, which the server refuses.
+    const next =
+      changed.criticalRank === undefined
+      || canBeCritical(changed, changed.criticalRank)
+        ? changed
+        : {
+            ...changed,
+            criticalRank: undefined,
+          };
     setChoice(next);
     const nextRecipe = getRecipe(next);
     const name = getCatalogName(nextRecipe);
@@ -238,6 +249,11 @@ export function VariantBuilder({
       <PartRow label="Copies">
         {RULE_RANKS.map((rank) => (
           <Chip
+            disabledReason={
+              choice.criticalRank === rank || canBeCritical(choice, rank)
+                ? undefined
+                : getCriticalBlockReason(rank)
+            }
             enabled
             key={rank}
             label={`Critical ${rank}s`}
@@ -725,6 +741,7 @@ function PartRow({
 }
 
 function Chip({
+  disabledReason,
   enabled,
   label,
   name = label,
@@ -733,6 +750,11 @@ function Chip({
   suit,
   tooltip,
 }: {
+  /**
+   * Why the chip does nothing, if it does nothing. Such a chip only looks disabled, so that it
+   * keeps its tooltip, which gives the reason.
+   */
+  readonly disabledReason?: string;
   readonly enabled: boolean;
   readonly label: string;
   /** The accessible name, when the label leaves out what the row tells. */
@@ -743,18 +765,20 @@ function Chip({
   /** What the part does. The tooltip waits for the pointer to rest on the chip. */
   readonly tooltip?: string;
 }) {
+  const blocked = disabledReason !== undefined;
   return (
     <button
+      aria-disabled={blocked ? true : undefined}
       aria-label={name === label ? undefined : name}
       aria-pressed={pressed}
-      className={`tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-[0.45em] tw:rounded-full tw:border tw:border-solid tw:px-[0.8em] tw:py-[0.25em] tw:text-[0.9em] tw:disabled:cursor-not-allowed tw:disabled:opacity-35 ${
+      className={`tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-[0.45em] tw:rounded-full tw:border tw:border-solid tw:px-[0.8em] tw:py-[0.25em] tw:text-[0.9em] tw:disabled:cursor-not-allowed tw:disabled:opacity-35 ${blocked ? "tw:cursor-not-allowed tw:opacity-35" : ""} ${
         pressed
           ? "tw:border-green tw:bg-green tw:text-text-on-accent"
-          : "tw:border-border tw:bg-surface tw:text-text tw:enabled:hover:border-green"
+          : `tw:border-border tw:bg-surface tw:text-text ${blocked ? "" : "tw:enabled:hover:border-green"}`
       }`}
       disabled={!enabled}
-      onClick={onClick}
-      ref={tooltipRef(tooltip)}
+      onClick={blocked ? undefined : onClick}
+      ref={tooltipRef(disabledReason ?? tooltip)}
       type="button"
     >
       {suit !== undefined && (

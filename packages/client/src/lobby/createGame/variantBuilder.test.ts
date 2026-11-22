@@ -2,6 +2,7 @@ import { getSuit, getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import type { Choice } from "./variantBuilder.ts";
 import {
+  canBeCritical,
   getCatalogName,
   getChoice,
   getOtherVersion,
@@ -83,6 +84,14 @@ describe("variant builder", () => {
       (c) => toggleFlag(c, "cm"),
     );
     expect([...muted.flags]).toEqual(["cm"]);
+  });
+
+  test("knows when a critical rank changes the deck", () => {
+    expect(canBeCritical(FIVE_SUITS, 5)).toBe(false);
+    expect(canBeCritical(FIVE_SUITS, 4)).toBe(true);
+    expect(canBeCritical(toggleReversed(FIVE_SUITS, "p"), 5)).toBe(true);
+    expect(canBeCritical(toggleFlag(FIVE_SUITS, "sudoku"), 5)).toBe(true);
+    expect(canBeCritical(toggleFlag(FIVE_SUITS, "updown"), 1)).toBe(false);
   });
 
   test("ends every reversal when Up or Down or Sudoku turns on", () => {
