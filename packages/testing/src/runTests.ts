@@ -149,7 +149,16 @@ async function startPostgres(): Promise<DisposablePostgres> {
         "-c",
         `max_connections=${POSTGRES_MAX_CONNECTIONS}`,
       ],
-      { stdio: "ignore" },
+      // On macOS, PostgreSQL stops at startup ("postmaster became multithreaded during startup")
+      // unless it has a valid locale. Turborepo does not pass the shell's locale to the tests, so
+      // the server gets the C locale, which every system has.
+      {
+        env: {
+          ...process.env,
+          LC_ALL: "C",
+        },
+        stdio: "ignore",
+      },
     );
     await once(child, "spawn");
 
