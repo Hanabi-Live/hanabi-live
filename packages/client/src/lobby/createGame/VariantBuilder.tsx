@@ -2,7 +2,13 @@
 // the deck of the variant that they make.
 
 import type { Suit, Variant } from "@hanabi-live/game";
-import { getVariant, MAX_SUITS, VALID_SUIT_INDEXES } from "@hanabi-live/game";
+import {
+  DEFAULT_VARIANT_NAME,
+  doesVariantExist,
+  getVariant,
+  MAX_SUITS,
+  VALID_SUIT_INDEXES,
+} from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
@@ -79,15 +85,20 @@ export function VariantBuilder({
   readonly variantName: string;
 }): React.JSX.Element {
   const parts = getParts();
+  // The field above holds a partial name while the player types a search, such as "n".
   const [choice, setChoice] = useState<Choice>(() =>
-    getChoice(getVariant(variantName).recipe),
+    getChoice(
+      getVariant(
+        doesVariantExist(variantName) ? variantName : DEFAULT_VARIANT_NAME,
+      ).recipe,
+    ),
   );
   const recipe = getRecipe(choice);
   const catalogName = getCatalogName(recipe);
 
   // A variant that the player chose in the field above starts a new choice.
   useEffect(() => {
-    if (catalogName !== variantName) {
+    if (catalogName !== variantName && doesVariantExist(variantName)) {
       setChoice(getChoice(getVariant(variantName).recipe));
     }
     // Only a new variant from the field starts a new choice, not a new choice.

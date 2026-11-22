@@ -229,6 +229,25 @@ describe("CreateGame", () => {
     expect(search.ariaExpanded).toBe("true");
   });
 
+  test("the variant builder keeps working while the player types a search", () => {
+    showPage();
+    fireEvent.change(getInput("create-game-variant-dropdown1"), {
+      target: {
+        value: "Search custom variants...",
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));
+    fireEvent.change(getInput("create-game-variant-dropdown2"), {
+      target: {
+        value: "n",
+      },
+    });
+
+    expect(document.querySelector("#create-game-variant-builder")).not.toBe(
+      null,
+    );
+  });
+
   test("a guest suggests the options of the table to its owner", () => {
     store.dispatch(screenChanged(Screen.PreGame));
     globals.tableId = TABLE_ID;
