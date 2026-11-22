@@ -796,7 +796,8 @@ function CuratedVariantMenu({
     // Escape closes the menu, and the focus goes back to the dropdown.
     <ul
       aria-label={CURATED_VARIANTS}
-      className="tw:m-0 tw:list-none tw:p-0"
+      // A long list scrolls, so that the menu stays on the screen.
+      className="tw:m-0 tw:max-h-[60vh] tw:list-none tw:overflow-y-auto tw:p-0"
       onKeyDown={(event) => {
         if (event.key !== "Escape") {
           return;
