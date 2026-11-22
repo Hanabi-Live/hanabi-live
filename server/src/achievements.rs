@@ -69,6 +69,51 @@ pub(crate) enum Games {
     /// The games of the 5-suit variants with a special rank, such as "Rainbow-Ones (5 Suits)" and
     /// "Rainbow-Fives (5 Suits)". The catalog has special ranks only for ones and fives.
     SpecialRank(&'static str),
+    /// The games of every 5-suit variant with a rule, such as Up or Down, alone or with other
+    /// rules and suits.
+    Rule(VariantRule),
+}
+
+/// The suits that a variant needs to count toward a `Games::Rule` achievement.
+const RULE_SUITS: usize = 5;
+
+/// A rule of a variant that an achievement counts the wins with.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum VariantRule {
+    CowAndPig,
+    Duck,
+    OddsAndEvens,
+    ReversedSuit,
+    UpOrDown,
+    ThrowItInAHole,
+    Sudoku,
+}
+
+impl VariantRule {
+    fn of(self, variant: &hanabi_engine::Variant) -> bool {
+        match self {
+            Self::CowAndPig => variant.cow_and_pig,
+            Self::Duck => variant.duck,
+            Self::OddsAndEvens => variant.odds_and_evens,
+            // Not `has_reversed_suits`, which also counts Up or Down.
+            Self::ReversedSuit => variant.suits.iter().any(|suit| suit.reversed),
+            Self::UpOrDown => variant.up_or_down,
+            Self::ThrowItInAHole => variant.throw_it_in_a_hole,
+            Self::Sudoku => variant.sudoku,
+        }
+    }
+
+    const fn name(self) -> &'static str {
+        match self {
+            Self::CowAndPig => "Cow and Pig",
+            Self::Duck => "Duck",
+            Self::OddsAndEvens => "Odds and Evens",
+            Self::ReversedSuit => "a reversed suit",
+            Self::UpOrDown => "Up or Down",
+            Self::ThrowItInAHole => "Throw It in a Hole",
+            Self::Sudoku => "Sudoku",
+        }
+    }
 }
 
 /// The ranks that the catalog has special-rank variants for.
@@ -84,6 +129,7 @@ impl Games {
                 "games with a {} special rank and 5 suits",
                 rank.replace('-', " ")
             ),
+            Self::Rule(rule) => format!("games with {} ({RULE_SUITS} suits)", rule.name()),
         }
     }
 }
@@ -189,6 +235,18 @@ const fn named(id: AchievementId, name: &'static str, variant: &'static str) -> 
     }
 }
 
+/// An achievement for `WINS` wins in the 5-suit variants with a rule.
+const fn rule(id: AchievementId, name: &'static str, rule: VariantRule) -> Definition {
+    Definition {
+        id,
+        name,
+        rule: Rule::Wins {
+            games: Games::Rule(rule),
+            goal: WINS,
+        },
+    }
+}
+
 /// An achievement for `WINS` wins in the 5-suit variants of a special rank.
 const fn special_rank(id: AchievementId, name: &'static str, rank: &'static str) -> Definition {
     Definition {
@@ -289,10 +347,42 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         "Extremely Ambiguous (6 Suits)",
     ),
     named(
-        AchievementId::DualColor10Wins,
+        AchievementId::DualColor5Suits10Wins,
         "Two-Tone",
         "Dual-Color (5 Suits)",
     ),
+    named(
+        AchievementId::DualColor6Suits10Wins,
+        "Double Vision",
+        "Dual-Color (6 Suits)",
+    ),
+    rule(
+        AchievementId::CowAndPig10Wins,
+        "Barnyard Banter",
+        VariantRule::CowAndPig,
+    ),
+    rule(AchievementId::Duck10Wins, "Sitting Duck", VariantRule::Duck),
+    rule(
+        AchievementId::OddsAndEvens10Wins,
+        "Against the Odds",
+        VariantRule::OddsAndEvens,
+    ),
+    rule(
+        AchievementId::ReversedSuit10Wins,
+        "Rewind",
+        VariantRule::ReversedSuit,
+    ),
+    rule(
+        AchievementId::UpOrDown10Wins,
+        "Ups and Downs",
+        VariantRule::UpOrDown,
+    ),
+    rule(
+        AchievementId::ThrowItInAHole10Wins,
+        "Hole in One",
+        VariantRule::ThrowItInAHole,
+    ),
+    rule(AchievementId::Sudoku10Wins, "Gridlock", VariantRule::Sudoku),
     players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
     players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
     players(AchievementId::FivePlayers10Wins, "High Five", 5),
@@ -375,6 +465,14 @@ impl QueryRows {
                 SPECIAL_RANKS
                     .iter()
                     .map(|n| find(&format!("{rank}-{n} (5 Suits)")))
+                    .collect::<Result<_>>()?,
+                0,
+            ),
+            Games::Rule(rule) => (
+                hanabi_engine::variants()
+                    .iter()
+                    .filter(|v| v.suits.len() == RULE_SUITS && rule.of(v))
+                    .map(|v| Ok((i16::try_from(v.id)?, i16::try_from(v.max_score)?)))
                     .collect::<Result<_>>()?,
                 0,
             ),

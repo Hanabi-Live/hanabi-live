@@ -21,8 +21,9 @@ type Achievement = ProfileTable["achievements"][number];
 
 /**
  * What each achievement shows: the suits of a variant (every suit of it, or only its last suit),
- * one person for each player, or a card of the last suit of a variant with a rank on it instead of
- * a pip, for a special rank. Deceptive ranks have no suit of their own, so they show a "?".
+ * one person for each player, a card of the last suit of a variant with a rank on it instead of a
+ * pip, for a special rank, or a card with an icon, for a rule such as Up or Down. Deceptive ranks
+ * have no suit of their own, so they show a "?".
  */
 const ACHIEVEMENT_CARDS = {
   noVariant10Wins: {
@@ -121,9 +122,41 @@ const ACHIEVEMENT_CARDS = {
     variant: "Extremely Ambiguous (6 Suits)",
     allSuits: true,
   },
-  dualColor10Wins: {
+  dualColor5Suits10Wins: {
     variant: "Dual-Color (5 Suits)",
     allSuits: true,
+  },
+  dualColor6Suits10Wins: {
+    variant: "Dual-Color (6 Suits)",
+    allSuits: true,
+  },
+  cowAndPig10Wins: {
+    icon: "fa-cow",
+    suitIndex: 0,
+  },
+  duck10Wins: {
+    icon: "fa-feather",
+    suitIndex: 1,
+  },
+  oddsAndEvens10Wins: {
+    icon: "fa-dice",
+    suitIndex: 2,
+  },
+  reversedSuit10Wins: {
+    icon: "fa-arrow-rotate-left",
+    suitIndex: 3,
+  },
+  upOrDown10Wins: {
+    icon: "fa-arrows-up-down",
+    suitIndex: 4,
+  },
+  throwItInAHole10Wins: {
+    icon: "fa-golf-ball-tee",
+    suitIndex: 5,
+  },
+  sudoku10Wins: {
+    icon: "fa-table-cells",
+    suitIndex: 0,
   },
   threePlayers10Wins: {
     players: 3,
@@ -143,7 +176,11 @@ const ACHIEVEMENT_CARDS = {
   | { readonly variant: string; readonly allSuits: boolean }
   | { readonly players: number }
   | { readonly rankOf: string; readonly label: string }
+  | { readonly icon: string; readonly suitIndex: number }
 >;
+
+/** The variant whose suits give the colors of the cards with an icon, for a rule. */
+const ICON_CARD_VARIANT = "6 Suits";
 
 /** The most people in a row of an achievement's players. */
 const MAX_PLAYERS_PER_ROW = 3;
@@ -222,15 +259,21 @@ function SuitCard({
   );
 }
 
-/** A card of the last suit of a variant, with a rank on it instead of a pip. */
-function RankCard({
-  label,
+/**
+ * A card of a suit of a variant (its last suit by default), with a rank or an icon on it instead of
+ * a pip.
+ */
+function LabelCard({
+  children,
+  suitIndex,
   variant,
 }: {
-  readonly label: string;
+  readonly children: React.ReactNode;
+  readonly suitIndex?: number;
   readonly variant: Variant;
 }): React.JSX.Element | null {
-  const suit = variant.suits.at(-1);
+  const suit =
+    suitIndex === undefined ? variant.suits.at(-1) : variant.suits[suitIndex];
   if (suit === undefined) {
     return null;
   }
@@ -245,7 +288,7 @@ function RankCard({
           suit.fill ?? `linear-gradient(160deg, ${suit.fillColors.join(", ")})`,
       }}
     >
-      {label}
+      {children}
     </div>
   );
 }
@@ -289,7 +332,19 @@ function AchievementCards({
   if ("rankOf" in art) {
     return (
       <div aria-hidden="true" className={artClassName} style={artStyle}>
-        <RankCard label={art.label} variant={getVariant(art.rankOf)} />
+        <LabelCard variant={getVariant(art.rankOf)}>{art.label}</LabelCard>
+      </div>
+    );
+  }
+  if ("icon" in art) {
+    return (
+      <div aria-hidden="true" className={artClassName} style={artStyle}>
+        <LabelCard
+          suitIndex={art.suitIndex}
+          variant={getVariant(ICON_CARD_VARIANT)}
+        >
+          <i className={`fas ${art.icon} tw:text-[0.75em]`} />
+        </LabelCard>
       </div>
     );
   }
