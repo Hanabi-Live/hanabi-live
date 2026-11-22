@@ -117,7 +117,7 @@ pub(super) async fn page(
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(1).unwrap_or("");
     let accepted: &[&str] = match mode {
-        "history" | "tags" | "seed" | "tag" | "scores" | "profile" => &["api"],
+        "history" | "tags" | "seed" | "tag" | "profile" => &["api"],
         "shared-missing-scores" => &[
             "excludePlayers",
             "excludeVariants",
@@ -158,11 +158,11 @@ pub(super) async fn page(
             let users = data::players(&state, &params, true).await?;
             return missing(&state, users, n, &q).await;
         }
-        "scores" | "profile" | "history" | "tags" => {
+        "profile" | "history" | "tags" => {
             let users = data::players(&state, &params, mode == "history").await?;
             v["name"] = json!(users[0].1);
             match mode {
-                "scores" | "profile" => {
+                "profile" => {
                     if api_redirect {
                         return Ok(Redirect::permanent(&format!(
                             "{API_PREFIX}/scores/{}",
@@ -170,8 +170,8 @@ pub(super) async fn page(
                         ))
                         .into_response());
                     }
-                    v["page"] = json!("scores");
-                    v["title"] = json!("Scores");
+                    v["page"] = json!("profile");
+                    v["title"] = json!("Profile");
                     let statistics = player_statistics(&state, users[0].0).await?;
                     let achievements = achievements(&state, users[0].0).await?;
                     set_table(

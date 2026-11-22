@@ -859,7 +859,7 @@ use these numbers to make the best move for the current situation.
 
 | URL                                                | Description                                                                                              |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `/scores/[username]`                               | Shows the player's profile and achievements.                                                             |
+| `/profile/[username]`                              | Shows the player's profile and achievements.                                                             |
 | `/history/[username]`                              | Lists the player's past games.                                                                           |
 | `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)                 |
 | `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)          |

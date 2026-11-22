@@ -665,8 +665,8 @@ function getStates(): readonly State[] {
       loggedIn: false,
     },
     {
-      name: "scores",
-      path: `/scores/${USERNAME}`,
+      name: "profile",
+      path: `/profile/${USERNAME}`,
       loggedIn: false,
     },
     {

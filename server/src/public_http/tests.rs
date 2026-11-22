@@ -554,7 +554,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "same"
     );
     for path in [
-        "/scores/Alice",
         "/profile/Alice",
         "/history/Alice/Bob",
         "/tags/Alice",
@@ -612,7 +611,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .await
         .unwrap();
     // A player's time counts each game once rather than once per player.
-    let (_, body) = request(app.clone(), "/scores/Alice").await;
+    let (_, body) = request(app.clone(), "/profile/Alice").await;
     let statistics = &page_table(&body)["statistics"];
     assert_eq!(
         [
@@ -625,7 +624,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     );
     let (status, body) = request(
         app.clone(),
-        "/scores/%3Cscript%3Ealert%281%29%3C%2Fscript%3E",
+        "/profile/%3Cscript%3Ealert%281%29%3C%2Fscript%3E",
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
@@ -653,7 +652,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     .await;
     assert!(missing_variants(&body).contains(&json!("No Variant")));
     for (path, status, text) in [
-        ("/scores", 404, "specify a player"),
+        ("/profile", 404, "specify a player"),
         ("/history/Missing/Alice/alice", 404, "No player is named"),
         ("/api/v1/history/Alice/alice", 404, "same player twice"),
         (
@@ -707,7 +706,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ),
         ("/api/v1/history/Alice?start=x", 400, "must be an integer"),
         ("/history/Alice?api=1", 400, "takes no value"),
-        ("/scores/Alice?api=1", 400, "takes no value"),
+        ("/profile/Alice?api=1", 400, "takes no value"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
         ("/lobby?login=", 400, "cannot be empty"),
         ("/api/v1/seed/no-games/stats", 404, "has no games"),
@@ -723,6 +722,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "offset",
         ),
         ("/api/v1/history-full/Alice", 404, ""),
+        // A profile was at "/scores" before.
+        ("/scores/Alice", 404, ""),
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
         ("/export/99999", 404, "does not exist"),
@@ -786,7 +787,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert!(error.message.contains("banned"));
     for (page, api) in [
         ("/history/Alice/Bob?api", "/api/v1/history/Alice/Bob"),
-        ("/scores/Alice?api", "/api/v1/scores/Alice"),
         ("/profile/Alice?api", "/api/v1/scores/Alice"),
     ] {
         let redirect = app

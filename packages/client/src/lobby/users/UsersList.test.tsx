@@ -139,7 +139,7 @@ describe("UsersList", () => {
     expect(screen.getByText("Bob").className).toBe("tw:text-friend");
     expect(screen.getByText("Alice").className).toBe("");
     expect(screen.getByText("Alice").getAttribute("href")).toBe(
-      "/scores/Alice",
+      "/profile/Alice",
     );
     expect(screen.getByTestId("title").textContent).toBe("Online Users (5)");
   });

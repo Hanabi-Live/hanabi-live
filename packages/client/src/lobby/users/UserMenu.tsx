@@ -56,7 +56,7 @@ export function UserLink({
   const menuKind = closingItems?.kind ?? kind;
   const menuBlocked = closingItems?.blocked ?? blocked;
 
-  const profileUrl = `/scores/${encodeURIComponent(user.username)}`;
+  const profileUrl = `/profile/${encodeURIComponent(user.username)}`;
   function closeMenu() {
     setClosingItems({
       kind,

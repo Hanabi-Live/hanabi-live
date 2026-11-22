@@ -23,6 +23,8 @@ of the repository.
 - Profiles show their statistics in two short lists, games and time. Each
   achievement shows the cards of its suit, in color once it is unlocked.
 - Profiles count speedruns with the other games and time, instead of apart.
+- A profile is now at `/profile/[username]`. Links to `/scores/[username]` no
+  longer work.
 
 ## November 21st, 2026
 
