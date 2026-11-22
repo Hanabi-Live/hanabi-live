@@ -304,7 +304,7 @@ function openConnection(isReconnect: boolean) {
             && gameSession.isOpen()
             && store.getState().game.current?.finished === false
           ) {
-            conn.send("gameStateLoad", { tableId: retained });
+            resumeGame(conn, retained);
           } else {
             gameMain.closeGame();
             lobbyCommands.get("tableJoined")?.(table);
@@ -518,7 +518,35 @@ function endedAfterDescribed(state: ServerEventData["gameState"]): boolean {
   );
 }
 
-/** Opens the game again, so that the server describes it as the replay that it is now. */
+/**
+ * Loads the state of the game that we had open before we lost the connection. A table keeps its ID
+ * when its players play again, so the table can play another game now, maybe in another variant.
+ * Then we open that game, since the state that we have describes the old one.
+ */
+function resumeGame(conn: Connection, tableId: number) {
+  conn.send("gameInitLoad", { tableId }, (reply) => {
+    // A connection that closes also fails its requests. The next connection tries again.
+    if (
+      !isCurrentConnection(conn)
+      || !gameSession.isOpen()
+      || conn.ws.readyState !== WebSocket.OPEN
+    ) {
+      return;
+    }
+    if (
+      reply.ok
+      && reply.data.startedAt === store.getState().game.current?.startedAt
+    ) {
+      conn.send("gameStateLoad", { tableId });
+      return;
+    }
+    reopenGame();
+    finishReconnecting(conn);
+    initCommands(conn);
+  });
+}
+
+/** Opens the game again, so that the server describes the table's game as it is now. */
 function reopenGame() {
   gameMain.closeGame();
   gameMain.show(false);
