@@ -1106,10 +1106,14 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
             actor.anchor = Instant::now()
                 .checked_sub(Duration::from_millis(900))
                 .unwrap();
+            let message = client_message("replayAction", &request)?;
+            let ClientRequest::ReplayAction(action) = &message else {
+                bail!("The request is not a replay action");
+            };
             actor
                 .replay_command(
                     h.users[0].clone(),
-                    client_message("replayAction", &request)?,
+                    crate::routing::PhaseRequest::ReplayAction(action),
                 )
                 .await?;
             let (saved, _) = h.snapshot(id).await?;

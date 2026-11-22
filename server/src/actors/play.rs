@@ -6,6 +6,7 @@ use super::{
 };
 use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
+use crate::routing::PhaseRequest;
 use crate::store::Commit;
 use crate::{
     model::{IDLE_TIMEOUT_MS, MS_PER_SECOND, NoteOwner, Phase, wire_options},
@@ -15,8 +16,8 @@ use anyhow::Context;
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::MAX_NOTE_LENGTH;
+use hanabi_protocol::ReplyData;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
-use hanabi_protocol::{ClientRequest, ReplyData};
 use hanabi_protocol::{PlayerIndex, UserId};
 use std::sync::Arc;
 
@@ -44,22 +45,24 @@ impl TableActor {
     pub(super) async fn live_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientRequest,
+        request: PhaseRequest<'_>,
     ) -> CommandResult<()> {
-        match message {
-            ClientRequest::PlayerAction(r) => self.action(session, r.action).await,
-            ClientRequest::TableTerminate(_) => self.terminate(session, None).await,
-            ClientRequest::TableTerminateVote(r) => self.terminate(session, Some(r.voted)).await,
-            ClientRequest::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
-            ClientRequest::PauseQueue(r) => {
-                self.pause(session, PauseChange::Queued(r.queued)).await
-            }
-            ClientRequest::IdleReset(_) => self.idle_reset(session).await,
-            ClientRequest::Note(r) => self.note(session, r.order, &r.text).await,
-            message @ (ClientRequest::TagAdd(_)
-            | ClientRequest::TagRemove(_)
-            | ClientRequest::TagRemoveAll(_)) => self.tag_message(session, message).await,
-            message => Err(wrong_phase(&message)),
+        use PhaseRequest as P;
+        match request {
+            P::PlayerAction(r) => self.action(session, r.action).await,
+            P::TableTerminate => self.terminate(session, None).await,
+            P::TableTerminateVote(r) => self.terminate(session, Some(r.voted)).await,
+            P::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
+            P::PauseQueue(r) => self.pause(session, PauseChange::Queued(r.queued)).await,
+            P::IdleReset => self.idle_reset(session).await,
+            P::Note(r) => self.note(session, r.order, &r.text).await,
+            P::Tag(change) => self.tag_message(session, change).await,
+            P::TableStart(_)
+            | P::TableUpdate(_)
+            | P::ReplayAction(_)
+            | P::TableSuggest(_)
+            | P::TableRestart
+            | P::TableRestartDecline(_) => Err(wrong_phase(request)),
         }
     }
     /// The game in progress. Commands that use it run only while a game is live.

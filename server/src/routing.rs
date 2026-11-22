@@ -1,8 +1,11 @@
 //! Where each client command runs. Every command is listed, so a new one needs a decision.
 
 use hanabi_protocol::{
-    ChatPmHistoryRequest, ChatPmRequest, ChatRequest, ClientRequest, RelationshipRequest,
-    SettingsRequest, TableId, TagSearchRequest, UserInactiveRequest,
+    ChatPmHistoryRequest, ChatPmRequest, ChatRequest, ClientRequest, NoteRequest,
+    PauseQueueRequest, PauseRequest, PlayerActionRequest, RelationshipRequest, ReplayAction,
+    SettingsRequest, TableId, TableRestartDeclineRequest, TableSetOwnerRequest,
+    TableSpectateRequest, TableStartRequest, TableSuggestRequest, TableTerminateVoteRequest,
+    TableUpdateRequest, TagRequest, TagSearchRequest, UserInactiveRequest,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -17,7 +20,7 @@ pub enum Route<'a> {
     /// The hub runs the command: the creation of a table or replay.
     Hub,
     /// The table with this ID runs the command.
-    Table(TableId),
+    Table(TableId, TableRequest<'a>),
     /// The connection logs a client error and alerts about it.
     ClientError,
 }
@@ -41,13 +44,72 @@ pub enum LobbyRequest<'a> {
     TagSearch(&'a TagSearchRequest),
 }
 
+/// A command that a table runs, borrowed from its client request.
+#[derive(Clone, Copy, Debug)]
+pub enum TableRequest<'a> {
+    /// A join that starts its password check in the table's `client` first.
+    TableJoin,
+    TableReattend,
+    TableSpectate(&'a TableSpectateRequest),
+    TableUnattend,
+    TableLeave,
+    TableSetOwner(&'a TableSetOwnerRequest),
+    GameInitLoad,
+    GameStateLoad,
+    GameLoaded,
+    /// A table's chat, after the lobby ran its chat commands.
+    Chat(&'a ChatRequest),
+    ChatRead,
+    ChatTyping,
+    /// A command whose result depends on the table's phase.
+    Phase(PhaseRequest<'a>),
+}
+
+/// A table command whose result depends on the table's phase. Each phase lists every one, so that a
+/// new command needs a decision in each phase.
+#[derive(Clone, Copy, Debug)]
+pub enum PhaseRequest<'a> {
+    TableStart(&'a TableStartRequest),
+    TableUpdate(&'a TableUpdateRequest),
+    TableTerminate,
+    TableTerminateVote(&'a TableTerminateVoteRequest),
+    PlayerAction(&'a PlayerActionRequest),
+    Pause(&'a PauseRequest),
+    PauseQueue(&'a PauseQueueRequest),
+    IdleReset,
+    Note(&'a NoteRequest),
+    Tag(TagChange<'a>),
+    ReplayAction(&'a ReplayAction),
+    TableSuggest(&'a TableSuggestRequest),
+    /// A restart, which starts in the table's `client` with its statistics.
+    TableRestart,
+    TableRestartDecline(&'a TableRestartDeclineRequest),
+}
+
+/// A change to a game's tags.
+#[derive(Clone, Copy, Debug)]
+pub enum TagChange<'a> {
+    Add(&'a TagRequest),
+    Remove(&'a TagRequest),
+    RemoveAll,
+}
+
 impl<'a> Route<'a> {
     /// The command that the lobby runs for this route, if it runs one.
     pub const fn lobby(self) -> Option<LobbyRequest<'a>> {
         match self {
             Route::Lobby(request) => Some(request),
             Route::TableChat(_, request) => Some(LobbyRequest::Chat(request)),
-            Route::Connection | Route::Hub | Route::Table(_) | Route::ClientError => None,
+            Route::Connection | Route::Hub | Route::Table(..) | Route::ClientError => None,
+        }
+    }
+
+    /// The table that runs this route's command, and the command, if a table runs one.
+    pub const fn table(self) -> Option<(TableId, TableRequest<'a>)> {
+        match self {
+            Route::Table(id, request) => Some((id, request)),
+            Route::TableChat(id, request) => Some((id, TableRequest::Chat(request))),
+            Route::Connection | Route::Hub | Route::Lobby(_) | Route::ClientError => None,
         }
     }
 }
@@ -55,52 +117,54 @@ impl<'a> Route<'a> {
 pub fn route(message: &ClientRequest) -> Route<'_> {
     use ClientRequest as M;
     use LobbyRequest as L;
-    let id = match message {
-        M::LobbyLoad(_) => return Route::Connection,
-        M::ClientError(_) => return Route::ClientError,
-        M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
-        M::Settings(r) => return Route::Lobby(L::Settings(r)),
-        M::UserInactive(r) => return Route::Lobby(L::UserInactive(r)),
-        M::ChatPm(r) => return Route::Lobby(L::ChatPm(r)),
-        M::ChatPmHistory(r) => return Route::Lobby(L::ChatPmHistory(r)),
-        M::FriendAdd(r) => return Route::Lobby(L::FriendAdd(r)),
-        M::FriendRemove(r) => return Route::Lobby(L::FriendRemove(r)),
-        M::LinkAdd(r) => return Route::Lobby(L::LinkAdd(r)),
-        M::LinkRemove(r) => return Route::Lobby(L::LinkRemove(r)),
-        M::LinkList(_) => return Route::Lobby(L::LinkList),
-        M::BlockAdd(r) => return Route::Lobby(L::BlockAdd(r)),
-        M::BlockRemove(r) => return Route::Lobby(L::BlockRemove(r)),
-        M::TagSearch(r) => return Route::Lobby(L::TagSearch(r)),
+    use PhaseRequest as P;
+    use TableRequest as T;
+    match message {
+        M::LobbyLoad(_) => Route::Connection,
+        M::ClientError(_) => Route::ClientError,
+        M::TableCreate(_) | M::ReplayCreate(_) => Route::Hub,
+        M::Settings(r) => Route::Lobby(L::Settings(r)),
+        M::UserInactive(r) => Route::Lobby(L::UserInactive(r)),
+        M::ChatPm(r) => Route::Lobby(L::ChatPm(r)),
+        M::ChatPmHistory(r) => Route::Lobby(L::ChatPmHistory(r)),
+        M::FriendAdd(r) => Route::Lobby(L::FriendAdd(r)),
+        M::FriendRemove(r) => Route::Lobby(L::FriendRemove(r)),
+        M::LinkAdd(r) => Route::Lobby(L::LinkAdd(r)),
+        M::LinkRemove(r) => Route::Lobby(L::LinkRemove(r)),
+        M::LinkList(_) => Route::Lobby(L::LinkList),
+        M::BlockAdd(r) => Route::Lobby(L::BlockAdd(r)),
+        M::BlockRemove(r) => Route::Lobby(L::BlockRemove(r)),
+        M::TagSearch(r) => Route::Lobby(L::TagSearch(r)),
         M::Chat(r) => match r.table_id {
-            Some(id) => return Route::TableChat(id, r),
-            None => return Route::Lobby(L::Chat(r)),
+            Some(id) => Route::TableChat(id, r),
+            None => Route::Lobby(L::Chat(r)),
         },
-        M::ChatRead(r)
-        | M::ChatTyping(r)
-        | M::TableLeave(r)
-        | M::TableReattend(r)
-        | M::IdleReset(r)
-        | M::TableUnattend(r)
-        | M::TableTerminate(r)
-        | M::GameInitLoad(r)
-        | M::GameStateLoad(r)
-        | M::TagRemoveAll(r)
-        | M::GameLoaded(r) => r.table_id,
-        M::TableJoin(r) => r.table_id,
-        M::TableTerminateVote(r) => r.table_id,
-        M::TableSetOwner(r) => r.table_id,
-        M::TableStart(r) => r.table_id,
-        M::TableRestart(r) => r.table_id,
-        M::TableRestartDecline(r) => r.table_id,
-        M::TableSuggest(r) => r.table_id,
-        M::TableSpectate(r) => r.table_id,
-        M::TableUpdate(r) => r.table_id,
-        M::PlayerAction(r) => r.table_id,
-        M::Pause(r) => r.table_id,
-        M::PauseQueue(r) => r.table_id,
-        M::Note(r) => r.table_id,
-        M::TagAdd(r) | M::TagRemove(r) => r.table_id,
-        M::ReplayAction(r) => r.table_id,
-    };
-    Route::Table(id)
+        M::TableJoin(r) => Route::Table(r.table_id, T::TableJoin),
+        M::TableReattend(r) => Route::Table(r.table_id, T::TableReattend),
+        M::TableSpectate(r) => Route::Table(r.table_id, T::TableSpectate(r)),
+        M::TableUnattend(r) => Route::Table(r.table_id, T::TableUnattend),
+        M::TableLeave(r) => Route::Table(r.table_id, T::TableLeave),
+        M::TableSetOwner(r) => Route::Table(r.table_id, T::TableSetOwner(r)),
+        M::GameInitLoad(r) => Route::Table(r.table_id, T::GameInitLoad),
+        M::GameStateLoad(r) => Route::Table(r.table_id, T::GameStateLoad),
+        M::GameLoaded(r) => Route::Table(r.table_id, T::GameLoaded),
+        M::ChatRead(r) => Route::Table(r.table_id, T::ChatRead),
+        M::ChatTyping(r) => Route::Table(r.table_id, T::ChatTyping),
+        M::TableStart(r) => Route::Table(r.table_id, T::Phase(P::TableStart(r))),
+        M::TableUpdate(r) => Route::Table(r.table_id, T::Phase(P::TableUpdate(r))),
+        M::TableTerminate(r) => Route::Table(r.table_id, T::Phase(P::TableTerminate)),
+        M::TableTerminateVote(r) => Route::Table(r.table_id, T::Phase(P::TableTerminateVote(r))),
+        M::PlayerAction(r) => Route::Table(r.table_id, T::Phase(P::PlayerAction(r))),
+        M::Pause(r) => Route::Table(r.table_id, T::Phase(P::Pause(r))),
+        M::PauseQueue(r) => Route::Table(r.table_id, T::Phase(P::PauseQueue(r))),
+        M::IdleReset(r) => Route::Table(r.table_id, T::Phase(P::IdleReset)),
+        M::Note(r) => Route::Table(r.table_id, T::Phase(P::Note(r))),
+        M::TagAdd(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Add(r)))),
+        M::TagRemove(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Remove(r)))),
+        M::TagRemoveAll(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::RemoveAll))),
+        M::ReplayAction(r) => Route::Table(r.table_id, T::Phase(P::ReplayAction(r))),
+        M::TableSuggest(r) => Route::Table(r.table_id, T::Phase(P::TableSuggest(r))),
+        M::TableRestart(r) => Route::Table(r.table_id, T::Phase(P::TableRestart)),
+        M::TableRestartDecline(r) => Route::Table(r.table_id, T::Phase(P::TableRestartDecline(r))),
+    }
 }

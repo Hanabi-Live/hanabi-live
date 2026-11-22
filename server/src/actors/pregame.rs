@@ -10,6 +10,7 @@ use super::{
 };
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
+use crate::routing::PhaseRequest;
 use crate::{
     game::Game,
     model::{MS_PER_SECOND, Phase, Player, Snapshot, TableSnapshot, engine_options},
@@ -17,7 +18,6 @@ use crate::{
 };
 use anyhow::Context;
 use hanabi_engine::{GameSetup, Interpretation};
-use hanabi_protocol::ClientRequest;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableJoined, TableStage};
@@ -76,10 +76,11 @@ impl TableActor {
     pub(super) async fn pregame_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientRequest,
+        request: PhaseRequest<'_>,
     ) -> CommandResult<()> {
-        match message {
-            ClientRequest::TableStart(r) => {
+        use PhaseRequest as P;
+        match request {
+            P::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
                 let ids = &r.intended_player_ids;
@@ -92,21 +93,31 @@ impl TableActor {
                 }
                 self.start(session).await
             }
-            ClientRequest::TableUpdate(r) => self.update(session, r).await,
-            ClientRequest::TableTerminate(_) => {
+            P::TableUpdate(r) => self.update(session, r).await,
+            P::TableTerminate => {
                 ensure_or_reject!(
                     self.attending(&session) && session.user == self.table.owner.user_id,
                     "Only owner can terminate."
                 );
                 self.retire().await
             }
-            message => Err(wrong_phase(&message)),
+            P::TableTerminateVote(_)
+            | P::PlayerAction(_)
+            | P::Pause(_)
+            | P::PauseQueue(_)
+            | P::IdleReset
+            | P::Note(_)
+            | P::Tag(_)
+            | P::ReplayAction(_)
+            | P::TableSuggest(_)
+            | P::TableRestart
+            | P::TableRestartDecline(_) => Err(wrong_phase(request)),
         }
     }
     async fn update(
         &mut self,
         session: Arc<Session>,
-        request: hanabi_protocol::TableUpdateRequest,
+        request: &hanabi_protocol::TableUpdateRequest,
     ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You must attend this table.");
         self.seat(&session)?;

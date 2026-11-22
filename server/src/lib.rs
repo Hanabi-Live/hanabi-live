@@ -36,16 +36,6 @@ macro_rules! bail_internal {
     };
 }
 
-/// Returns an unexpected failure of a player's request unless a condition holds, like `ensure!`.
-macro_rules! ensure_internal {
-    ($condition:expr, $($message:tt)+) => {
-        if $condition {
-        } else {
-            bail_internal!($($message)+);
-        }
-    };
-}
-
 /// Returns a rejection of a player's request, like `bail!`.
 macro_rules! reject {
     ($($message:tt)+) => {

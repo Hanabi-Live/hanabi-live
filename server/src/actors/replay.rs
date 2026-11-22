@@ -8,12 +8,12 @@ use super::{
 };
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
+use crate::routing::{PhaseRequest, TagChange};
 use crate::{
     model::{ExtraOptions, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Tag, TagEdit},
     transport::{Outgoing, Session, frame},
 };
 use anyhow::Context;
-use hanabi_protocol::ClientRequest;
 use hanabi_protocol::MAX_TABLE_NAME_LENGTH;
 use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
 use std::{
@@ -50,44 +50,48 @@ impl TableActor {
     pub(super) async fn replay_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientRequest,
+        request: PhaseRequest<'_>,
     ) -> CommandResult<()> {
-        match message {
-            ClientRequest::ReplayAction(r) => self.replay_action(session, r).await,
+        use PhaseRequest as P;
+        match request {
+            P::ReplayAction(r) => self.replay_action(session, r).await,
             // A suggestion is a message to the leader, so it is charged like one. The "/suggest"
             // command is charged as a chat message.
-            ClientRequest::TableSuggest(r) => {
+            P::TableSuggest(r) => {
                 self.charge_chat(session.user)?;
                 self.suggest(session, r.turn).await
             }
             // A restart starts in `client`, through `start_restart`.
-            ClientRequest::TableRestart(_) => {
+            P::TableRestart => {
                 bail_internal!("A restart ran without its statistics.")
             }
-            ClientRequest::TableRestartDecline(r) => {
-                self.decline_restart(session, r.declined).await
-            }
-            message @ (ClientRequest::TagAdd(_)
-            | ClientRequest::TagRemove(_)
-            | ClientRequest::TagRemoveAll(_)) => self.tag_message(session, message).await,
-            message => Err(wrong_phase(&message)),
+            P::TableRestartDecline(r) => self.decline_restart(session, r.declined).await,
+            P::Tag(change) => self.tag_message(session, change).await,
+            P::TableStart(_)
+            | P::TableUpdate(_)
+            | P::TableTerminate
+            | P::TableTerminateVote(_)
+            | P::PlayerAction(_)
+            | P::Pause(_)
+            | P::PauseQueue(_)
+            | P::IdleReset
+            | P::Note(_) => Err(wrong_phase(request)),
         }
     }
     /// Runs a tag command, which games in progress and replays accept.
     pub(super) async fn tag_message(
         &mut self,
         session: Arc<Session>,
-        message: ClientRequest,
+        change: TagChange<'_>,
     ) -> CommandResult<()> {
-        let edit = match message {
-            ClientRequest::TagAdd(r) => {
+        let edit = match change {
+            TagChange::Add(r) => {
                 TagEdit::Add(crate::model::normalize_tag(&r.tag).map_err(CommandError::rejected)?)
             }
-            ClientRequest::TagRemove(r) => TagEdit::Delete(
+            TagChange::Remove(r) => TagEdit::Delete(
                 crate::model::normalize_tag(&r.tag).map_err(CommandError::rejected)?,
             ),
-            ClientRequest::TagRemoveAll(_) => TagEdit::DeleteAll,
-            message => return Err(wrong_phase(&message)),
+            TagChange::RemoveAll => TagEdit::DeleteAll,
         };
         self.tag(session, edit).await
     }
@@ -304,7 +308,7 @@ impl TableActor {
     async fn replay_action(
         &mut self,
         session: Arc<Session>,
-        r: hanabi_protocol::ReplayAction,
+        r: &hanabi_protocol::ReplayAction,
     ) -> CommandResult<()> {
         use hanabi_protocol::{HypotheticalControl as H, ReplayLeaderAction as R};
 
@@ -369,7 +373,7 @@ impl TableActor {
                 H::ShowDrawnCards { show } => replay.show_drawn_cards = *show,
             },
         }
-        let message = Outgoing::new(hanabi_protocol::event::REPLAY_ACTION, r);
+        let message = Outgoing::new(hanabi_protocol::event::REPLAY_ACTION, r.clone());
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         if checkpoint {
             self.persist(next).await?;

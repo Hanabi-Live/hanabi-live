@@ -104,7 +104,13 @@ pub fn events_for_recipient(
                     *suit_index = None;
                     *rank = None;
                 }
-                _ => {}
+                // Each event is listed, so that a new one needs a decision about what it hides.
+                EngineEvent::Clue { clue: None, .. }
+                | EngineEvent::Play { .. }
+                | EngineEvent::Discard { .. }
+                | EngineEvent::Turn { .. }
+                | EngineEvent::GameOver { .. }
+                | EngineEvent::PlayerTimes { .. } => {}
             }
             event
         })

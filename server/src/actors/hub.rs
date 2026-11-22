@@ -9,7 +9,7 @@ use crate::{
     lobby::{OnlineUser, Publication},
     model::TableSnapshot,
     operations::Operation,
-    routing::{Route, route},
+    routing::route,
     server_info::ServerInfo,
     store::{Saved, Store},
     transport::{Frame, Session, frame},
@@ -935,13 +935,13 @@ impl Hub {
                     self.create(session, Creation::Replay(r), reply);
                 }
             }
-            message => match route(&message) {
-                Route::Table(table) | Route::TableChat(table, _) => {
+            message => match route(&message).table() {
+                Some((table, _)) => {
                     self.route(session, table, Command::Client(Box::new(message)), reply);
                 }
-                other => {
+                None => {
                     let _ = reply.send(Err(internal!(
-                        "Command {} runs at {other:?}, not at a table.",
+                        "Command {} does not run at a table.",
                         message.name()
                     )));
                 }

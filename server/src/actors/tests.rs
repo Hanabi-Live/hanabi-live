@@ -779,15 +779,15 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     );
 
     // Only players can keep the game going.
-    let idle_reset = || client_message("idleReset", &json!({"tableId":id}));
+    let idle_reset = crate::routing::PhaseRequest::IdleReset;
     ensure!(
         actor
-            .live_command(viewer.clone(), idle_reset()?)
+            .live_command(viewer.clone(), idle_reset)
             .await
             .is_err(),
         "A spectator kept an idle game going"
     );
-    actor.live_command(alice.clone(), idle_reset()?).await?;
+    actor.live_command(alice.clone(), idle_reset).await?;
     ensure!(
         actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
         "Keeping the game going did not restart the idle timer"

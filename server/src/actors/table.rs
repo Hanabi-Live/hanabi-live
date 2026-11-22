@@ -10,7 +10,7 @@ use super::{
 };
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
-use crate::routing::{Route, route};
+use crate::routing::{PhaseRequest, TableRequest, route};
 use crate::store::{Commit, Outcome, Saved};
 use crate::{
     model::{IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MS_PER_SECOND, Phase, Snapshot, TableSnapshot},
@@ -39,23 +39,22 @@ use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc};
 const TIMER_RETRY: Duration = Duration::from_millis(250);
 
 /// The refusal of a command that the table's phase does not accept.
-pub(super) fn wrong_phase(message: &ClientRequest) -> CommandError {
-    use ClientRequest as M;
-    let reason = match message {
-        M::TableStart(_) => "Already started.",
-        M::TableUpdate(_) => "Game already started.",
-        M::PlayerAction(_)
-        | M::Pause(_)
-        | M::PauseQueue(_)
-        | M::IdleReset(_)
-        | M::Note(_)
-        | M::TableTerminate(_)
-        | M::TableTerminateVote(_) => "Not an ongoing game.",
-        M::ReplayAction(_) => "Not a replay.",
-        M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay.",
-        M::TableRestart(_) => "Only the shared replay leader can restart.",
-        M::TagAdd(_) | M::TagRemove(_) | M::TagRemoveAll(_) => "No game.",
-        _ => "This table does not accept that command now.",
+pub(super) fn wrong_phase(request: PhaseRequest<'_>) -> CommandError {
+    use PhaseRequest as P;
+    let reason = match request {
+        P::TableStart(_) => "Already started.",
+        P::TableUpdate(_) => "Game already started.",
+        P::PlayerAction(_)
+        | P::Pause(_)
+        | P::PauseQueue(_)
+        | P::IdleReset
+        | P::Note(_)
+        | P::TableTerminate
+        | P::TableTerminateVote(_) => "Not an ongoing game.",
+        P::ReplayAction(_) => "Not a replay.",
+        P::TableSuggest(_) | P::TableRestartDecline(_) => "Not a shared replay.",
+        P::TableRestart => "Only the shared replay leader can restart.",
+        P::Tag(_) => "No game.",
     };
     rejection!("{reason}")
 }
@@ -1104,16 +1103,14 @@ impl TableActor {
                     .map(|()| None);
             }
         };
-        ensure_internal!(
-            matches!(route(&message), Route::Table(_) | Route::TableChat(..)),
-            "Unsupported table command: {}",
-            message.name()
-        );
-        let done = match message {
+        let Some((_, request)) = route(&message).table() else {
+            bail_internal!("Unsupported table command: {}", message.name());
+        };
+        let done = match request {
             // A join to a table with a password starts its password check in `client` instead.
-            ClientRequest::TableJoin(_) => self.join(session, blocks, None).await,
-            ClientRequest::TableReattend(_) => self.reattend(session, blocks, false, None).await,
-            ClientRequest::TableSpectate(r) => {
+            TableRequest::TableJoin => self.join(session, blocks, None).await,
+            TableRequest::TableReattend => self.reattend(session, blocks, false, None).await,
+            TableRequest::TableSpectate(r) => {
                 self.reattend(
                     session,
                     blocks,
@@ -1123,17 +1120,17 @@ impl TableActor {
                 )
                 .await
             }
-            ClientRequest::TableUnattend(_) => self.leave(session, false).await,
-            ClientRequest::TableLeave(_) => self.leave(session, true).await,
-            ClientRequest::GameInitLoad(_) => return self.info(session, GameInfo::Init).await,
-            ClientRequest::GameStateLoad(_) => {
+            TableRequest::TableUnattend => self.leave(session, false).await,
+            TableRequest::TableLeave => self.leave(session, true).await,
+            TableRequest::GameInitLoad => return self.info(session, GameInfo::Init).await,
+            TableRequest::GameStateLoad => {
                 self.info(session.clone(), GameInfo::State).await?;
                 if let Some(a) = self.attendees.get_mut(&session.user) {
                     a.synced = true;
                 }
                 Ok(())
             }
-            ClientRequest::GameLoaded(_) => {
+            TableRequest::GameLoaded => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading.");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
@@ -1164,15 +1161,15 @@ impl TableActor {
                 }
                 self.publish(e).await
             }
-            ClientRequest::Chat(r) => self.chat(session, &r.text).await,
-            ClientRequest::ChatRead(_) => self.chat_presence(session, false).await,
-            ClientRequest::ChatTyping(_) => self.chat_presence(session, true).await,
-            ClientRequest::TableSetOwner(r) => self.leader(session, r.user_id).await,
+            TableRequest::Chat(r) => self.chat(session, &r.text).await,
+            TableRequest::ChatRead => self.chat_presence(session, false).await,
+            TableRequest::ChatTyping => self.chat_presence(session, true).await,
+            TableRequest::TableSetOwner(r) => self.leader(session, r.user_id).await,
             // The rest depend on the table's phase.
-            message => match self.table.phase {
-                Phase::Pregame { .. } => self.pregame_command(session, message).await,
-                Phase::Live { .. } => self.live_command(session, message).await,
-                Phase::Replay { .. } => self.replay_command(session, message).await,
+            TableRequest::Phase(request) => match self.table.phase {
+                Phase::Pregame { .. } => self.pregame_command(session, request).await,
+                Phase::Live { .. } => self.live_command(session, request).await,
+                Phase::Replay { .. } => self.replay_command(session, request).await,
             },
         };
         done.map(|()| None)
