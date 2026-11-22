@@ -26,6 +26,9 @@ import {
   summary,
 } from "./mainProcessSupport.ts";
 
+/** Whether the system reports the server's memory in "/proc". */
+const REPORTS_MEMORY = process.platform === "linux";
+
 /** The deal of this two-player seed lets the players alternate 25 plays. */
 const SEED_SUFFIX = "77621";
 /** The card order that each turn plays. */
@@ -67,8 +70,10 @@ databaseDescribe("normal-server protocol workload", () => {
       });
       expect(page.status).toBe(200);
       await page.text();
+      // Only Linux reports a process's memory in "/proc", so on another system, such as a
+      // developer's Mac, the report has none.
       async function sample() {
-        if (processState?.child.pid === undefined) {
+        if (!REPORTS_MEMORY || processState?.child.pid === undefined) {
           return;
         }
         const status = await readFile(
@@ -372,7 +377,7 @@ databaseDescribe("normal-server protocol workload", () => {
           seed: `p2v0s${SEED_SUFFIX}`,
           games: completed.length,
           lanes: 4,
-          peakRssKib,
+          peakRssKib: REPORTS_MEMORY ? peakRssKib : undefined,
           stateStore: "PostgreSQL",
           gameplayMilliseconds,
           mixedReadMilliseconds: performance.now() - readStart,

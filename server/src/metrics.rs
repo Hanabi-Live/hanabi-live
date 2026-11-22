@@ -149,7 +149,12 @@ pub struct Memory {
     virtual_bytes: u64,
 }
 
-pub async fn memory() -> anyhow::Result<Memory> {
+/// Reads the server process's memory. Only Linux reports it (in `/proc/self/status`), so on another
+/// system, such as a developer's Mac, there is none.
+pub async fn memory() -> anyhow::Result<Option<Memory>> {
+    if !cfg!(target_os = "linux") {
+        return Ok(None);
+    }
     let status = tokio::fs::read_to_string("/proc/self/status").await?;
     let field = |name: &str| -> anyhow::Result<u64> {
         let line = status
@@ -163,10 +168,10 @@ pub async fn memory() -> anyhow::Result<Memory> {
             .parse::<u64>()?
             * BYTES_PER_KIB)
     };
-    Ok(Memory {
+    Ok(Some(Memory {
         resident_bytes: field("VmRSS:")?,
         virtual_bytes: field("VmSize:")?,
-    })
+    }))
 }
 #[cfg(test)]
 mod tests {

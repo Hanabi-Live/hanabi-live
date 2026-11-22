@@ -264,7 +264,8 @@ struct MetricsReport {
     uptime_seconds: f64,
     draining: bool,
     discord: &'static str,
-    runtime: metrics::Memory,
+    /// The server process's memory, which is `null` on a system that does not report it.
+    runtime: Option<metrics::Memory>,
     commands: BTreeMap<String, metrics::Metric>,
     recovery: metrics::Recovery,
     database: DatabaseReport,
