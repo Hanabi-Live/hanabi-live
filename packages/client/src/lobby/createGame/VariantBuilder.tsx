@@ -36,6 +36,7 @@ import {
   getParts,
   getRecipe,
   getReverseBlocker,
+  getSuitBackground,
   getSuitDescription,
   getSuitDescriptionById,
   getSuitName,
@@ -714,18 +715,6 @@ function getReverseBlockReason(
     return "In Sudoku, every stack goes up.";
   }
   return undefined;
-}
-
-/** A suit's color, or the stripes of its colors for a suit with several, such as Rainbow. */
-function getSuitBackground(suit: Suit): string {
-  if (suit.fillColors === undefined) {
-    return suit.fill;
-  }
-  const step = 100 / suit.fillColors.length;
-  const stops = suit.fillColors.map(
-    (color, index) => `${color} ${index * step}% ${(index + 1) * step}%`,
-  );
-  return `linear-gradient(180deg, ${stops.join(", ")})`;
 }
 
 function PartRow({

@@ -921,7 +921,7 @@ function getStates(): readonly State[] {
           "Other curated variants",
         );
         await page
-          .getByRole("list", { name: "Other curated variants" })
+          .getByRole("navigation", { name: "Other curated variants" })
           .waitFor();
         await settle(page);
       },

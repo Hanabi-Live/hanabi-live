@@ -218,9 +218,9 @@ describe("CreateGame", () => {
     expect(
       store.getState().session.settings.createTable.options.variantId,
     ).toBe(getVariant("Pink (5 Suits)").id);
-    expect(screen.queryByRole("list", { name: "Other curated variants" })).toBe(
-      null,
-    );
+    expect(
+      screen.queryByRole("navigation", { name: "Other curated variants" }),
+    ).toBe(null);
   });
 
   test("a curated variant that the catalog does not have shows its new name", () => {

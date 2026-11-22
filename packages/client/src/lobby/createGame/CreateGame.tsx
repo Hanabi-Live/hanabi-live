@@ -63,8 +63,16 @@ import {
 import * as lobbyPage from "../lobbyPage.ts";
 import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
-import { CURATED_VARIANT_RECIPES } from "./curatedVariants.ts";
-import { getCatalogName, getRecipeName } from "./variantBuilder.ts";
+import {
+  CURATED_VARIANT_GROUPS,
+  CURATED_VARIANT_RECIPES,
+} from "./curatedVariants.ts";
+import {
+  getCatalogName,
+  getRecipeName,
+  getRecipeSuit,
+  getSuitBackground,
+} from "./variantBuilder.ts";
 import { VariantBuilder } from "./VariantBuilder.tsx";
 
 /**
@@ -749,7 +757,11 @@ function VariantPicker({
             if (event.target.value === CURATED_VARIANTS) {
               // The dropdown keeps showing the variant, since its value does not change.
               menuRef.current?.openUntilClickElsewhere();
-              menu.querySelector<HTMLElement>("button")?.focus();
+              // The focus starts on the current variant, if the menu has it.
+              (
+                menu.querySelector<HTMLElement>("button[data-current]")
+                ?? menu.querySelector<HTMLElement>("button")
+              )?.focus();
             } else {
               onChange(event.target.value);
             }
@@ -817,6 +829,15 @@ function VariantPicker({
 }
 
 /** The menu of curated variants, which opens from the dropdown in the site's tooltip. */
+/** The suit count that most curated variants have, which their names in the menu leave out. */
+const USUAL_SUITS_SUFFIX = " (5 Suits)";
+
+/**
+ * The menu of curated variants, which opens from the dropdown in the site's tooltip. No Variant
+ * comes first, then the groups, which flow into as many columns as fit, so that the menu stays
+ * short. A suit's variants show the suit's color, and the current variant has the row highlight,
+ * which does not change the width of its name.
+ */
 function CuratedVariantMenu({
   currentRecipe,
   onClose,
@@ -828,37 +849,103 @@ function CuratedVariantMenu({
 }) {
   return (
     // Escape closes the menu, and the focus goes back to the dropdown.
-    <ul
+    <nav
       aria-label={CURATED_VARIANTS}
-      // A long list scrolls, so that the menu stays on the screen.
-      className="tw:m-0 tw:max-h-[60vh] tw:list-none tw:overflow-y-auto tw:p-0"
+      // A menu that is still taller than the window scrolls. A pressed button moves down, so the
+      // bottom keeps room for it.
+      className="tw:max-h-[80vh] tw:w-[min(58em,calc(100vw-3em))] tw:overflow-y-auto tw:pb-(--button-press-depth) tw:text-left"
       onKeyDown={(event) => {
         if (event.key !== "Escape") {
           return;
         }
-
         event.stopPropagation();
         onClose();
       }}
     >
-      {CURATED_VARIANT_RECIPES.map((recipe) => (
-        <li key={recipe}>
-          <button
-            aria-current={recipe === currentRecipe ? "true" : undefined}
-            className="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.6em] tw:rounded-[3px] tw:border-none tw:bg-transparent tw:px-[0.6em] tw:py-[0.3em] tw:text-left tw:whitespace-nowrap tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:text-(--text) tw:hover:bg-(--row-hover-bg) tw:hover:text-(--menu-hover-text)"
-            onClick={() => {
-              onPick(recipe);
-            }}
-            type="button"
-          >
-            <i
-              aria-hidden
-              className={`fas fa-check tw:w-4 tw:text-center ${recipe === currentRecipe ? "" : "tw:invisible"}`}
-            />
-            {getRecipeName(recipe)}
-          </button>
-        </li>
-      ))}
+      {CURATED_VARIANT_GROUPS.map(({ label, swatches, recipes }) =>
+        label === undefined ? (
+          <CuratedList
+            currentRecipe={currentRecipe}
+            key="top"
+            onPick={onPick}
+            recipes={recipes}
+            swatches={swatches}
+          />
+        ) : null,
+      )}
+      <div className="tw:mt-[0.6em] tw:columns-[10.5em] tw:gap-[1em]">
+        {CURATED_VARIANT_GROUPS.map(({ label, swatches, recipes }) =>
+          label === undefined ? null : (
+            <section
+              className="tw:mb-[0.8em] tw:break-inside-avoid"
+              key={label}
+            >
+              <h4 className="tw:m-0 tw:mb-[0.15em] tw:px-[0.5em] tw:text-[0.85em] tw:font-normal tw:text-(--text) tw:opacity-70">
+                {label}
+              </h4>
+              <CuratedList
+                currentRecipe={currentRecipe}
+                onPick={onPick}
+                recipes={recipes}
+                swatches={swatches}
+              />
+            </section>
+          ),
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function CuratedList({
+  currentRecipe,
+  onPick,
+  recipes,
+  swatches,
+}: {
+  readonly currentRecipe: string | undefined;
+  readonly onPick: (recipe: string) => void;
+  readonly recipes: readonly string[];
+  readonly swatches: boolean;
+}) {
+  return (
+    <ul className="tw:m-0 tw:list-none tw:p-0">
+      {recipes.map((recipe) => {
+        const current = recipe === currentRecipe;
+        const name = getRecipeName(recipe);
+        const suit = swatches ? getRecipeSuit(recipe) : undefined;
+        return (
+          <li key={recipe}>
+            <button
+              aria-current={current ? "true" : undefined}
+              aria-label={name}
+              className={`tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.5em] tw:rounded-[3px] tw:border-none tw:px-[0.5em] tw:py-[0.15em] tw:text-left tw:leading-snug tw:[font-family:inherit] tw:[font-size:inherit] tw:text-(--text) tw:hover:bg-(--row-hover-bg) tw:hover:text-(--menu-hover-text) tw:[font-weight:inherit] ${current ? "tw:bg-(--row-hover-bg)" : "tw:bg-transparent"}`}
+              data-current={current ? "" : undefined}
+              onClick={() => {
+                onPick(recipe);
+              }}
+              type="button"
+            >
+              {/* A variant without a suit, such as Deceptive-Ones, keeps the dot's space, so that its
+                  name lines up with the others. */}
+              {swatches && (
+                <span
+                  aria-hidden
+                  className={`tw:block tw:size-[0.75em] tw:shrink-0 tw:rounded-full ${suit === undefined ? "" : "tw:border tw:border-solid tw:border-black/40"}`}
+                  style={
+                    suit === undefined
+                      ? undefined
+                      : { background: getSuitBackground(suit) }
+                  }
+                />
+              )}
+              {name.endsWith(USUAL_SUITS_SUFFIX)
+                ? name.slice(0, -USUAL_SUITS_SUFFIX.length)
+                : name}
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

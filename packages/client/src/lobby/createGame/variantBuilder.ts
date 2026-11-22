@@ -894,6 +894,28 @@ function without<T>(set: ReadonlySet<T>, item: T): ReadonlySet<T> {
 
 let catalogByRecipe: ReadonlyMap<string, string> | undefined;
 
+/** A suit's color, or the stripes of its colors for a suit with several, such as Rainbow. */
+export function getSuitBackground(suit: Suit): string {
+  if (suit.fillColors === undefined) {
+    return suit.fill;
+  }
+  const step = 100 / suit.fillColors.length;
+  const stops = suit.fillColors.map(
+    (color, index) => `${color} ${index * step}% ${(index + 1) * step}%`,
+  );
+  return `linear-gradient(180deg, ${stops.join(", ")})`;
+}
+
+/**
+ * The suit that a recipe is about, for its color in a menu: the suit of its special rank, such as
+ * Pink for Pink-Ones, or else its last special suit, such as Black for Black (5 Suits).
+ */
+export function getRecipeSuit(recipe: string): Suit | undefined {
+  const choice = getChoice(recipe);
+  const id = choice.specialRank?.code ?? choice.suits.at(-1);
+  return id === undefined ? undefined : getSuitsById().get(id);
+}
+
 /**
  * The name of a recipe's variant: its catalog name, or the name that the server gives a new
  * variant.
