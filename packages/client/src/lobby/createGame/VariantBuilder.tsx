@@ -129,7 +129,8 @@ export function VariantBuilder({
 
   return (
     <div className="tw:flex tw:w-full tw:flex-col tw:gap-[0.9em]">
-      <div className="tw:flex tw:flex-wrap tw:items-end tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
+      {/* The hint sits right under the variant's name. */}
+      <div className="tw:flex tw:flex-col">
         <Deck
           actions={{
             onToggleDark: (id) => {
@@ -167,10 +168,10 @@ export function VariantBuilder({
           reversed={choice.reversed}
           variant={deck}
         />
+        <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
+          Click a card to make it dark or reversed.
+        </p>
       </div>
-      <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
-        Click a card to make it dark or reversed.
-      </p>
 
       {SUIT_GROUPS.map(({ group, label }) => (
         <PartRow key={group} label={label}>
