@@ -658,6 +658,12 @@ export function getSuitName(id: string): string {
   return getSuitsById().get(id)?.name ?? id;
 }
 
+/** What a suit does in a game, by its ID. See `getSuitDescription`. */
+export function getSuitDescriptionById(id: string): string {
+  const suit = getSuitsById().get(id);
+  return suit === undefined ? "" : getSuitDescription(suit);
+}
+
 /** Changes the number of suits. It cannot be fewer than the chosen suits. */
 export function setNumSuits(choice: Choice, numSuits: number): Choice {
   return withSuits(

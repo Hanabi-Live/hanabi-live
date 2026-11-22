@@ -34,6 +34,7 @@ import {
   getRecipe,
   getReverseBlocker,
   getSuitDescription,
+  getSuitDescriptionById,
   getSuitName,
   getVariantName,
   isDark,
@@ -586,7 +587,12 @@ function SuitMenu({
       }}
       role="dialog"
     >
-      <strong>{name}</strong>
+      <div>
+        <strong>{name}</strong>
+        <p className="tw:m-0 tw:text-[0.85em] tw:leading-snug">
+          {getSuitDescriptionById(id)}
+        </p>
+      </div>
       <MenuCheckbox
         checked={dark}
         disabledReason={
