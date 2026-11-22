@@ -350,7 +350,7 @@ function Deck({
   };
 
   return (
-    <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
+    <figure className="tw:m-0 tw:flex tw:flex-col tw:items-start tw:gap-[0.6em]">
       {/* The buttons wrap below the cards on a narrow screen. */}
       <div className="tw:flex tw:flex-wrap tw:gap-[0.3em]" role="group">
         {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
@@ -397,6 +397,8 @@ function Deck({
           />
         </span>
       </div>
+      {/* The name has its own line under the deck, so that it stays in place while the deck
+          grows or shrinks. */}
       <figcaption className="tw:font-bold">{variant.name}</figcaption>
     </figure>
   );
