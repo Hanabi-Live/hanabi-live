@@ -123,7 +123,7 @@ const FLAGS = {
   hole: {
     name: "Throw It in a Hole",
     description:
-      "Played cards stay face down, so the score shows only at the end. A 5 gives back no clue. Three strikes end the game.",
+      "Played cards stay face down, so the score shows only at the end. A 5 gives back no clue.",
   },
   funnels: {
     name: "Funnels",
