@@ -36,7 +36,6 @@ import {
 } from "./gameSummary.tsx";
 import { NameFilter } from "./NameFilter.tsx";
 import { SeedSummary } from "./SeedSummary.tsx";
-import { SuitDots } from "./SuitDots.tsx";
 
 /** A list of games that a page shows, which the server puts in the page. */
 export type GameListData = Extract<
@@ -430,14 +429,11 @@ function GameRow({
               />
             </div>
           ) : (
-            <div className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
-              <SuitDots suits={variant.suits} />
-              <span
-                className="tw:truncate"
-                ref={tooltipRef(variant.name, { onlyWhenTruncated: true })}
-              >
-                {variant.name}
-              </span>
+            <div
+              className="tw:truncate"
+              ref={tooltipRef(variant.name, { onlyWhenTruncated: true })}
+            >
+              {variant.name}
             </div>
           )}
           <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:text-[0.8em] tw:text-text-label">
