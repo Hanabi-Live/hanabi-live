@@ -22,6 +22,7 @@ import { getColorKeyIndex, getRankKeyIndex } from "../clueKeys.ts";
 import { confirmPlay } from "../confirmPlay.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
+import { swapUi } from "../main.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
@@ -164,6 +165,11 @@ function keydown(event: KeyboardEvent) {
 
       case "t": {
         replay.promptTurn();
+        return;
+      }
+
+      case "u": {
+        swapUi();
         return;
       }
 

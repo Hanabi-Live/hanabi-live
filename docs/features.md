@@ -368,8 +368,7 @@ These options are on the "Settings" page.
 
 - The "New UI" setting shows games and replays in a redesigned game screen. It
   is in testing and off by default.
-- In a game, the `/ui` chat command switches between the New UI and the classic
-  screen.
+- In a game, `Alt + u` switches between the New UI and the classic screen.
 
 ### Keldon Mode
 
@@ -710,6 +709,7 @@ use these numbers to make the best move for the current situation.
   - Open or close the in-game replay: `Up` or `Down`
   - Toggle the chat: `Alt + c`
   - Go to a specific turn: `Alt + t`
+  - Switch between the New UI and the classic screen: `Alt + u`
   - Delete the note of the card under the mouse: `Delete`
   - Return to the lobby: `Alt + l`
   - Close the chat, leave a hypothetical, or leave a replay: `Escape`

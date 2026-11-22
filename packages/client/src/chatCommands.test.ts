@@ -18,16 +18,9 @@ vi.mock("./modals.ts", () => ({}));
 vi.mock("./lobby/createReplayJson.ts", () => ({
   createJsonFromReplay: vi.fn(),
 }));
-vi.mock("./game/main.ts", () => ({
-  swapUi: vi.fn(),
-}));
 const { getLastPrivateMessageSender, sendSelfPmFromServer } =
   await import("./chat.ts");
 const { globals } = await import("./Globals.ts");
-const { swapUi } = await import("./game/main.ts");
-const { Screen } = await import("./lobby/types/Screen.ts");
-const { screenChanged } = await import("./sessionSlice.ts");
-const { store } = await import("./store.ts");
 const {
   parsePmHistoryCommandArgs,
   getVariantFromArgs,
@@ -126,26 +119,6 @@ test("runs the chat commands that the server lists as website commands", () => {
   expect([...chatCommands.keys()].toSorted()).toEqual(
     [...WEBSITE_CHAT_COMMANDS].toSorted(),
   );
-});
-
-describe("/ui", () => {
-  test("swaps the screen of an open game", () => {
-    store.dispatch(screenChanged(Screen.Game));
-    chatCommands.get("ui")?.(undefined, []);
-    expect(swapUi).toHaveBeenCalledOnce();
-  });
-
-  test("only tells the player when no game is open", () => {
-    vi.mocked(swapUi).mockClear();
-    store.dispatch(screenChanged(Screen.Lobby));
-    chatCommands.get("ui")?.(undefined, []);
-    expect(swapUi).not.toHaveBeenCalled();
-    expect(sendSelfPmFromServer).toHaveBeenCalledWith(
-      "The /ui command works only in a game.",
-      undefined,
-      undefined,
-    );
-  });
 });
 
 describe("/r", () => {
