@@ -20,8 +20,9 @@ type ProfileTable = Extract<
 type Achievement = ProfileTable["achievements"][number];
 
 /**
- * What each achievement shows: the suits of a variant (every suit of it, or only its last suit), or
- * one person for each player.
+ * What each achievement shows: the suits of a variant (every suit of it, or only its last suit),
+ * one person for each player, or a card of the last suit of a variant with a rank on it instead of
+ * a pip, for a special rank. Deceptive ranks have no suit of their own, so they show a "?".
  */
 const ACHIEVEMENT_CARDS = {
   noVariant10Wins: {
@@ -72,6 +73,42 @@ const ACHIEVEMENT_CARDS = {
     variant: "Black (5 Suits)",
     allSuits: false,
   },
+  rainbowRank10Wins: {
+    rankOf: "Rainbow (5 Suits)",
+    label: "1",
+  },
+  pinkRank10Wins: {
+    rankOf: "Pink (5 Suits)",
+    label: "1",
+  },
+  whiteRank10Wins: {
+    rankOf: "White (5 Suits)",
+    label: "1",
+  },
+  brownRank10Wins: {
+    rankOf: "Brown (5 Suits)",
+    label: "1",
+  },
+  omniRank10Wins: {
+    rankOf: "Omni (5 Suits)",
+    label: "1",
+  },
+  nullRank10Wins: {
+    rankOf: "Null (5 Suits)",
+    label: "1",
+  },
+  muddyRainbowRank10Wins: {
+    rankOf: "Muddy Rainbow (5 Suits)",
+    label: "1",
+  },
+  lightPinkRank10Wins: {
+    rankOf: "Light Pink (5 Suits)",
+    label: "1",
+  },
+  deceptiveRank10Wins: {
+    rankOf: "No Variant",
+    label: "?",
+  },
   threePlayers10Wins: {
     players: 3,
   },
@@ -89,6 +126,7 @@ const ACHIEVEMENT_CARDS = {
   Achievement["id"],
   | { readonly variant: string; readonly allSuits: boolean }
   | { readonly players: number }
+  | { readonly rankOf: string; readonly label: string }
 >;
 
 /** The most people in a row of an achievement's players. */
@@ -168,6 +206,34 @@ function SuitCard({
   );
 }
 
+/** A card of the last suit of a variant, with a rank on it instead of a pip. */
+function RankCard({
+  label,
+  variant,
+}: {
+  readonly label: string;
+  readonly variant: Variant;
+}): React.JSX.Element | null {
+  const suit = variant.suits.at(-1);
+  if (suit === undefined) {
+    return null;
+  }
+  return (
+    <div
+      className="tw:absolute tw:flex tw:items-center tw:justify-center tw:text-[1.6em] tw:leading-none tw:font-bold tw:text-white tw:shadow-[0_1px_3px_rgb(0_0_0/0.35)] tw:ring-1 tw:ring-black/30 tw:[text-shadow:0_1px_2px_rgb(0_0_0/0.6)] tw:[-webkit-text-stroke:3px_rgb(0_0_0/0.55)] tw:[paint-order:stroke_fill]"
+      style={{
+        width: CARD_WIDTH,
+        height: CARD_WIDTH * CARD_HEIGHT_PER_WIDTH,
+        borderRadius: CARD_WIDTH * CARD_CORNER_PER_WIDTH,
+        background:
+          suit.fill ?? `linear-gradient(160deg, ${suit.fillColors.join(", ")})`,
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
 /**
  * One person for each player, in rows of at most `MAX_PLAYERS_PER_ROW`, with the longer row on top.
  */
@@ -204,6 +270,13 @@ function AchievementCards({
     width: ART_WIDTH,
     height: CARD_WIDTH * CARD_HEIGHT_PER_WIDTH + 6,
   };
+  if ("rankOf" in art) {
+    return (
+      <div aria-hidden="true" className={artClassName} style={artStyle}>
+        <RankCard label={art.label} variant={getVariant(art.rankOf)} />
+      </div>
+    );
+  }
   if ("players" in art) {
     return (
       <div aria-hidden="true" className={artClassName} style={artStyle}>

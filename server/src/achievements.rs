@@ -41,16 +41,20 @@ impl Variant {
 
     /// The variant in the catalog: its ID and its max score.
     fn find(self) -> Result<(i16, i16)> {
-        let name = self.name();
-        let variant = hanabi_engine::variants()
-            .iter()
-            .find(|v| v.name == name)
-            .with_context(|| format!("The catalog has no variant named: {name}"))?;
-        Ok((
-            i16::try_from(variant.id)?,
-            i16::try_from(variant.max_score)?,
-        ))
+        find(&self.name())
     }
+}
+
+/// The variant in the catalog with this name: its ID and its max score.
+fn find(name: &str) -> Result<(i16, i16)> {
+    let variant = hanabi_engine::variants()
+        .iter()
+        .find(|v| v.name == name)
+        .with_context(|| format!("The catalog has no variant named: {name}"))?;
+    Ok((
+        i16::try_from(variant.id)?,
+        i16::try_from(variant.max_score)?,
+    ))
 }
 
 /// The games whose wins count toward an achievement.
@@ -59,13 +63,27 @@ pub(crate) enum Games {
     Variant(Variant),
     /// The games of every variant with this many players.
     Players(u8),
+    /// The games of the 5-suit variants with a special rank, such as "Rainbow-Ones (5 Suits)" and
+    /// "Rainbow-Fives (5 Suits)". The catalog has special ranks only for ones and fives.
+    SpecialRank(&'static str),
 }
+
+/// The ranks that the catalog has special-rank variants for.
+const SPECIAL_RANKS: [&str; 2] = ["Ones", "Fives"];
 
 impl Games {
     fn description(self) -> String {
         match self {
             Self::Variant(variant) => format!("games of {}", variant.name()),
             Self::Players(players) => format!("games with {players} players"),
+            Self::SpecialRank(rank) => format!(
+                "games of {}, with 5 suits",
+                SPECIAL_RANKS
+                    .iter()
+                    .map(|n| format!("{rank}-{n}"))
+                    .collect::<Vec<_>>()
+                    .join(" or ")
+            ),
         }
     }
 }
@@ -156,6 +174,18 @@ const fn players(id: AchievementId, name: &'static str, players: u8) -> Definiti
     }
 }
 
+/// An achievement for `WINS` wins in the 5-suit variants of a special rank.
+const fn special_rank(id: AchievementId, name: &'static str, rank: &'static str) -> Definition {
+    Definition {
+        id,
+        name,
+        rule: Rule::Wins {
+            games: Games::SpecialRank(rank),
+            goal: WINS,
+        },
+    }
+}
+
 /// Every achievement, in the order that a profile shows them.
 pub(crate) const ACHIEVEMENTS: &[Definition] = &[
     Definition {
@@ -207,6 +237,27 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
             ],
         },
     },
+    special_rank(AchievementId::RainbowRank10Wins, "Rainbow's End", "Rainbow"),
+    special_rank(AchievementId::PinkRank10Wins, "Pink Slip", "Pink"),
+    special_rank(AchievementId::WhiteRank10Wins, "White Knuckles", "White"),
+    special_rank(AchievementId::BrownRank10Wins, "Brownout", "Brown"),
+    special_rank(AchievementId::OmniRank10Wins, "Omnivore", "Omni"),
+    special_rank(AchievementId::NullRank10Wins, "Null Hypothesis", "Null"),
+    special_rank(
+        AchievementId::MuddyRainbowRank10Wins,
+        "Mud Season",
+        "Muddy-Rainbow",
+    ),
+    special_rank(
+        AchievementId::LightPinkRank10Wins,
+        "Rose-Tinted",
+        "Light-Pink",
+    ),
+    special_rank(
+        AchievementId::DeceptiveRank10Wins,
+        "Smoke and Mirrors",
+        "Deceptive",
+    ),
     players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
     players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
     players(AchievementId::FivePlayers10Wins, "High Five", 5),
@@ -285,6 +336,13 @@ impl QueryRows {
         let row = i64::try_from(self.games.len())?;
         let (variants, players) = match games {
             Games::Variant(variant) => (vec![variant.find()?], 0),
+            Games::SpecialRank(rank) => (
+                SPECIAL_RANKS
+                    .iter()
+                    .map(|n| find(&format!("{rank}-{n} (5 Suits)")))
+                    .collect::<Result<_>>()?,
+                0,
+            ),
             Games::Players(players) => (
                 hanabi_engine::variants()
                     .iter()
