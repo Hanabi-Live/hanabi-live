@@ -892,8 +892,9 @@ async fn profile_counts_wins_toward_achievements() {
     // (variants 3 and 17), which do not count toward Rainbow. Game 19 is a win in Pink (5 Suits)
     // (variant 107) with 4 players. Game 20 is a win in No Variant with 2 players, which does not
     // count. Games 21 and 22 are wins in Rainbow-Fives (5 Suits) and Rainbow-Ones (6 Suits)
-    // (variants 527 and 168). Only game 21 counts toward the Rainbow rank. The wins with 3 players
-    // are games 1 to 9, 13, 14, 16, 21, and 22.
+    // (variants 527 and 168). Only game 21 counts toward the Rainbow rank. Game 23 is a win in
+    // Ambiguous (6 Suits) (variant 8). The wins with 3 players are games 1 to 9, 13, 14, 16, and 21
+    // to 23.
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -912,9 +913,9 @@ async fn profile_counts_wins_toward_achievements() {
         FROM (SELECT id,0 AS variant,CASE WHEN id=12 THEN 20 ELSE 25 END AS score
           FROM generate_series(1,12) id
           UNION ALL VALUES(13,16,25),(14,3,30),(16,17,20),(19,107,25),(20,0,25),(21,527,25),
-            (22,168,30)) AS g(id,variant,score);
+            (22,168,30),(23,8,30)) AS g(id,variant,score);
         INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id WHERE id<>15;
-        INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0),(20,1,0),(21,1,0),(22,1,0);",
+        INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0),(20,1,0),(21,1,0),(22,1,0),(23,1,0);",
     )
     .execute(&db.pool)
     .await
@@ -940,6 +941,7 @@ async fn profile_counts_wins_toward_achievements() {
         ("fourPlayers10Wins", 1),
         ("noVariant5Streak", 5),
         ("rainbowRank10Wins", 1),
+        ("ambiguous10Wins", 1),
     ]);
     for achievement in shown {
         let id = achievement["id"].as_str().unwrap();

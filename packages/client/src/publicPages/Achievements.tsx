@@ -109,6 +109,22 @@ const ACHIEVEMENT_CARDS = {
     rankOf: "No Variant",
     label: "?",
   },
+  ambiguous10Wins: {
+    variant: "Ambiguous (6 Suits)",
+    allSuits: true,
+  },
+  veryAmbiguous10Wins: {
+    variant: "Very Ambiguous (6 Suits)",
+    allSuits: true,
+  },
+  extremelyAmbiguous10Wins: {
+    variant: "Extremely Ambiguous (6 Suits)",
+    allSuits: true,
+  },
+  dualColor10Wins: {
+    variant: "Dual-Color (5 Suits)",
+    allSuits: true,
+  },
   threePlayers10Wins: {
     players: 3,
   },

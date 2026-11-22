@@ -24,18 +24,21 @@ const SYNC_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_mi
 
 /// A variant that an achievement counts the wins in.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum Variant {
+pub(crate) enum CatalogVariant {
     NoVariant,
     /// The 5-suit variant of a suit, such as "Pink (5 Suits)". Games with 6 suits take too long to
     /// count.
     FiveSuits(&'static str),
+    /// A variant of the catalog, by its full name, such as "Ambiguous (6 Suits)".
+    Named(&'static str),
 }
 
-impl Variant {
+impl CatalogVariant {
     fn name(self) -> String {
         match self {
             Self::NoVariant => DEFAULT_VARIANT_NAME.to_owned(),
             Self::FiveSuits(suit) => format!("{suit} (5 Suits)"),
+            Self::Named(name) => name.to_owned(),
         }
     }
 
@@ -60,7 +63,7 @@ fn find(name: &str) -> Result<(i16, i16)> {
 /// The games whose wins count toward an achievement.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Games {
-    Variant(Variant),
+    Variant(CatalogVariant),
     /// The games of every variant with this many players.
     Players(u8),
     /// The games of the 5-suit variants with a special rank, such as "Rainbow-Ones (5 Suits)" and
@@ -92,7 +95,10 @@ pub(crate) enum Rule {
     /// A number of wins in a row in a variant, with the same number of players. Each player count
     /// has its own streak. Any other result in the games that could count, with that player count,
     /// breaks the streak. Games that cannot count, such as games with 2 players, do not.
-    Streak { variant: Variant, length: i64 },
+    Streak {
+        variant: CatalogVariant,
+        length: i64,
+    },
     /// One win in the 5-suit variant of each suit, such as each dark suit.
     OneWinEach {
         /// What the suits are, such as "dark suit".
@@ -110,7 +116,7 @@ impl Rule {
             Self::Streak { .. } => Vec::new(),
             Self::OneWinEach { suits, .. } => suits
                 .iter()
-                .map(|&suit| Games::Variant(Variant::FiveSuits(suit)))
+                .map(|&suit| Games::Variant(CatalogVariant::FiveSuits(suit)))
                 .collect(),
         }
     }
@@ -153,7 +159,7 @@ const fn special_suit(id: AchievementId, name: &'static str, suit: &'static str)
         id,
         name,
         rule: Rule::Wins {
-            games: Games::Variant(Variant::FiveSuits(suit)),
+            games: Games::Variant(CatalogVariant::FiveSuits(suit)),
             goal: WINS,
         },
     }
@@ -166,6 +172,18 @@ const fn players(id: AchievementId, name: &'static str, players: u8) -> Definiti
         name,
         rule: Rule::Wins {
             games: Games::Players(players),
+            goal: WINS,
+        },
+    }
+}
+
+/// An achievement for `WINS` wins in a variant of the catalog, by its full name.
+const fn named(id: AchievementId, name: &'static str, variant: &'static str) -> Definition {
+    Definition {
+        id,
+        name,
+        rule: Rule::Wins {
+            games: Games::Variant(CatalogVariant::Named(variant)),
             goal: WINS,
         },
     }
@@ -189,7 +207,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         id: AchievementId::NoVariant10Wins,
         name: "I've Got the Hang of This",
         rule: Rule::Wins {
-            games: Games::Variant(Variant::NoVariant),
+            games: Games::Variant(CatalogVariant::NoVariant),
             goal: WINS,
         },
     },
@@ -197,7 +215,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         id: AchievementId::NoVariant100Wins,
         name: "Core Mastery",
         rule: Rule::Wins {
-            games: Games::Variant(Variant::NoVariant),
+            games: Games::Variant(CatalogVariant::NoVariant),
             goal: 100,
         },
     },
@@ -255,6 +273,26 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         "Smoke and Mirrors",
         "Deceptive",
     ),
+    named(
+        AchievementId::Ambiguous10Wins,
+        "Mixed Signals",
+        "Ambiguous (6 Suits)",
+    ),
+    named(
+        AchievementId::VeryAmbiguous10Wins,
+        "Seeing Double",
+        "Very Ambiguous (6 Suits)",
+    ),
+    named(
+        AchievementId::ExtremelyAmbiguous10Wins,
+        "Lost in the Fog",
+        "Extremely Ambiguous (6 Suits)",
+    ),
+    named(
+        AchievementId::DualColor10Wins,
+        "Two-Tone",
+        "Dual-Color (5 Suits)",
+    ),
     players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
     players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
     players(AchievementId::FivePlayers10Wins, "High Five", 5),
@@ -262,15 +300,15 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         id: AchievementId::NoVariant5Streak,
         name: "On a Roll",
         rule: Rule::Streak {
-            variant: Variant::NoVariant,
+            variant: CatalogVariant::NoVariant,
             length: 5,
         },
     },
 ];
 
 /// The streak lengths that the achievements ask for in each variant.
-fn streaks() -> HashMap<Variant, Vec<i64>> {
-    let mut streaks: HashMap<Variant, Vec<i64>> = HashMap::new();
+fn streaks() -> HashMap<CatalogVariant, Vec<i64>> {
+    let mut streaks: HashMap<CatalogVariant, Vec<i64>> = HashMap::new();
     for achievement in ACHIEVEMENTS {
         if let Rule::Streak { variant, length } = achievement.rule {
             streaks.entry(variant).or_default().push(length);
@@ -381,7 +419,7 @@ struct Streak {
 #[derive(Default)]
 struct Record {
     wins: HashMap<i64, VariantWins>,
-    streaks: HashMap<(Variant, i64), Streak>,
+    streaks: HashMap<(CatalogVariant, i64), Streak>,
 }
 
 /// Each player's record.
@@ -520,7 +558,7 @@ async fn all_wins(
 /// Adds a player's streak to their record.
 fn add_streak(
     records: &mut Records,
-    variant: Variant,
+    variant: CatalogVariant,
     (user, length, best, reached): (i32, i64, i64, Option<OffsetDateTime>),
 ) {
     records
@@ -537,7 +575,7 @@ fn add_streak(
 /// player count, and they reach a length when the first of their streaks does.
 async fn streaks_of(
     connection: &mut PgConnection,
-    variant: Variant,
+    variant: CatalogVariant,
     lengths: &[i64],
     users: &[i32],
     records: &mut Records,
@@ -590,7 +628,7 @@ async fn streaks_of(
 /// variant's games.
 async fn all_streaks(
     connection: &mut PgConnection,
-    variant: Variant,
+    variant: CatalogVariant,
     lengths: &[i64],
     records: &mut Records,
 ) -> Result<()> {
