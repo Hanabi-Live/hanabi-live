@@ -26,6 +26,8 @@ of the repository.
 - Profiles count speedruns with the other games and time, instead of apart.
 - A profile is now at `/profile/[username]`. Links to `/scores/[username]` no
   longer work.
+- Profiles show the longest streak of max scores in a row, with its variant and
+  number of players.
 
 ## November 21st, 2026
 

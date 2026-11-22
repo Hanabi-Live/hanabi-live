@@ -8,9 +8,10 @@ use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{
-    Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore, MissingScoresFilters,
-    MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics, PublicGameList,
-    PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics, VariantId,
+    BestStreak, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
+    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
+    PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
+    VariantId,
 };
 use std::sync::Arc;
 
@@ -337,7 +338,7 @@ const SEED_AVERAGES_LIFETIME: std::time::Duration = if cfg!(test) {
 } else {
     std::time::Duration::from_mins(5)
 };
-/// A player's game counts, time played, and the date they joined.
+/// A player's game counts, time played, the date they joined, and their longest streak.
 async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStatistics> {
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
@@ -353,6 +354,9 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
     .fetch_one(&mut *transaction)
     .await
     .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
+    let best_streak = crate::achievements::best_streak(&mut transaction, user)
+        .await
+        .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
     transaction.commit().await?;
     let account = sqlx::query!(
         "SELECT datetime_created,seconds_reviewing FROM users WHERE id=$1",
@@ -369,6 +373,15 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
             row.duration.saturating_add(account.seconds_reviewing),
         )?,
         date_joined: account.datetime_created.into(),
+        best_streak: best_streak
+            .map(|streak| -> Result<BestStreak> {
+                Ok(BestStreak {
+                    length: Count::try_from(streak.length)?,
+                    variant_id: VariantId::try_from(streak.variant_id)?,
+                    num_players: NumPlayers::try_from(streak.num_players)?,
+                })
+            })
+            .transpose()?,
     })
 }
 

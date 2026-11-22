@@ -925,6 +925,11 @@ async fn profile_counts_wins_toward_achievements() {
     let table = page_table(&body);
     let shown = table["achievements"].as_array().unwrap();
     assert_eq!(shown.len(), crate::achievements::ACHIEVEMENTS.len());
+    // The 9 No Variant wins with 3 players in a row. The games with an option do not break it.
+    assert_eq!(
+        table["statistics"]["bestStreak"],
+        json!({"length":9,"variantId":0,"numPlayers":3})
+    );
     // The achievements with wins. The others have none.
     let progress = HashMap::from([
         ("noVariant10Wins", 9),
@@ -967,7 +972,7 @@ async fn profile_counts_wins_toward_achievements() {
     .execute(&db.pool)
     .await
     .unwrap();
-    let (status, body) = request(app, "/api/v1/scores/Alice").await;
+    let (status, body) = request(app.clone(), "/api/v1/scores/Alice").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let scores = serde_json::from_str::<Value>(&body).unwrap();
     hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
@@ -979,6 +984,25 @@ async fn profile_counts_wins_toward_achievements() {
     assert_eq!(achievement["id"], "noVariant100Wins");
     assert_eq!(achievement["progress"], 11);
     assert!(achievement.get("dateUnlocked").is_none());
+    // A game with another number of players does not break a streak, even in the same variant.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(
+        "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+          deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+          seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+        VALUES(99,'test',4,0,false,NULL,NULL,false,false,false,false,false,false,false,'s99',0,10,
+          2,'2026-01-05T12:00:00Z','2026-01-05T13:00:00Z');
+        INSERT INTO game_participants(game_id,user_id,seat) VALUES(99,1,0);",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, body) = request(app, "/api/v1/scores/Alice").await;
+    let scores = serde_json::from_str::<Value>(&body).unwrap();
+    assert_eq!(scores["statistics"]["bestStreak"]["length"], 9);
     db.close().await;
 }
 

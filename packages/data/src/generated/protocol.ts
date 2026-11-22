@@ -110,6 +110,28 @@ export const activitySchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * A number of things, such as games or unread messages, or a position in a list of them.
+ */
+const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
+
+/**
+ * A number of players.
+ */
+const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
+
+/**
+ * A player's longest run of max scores in a row, in one variant with one number of players. It
+ * counts the same games as the streak achievements.
+ */
+export const bestStreakSchema = z
+  .strictObject({
+    length: countSchema,
+    numPlayers: numPlayersSchema,
+    variantId: variantIdSchema,
+  })
+  .readonly();
+
+/**
  * The users whom we have blocked. It does not include the users who have blocked us.
  */
 export const blockedSchema = z
@@ -187,11 +209,6 @@ export const chatSchema = z
 export const chatDeletedSchema = z
   .strictObject({ chatId: chatIdSchema })
   .readonly();
-
-/**
- * A number of things, such as games or unread messages, or a position in a list of them.
- */
-const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
 
 /**
  * The table of a table's `chatList`, and what the recipient has read there. The server does not
@@ -1149,6 +1166,10 @@ const achievementSchema = z
  */
 export const playerStatisticsSchema = z
   .strictObject({
+    /**
+     * Absent until the player has a max score in a game that counts.
+     */
+    bestStreak: bestStreakSchema.optional(),
     dateJoined: z.iso.datetime({ precision: 3 }),
     numGames: countSchema,
     /**
@@ -1182,11 +1203,6 @@ export const playerScoresSchema = z
     statistics: playerStatisticsSchema,
   })
   .readonly();
-
-/**
- * A number of players.
- */
-const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
 
 /**
  * A player's best score on a variant at one player count.

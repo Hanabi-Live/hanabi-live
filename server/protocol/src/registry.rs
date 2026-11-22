@@ -123,7 +123,7 @@ macro_rules! exported_types {
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn, PublicPageTable,
-            PlayerStatistics, MaxScoreCount, MaxScoreSummary, PlayerScores,
+            BestStreak, PlayerStatistics, MaxScoreCount, MaxScoreSummary, PlayerScores,
             SeedDifficulty, SeedStatistics,
         }
     };

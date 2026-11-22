@@ -637,6 +637,61 @@ async fn all_streaks(
     Ok(())
 }
 
+/// A player's longest streak in any variant, as the streak achievements count one: each variant
+/// and number of players has its own streak. Of two streaks that are as long, it is the one that
+/// ended first.
+pub(crate) struct BestStreak {
+    pub length: i64,
+    pub variant_id: i16,
+    pub num_players: i16,
+}
+
+/// The longest streak of `user`, or `None` when they have no win that counts.
+pub(crate) async fn best_streak(
+    connection: &mut PgConnection,
+    user: i32,
+) -> Result<Option<BestStreak>> {
+    let (variant_ids, max_scores): (Vec<i16>, Vec<i16>) = hanabi_engine::variants()
+        .iter()
+        .filter_map(|v| Some((i16::try_from(v.id).ok()?, i16::try_from(v.max_score).ok()?)))
+        .unzip();
+    let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
+    let found = sqlx::query!(
+        "WITH counted AS (
+           SELECT g.variant_id,g.num_players,g.id,g.datetime_finished,
+             g.end_condition=$4 AND g.score=v.max_score AS win
+           FROM game_participants p JOIN games g ON g.id=p.game_id
+           JOIN unnest($2::smallint[],$3::smallint[]) AS v(variant_id,max_score)
+             ON v.variant_id=g.variant_id
+           WHERE p.user_id=$1 AND g.num_players>=$5
+           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
+             OR g.all_or_nothing OR g.detrimental_characters)
+         ), islands AS (
+           SELECT variant_id,num_players,datetime_finished,win,
+             row_number() OVER (PARTITION BY variant_id,num_players ORDER BY datetime_finished,id)
+             -row_number() OVER (PARTITION BY variant_id,num_players,win
+               ORDER BY datetime_finished,id) AS island
+           FROM counted
+         )
+         SELECT variant_id AS \"variant_id!\",num_players AS \"num_players!\",
+           count(*) AS \"length!\"
+         FROM islands WHERE win GROUP BY variant_id,num_players,island
+         ORDER BY count(*) DESC,max(datetime_finished) LIMIT 1",
+        user,
+        &variant_ids,
+        &max_scores,
+        normal_end,
+        i16::from(MIN_ACHIEVEMENT_PLAYERS),
+    )
+    .fetch_optional(connection)
+    .await?;
+    Ok(found.map(|row| BestStreak {
+        length: row.length,
+        variant_id: row.variant_id,
+        num_players: row.num_players,
+    }))
+}
+
 /// The records of the players in `users`, or of every player when `users` is `None`.
 async fn records(
     connection: &mut PgConnection,

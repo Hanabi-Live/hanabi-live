@@ -1,10 +1,13 @@
-// A player's join date, game counts, and time on their profile. The counts and the time are two
-// short lists side by side.
+// A player's join date, game counts, longest streak, and time on their profile. The counts and the
+// time are two short lists side by side.
 
 import type { playerStatisticsSchema } from "@hanabi-live/data";
-import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
+import { MIN_ACHIEVEMENT_PLAYERS, SECONDS_PER_MINUTE } from "@hanabi-live/data";
+import { getVariantById } from "@hanabi-live/game";
 import { HOUR_IN_MILLISECONDS, SECOND_IN_MILLISECONDS } from "complete-common";
 import type * as z from "zod";
+import { SuitDots } from "../gameList/SuitDots.tsx";
+import { tooltipRef } from "../tooltipRef.ts";
 
 type PlayerStatistics = z.infer<typeof playerStatisticsSchema>;
 
@@ -38,6 +41,29 @@ interface Row {
   readonly value: string;
   /** A row that sums up the rows above it. */
   readonly total?: boolean;
+  /** What the label means, in a tooltip. */
+  readonly tooltip?: string;
+  /** A line under the row that tells more about its value. */
+  readonly detail?: React.ReactNode;
+}
+
+const STREAK_TOOLTIP = `The most max scores in a row in one variant, with the same number of players. Only games with ${MIN_ACHIEVEMENT_PLAYERS} or more players and no option, such as "One Extra Card", count.`;
+
+/** The variant and the number of players of a streak, such as "Rainbow (5 Suits), 3 players". */
+function StreakDetail({
+  streak,
+}: {
+  readonly streak: NonNullable<PlayerStatistics["bestStreak"]>;
+}): React.JSX.Element {
+  const variant = getVariantById(streak.variantId);
+  return (
+    <span className="tw:flex tw:min-w-0 tw:items-center tw:gap-2">
+      <SuitDots size="0.5em" suits={variant.suits} />
+      <span className="tw:min-w-0">
+        {variant.name}, {streak.numPlayers} players
+      </span>
+    </span>
+  );
 }
 
 function StatisticGroup({
@@ -53,13 +79,29 @@ function StatisticGroup({
         {heading}
       </h4>
       <dl className="tw:m-0">
-        {rows.map(({ label, value, total = false }) => (
+        {rows.map(({ label, value, total = false, tooltip, detail }) => (
+          // A grid instead of a nested box, since a group in a list may hold only its terms and
+          // descriptions.
           <div
-            className={`tw:flex tw:items-baseline tw:justify-between tw:gap-4 tw:py-0.5 ${total ? "tw:mt-1 tw:border-t tw:border-border tw:pt-1.5 tw:font-semibold" : ""}`}
+            className={`tw:grid tw:grid-cols-[1fr_auto] tw:items-baseline tw:gap-x-4 tw:py-0.5 ${total ? "tw:mt-1 tw:border-t tw:border-border tw:pt-1.5 tw:font-semibold" : ""}`}
             key={label}
           >
-            <dt>{label}</dt>
+            <dt
+              className={
+                tooltip === undefined
+                  ? undefined
+                  : "tw:cursor-help tw:justify-self-start tw:underline tw:decoration-dotted tw:underline-offset-4"
+              }
+              ref={tooltip === undefined ? undefined : tooltipRef(tooltip)}
+            >
+              {label}
+            </dt>
             <dd className="tw:m-0 tw:tabular-nums">{value}</dd>
+            {detail !== undefined && (
+              <dd className="tw:col-span-2 tw:m-0 tw:mt-0.5 tw:text-[0.85em] tw:text-text-label">
+                {detail}
+              </dd>
+            )}
           </div>
         ))}
       </dl>
@@ -92,6 +134,14 @@ export function ProfileStatistics({
           {
             label: "Finished normally",
             value: countText(statistics.numGamesNormal),
+          },
+          {
+            label: "Longest streak",
+            value: countText(statistics.bestStreak?.length ?? 0),
+            tooltip: STREAK_TOOLTIP,
+            ...(statistics.bestStreak !== undefined && {
+              detail: <StreakDetail streak={statistics.bestStreak} />,
+            }),
           },
         ]}
       />

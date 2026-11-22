@@ -1,0 +1,51 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH counted AS (\n           SELECT g.variant_id,g.num_players,g.id,g.datetime_finished,\n             g.end_condition=$4 AND g.score=v.max_score AS win\n           FROM game_participants p JOIN games g ON g.id=p.game_id\n           JOIN unnest($2::smallint[],$3::smallint[]) AS v(variant_id,max_score)\n             ON v.variant_id=g.variant_id\n           WHERE p.user_id=$1 AND g.num_players>=$5\n           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card\n             OR g.all_or_nothing OR g.detrimental_characters)\n         ), islands AS (\n           SELECT variant_id,num_players,datetime_finished,win,\n             row_number() OVER (PARTITION BY variant_id,num_players ORDER BY datetime_finished,id)\n             -row_number() OVER (PARTITION BY variant_id,num_players,win\n               ORDER BY datetime_finished,id) AS island\n           FROM counted\n         )\n         SELECT variant_id AS \"variant_id!\",num_players AS \"num_players!\",\n           count(*) AS \"length!\"\n         FROM islands WHERE win GROUP BY variant_id,num_players,island\n         ORDER BY count(*) DESC,max(datetime_finished) LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "variant_id!",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "variant_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "num_players!",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "num_players"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "length!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2Array",
+        "Int2Array",
+        "Int2",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "6308c61cc471507ea019d6176c0d7ef34d7b06f59b439489f3953102521f9db8"
+}

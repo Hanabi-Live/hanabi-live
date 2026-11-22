@@ -169,6 +169,16 @@ named_enum! {
     }
 }
 
+/// A player's longest run of max scores in a row, in one variant with one number of players. It
+/// counts the same games as the streak achievements.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BestStreak {
+    pub length: Count,
+    pub variant_id: VariantId,
+    pub num_players: NumPlayers,
+}
+
 /// A player's game counts and time on their profile.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -184,6 +194,9 @@ pub struct PlayerStatistics {
     /// The time from the other two fields, in seconds.
     pub time_total_seconds: Count,
     pub date_joined: Timestamp,
+    /// Absent until the player has a max score in a game that counts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub best_streak: Option<BestStreak>,
 }
 
 /// The number of max scores at one player count, or at all of them.

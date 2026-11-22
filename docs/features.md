@@ -161,6 +161,9 @@ that have not been played yet and have only one copy remaining.)
   part of a variant's name, and suggests variant names as you type. The "With"
   box finds games by parts of other players' names. Separate names with commas
   to find the games that have all of them.
+- Profiles show the player's longest streak: the most max scores in a row in one
+  variant with the same number of players, and that variant and number of
+  players.
 - Profiles show the time spent playing, the time spent reviewing replays, and
   the total of both. Review time does not count the time before an idle replay
   closes.
