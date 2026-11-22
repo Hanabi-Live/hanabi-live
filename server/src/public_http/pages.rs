@@ -6,7 +6,6 @@ use super::{
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
 use axum::response::{Html, Redirect};
-use hanabi_engine::EndCondition;
 use hanabi_protocol::{
     BestStreak, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
     MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
@@ -173,8 +172,7 @@ pub(super) async fn page(
                     }
                     v["page"] = json!("profile");
                     v["title"] = json!("Profile");
-                    let statistics = player_statistics(&state, users[0].0).await?;
-                    let achievements = achievements(&state, users[0].0).await?;
+                    let (statistics, achievements) = profile(&state, users[0].0).await?;
                     set_table(
                         &mut v,
                         &PublicPageTable::Profile {
@@ -293,16 +291,6 @@ pub(super) async fn page(
     render(&state, "public-page.html", v)
 }
 
-/// A player's progress toward each achievement, and how many players have each one.
-async fn achievements(state: &PublicState, user: i32) -> Result<Vec<hanabi_protocol::Achievement>> {
-    let mut transaction = scan(state).await?;
-    let achievements = crate::achievements::achievements(&mut transaction, user)
-        .await
-        .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
-    transaction.commit().await?;
-    Ok(achievements)
-}
-
 /// Converts a count to a float for display; counts are far below the 2^53 that floats hold exactly.
 #[expect(clippy::cast_precision_loss, reason = "counts are far below 2^53")]
 fn float(n: i64) -> f64 {
@@ -338,42 +326,35 @@ const SEED_AVERAGES_LIFETIME: std::time::Duration = if cfg!(test) {
 } else {
     std::time::Duration::from_mins(5)
 };
-/// A player's game counts, time played, the date they joined, and their longest streak.
-async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStatistics> {
+/// A player's statistics and their progress toward each achievement. It reads the player's games
+/// once, and works out both from them.
+async fn profile(
+    state: &PublicState,
+    user: i32,
+) -> Result<(PlayerStatistics, Vec<hanabi_protocol::Achievement>)> {
     let mut transaction = scan(state).await?;
-    let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
-    let row = sqlx::query!(
-        "SELECT count(*) AS \"total!\",
-        count(*) FILTER(WHERE g.end_condition=$1) AS \"normal!\",
-        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started)),0)::bigint
-          AS \"duration!\"
-        FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
-        normal_end,
-        user
-    )
-    .fetch_one(&mut *transaction)
-    .await
-    .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
-    let best_streak = crate::achievements::best_streak(&mut transaction, user)
+    let games = crate::achievements::played_games(&mut transaction, &[user])
         .await
         .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
-    transaction.commit().await?;
+    let achievements = crate::achievements::achievements(&mut transaction, user, &games)
+        .await
+        .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
     let account = sqlx::query!(
         "SELECT datetime_created,seconds_reviewing FROM users WHERE id=$1",
         user
     )
-    .fetch_one(&state.pool)
+    .fetch_one(&mut *transaction)
     .await?;
-    Ok(PlayerStatistics {
-        num_games: Count::try_from(row.total)?,
-        num_games_normal: Count::try_from(row.normal)?,
-        time_played_seconds: Count::try_from(row.duration)?,
+    transaction.commit().await?;
+    let played = played_seconds(&games);
+    let statistics = PlayerStatistics {
+        num_games: Count::try_from(games.len())?,
+        num_games_normal: Count::try_from(games.iter().filter(|g| g.ended_normally).count())?,
+        time_played_seconds: Count::try_from(played)?,
         time_reviewed_seconds: Count::try_from(account.seconds_reviewing)?,
-        time_total_seconds: Count::try_from(
-            row.duration.saturating_add(account.seconds_reviewing),
-        )?,
+        time_total_seconds: Count::try_from(played.saturating_add(account.seconds_reviewing))?,
         date_joined: account.datetime_created.into(),
-        best_streak: best_streak
+        best_streak: crate::achievements::best_streak(&games)
             .map(|streak| -> Result<BestStreak> {
                 Ok(BestStreak {
                     length: Count::try_from(streak.length)?,
@@ -382,7 +363,24 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
                 })
             })
             .transpose()?,
-    })
+    };
+    Ok((statistics, achievements))
+}
+
+/// The time that a player spent in their games, in whole seconds, rounded to the nearest one.
+fn played_seconds(games: &[crate::achievements::PlayedGame]) -> i64 {
+    const MICROSECONDS_PER_SECOND: i128 = 1_000_000;
+    let microseconds: i128 = games
+        .iter()
+        .map(|game| (game.finished - game.started).whole_microseconds())
+        .sum();
+    let half = MICROSECONDS_PER_SECOND / 2;
+    let rounded = if microseconds < 0 {
+        (microseconds - half) / MICROSECONDS_PER_SECOND
+    } else {
+        (microseconds + half) / MICROSECONDS_PER_SECOND
+    };
+    i64::try_from(rounded).unwrap_or(i64::MAX)
 }
 
 /// A player's statistics, max scores, and achievements, for `/api/v1/scores/{username}`.
@@ -391,12 +389,12 @@ pub(super) async fn player_scores(
     user: i32,
     name: &str,
 ) -> Result<PlayerScores> {
-    let statistics = player_statistics(state, user).await?;
+    let (statistics, achievements) = profile(state, user).await?;
     Ok(PlayerScores {
         name: name.into(),
         statistics,
         max_scores: score_summary(state, user).await?,
-        achievements: achievements(state, user).await?,
+        achievements,
     })
 }
 

@@ -1017,6 +1017,9 @@ async fn profile_counts_wins_toward_achievements() {
     let (_, body) = request(app, "/api/v1/scores/Alice").await;
     let scores = serde_json::from_str::<Value>(&body).unwrap();
     assert_eq!(scores["statistics"]["bestStreak"]["length"], 9);
+    let mut connection = db.pool.acquire().await.unwrap();
+    crate::achievements::assert_both_ways_agree(&mut connection).await;
+    drop(connection);
     db.close().await;
 }
 
