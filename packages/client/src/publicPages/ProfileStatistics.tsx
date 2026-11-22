@@ -79,7 +79,7 @@ export function ProfileStatistics({
   });
   return (
     <section className="tw:mx-auto tw:mb-8 tw:grid tw:max-w-[36em] tw:gap-x-12 tw:gap-y-5 tw:sm:grid-cols-2">
-      <p className="tw:m-0 tw:text-center tw:text-[0.9em] tw:text-text-label tw:sm:col-span-2">
+      <p className="tw:m-0 tw:text-center tw:text-[0.9em] tw:text-text tw:sm:col-span-2">
         Joined {joined}.
       </p>
       <StatisticGroup
@@ -87,15 +87,11 @@ export function ProfileStatistics({
         rows={[
           {
             label: "Played",
-            value: countText(statistics.numGamesTotal),
+            value: countText(statistics.numGames),
           },
           {
             label: "Finished normally",
             value: countText(statistics.numGamesNormal),
-          },
-          {
-            label: "Speedruns",
-            value: countText(statistics.numGamesSpeedrun),
           },
         ]}
       />
@@ -105,10 +101,6 @@ export function ProfileStatistics({
           {
             label: "Playing",
             value: durationText(statistics.timePlayedSeconds),
-          },
-          {
-            label: "Speedruns",
-            value: durationText(statistics.timePlayedSpeedrunSeconds),
           },
           {
             label: "Reviewing",

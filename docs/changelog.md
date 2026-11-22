@@ -20,6 +20,7 @@ of the repository.
 - Profiles no longer have the "Missing scores" tab.
 - Profiles show their statistics in two short lists, games and time. Each
   achievement shows the cards of its suit, in color once it is unlocked.
+- Profiles count speedruns with the other games and time, instead of apart.
 
 ## November 21st, 2026
 

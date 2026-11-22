@@ -1137,24 +1137,22 @@ const achievementSchema = z
 export const playerStatisticsSchema = z
   .strictObject({
     dateJoined: z.iso.datetime({ precision: 3 }),
-    numGamesNormal: countSchema,
-    numGamesOther: countSchema,
-    numGamesSpeedrun: countSchema,
-    numGamesTotal: countSchema,
+    numGames: countSchema,
     /**
-     * The time that the player spent in games that are not speedruns, in seconds.
+     * The games that ended normally (`EndCondition::Normal`), rather than with a strikeout, a
+     * timeout, or a termination.
+     */
+    numGamesNormal: countSchema,
+    /**
+     * The time that the player spent in games, in seconds.
      */
     timePlayedSeconds: countSchema,
-    /**
-     * The time that the player spent in speedruns, in seconds.
-     */
-    timePlayedSpeedrunSeconds: countSchema,
     /**
      * The time that the player spent reviewing replays, in seconds.
      */
     timeReviewedSeconds: countSchema,
     /**
-     * The time from the other three fields, in seconds.
+     * The time from the other two fields, in seconds.
      */
     timeTotalSeconds: countSchema,
   })

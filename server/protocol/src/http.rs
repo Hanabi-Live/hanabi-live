@@ -173,17 +173,15 @@ named_enum! {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerStatistics {
+    pub num_games: Count,
+    /// The games that ended normally (`EndCondition::Normal`), rather than with a strikeout, a
+    /// timeout, or a termination.
     pub num_games_normal: Count,
-    pub num_games_other: Count,
-    pub num_games_total: Count,
-    pub num_games_speedrun: Count,
-    /// The time that the player spent in games that are not speedruns, in seconds.
+    /// The time that the player spent in games, in seconds.
     pub time_played_seconds: Count,
-    /// The time that the player spent in speedruns, in seconds.
-    pub time_played_speedrun_seconds: Count,
     /// The time that the player spent reviewing replays, in seconds.
     pub time_reviewed_seconds: Count,
-    /// The time from the other three fields, in seconds.
+    /// The time from the other two fields, in seconds.
     pub time_total_seconds: Count,
     pub date_joined: Timestamp,
 }

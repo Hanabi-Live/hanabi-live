@@ -342,13 +342,10 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let row = sqlx::query!(
-        "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",
-        count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",
-        count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
-        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-          FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
-        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-          FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
+        "SELECT count(*) AS \"total!\",
+        count(*) FILTER(WHERE g.end_condition=$1) AS \"normal!\",
+        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started)),0)::bigint
+          AS \"duration!\"
         FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
         normal_end,
         user
@@ -364,17 +361,12 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<PlayerStati
     .fetch_one(&state.pool)
     .await?;
     Ok(PlayerStatistics {
+        num_games: Count::try_from(row.total)?,
         num_games_normal: Count::try_from(row.normal)?,
-        num_games_other: Count::try_from(row.other)?,
-        num_games_total: Count::try_from(row.normal + row.other)?,
-        num_games_speedrun: Count::try_from(row.speed)?,
         time_played_seconds: Count::try_from(row.duration)?,
-        time_played_speedrun_seconds: Count::try_from(row.speed_duration)?,
         time_reviewed_seconds: Count::try_from(account.seconds_reviewing)?,
         time_total_seconds: Count::try_from(
-            row.duration
-                .saturating_add(row.speed_duration)
-                .saturating_add(account.seconds_reviewing),
+            row.duration.saturating_add(account.seconds_reviewing),
         )?,
         date_joined: account.datetime_created.into(),
     })

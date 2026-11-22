@@ -511,12 +511,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let scores = serde_json::from_str::<Value>(&body).unwrap();
     hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
     assert_eq!(scores["name"], "Alice");
-    assert_eq!(scores["statistics"]["numGamesNormal"], 1);
-    assert_eq!(scores["statistics"]["numGamesOther"], 1);
-    assert_eq!(scores["statistics"]["numGamesTotal"], 2);
-    assert_eq!(scores["statistics"]["numGamesSpeedrun"], 1);
-    assert_eq!(scores["statistics"]["timePlayedSeconds"], 2 * 60 * 60);
-    assert_eq!(scores["statistics"]["timePlayedSpeedrunSeconds"], 60 * 60);
+    // Speedruns count with the other games. Game 2 ended with a strikeout.
+    assert_eq!(scores["statistics"]["numGames"], 3);
+    assert_eq!(scores["statistics"]["numGamesNormal"], 2);
+    assert_eq!(scores["statistics"]["timePlayedSeconds"], 3 * 60 * 60);
     assert_eq!(scores["maxScores"]["total"], 1);
     let (status, body) = request(app.clone(), "/api/v1/seed/same/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
@@ -618,13 +616,11 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let statistics = &page_table(&body)["statistics"];
     assert_eq!(
         [
-            &statistics["numGamesTotal"],
+            &statistics["numGames"],
             &statistics["numGamesNormal"],
             &statistics["timePlayedSeconds"],
-            &statistics["numGamesSpeedrun"],
-            &statistics["timePlayedSpeedrunSeconds"],
         ],
-        [&json!(2), &json!(1), &json!(7200), &json!(1), &json!(3600)],
+        [&json!(3), &json!(2), &json!(3 * 60 * 60)],
         "{statistics}"
     );
     let (status, body) = request(
