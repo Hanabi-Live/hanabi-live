@@ -155,7 +155,7 @@ describe("variant builder", () => {
       "Black clues touch its cards. Rank clues touch its cards as usual. It has one card of each rank, so every card is critical.",
     );
     expect(getSuitDescription(getSuit("Tangerine"))).toBe(
-      "Red and Yellow clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can. Rank clues touch its cards as usual.",
+      "Red and Yellow clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can. Peach and Yam take the same clues. With two of these suits in a game, no color clue tells their cards apart. Rank clues touch its cards as usual.",
     );
     expect(getSuitDescription(getSuit("Tomato"))).toBe(
       "Red clues touch its cards, and the cards of other red suits, such as Red, Mahogany, and Carrot. With two red suits in a game, a Red clue cannot tell them apart, so the players must find the suit another way. Rank clues touch its cards as usual.",

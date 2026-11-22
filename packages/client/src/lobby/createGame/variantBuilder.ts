@@ -324,7 +324,24 @@ function getSharedColorText(suit: Suit): string | undefined {
   const ranks = getRankText(suit, "its cards");
   const [color] = colors;
   if (color === undefined || colors.length > 1) {
-    return `${joinNames(colors)} clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can. ${ranks}`;
+    // Other suits that take exactly the same colors, such as Peach for Tangerine.
+    const key = colors.toSorted().join(",");
+    const twins = [...getSuitsById().values()]
+      .filter(
+        (other) =>
+          other.name !== suit.name
+          && !other.oneOfEach
+          && other.clueColors
+            .map(({ name }) => name)
+            .toSorted()
+            .join(",") === key,
+      )
+      .map(({ name }) => name);
+    const twinText =
+      twins.length === 0
+        ? ""
+        : ` ${joinNames(twins)} ${twins.length === 1 ? "takes" : "take"} the same clues. With two of these suits in a game, no color clue tells their cards apart.`;
+    return `${joinNames(colors)} clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can.${twinText} ${ranks}`;
   }
   const others = [...getSuitsById().values()]
     .filter(
