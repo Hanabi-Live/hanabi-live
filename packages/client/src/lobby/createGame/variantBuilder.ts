@@ -630,9 +630,14 @@ export function toggleScarceOnes(choice: Choice): Choice {
   };
 }
 
+/** Turns a rule on or off. "Up or Down" plays every suit both ways, so it ends any reversal. */
 export function toggleFlag(choice: Choice, flag: RecipeFlag): Choice {
   return {
     ...choice,
+    reversed:
+      flag === "updown" && !choice.flags.has(flag)
+        ? new Set()
+        : choice.reversed,
     flags: choice.flags.has(flag)
       ? without(choice.flags, flag)
       : new Set(choice.flags).add(flag),

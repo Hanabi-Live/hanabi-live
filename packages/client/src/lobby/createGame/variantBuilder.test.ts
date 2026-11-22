@@ -63,6 +63,12 @@ describe("variant builder", () => {
     expect(getCatalogName(getRecipe(combined))).toBeUndefined();
   });
 
+  test("ends every reversal when Up or Down turns on", () => {
+    const reversed = toggleReversed(FIVE_SUITS, "p");
+    expect(getRecipe(reversed)).toBe("r-y-g-b-p.rev");
+    expect(getRecipe(toggleFlag(reversed, "updown"))).toBe("r-y-g-b-p_updown");
+  });
+
   test("keeps each suit once, and grows a full deck", () => {
     const dark = build(
       FIVE_SUITS,

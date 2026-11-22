@@ -102,7 +102,15 @@ export function VariantBuilder({
   return (
     <div className="tw:flex tw:w-full tw:flex-col tw:gap-[0.9em]">
       <div className="tw:flex tw:flex-wrap tw:items-end tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
-        <Deck variant={deck} />
+        <Deck
+          ids={deckIds}
+          onReverse={(id) => {
+            choose(toggleReversed(choice, id));
+          }}
+          reversed={choice.reversed}
+          upOrDown={choice.flags.has("updown")}
+          variant={deck}
+        />
         <p className="tw:m-0 tw:text-text-label">
           {catalogName === undefined ? (
             <>
@@ -114,6 +122,11 @@ export function VariantBuilder({
           )}
         </p>
       </div>
+      {!choice.flags.has("updown") && (
+        <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
+          Click a card to reverse its suit.
+        </p>
+      )}
 
       <PartRow label="Suits">
         {SUIT_COUNTS.map((numSuits) => (
@@ -148,24 +161,6 @@ export function VariantBuilder({
             ))}
         </PartRow>
       ))}
-
-      <PartRow label="Reversed suits">
-        {deckIds.map((id, index) => (
-          <Chip
-            enabled
-            // A deck has each suit once.
-            key={id}
-            label={deck.suits[index]?.displayName ?? id}
-            name={`${deck.suits[index]?.displayName ?? id} Reversed`}
-            onClick={() => {
-              choose(toggleReversed(choice, id));
-            }}
-            pressed={choice.reversed.has(id)}
-            suit={deck.suits[index]}
-            tooltip={REVERSED_DESCRIPTION}
-          />
-        ))}
-      </PartRow>
 
       <PartRow label="Special rank">
         {parts.specialRanks.map(({ code, name, description }) => (
@@ -275,27 +270,71 @@ function FlagRow({
 const DECK_CARD_WIDTH = 40;
 
 /** The variant's suits, drawn as the cards of a game, without ranks. */
-function Deck({ variant }: { readonly variant: Variant }) {
+function Deck({
+  ids,
+  onReverse,
+  reversed,
+  upOrDown,
+  variant,
+}: {
+  /** The ID of each suit of the deck, in order. */
+  readonly ids: readonly string[];
+  readonly onReverse: (id: string) => void;
+  readonly reversed: ReadonlySet<string>;
+  /** In "Up or Down", every suit goes either way, so no suit can be reversed. */
+  readonly upOrDown: boolean;
+  readonly variant: Variant;
+}) {
   const colorblindMode = useAppSelector(
     (state) => state.session.settings.colorblindMode,
   );
   return (
     <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
-      <div aria-hidden className="tw:flex tw:gap-[0.3em]">
-        {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => (
-          <CardFace
-            colorblindMode={colorblindMode}
-            key={suitIndex}
-            rank={undefined}
-            suitIndex={suitIndex}
-            variant={variant}
-            width={DECK_CARD_WIDTH}
-          />
-        ))}
+      <div className="tw:flex tw:gap-[0.3em]" role="group">
+        {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
+          const id = ids[suitIndex];
+          const name = variant.suits[suitIndex]?.displayName ?? "";
+          const isReversed = id !== undefined && reversed.has(id);
+          return (
+            // A disabled button gets no pointer events, so this one only looks disabled, to keep
+            // its tooltip.
+            <button
+              aria-disabled={upOrDown}
+              aria-label={`${name} Reversed`}
+              aria-pressed={isReversed}
+              className={`tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none ${upOrDown ? "tw:cursor-not-allowed" : "tw:hover:-translate-y-[2px]"}`}
+              key={suitIndex}
+              onClick={() => {
+                if (!upOrDown && id !== undefined) {
+                  onReverse(id);
+                }
+              }}
+              ref={tooltipRef(getReverseTooltip(upOrDown, isReversed))}
+              type="button"
+            >
+              <CardFace
+                colorblindMode={colorblindMode}
+                rank={undefined}
+                suitIndex={suitIndex}
+                variant={variant}
+                width={DECK_CARD_WIDTH}
+              />
+            </button>
+          );
+        })}
       </div>
       <figcaption className="tw:font-bold">{variant.name}</figcaption>
     </figure>
   );
+}
+
+function getReverseTooltip(upOrDown: boolean, reversed: boolean): string {
+  if (upOrDown) {
+    return "In Up or Down, every suit can go up or down, so no suit can be reversed.";
+  }
+  return reversed
+    ? "Click to play this suit from 1 up to 5 again."
+    : `Click to reverse this suit. ${REVERSED_DESCRIPTION}`;
 }
 
 /** A suit's color, or the stripes of its colors for a suit with several, such as Rainbow. */
