@@ -79,6 +79,71 @@ export const PAGE_SIZES = [10, 20, 50, 100] as const;
 export const MAX_EFFICIENCY_MODIFIER = 60;
 
 /**
+ * An achievement that a player can unlock.
+ */
+const achievementIdSchema = z.enum([
+  "noVariant10Wins",
+  "noVariant100Wins",
+  "black10Wins",
+  "rainbow10Wins",
+  "pink10Wins",
+  "white10Wins",
+  "brown10Wins",
+  "omni10Wins",
+  "null10Wins",
+  "muddyRainbow10Wins",
+  "lightPink10Wins",
+  "prism10Wins",
+  "orange10Wins",
+  "darkSuitsWins",
+  "rainbowRank10Wins",
+  "pinkRank10Wins",
+  "whiteRank10Wins",
+  "brownRank10Wins",
+  "omniRank10Wins",
+  "nullRank10Wins",
+  "muddyRainbowRank10Wins",
+  "lightPinkRank10Wins",
+  "deceptiveRank10Wins",
+  "ambiguous10Wins",
+  "veryAmbiguous10Wins",
+  "extremelyAmbiguous10Wins",
+  "dualColor5Suits10Wins",
+  "dualColor6Suits10Wins",
+  "criticalOnes10Wins",
+  "criticalTwos10Wins",
+  "criticalThrees10Wins",
+  "criticalFours10Wins",
+  "scarceOnes10Wins",
+  "clueStarved10Wins",
+  "colorBlind10Wins",
+  "numberBlind10Wins",
+  "totallyBlind10Wins",
+  "cowAndPig10Wins",
+  "duck10Wins",
+  "oddsAndEvens10Wins",
+  "reversedSuit10Wins",
+  "upOrDown10Wins",
+  "throwItInAHole10Wins",
+  "sudoku10Wins",
+  "threePlayers10Wins",
+  "fourPlayers10Wins",
+  "fivePlayers10Wins",
+  "noVariant5Streak",
+]);
+
+/**
+ * An achievement that the player just unlocked, with the game that they just finished.
+ */
+export const achievementUnlockedSchema = z
+  .strictObject({
+    description: z.string(),
+    id: achievementIdSchema,
+    name: z.string(),
+  })
+  .readonly();
+
+/**
  * A table's ID.
  */
 export const tableIdSchema = z
@@ -1101,60 +1166,6 @@ const playerActionSchema = z.discriminatedUnion("type", [
 export const playerActionRequestSchema = z
   .strictObject({ action: playerActionSchema, tableId: tableIdSchema })
   .readonly();
-
-/**
- * An achievement that a player can unlock.
- */
-const achievementIdSchema = z.enum([
-  "noVariant10Wins",
-  "noVariant100Wins",
-  "black10Wins",
-  "rainbow10Wins",
-  "pink10Wins",
-  "white10Wins",
-  "brown10Wins",
-  "omni10Wins",
-  "null10Wins",
-  "muddyRainbow10Wins",
-  "lightPink10Wins",
-  "prism10Wins",
-  "orange10Wins",
-  "darkSuitsWins",
-  "rainbowRank10Wins",
-  "pinkRank10Wins",
-  "whiteRank10Wins",
-  "brownRank10Wins",
-  "omniRank10Wins",
-  "nullRank10Wins",
-  "muddyRainbowRank10Wins",
-  "lightPinkRank10Wins",
-  "deceptiveRank10Wins",
-  "ambiguous10Wins",
-  "veryAmbiguous10Wins",
-  "extremelyAmbiguous10Wins",
-  "dualColor5Suits10Wins",
-  "dualColor6Suits10Wins",
-  "criticalOnes10Wins",
-  "criticalTwos10Wins",
-  "criticalThrees10Wins",
-  "criticalFours10Wins",
-  "scarceOnes10Wins",
-  "clueStarved10Wins",
-  "colorBlind10Wins",
-  "numberBlind10Wins",
-  "totallyBlind10Wins",
-  "cowAndPig10Wins",
-  "duck10Wins",
-  "oddsAndEvens10Wins",
-  "reversedSuit10Wins",
-  "upOrDown10Wins",
-  "throwItInAHole10Wins",
-  "sudoku10Wins",
-  "threePlayers10Wins",
-  "fourPlayers10Wins",
-  "fivePlayers10Wins",
-  "noVariant5Streak",
-]);
 
 /**
  * A player's progress toward an achievement.
@@ -2229,6 +2240,7 @@ export const REPLY_SCHEMAS = {
   gameInitLoad: gameInitSchema,
 } as const;
 export const SERVER_EVENT_SCHEMAS = {
+  achievementUnlocked: achievementUnlockedSchema,
   blocked: blockedSchema,
   chat: chatSchema,
   chatDeleted: chatDeletedSchema,

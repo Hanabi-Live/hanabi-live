@@ -3,6 +3,7 @@
 
 import { useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { AchievementToasts } from "./AchievementToasts.tsx";
 import { EmojiPicker } from "./EmojiPicker.tsx";
 import { MessageModal } from "./MessageModal.tsx";
 import { PromptModal } from "./PromptModal.tsx";
@@ -87,6 +88,7 @@ function App({ targets }: { readonly targets: Targets }): React.JSX.Element {
         )}
       {createPortal(<GameChatBox />, targets.gameChat)}
       {newUiShown && createPortal(<GameScreen />, targets.newUi)}
+      <AchievementToasts />
     </>
   );
 }

@@ -1,5 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
+import { achievementUnlocked } from "./achievementToastSlice.ts";
 import * as chat from "./chat.ts";
 import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
@@ -19,6 +20,10 @@ export const commands = new ServerHandlers();
 commands.set("warning", (data) => {
   console.warn(data.message);
   modals.showWarning(noticeHtml(data));
+});
+
+commands.set("achievementUnlocked", (data) => {
+  store.dispatch(achievementUnlocked(data));
 });
 
 commands.set("error", (data) => {

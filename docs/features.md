@@ -170,6 +170,8 @@ that have not been played yet and have only one copy remaining.)
 - Profiles show the player's achievements, with their progress toward each one,
   the date that they unlocked it, and the percentage of the players with an
   achievement who have it.
+- When a game unlocks an achievement, the table chat says so, and the player who
+  unlocked it sees a message at the top of the screen.
 
 ### Replays
 

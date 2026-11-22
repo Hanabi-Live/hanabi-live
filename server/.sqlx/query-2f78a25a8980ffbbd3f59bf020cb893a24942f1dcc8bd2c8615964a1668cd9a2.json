@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT user_id,achievement FROM user_achievements WHERE user_id=ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_achievements",
+            "name": "user_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "achievement",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "user_achievements",
+            "name": "achievement"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "2f78a25a8980ffbbd3f59bf020cb893a24942f1dcc8bd2c8615964a1668cd9a2"
+}

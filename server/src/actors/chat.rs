@@ -279,6 +279,52 @@ impl TableActor {
             }
         })
     }
+    /// Tells the table which achievements its game unlocked, in a chat message for each, and
+    /// tells each player who is still at the table about theirs.
+    pub(super) async fn announce_achievements(
+        &mut self,
+        unlocked: &[crate::achievements::Unlocked],
+        names: &std::collections::HashMap<i32, String>,
+    ) -> CommandResult<()> {
+        if unlocked.is_empty() {
+            return Ok(());
+        }
+        let messages: Vec<_> = unlocked
+            .iter()
+            .filter_map(|u| {
+                let name = names.get(&u.user)?;
+                Some(server_chat(
+                    self.table.id,
+                    &format!("{name} unlocked an achievement: {}", u.achievement.name),
+                ))
+            })
+            .collect();
+        let mut next = self.candidate();
+        push_chat(&mut next, messages.iter().map(|m| (None, m.clone())))?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        for message in &messages {
+            self.add_chat(&mut e, message);
+        }
+        for u in unlocked {
+            let Some(attendee) = UserId::new(u.user).and_then(|user| self.attendees.get(&user))
+            else {
+                continue;
+            };
+            e.messages.push((
+                attendee.session.clone(),
+                frame(
+                    hanabi_protocol::event::ACHIEVEMENT_UNLOCKED,
+                    hanabi_protocol::AchievementUnlocked {
+                        id: u.achievement.id,
+                        name: u.achievement.name.into(),
+                        description: u.achievement.description(),
+                    },
+                ),
+            ));
+        }
+        self.publish(e).await
+    }
     pub(super) async fn finish_discovery(
         &mut self,
         query: VariantDiscovery,

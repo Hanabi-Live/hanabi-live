@@ -359,15 +359,16 @@ function Players({ players }: { readonly players: number }): React.JSX.Element {
 
 /**
  * The art of an achievement: one card of its suit, a fan of every suit of its variant, or its
- * players.
+ * players. It is gray until the achievement is unlocked.
  */
-function AchievementCards({
-  achievement,
+export function AchievementArt({
+  id,
+  unlocked,
 }: {
-  readonly achievement: Achievement;
+  readonly id: Achievement["id"];
+  readonly unlocked: boolean;
 }): React.JSX.Element {
-  const art = ACHIEVEMENT_CARDS[achievement.id];
-  const unlocked = achievement.dateUnlocked !== undefined;
+  const art = ACHIEVEMENT_CARDS[id];
   const artClassName = `tw:relative tw:flex tw:shrink-0 tw:items-center tw:justify-center ${unlocked ? "" : "tw:opacity-45 tw:grayscale"}`;
   const artStyle = {
     width: ART_WIDTH,
@@ -428,6 +429,7 @@ function AchievementCard({
     dateUnlocked,
     description,
     goal,
+    id,
     name,
     progress,
     unlockedPercentage,
@@ -437,7 +439,7 @@ function AchievementCard({
     <div
       className={`tw:flex tw:items-center tw:gap-3 tw:rounded-lg tw:border tw:p-2.5 ${unlocked ? "tw:border-border tw:bg-surface-panel" : "tw:border-dashed tw:border-border"}`}
     >
-      <AchievementCards achievement={achievement} />
+      <AchievementArt id={id} unlocked={unlocked} />
       <div className="tw:min-w-0 tw:flex-1">
         <div className="tw:flex tw:flex-wrap tw:items-baseline tw:justify-between tw:gap-x-2">
           <span

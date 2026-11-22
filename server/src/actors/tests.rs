@@ -1500,3 +1500,78 @@ fn hypothetical_back_keeps_morphs() {
         text(&[action("morph", 2), action("unmorph", 6)])
     );
 }
+
+#[tokio::test]
+async fn unlocked_achievements_reach_the_table_chat_and_the_player() -> Result<()> {
+    let Some((db, store, _)) = fixture_store().await? else {
+        return Ok(());
+    };
+    let id = store.allocate_table().await?;
+    let table = review(id, EndCondition::TerminatedByPlayer)?;
+    let revision = store.save_at(&table, 0).await?;
+    let (hub, mut notifications) = mpsc::channel(16);
+    let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
+    let mut actor = TableActor::new(
+        table,
+        saved,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
+    );
+    let (alice, _frames) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
+    actor.reattend(alice, &BTreeSet::new(), false, None).await?;
+    while notifications.try_recv().is_ok() {}
+    // Alice and Bob unlock the first achievement. Only Alice is still at the table.
+    let achievement = &crate::achievements::ACHIEVEMENTS[0];
+    actor
+        .announce_achievements(
+            &[
+                crate::achievements::Unlocked {
+                    user: 1,
+                    achievement,
+                },
+                crate::achievements::Unlocked {
+                    user: 2,
+                    achievement,
+                },
+            ],
+            &HashMap::from([(1, "Alice".to_owned()), (2, "Bob".to_owned())]),
+        )
+        .await?;
+    let (mut chat, mut toasts) = (Vec::new(), Vec::new());
+    while let Ok(notification) = notifications.try_recv() {
+        if let HubCommand::Effects(effects) = notification {
+            for (session, message) in &effects.messages {
+                match crate::transport::event(message) {
+                    Some((name, data)) if name == "chat" => {
+                        chat.push(data["text"].as_str().unwrap_or("").to_owned());
+                    }
+                    Some((name, data)) if name == "achievementUnlocked" => {
+                        toasts.push((session.user, data["name"].clone()));
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    ensure!(
+        chat.contains(&format!(
+            "Alice unlocked an achievement: {}",
+            achievement.name
+        )) && chat.contains(&format!(
+            "Bob unlocked an achievement: {}",
+            achievement.name
+        )),
+        "The table chat did not announce both unlocks: {chat:?}"
+    );
+    ensure!(
+        toasts == [(UserId::new(1).unwrap(), json!(achievement.name))],
+        "Only Alice should get the achievement event: {toasts:?}"
+    );
+    actor.retire().await?;
+    store.close().await?;
+    db.close().await;
+    Ok(())
+}

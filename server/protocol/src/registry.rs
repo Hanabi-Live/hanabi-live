@@ -105,6 +105,7 @@ macro_rules! event_contracts {
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
             WARNING "warning" => Notice;
+            ACHIEVEMENT_UNLOCKED "achievementUnlocked" => AchievementUnlocked;
             WELCOME "welcome" => Welcome;
             SPECTATORS "spectators" => Spectators;
             TABLE "table" => Table;

@@ -147,6 +147,7 @@ impl TableActor {
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             chat_bytes: super::chat::ChatBytes::default(),
             discovering: false,
+            queued_achievements: Vec::new(),
             _permit: permit,
             info,
         }
@@ -654,7 +655,14 @@ impl TableActor {
             *read = read.saturating_sub(dropped);
         }
         if archived && let Some(s) = next.game() {
-            self.store.refresh_background(s.clone());
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            self.store.refresh_background(s.clone(), sender);
+            let names = s
+                .players
+                .iter()
+                .filter_map(|p| Some((p.id?.get(), p.name.clone())))
+                .collect();
+            self.queued_achievements.push((receiver, names));
         }
         let became_replay = matches!(self.table.phase, Phase::Live { .. })
             && matches!(next.phase, Phase::Replay { .. });
@@ -819,6 +827,17 @@ impl TableActor {
                     self.run_timers().await;
                 }
             }
+            for (receiver, names) in self.queued_achievements.drain(..) {
+                pending.start(
+                    async move {
+                        Completed::Achievements {
+                            unlocked: receiver.await.unwrap_or_default(),
+                            names,
+                        }
+                    },
+                    None,
+                );
+            }
         }
         pending.close();
         receiver.close();
@@ -841,6 +860,9 @@ impl TableActor {
     async fn complete(&mut self, completed: Completed) -> CommandResult<()> {
         match completed {
             Completed::GameCounts(result) => self.apply_game_counts(result).await,
+            Completed::Achievements { unlocked, names } => {
+                self.announce_achievements(&unlocked, &names).await
+            }
             Completed::Discovery {
                 discovery,
                 selected,

@@ -34,6 +34,8 @@ of the repository.
   longer work.
 - Profiles show the longest streak of max scores in a row, with its variant and
   number of players.
+- When a game unlocks an achievement, the table chat says so, and the player who
+  unlocked it sees a message at the top of the screen.
 
 ## November 21st, 2026
 

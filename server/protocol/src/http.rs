@@ -285,6 +285,15 @@ named_enum! {
     }
 }
 
+/// An achievement that the player just unlocked, with the game that they just finished.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AchievementUnlocked {
+    pub id: AchievementId,
+    pub name: String,
+    pub description: String,
+}
+
 /// A player's progress toward an achievement.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

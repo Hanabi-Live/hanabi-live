@@ -27,6 +27,11 @@ pub(super) enum Completed {
         hide: bool,
         stats: Result<BTreeMap<UserId, PregameStats>>,
     },
+    /// The achievements that a saved game unlocked, with the names of its players.
+    Achievements {
+        unlocked: Vec<crate::achievements::Unlocked>,
+        names: HashMap<i32, String>,
+    },
     /// The password check of a join.
     Password {
         session: Arc<Session>,

@@ -421,6 +421,11 @@ struct Attendance {
     /// When the attendee started viewing the replay, for their review time. `None` outside replays.
     reviewing_since: Option<Instant>,
 }
+/// The achievements that a saved game unlocks, which arrive later, and the names of its players.
+type QueuedAchievements = (
+    oneshot::Receiver<Vec<crate::achievements::Unlocked>>,
+    HashMap<i32, String>,
+);
 struct TableActor {
     table: TableSnapshot,
     /// What the database holds for the table.
@@ -440,6 +445,9 @@ struct TableActor {
     chat_bytes: chat::ChatBytes,
     /// Whether a variant search is pending. A table runs one at a time.
     discovering: bool,
+    /// The achievements of saved games, which the background statistics work sends, with the
+    /// names of each game's players. The table's loop waits for them.
+    queued_achievements: Vec<QueuedAchievements>,
     _permit: OwnedSemaphorePermit,
     info: Arc<ServerInfo>,
 }

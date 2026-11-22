@@ -228,6 +228,19 @@ pub(crate) struct Definition {
     pub rule: Rule,
 }
 
+impl Definition {
+    /// What the achievement asks for, in words.
+    pub(crate) fn description(&self) -> String {
+        self.rule.description()
+    }
+}
+
+/// An achievement that a player unlocked with the game that they just finished.
+pub(crate) struct Unlocked {
+    pub user: i32,
+    pub achievement: &'static Definition,
+}
+
 /// An achievement for `WINS` wins in the 5-suit variant of a special suit.
 const fn special_suit(id: AchievementId, name: &'static str, suit: &'static str) -> Definition {
     Definition {
@@ -1066,20 +1079,22 @@ pub(crate) async fn achievements(
 }
 
 /// Replaces the unlocked achievements of the players in `users`, or of every player when `users` is
-/// `None`.
+/// `None`. Returns each unlocked achievement.
 async fn write(
     connection: &mut PgConnection,
     rows: &QueryRows,
     users: Option<&[i32]>,
     records: &Records,
-) -> Result<()> {
+) -> Result<Vec<Unlocked>> {
     let (mut ids, mut achievements, mut times) = (Vec::new(), Vec::new(), Vec::new());
+    let mut unlocked = Vec::new();
     for (&user, record) in records {
         for achievement in ACHIEVEMENTS {
             if let Some(time) = progress(achievement, rows, Some(record)).unlocked {
                 ids.push(user);
                 achievements.push(achievement.id.name());
                 times.push(time);
+                unlocked.push(Unlocked { user, achievement });
             }
         }
     }
@@ -1106,21 +1121,34 @@ async fn write(
     )
     .execute(connection)
     .await?;
-    Ok(())
+    Ok(unlocked)
 }
 
-/// Writes the unlocked achievements of the players in `users`, after they finished a game.
-pub(crate) async fn refresh(pool: &PgPool, users: &[i32]) -> Result<()> {
+/// Writes the unlocked achievements of the players in `users`, after they finished a game, and
+/// returns the ones that the game unlocked.
+pub(crate) async fn refresh(pool: &PgPool, users: &[i32]) -> Result<Vec<Unlocked>> {
     let rows = QueryRows::new()?;
     let mut transaction = pool.begin().await?;
     // The lock keeps a refresh and the startup sync from writing a player's unlocks from older
     // wins after the other one wrote newer ones.
     advisory_lock(&mut transaction, LockSpace::Achievements, 0).await?;
+    let before: std::collections::HashSet<(i32, String)> = sqlx::query!(
+        "SELECT user_id,achievement FROM user_achievements WHERE user_id=ANY($1)",
+        users
+    )
+    .fetch_all(&mut *transaction)
+    .await?
+    .into_iter()
+    .map(|row| (row.user_id, row.achievement))
+    .collect();
     let games = played_games(&mut transaction, users).await?;
     let records = records_of(&rows, &games)?;
-    write(&mut transaction, &rows, Some(users), &records).await?;
+    let unlocked = write(&mut transaction, &rows, Some(users), &records).await?;
     transaction.commit().await?;
-    Ok(())
+    Ok(unlocked
+        .into_iter()
+        .filter(|u| !before.contains(&(u.user, u.achievement.id.name().to_owned())))
+        .collect())
 }
 
 /// Writes the unlocked achievements of every player again, so that the table follows the current
@@ -1289,7 +1317,16 @@ mod tests {
         // Bob wins 5 more games with Alice. After the games, both of them have the achievement,
         // and Alice has 15 wins.
         win(pool, 11, 5, &[2, 1, 7]).await;
-        refresh(pool, &[2, 1, 7]).await.unwrap();
+        let new: Vec<_> = refresh(pool, &[2, 1, 7])
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|u| (u.user, u.achievement.id))
+            .collect();
+        // Only Bob's and Gina's unlocks are new. Alice had hers before the games.
+        assert!(new.contains(&(2, AchievementId::NoVariant10Wins)));
+        assert!(new.contains(&(7, AchievementId::NoVariant5Streak)));
+        assert!(new.iter().all(|(user, _)| *user != 1));
         assert_eq!(
             unlocked(pool).await,
             [

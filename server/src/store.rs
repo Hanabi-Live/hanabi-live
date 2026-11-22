@@ -461,7 +461,14 @@ impl Store {
         }
         unreachable!()
     }
-    pub fn refresh_background(&self, snapshot: Snapshot) {
+    /// Updates the statistics and the achievements of a saved game's players, in the background.
+    /// Sends the achievements that the game unlocked to `unlocked`, which gets nothing when the
+    /// game unlocked none or the work did not run.
+    pub fn refresh_background(
+        &self,
+        snapshot: Snapshot,
+        unlocked: tokio::sync::oneshot::Sender<Vec<crate::achievements::Unlocked>>,
+    ) {
         let Ok(permit) = self.stats_slots.clone().try_acquire_owned() else {
             tracing::warn!(
                 "Derived statistics capacity exhausted; the completed archive remains durable."
@@ -487,8 +494,13 @@ impl Store {
                     Ok(users) => crate::achievements::refresh(&store.primary, &users).await,
                     Err(e) => Err(e),
                 };
-                if let Err(e) = result {
-                    tracing::error!("Achievements failed: {e:#}");
+                match result {
+                    Ok(new) if !new.is_empty() => {
+                        // The table may have closed, which leaves no one to tell.
+                        let _ = unlocked.send(new);
+                    }
+                    Ok(_) => {}
+                    Err(e) => tracing::error!("Achievements failed: {e:#}"),
                 }
             }
         });
