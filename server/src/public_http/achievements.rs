@@ -20,7 +20,8 @@ pub(super) struct WinAchievement {
 /// The variants whose wins count toward a group of achievements.
 pub(super) enum WinVariants {
     NoVariant,
-    /// The 5-suit and 6-suit variants of a special suit, such as "Pink (5 Suits)".
+    /// The 5-suit variant of a special suit, such as "Pink (5 Suits)". Games with 6 suits take too
+    /// long to count.
     SpecialSuit(&'static str),
 }
 
@@ -29,7 +30,7 @@ impl WinVariants {
         match self {
             Self::NoVariant => vec![DEFAULT_VARIANT_NAME.to_owned()],
             Self::SpecialSuit(suit) => {
-                vec![format!("{suit} (5 Suits)"), format!("{suit} (6 Suits)")]
+                vec![format!("{suit} (5 Suits)")]
             }
         }
     }
