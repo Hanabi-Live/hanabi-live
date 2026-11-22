@@ -331,8 +331,7 @@ impl TableActor {
         session: Arc<Session>,
         typing: bool,
     ) -> CommandResult<()> {
-        ensure_or_reject!(self.attending(&session), "Not attending.");
-        let a = self.attendees.get_mut(&session.user).expect("attendee");
+        let a = self.attendance_mut(&session).or_reject("Not attending.")?;
         let notify = typing && a.typing_until.is_none();
         if typing {
             a.typing_until = Some(Instant::now() + TYPING_TIMEOUT);

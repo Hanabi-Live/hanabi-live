@@ -324,14 +324,11 @@ pub(super) fn possessive(name: &str) -> String {
 }
 
 fn names_title(names: &[String]) -> String {
-    if names.len() == 1 {
-        return names[0].clone();
+    match names {
+        [] => String::new(),
+        [name] => name.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
     }
-    format!(
-        "{} and {}",
-        names[..names.len() - 1].join(", "),
-        names.last().expect("names")
-    )
 }
 
 /// How long the server keeps the average scores of seeds that share a prefix.

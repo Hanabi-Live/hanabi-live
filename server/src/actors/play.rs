@@ -5,6 +5,7 @@ use super::{
     wire::{game_event_message, game_events},
 };
 use crate::errors::CommandResult;
+use crate::errors::OrReject;
 use crate::model::{Snapshot, TableSnapshot};
 use crate::routing::PhaseRequest;
 use crate::store::Commit;
@@ -534,12 +535,10 @@ impl TableActor {
         session: Arc<Session>,
         part: GameInfo,
     ) -> CommandResult<Option<ReplyData>> {
-        ensure_or_reject!(
-            self.attending(&session),
-            "Reattend before requesting private game data."
-        );
+        let a = self
+            .attendance(&session)
+            .or_reject("Reattend before requesting private game data.")?;
         let s = self.table.game().context("No available game")?;
-        let a = self.attendees.get(&session.user).expect("attendee");
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = s.players.iter().position(|p| p.is(session.user));
         let mut e = self.effects();

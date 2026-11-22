@@ -251,11 +251,18 @@ impl TableActor {
             .context("Coordinator stopped")?)
     }
     pub(super) fn attending(&self, s: &Session) -> bool {
-        s.active()
-            && self
-                .attendees
-                .get(&s.user)
-                .is_some_and(|a| a.session.generation == s.generation)
+        self.attendance(s).is_some()
+    }
+    /// The attendance of this session, if it is the one that attends the table.
+    pub(super) fn attendance(&self, s: &Session) -> Option<&Attendance> {
+        self.attendees
+            .get(&s.user)
+            .filter(|a| s.active() && a.session.generation == s.generation)
+    }
+    pub(super) fn attendance_mut(&mut self, s: &Session) -> Option<&mut Attendance> {
+        self.attendees
+            .get_mut(&s.user)
+            .filter(|a| s.active() && a.session.generation == s.generation)
     }
     pub(super) fn seat(&self, s: &Session) -> CommandResult<usize> {
         self.table
