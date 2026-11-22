@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT w.grp AS \"grp!\",w.datetime_finished AS \"datetime_finished!\" FROM (\n           SELECT v.grp,v.most,g.datetime_finished,\n             row_number() OVER (PARTITION BY v.grp ORDER BY g.datetime_finished,g.id) AS n\n           FROM game_participants p JOIN games g ON g.id=p.game_id\n           JOIN unnest($2::smallint[],$3::smallint[],$4::int[],$5::bigint[])\n             AS v(variant_id,max_score,grp,most)\n             ON v.variant_id=g.variant_id AND v.max_score=g.score\n           WHERE p.user_id=$1 AND g.end_condition=$6\n           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card\n             OR g.all_or_nothing OR g.detrimental_characters)\n         ) w WHERE w.n<=w.most ORDER BY w.grp,w.n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "grp!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "datetime_finished!",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "datetime_finished"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2Array",
+        "Int2Array",
+        "Int4Array",
+        "Int8Array",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      null,
+      false
+    ]
+  },
+  "hash": "ad3408642a20c6459d121769d77884c0de2676b56b612d39384ad2d0cfdd988f"
+}

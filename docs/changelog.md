@@ -11,8 +11,9 @@ of the repository.
 
 - Profiles now show achievements for getting the max score many times: "I've Got
   the Hang of This" and "Core Mastery" for 10 and 100 games of No Variant, and
-  "Rainbow Wrangler" for 10 games of Rainbow (5 or 6 suits). Games with an
-  option such as "One Extra Card" or detrimental characters do not count.
+  one for 10 games of each of Rainbow, Pink, White, Brown, Omni, Null, Muddy
+  Rainbow, Light Pink, and Prism (with 5 or 6 suits). Games with an option such
+  as "One Extra Card" or detrimental characters do not count.
 
 ## November 21st, 2026
 

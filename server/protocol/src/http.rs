@@ -251,6 +251,14 @@ named_enum! {
         NoVariant10Wins => "noVariant10Wins",
         NoVariant100Wins => "noVariant100Wins",
         Rainbow10Wins => "rainbow10Wins",
+        Pink10Wins => "pink10Wins",
+        White10Wins => "white10Wins",
+        Brown10Wins => "brown10Wins",
+        Omni10Wins => "omni10Wins",
+        Null10Wins => "null10Wins",
+        MuddyRainbow10Wins => "muddyRainbow10Wins",
+        LightPink10Wins => "lightPink10Wins",
+        Prism10Wins => "prism10Wins",
     }
 }
 

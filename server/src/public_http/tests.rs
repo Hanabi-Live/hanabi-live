@@ -899,7 +899,8 @@ async fn profile_counts_wins_toward_achievements() {
     // Games 1 to 9 are wins in No Variant (variant 0). Game 10 uses "One Extra Card", game 11 has
     // detrimental characters, and game 12 does not reach the max score. Games 13 and 14 are wins in
     // Rainbow (5 Suits) and Rainbow (6 Suits) (variants 16 and 3). Game 15 does not reach the max
-    // score of Rainbow (6 Suits), and game 16 is a win in Rainbow (4 Suits) (variant 17).
+    // score of Rainbow (6 Suits), and game 16 is a win in Rainbow (4 Suits) (variant 17). Game 19 is
+    // a win in Pink (5 Suits) (variant 107).
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -916,8 +917,9 @@ async fn profile_counts_wins_toward_achievements() {
           '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
         FROM (SELECT id,0 AS variant,CASE WHEN id=12 THEN 20 ELSE 25 END AS score
           FROM generate_series(1,12) id
-          UNION ALL VALUES(13,16,25),(14,3,30),(15,3,25),(16,17,20)) AS g(id,variant,score);
-        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id;",
+          UNION ALL VALUES(13,16,25),(14,3,30),(15,3,25),(16,17,20),(19,107,25)) AS g(id,variant,score);
+        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id;
+        INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0);",
     )
     .execute(&db.pool)
     .await
@@ -928,7 +930,7 @@ async fn profile_counts_wins_toward_achievements() {
     let table = page_table(&body);
     let expected = achievements::WIN_GROUPS
         .iter()
-        .zip([9, 2])
+        .zip([9, 2, 1].into_iter().chain(std::iter::repeat(0)))
         .flat_map(|(group, wins)| {
             group
                 .achievements
@@ -944,6 +946,7 @@ async fn profile_counts_wins_toward_achievements() {
     }
     assert_eq!(shown[0]["id"], "noVariant10Wins");
     assert_eq!(shown[2]["id"], "rainbow10Wins");
+    assert_eq!(shown[3]["id"], "pink10Wins");
     // The tenth win unlocks the first achievement, and later wins do not move the date.
     #[expect(
         clippy::disallowed_methods,
