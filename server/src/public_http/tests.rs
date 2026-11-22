@@ -591,8 +591,12 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/history/Alice").await;
     assert_eq!(page_table(&body)["list"], "history");
     // A max score names the option that kept it from counting normally, if any.
-    let (_, body) = request(app.clone(), "/scores/Alice").await;
-    let variant = &page_table(&body)["variants"][0];
+    let scores_api = async || {
+        let (_, body) = request(app.clone(), "/api/v1/scores/Alice").await;
+        serde_json::from_str::<Value>(&body).unwrap()
+    };
+    let scores = scores_api().await;
+    let variant = &scores["variants"][0];
     assert_eq!(
         variant["bestScores"][0],
         json!({"score": variant["maxScore"]}),
@@ -606,9 +610,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let (_, body) = request(app.clone(), "/scores/Alice").await;
     assert_eq!(
-        page_table(&body)["variants"][0]["bestScores"][0]["modifier"],
+        scores_api().await["variants"][0]["bestScores"][0]["modifier"],
         "oneExtraCard"
     );
     #[expect(

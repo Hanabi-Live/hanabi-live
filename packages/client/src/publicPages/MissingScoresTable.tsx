@@ -1,18 +1,13 @@
-// The tables of best scores: a player's scores on each variant, and the max scores that players are
-// missing.
+// The table of the max scores that players are missing.
 
 import type { publicPageTableSchema } from "@hanabi-live/data";
-import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
-import { iRange } from "complete-common";
 import type * as z from "zod";
 import { tooltipRefHtml } from "../tooltipRef.ts";
-import { Achievements } from "./Achievements.tsx";
 import type { LocalColumn } from "./LocalTable.tsx";
 import { LocalTable } from "./LocalTable.tsx";
 import { MissingScoresFilters } from "./MissingScoresFilters.tsx";
 
 type PublicPageTable = z.infer<typeof publicPageTableSchema>;
-type ScoresTable = Extract<PublicPageTable, { type: "scores" }>;
 type MissingScoresTable = Extract<PublicPageTable, { type: "missingScores" }>;
 type MissingScore = MissingScoresTable["rows"][number];
 type ScoreModifierOption = NonNullable<MissingScore["modifier"]>;
@@ -49,84 +44,6 @@ function scoreText(score: number | undefined, maxScore: number): string {
   return `${score ?? "\u{2013}"} / ${maxScore}`;
 }
 
-export function ScoresTable({
-  table,
-}: {
-  readonly table: ScoresTable;
-}): React.JSX.Element {
-  type VariantScores = ScoresTable["variants"][number];
-  const columns: Array<LocalColumn<VariantScores>> = [
-    {
-      header: "Variant",
-      sortable: true,
-      filter: "select",
-      text: (row) => row.variantName,
-      cell: (row) => row.variantName,
-    },
-    {
-      header: "Total Games",
-      sortable: true,
-      filter: "text",
-      className: CENTER,
-      text: (row) => String(row.numGames),
-      cell: (row) => row.numGames,
-    },
-    ...Array.from(
-      iRange(MIN_PLAYERS, MAX_PLAYERS),
-      (players, index): LocalColumn<VariantScores> => ({
-        header: `${players}-Player Best Score`,
-        sortable: true,
-        filter: "text",
-        ratio: true,
-        className: CENTER,
-        text: (row) => {
-          const { score } = row.bestScores[index] ?? {};
-          return score === undefined
-            ? "\u{2013}"
-            : scoreText(score, row.maxScore);
-        },
-        cell: (row) => {
-          const { modifier, score } = row.bestScores[index] ?? {};
-          if (score === undefined) {
-            return "\u{2013}";
-          }
-          if (score !== row.maxScore) {
-            return scoreText(score, row.maxScore);
-          }
-          return (
-            <>
-              <strong>{scoreText(score, row.maxScore)}</strong>{" "}
-              {modifier === undefined ? (
-                <i className="fas fa-check score-modifier green" />
-              ) : (
-                <ModifierIcon modifier={modifier} />
-              )}
-            </>
-          );
-        },
-      }),
-    ),
-  ];
-
-  return (
-    <>
-      <Achievements achievements={table.achievements} />
-      <LocalTable
-        columns={columns}
-        emptyText="This player has no scores yet."
-        initialSort={{
-          column: 0,
-          descending: false,
-        }}
-        noun={["variant", "variants"]}
-        rowKey={(row) => row.variantName}
-        rows={table.variants}
-        scrollLabel="Scores"
-      />
-    </>
-  );
-}
-
 /** The classes of an efficiency's cell, which stands out when a max score is hard. */
 const DIFFICULTY_CLASSES = {
   normal: "",
@@ -138,7 +55,6 @@ const missingScoreColumns: ReadonlyArray<LocalColumn<MissingScore>> = [
   {
     header: "Variant",
     sortable: true,
-    filter: "none",
     className: "tw:w-[55%]",
     text: (row) => row.variantName,
     cell: (row) => row.variantName,
@@ -146,7 +62,6 @@ const missingScoreColumns: ReadonlyArray<LocalColumn<MissingScore>> = [
   {
     header: "# of Players",
     sortable: false,
-    filter: "none",
     className: `tw:w-[15%] ${CENTER}`,
     text: (row) => String(row.numPlayers),
     cell: (row) => row.numPlayers,
@@ -154,7 +69,6 @@ const missingScoreColumns: ReadonlyArray<LocalColumn<MissingScore>> = [
   {
     header: "Highest Score",
     sortable: true,
-    filter: "none",
     ratio: true,
     className: `tw:w-[15%] ${CENTER}`,
     text: (row) => scoreText(row.score, row.maxScore),
@@ -173,7 +87,6 @@ const missingScoreColumns: ReadonlyArray<LocalColumn<MissingScore>> = [
   {
     header: "Efficiency",
     sortable: true,
-    filter: "none",
     className: `tw:w-[15%] ${CENTER}`,
     text: (row) => row.efficiency,
     cell: (row) => row.efficiency,

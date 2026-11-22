@@ -175,15 +175,8 @@ pub(super) async fn page(
                     v["title"] = json!("Scores");
                     let (statistics, joined) = player_statistics(&state, users[0].0).await?;
                     v["stats"] = statistics_value(&statistics, joined);
-                    let (_, variants) = score_summary(&state, users[0].0).await?;
                     let achievements = achievements(&state, users[0].0).await?;
-                    set_table(
-                        &mut v,
-                        &PublicPageTable::Scores {
-                            variants,
-                            achievements,
-                        },
-                    )?;
+                    set_table(&mut v, &PublicPageTable::Achievements { achievements })?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();

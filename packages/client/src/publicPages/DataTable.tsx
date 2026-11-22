@@ -33,34 +33,12 @@ export interface Sort {
   readonly descending: boolean;
 }
 
-/** Each column's non-empty filter value, by column index. */
-export type Filters = ReadonlyMap<number, string>;
-
 /** The sort after a click on a column's header: ascending, or the other way if it is sorted. */
 export function nextSort(sort: Sort | undefined, column: number): Sort {
   return {
     column,
     descending: sort?.column === column && !sort.descending,
   };
-}
-
-/** The filters with a column's new value, or the same filters if the value did not change. */
-export function nextFilters(
-  filters: Filters,
-  column: number,
-  value: string,
-): Filters {
-  const trimmed = value.trim();
-  if ((filters.get(column) ?? "") === trimmed) {
-    return filters;
-  }
-  const next = new Map(filters);
-  if (trimmed === "") {
-    next.delete(column);
-  } else {
-    next.set(column, trimmed);
-  }
-  return next;
 }
 
 /** The number of pages that `rows` rows fill, which is at least one. */
@@ -78,19 +56,17 @@ export function DataTable({
   sort,
   onSort,
   onFilter,
-  scrollLabel,
   children,
 }: {
   readonly columns: readonly Column[];
   readonly sort: Sort | undefined;
   readonly onSort: (column: number) => void;
-  readonly onFilter: (column: number, value: string) => void;
-  /** The name of the region that scrolls a wide table sideways, if it has one. */
-  readonly scrollLabel?: string;
+  /** Absent when no column has a filter. */
+  readonly onFilter?: (column: number, value: string) => void;
   /** The rows. */
   readonly children: React.ReactNode;
 }): React.JSX.Element {
-  const table = (
+  return (
     <table className="tw:mt-2">
       <thead>
         <tr>
@@ -113,7 +89,7 @@ export function DataTable({
                   filter={column.filter}
                   name={column.header}
                   onChange={(value) => {
-                    onFilter(index, value);
+                    onFilter?.(index, value);
                   }}
                 />
               </td>
@@ -123,20 +99,6 @@ export function DataTable({
       </thead>
       <tbody>{children}</tbody>
     </table>
-  );
-
-  if (scrollLabel === undefined) {
-    return table;
-  }
-  return (
-    <div
-      aria-label={scrollLabel}
-      className="tw:max-w-full tw:overflow-x-auto"
-      role="region"
-      tabIndex={0}
-    >
-      {table}
-    </div>
   );
 }
 

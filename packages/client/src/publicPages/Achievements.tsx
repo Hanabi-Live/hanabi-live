@@ -5,11 +5,11 @@ import { MIN_ACHIEVEMENT_PLAYERS } from "@hanabi-live/data";
 import type * as z from "zod";
 import { tooltipRef } from "../tooltipRef.ts";
 
-type ScoresTable = Extract<
+type AchievementsTable = Extract<
   z.infer<typeof publicPageTableSchema>,
-  { type: "scores" }
+  { type: "achievements" }
 >;
-type Achievement = ScoresTable["achievements"][number];
+type Achievement = AchievementsTable["achievements"][number];
 
 function unlockedText(date: string): string {
   const unlocked = new Date(date).toLocaleDateString(undefined, {

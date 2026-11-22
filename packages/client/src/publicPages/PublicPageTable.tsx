@@ -1,7 +1,8 @@
 import type { publicPageTableSchema } from "@hanabi-live/data";
 import type * as z from "zod";
 import { GameList } from "../gameList/GameList.tsx";
-import { MissingScoresTable, ScoresTable } from "./ScoreTables.tsx";
+import { Achievements } from "./Achievements.tsx";
+import { MissingScoresTable } from "./MissingScoresTable.tsx";
 
 export function PublicPageTable({
   table,
@@ -9,8 +10,8 @@ export function PublicPageTable({
   readonly table: z.infer<typeof publicPageTableSchema>;
 }): React.JSX.Element {
   switch (table.type) {
-    case "scores": {
-      return <ScoresTable table={table} />;
+    case "achievements": {
+      return <Achievements achievements={table.achievements} />;
     }
 
     case "missingScores": {

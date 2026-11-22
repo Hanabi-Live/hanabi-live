@@ -858,7 +858,7 @@ use these numbers to make the best move for the current situation.
 
 | URL                                                | Description                                                                                              |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `/scores/[username]`                               | Lists the player's profile and best scores.                                                              |
+| `/scores/[username]`                               | Shows the player's profile and achievements.                                                             |
 | `/history/[username]`                              | Lists the player's past games.                                                                           |
 | `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)                 |
 | `/missing-scores/[username]`                       | Lists the player's remaining non-max scores.                                                             |

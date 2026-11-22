@@ -383,11 +383,8 @@ named_enum! {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum PublicPageTable {
-    /// A player's best scores, one row for each variant that they have played.
-    Scores {
-        variants: Vec<VariantScores>,
-        achievements: Vec<Achievement>,
-    },
+    /// A player's achievements, on their profile.
+    Achievements { achievements: Vec<Achievement> },
     /// The max scores that one or more players are missing.
     MissingScores {
         rows: Vec<MissingScore>,
