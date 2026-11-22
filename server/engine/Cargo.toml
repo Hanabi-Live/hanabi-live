@@ -1,5 +1,5 @@
 [package]
-name = "hanabi_engine"
+name = "hanabi-engine"
 version = "0.1.0"
 edition = "2024"
 publish = false
@@ -9,7 +9,7 @@ license = "GPL-3.0-only"
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
-hanabi_protocol = { path = "../protocol" }
+hanabi-protocol = { path = "../protocol" }
 
 [lints]
 workspace = true

@@ -82,8 +82,8 @@ hmac = "0.13"
 hex = "0.4"
 http-body-util = "0.1"
 hyper-util = { version = "0.1", features = ["tokio"] }
-hanabi_engine = { path = "engine" }
-hanabi_protocol = { path = "protocol" }
+hanabi-engine = { path = "engine" }
+hanabi-protocol = { path = "protocol" }
 minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"

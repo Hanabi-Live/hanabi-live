@@ -1,5 +1,5 @@
 [package]
-name = "hanabi_protocol"
+name = "hanabi-protocol"
 version = "0.1.0"
 edition = "2024"
 description = "The messages of hanab.live's protocol (WebSocket and HTTP), typed, with their JSON schemas"

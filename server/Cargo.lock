@@ -815,6 +815,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hanabi-engine"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "hanabi-protocol",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "hanabi-live"
 version = "0.1.0"
 dependencies = [
@@ -826,8 +836,8 @@ dependencies = [
  "deunicode",
  "dotenvy",
  "futures-util",
- "hanabi_engine",
- "hanabi_protocol",
+ "hanabi-engine",
+ "hanabi-protocol",
  "hex",
  "hmac",
  "http-body-util",
@@ -862,17 +872,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hanabi_engine"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "hanabi_protocol",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "hanabi_protocol"
+name = "hanabi-protocol"
 version = "0.1.0"
 dependencies = [
  "anyhow",

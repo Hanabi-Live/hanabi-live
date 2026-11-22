@@ -218,7 +218,7 @@ async function buildServer() {
       "--bin",
       "hanabi-live",
       "--package",
-      "hanabi_engine",
+      "hanabi-engine",
       "--example",
       "catalog",
       "--example",
