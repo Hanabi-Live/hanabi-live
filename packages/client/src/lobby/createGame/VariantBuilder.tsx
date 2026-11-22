@@ -1,27 +1,33 @@
-// The variant builder of Create Game: rows of parts that a player turns on and off, and the deck of
-// the variant that has them.
+// The variant builder of Create Game: rows of suits and rules that a player turns on and off, and
+// the deck of the variant that they make.
 
 import type { Suit, Variant } from "@hanabi-live/game";
-import {
-  doesVariantExist,
-  getVariant,
-  VALID_SUIT_INDEXES,
-} from "@hanabi-live/game";
+import { getVariant, MAX_SUITS, VALID_SUIT_INDEXES } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
-import type { Choice, PartGroup } from "./variantBuilder.ts";
+import type { Choice, FlagPart, SuitGroup } from "./variantBuilder.ts";
 import {
-  canAdd,
-  canHaveSuits,
-  getCatalog,
+  canAddSuit,
+  getCatalogName,
   getChoice,
-  getMatches,
-  toggle,
+  getDeckSuitIds,
+  getDeckVariant,
+  getParts,
+  getRecipe,
+  RULE_RANKS,
+  setNumSuits,
+  setSpecialRank,
+  toggleCriticalRank,
+  toggleFlag,
+  toggleReversed,
+  toggleScarceOnes,
+  toggleSpecialRule,
+  toggleSuit,
 } from "./variantBuilder.ts";
 
-/** The rows of parts, in the order that the builder shows them. */
-const GROUPS = [
+/** The rows of suits, in the order that the builder shows them. */
+const SUIT_GROUPS = [
   {
     group: "special",
     label: "Special suits",
@@ -31,59 +37,41 @@ const GROUPS = [
     label: "Dark suits",
   },
   {
-    group: "reversed",
-    label: "Reversed suits",
-  },
-  {
     group: "otherColors",
     label: "Other colors",
   },
-  {
-    group: "ranks",
-    label: "Ranks",
-  },
-  {
-    group: "clues",
-    label: "Clues",
-  },
-  {
-    group: "play",
-    label: "Play",
-  },
 ] as const satisfies ReadonlyArray<{
-  readonly group: PartGroup;
+  readonly group: SuitGroup;
   readonly label: string;
 }>;
 
-/**
- * The groups whose parts show only when they lead to a variant. They have dozens of parts that only
- * a few variants use.
- */
-const SPARSE_GROUPS: ReadonlySet<PartGroup> = new Set(["otherColors"]);
+const SUIT_COUNTS: readonly number[] = Array.from(
+  { length: MAX_SUITS },
+  (_, index) => index + 1,
+);
 
 export function VariantBuilder({
+  onNew,
   onPick,
   variantName,
 }: {
-  /** A variant has the chosen parts, and the form takes it. */
+  /** The chosen parts make a variant that the catalog does not have. */
+  readonly onNew: (recipe: string) => void;
+  /** The chosen parts make a variant of the catalog, and the form takes it. */
   readonly onPick: (variantName: string) => void;
   readonly variantName: string;
 }): React.JSX.Element {
-  const catalog = getCatalog();
+  const parts = getParts();
   const [choice, setChoice] = useState<Choice>(() =>
-    getChoice(catalog, variantName),
+    getChoice(getVariant(variantName).recipe),
   );
-  const matches = getMatches(catalog, choice);
+  const recipe = getRecipe(choice);
+  const catalogName = getCatalogName(recipe);
 
   // A variant that the player chose in the field above starts a new choice.
   useEffect(() => {
-    if (
-      doesVariantExist(variantName)
-      && getMatches(catalog, choice).every(
-        ({ variant }) => variant.name !== variantName,
-      )
-    ) {
-      setChoice(getChoice(catalog, variantName));
+    if (catalogName !== variantName) {
+      setChoice(getChoice(getVariant(variantName).recipe));
     }
     // Only a new variant from the field starts a new choice, not a new choice.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,107 +79,186 @@ export function VariantBuilder({
 
   function choose(next: Choice) {
     setChoice(next);
-    const [first] = getMatches(catalog, next);
-    if (first !== undefined) {
-      onPick(first.variant.name);
+    const nextRecipe = getRecipe(next);
+    const name = getCatalogName(nextRecipe);
+    if (name === undefined) {
+      onNew(nextRecipe);
+    } else {
+      onPick(name);
     }
   }
 
-  const shown = doesVariantExist(variantName)
-    ? getVariant(variantName)
-    : matches[0]?.variant;
+  const deckIds = getDeckSuitIds(choice);
+  const deck =
+    catalogName === undefined
+      ? getDeckVariant(choice, "New variant")
+      : getVariant(catalogName);
 
   return (
     <div className="tw:flex tw:w-full tw:flex-col tw:gap-[0.9em]">
       <div className="tw:flex tw:flex-wrap tw:items-end tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
-        {shown !== undefined && <Deck variant={shown} />}
+        <Deck variant={deck} />
         <p className="tw:m-0 tw:text-text-label">
-          {getMatchText(matches.length)}
+          {catalogName === undefined ? (
+            <>
+              The server checks the rules when it creates the game. Recipe:{" "}
+              <code>{recipe}</code>
+            </>
+          ) : (
+            "A variant that players already know."
+          )}
         </p>
       </div>
 
       <PartRow label="Suits">
-        {catalog.suitCounts.map((numSuits) => (
+        {SUIT_COUNTS.map((numSuits) => (
           <Chip
-            enabled={canHaveSuits(catalog, choice, numSuits)}
+            enabled={numSuits >= choice.suits.length}
             key={numSuits}
             label={numSuits.toString()}
             onClick={() => {
-              // A second click removes the count, which matches any count.
-              choose({
-                ...choice,
-                numSuits: choice.numSuits === numSuits ? undefined : numSuits,
-              });
+              choose(setNumSuits(choice, numSuits));
             }}
             pressed={choice.numSuits === numSuits}
           />
         ))}
       </PartRow>
 
-      {GROUPS.map(({ group, label }) => {
-        const parts = [...catalog.parts.values()]
-          .filter((part) => part.group === group)
-          .map((part) => ({
-            part,
-            pressed: choice.parts.has(part.code),
-            enabled:
-              choice.parts.has(part.code) || canAdd(catalog, choice, part.code),
-          }))
-          .filter(
-            ({ pressed, enabled }) =>
-              !SPARSE_GROUPS.has(group) || pressed || enabled,
-          );
-        if (parts.length === 0) {
-          return undefined;
-        }
-        return (
-          <PartRow key={group} label={label}>
-            {parts.map(({ part, pressed, enabled }) => (
+      {SUIT_GROUPS.map(({ group, label }) => (
+        <PartRow key={group} label={label}>
+          {parts.suits
+            .filter((part) => part.group === group)
+            .map(({ id, suit }) => (
               <Chip
-                enabled={enabled}
-                key={part.code}
-                label={part.label}
-                name={part.name}
+                enabled={choice.suits.includes(id) || canAddSuit(choice, id)}
+                key={id}
+                label={suit.name}
                 onClick={() => {
-                  choose(toggle(choice, part.code));
+                  choose(toggleSuit(choice, id));
                 }}
-                pressed={pressed}
-                suit={part.suit}
+                pressed={choice.suits.includes(id)}
+                suit={suit}
               />
             ))}
-          </PartRow>
-        );
-      })}
+        </PartRow>
+      ))}
 
-      {matches.length > 1 && (
-        <PartRow label="Variants">
-          {matches.map(({ variant }) => (
+      <PartRow label="Reversed suits">
+        {deckIds.map((id, index) => (
+          <Chip
+            enabled
+            // A deck has each suit once.
+            key={id}
+            label={deck.suits[index]?.displayName ?? id}
+            name={`${deck.suits[index]?.displayName ?? id} Reversed`}
+            onClick={() => {
+              choose(toggleReversed(choice, id));
+            }}
+            pressed={choice.reversed.has(id)}
+            suit={deck.suits[index]}
+          />
+        ))}
+      </PartRow>
+
+      <PartRow label="Special rank">
+        {parts.specialRanks.map(({ code, name }) => (
+          <Chip
+            enabled
+            key={code}
+            label={name}
+            // A suit of the same name can be in the rows above.
+            name={`${name} rank`}
+            onClick={() => {
+              choose(toggleSpecialRule(choice, code));
+            }}
+            pressed={choice.specialRank?.code === code}
+          />
+        ))}
+      </PartRow>
+
+      {choice.specialRank !== undefined && (
+        <PartRow label="Which rank">
+          {RULE_RANKS.map((rank) => (
             <Chip
               enabled
-              key={variant.name}
-              label={variant.name}
+              key={rank}
+              label={rank.toString()}
+              name={`Special rank ${rank}`}
               onClick={() => {
-                onPick(variant.name);
+                choose(setSpecialRank(choice, rank));
               }}
-              pressed={variant.name === variantName}
+              pressed={choice.specialRank?.rank === rank}
             />
           ))}
         </PartRow>
       )}
+
+      <PartRow label="Copies">
+        {RULE_RANKS.map((rank) => (
+          <Chip
+            enabled
+            key={rank}
+            label={`Critical ${rank}s`}
+            onClick={() => {
+              choose(toggleCriticalRank(choice, rank));
+            }}
+            pressed={choice.criticalRank === rank}
+          />
+        ))}
+        <Chip
+          enabled
+          label="Scarce 1s"
+          onClick={() => {
+            choose(toggleScarceOnes(choice));
+          }}
+          pressed={choice.scarceOnes}
+        />
+      </PartRow>
+
+      <FlagRow
+        choice={choice}
+        choose={choose}
+        flags={parts.clueFlags}
+        label="Clues"
+      />
+      <FlagRow
+        choice={choice}
+        choose={choose}
+        flags={parts.playFlags}
+        label="Play"
+      />
     </div>
   );
 }
 
-function getMatchText(numMatches: number): string {
-  if (numMatches === 0) {
-    return "No variant has all of these. Turn one off.";
-  }
-  return numMatches === 1
-    ? "This is the only variant with these."
-    : `${numMatches} variants have these.`;
+function FlagRow({
+  choice,
+  choose,
+  flags,
+  label,
+}: {
+  readonly choice: Choice;
+  readonly choose: (next: Choice) => void;
+  readonly flags: readonly FlagPart[];
+  readonly label: string;
+}) {
+  return (
+    <PartRow label={label}>
+      {flags.map(({ flag, name }) => (
+        <Chip
+          enabled
+          key={flag}
+          label={name}
+          onClick={() => {
+            choose(toggleFlag(choice, flag));
+          }}
+          pressed={choice.flags.has(flag)}
+        />
+      ))}
+    </PartRow>
+  );
 }
 
-/** One card face for each suit of the variant, in the colors of the suit. */
 /** The width of each card of the deck, in CSS pixels. */
 const DECK_CARD_WIDTH = 40;
 

@@ -281,6 +281,12 @@ export function CreateGame(): React.JSX.Element {
   // refusal keeps what the user entered.
   const [waiting, setWaiting] = useState(false);
   const [building, setBuilding] = useState(false);
+  // The recipe of a variant that the builder made and the catalog does not have. The server cannot
+  // create a table with it yet.
+  const [newRecipe, setNewRecipe] = useState<string | undefined>();
+  const newVariant = building && newRecipe !== undefined;
+  const blocked = unchanged || newVariant;
+  const blockedReason = getBlockedReason(unchanged, newVariant);
   const nameRef = useRef<HTMLInputElement>(null);
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
@@ -310,7 +316,7 @@ export function CreateGame(): React.JSX.Element {
   function submit() {
     if (
       waiting
-      || unchanged
+      || blocked
       || rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)
     ) {
       return;
@@ -445,7 +451,9 @@ export function CreateGame(): React.JSX.Element {
           {building && (
             <li className="lobby-row" id="create-game-variant-builder">
               <VariantBuilder
+                onNew={setNewRecipe}
                 onPick={(variantName) => {
+                  setNewRecipe(undefined);
                   change({ variantName }, true);
                 }}
                 variantName={form.variantName}
@@ -642,11 +650,11 @@ export function CreateGame(): React.JSX.Element {
           tooltip. */}
       <button
         aria-busy={waiting}
-        aria-disabled={unchanged || waiting}
-        className={`button fit primary tw:mt-6 ${getWaitingButtonClass(waiting)}${unchanged ? " disabled" : ""}`}
+        aria-disabled={blocked || waiting}
+        className={`button fit primary tw:mt-6 ${getWaitingButtonClass(waiting)}${blocked ? " disabled" : ""}`}
         id="create-game-submit"
         onClick={submit}
-        ref={tooltipRef(unchanged ? "Nothing has changed." : undefined)}
+        ref={tooltipRef(blockedReason)}
         type="submit"
       >
         <WaitingLabel waiting={waiting} waitingText={WAITING_LABELS[mode]}>
@@ -917,4 +925,18 @@ function CheckboxRow({
       </span>
     </li>
   );
+}
+
+/** Why the submit button does nothing, if it does nothing. */
+function getBlockedReason(
+  unchanged: boolean,
+  newVariant: boolean,
+): string | undefined {
+  if (unchanged) {
+    return "Nothing has changed.";
+  }
+  if (newVariant) {
+    return "The server cannot create new variants yet.";
+  }
+  return undefined;
 }
