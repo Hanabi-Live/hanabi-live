@@ -1,6 +1,7 @@
 use super::{
-    API_PREFIX, HashMap, HttpError, IntoResponse, Json, Params, Path, PublicState, Query, RawQuery,
-    Response, Result, State, Value, catalog, data, encoded, integer, json, replay, strict_query,
+    AGGREGATE_STATEMENT_TIMEOUT, API_PREFIX, HashMap, HttpError, IntoResponse, Json, Params, Path,
+    PublicState, Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer,
+    json, replay, scan, strict_query,
 };
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
@@ -350,21 +351,6 @@ const SEED_AVERAGES_LIFETIME: std::time::Duration = if cfg!(test) {
 } else {
     std::time::Duration::from_mins(5)
 };
-/// How long a statistics scan may run, longer than the lobby pool's usual limit.
-const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
-
-/// A transaction for a statistics scan, which may run for up to `AGGREGATE_STATEMENT_TIMEOUT`.
-async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Postgres>> {
-    let mut transaction = state.pool.begin().await?;
-    sqlx::query_scalar!(
-        "SELECT set_config('statement_timeout',$1,true)",
-        AGGREGATE_STATEMENT_TIMEOUT.as_millis().to_string()
-    )
-    .fetch_one(&mut *transaction)
-    .await?;
-    Ok(transaction)
-}
-
 /// A player's game counts, time played, and the date they joined. The date is also returned as a
 /// time, so that the profile can show it in words.
 async fn player_statistics(

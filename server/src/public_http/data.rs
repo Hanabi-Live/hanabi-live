@@ -1,7 +1,10 @@
 use super::{
-    HttpError, PAGE_PARAMETERS, Page, Params, PublicState, Query, Result, integer, pagination,
+    AGGREGATE_STATEMENT_TIMEOUT, HttpError, PAGE_PARAMETERS, Page, Params, PublicState, Query,
+    Result, integer, pagination, scan,
 };
 use crate::archive::GameRecord;
+use crate::errors::StatementLimit;
+use anyhow::Context as _;
 use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
 
@@ -382,10 +385,24 @@ async fn history(
         .push_bind(page.limit)
         .push(" OFFSET ")
         .push_bind(page.offset);
-    Ok(qb
-        .build_query_as::<HistoryRow>()
-        .fetch_all(&state.pool)
-        .await?
+    // A page of the HTTP API can be much larger than a page of the website. Its games are scattered
+    // across the database table, so reading their players from disk can take longer than the
+    // pool's limit.
+    let rows = if page.limit > hanabi_protocol::MAX_PAGE_LIMIT {
+        let mut transaction = scan(state).await?;
+        let rows = qb
+            .build_query_as::<HistoryRow>()
+            .fetch_all(&mut *transaction)
+            .await
+            .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
+        transaction.commit().await?;
+        rows
+    } else {
+        qb.build_query_as::<HistoryRow>()
+            .fetch_all(&state.pool)
+            .await?
+    };
+    Ok(rows
         .into_iter()
         .map(|row| row.game.summary(row.names, row.tags, row.seed_count))
         .collect::<anyhow::Result<Vec<_>>>()?)

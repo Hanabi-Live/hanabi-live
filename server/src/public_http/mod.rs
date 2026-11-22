@@ -59,6 +59,22 @@ pub(super) use hanabi_protocol::DEFAULT_PAGE_LIMIT;
 /// limits the pages that people read, so that a script can fetch a long history in a few requests.
 const MAX_API_PAGE_LIMIT: i64 = 10_000;
 
+/// How long a statistics scan or a page of more than `MAX_PAGE_LIMIT` games may run, longer than
+/// the lobby pool's usual limit.
+const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
+
+/// A transaction whose statements may run for up to `AGGREGATE_STATEMENT_TIMEOUT`.
+async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Postgres>> {
+    let mut transaction = state.pool.begin().await?;
+    sqlx::query_scalar!(
+        "SELECT set_config('statement_timeout',$1,true)",
+        AGGREGATE_STATEMENT_TIMEOUT.as_millis().to_string()
+    )
+    .fetch_one(&mut *transaction)
+    .await?;
+    Ok(transaction)
+}
+
 /// The query parameters that page a list.
 const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];
 
