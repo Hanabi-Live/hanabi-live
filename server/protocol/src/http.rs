@@ -242,6 +242,30 @@ pub struct PlayerScores {
     pub max_scores: MaxScoreSummary,
     /// The variants that the player has played, in the catalog's order.
     pub variants: Vec<VariantScores>,
+    pub achievements: Vec<Achievement>,
+}
+
+named_enum! {
+    /// An achievement that a player can unlock.
+    pub enum AchievementId {
+        NoVariantWins => "noVariantWins",
+    }
+}
+
+/// A player's progress toward an achievement.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Achievement {
+    pub id: AchievementId,
+    pub name: String,
+    pub description: String,
+    /// How far the player has come, up to `goal`.
+    pub progress: Count,
+    /// The progress that unlocks the achievement.
+    pub goal: Count,
+    /// When the player unlocked the achievement. Absent until they unlock it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub date_unlocked: Option<Timestamp>,
 }
 
 /// How hard a seed is compared to the other seeds of its variant and player count.
@@ -346,7 +370,10 @@ named_enum! {
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum PublicPageTable {
     /// A player's best scores, one row for each variant that they have played.
-    Scores { variants: Vec<VariantScores> },
+    Scores {
+        variants: Vec<VariantScores>,
+        achievements: Vec<Achievement>,
+    },
     /// The max scores that one or more players are missing.
     MissingScores {
         rows: Vec<MissingScore>,

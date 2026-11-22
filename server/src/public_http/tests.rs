@@ -890,3 +890,66 @@ async fn seed_page_ranks_the_seed_among_seeds_with_its_prefix() {
     assert_eq!(statistics["difficulty"]["percentile"], 50.0);
     assert_eq!(statistics["difficulty"]["numSeeds"], 3);
 }
+
+#[tokio::test]
+async fn profile_counts_no_variant_wins_toward_the_achievement() {
+    let Some(db) = crate::accounts::test_support::TestDb::create().await else {
+        return;
+    };
+    // Games 1 to 9 are wins. Game 10 uses an option that makes it easier, game 11 is in another
+    // variant, and game 12 does not reach the max score.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(
+        "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+          VALUES(1,'Alice','alice','test','127.0.0.1');
+        INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+          deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+          seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+        SELECT id,'test',2,CASE WHEN id=11 THEN 1 ELSE 0 END,false,NULL,NULL,false,false,false,
+          id=10,false,false,false,'s'||id,CASE WHEN id=12 THEN 20 ELSE 25 END,10,1,
+          '2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
+          '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
+        FROM generate_series(1,12) id;
+        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,12) id;",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let app = router(db.pool.clone(), &config());
+    let (status, body) = request(app.clone(), "/profile/Alice").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let achievement = &page_table(&body)["achievements"][0];
+    assert_eq!(achievement["id"], "noVariantWins");
+    assert_eq!(achievement["progress"], 9);
+    assert_eq!(achievement["goal"], achievements::NO_VARIANT_WINS_GOAL);
+    assert!(achievement.get("dateUnlocked").is_none());
+    // The tenth win unlocks it, and later wins do not move the date.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(
+        "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+          deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+          seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+        SELECT id,'test',2,0,false,NULL,NULL,false,false,false,false,false,false,false,'s'||id,25,10,
+          1,'2026-02-01T00:00:00Z'::timestamptz+make_interval(days=>id),
+          '2026-02-01T01:00:00Z'::timestamptz+make_interval(days=>id)
+        FROM generate_series(13,14) id;
+        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(13,14) id;",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (status, body) = request(app, "/api/v1/scores/Alice").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let scores = serde_json::from_str::<Value>(&body).unwrap();
+    hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
+    let achievement = &scores["achievements"][0];
+    assert_eq!(achievement["progress"], 10);
+    assert_eq!(achievement["dateUnlocked"], "2026-02-14T01:00:00.000Z");
+    db.close().await;
+}

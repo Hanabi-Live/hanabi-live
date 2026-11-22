@@ -1,5 +1,6 @@
 //! Native, read-only public HTTP surface. The engine is injected so historical exports use
 //! the same rules as live games rather than a second implementation.
+mod achievements;
 mod catalog;
 mod data;
 mod pages;

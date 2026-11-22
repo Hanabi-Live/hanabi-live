@@ -164,6 +164,10 @@ that have not been played yet and have only one copy remaining.)
 - Profiles show the time spent playing, the time spent reviewing replays, and
   the total of both. Review time does not count the time before an idle replay
   closes.
+- Profiles show the player's achievements, with their progress toward each one
+  and the date that they unlocked it. The "No Variant Winner" achievement asks
+  for 10 games of No Variant with the max score, without an option that makes
+  the game easier.
 
 ### Replays
 

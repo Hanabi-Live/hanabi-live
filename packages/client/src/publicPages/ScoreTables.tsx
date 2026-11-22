@@ -6,6 +6,7 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import type * as z from "zod";
 import { tooltipRefHtml } from "../tooltipRef.ts";
+import { Achievements } from "./Achievements.tsx";
 import type { LocalColumn } from "./LocalTable.tsx";
 import { LocalTable } from "./LocalTable.tsx";
 import { MissingScoresFilters } from "./MissingScoresFilters.tsx";
@@ -108,18 +109,21 @@ export function ScoresTable({
   ];
 
   return (
-    <LocalTable
-      columns={columns}
-      emptyText="This player has no scores yet."
-      initialSort={{
-        column: 0,
-        descending: false,
-      }}
-      noun={["variant", "variants"]}
-      rowKey={(row) => row.variantName}
-      rows={table.variants}
-      scrollLabel="Scores"
-    />
+    <>
+      <Achievements achievements={table.achievements} />
+      <LocalTable
+        columns={columns}
+        emptyText="This player has no scores yet."
+        initialSort={{
+          column: 0,
+          descending: false,
+        }}
+        noun={["variant", "variants"]}
+        rowKey={(row) => row.variantName}
+        rows={table.variants}
+        scrollLabel="Scores"
+      />
+    </>
   );
 }
 

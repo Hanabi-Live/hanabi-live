@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT g.datetime_finished FROM game_participants p JOIN games g ON g.id=p.game_id\n         WHERE p.user_id=$1 AND g.variant_id=$2 AND g.score=$3 AND g.end_condition=$4\n         AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card\n           OR g.all_or_nothing)\n         ORDER BY g.datetime_finished, g.id LIMIT $5",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "datetime_finished",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "datetime_finished"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2",
+        "Int2",
+        "Int2",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "2c8c6684cd4b19ff6ff713349cbc7a79655b1734ff96fda8ef359e19441459a8"
+}

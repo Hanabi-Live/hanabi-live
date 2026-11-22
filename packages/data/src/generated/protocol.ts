@@ -1060,6 +1060,34 @@ export const playerActionRequestSchema = z
   .readonly();
 
 /**
+ * An achievement that a player can unlock.
+ */
+const achievementIdSchema = z.literal("noVariantWins");
+
+/**
+ * A player's progress toward an achievement.
+ */
+const achievementSchema = z
+  .strictObject({
+    /**
+     * When the player unlocked the achievement. Absent until they unlock it.
+     */
+    dateUnlocked: z.iso.datetime({ precision: 3 }).optional(),
+    description: z.string(),
+    /**
+     * The progress that unlocks the achievement.
+     */
+    goal: countSchema,
+    id: achievementIdSchema,
+    name: z.string(),
+    /**
+     * How far the player has come, up to `goal`.
+     */
+    progress: countSchema,
+  })
+  .readonly();
+
+/**
  * A player's game counts and time on their profile.
  */
 export const playerStatisticsSchema = z
@@ -1133,6 +1161,7 @@ const variantScoresSchema = z
  */
 export const playerScoresSchema = z
   .strictObject({
+    achievements: z.array(achievementSchema).readonly(),
     maxScores: maxScoreSummarySchema,
     name: z.string().min(1),
     statistics: playerStatisticsSchema,
@@ -1370,6 +1399,7 @@ export const seedStatisticsSchema = z
 export const publicPageTableSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
+      achievements: z.array(achievementSchema).readonly(),
       type: z.literal("scores"),
       variants: z.array(variantScoresSchema).readonly(),
     })

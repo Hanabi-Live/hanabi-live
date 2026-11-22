@@ -1,7 +1,7 @@
 use super::{
     AGGREGATE_STATEMENT_TIMEOUT, API_PREFIX, HashMap, HttpError, IntoResponse, Json, Params, Path,
-    PublicState, Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer,
-    json, replay, scan, strict_query,
+    PublicState, Query, RawQuery, Response, Result, State, Value, achievements, catalog, data,
+    encoded, integer, json, replay, scan, strict_query,
 };
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
@@ -176,7 +176,14 @@ pub(super) async fn page(
                     let (statistics, joined) = player_statistics(&state, users[0].0).await?;
                     v["stats"] = statistics_value(&statistics, joined);
                     let (_, variants) = score_summary(&state, users[0].0).await?;
-                    set_table(&mut v, &PublicPageTable::Scores { variants })?;
+                    let achievements = achievements::achievements(&state, users[0].0).await?;
+                    set_table(
+                        &mut v,
+                        &PublicPageTable::Scores {
+                            variants,
+                            achievements,
+                        },
+                    )?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -433,6 +440,7 @@ pub(super) async fn player_scores(
         statistics,
         max_scores,
         variants,
+        achievements: achievements::achievements(state, user).await?,
     })
 }
 

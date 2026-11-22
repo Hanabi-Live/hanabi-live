@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 22nd, 2026
+
+- Profiles now show achievements. The first one, "No Variant Winner", is for
+  getting the max score in 10 games of No Variant.
+
 ## November 21st, 2026
 
 - In a chat box with text in it, the up arrow and down arrow first move to the
