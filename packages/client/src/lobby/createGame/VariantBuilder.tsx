@@ -6,7 +6,8 @@ import { getVariant, MAX_SUITS, VALID_SUIT_INDEXES } from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
-import { tooltipRef } from "../../tooltipRef.ts";
+import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
+import { escapeHtml } from "../../utils.ts";
 import type {
   Choice,
   FlagPart,
@@ -311,7 +312,9 @@ function Deck({
                   onReverse(id);
                 }
               }}
-              ref={tooltipRef(getReverseTooltip(reverseBlocker, isReversed))}
+              ref={tooltipRefHtml(
+                `<strong>${escapeHtml(isReversed ? `${name} Reversed` : name)}</strong><br>${escapeHtml(getReverseTooltip(reverseBlocker, isReversed))}`,
+              )}
               type="button"
             >
               <CardFace
