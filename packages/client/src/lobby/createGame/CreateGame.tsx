@@ -12,6 +12,7 @@ import {
   MAX_PLAYERS,
   MIN_PLAYERS,
   doesVariantExist,
+  getVariant,
   getVariantById,
   isValidNumPlayers,
 } from "@hanabi-live/game";
@@ -62,7 +63,8 @@ import {
 import * as lobbyPage from "../lobbyPage.ts";
 import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
-import { CURATED_VARIANT_NAMES } from "./curatedVariants.ts";
+import { CURATED_VARIANT_RECIPES } from "./curatedVariants.ts";
+import { getCatalogName, getRecipeName } from "./variantBuilder.ts";
 import { VariantBuilder } from "./VariantBuilder.tsx";
 
 /**
@@ -79,6 +81,9 @@ const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 
 /** The choice of the dropdown that opens the menu of curated variants. */
 const CURATED_VARIANTS = "Other curated variants";
+
+/** The value of the dropdown's choice that shows a new variant, which has no catalog name. */
+const NEW_VARIANT = "new-variant";
 
 export const DOCS_URL =
   "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs";
@@ -284,7 +289,7 @@ export function CreateGame(): React.JSX.Element {
   // The recipe of a variant that the builder made and the catalog does not have. The server cannot
   // create a table with it yet.
   const [newRecipe, setNewRecipe] = useState<string | undefined>();
-  const newVariant = building && newRecipe !== undefined;
+  const newVariant = newRecipe !== undefined;
   const blocked = unchanged || newVariant;
   const blockedReason = getBlockedReason(unchanged, newVariant);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -436,11 +441,22 @@ export function CreateGame(): React.JSX.Element {
             </div>
             <VariantPicker
               building={building}
+              newRecipe={newRecipe}
               onBuild={() => {
                 setBuilding(!building);
               }}
               onChange={(variantName) => {
+                setNewRecipe(undefined);
                 change({ variantName }, true);
+              }}
+              onPickRecipe={(recipe) => {
+                const name = getCatalogName(recipe);
+                if (name === undefined) {
+                  setNewRecipe(recipe);
+                } else {
+                  setNewRecipe(undefined);
+                  change({ variantName: name }, true);
+                }
               }}
               variantName={form.variantName}
             />
@@ -448,6 +464,7 @@ export function CreateGame(): React.JSX.Element {
           {building && (
             <li className="lobby-row" id="create-game-variant-builder">
               <VariantBuilder
+                newRecipe={newRecipe}
                 onNew={setNewRecipe}
                 onPick={(variantName) => {
                   setNewRecipe(undefined);
@@ -668,15 +685,21 @@ export function CreateGame(): React.JSX.Element {
  */
 function VariantPicker({
   building,
+  newRecipe,
   onBuild,
   onChange,
+  onPickRecipe,
   variantName,
 }: {
   /** Whether the variant builder is open. */
   readonly building: boolean;
+  /** The recipe of a new variant that the form shows, which the catalog does not have. */
+  readonly newRecipe: string | undefined;
   readonly onBuild: () => void;
-  /** A variant was chosen, which the form remembers. */
+  /** A variant of the catalog was chosen, which the form remembers. */
   readonly onChange: (variantName: string) => void;
+  /** A curated variant was chosen, which can be a new variant. */
+  readonly onPickRecipe: (recipe: string) => void;
   readonly variantName: string;
 }) {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -707,6 +730,11 @@ function VariantPicker({
 
   const other =
     !BASIC_VARIANT_NAMES_SET.has(variantName) && doesVariantExist(variantName);
+  const currentRecipe =
+    newRecipe
+    ?? (doesVariantExist(variantName)
+      ? getVariant(variantName).recipe
+      : undefined);
 
   return (
     <div className={`tw:flex tw:items-center tw:gap-[0.9em] ${FIELD_WIDTH}`}>
@@ -715,6 +743,9 @@ function VariantPicker({
           className="tw:w-full"
           id="create-game-variant-dropdown1"
           onChange={(event) => {
+            if (event.target.value === NEW_VARIANT) {
+              return;
+            }
             if (event.target.value === CURATED_VARIANTS) {
               // The dropdown keeps showing the variant, since its value does not change.
               menuRef.current?.openUntilClickElsewhere();
@@ -724,13 +755,14 @@ function VariantPicker({
             }
           }}
           ref={selectRef}
-          value={
-            other || BASIC_VARIANT_NAMES_SET.has(variantName)
-              ? variantName
-              : DEFAULT_VARIANT_NAME
-          }
+          value={getDropdownValue(newRecipe, variantName, other)}
         >
-          {other && <option value={variantName}>{variantName}</option>}
+          {newRecipe !== undefined && (
+            <option value={NEW_VARIANT}>{getRecipeName(newRecipe)}</option>
+          )}
+          {newRecipe === undefined && other && (
+            <option value={variantName}>{variantName}</option>
+          )}
           {BASIC_VARIANT_NAMES.map((name) => (
             <option key={name} value={name}>
               {name}
@@ -745,9 +777,11 @@ function VariantPicker({
         className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
         onClick={() => {
           // A different variant each time, so that a click always changes it.
-          onChange(
+          onPickRecipe(
             getRandomArrayElement(
-              CURATED_VARIANT_NAMES.filter((name) => name !== variantName),
+              CURATED_VARIANT_RECIPES.filter(
+                (recipe) => recipe !== currentRecipe,
+              ),
             ),
           );
         }}
@@ -769,12 +803,12 @@ function VariantPicker({
       </button>
       {createPortal(
         <CuratedVariantMenu
+          currentRecipe={currentRecipe}
           onClose={closeMenu}
-          onPick={(name) => {
+          onPick={(recipe) => {
             closeMenu();
-            onChange(name);
+            onPickRecipe(recipe);
           }}
-          variantName={variantName}
         />,
         menu,
       )}
@@ -784,13 +818,13 @@ function VariantPicker({
 
 /** The menu of curated variants, which opens from the dropdown in the site's tooltip. */
 function CuratedVariantMenu({
+  currentRecipe,
   onClose,
   onPick,
-  variantName,
 }: {
+  readonly currentRecipe: string | undefined;
   readonly onClose: () => void;
-  readonly onPick: (variantName: string) => void;
-  readonly variantName: string;
+  readonly onPick: (recipe: string) => void;
 }) {
   return (
     // Escape closes the menu, and the focus goes back to the dropdown.
@@ -807,21 +841,21 @@ function CuratedVariantMenu({
         onClose();
       }}
     >
-      {CURATED_VARIANT_NAMES.map((name) => (
-        <li key={name}>
+      {CURATED_VARIANT_RECIPES.map((recipe) => (
+        <li key={recipe}>
           <button
-            aria-current={name === variantName ? "true" : undefined}
+            aria-current={recipe === currentRecipe ? "true" : undefined}
             className="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.6em] tw:rounded-[3px] tw:border-none tw:bg-transparent tw:px-[0.6em] tw:py-[0.3em] tw:text-left tw:whitespace-nowrap tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:text-(--text) tw:hover:bg-(--row-hover-bg) tw:hover:text-(--menu-hover-text)"
             onClick={() => {
-              onPick(name);
+              onPick(recipe);
             }}
             type="button"
           >
             <i
               aria-hidden
-              className={`fas fa-check tw:w-4 tw:text-center ${name === variantName ? "" : "tw:invisible"}`}
+              className={`fas fa-check tw:w-4 tw:text-center ${recipe === currentRecipe ? "" : "tw:invisible"}`}
             />
-            {name}
+            {getRecipeName(recipe)}
           </button>
         </li>
       ))}
@@ -923,6 +957,20 @@ function CheckboxRow({
       </span>
     </li>
   );
+}
+
+/** The choice that the variant dropdown shows. */
+function getDropdownValue(
+  newRecipe: string | undefined,
+  variantName: string,
+  other: boolean,
+): string {
+  if (newRecipe !== undefined) {
+    return NEW_VARIANT;
+  }
+  return other || BASIC_VARIANT_NAMES_SET.has(variantName)
+    ? variantName
+    : DEFAULT_VARIANT_NAME;
 }
 
 /** Why the submit button does nothing, if it does nothing. */

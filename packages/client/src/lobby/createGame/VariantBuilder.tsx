@@ -79,10 +79,13 @@ const SUIT_GROUPS = [
 }>;
 
 export function VariantBuilder({
+  newRecipe,
   onNew,
   onPick,
   variantName,
 }: {
+  /** The recipe of a new variant that the form shows, such as one from the curated menu. */
+  readonly newRecipe: string | undefined;
   /** The chosen parts make a variant that the catalog does not have. */
   readonly onNew: (recipe: string) => void;
   /** The chosen parts make a variant of the catalog, and the form takes it. */
@@ -93,13 +96,23 @@ export function VariantBuilder({
   // The field above holds a partial name while the player types a search, such as "n".
   const [choice, setChoice] = useState<Choice>(() =>
     getChoice(
-      getVariant(
-        doesVariantExist(variantName) ? variantName : DEFAULT_VARIANT_NAME,
-      ).recipe,
+      newRecipe
+        ?? getVariant(
+          doesVariantExist(variantName) ? variantName : DEFAULT_VARIANT_NAME,
+        ).recipe,
     ),
   );
   const recipe = getRecipe(choice);
   const catalogName = getCatalogName(recipe);
+
+  // A new variant that the player chose outside of the builder starts a new choice.
+  useEffect(() => {
+    if (newRecipe !== undefined && newRecipe !== recipe) {
+      setChoice(getChoice(newRecipe));
+    }
+    // Only a new recipe from outside the builder changes it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newRecipe]);
 
   // A variant that the player chose in the field above starts a new choice.
   useEffect(() => {

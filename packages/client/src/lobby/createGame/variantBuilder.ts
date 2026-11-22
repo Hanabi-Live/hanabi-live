@@ -894,6 +894,14 @@ function without<T>(set: ReadonlySet<T>, item: T): ReadonlySet<T> {
 
 let catalogByRecipe: ReadonlyMap<string, string> | undefined;
 
+/**
+ * The name of a recipe's variant: its catalog name, or the name that the server gives a new
+ * variant.
+ */
+export function getRecipeName(recipe: string): string {
+  return getCatalogName(recipe) ?? getVariantName(getChoice(recipe));
+}
+
 /** The name of the catalog's variant with this recipe, if it has one. */
 export function getCatalogName(recipe: string): string | undefined {
   catalogByRecipe ??= new ReadonlyMap(

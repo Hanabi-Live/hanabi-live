@@ -223,6 +223,31 @@ describe("CreateGame", () => {
     );
   });
 
+  test("a curated variant that the catalog does not have shows its new name", () => {
+    showPage();
+    const dropdown = document.querySelector<HTMLSelectElement>(
+      "#create-game-variant-dropdown1",
+    )!;
+    fireEvent.change(dropdown, {
+      target: {
+        value: "Other curated variants",
+      },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Critical Twos (5 Suits)" }),
+    );
+
+    expect(dropdown.selectedOptions[0]?.textContent).toBe(
+      "Critical Twos (5 Suits)",
+    );
+    // Until the server can create a new variant, the form cannot create its table.
+    expect(
+      document
+        .querySelector("#create-game-submit")
+        ?.getAttribute("aria-disabled"),
+    ).toBe("true");
+  });
+
   test("a deck card's menu reverses its suit, and Escape closes it", () => {
     showPage();
     fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));

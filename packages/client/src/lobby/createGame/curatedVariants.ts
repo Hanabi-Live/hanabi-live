@@ -1,63 +1,67 @@
 /**
  * The variants that the Create Game menu "Other curated variants" offers, which players know to be
- * fun. The variant builder makes every other variant.
+ * fun. Each is a recipe, which is a variant's identity, with its name in a comment. A recipe that
+ * the catalog does not have, such as Critical Twos, is a new variant, which the server creates. The
+ * variant builder makes every other variant.
  */
-export const CURATED_VARIANT_NAMES = [
-  "No Variant",
-  "Black (5 Suits)",
-  "Rainbow (5 Suits)",
-  "Pink (5 Suits)",
-  "White (5 Suits)",
-  "Brown (5 Suits)",
-  "Omni (5 Suits)",
-  "Null (5 Suits)",
-  "Muddy Rainbow (5 Suits)",
-  "Light Pink (5 Suits)",
-  "Prism (5 Suits)",
-  "Orange (5 Suits)",
-  "Dark Rainbow (5 Suits)",
-  "Dark Pink (5 Suits)",
-  "Gray (5 Suits)",
-  "Dark Brown (5 Suits)",
-  "Dark Omni (5 Suits)",
-  "Dark Null (5 Suits)",
-  "Cocoa Rainbow (5 Suits)",
-  "Gray Pink (5 Suits)",
-  "Dark Prism (5 Suits)",
-  "Dark Orange (5 Suits)",
-  "Rainbow-Ones (5 Suits)",
-  "Pink-Ones (5 Suits)",
-  "White-Ones (5 Suits)",
-  "Brown-Ones (5 Suits)",
-  "Omni-Ones (5 Suits)",
-  "Null-Ones (5 Suits)",
-  "Muddy-Rainbow-Ones (5 Suits)",
-  "Light-Pink-Ones (5 Suits)",
-  "Rainbow-Fives (5 Suits)",
-  "Pink-Fives (5 Suits)",
-  "White-Fives (5 Suits)",
-  "Brown-Fives (5 Suits)",
-  "Omni-Fives (5 Suits)",
-  "Null-Fives (5 Suits)",
-  "Muddy-Rainbow-Fives (5 Suits)",
-  "Light-Pink-Fives (5 Suits)",
-  "Ambiguous (6 Suits)",
-  "Very Ambiguous (6 Suits)",
-  "Extremely Ambiguous (6 Suits)",
-  "Matryoshka (6 Suits)",
-  "Dual-Color (5 Suits)",
-  "Dual-Color (6 Suits)",
-  "Critical Fours (5 Suits)",
-  "Scarce Ones (5 Suits)",
-  "Clue Starved (5 Suits)",
-  "Color Blind (5 Suits)",
-  "Number Blind (5 Suits)",
-  "Totally Blind (5 Suits)",
-  "Cow and Pig (5 Suits)",
-  "Duck (5 Suits)",
-  "Odds and Evens (5 Suits)",
-  "Reversed (5 Suits)",
-  "Up or Down (5 Suits)",
-  "Throw It in a Hole (5 Suits)",
-  "Sudoku (5 Suits)",
+export const CURATED_VARIANT_RECIPES = [
+  "r-y-g-b-p", // No Variant
+  "r-y-g-b-bk", // Black (5 Suits)
+  "r-y-g-b-ra", // Rainbow (5 Suits)
+  "r-y-g-b-pi", // Pink (5 Suits)
+  "r-y-g-b-wh", // White (5 Suits)
+  "r-y-g-b-br", // Brown (5 Suits)
+  "r-y-g-b-om", // Omni (5 Suits)
+  "r-y-g-b-nu", // Null (5 Suits)
+  "r-y-g-b-brra", // Muddy Rainbow (5 Suits)
+  "r-y-g-b-whpi", // Light Pink (5 Suits)
+  "r-y-g-b-pr", // Prism (5 Suits)
+  "r-y-g-b-or", // Orange (5 Suits)
+  "r-y-g-b-ra.dark", // Dark Rainbow (5 Suits)
+  "r-y-g-b-pi.dark", // Dark Pink (5 Suits)
+  "r-y-g-b-wh.dark", // Gray (5 Suits)
+  "r-y-g-b-br.dark", // Dark Brown (5 Suits)
+  "r-y-g-b-om.dark", // Dark Omni (5 Suits)
+  "r-y-g-b-nu.dark", // Dark Null (5 Suits)
+  "r-y-g-b-brra.dark", // Cocoa Rainbow (5 Suits)
+  "r-y-g-b-whpi.dark", // Gray Pink (5 Suits)
+  "r-y-g-b-pr.dark", // Dark Prism (5 Suits)
+  "r-y-g-b-or.dark", // Dark Orange (5 Suits)
+  "r-y-g-b-p_1ra", // Rainbow-Ones (5 Suits)
+  "r-y-g-b-p_1pi", // Pink-Ones (5 Suits)
+  "r-y-g-b-p_1wh", // White-Ones (5 Suits)
+  "r-y-g-b-p_1br", // Brown-Ones (5 Suits)
+  "r-y-g-b-p_1om", // Omni-Ones (5 Suits)
+  "r-y-g-b-p_1nu", // Null-Ones (5 Suits)
+  "r-y-g-b-p_1brra", // Muddy-Rainbow-Ones (5 Suits)
+  "r-y-g-b-p_1whpi", // Light-Pink-Ones (5 Suits)
+  "r-y-g-b-p_5ra", // Rainbow-Fives (5 Suits)
+  "r-y-g-b-p_5pi", // Pink-Fives (5 Suits)
+  "r-y-g-b-p_5wh", // White-Fives (5 Suits)
+  "r-y-g-b-p_5br", // Brown-Fives (5 Suits)
+  "r-y-g-b-p_5om", // Omni-Fives (5 Suits)
+  "r-y-g-b-p_5nu", // Null-Fives (5 Suits)
+  "r-y-g-b-p_5brra", // Muddy-Rainbow-Fives (5 Suits)
+  "r-y-g-b-p_5whpi", // Light-Pink-Fives (5 Suits)
+  "tomato-mahogany-emerald-olive-berry-navy", // Ambiguous (6 Suits)
+  "tomato-mahogany-carrot-berry-navy-sky", // Very Ambiguous (6 Suits)
+  "iceea-aquaea-skyea-berryea-navyea-oceanea", // Extremely Ambiguous (6 Suits)
+  "ruby-yam-geas-beatnik-plum-taupe", // Matryoshka (6 Suits)
+  "tangerine-lime-cyan-indigo-cardinal", // Dual-Color (5 Suits)
+  "tangerine-violet-maroon-jade-tan-cobalt", // Dual-Color (6 Suits)
+  "r-y-g-b-p_2crit", // Critical Twos (5 Suits)
+  "r-y-g-b-p_3crit", // Critical Threes (5 Suits)
+  "r-y-g-b-p_4crit", // Critical Fours (5 Suits)
+  "r-y-g-b-p_1scarce", // Scarce Ones (5 Suits)
+  "r-y-g-b-p_starved", // Clue Starved (5 Suits)
+  "r-y-g-b-p_cb", // Color Blind (5 Suits)
+  "r-y-g-b-p_nb", // Number Blind (5 Suits)
+  "r-y-g-b-p_cb_nb", // Totally Blind (5 Suits)
+  "r-y-g-b-p_cowpig", // Cow and Pig (5 Suits)
+  "r-y-g-b-p_duck", // Duck (5 Suits)
+  "r-y-g-b-p_oe", // Odds and Evens (5 Suits)
+  "r-y-g-b-p.rev", // Reversed (5 Suits)
+  "r-y-g-b-p_updown", // Up or Down (5 Suits)
+  "r-y-g-b-p_hole", // Throw It in a Hole (5 Suits)
+  "r-y-g-b-p_sudoku", // Sudoku (5 Suits)
 ] as const;
