@@ -63,9 +63,11 @@ export function SuggestBox({
           setActive(-1);
           onType(event.target.value);
         }}
-        onFocus={(event) => {
+        // The list does not open when the box gets the focus, because a page can put the focus
+        // there, such as the New Game dialog, and the list would cover the fields under it.
+        onClick={(event) => {
           setOpen(true);
-          props.onFocus?.(event);
+          props.onClick?.(event);
         }}
         onKeyDown={(event) => {
           switch (event.key) {

@@ -205,6 +205,28 @@ describe("CreateGame", () => {
     ).toBe(getVariant("6 Suits").id);
   });
 
+  test("the variant search opens its list on a click, not when the page opens", () => {
+    store.dispatch(
+      settingsChanged({
+        ...defaultSettings,
+        createTable: {
+          ...defaultSettings.createTable,
+          options: {
+            ...defaultSettings.createTable.options,
+            variantId: getVariant("Rainbow (5 Suits)").id,
+          },
+        },
+      }),
+    );
+    showPage();
+    const search = getInput("create-game-variant-dropdown2");
+    expect(document.activeElement).toBe(search);
+    expect(search.ariaExpanded).toBe("false");
+
+    click("create-game-variant-dropdown2");
+    expect(search.ariaExpanded).toBe("true");
+  });
+
   test("a guest suggests the options of the table to its owner", () => {
     store.dispatch(screenChanged(Screen.PreGame));
     globals.tableId = TABLE_ID;
