@@ -341,7 +341,7 @@ function getSharedColorText(suit: Suit): string | undefined {
       twins.length === 0
         ? ""
         : ` ${joinNames(twins)} ${twins.length === 1 ? "takes" : "take"} the same clues. With two of these suits in a game, no color clue tells their cards apart.`;
-    return `${joinNames(colors)} clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can.${twinText} ${ranks}`;
+    return `${joinNames(colors)} clues all touch its cards, and each of them touches other suits too. One color clue does not tell which suit a card is, but two can.${twinText}${ranks}`;
   }
   const others = [...getSuitsById().values()]
     .filter(
@@ -354,12 +354,12 @@ function getSharedColorText(suit: Suit): string | undefined {
     .slice(0, MAX_NAMED_SUITS)
     .map(({ name }) => name);
   const shade = color.toLowerCase();
-  return `${color} clues touch its cards, and the cards of other ${shade} suits, such as ${joinNames(others)}. With two ${shade} suits in a game, a ${color} clue cannot tell them apart, so the players must find the suit another way. ${ranks}`;
+  return `${color} clues touch its cards, and the cards of other ${shade} suits, such as ${joinNames(others)}. With two ${shade} suits in a game, a ${color} clue cannot tell them apart, so the players must find the suit another way.${ranks}`;
 }
 
 /** Which clues touch the cards of a suit, as sentences about `cards`, such as "its cards". */
 function getClueText(suit: Suit, cards: string): string {
-  return `${getColorText(suit, cards)} ${getRankText(suit, cards)}`;
+  return `${getColorText(suit, cards)}${getRankText(suit, cards)}`;
 }
 
 function getColorText(suit: Suit, cards: string): string {
@@ -375,14 +375,15 @@ function getColorText(suit: Suit, cards: string): string {
   return `${joinNames(suit.clueColors.map(({ name }) => name))} clues touch ${cards}.`;
 }
 
+/** How rank clues touch the cards of a suit, or nothing when they touch them as usual. */
 function getRankText(suit: Suit, cards: string): string {
   if (suit.allClueRanks) {
-    return `Every rank clue touches ${cards}.`;
+    return ` Every rank clue touches ${cards}.`;
   }
   if (suit.noClueRanks) {
-    return `No rank clue touches ${cards}.`;
+    return ` No rank clue touches ${cards}.`;
   }
-  return `Rank clues touch ${cards} as usual.`;
+  return "";
 }
 
 /** Names joined as in a sentence, such as "Red, Yellow, and Blue". */
