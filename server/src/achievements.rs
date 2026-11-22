@@ -74,7 +74,8 @@ impl Games {
 pub(crate) enum Rule {
     /// A number of wins.
     Wins { games: Games, goal: i64 },
-    /// A number of wins in a row in a variant. Any other result in the games that could count
+    /// A number of wins in a row in a variant, with the same number of players. Each player count
+    /// has its own streak. Any other result in the games that could count, with that player count,
     /// breaks the streak. Games that cannot count, such as games with 2 players, do not.
     Streak { variant: Variant, length: i64 },
     /// One win in the 5-suit variant of each suit, such as each dark suit.
@@ -113,7 +114,8 @@ impl Rule {
                 format!("Get the max score in {goal} {}.", games.description())
             }
             Self::Streak { variant, length } => format!(
-                "Get the max score in {length} games of {} in a row.",
+                "Get the max score in {length} games of {} in a row, with the same number of \
+                 players.",
                 variant.name()
             ),
             Self::OneWinEach { kind, suits } => format!(
@@ -474,9 +476,10 @@ fn add_streak(
 }
 
 /// The streaks in `variant` of the players in `users`, for each length in `lengths`. A game that
-/// could count extends a streak when it is a win and breaks it otherwise. The query numbers each
-/// game, and each game among the wins or among the others; the difference of the two numbers is
-/// the same for each game of a run.
+/// could count extends the streak of its player count when it is a win, and breaks it otherwise.
+/// The query numbers each game, and each game among the wins or among the others; the difference of
+/// the two numbers is the same for each game of a run. A player's best streak is the longest at any
+/// player count, and they reach a length when the first of their streaks does.
 async fn streaks_of(
     connection: &mut PgConnection,
     variant: Variant,
@@ -488,20 +491,22 @@ async fn streaks_of(
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "WITH counted AS (
-           SELECT p.user_id,g.id,g.datetime_finished,g.end_condition=$4 AND g.score=$3 AS win
+           SELECT p.user_id,g.num_players,g.id,g.datetime_finished,
+             g.end_condition=$4 AND g.score=$3 AS win
            FROM game_participants p JOIN games g ON g.id=p.game_id
            WHERE p.user_id=ANY($1) AND g.variant_id=$2 AND g.num_players>=$5
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
          ), islands AS (
-           SELECT user_id,id,datetime_finished,win,
-             row_number() OVER (PARTITION BY user_id ORDER BY datetime_finished,id)
-             -row_number() OVER (PARTITION BY user_id,win ORDER BY datetime_finished,id) AS island
+           SELECT user_id,num_players,id,datetime_finished,win,
+             row_number() OVER (PARTITION BY user_id,num_players ORDER BY datetime_finished,id)
+             -row_number() OVER (PARTITION BY user_id,num_players,win
+               ORDER BY datetime_finished,id) AS island
            FROM counted
          ), runs AS (
            SELECT user_id,datetime_finished,
-             row_number() OVER (PARTITION BY user_id,island ORDER BY datetime_finished,id)
-               AS length
+             row_number() OVER (PARTITION BY user_id,num_players,island
+               ORDER BY datetime_finished,id) AS length
            FROM islands WHERE win
          )
          SELECT r.user_id AS \"user_id!\",t.length AS \"length!\",max(r.length) AS \"best!\",
@@ -538,20 +543,22 @@ async fn all_streaks(
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "WITH counted AS (
-           SELECT p.user_id,g.id,g.datetime_finished,g.end_condition=$3 AND g.score=$2 AS win
+           SELECT p.user_id,g.num_players,g.id,g.datetime_finished,
+             g.end_condition=$3 AND g.score=$2 AS win
            FROM games g JOIN game_participants p ON p.game_id=g.id
            WHERE g.variant_id=$1 AND g.num_players>=$4
            AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
              OR g.all_or_nothing OR g.detrimental_characters)
          ), islands AS (
-           SELECT user_id,id,datetime_finished,win,
-             row_number() OVER (PARTITION BY user_id ORDER BY datetime_finished,id)
-             -row_number() OVER (PARTITION BY user_id,win ORDER BY datetime_finished,id) AS island
+           SELECT user_id,num_players,id,datetime_finished,win,
+             row_number() OVER (PARTITION BY user_id,num_players ORDER BY datetime_finished,id)
+             -row_number() OVER (PARTITION BY user_id,num_players,win
+               ORDER BY datetime_finished,id) AS island
            FROM counted
          ), runs AS (
            SELECT user_id,datetime_finished,
-             row_number() OVER (PARTITION BY user_id,island ORDER BY datetime_finished,id)
-               AS length
+             row_number() OVER (PARTITION BY user_id,num_players,island
+               ORDER BY datetime_finished,id) AS length
            FROM islands WHERE win
          )
          SELECT r.user_id AS \"user_id!\",t.length AS \"length!\",max(r.length) AS \"best!\",
@@ -907,9 +914,9 @@ mod tests {
             return;
         };
         let pool = &db.pool;
-        // Alice wins games 1 and 2, loses game 3, and then wins games 4 to 10. Game 6 has 2
-        // players, so its loss does not break the streak. Game 7 uses "One Extra Card", so it does
-        // not either. The fifth win in a row is game 10.
+        // Alice wins games 1 and 2, loses game 3, and then wins games 4 to 10, all with 3 players.
+        // Game 6 has 4 players, so its loss breaks only the streak with 4 players. Game 7 uses
+        // "One Extra Card", so its loss does not count. The fifth win in a row is game 10.
         #[expect(
             clippy::disallowed_methods,
             reason = "test SQL that sets up database state directly"
@@ -921,7 +928,7 @@ mod tests {
               speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
               detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
               datetime_finished)
-            SELECT id,'test',CASE WHEN id=6 THEN 2 ELSE 3 END,0,false,NULL,NULL,false,false,
+            SELECT id,'test',CASE WHEN id=6 THEN 4 ELSE 3 END,0,false,NULL,NULL,false,false,
               false,id=7,false,false,false,'s'||id,CASE WHEN id IN (3,6,7) THEN 20 ELSE 25 END,
               10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
               '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
@@ -953,6 +960,21 @@ mod tests {
             .unwrap();
         let achievement = streak(&achievements(&mut connection, 1).await.unwrap());
         assert_eq!(achievement.progress.get(), 2);
+        assert!(achievement.date_unlocked.is_none());
+        // A win with 5 players in game 5 would not add to the streak with 3 players either.
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "test SQL that sets up database state directly"
+        )]
+        sqlx::raw_sql(
+            "UPDATE games SET score=25 WHERE id=8;
+            UPDATE games SET num_players=5 WHERE id=5;",
+        )
+        .execute(pool)
+        .await
+        .unwrap();
+        let achievement = streak(&achievements(&mut connection, 1).await.unwrap());
+        assert_eq!(achievement.progress.get(), 4);
         assert!(achievement.date_unlocked.is_none());
         drop(connection);
         db.close().await;
