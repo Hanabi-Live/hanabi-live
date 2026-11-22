@@ -158,7 +158,7 @@ impl Games {
                 "games with a {} special rank and 5 suits",
                 rank.replace('-', " ")
             ),
-            Self::Rule(rule) => format!("games with {} ({RULE_SUITS} suits)", rule.name()),
+            Self::Rule(rule) => format!("games with {} ({RULE_SUITS} Suits)", rule.name()),
         }
     }
 }
