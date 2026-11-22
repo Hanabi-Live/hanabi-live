@@ -167,8 +167,12 @@ the state that you need has fewer players, add a 5-player state to
 `packages/testing/src/uiScreenshots.ts`.
 
 When running in WSL, the host app cannot display screenshots that you send it.
-Open each one that you show in its Windows app instead:
-`f="$(realpath <file>)" && test -f "$f" && explorer.exe "$(wslpath -w "$f")"`.
+Open them in the Windows browser instead. Each run of `bun run ui-screenshots`
+deletes the screenshots of the run before it, so take all the screenshots that
+you show in one run. Then open `index.html` in its output folder, which shows
+every screenshot of the run. Do not open each screenshot alone: the browser
+shows only the last one.
+`f="$(realpath dist/ui-screenshots/index.html)" && test -f "$f" && explorer.exe "$(wslpath -w "$f")"`.
 When `explorer.exe` cannot open a path, it opens the Documents folder and gives
 no error. Thus, check that the file exists, and do not use a file name that has
 a comma.

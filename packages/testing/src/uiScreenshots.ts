@@ -13,6 +13,9 @@
 // - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
 //   that ref, and take a screenshot with them wherever a difference shows.
 
+// Each run deletes the screenshots of the run before it. It writes "index.html", a page that shows
+// every screenshot of the run, so that they can be opened together.
+
 // Each state sets up what it shows, so that it can run alone. The states that show the lobby run
 // first, one at a time, since they show every account that is online and every table. The isolated
 // states then run in several browser pages at once. Each page uses its own accounts.
@@ -4146,6 +4149,30 @@ async function writeReports(options: Options, results: Results) {
   process.exitCode = 1;
 }
 
+/** Writes a page that shows every screenshot of the run, with its file name above it. */
+async function writeIndex() {
+  const entries = await readdir(OUTPUT_DIRECTORY);
+  const files = entries.filter((file) => file.endsWith(".png")).toSorted();
+  const figures = files.map(
+    (file) =>
+      `<figure><figcaption>${file}</figcaption><img src="${file}"></figure>`,
+  );
+  await writeFile(
+    path.join(OUTPUT_DIRECTORY, "index.html"),
+    `<!doctype html>
+<meta charset="utf-8">
+<title>UI screenshots</title>
+<style>
+  body { margin: 16px; background: #222; color: #eee; font-family: sans-serif; }
+  figure { margin: 0 0 32px; }
+  figcaption { margin-bottom: 8px; font-weight: bold; }
+  img { display: block; max-width: 100%; }
+</style>
+${figures.join("\n")}
+`,
+  );
+}
+
 async function main() {
   const options = parseOptions();
   await rm(OUTPUT_DIRECTORY, {
@@ -4301,6 +4328,7 @@ async function main() {
       ),
     ]);
     await writeReports(options, results);
+    await writeIndex();
     console.info(`Screenshots: ${OUTPUT_DIRECTORY}`);
   } finally {
     if (seeded !== undefined) {
