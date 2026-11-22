@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_achievements(user_id,achievement,datetime_unlocked)\n         SELECT u.user_id,u.achievement,u.datetime_unlocked\n         FROM unnest($1::integer[],$2::text[],$3::timestamptz[])\n           AS u(user_id,achievement,datetime_unlocked)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "TextArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a286af96cc660ca41f467e2c304c866122219a21b74f0a0035adf82151e29771"
+}

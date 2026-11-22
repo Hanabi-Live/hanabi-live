@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM user_achievements",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "67d8567185f11249a5539adf81b51bf75801b4326b8e7c8bcaffe7993e3acf74"
+}

@@ -1,7 +1,7 @@
 use super::{
     AGGREGATE_STATEMENT_TIMEOUT, API_PREFIX, HashMap, HttpError, IntoResponse, Json, Params, Path,
-    PublicState, Query, RawQuery, Response, Result, State, Value, achievements, catalog, data,
-    encoded, integer, json, replay, scan, strict_query,
+    PublicState, Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer,
+    json, replay, scan, strict_query,
 };
 use crate::errors::StatementLimit;
 use anyhow::Context as _;
@@ -176,7 +176,7 @@ pub(super) async fn page(
                     let (statistics, joined) = player_statistics(&state, users[0].0).await?;
                     v["stats"] = statistics_value(&statistics, joined);
                     let (_, variants) = score_summary(&state, users[0].0).await?;
-                    let achievements = achievements::achievements(&state, users[0].0).await?;
+                    let achievements = achievements(&state, users[0].0).await?;
                     set_table(
                         &mut v,
                         &PublicPageTable::Scores {
@@ -302,6 +302,16 @@ pub(super) async fn page(
         _ => return Err(HttpError::not_found("Not found.")),
     }
     render(&state, "public-page.html", v)
+}
+
+/// A player's progress toward each achievement, and how many players have each one.
+async fn achievements(state: &PublicState, user: i32) -> Result<Vec<hanabi_protocol::Achievement>> {
+    let mut transaction = scan(state).await?;
+    let achievements = crate::achievements::achievements(&mut transaction, user)
+        .await
+        .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
+    transaction.commit().await?;
+    Ok(achievements)
 }
 
 /// Converts a count to a float for display; counts are far below the 2^53 that floats hold exactly.
@@ -440,7 +450,7 @@ pub(super) async fn player_scores(
         statistics,
         max_scores,
         variants,
-        achievements: achievements::achievements(state, user).await?,
+        achievements: achievements(state, user).await?,
     })
 }
 

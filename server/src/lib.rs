@@ -69,6 +69,7 @@ pub const KIB: usize = 1024;
 pub const MIB: usize = 1024 * KIB;
 
 mod accounts;
+mod achievements;
 mod actors;
 mod archive;
 mod checkpoint;

@@ -270,6 +270,17 @@ async fn run(config: Config, version: String) -> Result<Option<restart::Replacem
         }
         app.store.check_state()?;
         lifecycle.activate();
+        let sync_app = app.clone();
+        app.background.spawn(async move {
+            tokio::select! {
+                () = sync_app.lifecycle.shutdown().cancelled() => {},
+                result = crate::achievements::sync(&sync_app.store.primary) => {
+                    if let Err(error) = result {
+                        tracing::error!("Writing the achievements failed: {error:#}");
+                    }
+                }
+            }
+        });
         let integration_app = app.clone();
         let integrations = config.integrations.clone();
         app.background.spawn(async move {

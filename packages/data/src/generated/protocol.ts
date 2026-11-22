@@ -1123,6 +1123,11 @@ const achievementSchema = z
      * How far the player has come, up to `goal`.
      */
     progress: countSchema,
+    /**
+     * The percentage of the players with at least one achievement who have this one, from 0 to
+     * 100.
+     */
+    unlockedPercentage: z.number(),
   })
   .readonly();
 

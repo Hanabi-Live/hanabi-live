@@ -56,6 +56,8 @@ pub(crate) enum LockSpace {
     VariantStats = 17483,
     /// Ownership of the live tables, held for as long as a server runs.
     LiveState = 17485,
+    /// The `user_achievements` table, which one writer changes at a time. The key is always 0.
+    Achievements = 17486,
 }
 
 /// Holds the advisory lock on `key` in `space` until the transaction ends.
@@ -474,6 +476,20 @@ impl Store {
             };
             if let Err(e) = crate::stats::refresh(&store.primary, &snapshot).await {
                 tracing::error!("Derived statistics failed: {e}");
+            }
+            if crate::achievements::counts(&snapshot) {
+                let users = snapshot
+                    .players
+                    .iter()
+                    .map(|p| p.user().map(UserId::get))
+                    .collect::<Result<Vec<_>>>();
+                let result = match users {
+                    Ok(users) => crate::achievements::refresh(&store.primary, &users).await,
+                    Err(e) => Err(e),
+                };
+                if let Err(e) = result {
+                    tracing::error!("Achievements failed: {e:#}");
+                }
             }
         });
     }

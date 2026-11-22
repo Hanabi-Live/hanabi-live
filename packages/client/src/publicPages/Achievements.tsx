@@ -3,6 +3,7 @@
 import type { publicPageTableSchema } from "@hanabi-live/data";
 import { MIN_ACHIEVEMENT_PLAYERS } from "@hanabi-live/data";
 import type * as z from "zod";
+import { tooltipRef } from "../tooltipRef.ts";
 
 type ScoresTable = Extract<
   z.infer<typeof publicPageTableSchema>,
@@ -19,12 +20,31 @@ function unlockedText(date: string): string {
   return `Unlocked on ${unlocked}.`;
 }
 
+/** The smallest percentage that a card shows as a number. Smaller ones show as "<0.1%". */
+const MIN_SHOWN_PERCENTAGE = 0.1;
+
+/** How many players have an achievement, such as "12.5% of players". */
+function rarityText(percentage: number): string {
+  const shown =
+    percentage > 0 && percentage < MIN_SHOWN_PERCENTAGE
+      ? `<${MIN_SHOWN_PERCENTAGE}`
+      : String(Math.round(percentage * 10) / 10);
+  return `${shown}% of players`;
+}
+
 function AchievementCard({
   achievement,
 }: {
   readonly achievement: Achievement;
 }): React.JSX.Element {
-  const { dateUnlocked, description, goal, name, progress } = achievement;
+  const {
+    dateUnlocked,
+    description,
+    goal,
+    name,
+    progress,
+    unlockedPercentage,
+  } = achievement;
   const unlocked = dateUnlocked !== undefined;
   return (
     <div className="tw:flex tw:items-center tw:gap-3 tw:rounded-lg tw:border tw:border-border tw:bg-surface-panel tw:p-3">
@@ -34,7 +54,17 @@ function AchievementCard({
         <i aria-hidden="true" className="fas fa-trophy" />
       </div>
       <div className="tw:min-w-0 tw:flex-1">
-        <div className="tw:font-semibold">{name}</div>
+        <div className="tw:flex tw:items-baseline tw:justify-between tw:gap-2">
+          <span className="tw:font-semibold">{name}</span>
+          <span
+            className="tw:shrink-0 tw:text-[0.85em] tw:text-text-label tw:tabular-nums"
+            ref={tooltipRef(
+              "The share of the players with at least one achievement who have this one.",
+            )}
+          >
+            {rarityText(unlockedPercentage)}
+          </span>
+        </div>
         <div className="tw:text-[0.85em] tw:leading-snug tw:text-text-label">
           {description}
         </div>

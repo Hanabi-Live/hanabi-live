@@ -14,7 +14,8 @@ of the repository.
   one for 10 games of each of Rainbow, Pink, White, Brown, Omni, Null, Muddy
   Rainbow, Light Pink, and Prism (with 5 suits), and "Lights Out" for one game
   of each dark suit (with 5 suits). Games with 2 players, or with an option such
-  as "One Extra Card" or detrimental characters, do not count.
+  as "One Extra Card" or detrimental characters, do not count. Each achievement
+  shows how many of the players with an achievement have it.
 
 ## November 21st, 2026
 

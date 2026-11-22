@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT achievement,count(*) AS \"players!\",\n           (SELECT count(DISTINCT user_id) FROM user_achievements) AS \"total!\"\n         FROM user_achievements GROUP BY achievement",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "achievement",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "user_achievements",
+            "name": "achievement"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "players!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "total!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "9c4769d754167ecb51553a20e6f4c77a6133bc42f9fd914a63d889b6ede54b36"
+}

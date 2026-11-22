@@ -277,6 +277,9 @@ pub struct Achievement {
     /// When the player unlocked the achievement. Absent until they unlock it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub date_unlocked: Option<Timestamp>,
+    /// The percentage of the players with at least one achievement who have this one, from 0 to
+    /// 100.
+    pub unlocked_percentage: f64,
 }
 
 /// How hard a seed is compared to the other seeds of its variant and player count.

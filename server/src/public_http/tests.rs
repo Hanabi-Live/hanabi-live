@@ -930,11 +930,7 @@ async fn profile_counts_wins_toward_achievements() {
     assert_eq!(status, StatusCode::OK, "{body}");
     let table = page_table(&body);
     let shown = table["achievements"].as_array().unwrap();
-    let total: usize = achievements::WIN_GROUPS
-        .iter()
-        .map(|group| group.achievements.len())
-        .sum();
-    assert_eq!(shown.len(), total);
+    assert_eq!(shown.len(), crate::achievements::ACHIEVEMENTS.len());
     // The two No Variant achievements, Rainbow, and Pink. The others have no wins.
     let progress = [9, 9, 1, 1];
     for (index, achievement) in shown.iter().enumerate() {

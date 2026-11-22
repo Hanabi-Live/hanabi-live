@@ -73,6 +73,18 @@ CREATE TABLE variants (
     name    TEXT      NULL      UNIQUE /* NULL until the server records it. */
 );
 
+/* The achievements that each player has unlocked. The server works them out from the saved games. */
+DROP TABLE IF EXISTS user_achievements CASCADE;
+CREATE TABLE user_achievements (
+    user_id            INTEGER      NOT NULL,
+    /* The achievement's ID on the wire, such as "noVariant10Wins". */
+    achievement        TEXT         NOT NULL,
+    /* When the game that unlocked the achievement finished. */
+    datetime_unlocked  TIMESTAMPTZ  NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, achievement)
+);
+
 /* User stats are per variant. */
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
