@@ -67,6 +67,12 @@ describe("variant builder", () => {
     );
   });
 
+  test("turns off Cow and Pig when Duck turns on, and the other way", () => {
+    const duck = toggleFlag(toggleFlag(FIVE_SUITS, "cowpig"), "duck");
+    expect([...duck.flags]).toEqual(["duck"]);
+    expect([...toggleFlag(duck, "cowpig").flags]).toEqual(["cowpig"]);
+  });
+
   test("ends every reversal when Up or Down turns on", () => {
     const reversed = toggleReversed(FIVE_SUITS, "p");
     expect(getRecipe(reversed)).toBe("r-y-g-b-p.rev");

@@ -361,7 +361,7 @@ function joinNames(names: readonly string[]): string {
 }
 
 export const REVERSED_DESCRIPTION =
-  "The suit plays from 5 down to 1. It has one 1 and three 5s.";
+  "Reverse suits play from 5 down to 1. They have one 1 and three 5s.";
 
 export function getCriticalDescription(rank: number): string {
   return `Each suit has one ${rank}, so every ${rank} is critical.`;
@@ -630,17 +630,35 @@ export function toggleScarceOnes(choice: Choice): Choice {
   };
 }
 
-/** Turns a rule on or off. "Up or Down" plays every suit both ways, so it ends any reversal. */
+/**
+ * Rules that cannot be on together, each with the rule that it turns off. Duck hides all of a clue,
+ * so Cow and Pig, which hides only its value, would change nothing.
+ */
+const EXCLUSIVE_FLAGS = new ReadonlyMap<RecipeFlag, RecipeFlag>([
+  ["cowpig", "duck"],
+  ["duck", "cowpig"],
+]);
+
+/**
+ * Turns a rule on or off. A rule that cannot be on with another turns it off, and "Up or Down",
+ * which plays every suit both ways, ends any reversal.
+ */
 export function toggleFlag(choice: Choice, flag: RecipeFlag): Choice {
+  if (choice.flags.has(flag)) {
+    return {
+      ...choice,
+      flags: without(choice.flags, flag),
+    };
+  }
+  const flags = new Set(choice.flags).add(flag);
+  const excluded = EXCLUSIVE_FLAGS.get(flag);
+  if (excluded !== undefined) {
+    flags.delete(excluded);
+  }
   return {
     ...choice,
-    reversed:
-      flag === "updown" && !choice.flags.has(flag)
-        ? new Set()
-        : choice.reversed,
-    flags: choice.flags.has(flag)
-      ? without(choice.flags, flag)
-      : new Set(choice.flags).add(flag),
+    reversed: flag === "updown" ? new Set() : choice.reversed,
+    flags,
   };
 }
 
