@@ -212,6 +212,13 @@ describe("CreateGame", () => {
         value: "Other curated variants",
       },
     });
+    // A name keeps "(5 Suits)" only beside the same name with another suit count.
+    expect(
+      screen.getByRole("button", { name: "Pink (5 Suits)" }).textContent,
+    ).toBe("Pink");
+    expect(
+      screen.getByRole("button", { name: "Dual-Color (5 Suits)" }).textContent,
+    ).toBe("Dual-Color (5 Suits)");
     fireEvent.click(screen.getByRole("button", { name: "Pink (5 Suits)" }));
 
     expect(dropdown.value).toBe("Pink (5 Suits)");

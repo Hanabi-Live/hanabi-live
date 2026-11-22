@@ -897,6 +897,22 @@ function CuratedVariantMenu({
   );
 }
 
+/**
+ * The name that the menu shows: without "(5 Suits)", unless another variant of the group has the
+ * same name with another suit count, such as Dual-Color (6 Suits).
+ */
+function getShortName(name: string, groupRecipes: readonly string[]): string {
+  if (!name.endsWith(USUAL_SUITS_SUFFIX)) {
+    return name;
+  }
+  const short = name.slice(0, -USUAL_SUITS_SUFFIX.length);
+  const shared = groupRecipes.some((recipe) => {
+    const other = getRecipeName(recipe);
+    return other !== name && other.startsWith(`${short} (`);
+  });
+  return shared ? name : short;
+}
+
 function CuratedList({
   currentRecipe,
   onPick,
@@ -939,9 +955,7 @@ function CuratedList({
                   }
                 />
               )}
-              {name.endsWith(USUAL_SUITS_SUFFIX)
-                ? name.slice(0, -USUAL_SUITS_SUFFIX.length)
-                : name}
+              {getShortName(name, recipes)}
             </button>
           </li>
         );
