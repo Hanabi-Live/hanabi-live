@@ -93,7 +93,7 @@ const FLAGS = {
   alt: {
     name: "Alternating Clues",
     description:
-      "After the first clue, each clue must be of the other type than the clue before it: color, then rank, then color.",
+      "After the first clue, each clue must be of the other type than the clue before it. For example: color, then rank, then color.",
   },
   cowpig: {
     name: "Cow and Pig",
