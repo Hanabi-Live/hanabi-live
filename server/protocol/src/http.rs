@@ -169,29 +169,6 @@ named_enum! {
     }
 }
 
-/// A best score on a public page, and the option that keeps it from counting as a normal one.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct BestScore {
-    /// Absent when no game was played.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub score: Option<Score>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub modifier: Option<ScoreModifierOption>,
-}
-
-/// A variant that a player has played, with their best score at each player count.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct VariantScores {
-    pub variant_name: String,
-    pub max_score: Score,
-    pub num_games: Count,
-    /// From the fewest players to the most.
-    #[schemars(length(min = MAX_PLAYERS - MIN_PLAYERS + 1, max = MAX_PLAYERS - MIN_PLAYERS + 1))]
-    pub best_scores: Vec<BestScore>,
-}
-
 /// A player's game counts and time on their profile.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -233,15 +210,13 @@ pub struct MaxScoreSummary {
     pub per_type: Vec<MaxScoreCount>,
 }
 
-/// A player's profile and their best scores, from `/api/v1/scores/{username}`.
+/// A player's profile and their max scores, from `/api/v1/scores/{username}`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerScores {
     pub name: Username,
     pub statistics: PlayerStatistics,
     pub max_scores: MaxScoreSummary,
-    /// The variants that the player has played, in the catalog's order.
-    pub variants: Vec<VariantScores>,
     pub achievements: Vec<Achievement>,
 }
 

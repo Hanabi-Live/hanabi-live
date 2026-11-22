@@ -1161,47 +1161,7 @@ export const playerStatisticsSchema = z
   .readonly();
 
 /**
- * An option that keeps a best score from counting as a normal one. A score with several of
- * them shows only the first in this order.
- */
-const scoreModifierOptionSchema = z.enum([
-  "allOrNothing",
-  "oneExtraCard",
-  "oneLessCard",
-  "emptyClues",
-  "deckPlays",
-]);
-
-/**
- * A best score on a public page, and the option that keeps it from counting as a normal one.
- */
-const bestScoreSchema = z
-  .strictObject({
-    modifier: scoreModifierOptionSchema.optional(),
-    /**
-     * Absent when no game was played.
-     */
-    score: scoreSchema.optional(),
-  })
-  .readonly();
-
-/**
- * A variant that a player has played, with their best score at each player count.
- */
-const variantScoresSchema = z
-  .strictObject({
-    /**
-     * From the fewest players to the most.
-     */
-    bestScores: z.array(bestScoreSchema).min(5).max(5).readonly(),
-    maxScore: scoreSchema,
-    numGames: countSchema,
-    variantName: z.string(),
-  })
-  .readonly();
-
-/**
- * A player's profile and their best scores, from `/api/v1/scores/{username}`.
+ * A player's profile and their max scores, from `/api/v1/scores/{username}`.
  */
 export const playerScoresSchema = z
   .strictObject({
@@ -1209,10 +1169,6 @@ export const playerScoresSchema = z
     maxScores: maxScoreSummarySchema,
     name: z.string().min(1),
     statistics: playerStatisticsSchema,
-    /**
-     * The variants that the player has played, in the catalog's order.
-     */
-    variants: z.array(variantScoresSchema).readonly(),
   })
   .readonly();
 
@@ -1326,6 +1282,18 @@ export const pregameSchema = z
  * How hard a max score is, from the clue efficiency that it needs.
  */
 const difficultySchema = z.enum(["normal", "hard", "veryHard"]);
+
+/**
+ * An option that keeps a best score from counting as a normal one. A score with several of
+ * them shows only the first in this order.
+ */
+const scoreModifierOptionSchema = z.enum([
+  "allOrNothing",
+  "oneExtraCard",
+  "oneLessCard",
+  "emptyClues",
+  "deckPlays",
+]);
 
 /**
  * A variant at a player count that has no normal max score yet.

@@ -527,7 +527,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(scores["statistics"]["timePlayedSeconds"], 2 * 60 * 60);
     assert_eq!(scores["statistics"]["timePlayedSpeedrunSeconds"], 60 * 60);
     assert_eq!(scores["maxScores"]["total"], 1);
-    assert_eq!(scores["variants"][0]["variantName"], "No Variant");
     let (status, body) = request(app.clone(), "/api/v1/seed/same/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let seed = serde_json::from_str::<Value>(&body).unwrap();
@@ -590,18 +589,17 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(page_table(&body)["apiPath"], "/api/v1/tag/mine");
     let (_, body) = request(app.clone(), "/history/Alice").await;
     assert_eq!(page_table(&body)["list"], "history");
-    // A max score names the option that kept it from counting normally, if any.
-    let scores_api = async || {
-        let (_, body) = request(app.clone(), "/api/v1/scores/Alice").await;
-        serde_json::from_str::<Value>(&body).unwrap()
+    // A max score with an option that makes it easier is missing, and names the option.
+    let missing_no_variant = async || {
+        let (_, body) = request(app.clone(), "/missing-scores/Alice/2").await;
+        page_table(&body)["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["variantName"] == "No Variant")
+            .cloned()
     };
-    let scores = scores_api().await;
-    let variant = &scores["variants"][0];
-    assert_eq!(
-        variant["bestScores"][0],
-        json!({"score": variant["maxScore"]}),
-        "{variant}"
-    );
+    assert_eq!(missing_no_variant().await, None);
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"
@@ -610,10 +608,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .execute(&db.pool)
         .await
         .unwrap();
-    assert_eq!(
-        scores_api().await["variants"][0]["bestScores"][0]["modifier"],
-        "oneExtraCard"
-    );
+    let row = missing_no_variant().await.unwrap();
+    assert_eq!(row["score"], row["maxScore"], "{row}");
+    assert_eq!(row["modifier"], "oneExtraCard", "{row}");
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"

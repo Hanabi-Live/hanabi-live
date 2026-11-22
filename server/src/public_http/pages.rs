@@ -8,10 +8,9 @@ use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::{
-    BestScore, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
-    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
-    PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
-    VariantId, VariantScores,
+    Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore, MissingScoresFilters,
+    MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics, PublicGameList,
+    PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics, VariantId,
 };
 use std::sync::Arc;
 
@@ -430,19 +429,17 @@ fn statistics_value(statistics: &PlayerStatistics, date: time::OffsetDateTime) -
     })
 }
 
-/// A player's statistics and best scores, for `/api/v1/scores/{username}`.
+/// A player's statistics, max scores, and achievements, for `/api/v1/scores/{username}`.
 pub(super) async fn player_scores(
     state: &PublicState,
     user: i32,
     name: &str,
 ) -> Result<PlayerScores> {
     let (statistics, _) = player_statistics(state, user).await?;
-    let (max_scores, variants) = score_summary(state, user).await?;
     Ok(PlayerScores {
         name: name.into(),
         statistics,
-        max_scores,
-        variants,
+        max_scores: score_summary(state, user).await?,
         achievements: achievements(state, user).await?,
     })
 }
@@ -606,39 +603,20 @@ const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
 const VERY_HARD_EFFICIENCY: f64 = 1.5;
 
-/// A player's count of max scores at each player count, and their best scores on each variant that
-/// they have played.
-async fn score_summary(
-    state: &PublicState,
-    id: i32,
-) -> Result<(MaxScoreSummary, Vec<VariantScores>)> {
+/// A player's count of max scores at each player count.
+async fn score_summary(state: &PublicState, id: i32) -> Result<MaxScoreSummary> {
     let statistics = user_stats(state, id).await?;
     let mut totals = [0; crate::database::PLAYER_COUNTS];
-    let mut played = Vec::new();
     for variant in catalog::variants() {
-        let row = statistics.get(&i64::from(variant.id));
+        // A variant without a row has no games.
+        let Some(row) = statistics.get(&i64::from(variant.id)) else {
+            continue;
+        };
         let max = i64::from(variant.max_score);
-        let best_scores = row.map_or(
-            [None; crate::database::PLAYER_COUNTS],
-            crate::database::UserStats::best_scores,
-        );
-        for (total, score) in totals.iter_mut().zip(best_scores) {
+        for (total, score) in totals.iter_mut().zip(row.best_scores()) {
             if score.is_some_and(|(score, _)| i64::from(score) == max) {
                 *total += 1;
             }
-        }
-        // A variant without a row has no games.
-        let games = row.map_or(0, |row| i64::from(row.num_games));
-        if games > 0 {
-            played.push(VariantScores {
-                variant_name: variant.name.clone(),
-                max_score: Score::try_from(variant.max_score)?,
-                num_games: Count::try_from(games)?,
-                best_scores: best_scores
-                    .into_iter()
-                    .map(best_score)
-                    .collect::<Result<_>>()?,
-            });
         }
     }
     let total: i64 = totals.iter().sum();
@@ -652,17 +630,14 @@ async fn score_summary(
             })
         })
         .collect::<Result<Vec<_>>>()?;
-    Ok((
-        MaxScoreSummary {
-            total: Count::try_from(total)?,
-            percentage: percentage(
-                total,
-                variants * i64::try_from(crate::database::PLAYER_COUNTS)?,
-            ),
-            per_type,
-        },
-        played,
-    ))
+    Ok(MaxScoreSummary {
+        total: Count::try_from(total)?,
+        percentage: percentage(
+            total,
+            variants * i64::try_from(crate::database::PLAYER_COUNTS)?,
+        ),
+        per_type,
+    })
 }
 
 /// A player's max scores as their profile shows them, with rounded percentages.
@@ -673,14 +648,6 @@ fn summary_value(summary: &MaxScoreSummary) -> Result<Value> {
         v["perType"][row]["percentage"] = json!(format_percentage(count.percentage));
     }
     Ok(v)
-}
-
-/// A stored best score and its modifier bits, if there is a game.
-fn best_score(score: Option<(i16, i16)>) -> Result<BestScore> {
-    Ok(BestScore {
-        score: score.map(|(score, _)| Score::try_from(score)).transpose()?,
-        modifier: score.and_then(|(_, modifier)| shown_modifier(modifier)),
-    })
 }
 
 /// The most comma-separated names that a missing-scores filter, such as `excludeVariants`, takes.
@@ -810,13 +777,12 @@ async fn missing(
             {
                 continue;
             }
-            let BestScore { score, modifier } = best_score(best)?;
             rows.push(MissingScore {
                 variant_name: name.to_owned(),
                 num_players: NumPlayers::try_from(p)?,
-                score,
+                score: best.map(|(score, _)| Score::try_from(score)).transpose()?,
                 max_score: Score::try_from(max)?,
-                modifier,
+                modifier: best.and_then(|(_, modifier)| shown_modifier(modifier)),
                 efficiency: shown,
                 difficulty: if efficiency < HARD_EFFICIENCY {
                     Difficulty::Normal
@@ -849,7 +815,7 @@ async fn missing(
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared});
     if !shared {
-        v["summary"] = summary_value(&score_summary(state, users[0].0).await?.0)?;
+        v["summary"] = summary_value(&score_summary(state, users[0].0).await?)?;
     }
     set_table(&mut v, &PublicPageTable::MissingScores { rows, filters })?;
     render(state, "missing-scores.html", v)
