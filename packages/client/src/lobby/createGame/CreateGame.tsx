@@ -944,17 +944,26 @@ function CuratedList({
             >
               {/* A variant without a suit, such as Deceptive-Ones, keeps the dot's space, so that its
                   name lines up with the others. */}
-              {swatches && (
-                <span
-                  aria-hidden
-                  className={`tw:block tw:size-[0.75em] tw:shrink-0 tw:rounded-full ${suit === undefined ? "" : "tw:border tw:border-solid tw:border-black/40"}`}
-                  style={
-                    suit === undefined
-                      ? undefined
-                      : { background: getSuitBackground(suit) }
-                  }
-                />
-              )}
+              {swatches
+                && (suit === undefined ? (
+                  // A variant without a suit, such as Deceptive-Ones, has an outlined dot with a
+                  // mark, so that its name lines up with the others and the dot does not look
+                  // missing.
+                  <span
+                    aria-hidden
+                    className="tw:flex tw:size-[0.75em] tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-solid tw:border-current tw:opacity-70"
+                  >
+                    <span className="tw:text-[0.6em] tw:leading-none tw:font-bold">
+                      ?
+                    </span>
+                  </span>
+                ) : (
+                  <span
+                    aria-hidden
+                    className="tw:block tw:size-[0.75em] tw:shrink-0 tw:rounded-full tw:border tw:border-solid tw:border-black/40"
+                    style={{ background: getSuitBackground(suit) }}
+                  />
+                ))}
               {getShortName(name, recipes)}
             </button>
           </li>
