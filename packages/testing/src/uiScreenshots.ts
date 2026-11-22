@@ -942,8 +942,13 @@ function getStates(): readonly State[] {
         await select.locator("option").first().waitFor();
       },
       cleanup: async (page) => {
-        await page.keyboard.press("Escape");
-        await page.locator("#hGroupLevel").selectOption("");
+        const select = page.locator("#hGroupLevel");
+        // With "--compare", the list is already closed: Chrome closes it when the stylesheets
+        // change. Then the Escape key would close the settings instead.
+        if (await select.evaluate((element) => element.matches(":open"))) {
+          await page.keyboard.press("Escape");
+        }
+        await select.selectOption("");
         await toggleHGroupConventions(page, false);
       },
     },
@@ -3520,27 +3525,32 @@ function showDarkTheme() {
   document.documentElement.dataset["theme"] = "dark";
 }
 
-/** Runs in the page. Loads a bundle in place of the page's stylesheets, or restores them. */
+/**
+ * Runs in the page. Loads a bundle in place of the page's stylesheets, or restores them. The new
+ * bundle loads before the old stylesheets go, so that the page always has styles. Without them, an
+ * open select changes its `appearance`, and Chrome closes it.
+ */
 async function useStylesheet(href: string | undefined) {
-  for (const link of document.querySelectorAll<HTMLLinkElement>(
-    'link[href*="/public/css/"]',
-  )) {
+  const old = [
+    ...document.querySelectorAll<HTMLLinkElement>(
+      'link[href*="/public/css/"], #ui-screenshots-stylesheet',
+    ),
+  ];
+  if (href !== undefined) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    const loaded = new Promise((resolve, reject) => {
+      link.addEventListener("load", resolve);
+      link.addEventListener("error", reject);
+    });
+    link.href = href;
+    document.head.append(link);
+    await loaded;
+    link.id = "ui-screenshots-stylesheet";
+  }
+  for (const link of old) {
     link.remove();
   }
-  document.querySelector("#ui-screenshots-stylesheet")?.remove();
-  if (href === undefined) {
-    return;
-  }
-  const link = document.createElement("link");
-  link.id = "ui-screenshots-stylesheet";
-  link.rel = "stylesheet";
-  const loaded = new Promise((resolve, reject) => {
-    link.addEventListener("load", resolve);
-    link.addEventListener("error", reject);
-  });
-  link.href = href;
-  document.head.append(link);
-  await loaded;
   await document.fonts.ready;
 }
 
