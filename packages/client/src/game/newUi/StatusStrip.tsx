@@ -880,10 +880,13 @@ function usePanelTabs(
       (child): child is HTMLElement =>
         child instanceof HTMLElement && child !== group,
     );
+    // With tabs, part of the panel's padding is on its contents (see `status` below).
+    const contentStyle = getComputedStyle(content);
     const contentHeight =
       parts.reduce((sum, part) => sum + part.offsetHeight, 0)
       + Math.max(group?.offsetHeight ?? 0, PANEL_REPLAY_CONTROLS_HEIGHT)
-      + parts.length * getPixels(getComputedStyle(content).rowGap);
+      + parts.length * getPixels(contentStyle.rowGap)
+      + getPixels(contentStyle.paddingBottom);
     const tabbed = Object.hasOwn(footer.dataset, "tabbed");
     const footerStyle = getComputedStyle(footer);
     const panelHeight =
@@ -1445,10 +1448,13 @@ export function StatusStrip({
     // tabs, they are at the top, and the panel grows up into the clue log's space. With tabs, the
     // panel fills its tab, with the numbers at the top and the buttons at the bottom, and the
     // controls go between them. The gaps between the three groups are larger than the gaps in them,
-    // so that each group reads as one.
+    // so that each group reads as one. A pressed button moves down by 2px (`RAISED_BUTTON_CLASS`),
+    // and the tab scrolls, so the buttons stand 2px above the bottom of the tab. Otherwise a press
+    // makes the tab overflow and show a scroll bar, which makes it narrower and wraps the buttons
+    // again. The panel's padding is 2px smaller at the bottom, so that the buttons stay in place.
     const status = (
       <div
-        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:min-h-full" : ""}`}
+        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:min-h-full tw:pb-[2px]" : ""}`}
         data-panel-status
         ref={statusRef}
       >
@@ -1503,7 +1509,7 @@ export function StatusStrip({
     // The panel and the logs share the rest of the column, one tab at a time.
     return (
       <footer
-        className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:text-game-screen-compact ${panelColorClass}`}
+        className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:pb-3 tw:text-game-screen-compact ${panelColorClass}`}
         data-panel=""
         data-phone-layout=""
         data-tabbed=""
