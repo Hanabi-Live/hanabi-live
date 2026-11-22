@@ -170,11 +170,11 @@ fn play(random: &mut Random, variant: &'static Variant, num_players: usize, seed
     };
     let needed = num_players * normal_hand_size(num_players);
     let Ok(mut state) = create_game(setup) else {
-        assert!(deck_size(variant) < needed, "{recipe}: no game");
+        assert!(deck_size(variant) <= needed, "{recipe}: no game");
         return;
     };
     assert!(
-        deck_size(variant) >= needed,
+        deck_size(variant) > needed,
         "{recipe}: a game without enough cards"
     );
     let mut max_score = variant.max_score;

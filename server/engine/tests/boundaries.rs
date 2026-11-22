@@ -645,3 +645,16 @@ fn an_old_variant_name_finds_the_renamed_variant() {
     assert_eq!(variant.name, "Cow and Pig (5 Suits)");
     assert!(get_variant("Cow & Pig").is_err());
 }
+
+#[test]
+fn a_game_needs_cards_left_after_the_deal() {
+    for (recipe, works) in [("r", false), ("r-b", true)] {
+        let variant = add_variant(variant_from_recipe(recipe, 0, recipe).unwrap()).unwrap();
+        let options = Options {
+            variant_name: variant.name.clone(),
+            ..Options::default()
+        };
+        // Two players hold 10 cards, which is the whole deck of one suit.
+        assert_eq!(create_game(setup(options, None)).is_ok(), works, "{recipe}");
+    }
+}

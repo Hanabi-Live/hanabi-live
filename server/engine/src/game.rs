@@ -57,9 +57,11 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Invalid player capacity."
     );
     let variant = get_variant(&options.variant_name)?;
+    // A deck that the deal empties starts the final round at once, so the game ends before anyone
+    // can reach the maximum score.
     let cards = crate::deck_size(variant);
     ensure!(
-        cards >= options.num_players * hand_size(options),
+        cards > options.num_players * hand_size(options),
         "This variant has {cards} cards, too few for {} players.",
         options.num_players
     );
