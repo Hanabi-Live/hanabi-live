@@ -23,7 +23,7 @@ const WINS: i64 = 10;
 const SYNC_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_mins(2);
 
 /// A variant that an achievement counts the wins in.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum Variant {
     NoVariant,
     /// The 5-suit variant of a suit, such as "Pink (5 Suits)". Games with 6 suits take too long to
@@ -37,6 +37,19 @@ impl Variant {
             Self::NoVariant => DEFAULT_VARIANT_NAME.to_owned(),
             Self::FiveSuits(suit) => format!("{suit} (5 Suits)"),
         }
+    }
+
+    /// The variant in the catalog: its ID and its max score.
+    fn find(self) -> Result<(i16, i16)> {
+        let name = self.name();
+        let variant = hanabi_engine::variants()
+            .iter()
+            .find(|v| v.name == name)
+            .with_context(|| format!("The catalog has no variant named: {name}"))?;
+        Ok((
+            i16::try_from(variant.id)?,
+            i16::try_from(variant.max_score)?,
+        ))
     }
 }
 
@@ -61,6 +74,9 @@ impl Games {
 pub(crate) enum Rule {
     /// A number of wins.
     Wins { games: Games, goal: i64 },
+    /// A number of wins in a row in a variant. Any other result in the games that could count
+    /// breaks the streak. Games that cannot count, such as games with 2 players, do not.
+    Streak { variant: Variant, length: i64 },
     /// One win in the 5-suit variant of each suit, such as each dark suit.
     OneWinEach {
         /// What the suits are, such as "dark suit".
@@ -70,10 +86,12 @@ pub(crate) enum Rule {
 }
 
 impl Rule {
-    /// The games whose wins the rule counts. `OneWinEach` needs a win in each of them.
+    /// The games whose wins the rule counts. `OneWinEach` needs a win in each of them. A streak
+    /// has its own query, so it has none.
     fn games(&self) -> Vec<Games> {
         match self {
             Self::Wins { games, .. } => vec![*games],
+            Self::Streak { .. } => Vec::new(),
             Self::OneWinEach { suits, .. } => suits
                 .iter()
                 .map(|&suit| Games::Variant(Variant::FiveSuits(suit)))
@@ -84,7 +102,7 @@ impl Rule {
     /// The wins in each of the rule's games that the rule needs.
     const fn wins_per_variant(&self) -> i64 {
         match self {
-            Self::Wins { goal, .. } => *goal,
+            Self::Wins { goal, .. } | Self::Streak { length: goal, .. } => *goal,
             Self::OneWinEach { .. } => 1,
         }
     }
@@ -94,6 +112,10 @@ impl Rule {
             Self::Wins { games, goal } => {
                 format!("Get the max score in {goal} {}.", games.description())
             }
+            Self::Streak { variant, length } => format!(
+                "Get the max score in {length} games of {} in a row.",
+                variant.name()
+            ),
             Self::OneWinEach { kind, suits } => format!(
                 "Get the max score in a 5-suit game with each {kind}: {}",
                 suits.join(", ")
@@ -186,7 +208,26 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
     players(AchievementId::ThreePlayers10Wins, "Power Trio", 3),
     players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
     players(AchievementId::FivePlayers10Wins, "High Five", 5),
+    Definition {
+        id: AchievementId::NoVariant5Streak,
+        name: "On a Roll",
+        rule: Rule::Streak {
+            variant: Variant::NoVariant,
+            length: 5,
+        },
+    },
 ];
+
+/// The streak lengths that the achievements ask for in each variant.
+fn streaks() -> HashMap<Variant, Vec<i64>> {
+    let mut streaks: HashMap<Variant, Vec<i64>> = HashMap::new();
+    for achievement in ACHIEVEMENTS {
+        if let Rule::Streak { variant, length } = achievement.rule {
+            streaks.entry(variant).or_default().push(length);
+        }
+    }
+    streaks
+}
 
 /// The games that the achievements count, as the queries take them. Each `Games` is a row,
 /// numbered from 1. The queries match a game to a row by its variant and max score, and by its
@@ -240,23 +281,19 @@ impl QueryRows {
     fn add(&mut self, games: Games) -> Result<i64> {
         self.games.push(games);
         let row = i64::try_from(self.games.len())?;
-        let (variants, players): (Vec<_>, _) = match games {
-            Games::Variant(variant) => {
-                let name = variant.name();
-                let variant = hanabi_engine::variants()
-                    .iter()
-                    .find(|v| v.name == name)
-                    .with_context(|| format!("The catalog has no variant named: {name}"))?;
-                (vec![variant], 0)
-            }
+        let (variants, players) = match games {
+            Games::Variant(variant) => (vec![variant.find()?], 0),
             Games::Players(players) => (
-                hanabi_engine::variants().iter().collect(),
+                hanabi_engine::variants()
+                    .iter()
+                    .map(|v| Ok((i16::try_from(v.id)?, i16::try_from(v.max_score)?)))
+                    .collect::<Result<_>>()?,
                 i16::from(players),
             ),
         };
-        for variant in variants {
-            self.variant_ids.push(i16::try_from(variant.id)?);
-            self.max_scores.push(i16::try_from(variant.max_score)?);
+        for (variant_id, max_score) in variants {
+            self.variant_ids.push(variant_id);
+            self.max_scores.push(max_score);
             self.player_counts.push(players);
             self.rows.push(row);
         }
@@ -277,8 +314,21 @@ struct VariantWins {
     times: HashMap<i64, OffsetDateTime>,
 }
 
-/// Each player's wins, by row.
-type Wins = HashMap<i32, HashMap<i64, VariantWins>>;
+/// A player's best streak in a variant, and when they reached a length.
+struct Streak {
+    best: i64,
+    reached: Option<OffsetDateTime>,
+}
+
+/// A player's results: their wins in each row, and their streaks by variant and length.
+#[derive(Default)]
+struct Record {
+    wins: HashMap<i64, VariantWins>,
+    streaks: HashMap<(Variant, i64), Streak>,
+}
+
+/// Each player's record.
+type Records = HashMap<i32, Record>;
 
 /// A win is a game that reached the max score without an option that changes the game, such as
 /// "One Extra Card" or detrimental characters, and with at least `MIN_ACHIEVEMENT_PLAYERS`
@@ -303,18 +353,29 @@ pub(crate) fn counts(s: &Snapshot) -> bool {
 
 /// Each player's wins from the rows of a query: the player, the row, the row's count of wins, a
 /// threshold, and when the player reached it.
-fn collect(found: impl Iterator<Item = (i32, i64, i64, i64, OffsetDateTime)>) -> Wins {
-    let mut wins = Wins::new();
+fn collect(
+    records: &mut Records,
+    found: impl Iterator<Item = (i32, i64, i64, i64, OffsetDateTime)>,
+) {
     for (user, row, count, n, time) in found {
-        let variant = wins.entry(user).or_default().entry(row).or_default();
+        let variant = records
+            .entry(user)
+            .or_default()
+            .wins
+            .entry(row)
+            .or_default();
         variant.count = count;
         variant.times.insert(n, time);
     }
-    wins
 }
 
 /// The wins of the players in `users`. The query starts from each player's games.
-async fn wins_of(connection: &mut PgConnection, rows: &QueryRows, users: &[i32]) -> Result<Wins> {
+async fn wins_of(
+    connection: &mut PgConnection,
+    rows: &QueryRows,
+    users: &[i32],
+    records: &mut Records,
+) -> Result<()> {
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "SELECT x.user_id AS \"user_id!\",x.row AS \"row!\",x.wins AS \"wins!\",x.n AS \"n!\",
@@ -345,14 +406,22 @@ async fn wins_of(connection: &mut PgConnection, rows: &QueryRows, users: &[i32])
     )
     .fetch_all(connection)
     .await?;
-    Ok(collect(found.into_iter().map(|row| {
-        (row.user_id, row.row, row.wins, row.n, row.datetime_finished)
-    })))
+    collect(
+        records,
+        found
+            .into_iter()
+            .map(|row| (row.user_id, row.row, row.wins, row.n, row.datetime_finished)),
+    );
+    Ok(())
 }
 
 /// The wins of every player. The query starts from the games that the achievements count, which is
 /// faster than starting from each player's games.
-async fn all_wins(connection: &mut PgConnection, rows: &QueryRows) -> Result<Wins> {
+async fn all_wins(
+    connection: &mut PgConnection,
+    rows: &QueryRows,
+    records: &mut Records,
+) -> Result<()> {
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     let found = sqlx::query!(
         "SELECT x.user_id AS \"user_id!\",x.row AS \"row!\",x.wins AS \"wins!\",x.n AS \"n!\",
@@ -382,9 +451,150 @@ async fn all_wins(connection: &mut PgConnection, rows: &QueryRows) -> Result<Win
     )
     .fetch_all(connection)
     .await?;
-    Ok(collect(found.into_iter().map(|row| {
-        (row.user_id, row.row, row.wins, row.n, row.datetime_finished)
-    })))
+    collect(
+        records,
+        found
+            .into_iter()
+            .map(|row| (row.user_id, row.row, row.wins, row.n, row.datetime_finished)),
+    );
+    Ok(())
+}
+
+/// Adds a player's streak to their record.
+fn add_streak(
+    records: &mut Records,
+    variant: Variant,
+    (user, length, best, reached): (i32, i64, i64, Option<OffsetDateTime>),
+) {
+    records
+        .entry(user)
+        .or_default()
+        .streaks
+        .insert((variant, length), Streak { best, reached });
+}
+
+/// The streaks in `variant` of the players in `users`, for each length in `lengths`. A game that
+/// could count extends a streak when it is a win and breaks it otherwise. The query numbers each
+/// game, and each game among the wins or among the others; the difference of the two numbers is
+/// the same for each game of a run.
+async fn streaks_of(
+    connection: &mut PgConnection,
+    variant: Variant,
+    lengths: &[i64],
+    users: &[i32],
+    records: &mut Records,
+) -> Result<()> {
+    let (variant_id, max_score) = variant.find()?;
+    let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
+    let found = sqlx::query!(
+        "WITH counted AS (
+           SELECT p.user_id,g.id,g.datetime_finished,g.end_condition=$4 AND g.score=$3 AS win
+           FROM game_participants p JOIN games g ON g.id=p.game_id
+           WHERE p.user_id=ANY($1) AND g.variant_id=$2 AND g.num_players>=$5
+           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
+             OR g.all_or_nothing OR g.detrimental_characters)
+         ), islands AS (
+           SELECT user_id,id,datetime_finished,win,
+             row_number() OVER (PARTITION BY user_id ORDER BY datetime_finished,id)
+             -row_number() OVER (PARTITION BY user_id,win ORDER BY datetime_finished,id) AS island
+           FROM counted
+         ), runs AS (
+           SELECT user_id,datetime_finished,
+             row_number() OVER (PARTITION BY user_id,island ORDER BY datetime_finished,id)
+               AS length
+           FROM islands WHERE win
+         )
+         SELECT r.user_id AS \"user_id!\",t.length AS \"length!\",max(r.length) AS \"best!\",
+           min(r.datetime_finished) FILTER (WHERE r.length=t.length) AS reached
+         FROM runs r CROSS JOIN unnest($6::bigint[]) AS t(length) GROUP BY r.user_id,t.length",
+        users,
+        variant_id,
+        max_score,
+        normal_end,
+        i16::from(MIN_ACHIEVEMENT_PLAYERS),
+        lengths,
+    )
+    .fetch_all(connection)
+    .await?;
+    for row in found {
+        add_streak(
+            records,
+            variant,
+            (row.user_id, row.length, row.best, row.reached),
+        );
+    }
+    Ok(())
+}
+
+/// The streaks in `variant` of every player, as `streaks_of` finds them. The query starts from the
+/// variant's games.
+async fn all_streaks(
+    connection: &mut PgConnection,
+    variant: Variant,
+    lengths: &[i64],
+    records: &mut Records,
+) -> Result<()> {
+    let (variant_id, max_score) = variant.find()?;
+    let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
+    let found = sqlx::query!(
+        "WITH counted AS (
+           SELECT p.user_id,g.id,g.datetime_finished,g.end_condition=$3 AND g.score=$2 AS win
+           FROM games g JOIN game_participants p ON p.game_id=g.id
+           WHERE g.variant_id=$1 AND g.num_players>=$4
+           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card
+             OR g.all_or_nothing OR g.detrimental_characters)
+         ), islands AS (
+           SELECT user_id,id,datetime_finished,win,
+             row_number() OVER (PARTITION BY user_id ORDER BY datetime_finished,id)
+             -row_number() OVER (PARTITION BY user_id,win ORDER BY datetime_finished,id) AS island
+           FROM counted
+         ), runs AS (
+           SELECT user_id,datetime_finished,
+             row_number() OVER (PARTITION BY user_id,island ORDER BY datetime_finished,id)
+               AS length
+           FROM islands WHERE win
+         )
+         SELECT r.user_id AS \"user_id!\",t.length AS \"length!\",max(r.length) AS \"best!\",
+           min(r.datetime_finished) FILTER (WHERE r.length=t.length) AS reached
+         FROM runs r CROSS JOIN unnest($5::bigint[]) AS t(length) GROUP BY r.user_id,t.length",
+        variant_id,
+        max_score,
+        normal_end,
+        i16::from(MIN_ACHIEVEMENT_PLAYERS),
+        lengths,
+    )
+    .fetch_all(connection)
+    .await?;
+    for row in found {
+        add_streak(
+            records,
+            variant,
+            (row.user_id, row.length, row.best, row.reached),
+        );
+    }
+    Ok(())
+}
+
+/// The records of the players in `users`, or of every player when `users` is `None`.
+async fn records(
+    connection: &mut PgConnection,
+    rows: &QueryRows,
+    users: Option<&[i32]>,
+) -> Result<Records> {
+    let mut records = Records::new();
+    match users {
+        Some(users) => wins_of(connection, rows, users, &mut records).await?,
+        None => all_wins(connection, rows, &mut records).await?,
+    }
+    for (variant, lengths) in streaks() {
+        match users {
+            Some(users) => {
+                streaks_of(connection, variant, &lengths, users, &mut records).await?;
+            }
+            None => all_streaks(connection, variant, &lengths, &mut records).await?,
+        }
+    }
+    Ok(records)
 }
 
 /// A player's progress toward an achievement.
@@ -394,16 +604,20 @@ struct Standing {
     unlocked: Option<OffsetDateTime>,
 }
 
-fn progress(
-    achievement: &Definition,
-    rows: &QueryRows,
-    wins: Option<&HashMap<i64, VariantWins>>,
-) -> Standing {
+fn progress(achievement: &Definition, rows: &QueryRows, record: Option<&Record>) -> Standing {
     let of = |games: Games| {
         rows.row(games)
-            .and_then(|row| wins.and_then(|wins| wins.get(&row)))
+            .and_then(|row| record.and_then(|record| record.wins.get(&row)))
     };
     match achievement.rule {
+        Rule::Streak { variant, length } => {
+            let streak = record.and_then(|record| record.streaks.get(&(variant, length)));
+            Standing {
+                progress: streak.map_or(0, |streak| streak.best.min(length)),
+                goal: length,
+                unlocked: streak.and_then(|streak| streak.reached),
+            }
+        }
         Rule::Wins { games, goal } => {
             let wins = of(games);
             Standing {
@@ -464,7 +678,7 @@ pub(crate) async fn achievements(
     user: i32,
 ) -> Result<Vec<Achievement>> {
     let rows = QueryRows::new()?;
-    let wins = wins_of(connection, &rows, &[user]).await?;
+    let records = records(connection, &rows, Some(&[user])).await?;
     let rarities = rarities(connection).await?;
     ACHIEVEMENTS
         .iter()
@@ -473,7 +687,7 @@ pub(crate) async fn achievements(
                 progress,
                 goal,
                 unlocked,
-            } = progress(achievement, &rows, wins.get(&user));
+            } = progress(achievement, &rows, records.get(&user));
             Ok(Achievement {
                 id: achievement.id,
                 name: achievement.name.into(),
@@ -490,18 +704,18 @@ pub(crate) async fn achievements(
         .collect()
 }
 
-/// Replaces the unlocked achievements of the players in `wins`, or of every player when `users` is
+/// Replaces the unlocked achievements of the players in `users`, or of every player when `users` is
 /// `None`.
 async fn write(
     connection: &mut PgConnection,
     rows: &QueryRows,
     users: Option<&[i32]>,
-    wins: &Wins,
+    records: &Records,
 ) -> Result<()> {
     let (mut ids, mut achievements, mut times) = (Vec::new(), Vec::new(), Vec::new());
-    for (&user, user_wins) in wins {
+    for (&user, record) in records {
         for achievement in ACHIEVEMENTS {
-            if let Some(time) = progress(achievement, rows, Some(user_wins)).unlocked {
+            if let Some(time) = progress(achievement, rows, Some(record)).unlocked {
                 ids.push(user);
                 achievements.push(achievement.id.name());
                 times.push(time);
@@ -541,8 +755,8 @@ pub(crate) async fn refresh(pool: &PgPool, users: &[i32]) -> Result<()> {
     // The lock keeps a refresh and the startup sync from writing a player's unlocks from older
     // wins after the other one wrote newer ones.
     advisory_lock(&mut transaction, LockSpace::Achievements, 0).await?;
-    let wins = wins_of(&mut transaction, &rows, users).await?;
-    write(&mut transaction, &rows, Some(users), &wins).await?;
+    let records = records(&mut transaction, &rows, Some(users)).await?;
+    write(&mut transaction, &rows, Some(users), &records).await?;
     transaction.commit().await?;
     Ok(())
 }
@@ -560,12 +774,12 @@ pub(crate) async fn sync(pool: &PgPool) -> Result<()> {
     .fetch_one(&mut *transaction)
     .await?;
     advisory_lock(&mut transaction, LockSpace::Achievements, 0).await?;
-    let wins = all_wins(&mut transaction, &rows).await?;
-    write(&mut transaction, &rows, None, &wins).await?;
+    let records = records(&mut transaction, &rows, None).await?;
+    write(&mut transaction, &rows, None, &records).await?;
     transaction.commit().await?;
     tracing::info!(
         "Wrote the achievements of {} players in {:?}.",
-        wins.len(),
+        records.len(),
         started.elapsed()
     );
     Ok(())
@@ -606,10 +820,13 @@ mod tests {
         .unwrap();
     }
 
-    /// Each unlocked achievement, as the table stores it.
+    /// Each unlocked achievement, as the table stores it, without the streak, which every player of
+    /// `win` unlocks.
     async fn unlocked(pool: &PgPool) -> Vec<(i32, String)> {
         sqlx::query!(
-            "SELECT user_id,achievement FROM user_achievements ORDER BY user_id,achievement"
+            "SELECT user_id,achievement FROM user_achievements WHERE achievement<>$1
+             ORDER BY user_id,achievement",
+            AchievementId::NoVariant5Streak.name()
         )
         .fetch_all(pool)
         .await
@@ -659,7 +876,8 @@ mod tests {
             alice[0].date_unlocked.as_ref().unwrap().as_str(),
             "2026-01-11T01:00:00.000Z"
         );
-        assert!((alice[0].unlocked_percentage - 100.0).abs() < f64::EPSILON);
+        // Alice, Bob, Dave, Erin, and Frank each have the streak, and only Alice has 10 wins.
+        assert!((alice[0].unlocked_percentage - 100.0 / 5.0).abs() < 1e-9);
         assert!(alice[1].unlocked_percentage.abs() < f64::EPSILON);
         // Bob wins 5 more games with Alice. After the games, both of them have the achievement,
         // and Alice has 15 wins.
@@ -677,7 +895,65 @@ mod tests {
         let bob = achievements(&mut connection, 2).await.unwrap();
         assert_eq!(bob[0].progress.get(), WINS);
         assert_eq!(bob[1].progress.get(), WINS);
-        assert!((bob[0].unlocked_percentage - 100.0).abs() < f64::EPSILON);
+        // Gina now has the streak too, and Bob has 10 wins.
+        assert!((bob[0].unlocked_percentage - 100.0 * 2.0 / 6.0).abs() < 1e-9);
+        drop(connection);
+        db.close().await;
+    }
+
+    #[tokio::test]
+    async fn a_streak_needs_wins_in_a_row() {
+        let Some(db) = crate::accounts::test_support::TestDb::create().await else {
+            return;
+        };
+        let pool = &db.pool;
+        // Alice wins games 1 and 2, loses game 3, and then wins games 4 to 10. Game 6 has 2
+        // players, so its loss does not break the streak. Game 7 uses "One Extra Card", so it does
+        // not either. The fifth win in a row is game 10.
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "test SQL that sets up database state directly"
+        )]
+        sqlx::raw_sql(
+            "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+              VALUES(1,'Alice','alice','test','127.0.0.1');
+            INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,
+              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+              detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
+              datetime_finished)
+            SELECT id,'test',CASE WHEN id=6 THEN 2 ELSE 3 END,0,false,NULL,NULL,false,false,
+              false,id=7,false,false,false,'s'||id,CASE WHEN id IN (3,6,7) THEN 20 ELSE 25 END,
+              10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
+              '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
+            FROM generate_series(1,10) id;
+            INSERT INTO game_participants(game_id,user_id,seat)
+            SELECT id,1,0 FROM generate_series(1,10) id;",
+        )
+        .execute(pool)
+        .await
+        .unwrap();
+        let streak = |achievements: &[Achievement]| {
+            achievements
+                .iter()
+                .find(|achievement| achievement.id == AchievementId::NoVariant5Streak)
+                .unwrap()
+                .clone()
+        };
+        let mut connection = pool.acquire().await.unwrap();
+        let achievement = streak(&achievements(&mut connection, 1).await.unwrap());
+        assert_eq!(achievement.progress.get(), 5);
+        assert_eq!(
+            achievement.date_unlocked.unwrap().as_str(),
+            "2026-01-11T01:00:00.000Z"
+        );
+        // A loss in game 8 would have left a best streak of 2.
+        sqlx::query!("UPDATE games SET score=20 WHERE id=8")
+            .execute(pool)
+            .await
+            .unwrap();
+        let achievement = streak(&achievements(&mut connection, 1).await.unwrap());
+        assert_eq!(achievement.progress.get(), 2);
+        assert!(achievement.date_unlocked.is_none());
         drop(connection);
         db.close().await;
     }

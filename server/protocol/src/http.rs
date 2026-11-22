@@ -236,6 +236,7 @@ named_enum! {
         ThreePlayers10Wins => "threePlayers10Wins",
         FourPlayers10Wins => "fourPlayers10Wins",
         FivePlayers10Wins => "fivePlayers10Wins",
+        NoVariant5Streak => "noVariant5Streak",
     }
 }
 

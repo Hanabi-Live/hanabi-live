@@ -930,14 +930,17 @@ async fn profile_counts_wins_toward_achievements() {
         ("pink10Wins", 1),
         ("threePlayers10Wins", 10),
         ("fourPlayers10Wins", 1),
+        ("noVariant5Streak", 5),
     ]);
     for achievement in shown {
         let id = achievement["id"].as_str().unwrap();
         let expected = progress.get(id).copied().unwrap_or(0);
         assert_eq!(achievement["progress"], expected, "{achievement}");
-        // The tenth win with 3 players is game 13.
+        // The tenth win with 3 players is game 13, and the fifth win in a row is game 5.
         if id == "threePlayers10Wins" {
             assert_eq!(achievement["dateUnlocked"], "2026-01-14T01:00:00.000Z");
+        } else if id == "noVariant5Streak" {
+            assert_eq!(achievement["dateUnlocked"], "2026-01-06T01:00:00.000Z");
         } else {
             assert!(achievement.get("dateUnlocked").is_none(), "{achievement}");
         }

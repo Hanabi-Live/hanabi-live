@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE games SET score=20 WHERE id=8",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "79dc76b824a79264b403229d0f765d6cf05969446e6aa20864ae055700ef3af5"
+}

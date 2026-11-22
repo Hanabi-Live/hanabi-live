@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH counted AS (\n           SELECT p.user_id,g.id,g.datetime_finished,g.end_condition=$3 AND g.score=$2 AS win\n           FROM games g JOIN game_participants p ON p.game_id=g.id\n           WHERE g.variant_id=$1 AND g.num_players>=$4\n           AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card\n             OR g.all_or_nothing OR g.detrimental_characters)\n         ), islands AS (\n           SELECT user_id,id,datetime_finished,win,\n             row_number() OVER (PARTITION BY user_id ORDER BY datetime_finished,id)\n             -row_number() OVER (PARTITION BY user_id,win ORDER BY datetime_finished,id) AS island\n           FROM counted\n         ), runs AS (\n           SELECT user_id,datetime_finished,\n             row_number() OVER (PARTITION BY user_id,island ORDER BY datetime_finished,id)\n               AS length\n           FROM islands WHERE win\n         )\n         SELECT r.user_id AS \"user_id!\",t.length AS \"length!\",max(r.length) AS \"best!\",\n           min(r.datetime_finished) FILTER (WHERE r.length=t.length) AS reached\n         FROM runs r CROSS JOIN unnest($5::bigint[]) AS t(length) GROUP BY r.user_id,t.length",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id!",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "user_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "length!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "best!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "reached",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2",
+        "Int2",
+        "Int2",
+        "Int8Array"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "02591711d868a09495f6ddf25075c579064e1ff6176fbc888db1cb12fd52a9f8"
+}

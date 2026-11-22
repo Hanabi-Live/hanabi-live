@@ -81,6 +81,10 @@ const ACHIEVEMENT_CARDS = {
   fivePlayers10Wins: {
     players: 5,
   },
+  noVariant5Streak: {
+    variant: "No Variant",
+    allSuits: true,
+  },
 } as const satisfies Record<
   Achievement["id"],
   | { readonly variant: string; readonly allSuits: boolean }

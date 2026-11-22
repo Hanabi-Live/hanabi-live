@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id,achievement FROM user_achievements ORDER BY user_id,achievement",
+  "query": "SELECT user_id,achievement FROM user_achievements WHERE achievement<>$1\n             ORDER BY user_id,achievement",
   "describe": {
     "columns": [
       {
@@ -27,12 +27,14 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Text"
+      ]
     },
     "nullable": [
       false,
       false
     ]
   },
-  "hash": "0b627a79c68305f4e10546a748ff0b6ddae34f2e7b5ee44b63b54598ff607c5c"
+  "hash": "8ec845c864f022da3d12c134e5f617f42051d0a0a6f0229c977af858c49cb1e7"
 }
