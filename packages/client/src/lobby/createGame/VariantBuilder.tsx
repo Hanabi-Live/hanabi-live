@@ -31,6 +31,7 @@ import {
   getCriticalDescription,
   getDeckSuitIds,
   getDeckVariant,
+  getFlagTooltip,
   getOtherVersion,
   getParts,
   getRecipe,
@@ -304,7 +305,7 @@ function FlagRow({
 }) {
   return (
     <PartRow label={label}>
-      {flags.map(({ flag, name, description }) => (
+      {flags.map(({ flag, name }) => (
         <Chip
           enabled
           key={flag}
@@ -313,7 +314,7 @@ function FlagRow({
             choose(toggleFlag(choice, flag));
           }}
           pressed={choice.flags.has(flag)}
-          tooltip={description}
+          tooltip={getFlagTooltip(choice, flag)}
         />
       ))}
     </PartRow>

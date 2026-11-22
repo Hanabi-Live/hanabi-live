@@ -5,6 +5,7 @@ import {
   canBeCritical,
   getCatalogName,
   getChoice,
+  getFlagTooltip,
   getOtherVersion,
   getParts,
   getRecipe,
@@ -84,6 +85,15 @@ describe("variant builder", () => {
       (c) => toggleFlag(c, "cm"),
     );
     expect([...muted.flags]).toEqual(["cm"]);
+  });
+
+  test("says which rules a rule turns off", () => {
+    const blind = toggleFlag(FIVE_SUITS, "nb");
+    expect(getFlagTooltip(blind, "nm")).toContain("Turns off Number Blind.");
+    expect(getFlagTooltip(blind, "nb")).not.toContain("Turns off");
+    expect(getFlagTooltip(toggleReversed(FIVE_SUITS, "p"), "sudoku")).toContain(
+      "Ends every reversed suit.",
+    );
   });
 
   test("knows when a critical rank changes the deck", () => {

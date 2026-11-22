@@ -809,6 +809,28 @@ export function getReverseBlocker(choice: Choice): RecipeFlag | undefined {
 }
 
 /**
+ * The tooltip of a rule's chip: what the rule does, and what turning it on would turn off, such as
+ * "Turns off Number Blind.", so that the switch is not a surprise.
+ */
+export function getFlagTooltip(choice: Choice, flag: RecipeFlag): string {
+  const sentences: string[] = [FLAGS[flag].description];
+  if (!choice.flags.has(flag)) {
+    const turnedOff = (EXCLUDED_FLAGS.get(flag) ?? []).filter((other) =>
+      choice.flags.has(other),
+    );
+    if (turnedOff.length > 0) {
+      sentences.push(
+        `Turns off ${joinNames(turnedOff.map((other) => FLAGS[other].name))}.`,
+      );
+    }
+    if (ONE_WAY_FLAGS.has(flag) && choice.reversed.size > 0) {
+      sentences.push("Ends every reversed suit.");
+    }
+  }
+  return sentences.join(" ");
+}
+
+/**
  * Turns a rule on or off. A rule turns off the rules that cannot be on with it, and a rule that
  * stops reversal ends any reversal.
  */
