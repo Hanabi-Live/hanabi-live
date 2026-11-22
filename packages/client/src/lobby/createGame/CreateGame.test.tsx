@@ -35,7 +35,9 @@ vi.mock("../lobbyPage.ts", () => ({
 
 /** The error tooltips that are open, by the ID of their text box. */
 const openErrors = new Map<string, string>();
-vi.mock("../../Tooltip.ts", () => ({
+vi.mock("../../Tooltip.ts", async (importOriginal) => ({
+  // The New UI's cards read its sizes.
+  ...(await importOriginal<object>()),
   Tooltip: class {
     private readonly id: string;
     private content = "";

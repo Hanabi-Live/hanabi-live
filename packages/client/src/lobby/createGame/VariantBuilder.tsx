@@ -2,8 +2,14 @@
 // the variant that has them.
 
 import type { Suit, Variant } from "@hanabi-live/game";
-import { doesVariantExist, getVariant } from "@hanabi-live/game";
+import {
+  doesVariantExist,
+  getVariant,
+  VALID_SUIT_INDEXES,
+} from "@hanabi-live/game";
 import { useEffect, useState } from "react";
+import { CardFace } from "../../game/newUi/Card.tsx";
+import { useAppSelector } from "../../store.ts";
 import type { Choice, PartGroup } from "./variantBuilder.ts";
 import {
   canAdd,
@@ -186,26 +192,30 @@ function getMatchText(numMatches: number): string {
 }
 
 /** One card face for each suit of the variant, in the colors of the suit. */
+/** The width of each card of the deck, in CSS pixels. */
+const DECK_CARD_WIDTH = 40;
+
+/** The variant's suits, drawn as the cards of a game, without ranks. */
 function Deck({ variant }: { readonly variant: Variant }) {
+  const colorblindMode = useAppSelector(
+    (state) => state.session.settings.colorblindMode,
+  );
   return (
     <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
       <div aria-hidden className="tw:flex tw:gap-[0.3em]">
-        {variant.suits.map((suit, index) => (
-          // A variant can have the same suit twice.
-          <SuitCard key={index} suit={suit} />
+        {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => (
+          <CardFace
+            colorblindMode={colorblindMode}
+            key={suitIndex}
+            rank={undefined}
+            suitIndex={suitIndex}
+            variant={variant}
+            width={DECK_CARD_WIDTH}
+          />
         ))}
       </div>
       <figcaption className="tw:font-bold">{variant.name}</figcaption>
     </figure>
-  );
-}
-
-function SuitCard({ suit }: { readonly suit: Suit }) {
-  return (
-    <span
-      className="tw:block tw:h-[2.6em] tw:w-[1.8em] tw:rounded-[0.3em] tw:border tw:border-solid tw:border-black/40 tw:shadow-[0_2px_0_rgb(0_0_0/0.25)]"
-      style={{ background: getSuitBackground(suit) }}
-    />
   );
 }
 
