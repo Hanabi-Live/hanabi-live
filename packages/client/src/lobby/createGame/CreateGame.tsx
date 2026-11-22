@@ -851,9 +851,9 @@ function CuratedVariantMenu({
     // Escape closes the menu, and the focus goes back to the dropdown.
     <nav
       aria-label={CURATED_VARIANTS}
-      // A menu that is still taller than the window scrolls. A pressed button moves down, so the
-      // bottom keeps room for it.
-      className="tw:max-h-[80vh] tw:w-[min(58em,calc(100vw-3em))] tw:overflow-y-auto tw:pb-(--button-press-depth) tw:text-left"
+      // The tooltip scrolls a menu that is taller than the room on the screen. A pressed button
+      // moves down, so the bottom keeps room for it.
+      className="tw:w-[min(58em,calc(100vw-3em))] tw:pb-(--button-press-depth) tw:text-left"
       onKeyDown={(event) => {
         if (event.key !== "Escape") {
           return;
