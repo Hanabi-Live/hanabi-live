@@ -110,7 +110,6 @@ const achievementIdSchema = z.enum([
   "extremelyAmbiguous10Wins",
   "dualColor5Suits10Wins",
   "dualColor6Suits10Wins",
-  "criticalOnes10Wins",
   "criticalTwos10Wins",
   "criticalThrees10Wins",
   "criticalFours10Wins",

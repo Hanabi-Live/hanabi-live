@@ -404,11 +404,6 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         "Dual-Color (6 Suits)",
     ),
     rule(
-        AchievementId::CriticalOnes10Wins,
-        "One and Only",
-        VariantRule::CriticalRank(1),
-    ),
-    rule(
         AchievementId::CriticalTwos10Wins,
         "Pair Bond",
         VariantRule::CriticalRank(2),

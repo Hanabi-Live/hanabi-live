@@ -262,7 +262,6 @@ named_enum! {
         ExtremelyAmbiguous10Wins => "extremelyAmbiguous10Wins",
         DualColor5Suits10Wins => "dualColor5Suits10Wins",
         DualColor6Suits10Wins => "dualColor6Suits10Wins",
-        CriticalOnes10Wins => "criticalOnes10Wins",
         CriticalTwos10Wins => "criticalTwos10Wins",
         CriticalThrees10Wins => "criticalThrees10Wins",
         CriticalFours10Wins => "criticalFours10Wins",

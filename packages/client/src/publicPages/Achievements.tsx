@@ -138,10 +138,6 @@ const ACHIEVEMENT_CARDS = {
     variant: "Dual-Color (6 Suits)",
     allSuits: true,
   },
-  criticalOnes10Wins: {
-    rankOf: "Black (5 Suits)",
-    label: "1",
-  },
   criticalTwos10Wins: {
     rankOf: "Black (5 Suits)",
     label: "2",
