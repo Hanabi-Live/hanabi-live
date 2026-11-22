@@ -350,7 +350,7 @@ function Deck({
   };
 
   return (
-    <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
+    <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:gap-x-[1.2em] tw:gap-y-[0.6em]">
       {/* The buttons wrap below the cards on a narrow screen. */}
       <div className="tw:flex tw:flex-wrap tw:gap-[0.3em]" role="group">
         {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
@@ -376,16 +376,6 @@ function Deck({
         })}
         <span className="tw:flex tw:items-center tw:gap-[0.3em] tw:pl-[0.2em]">
           <CountButton
-            icon="fa-plus"
-            label="Add a suit"
-            onClick={count.onAdd}
-            tooltip={
-              count.onAdd === undefined
-                ? `A deck has at most ${MAX_SUITS} suits.`
-                : "Add a normal suit."
-            }
-          />
-          <CountButton
             icon="fa-minus"
             label="Remove a suit"
             onClick={count.onRemove}
@@ -393,6 +383,16 @@ function Deck({
               count.onRemove === undefined
                 ? count.removeBlockedReason
                 : "Remove a normal suit."
+            }
+          />
+          <CountButton
+            icon="fa-plus"
+            label="Add a suit"
+            onClick={count.onAdd}
+            tooltip={
+              count.onAdd === undefined
+                ? `A deck has at most ${MAX_SUITS} suits.`
+                : "Add a normal suit."
             }
           />
         </span>
