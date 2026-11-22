@@ -36,6 +36,8 @@ of the repository.
   number of players.
 - When a game unlocks an achievement, the table chat says so, and the player who
   unlocked it sees a message at the top of the screen.
+- The first tab of a profile is now named "Profile", and the heading above the
+  tabs shows only the player's name.
 
 ## November 21st, 2026
 

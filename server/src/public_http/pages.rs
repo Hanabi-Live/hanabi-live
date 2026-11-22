@@ -28,7 +28,6 @@ fn set_table(values: &mut Value, table: &PublicPageTable) -> Result<()> {
 pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
     env.add_filter("urlencode", |s: String| encoded(&s));
-    env.add_filter("possessive", |s: String| possessive(&s));
     for (name, source) in [
         ("layout.html", include_str!("../../templates/layout.html")),
         ("logo.html", include_str!("../../templates/logo.html")),
@@ -302,13 +301,6 @@ fn percentage(n: i64, total: i64) -> f64 {
         0.0
     } else {
         float(n) * 100.0 / float(total)
-    }
-}
-pub(super) fn possessive(name: &str) -> String {
-    if name.ends_with(['s', 'S']) {
-        format!("{name}'")
-    } else {
-        format!("{name}'s")
     }
 }
 

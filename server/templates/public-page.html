@@ -21,8 +21,8 @@ endif %}{% endblock %}{% block head %}{% if table or page == "password-reset"
           {% if page != "seed" %}
           <!-- The script of the seed page draws its own heading. -->
           <h2 class="align-center">
-            {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name|possessive
-            }} Profile{% else %}{{ title }}{% endif %}
+            {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name }}{% else
+            %}{{ title }}{% endif %}
           </h2>
           {% endif %} {% include "profile-buttons.html" %} {% if page ==
           "password-reset" %}
