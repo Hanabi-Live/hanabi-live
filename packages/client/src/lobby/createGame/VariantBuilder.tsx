@@ -771,7 +771,7 @@ function Chip({
       aria-disabled={blocked ? true : undefined}
       aria-label={name === label ? undefined : name}
       aria-pressed={pressed}
-      className={`tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-[0.45em] tw:rounded-full tw:border tw:border-solid tw:px-[0.8em] tw:py-[0.25em] tw:text-[0.9em] tw:disabled:cursor-not-allowed tw:disabled:opacity-35 ${blocked ? "tw:cursor-not-allowed tw:opacity-35" : ""} ${
+      className={`tw:inline-flex tw:items-center tw:gap-[0.45em] tw:rounded-full tw:border tw:border-solid tw:px-[0.8em] tw:py-[0.25em] tw:text-[0.9em] tw:disabled:cursor-not-allowed tw:disabled:opacity-35 ${blocked ? "tw:cursor-not-allowed tw:opacity-35" : "tw:cursor-pointer"} ${
         pressed
           ? "tw:border-green tw:bg-green tw:text-text-on-accent"
           : `tw:border-border tw:bg-surface tw:text-text ${blocked ? "" : "tw:enabled:hover:border-green"}`
