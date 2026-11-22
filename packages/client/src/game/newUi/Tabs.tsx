@@ -48,14 +48,15 @@ export function Tabs<Tab extends string>({
         <button
           aria-controls={id}
           aria-selected={tab === id}
-          className={`tw:relative tw:grid tw:min-w-0 tw:cursor-pointer tw:grid-cols-[minmax(0,1fr)] tw:justify-items-center tw:border-0 tw:bg-transparent tw:px-0 tw:py-1.5 tw:text-[15px] tw:leading-[20px] tw:font-semibold tw:whitespace-nowrap ${tab === id ? "tw:text-game-text" : "tw:text-game-muted tw:hover:text-game-text"}`}
+          className={`tw:relative tw:grid tw:min-w-0 tw:cursor-pointer tw:grid-cols-[minmax(0,1fr)] tw:justify-items-center tw:rounded-game-control tw:border-0 tw:bg-transparent tw:px-0 tw:py-1.5 tw:text-[15px] tw:leading-[20px] tw:font-semibold tw:whitespace-nowrap ${tab === id ? "tw:text-game-text" : "tw:text-game-muted tw:hover:bg-white/8 tw:hover:text-game-text"}`}
           key={id}
           onClick={() => {
             onTab(id);
           }}
           role="tab"
-          // The text's color changes as the highlight slides to the tab. A text color is not a
-          // background color, so it may animate.
+          // Under the pointer, another tab gets a fainter copy of the highlight at once, so that it
+          // looks like it can be pressed. The text's color changes as the highlight slides to the
+          // tab. A text color is not a background color, so it may animate.
           style={{
             transition: reducedMotion
               ? undefined
