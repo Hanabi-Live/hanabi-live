@@ -81,7 +81,7 @@ import { VariantBuilder } from "./VariantBuilder.tsx";
  */
 const BASIC_VARIANT_NAMES = [
   "No Variant",
-  "Black (5 Suits)",
+  "Black (6 Suits)",
   "Rainbow (5 Suits)",
 ] as const;
 
