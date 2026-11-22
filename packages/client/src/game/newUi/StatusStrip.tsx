@@ -393,6 +393,9 @@ const OUR_TURN_PULSES = 3;
 /** How long one pulse of the replay button takes, in milliseconds. */
 const OUR_TURN_PULSE_MILLISECONDS = 1200;
 
+/** How far the ring of a pulse grows out from the replay button, in CSS pixels. */
+const OUR_TURN_PULSE_REACH = 12;
+
 interface ReplayToggleProps {
   readonly inReplay: boolean;
   /** Whose turn it is in the game now, which the screen does not show while we look back. */
@@ -425,15 +428,18 @@ function ReplayToggle({
     if (ring === null || !turnCame || !inReplay || reducedMotion) {
       return undefined;
     }
+    // The ring is an outline, which grows by its offset. A scaled ring would make the panel's tab
+    // overflow and show a scroll bar for a moment, which wraps the buttons again. An outline does
+    // not make an element overflow.
     const pulse = ring.animate(
       [
         {
           opacity: 0.8,
-          transform: "scale(1)",
+          outlineOffset: "0px",
         },
         {
           opacity: 0,
-          transform: "scale(1.15, 1.6)",
+          outlineOffset: `${OUR_TURN_PULSE_REACH}px`,
         },
       ],
       {
@@ -461,7 +467,7 @@ function ReplayToggle({
     <div className="tw:relative tw:shrink-0">
       <span
         aria-hidden="true"
-        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-game-control tw:opacity-0 tw:ring-2 tw:ring-game-turn"
+        className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-game-control tw:opacity-0 tw:outline-2 tw:outline-game-turn"
         ref={ringRef}
       />
       <button
