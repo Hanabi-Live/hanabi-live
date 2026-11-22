@@ -76,13 +76,10 @@ impl Games {
         match self {
             Self::Variant(variant) => format!("games of {}", variant.name()),
             Self::Players(players) => format!("games with {players} players"),
+            // The text does not name the ranks, which may change.
             Self::SpecialRank(rank) => format!(
-                "games of {}, with 5 suits",
-                SPECIAL_RANKS
-                    .iter()
-                    .map(|n| format!("{rank}-{n}"))
-                    .collect::<Vec<_>>()
-                    .join(" or ")
+                "games with a {} special rank and 5 suits",
+                rank.replace('-', " ")
             ),
         }
     }
