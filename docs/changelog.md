@@ -37,6 +37,8 @@ of the repository.
   unlocked it sees a message at the top of the screen.
 - The first tab of a profile is now named "Profile", and the heading above the
   tabs shows only the player's name.
+- Profiles have a "Best scores" tab, with the player's best scores in the
+  curated variants with 2 to 5 players.
 
 ## November 21st, 2026
 

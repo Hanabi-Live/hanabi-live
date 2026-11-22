@@ -172,6 +172,9 @@ that have not been played yet and have only one copy remaining.)
   achievement who have it.
 - When a game unlocks an achievement, the table chat says so, and the player who
   unlocked it sees a message at the top of the screen.
+- A profile's "Best scores" tab shows the player's best score in each curated
+  variant with 2, 3, 4, and 5 players. A max score is highlighted, and each
+  column counts the player's max scores.
 
 ### Replays
 
@@ -869,6 +872,7 @@ use these numbers to make the best move for the current situation.
 | `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)                 |
 | `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)          |
 | `/tags/[username]`                                 | Lists the player's tagged games.                                                                         |
+| `/best-scores/[username]`                          | Shows the player's best scores in the curated variants.                                                  |
 | `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                               |
 | `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                                        |
 | `/create-table`                                    | Creates a table. Query parameters (such as `?variantName=Rainbow (6 Suits)&timed=true`) set its options. |

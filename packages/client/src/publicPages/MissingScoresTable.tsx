@@ -24,7 +24,7 @@ const MODIFIER_NAMES = {
 const CENTER = "tw:text-center";
 
 /** A cross that explains which option kept a score from counting as a normal one. */
-function ModifierIcon({
+export function ModifierIcon({
   modifier,
 }: {
   readonly modifier: ScoreModifierOption;

@@ -281,6 +281,9 @@ const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 /** The accounts that play a game and review another in the lobby. */
 const LOBBY_GAME_NAMES = ["Mallory", "Nora", "Oscar", "Peggy"] as const;
 
+/** The player whose "Best scores" tab the screenshots show, with the scores that the seed gives. */
+const BEST_SCORES_USERNAME = LOBBY_GAME_NAMES[2];
+
 /** The account that owns the open table and plays Bob's game with the browser's account. */
 const BOB = "Bob";
 
@@ -670,6 +673,11 @@ function getStates(): readonly State[] {
     {
       name: "profile",
       path: `/profile/${USERNAME}`,
+      loggedIn: false,
+    },
+    {
+      name: "best-scores",
+      path: `/best-scores/${BEST_SCORES_USERNAME}`,
       loggedIn: false,
     },
     {
@@ -4235,6 +4243,23 @@ async function main() {
     // accounts are not new.
     const sql = database.connect();
     await sql`UPDATE users SET datetime_created = datetime_created - interval '1 day'`;
+    // Best scores of a player whom no other score state shows, so that the "Best scores" tab has
+    // max scores, a lower score, and a max score with an option (4 is "One Extra Card").
+    await sql`
+      INSERT INTO user_stats (user_id, variant_id, num_games, best_score3, best_score3_mod, best_score4, best_score4_mod, best_score5, best_score5_mod)
+      SELECT users.id, variants.id, 3, best.three, 0, best.four, best.four_mod, best.five,
+        CASE WHEN best.five IS NULL THEN NULL ELSE 0 END
+      FROM users, variants, (VALUES
+        ('No Variant', 25, 25, 0, 23),
+        ('Rainbow (5 Suits)', 25, 21, 0, NULL),
+        ('Black (6 Suits)', 30, 30, 4, NULL)
+      ) AS best(name, three, four, four_mod, five)
+      WHERE users.username = ${BEST_SCORES_USERNAME} AND variants.name = best.name
+      ON CONFLICT (user_id, variant_id) DO UPDATE SET
+        best_score3 = EXCLUDED.best_score3, best_score3_mod = EXCLUDED.best_score3_mod,
+        best_score4 = EXCLUDED.best_score4, best_score4_mod = EXCLUDED.best_score4_mod,
+        best_score5 = EXCLUDED.best_score5, best_score5_mod = EXCLUDED.best_score5_mod
+    `;
     await sql.end();
 
     await run(process.execPath, [

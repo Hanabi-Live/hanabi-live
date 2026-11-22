@@ -1453,6 +1453,38 @@ export const seedStatisticsSchema = z
   .readonly();
 
 /**
+ * A player's best score in a variant with one number of players.
+ */
+const playerCountScoreSchema = z
+  .strictObject({
+    /**
+     * The option that keeps the score from counting as a normal one, if any.
+     */
+    modifier: scoreModifierOptionSchema.optional(),
+    numPlayers: numPlayersSchema,
+    score: scoreSchema,
+  })
+  .readonly();
+
+/**
+ * A player's best scores in a variant that they played.
+ */
+const variantBestScoresSchema = z
+  .strictObject({
+    maxScore: scoreSchema,
+    /**
+     * The variant's recipe, which is its identity.
+     */
+    recipe: z.string(),
+    /**
+     * The best score with each number of players that the player played.
+     */
+    scores: z.array(playerCountScoreSchema).max(5).readonly(),
+    variantName: z.string(),
+  })
+  .readonly();
+
+/**
  * What the script of a public page draws: its table, and the controls and chart that go with it.
  */
 export const publicPageTableSchema = z.discriminatedUnion("type", [
@@ -1461,6 +1493,12 @@ export const publicPageTableSchema = z.discriminatedUnion("type", [
       achievements: z.array(achievementSchema).readonly(),
       statistics: playerStatisticsSchema,
       type: z.literal("profile"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      rows: z.array(variantBestScoresSchema).readonly(),
+      type: z.literal("bestScores"),
     })
     .readonly(),
   z

@@ -8,9 +8,9 @@ use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_protocol::{
     BestStreak, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
-    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerScores, PlayerStatistics,
-    PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty, SeedStatistics,
-    VariantId,
+    MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerCountScore, PlayerScores,
+    PlayerStatistics, PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty,
+    SeedStatistics, VariantBestScores, VariantId,
 };
 use std::sync::Arc;
 
@@ -157,7 +157,7 @@ pub(super) async fn page(
             let users = data::players(&state, &params, true).await?;
             return missing(&state, users, n, &q).await;
         }
-        "profile" | "history" | "tags" => {
+        "profile" | "history" | "tags" | "best-scores" => {
             let users = data::players(&state, &params, mode == "history").await?;
             v["name"] = json!(users[0].1);
             match mode {
@@ -179,6 +179,11 @@ pub(super) async fn page(
                             achievements,
                         },
                     )?;
+                }
+                "best-scores" => {
+                    v["title"] = json!("Best Scores");
+                    let rows = best_scores(&state, users[0].0).await?;
+                    set_table(&mut v, &PublicPageTable::BestScores { rows })?;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -548,6 +553,41 @@ const EFFICIENCY_DECIMALS: usize = 2;
 const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
 const VERY_HARD_EFFICIENCY: f64 = 1.5;
+
+/// A player's best scores in each variant of the catalog that they played.
+async fn best_scores(state: &PublicState, id: i32) -> Result<Vec<VariantBestScores>> {
+    let statistics = user_stats(state, id).await?;
+    let mut rows = Vec::new();
+    for variant in catalog::variants() {
+        // A variant without a row has no games.
+        let Some(row) = statistics.get(&i64::from(variant.id)) else {
+            continue;
+        };
+        let scores = row
+            .best_scores()
+            .into_iter()
+            .zip(hanabi_protocol::MIN_PLAYERS..)
+            .filter_map(|(score, num_players)| Some((score?, num_players)))
+            .map(|((score, modifier), num_players)| {
+                Ok(PlayerCountScore {
+                    num_players: NumPlayers::try_from(num_players)?,
+                    score: Score::try_from(score)?,
+                    modifier: shown_modifier(modifier),
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+        if scores.is_empty() {
+            continue;
+        }
+        rows.push(VariantBestScores {
+            recipe: variant.recipe.clone(),
+            variant_name: variant.name.clone(),
+            max_score: Score::try_from(variant.max_score)?,
+            scores,
+        });
+    }
+    Ok(rows)
+}
 
 /// A player's count of max scores at each player count.
 async fn score_summary(state: &PublicState, id: i32) -> Result<MaxScoreSummary> {

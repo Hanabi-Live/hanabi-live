@@ -596,6 +596,20 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let row = missing_no_variant().await.unwrap();
     assert_eq!(row["score"], row["maxScore"], "{row}");
     assert_eq!(row["modifier"], "oneExtraCard", "{row}");
+    // The "Best scores" tab lists each played variant by its recipe, with each player count.
+    let (status, body) = request(app.clone(), "/best-scores/Alice").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let rows = page_table(&body)["rows"].clone();
+    assert_eq!(
+        rows,
+        json!([{
+            "recipe": "r-y-g-b-p",
+            "variantName": "No Variant",
+            "maxScore": 25,
+            "scores": [{"numPlayers": 2, "score": 25, "modifier": "oneExtraCard"}],
+        }]),
+        "{rows}"
+    );
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"

@@ -365,6 +365,30 @@ pub struct MissingScore {
     pub difficulty: Difficulty,
 }
 
+/// A player's best scores in a variant that they played.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct VariantBestScores {
+    /// The variant's recipe, which is its identity.
+    pub recipe: String,
+    pub variant_name: String,
+    pub max_score: Score,
+    /// The best score with each number of players that the player played.
+    #[schemars(length(max = MAX_PLAYERS - MIN_PLAYERS + 1))]
+    pub scores: Vec<PlayerCountScore>,
+}
+
+/// A player's best score in a variant with one number of players.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerCountScore {
+    pub num_players: NumPlayers,
+    pub score: Score,
+    /// The option that keeps the score from counting as a normal one, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modifier: Option<ScoreModifierOption>,
+}
+
 /// A player of a shared missing scores page.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -406,6 +430,9 @@ pub enum PublicPageTable {
         statistics: PlayerStatistics,
         achievements: Vec<Achievement>,
     },
+    /// A player's best scores in each variant that they played. The page shows the curated
+    /// variants.
+    BestScores { rows: Vec<VariantBestScores> },
     /// The max scores that one or more players are missing.
     MissingScores {
         rows: Vec<MissingScore>,
