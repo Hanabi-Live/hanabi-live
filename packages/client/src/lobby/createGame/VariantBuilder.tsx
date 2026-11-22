@@ -70,11 +70,6 @@ const SUIT_GROUPS = [
   readonly label: string;
 }>;
 
-const SUIT_COUNTS: readonly number[] = Array.from(
-  { length: MAX_SUITS },
-  (_, index) => index + 1,
-);
-
 export function VariantBuilder({
   onNew,
   onPick,
@@ -144,6 +139,25 @@ export function VariantBuilder({
             },
           }}
           chosen={choice.suits}
+          count={{
+            onAdd:
+              choice.numSuits < MAX_SUITS
+                ? () => {
+                    choose(setNumSuits(choice, choice.numSuits + 1));
+                  }
+                : undefined,
+            // Only a normal suit goes, since the player picked the others.
+            onRemove:
+              choice.numSuits > Math.max(choice.suits.length, 1)
+                ? () => {
+                    choose(setNumSuits(choice, choice.numSuits - 1));
+                  }
+                : undefined,
+            removeBlockedReason:
+              choice.numSuits === 1
+                ? "A deck has at least one suit."
+                : "This deck has no normal suit. Remove another suit from its card's menu.",
+          }}
           ids={deckIds}
           reverseBlocker={getReverseBlocker(choice)}
           reversed={choice.reversed}
@@ -153,20 +167,6 @@ export function VariantBuilder({
       <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
         Click a card to make it dark or reversed.
       </p>
-
-      <PartRow label="Suits">
-        {SUIT_COUNTS.map((numSuits) => (
-          <Chip
-            enabled={numSuits >= choice.suits.length}
-            key={numSuits}
-            label={numSuits.toString()}
-            onClick={() => {
-              choose(setNumSuits(choice, numSuits));
-            }}
-            pressed={choice.numSuits === numSuits}
-          />
-        ))}
-      </PartRow>
 
       {SUIT_GROUPS.map(({ group, label }) => (
         <PartRow key={group} label={label}>
@@ -309,9 +309,18 @@ interface DeckActions {
   readonly onRemove: (id: string) => void;
 }
 
+/** The buttons that add or remove a normal suit. Each is absent when it cannot. */
+interface CountActions {
+  readonly onAdd: (() => void) | undefined;
+  readonly onRemove: (() => void) | undefined;
+  /** Why no suit can be removed, while `onRemove` is absent. */
+  readonly removeBlockedReason: string;
+}
+
 function Deck({
   actions,
   chosen,
+  count,
   ids,
   reversed,
   reverseBlocker,
@@ -322,6 +331,7 @@ function Deck({
    * The suits that the player picked, which the menu can remove. The normal suits fill the rest.
    */
   readonly chosen: readonly string[];
+  readonly count: CountActions;
   /** The ID of each suit of the deck, in order. */
   readonly ids: readonly string[];
   readonly reversed: ReadonlySet<string>;
@@ -341,7 +351,8 @@ function Deck({
 
   return (
     <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
-      <div className="tw:flex tw:gap-[0.3em]" role="group">
+      {/* The buttons wrap below the cards on a narrow screen. */}
+      <div className="tw:flex tw:flex-wrap tw:gap-[0.3em]" role="group">
         {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
           const id = ids[suitIndex];
           return (
@@ -363,9 +374,62 @@ function Deck({
             )
           );
         })}
+        <span className="tw:flex tw:items-center tw:gap-[0.3em] tw:pl-[0.2em]">
+          <CountButton
+            icon="fa-plus"
+            label="Add a suit"
+            onClick={count.onAdd}
+            tooltip={
+              count.onAdd === undefined
+                ? `A deck has at most ${MAX_SUITS} suits.`
+                : "Add a normal suit."
+            }
+          />
+          <CountButton
+            icon="fa-minus"
+            label="Remove a suit"
+            onClick={count.onRemove}
+            tooltip={
+              count.onRemove === undefined
+                ? count.removeBlockedReason
+                : "Remove a normal suit."
+            }
+          />
+        </span>
       </div>
       <figcaption className="tw:font-bold">{variant.name}</figcaption>
     </figure>
+  );
+}
+
+/** A small round button beside the deck that adds or removes a suit. */
+function CountButton({
+  icon,
+  label,
+  onClick,
+  tooltip,
+}: {
+  /** The Font Awesome icon, such as "fa-plus". */
+  readonly icon: string;
+  readonly label: string;
+  /** Absent when the button cannot do anything. */
+  readonly onClick: (() => void) | undefined;
+  readonly tooltip: string;
+}) {
+  const enabled = onClick !== undefined;
+  return (
+    // A disabled button gets no pointer events, so this one only looks disabled, to keep its
+    // tooltip.
+    <button
+      aria-disabled={!enabled}
+      aria-label={label}
+      className={`tw:flex tw:size-[1.4em] tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-0 tw:text-[1.1em] tw:leading-none tw:text-text ${enabled ? "tw:cursor-pointer tw:hover:border-green" : "tw:cursor-not-allowed tw:opacity-35"}`}
+      onClick={onClick}
+      ref={tooltipRef(tooltip)}
+      type="button"
+    >
+      <i aria-hidden className={`fas ${icon} tw:text-[0.7em]`} />
+    </button>
   );
 }
 

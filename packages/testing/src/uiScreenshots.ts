@@ -926,7 +926,7 @@ function getStates(): readonly State[] {
         const builder = page.locator("#create-game-variant-builder");
         await builder
           .getByRole("button", {
-            name: "6",
+            name: "Add a suit",
             exact: true,
           })
           .click();
