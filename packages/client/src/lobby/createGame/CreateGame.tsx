@@ -11,7 +11,6 @@ import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
   MIN_PLAYERS,
-  VARIANT_NAMES,
   doesVariantExist,
   getVariantById,
   isValidNumPlayers,
@@ -742,12 +741,17 @@ function VariantPicker({
         </select>
       </div>
       <button
-        aria-label="Choose a random variant"
+        aria-label="Choose a random curated variant"
         className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-[1.2em] tw:text-green-text tw:hover:text-(--dice-hover)"
         onClick={() => {
-          onChange(getRandomArrayElement(VARIANT_NAMES));
+          // A different variant each time, so that a click always changes it.
+          onChange(
+            getRandomArrayElement(
+              CURATED_VARIANT_NAMES.filter((name) => name !== variantName),
+            ),
+          );
         }}
-        ref={tooltipRef("Choose a random variant")}
+        ref={tooltipRef("Choose a random curated variant")}
         type="button"
       >
         <i className="fas fa-dice" id="dice" />
