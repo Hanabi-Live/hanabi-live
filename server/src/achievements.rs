@@ -80,6 +80,16 @@ const RULE_SUITS: usize = 5;
 /// A rule of a variant that an achievement counts the wins with.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum VariantRule {
+    /// The rank whose cards have one copy each, such as 4 in Critical Fours.
+    CriticalRank(i32),
+    ScarceOnes,
+    ClueStarved,
+    /// Color clues touch no cards, but rank clues do.
+    ColorBlind,
+    /// Rank clues touch no cards, but color clues do.
+    NumberBlind,
+    /// No clue touches any card.
+    TotallyBlind,
     CowAndPig,
     Duck,
     OddsAndEvens,
@@ -92,6 +102,18 @@ pub(crate) enum VariantRule {
 impl VariantRule {
     fn of(self, variant: &hanabi_engine::Variant) -> bool {
         match self {
+            Self::CriticalRank(rank) => variant.critical_rank == Some(rank),
+            Self::ScarceOnes => variant.scarce_ones,
+            Self::ClueStarved => variant.clue_starved,
+            Self::ColorBlind => {
+                variant.color_clues_touch_nothing && !variant.rank_clues_touch_nothing
+            }
+            Self::NumberBlind => {
+                variant.rank_clues_touch_nothing && !variant.color_clues_touch_nothing
+            }
+            Self::TotallyBlind => {
+                variant.color_clues_touch_nothing && variant.rank_clues_touch_nothing
+            }
             Self::CowAndPig => variant.cow_and_pig,
             Self::Duck => variant.duck,
             Self::OddsAndEvens => variant.odds_and_evens,
@@ -103,8 +125,14 @@ impl VariantRule {
         }
     }
 
-    const fn name(self) -> &'static str {
-        match self {
+    fn name(self) -> String {
+        let name = match self {
+            Self::CriticalRank(rank) => return format!("critical {rank}s"),
+            Self::ScarceOnes => "Scarce Ones",
+            Self::ClueStarved => "Clue Starved",
+            Self::ColorBlind => "Color Blind",
+            Self::NumberBlind => "Number Blind",
+            Self::TotallyBlind => "Totally Blind",
             Self::CowAndPig => "Cow and Pig",
             Self::Duck => "Duck",
             Self::OddsAndEvens => "Odds and Evens",
@@ -112,7 +140,8 @@ impl VariantRule {
             Self::UpOrDown => "Up or Down",
             Self::ThrowItInAHole => "Throw It in a Hole",
             Self::Sudoku => "Sudoku",
-        }
+        };
+        name.to_owned()
     }
 }
 
@@ -280,6 +309,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
             goal: 100,
         },
     },
+    special_suit(AchievementId::Black10Wins, "Pitch Black", "Black"),
     special_suit(AchievementId::Rainbow10Wins, "Rainbow Wrangler", "Rainbow"),
     special_suit(AchievementId::Pink10Wins, "Tickled Pink", "Pink"),
     special_suit(AchievementId::White10Wins, "Whiteout", "White"),
@@ -293,6 +323,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
     ),
     special_suit(AchievementId::LightPink10Wins, "Light Touch", "Light Pink"),
     special_suit(AchievementId::Prism10Wins, "Prismatic", "Prism"),
+    special_suit(AchievementId::Orange10Wins, "Citrus Twist", "Orange"),
     Definition {
         id: AchievementId::DarkSuitsWins,
         name: "Lights Out",
@@ -358,6 +389,51 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         AchievementId::DualColor6Suits10Wins,
         "Double Vision",
         "Dual-Color (6 Suits)",
+    ),
+    rule(
+        AchievementId::CriticalOnes10Wins,
+        "One and Only",
+        VariantRule::CriticalRank(1),
+    ),
+    rule(
+        AchievementId::CriticalTwos10Wins,
+        "Pair Bond",
+        VariantRule::CriticalRank(2),
+    ),
+    rule(
+        AchievementId::CriticalThrees10Wins,
+        "Triple Threat",
+        VariantRule::CriticalRank(3),
+    ),
+    rule(
+        AchievementId::CriticalFours10Wins,
+        "Four-Leaf Clover",
+        VariantRule::CriticalRank(4),
+    ),
+    rule(
+        AchievementId::ScarceOnes10Wins,
+        "Rare Find",
+        VariantRule::ScarceOnes,
+    ),
+    rule(
+        AchievementId::ClueStarved10Wins,
+        "Lean Times",
+        VariantRule::ClueStarved,
+    ),
+    rule(
+        AchievementId::ColorBlind10Wins,
+        "Shades of Gray",
+        VariantRule::ColorBlind,
+    ),
+    rule(
+        AchievementId::NumberBlind10Wins,
+        "Lost Count",
+        VariantRule::NumberBlind,
+    ),
+    rule(
+        AchievementId::TotallyBlind10Wins,
+        "Blindfolded",
+        VariantRule::TotallyBlind,
     ),
     rule(
         AchievementId::CowAndPig10Wins,

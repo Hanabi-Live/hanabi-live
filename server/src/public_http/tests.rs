@@ -894,8 +894,11 @@ async fn profile_counts_wins_toward_achievements() {
     // count. Games 21 and 22 are wins in Rainbow-Fives (5 Suits) and Rainbow-Ones (6 Suits)
     // (variants 527 and 168). Only game 21 counts toward the Rainbow rank. Game 23 is a win in
     // Ambiguous (6 Suits) (variant 8). Games 24 and 25 are wins in Up or Down (5 Suits) and Up or
-    // Down (6 Suits) (variants 24 and 40). Only game 24 counts toward Up or Down. The wins with 3
-    // players are games 1 to 9, 13, 14, 16, and 21 to 25.
+    // Down (6 Suits) (variants 24 and 40). Only game 24 counts toward Up or Down. Games 26, 27, and
+    // 28 are wins in Black (5 Suits), Critical Fours (5 Suits), and Totally Blind (5 Suits)
+    // (variants 21, 1822, and 152). Totally Blind does not count toward Color Blind or Number
+    // Blind. Black is also one of the dark suits. The wins with 3 players are games 1 to 9, 13, 14,
+    // 16, and 21 to 28.
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -915,10 +918,10 @@ async fn profile_counts_wins_toward_achievements() {
           FROM generate_series(1,12) id
           UNION ALL VALUES(13,16,25),(14,3,30),(16,17,20),(19,107,25),(20,0,25),(21,527,25),
             (22,168,30),(23,8,30),(24,24,25),
-            (25,40,30)) AS g(id,variant,score);
+            (25,40,30),(26,21,25),(27,1822,25),(28,152,25)) AS g(id,variant,score);
         INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id WHERE id<>15;
         INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0),(20,1,0),(21,1,0),(22,1,0),(23,1,0),
-          (24,1,0),(25,1,0);",
+          (24,1,0),(25,1,0),(26,1,0),(27,1,0),(28,1,0);",
     )
     .execute(&db.pool)
     .await
@@ -946,6 +949,10 @@ async fn profile_counts_wins_toward_achievements() {
         ("rainbowRank10Wins", 1),
         ("ambiguous10Wins", 1),
         ("upOrDown10Wins", 1),
+        ("black10Wins", 1),
+        ("darkSuitsWins", 1),
+        ("criticalFours10Wins", 1),
+        ("totallyBlind10Wins", 1),
     ]);
     for achievement in shown {
         let id = achievement["id"].as_str().unwrap();

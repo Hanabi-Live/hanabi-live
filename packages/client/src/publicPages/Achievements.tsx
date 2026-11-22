@@ -34,6 +34,10 @@ const ACHIEVEMENT_CARDS = {
     variant: "No Variant",
     allSuits: true,
   },
+  black10Wins: {
+    variant: "Black (5 Suits)",
+    allSuits: false,
+  },
   rainbow10Wins: {
     variant: "Rainbow (5 Suits)",
     allSuits: false,
@@ -68,6 +72,10 @@ const ACHIEVEMENT_CARDS = {
   },
   prism10Wins: {
     variant: "Prism (5 Suits)",
+    allSuits: false,
+  },
+  orange10Wins: {
+    variant: "Orange (5 Suits)",
     allSuits: false,
   },
   darkSuitsWins: {
@@ -129,6 +137,42 @@ const ACHIEVEMENT_CARDS = {
   dualColor6Suits10Wins: {
     variant: "Dual-Color (6 Suits)",
     allSuits: true,
+  },
+  criticalOnes10Wins: {
+    rankOf: "Black (5 Suits)",
+    label: "1",
+  },
+  criticalTwos10Wins: {
+    rankOf: "Black (5 Suits)",
+    label: "2",
+  },
+  criticalThrees10Wins: {
+    rankOf: "Black (5 Suits)",
+    label: "3",
+  },
+  criticalFours10Wins: {
+    rankOf: "Black (5 Suits)",
+    label: "4",
+  },
+  scarceOnes10Wins: {
+    icon: "fa-gem",
+    suitIndex: 5,
+  },
+  clueStarved10Wins: {
+    icon: "fa-battery-empty",
+    suitIndex: 1,
+  },
+  colorBlind10Wins: {
+    icon: "fa-palette",
+    suitIndex: 2,
+  },
+  numberBlind10Wins: {
+    icon: "fa-hashtag",
+    suitIndex: 3,
+  },
+  totallyBlind10Wins: {
+    icon: "fa-eye-slash",
+    suitIndex: 4,
   },
   cowAndPig10Wins: {
     icon: "fa-cow",
