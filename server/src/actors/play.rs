@@ -570,6 +570,9 @@ impl TableActor {
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),
+                variant: hanabi_engine::variant_rules(hanabi_engine::get_variant(
+                    &s.game.options.variant_name,
+                )?)?,
                 characters: if s.game.options.detrimental_characters {
                     s.game
                         .players

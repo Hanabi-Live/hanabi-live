@@ -7,13 +7,18 @@ import type { Suit, SuitFill } from "./interfaces/Suit.ts";
 import type { SuitJson } from "./interfaces/SuitJson.ts";
 import suitsJson from "./json/suits.json" with { type: "json" };
 
+/**
+ * The suits of `suits.json`, or of the entries given, such as the suits of a variant's rules from
+ * the server. Each suit also has a reversed version.
+ */
 export function suitsInit(
   COLORS: ReadonlyMap<string, Color>,
+  // A test validates the file against the server's catalog contract.
+  entries: readonly SuitJson[] = suitsJson as readonly SuitJson[],
 ): ReadonlyMap<string, Suit> {
   const suits = new Map<string, Suit>();
 
-  // A test validates the file against the server's catalog contract.
-  for (const suitJson of suitsJson as readonly SuitJson[]) {
+  for (const suitJson of entries) {
     const { id, name, pip } = suitJson;
 
     // Validate the "pip" property.

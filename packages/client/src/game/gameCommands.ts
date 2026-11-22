@@ -5,6 +5,7 @@
 import type { ReplyData, ServerEventData, TableId } from "@hanabi-live/data";
 import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
 import {
+  addVariant,
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
@@ -253,6 +254,8 @@ export function loadGameInit(conn: Connection, tableId: number): void {
       return;
     }
     const metadata: GameInit = reply.data;
+    // The game reads its variant from the rules that the server sends, not from the catalog.
+    addVariant(metadata.variant);
     setUrl(tableId, metadata);
     initStateStore(metadata);
 

@@ -466,6 +466,8 @@ pub struct GameInit {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub finished_at: Option<Timestamp>,
     pub options: GameOptions,
+    /// The rules of the variant that `options.variantId` names.
+    pub variant: VariantRules,
     /// Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,

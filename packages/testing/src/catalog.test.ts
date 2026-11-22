@@ -1,4 +1,5 @@
-import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
+import { gameInitSchema } from "@hanabi-live/data";
+import { addVariant, getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { expect, test } from "bun:test";
 import { isArray } from "complete-common";
 import { execFileSync } from "node:child_process";
@@ -36,14 +37,22 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === "object" && value !== null && !isArray(value);
 }
 
+const output = execFileSync(CATALOG, {
+  encoding: "utf8",
+  maxBuffer: 64 * 1024 * 1024,
+});
+
+/** The server's variants, and the rules that clients build each one from. */
+const serverVariantSchema = z.looseObject({ name: z.string() });
+const catalog = z
+  .object({
+    variants: z.array(serverVariantSchema),
+    rules: z.array(z.unknown()),
+  })
+  .parse(JSON.parse(output));
+
 test("the server's rules derive the same variants as the game library", () => {
-  const output = execFileSync(CATALOG, {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  const serverVariants = z
-    .array(z.looseObject({ name: z.string() }))
-    .parse(JSON.parse(output));
+  const serverVariants = catalog.variants;
 
   expect(serverVariants.map((variant) => variant.name)).toEqual([
     ...VARIANT_NAMES,
@@ -51,5 +60,16 @@ test("the server's rules derive the same variants as the game library", () => {
   for (const serverVariant of serverVariants) {
     const variant = getVariant(serverVariant.name);
     expect(asServer(variant, serverVariant)).toEqual(serverVariant);
+  }
+});
+
+test("a variant built from the rules in GameInit is the catalog's variant", () => {
+  expect(catalog.rules).toHaveLength(VARIANT_NAMES.length);
+  for (const [index, name] of VARIANT_NAMES.entries()) {
+    const fromCatalog = getVariant(name);
+    const rules = gameInitSchema
+      .unwrap()
+      .shape.variant.parse(catalog.rules[index]);
+    expect(addVariant(rules)).toEqual(fromCatalog);
   }
 });
