@@ -955,7 +955,8 @@ function getStates(): readonly State[] {
           })
           .first()
           .click();
-        await builder.getByRole("dialog").waitFor();
+        // The menu is in the site's tooltip, outside of the builder.
+        await page.getByRole("dialog").waitFor();
         await settle(page);
       },
       // The form remembers its variant, which the other states need to be the default.

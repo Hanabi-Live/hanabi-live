@@ -40,9 +40,10 @@ vi.mock("../../Tooltip.ts", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   Tooltip: class {
     private readonly id: string;
-    private content = "";
+    private content: Node | string = "";
+    isOpen = false;
     readonly openOnHover = vi.fn();
-    constructor(anchor: HTMLElement, options: { content: string }) {
+    constructor(anchor: HTMLElement, options: { content: Node | string }) {
       this.id = anchor.id;
       this.content = options.content;
     }
@@ -52,11 +53,26 @@ vi.mock("../../Tooltip.ts", async (importOriginal) => ({
     }
 
     open() {
-      openErrors.set(this.id, this.content);
+      this.isOpen = true;
+      if (typeof this.content === "string") {
+        openErrors.set(this.id, this.content);
+      } else {
+        // A menu, such as that of a card of the variant builder, shows its element.
+        document.body.append(this.content);
+      }
+    }
+
+    openUntilClickElsewhere() {
+      this.open();
     }
 
     close() {
-      openErrors.delete(this.id);
+      this.isOpen = false;
+      if (typeof this.content === "string") {
+        openErrors.delete(this.id);
+      } else {
+        (this.content as ChildNode).remove();
+      }
     }
 
     destroy() {
@@ -263,7 +279,10 @@ describe("CreateGame", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: /Reversed/u }));
     const card = screen.getByRole("button", { name: "Red Reversed" });
 
-    fireEvent.keyDown(document, { key: "Escape" });
+    // The menu takes the focus, so Escape reaches it.
+    fireEvent.keyDown(screen.getByRole("checkbox", { name: /Reversed/u }), {
+      key: "Escape",
+    });
     expect(screen.queryByRole("dialog")).toBe(null);
     expect(document.activeElement).toBe(card);
   });

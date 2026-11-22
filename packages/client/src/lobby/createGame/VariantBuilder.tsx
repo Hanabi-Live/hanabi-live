@@ -1,7 +1,7 @@
 // The variant builder of Create Game: rows of suits and rules that a player turns on and off, and
 // the deck of the variant that they make.
 
-import type { Suit, Variant } from "@hanabi-live/game";
+import type { Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
   doesVariantExist,
@@ -10,10 +10,11 @@ import {
   VALID_SUIT_INDEXES,
 } from "@hanabi-live/game";
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
-import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
-import { escapeHtml } from "../../utils.ts";
+import { Tooltip } from "../../Tooltip.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type {
   Choice,
   FlagPart,
@@ -328,87 +329,38 @@ function Deck({
   readonly reverseBlocker: RecipeFlag | undefined;
   readonly variant: Variant;
 }) {
-  const colorblindMode = useAppSelector(
-    (state) => state.session.settings.colorblindMode,
-  );
-  const [openId, setOpenId] = useState<string | undefined>();
-  const cardRefs = useRef(new Map<string, HTMLButtonElement>());
-
-  // A dark swap changes the suit's ID, so the menu follows it to the new card.
+  // A dark swap changes a suit's ID, and so its card. The new card opens its menu again.
+  const [reopenId, setReopenId] = useState<string | undefined>();
   const menuActions: DeckActions = {
     ...actions,
     onToggleDark: (id) => {
+      setReopenId(getOtherVersion(id));
       actions.onToggleDark(id);
-      setOpenId(getOtherVersion(id) ?? id);
     },
   };
-
-  function close(returnFocus: boolean) {
-    if (returnFocus && openId !== undefined) {
-      cardRefs.current.get(openId)?.focus();
-    }
-    setOpenId(undefined);
-  }
 
   return (
     <figure className="tw:m-0 tw:flex tw:flex-wrap tw:items-end tw:gap-[0.6em]">
       <div className="tw:flex tw:gap-[0.3em]" role="group">
         {VALID_SUIT_INDEXES.slice(0, variant.suits.length).map((suitIndex) => {
           const id = ids[suitIndex];
-          if (id === undefined) {
-            return undefined;
-          }
-          const isReversed = reversed.has(id);
-          const name = `${getSuitName(id)}${isReversed ? " Reversed" : ""}`;
-          const open = openId === id;
-          const tooltip = tooltipRefHtml(
-            open
-              ? ""
-              : `<strong>${escapeHtml(name)}</strong><br>Click to make it dark or reversed.`,
-          );
           return (
-            <span className="tw:relative" key={id}>
-              <button
-                aria-expanded={open}
-                aria-haspopup="dialog"
-                aria-label={name}
-                className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none tw:hover:-translate-y-[2px]"
-                onClick={() => {
-                  setOpenId(open ? undefined : id);
+            id !== undefined && (
+              <DeckCard
+                actions={menuActions}
+                id={id}
+                key={id}
+                onReopened={() => {
+                  setReopenId(undefined);
                 }}
-                ref={(element) => {
-                  if (element === null) {
-                    cardRefs.current.delete(id);
-                  } else {
-                    cardRefs.current.set(id, element);
-                  }
-                  return tooltip(element);
-                }}
-                type="button"
-              >
-                <CardFace
-                  colorblindMode={colorblindMode}
-                  rank={undefined}
-                  suitIndex={suitIndex}
-                  variant={variant}
-                  width={DECK_CARD_WIDTH}
-                />
-              </button>
-              {open && (
-                <SuitMenu
-                  actions={menuActions}
-                  // Cards on the right half open their menu to the left, so that it stays on a
-                  // narrow screen.
-                  alignRight={suitIndex >= variant.suits.length / 2}
-                  id={id}
-                  name={name}
-                  onClose={close}
-                  removable={chosen.includes(id)}
-                  reverseBlocker={reverseBlocker}
-                  reversed={isReversed}
-                />
-              )}
-            </span>
+                removable={chosen.includes(id)}
+                reopen={reopenId === id}
+                reverseBlocker={reverseBlocker}
+                reversed={reversed.has(id)}
+                suitIndex={suitIndex}
+                variant={variant}
+              />
+            )
           );
         })}
       </div>
@@ -417,10 +369,116 @@ function Deck({
   );
 }
 
+/**
+ * A card of the deck. A click opens its menu in the site's tooltip, which makes the suit dark or
+ * reversed, or removes it.
+ */
+function DeckCard({
+  actions,
+  id,
+  onReopened,
+  removable,
+  reopen,
+  reverseBlocker,
+  reversed,
+  suitIndex,
+  variant,
+}: {
+  readonly actions: DeckActions;
+  readonly id: string;
+  readonly onReopened: () => void;
+  readonly removable: boolean;
+  /** Whether the card opens its menu as it appears, after a dark swap. */
+  readonly reopen: boolean;
+  readonly reverseBlocker: RecipeFlag | undefined;
+  readonly reversed: boolean;
+  readonly suitIndex: SuitIndex;
+  readonly variant: Variant;
+}) {
+  const colorblindMode = useAppSelector(
+    (state) => state.session.settings.colorblindMode,
+  );
+  const cardRef = useRef<HTMLButtonElement>(null);
+  const [menu] = useState(() => document.createElement("div"));
+  const menuRef = useRef<Tooltip>(null);
+  const name = `${getSuitName(id)}${reversed ? " Reversed" : ""}`;
+
+  useEffect(() => {
+    const tooltip = new Tooltip(cardRef.current!, {
+      content: menu,
+      interactive: true,
+    });
+    menuRef.current = tooltip;
+    return () => {
+      tooltip.destroy();
+    };
+  }, [menu]);
+
+  function openMenu() {
+    menuRef.current?.openUntilClickElsewhere();
+    menu.querySelector<HTMLElement>("input:not(:disabled), button")?.focus();
+  }
+
+  function closeMenu(returnFocus: boolean) {
+    menuRef.current?.close();
+    if (returnFocus) {
+      cardRef.current?.focus();
+    }
+  }
+
+  // Only a new card reopens its menu, after a dark swap.
+  useEffect(() => {
+    if (!reopen) {
+      return;
+    }
+    openMenu();
+    onReopened();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <>
+      <button
+        aria-haspopup="dialog"
+        aria-label={name}
+        className="tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none tw:hover:-translate-y-[2px]"
+        onClick={() => {
+          if (menuRef.current?.isOpen === true) {
+            closeMenu(false);
+          } else {
+            openMenu();
+          }
+        }}
+        ref={cardRef}
+        type="button"
+      >
+        <CardFace
+          colorblindMode={colorblindMode}
+          rank={undefined}
+          suitIndex={suitIndex}
+          variant={variant}
+          width={DECK_CARD_WIDTH}
+        />
+      </button>
+      {createPortal(
+        <SuitMenu
+          actions={actions}
+          id={id}
+          name={name}
+          onClose={closeMenu}
+          removable={removable}
+          reverseBlocker={reverseBlocker}
+          reversed={reversed}
+        />,
+        menu,
+      )}
+    </>
+  );
+}
+
 /** The menu of a deck card: whether its suit is dark or reversed, and whether it stays. */
 function SuitMenu({
   actions,
-  alignRight,
   id,
   name,
   onClose,
@@ -429,7 +487,6 @@ function SuitMenu({
   reversed,
 }: {
   readonly actions: DeckActions;
-  readonly alignRight: boolean;
   readonly id: string;
   readonly name: string;
   /** Closes the menu. `returnFocus` moves the focus back to the card. */
@@ -438,53 +495,24 @@ function SuitMenu({
   readonly reverseBlocker: RecipeFlag | undefined;
   readonly reversed: boolean;
 }) {
-  const menuRef = useRef<HTMLDivElement>(null);
-  // The listeners below last while the menu is open, so they read the latest callback here.
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
   const otherVersion = getOtherVersion(id);
   const dark = isDark(id);
   const darkId = dark ? id : otherVersion;
   const lightName = getSuitName(dark ? (otherVersion ?? id) : id);
 
-  // The first control takes the focus. A click outside, or Escape, closes the menu.
-  useEffect(() => {
-    menuRef.current
-      ?.querySelector<HTMLElement>("input:not(:disabled), button")
-      ?.focus();
-    function onPointerDown(event: PointerEvent) {
-      const menu = menuRef.current;
-      const card = menu?.parentElement;
-      if (
-        card !== null
-        && card !== undefined
-        && !card.contains(event.target as Node)
-      ) {
-        onCloseRef.current(false);
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      event.stopPropagation();
-      onCloseRef.current(true);
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
-
   return (
+    // Escape closes the menu, and the focus goes back to its card.
     <div
       aria-label={name}
-      className={`tw:absolute tw:top-full tw:z-10 tw:mt-[0.4em] tw:flex tw:w-max tw:max-w-[16em] tw:flex-col tw:gap-[0.5em] tw:rounded-[0.4em] tw:border tw:border-solid tw:border-border tw:bg-surface tw:p-[0.7em] tw:shadow-[0_4px_12px_rgb(0_0_0/0.25)] tw:transition-opacity tw:starting:opacity-0 ${alignRight ? "tw:right-0" : "tw:left-0"}`}
-      ref={menuRef}
+      className="tw:flex tw:max-w-[16em] tw:flex-col tw:gap-[0.5em] tw:text-left"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") {
+          return;
+        }
+
+        event.stopPropagation();
+        onClose(true);
+      }}
       role="dialog"
     >
       <strong>{name}</strong>
@@ -510,7 +538,7 @@ function SuitMenu({
       />
       {removable && (
         <button
-          className="tw:cursor-pointer tw:self-start tw:border-none tw:bg-transparent tw:p-0 tw:text-green-text tw:underline"
+          className="tw:cursor-pointer tw:self-start tw:border-none tw:bg-transparent tw:p-0 tw:text-inherit tw:underline"
           onClick={() => {
             onClose(false);
             actions.onRemove(id);
