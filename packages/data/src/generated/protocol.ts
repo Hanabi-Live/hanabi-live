@@ -1087,7 +1087,11 @@ export const playerActionRequestSchema = z
 /**
  * An achievement that a player can unlock.
  */
-const achievementIdSchema = z.enum(["noVariant10Wins", "noVariant100Wins"]);
+const achievementIdSchema = z.enum([
+  "noVariant10Wins",
+  "noVariant100Wins",
+  "rainbow10Wins",
+]);
 
 /**
  * A player's progress toward an achievement.

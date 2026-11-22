@@ -250,6 +250,7 @@ named_enum! {
     pub enum AchievementId {
         NoVariant10Wins => "noVariant10Wins",
         NoVariant100Wins => "noVariant100Wins",
+        Rainbow10Wins => "rainbow10Wins",
     }
 }
 

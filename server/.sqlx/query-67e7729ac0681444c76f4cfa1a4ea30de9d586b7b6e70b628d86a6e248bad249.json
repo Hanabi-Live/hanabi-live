@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT g.datetime_finished FROM game_participants p JOIN games g ON g.id=p.game_id\n         JOIN unnest($2::smallint[],$3::smallint[]) AS v(variant_id,max_score)\n           ON v.variant_id=g.variant_id AND v.max_score=g.score\n         WHERE p.user_id=$1 AND g.end_condition=$4\n         AND NOT (g.deck_plays OR g.empty_clues OR g.one_extra_card OR g.one_less_card\n           OR g.all_or_nothing OR g.detrimental_characters)\n         ORDER BY g.datetime_finished, g.id LIMIT $5",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "datetime_finished",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "datetime_finished"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2Array",
+        "Int2Array",
+        "Int2",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "67e7729ac0681444c76f4cfa1a4ea30de9d586b7b6e70b628d86a6e248bad249"
+}

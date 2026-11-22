@@ -892,12 +892,14 @@ async fn seed_page_ranks_the_seed_among_seeds_with_its_prefix() {
 }
 
 #[tokio::test]
-async fn profile_counts_no_variant_wins_toward_the_achievement() {
+async fn profile_counts_wins_toward_achievements() {
     let Some(db) = crate::accounts::test_support::TestDb::create().await else {
         return;
     };
-    // Games 1 to 9 are wins. Game 10 uses an option that makes it easier, game 11 is in another
-    // variant, and game 12 does not reach the max score.
+    // Games 1 to 9 are wins in No Variant (variant 0). Game 10 uses "One Extra Card", game 11 has
+    // detrimental characters, and game 12 does not reach the max score. Games 13 and 14 are wins in
+    // Rainbow (5 Suits) and Rainbow (6 Suits) (variants 16 and 3). Game 15 does not reach the max
+    // score of Rainbow (6 Suits), and game 16 is a win in Rainbow (4 Suits) (variant 17).
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state directly"
@@ -908,12 +910,14 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
         INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',2,CASE WHEN id=11 THEN 1 ELSE 0 END,false,NULL,NULL,false,false,false,
-          id=10,false,false,false,'s'||id,CASE WHEN id=12 THEN 20 ELSE 25 END,10,1,
+        SELECT id,'test',2,variant,false,NULL,NULL,false,false,false,id=10,false,false,id=11,
+          's'||id,score,10,1,
           '2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
           '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
-        FROM generate_series(1,12) id;
-        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,12) id;",
+        FROM (SELECT id,0 AS variant,CASE WHEN id=12 THEN 20 ELSE 25 END AS score
+          FROM generate_series(1,12) id
+          UNION ALL VALUES(13,16,25),(14,3,30),(15,3,25),(16,17,20)) AS g(id,variant,score);
+        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id;",
     )
     .execute(&db.pool)
     .await
@@ -922,13 +926,24 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
     let (status, body) = request(app.clone(), "/profile/Alice").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let table = page_table(&body);
-    for (index, (_, _, goal)) in achievements::NO_VARIANT_WIN_ACHIEVEMENTS.iter().enumerate() {
-        let achievement = &table["achievements"][index];
-        assert_eq!(achievement["progress"], 9);
-        assert_eq!(achievement["goal"], *goal);
+    let expected = achievements::WIN_GROUPS
+        .iter()
+        .zip([9, 2])
+        .flat_map(|(group, wins)| {
+            group
+                .achievements
+                .iter()
+                .map(move |achievement| (achievement.goal, wins))
+        });
+    let shown = table["achievements"].as_array().unwrap();
+    assert_eq!(shown.len(), expected.clone().count());
+    for (achievement, (goal, wins)) in shown.iter().zip(expected) {
+        assert_eq!(achievement["progress"], wins, "{achievement}");
+        assert_eq!(achievement["goal"], goal, "{achievement}");
         assert!(achievement.get("dateUnlocked").is_none());
     }
-    assert_eq!(table["achievements"][0]["id"], "noVariant10Wins");
+    assert_eq!(shown[0]["id"], "noVariant10Wins");
+    assert_eq!(shown[2]["id"], "rainbow10Wins");
     // The tenth win unlocks the first achievement, and later wins do not move the date.
     #[expect(
         clippy::disallowed_methods,
@@ -941,8 +956,8 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
         SELECT id,'test',2,0,false,NULL,NULL,false,false,false,false,false,false,false,'s'||id,25,10,
           1,'2026-02-01T00:00:00Z'::timestamptz+make_interval(days=>id),
           '2026-02-01T01:00:00Z'::timestamptz+make_interval(days=>id)
-        FROM generate_series(13,14) id;
-        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(13,14) id;",
+        FROM generate_series(17,18) id;
+        INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(17,18) id;",
     )
     .execute(&db.pool)
     .await
@@ -953,7 +968,7 @@ async fn profile_counts_no_variant_wins_toward_the_achievement() {
     hanabi_protocol::validate::<hanabi_protocol::PlayerScores>(&scores).unwrap();
     let achievement = &scores["achievements"][0];
     assert_eq!(achievement["progress"], 10);
-    assert_eq!(achievement["dateUnlocked"], "2026-02-14T01:00:00.000Z");
+    assert_eq!(achievement["dateUnlocked"], "2026-02-18T01:00:00.000Z");
     // The 11 wins count toward the next achievement, which they do not unlock.
     let achievement = &scores["achievements"][1];
     assert_eq!(achievement["id"], "noVariant100Wins");
