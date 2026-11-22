@@ -315,6 +315,14 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
     players(AchievementId::FourPlayers10Wins, "Four-Part Harmony", 4),
     players(AchievementId::FivePlayers10Wins, "High Five", 5),
     Definition {
+        id: AchievementId::NoVariant5Streak,
+        name: "On a Roll",
+        rule: Rule::Streak {
+            variant: CatalogVariant::NoVariant,
+            length: 5,
+        },
+    },
+    Definition {
         id: AchievementId::NoVariant100Wins,
         name: "Core Mastery",
         rule: Rule::Wins {
@@ -470,14 +478,6 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         VariantRule::ThrowItInAHole,
     ),
     rule(AchievementId::Sudoku10Wins, "Gridlock", VariantRule::Sudoku),
-    Definition {
-        id: AchievementId::NoVariant5Streak,
-        name: "On a Roll",
-        rule: Rule::Streak {
-            variant: CatalogVariant::NoVariant,
-            length: 5,
-        },
-    },
 ];
 
 /// The streak lengths that the achievements ask for in each variant.
