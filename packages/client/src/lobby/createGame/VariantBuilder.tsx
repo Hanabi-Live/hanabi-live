@@ -7,7 +7,12 @@ import { useEffect, useState } from "react";
 import { CardFace } from "../../game/newUi/Card.tsx";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import type { Choice, FlagPart, SuitGroup } from "./variantBuilder.ts";
+import type {
+  Choice,
+  FlagPart,
+  RecipeFlag,
+  SuitGroup,
+} from "./variantBuilder.ts";
 import {
   canAddSuit,
   getCatalogName,
@@ -17,6 +22,7 @@ import {
   getDeckVariant,
   getParts,
   getRecipe,
+  getReverseBlocker,
   getSuitDescription,
   getVariantName,
   REVERSED_DESCRIPTION,
@@ -108,12 +114,12 @@ export function VariantBuilder({
           onReverse={(id) => {
             choose(toggleReversed(choice, id));
           }}
+          reverseBlocker={getReverseBlocker(choice)}
           reversed={choice.reversed}
-          upOrDown={choice.flags.has("updown")}
           variant={deck}
         />
       </div>
-      {!choice.flags.has("updown") && (
+      {getReverseBlocker(choice) === undefined && (
         <p className="tw:m-0 tw:text-[0.9em] tw:text-text-label">
           Click a card to reverse its suit.
         </p>
@@ -265,15 +271,15 @@ function Deck({
   ids,
   onReverse,
   reversed,
-  upOrDown,
+  reverseBlocker,
   variant,
 }: {
   /** The ID of each suit of the deck, in order. */
   readonly ids: readonly string[];
   readonly onReverse: (id: string) => void;
   readonly reversed: ReadonlySet<string>;
-  /** In "Up or Down", every suit goes either way, so no suit can be reversed. */
-  readonly upOrDown: boolean;
+  /** The rule that stops a suit from being reversed, such as "Up or Down". */
+  readonly reverseBlocker: RecipeFlag | undefined;
   readonly variant: Variant;
 }) {
   const colorblindMode = useAppSelector(
@@ -286,21 +292,22 @@ function Deck({
           const id = ids[suitIndex];
           const name = variant.suits[suitIndex]?.displayName ?? "";
           const isReversed = id !== undefined && reversed.has(id);
+          const blocked = reverseBlocker !== undefined;
           return (
             // A disabled button gets no pointer events, so this one only looks disabled, to keep
             // its tooltip.
             <button
-              aria-disabled={upOrDown}
+              aria-disabled={blocked}
               aria-label={`${name} Reversed`}
               aria-pressed={isReversed}
-              className={`tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none ${upOrDown ? "tw:cursor-not-allowed" : "tw:hover:-translate-y-[2px]"}`}
+              className={`tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:leading-none ${blocked ? "tw:cursor-not-allowed" : "tw:hover:-translate-y-[2px]"}`}
               key={suitIndex}
               onClick={() => {
-                if (!upOrDown && id !== undefined) {
+                if (!blocked && id !== undefined) {
                   onReverse(id);
                 }
               }}
-              ref={tooltipRef(getReverseTooltip(upOrDown, isReversed))}
+              ref={tooltipRef(getReverseTooltip(reverseBlocker, isReversed))}
               type="button"
             >
               <CardFace
@@ -319,9 +326,15 @@ function Deck({
   );
 }
 
-function getReverseTooltip(upOrDown: boolean, reversed: boolean): string {
-  if (upOrDown) {
+function getReverseTooltip(
+  blocker: RecipeFlag | undefined,
+  reversed: boolean,
+): string {
+  if (blocker === "updown") {
     return "In Up or Down, every suit can go up or down, so no suit can be reversed.";
+  }
+  if (blocker === "sudoku") {
+    return "In Sudoku, every stack goes up, so no suit can be reversed.";
   }
   return reversed
     ? "Click to play this suit from 1 up to 5 again."

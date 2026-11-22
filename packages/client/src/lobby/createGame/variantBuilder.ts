@@ -630,21 +630,46 @@ export function toggleScarceOnes(choice: Choice): Choice {
   };
 }
 
-/**
- * Rules that cannot be on together, each with the rule that it turns off. Duck hides all of a clue,
- * so Cow and Pig, which hides only its value, would change nothing. Funnels and Chimneys each
- * decide which cards a rank clue touches.
- */
-const EXCLUSIVE_FLAGS = new ReadonlyMap<RecipeFlag, RecipeFlag>([
-  ["chimneys", "funnels"],
+/** Pairs of rules that cannot be on together, since the server refuses them. */
+const EXCLUSIVE_PAIRS = [
+  // Duck hides all of a clue, so Cow and Pig, which hides only its value, would change nothing.
   ["cowpig", "duck"],
-  ["duck", "cowpig"],
+  // Each decides which cards a rank clue touches.
   ["funnels", "chimneys"],
-]);
+  // A clue that cannot be given touches nothing anyway.
+  ["cb", "cm"],
+  ["nb", "nm"],
+  // With only one type of clue, the second clue could never be given.
+  ["alt", "cm"],
+  ["alt", "nm"],
+  // A Sudoku stack plays up from any rank, so it cannot also go either way.
+  ["sudoku", "updown"],
+] as const satisfies ReadonlyArray<readonly [RecipeFlag, RecipeFlag]>;
+
+/** The rules that each rule turns off when it turns on. */
+const EXCLUDED_FLAGS: ReadonlyMap<RecipeFlag, readonly RecipeFlag[]> = (() => {
+  const excluded = new Map<RecipeFlag, RecipeFlag[]>();
+  for (const [a, b] of EXCLUSIVE_PAIRS) {
+    excluded.set(a, [...(excluded.get(a) ?? []), b]);
+    excluded.set(b, [...(excluded.get(b) ?? []), a]);
+  }
+  return excluded;
+})();
+
+/** The rules that play every suit one way, so that no suit can be reversed. */
+const ONE_WAY_FLAGS = new ReadonlySet<RecipeFlag>(["sudoku", "updown"]);
 
 /**
- * Turns a rule on or off. A rule that cannot be on with another turns it off, and "Up or Down",
- * which plays every suit both ways, ends any reversal.
+ * The rule of a choice that stops a suit from being reversed, if any: "Up or Down" plays every suit
+ * both ways, and "Sudoku" plays every stack up.
+ */
+export function getReverseBlocker(choice: Choice): RecipeFlag | undefined {
+  return [...ONE_WAY_FLAGS].find((flag) => choice.flags.has(flag));
+}
+
+/**
+ * Turns a rule on or off. A rule turns off the rules that cannot be on with it, and a rule that
+ * stops reversal ends any reversal.
  */
 export function toggleFlag(choice: Choice, flag: RecipeFlag): Choice {
   if (choice.flags.has(flag)) {
@@ -654,13 +679,15 @@ export function toggleFlag(choice: Choice, flag: RecipeFlag): Choice {
     };
   }
   const flags = new Set(choice.flags).add(flag);
-  const excluded = EXCLUSIVE_FLAGS.get(flag);
-  if (excluded !== undefined) {
-    flags.delete(excluded);
+  const excludedFlags = EXCLUDED_FLAGS.get(flag);
+  if (excludedFlags !== undefined) {
+    for (const excluded of excludedFlags) {
+      flags.delete(excluded);
+    }
   }
   return {
     ...choice,
-    reversed: flag === "updown" ? new Set() : choice.reversed,
+    reversed: ONE_WAY_FLAGS.has(flag) ? new Set() : choice.reversed,
     flags,
   };
 }

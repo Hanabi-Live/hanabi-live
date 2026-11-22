@@ -6,6 +6,7 @@ import {
   getChoice,
   getParts,
   getRecipe,
+  getReverseBlocker,
   getSuitDescription,
   getVariantName,
   setNumSuits,
@@ -73,12 +74,21 @@ describe("variant builder", () => {
     expect([...toggleFlag(duck, "cowpig").flags]).toEqual(["cowpig"]);
     const chimneys = toggleFlag(toggleFlag(FIVE_SUITS, "funnels"), "chimneys");
     expect([...chimneys.flags]).toEqual(["chimneys"]);
+    const muted = build(
+      FIVE_SUITS,
+      (c) => toggleFlag(c, "cb"),
+      (c) => toggleFlag(c, "alt"),
+      (c) => toggleFlag(c, "cm"),
+    );
+    expect([...muted.flags]).toEqual(["cm"]);
   });
 
-  test("ends every reversal when Up or Down turns on", () => {
+  test("ends every reversal when Up or Down or Sudoku turns on", () => {
     const reversed = toggleReversed(FIVE_SUITS, "p");
     expect(getRecipe(reversed)).toBe("r-y-g-b-p.rev");
     expect(getRecipe(toggleFlag(reversed, "updown"))).toBe("r-y-g-b-p_updown");
+    expect(getRecipe(toggleFlag(reversed, "sudoku"))).toBe("r-y-g-b-p_sudoku");
+    expect(getReverseBlocker(toggleFlag(FIVE_SUITS, "sudoku"))).toBe("sudoku");
   });
 
   test("keeps each suit once, and grows a full deck", () => {
