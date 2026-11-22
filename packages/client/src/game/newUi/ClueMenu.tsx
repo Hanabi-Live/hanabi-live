@@ -675,7 +675,7 @@ function EmptySlot(): React.JSX.Element {
   return (
     <div
       aria-hidden="true"
-      className={`tw:translate-y-[2px] ${choiceSizeClass} ${WELL_CLASS}`}
+      className={`tw:translate-y-(--button-press-depth) ${choiceSizeClass} ${WELL_CLASS}`}
     />
   );
 }

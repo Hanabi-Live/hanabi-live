@@ -3907,6 +3907,76 @@ function getOverflows(tolerance: number): readonly string[] {
 /** How far, in CSS pixels, an element can stick out of its box, for rounding. */
 const OVERFLOW_TOLERANCE = 1;
 
+/**
+ * Runs in the page. Returns each button that makes a scroll area overflow when it is pressed. A
+ * pressed button moves down by "--button-press-depth". In a scroll area that has no room for the
+ * move, a press shows a scroll bar, which makes the area narrower and can wrap its content again.
+ * The page itself counts as a scroll area.
+ */
+function getPressOverflows(): readonly string[] {
+  const depth = getComputedStyle(document.documentElement)
+    .getPropertyValue("--button-press-depth")
+    .trim();
+  if (depth === "") {
+    return [
+      'The page has no "--button-press-depth", so the press check cannot run.',
+    ];
+  }
+  const buttons = document.querySelectorAll<HTMLElement>(
+    "button:enabled, input[type='submit']:enabled, input[type='button']:enabled, .button:not(.disabled, .alt)",
+  );
+  const overflows = new Set<string>();
+  for (const button of buttons) {
+    const rect = button.getBoundingClientRect();
+    if (
+      rect.width === 0
+      || rect.height === 0
+      || getComputedStyle(button).visibility === "hidden"
+    ) {
+      continue;
+    }
+
+    // Only a scroll area that does not overflow yet would show a new scroll bar.
+    const areas: Element[] = [];
+    for (
+      let area = button.parentElement;
+      area !== null;
+      area = area.parentElement
+    ) {
+      const { overflowY } = getComputedStyle(area);
+      if (
+        (overflowY === "auto" || overflowY === "scroll")
+        && area.scrollHeight <= area.clientHeight
+      ) {
+        areas.push(area);
+      }
+    }
+    const page = document.scrollingElement;
+    if (page !== null && page.scrollHeight <= page.clientHeight) {
+      areas.push(page);
+    }
+
+    const { transition, translate } = button.style;
+    button.style.transition = "none";
+    button.style.translate = `0 ${depth}`;
+    for (const area of areas) {
+      if (area.scrollHeight <= area.clientHeight) {
+        continue;
+      }
+      const label =
+        button.getAttribute("aria-label")
+        ?? button.textContent.trim().replaceAll(/\s+/gu, " ").slice(0, 30);
+      const name = `<${area.tagName.toLowerCase()}${area.id === "" ? "" : `#${area.id}`}>`;
+      overflows.add(
+        `A press of "${label}" makes ${name} overflow by ${area.scrollHeight - area.clientHeight}px.`,
+      );
+    }
+    button.style.translate = translate;
+    button.style.transition = transition;
+  }
+  return [...overflows];
+}
+
 /** Takes the screenshots of a state. */
 async function captureState(
   page: Page,
@@ -3993,6 +4063,9 @@ async function captureState(
         getOverflows,
         OVERFLOW_TOLERANCE,
       )) {
+        results.errors.push(`${state.name} ${size.width}: ${overflow}`);
+      }
+      for (const overflow of await page.evaluate(getPressOverflows)) {
         results.errors.push(`${state.name} ${size.width}: ${overflow}`);
       }
       if (openedWindow !== undefined) {

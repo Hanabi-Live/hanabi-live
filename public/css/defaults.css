@@ -724,7 +724,7 @@ input[type="button"]:active,
 .button:active {
   background-color: var(--button-active-bg);
   box-shadow: var(--button-key-pressed-shadow);
-  translate: 0 2px;
+  translate: 0 var(--button-press-depth);
 }
 
 /* Show which button has the keyboard focus. A mouse click does not show it. */

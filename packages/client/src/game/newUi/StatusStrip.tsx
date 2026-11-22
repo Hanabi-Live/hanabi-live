@@ -1448,13 +1448,14 @@ export function StatusStrip({
     // tabs, they are at the top, and the panel grows up into the clue log's space. With tabs, the
     // panel fills its tab, with the numbers at the top and the buttons at the bottom, and the
     // controls go between them. The gaps between the three groups are larger than the gaps in them,
-    // so that each group reads as one. A pressed button moves down by 2px (`RAISED_BUTTON_CLASS`),
-    // and the tab scrolls, so the buttons stand 2px above the bottom of the tab. Otherwise a press
+    // so that each group reads as one. A pressed button moves down by "--button-press-depth", and
+    // the tab scrolls, so the buttons stand that far above the bottom of the tab. Otherwise a press
     // makes the tab overflow and show a scroll bar, which makes it narrower and wraps the buttons
-    // again. The panel's padding is 2px smaller at the bottom, so that the buttons stay in place.
+    // again. The panel's padding is that much smaller at the bottom, so that the buttons stay in
+    // place. The "ui-screenshots" command checks that no press makes a scroll area overflow.
     const status = (
       <div
-        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:min-h-full tw:pb-[2px]" : ""}`}
+        className={`tw:flex tw:flex-col tw:gap-5 ${tabbed ? "tw:min-h-full tw:pb-(--button-press-depth)" : ""}`}
         data-panel-status
         ref={statusRef}
       >
@@ -1509,7 +1510,7 @@ export function StatusStrip({
     // The panel and the logs share the rest of the column, one tab at a time.
     return (
       <footer
-        className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:pb-3 tw:text-game-screen-compact ${panelColorClass}`}
+        className={`tw:group/strip tw:@container/panel tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-game-panel tw:p-3.5 tw:pb-[calc(--spacing(3.5)-var(--button-press-depth))] tw:text-game-screen-compact ${panelColorClass}`}
         data-panel=""
         data-phone-layout=""
         data-tabbed=""
