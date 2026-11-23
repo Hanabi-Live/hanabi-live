@@ -226,6 +226,15 @@ impl<'a> ChatCommand<'a> {
         }
     }
 
+    /// The reply to a command that the server does not know. The client sends the same reply
+    /// without asking the server.
+    pub fn invalid_response(&self) -> String {
+        format!(
+            "The chat command of \"/{}\" is not valid. Use \"/help\" to get a list of available commands.",
+            self.name
+        )
+    }
+
     /// The reply to a command that runs the same way in the lobby, at a table, and from Discord.
     pub fn general_response(&self) -> Option<GeneralResponse> {
         Some(match self.kind {
@@ -298,8 +307,7 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<Ext
 fn help() -> String {
     let mut names: Vec<_> = hanabi_protocol::WEBSITE_CHAT_COMMANDS
         .iter()
-        .chain(TABLE_COMMANDS.iter().map(|(name, _)| name))
-        .chain(SERVER_COMMANDS.iter().map(|(name, _)| name))
+        .chain(hanabi_protocol::SERVER_CHAT_COMMANDS)
         .map(|s| format!("/{s}"))
         .collect();
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
@@ -538,10 +546,7 @@ pub async fn lobby_chat(
             None => {
                 return Ok(Some(vec![notice(
                     &caller.name,
-                    &format!(
-                        "The chat command of \"/{}\" is not valid. Use \"/help\" to get a list of available commands.",
-                        command.name
-                    ),
+                    &command.invalid_response(),
                 )]));
             }
         }
@@ -670,4 +675,22 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         ),
         message: message.into(),
     })
+}
+
+#[cfg(test)]
+mod command_list_tests {
+    use super::*;
+
+    #[test]
+    fn the_protocol_lists_every_command_that_the_server_runs() {
+        let mut names: Vec<_> = TABLE_COMMANDS
+            .iter()
+            .map(|(name, _)| *name)
+            .chain(SERVER_COMMANDS.iter().map(|(name, _)| *name))
+            .collect();
+        names.sort_unstable();
+        let mut listed = hanabi_protocol::SERVER_CHAT_COMMANDS.to_vec();
+        listed.sort_unstable();
+        assert_eq!(names, listed);
+    }
 }

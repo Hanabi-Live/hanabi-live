@@ -9,8 +9,9 @@ of the repository.
 
 ## November 23rd, 2026
 
-- At a table, a slash command that the website does not know, such as a typo,
-  now also tells its sender that it was sent as a chat message for bots.
+- A slash command that the website does not know, such as a typo, is now refused
+  at tables too, instead of being sent as a chat message. Bots must read
+  commands that start with another character, such as "!setall".
 
 ## November 22nd, 2026
 

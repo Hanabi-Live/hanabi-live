@@ -58,6 +58,33 @@ export const WEBSITE_CHAT_COMMANDS = [
   "w",
   "whisper",
 ] as const;
+export const SERVER_CHAT_COMMANDS = [
+  "find-variant",
+  "findvariant",
+  "fv",
+  "id",
+  "impostor",
+  "kick",
+  "m",
+  "missing",
+  "missing-scores",
+  "missingscores",
+  "random",
+  "random-variant",
+  "randomvariant",
+  "replay",
+  "sa",
+  "seed",
+  "shared-missing-scores",
+  "sharedmissingscores",
+  "split",
+  "splitauto",
+  "suggest",
+  "taglist",
+  "tags",
+  "token",
+  "uptime",
+] as const;
 export const MAX_CLIENT_ERROR_MESSAGE_LENGTH = 1000;
 export const MAX_CLIENT_ERROR_STACK_LENGTH = 4000;
 export const API_PREFIX = "/api/v1";

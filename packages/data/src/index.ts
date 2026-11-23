@@ -7,6 +7,7 @@ export * from "./generated/protocol.ts";
 export type * from "./interfaces/GameSummary.ts";
 export * from "./interfaces/Settings.ts";
 export type * from "./interfaces/Spectator.ts";
+export * from "./serverChatCommands.ts";
 export * from "./statusText.ts";
 export type * from "./types/ChatId.ts";
 export type * from "./types/GameId.ts";

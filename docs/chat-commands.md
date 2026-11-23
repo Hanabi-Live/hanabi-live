@@ -68,11 +68,9 @@ If you need general help with the website, then read the
 
 ## Game Commands
 
-| Command      | Description                              |
-| ------------ | ---------------------------------------- |
-| `/pause`     | Pause the game (can be done on any turn) |
-| `/unpause`   | Unpause the game                         |
-| `/terminate` | Terminate the game                       |
+| Command      | Description        |
+| ------------ | ------------------ |
+| `/terminate` | Terminate the game |
 
 ## Game or Replay Commands
 

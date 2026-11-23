@@ -219,6 +219,36 @@ constants! {
         "w",
         "whisper",
     ];
+    /// The chat commands that the server runs, besides the fixed replies in
+    /// "chatReplyCommands.json". The website refuses any other command that the website does not
+    /// run itself.
+    @data pub const SERVER_CHAT_COMMANDS: &[&str] = &[
+        "find-variant",
+        "findvariant",
+        "fv",
+        "id",
+        "impostor",
+        "kick",
+        "m",
+        "missing",
+        "missing-scores",
+        "missingscores",
+        "random",
+        "random-variant",
+        "randomvariant",
+        "replay",
+        "sa",
+        "seed",
+        "shared-missing-scores",
+        "sharedmissingscores",
+        "split",
+        "splitauto",
+        "suggest",
+        "taglist",
+        "tags",
+        "token",
+        "uptime",
+    ];
     /// The longest message of a client error report, in characters. The server cuts a longer one.
     @data pub const MAX_CLIENT_ERROR_MESSAGE_LENGTH: usize = 1000;
     /// The longest stack trace of a client error report, in characters. The server cuts a longer

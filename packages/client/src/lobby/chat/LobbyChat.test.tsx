@@ -11,6 +11,7 @@ import {
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { globals } from "../../Globals.ts";
 import { add, removeDeletedLobbyMessage } from "../../chat.ts";
 import { screenChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
@@ -151,5 +152,35 @@ describe("LobbyChat", () => {
     fireEvent.keyDown(input, { key: "ArrowUp" });
     expect(input.value).toBe("draft");
     expect(input.selectionStart).toBe(0);
+  });
+
+  test("refuses an unknown slash command without sending it, and sends a server command", () => {
+    const send = vi.fn();
+    // The test page cannot animate the line that shows the error.
+    Element.prototype.animate = vi.fn();
+    globals.conn = { send } as unknown as NonNullable<typeof globals.conn>;
+    const input =
+      document.querySelector<HTMLInputElement>("#lobby-chat-input")!;
+
+    fireEvent.input(input, {
+      target: {
+        value: "/pause now",
+      },
+    });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(send).not.toHaveBeenCalled();
+    expect(lineTexts().at(-1)).toContain(
+      "The chat command of /pause is not valid.",
+    );
+
+    for (const text of ["/HELP", "/commands", "/fv", "!setall 11"]) {
+      fireEvent.input(input, {
+        target: {
+          value: text,
+        },
+      });
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(send).toHaveBeenLastCalledWith("chat", { text });
+    }
   });
 });

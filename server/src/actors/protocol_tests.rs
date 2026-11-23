@@ -2713,7 +2713,7 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
 }
 
 #[tokio::test]
-async fn unknown_table_commands_reach_bots_and_warn_the_sender() -> Result<()> {
+async fn tables_refuse_unknown_slash_commands_and_bots_read_other_commands() -> Result<()> {
     let Some(mut h) = Harness::new(&["Bot", "Alice", "Outsider"]).await? else {
         return Ok(());
     };
@@ -2728,43 +2728,43 @@ async fn unknown_table_commands_reach_bots_and_warn_the_sender() -> Result<()> {
             for index in 0..3 {
                 h.frames(index);
             }
-            for (text, expected) in [
-                ("/setall 11", "/setall 11"),
-                ("/custom-bot <level>", "/custom-bot <level>"),
-            ] {
-                let before = h.snapshot(id).await?.0.chat.len();
+            let before = h.snapshot(id).await?.0.chat.len();
+            // Only the sender sees an unknown slash command, with the reason.
+            h.send(1, "chat", json!({"tableId":id,"text":"/setall 11"}))
+                .await?;
+            h.barrier(0).await?;
+            ensure!(
+                chat_messages(&h.frames(0)).is_empty(),
+                "Another player received an unknown command"
+            );
+            let messages = chat_messages(&h.frames(1));
+            ensure!(
+                messages.len() == 1
+                    && messages[0]["kind"]["type"] == "private"
+                    && messages[0]["text"]
+                        == "The chat command of \"/setall\" is not valid. Use \"/help\" to get a list of available commands.",
+                "Sender did not get the refusal: {messages:?}"
+            );
+            ensure!(
+                h.snapshot(id).await?.0.chat.len() == before,
+                "An unknown command was persisted"
+            );
+            // Bots read commands that start with another character.
+            for text in ["!setall 11", "!custom-bot <level>"] {
                 h.send(1, "chat", json!({"tableId":id,"text":text})).await?;
                 let messages = chat_messages(&h.frames(0));
                 ensure!(
                     messages.len() == 1
-                        && messages[0]["text"] == expected
+                        && messages[0]["text"] == text
                         && messages[0]["kind"]["author"]
                             == json!({"type":"user","username":"Alice"}),
-                    "Bot did not receive only the table command: {messages:?}"
-                );
-                // The sender also gets a private warning, in case the command is a typo.
-                let messages = chat_messages(&h.frames(1));
-                let name = expected.split_whitespace().next().unwrap_or_default();
-                ensure!(
-                    messages.len() == 2
-                        && messages[0]["text"] == expected
-                        && messages[1]["kind"]["type"] == "private"
-                        && messages[1]["text"].as_str().is_some_and(|text| {
-                            text.starts_with(&format!("\"{name}\" is not a command"))
-                        }),
-                    "Sender did not get the unknown-command warning: {messages:?}"
-                );
-                let snapshot = h.snapshot(id).await?.0;
-                ensure!(
-                    snapshot.chat.len() == before + 1,
-                    "Command was not persisted"
-                );
-                ensure!(snapshot.chat[before].message.message.text == expected);
-                ensure!(
-                    chat_messages(&h.frames(2)).is_empty(),
-                    "Outsider received chat"
+                    "Bot did not receive the command: {messages:?}"
                 );
             }
+            ensure!(
+                chat_messages(&h.frames(2)).is_empty(),
+                "Outsider received chat"
+            );
         }
         Ok::<(), anyhow::Error>(())
     }

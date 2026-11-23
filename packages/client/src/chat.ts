@@ -7,6 +7,7 @@ import {
   CHAT_EMOTES as emotes,
   MAX_CHAT_LENGTH,
   PROJECT_NAME,
+  SERVER_CHAT_COMMAND_NAMES,
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
@@ -261,6 +262,23 @@ function sendText(room: ChatRoom, msgRaw: string) {
     const chatCommandFunction = chatCommands.get(command);
     if (chatCommandFunction !== undefined) {
       chatCommandFunction(tableId, args);
+      return;
+    }
+
+    // The server refuses every other command, so do not send it. Bots read commands that start with
+    // another character, such as "!setall".
+    if (command !== "" && !SERVER_CHAT_COMMAND_NAMES.has(command)) {
+      sendSelfPmFromServer(
+        [
+          "The chat command of ",
+          { code: `/${command}` },
+          " is not valid. Use ",
+          { code: "/help" },
+          " to get a list of available commands.",
+        ],
+        tableId,
+        SelfChatMessageType.Error,
+      );
       return;
     }
   }
