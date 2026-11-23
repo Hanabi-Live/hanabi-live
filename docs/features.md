@@ -783,13 +783,10 @@ use these numbers to make the best move for the current situation.
     for the game was `p3v0sshowmatch-jan-2050-game-1`.)
   - Restarting a game with a seed moves on to the next one, such as from
     `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
-- Additionally, you can start a game that will be a partial replay of an
-  existing game. For example, this is useful if you want to see how a game would
-  play out if a different move was taken. To do this, enter the ID of the game
-  in the "Replay Game" option under "Extra Options" when creating a game, and
-  optionally the turn to start from. If the turn is omitted, the game will start
-  on the first turn. The game uses the same deal, seats, and options as the
-  original, so it needs the same number of players.
+- Additionally, you can start a game that will be a "replay" of an previously
+  played game. All of the same moves are automatically executed up to the
+  selected turn. For example, this is useful if a game gets terminated and you
+  want to resume it later on.
 
 ## Chat
 
