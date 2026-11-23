@@ -102,7 +102,7 @@
     {
       // The end of the game. "endCondition" is the name of a value of the "EndCondition" enum:
       // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/protocol/src/enums.rs
-      // (for example, "timeout" corresponds to someone running out of time in a timed game,
+      // (For example, "timeout" corresponds to someone running out of time in a timed game,
       // "terminatedByPlayer" corresponds to a player manually terminating the game, etc.)
       // "playerIndex" is the index of the player that ended the game. It is omitted when no player
       // did.

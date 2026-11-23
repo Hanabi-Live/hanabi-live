@@ -1288,8 +1288,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   checkNoteDisproved(): void {
     // If we wrote a card identity note and all the possibilities for that note have been
-    // eliminated, unmorph the card (for example, a note of "r1" is now impossible because red 1 has
-    // 0 cards left).
+    // eliminated, unmorph the card. (For example, a note of "r1" is now impossible because red 1
+    // has 0 cards left.)
     if (
       this.note.possibilities.every(
         ([suitIndex, rank]) =>

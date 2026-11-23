@@ -488,7 +488,7 @@ additional UI elements are enabled:
   - The new card face will automatically be deactivated if a clue is received
     that falsifies the note.
 - If this behavior is undesired, append a question mark to the end of your note.
-  (For example, "r1?")
+  (For example, "r1?".)
 
 | Suit Name       | Abbreviation                                   |
 | --------------- | ---------------------------------------------- |
@@ -565,10 +565,10 @@ additional UI elements are enabled:
   known from turn 3".)
 - This feature can also be used to stack multiple effects on top of each other.
   (For example, "[r1] [f]" will mark a card as both a red 1 and having the
-  _Finesse_ border)
+  _Finesse_ border.)
 - A "?" or "!" at the end of a special note adds its effect without brackets.
   (For example, "kt?" is the same as "[kt][?]", and "r3!" is the same as
-  "[r3][!]")
+  "[r3][!]".)
 
 ### Note Shortcuts
 

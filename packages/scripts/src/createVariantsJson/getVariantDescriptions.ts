@@ -387,8 +387,8 @@ function getVariantDescriptionForSpecialRankVariant(
     variantDescription[specialPropertyName] = true;
   }
 
-  // Exclude certain types of rank clues, if applicable (for example, you can't clue number 1 in a
-  // Pink-Ones variant).
+  // Exclude certain types of rank clues, if applicable. (For example, you can't clue number 1 in a
+  // Pink-Ones variant.)
   if (suit.allClueRanks === true || suit.noClueRanks === true) {
     variantDescription.clueRanks = specialClueRanks;
   }
