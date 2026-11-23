@@ -4,7 +4,7 @@
   which restrict players in additional ways beyond the normal rules.
 - These characters are loosely based on
   [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant)
-  from Sean McCarthy on the Board Game Geek forums.
+  from Sean McCarthy on the BoardGameGeek forums.
 
 ## List of Characters
 

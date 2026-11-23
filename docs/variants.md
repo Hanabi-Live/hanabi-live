@@ -108,10 +108,10 @@ The pips that are assigned to each suit are documented on the
 ### Prism
 
 - One of the suits is replaced with a prism suit.
-- The prism 1 is touched by the left-most color, the prism 2 is touched by the
-  second-to-left-most color, and so forth.
-- If there are less than 5 colors available in the variant, then the colors used
-  for prism cards will wrap around.
+- The prism 1 is touched by the leftmost color, the prism 2 is touched by the
+  second-from-left color, and so forth.
+- If there are fewer than 5 colors available in the variant, then the colors
+  used for prism cards will wrap around.
 
 ### Orange
 
@@ -411,7 +411,7 @@ The pips that are assigned to each suit are documented on the
 ### Alternating Clues
 
 - The first clue of the game has no restrictions. After that, each successive
-  clue must be the opposite type as the one prior.
+  clue must be the opposite type from the one before it.
 - For example, if the first clue of the game is a color clue, then the second
   clue must be a number clue, the third clue must be a color clue, and so forth.
 - This variant was invented by Jake Stiles.
@@ -431,7 +431,7 @@ The pips that are assigned to each suit are documented on the
 ### Odds and Evens
 
 - Rank clues are limited to 1 and 2.
-- "O" (Odd) rank clue touches all odd cards, "E" (Even) touches all even cards.
+- "O" (Odd) rank clue touches all odd cards; "E" (Even) touches all even cards.
 
 ### Synesthesia
 
@@ -445,12 +445,12 @@ The pips that are assigned to each suit are documented on the
 
 - One of the suits is replaced with a reversed suit.
 - The reversed suit must be played in the opposite order (5, 4, 3, 2, 1).
-- Two 1's are removed from the reversed suit.
-- Two 5's are added to the reversed suit.
+- Two 1s are removed from the reversed suit.
+- Two 5s are added to the reversed suit.
 
 ### Up or Down
 
-- Two 1's are removed from each suit.
+- Two 1s are removed from each suit.
 - One "START" card is added to each suit.
 - When a stack is empty, you can play either a 1, a 5, or a START card on it.
 - When a stack has a START card on it, you can play either a 2 or a 4 on it.
@@ -475,11 +475,11 @@ The pips that are assigned to each suit are documented on the
 
 ### Funnels
 
-- Rank clues also touch all lower ranked cards.
+- Rank clues also touch all lower-ranked cards.
 
 ### Chimneys
 
-- Rank clues also touch all higher ranked cards.
+- Rank clues also touch all higher-ranked cards.
 
 ### Sudoku (5 Suits)
 
@@ -488,7 +488,7 @@ The pips that are assigned to each suit are documented on the
 - Each stack has to be started with a different rank. However, it is not
   predetermined which stack has to start with a particular rank.
 - Instead of the normal card distribution, there are two copies of each card.
-- Similar to a no variant game, playing the fifth card of a suit gives back a
+- Similar to a No Variant game, playing the fifth card of a suit gives back a
   clue.
 
 ### Sudoku (4 Suits)

@@ -51,7 +51,7 @@ before asking any questions in the chat.
   - In the bottom-left-hand corner is the deck, which shows how many cards are
     left in it.
   - In the bottom-right-hand corner is the discard pile.
-  - To the left of the discard pile is the turn count, score, clue count, and
+  - To the left of the discard pile are the turn count, score, clue count, and
     strike count.
 - To perform an action:
   - Play a card by clicking and dragging it to the play stacks.
@@ -199,8 +199,8 @@ that have not been played yet and have only one copy remaining.)
   the person who created the game or created the shared replay.
 - Players can "break free" of what the leader is showing by clicking the "Pause
   Shared Turns" button, or by manually navigating to a different turn. To
-  resynchronize with the team, they need to click on the "Use Shared Turns
-  Button". (The up arrow and down arrow are also shortcuts for clicking on this
+  resynchronize with the team, they need to click on the "Use Shared Turns"
+  button. (The up arrow and down arrow are also shortcuts for clicking on this
   button.)
 - The leader can right-click on a card to highlight it with an arrow (to point
   out things to the other players).
@@ -210,8 +210,8 @@ that have not been played yet and have only one copy remaining.)
     the pace, the efficiency, and the needed efficiency.
   - During a game, players can create "local" arrows by Ctrl + right-clicking.
     These arrows won't be shown to anyone else.
-- The current leader can be seen by hovering over the "👑" icon in the bottom
-  right-hand corner.
+- The current leader can be seen by hovering over the "👑" icon in the
+  bottom-right-hand corner.
 - The leader role can be transferred by clicking or double-tapping the crown.
 
 ### Hypotheticals
@@ -303,7 +303,7 @@ that have not been played yet and have only one copy remaining.)
 - Each game has the option to allow a special "house" rule.
 - If enabled, when there is 1 card left in the deck, players are allowed to
   blind play it.
-- This is done by dragging the deck on to the play area.
+- This is done by dragging the deck onto the play area.
 - A golden border will appear around the deck when there is 1 card left in order
   to signify that this is possible.
 - This feature can prevent losses that occur from being "bottom decked" by a 3
@@ -321,15 +321,15 @@ that have not been played yet and have only one copy remaining.)
 
 - Each game has the option to play with one extra card dealt to each player at
   the start of the game.
-- This can make the game easier with a low amount of players, but make the game
-  harder with a high amount of players.
+- This can make the game easier with a low number of players, but make the game
+  harder with a high number of players.
 
 ### One Less Card
 
 - Each game has the option to play with one less card dealt to each player at
   the start of the game.
-- This can make the game easier with a high amount of players, but make the game
-  harder with a low amount of players.
+- This can make the game easier with a high number of players, but make the game
+  harder with a low number of players.
 
 ### All or Nothing
 
@@ -353,7 +353,7 @@ that have not been played yet and have only one copy remaining.)
   enabled, it will restrict players in additional ways beyond the normal rules.
 - The characters are loosely based on
   [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant)
-  from Sean McCarthy on the Board Game Geek forums.
+  from Sean McCarthy on the BoardGameGeek forums.
 - More information on the characters is listed on
   [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/characters.md).
 
@@ -388,7 +388,7 @@ These options are on the "Settings" page.
 
 - By default, the interface will group all of the hands together in rows.
 - In Keldon mode, the hands are distributed around the table, similar to how it
-  would look if you were playing a card game in real-life.
+  would look if you were playing a card game in real life.
 - (This is named after [Keldon Jones](http://www.keldon.net/), since he is the
   person who originally created this mode and the UI more generally.)
 
@@ -401,14 +401,14 @@ These options are on the "Settings" page.
 
 - In real-life mode, cards will no longer be filled in with positive and
   negative clues.
-- Furthermore, extra UI elements are turned off (8 clue warning, etc.).
+- Furthermore, extra UI elements are turned off (8-clue warning, etc.).
 
 ### Reverse Hand Direction
 
 - Each player has the option to toggle a "reverse hand direction" option, in
   which the user interface will display the hand from right-to-left instead of
   from left-to-right.
-- This is useful for players that are used to drawing cards from the right side
+- This is useful for players who are used to drawing cards from the right side
   instead of from the left.
 
 ### Other Appearance Options
@@ -423,7 +423,7 @@ These options are on the "Settings" page.
 ### Pre-Playing
 
 - Each player has the option to enable the ability to pre-play cards, which is
-  similar to "pre-moves" in Chess.
+  similar to "pre-moves" in chess.
 - Players can pre-play or pre-discard by clicking and dragging a card to the
   respective location and releasing the mouse button. Once done, the card will
   hover over the location until their turn has arrived, and then the action will
@@ -488,7 +488,7 @@ additional UI elements are enabled:
   - The new card face will automatically be deactivated if a clue is received
     that falsifies the note.
 - If this behavior is undesired, append a question mark to the end of your note.
-  (for example, "r1?")
+  (For example, "r1?")
 
 | Suit Name       | Abbreviation                                   |
 | --------------- | ---------------------------------------------- |
@@ -507,7 +507,7 @@ additional UI elements are enabled:
 | Gray            | A                                              |
 
 - If there are two suits with the same abbreviation, the second suit
-  abbreviation will be changed to be the left-most unused letter.
+  abbreviation will be changed to be the leftmost unused letter.
   - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have
     an abbreviation of "U".
 
@@ -561,13 +561,13 @@ additional UI elements are enabled:
 ### Adding Context to Special Notes
 
 - If you want to keep the behavior of a special note but write additional text
-  on the note, place the special note in square brackets. (for example, "[r2]
+  on the note, place the special note in square brackets. (For example, "[r2]
   known from turn 3")
 - This feature can also be used to stack multiple effects on top of each other.
-  (for example, "[r1] [f]" will mark a card as both a red 1 and having the
+  (For example, "[r1] [f]" will mark a card as both a red 1 and having the
   _Finesse_ border)
 - A "?" or "!" at the end of a special note adds its effect without brackets.
-  (for example, "kt?" is the same as "[kt][?]", and "r3!" is the same as
+  (For example, "kt?" is the same as "[kt][?]", and "r3!" is the same as
   "[r3][!]")
 
 ### Note Shortcuts
@@ -607,7 +607,7 @@ use these numbers to make the best move for the current situation.
 
 - You can think of the game as a race to play all of the cards before the deck
   runs out. It is useful to track how close to the end of the race you are.
-- Pace is a measure of the amount of discards that can happen while still having
+- Pace is a measure of the number of discards that can happen while still having
   a chance to get the maximum score.
 - Pace is calculated with the following formula:
   - `current score + cards in deck + number of players - maximum score`.
@@ -618,9 +618,9 @@ use these numbers to make the best move for the current situation.
 
 ### Efficiency
 
-- Since the game only gives you a limited amount of clues, you should be as
+- Since the game only gives you a limited number of clues, you should be as
   efficient as possible with them. It is useful to track how well the team is
-  doing with regards to this.
+  doing with regard to this.
 - In general, efficiency is calculated with the following formula:
   - `cards gotten / number of clues given or lost`
   - `cards gotten` is simply
@@ -629,7 +629,7 @@ use these numbers to make the best move for the current situation.
   - a card misplays (because it could have been discarded instead)
   - a stack is completed when the team already has 8 clues in the bank
 - Note that this efficiency calculation assumes that players are playing with
-  _Good Touch Principle_ - that all clued cards will eventually be played. If
+  _Good Touch Principle_: that all clued cards will eventually be played. If
   your team does not play with _Good Touch Principle_, then this efficiency
   calculation won't be very useful.
 - Note that the calculation will automatically account for clued cards that are
@@ -751,8 +751,8 @@ use these numbers to make the best move for the current situation.
   players.
 - Normally, when a game is started, the server will find a deal in the database
   (based on a seed) that none of the players have played before.
-- If there were no old deals that matched these criteria, the server will
-  generate a new random deal.
+- If there are no old deals that match these criteria, the server will generate
+  a new random deal.
 - After the game is completed, the "Other Scores" button on the game history
   screen will show other players who played the same deal, if any. You can even
   view the replay of other people's games to see how they played the deal.
@@ -783,7 +783,7 @@ use these numbers to make the best move for the current situation.
     for the game was `p3v0sshowmatch-jan-2050-game-1`.)
   - Restarting a game with a seed moves on to the next one, such as from
     `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
-- Additionally, you can start a game that will be a "replay" of an previously
+- Additionally, you can start a game that will be a "replay" of a previously
   played game. All of the same moves are automatically executed up to the
   selected turn. For example, this is useful if a game gets terminated and you
   want to resume it later on.
@@ -796,13 +796,13 @@ use these numbers to make the best move for the current situation.
 - You can also send private messages to other players with the `/pm` command and
   revisit recent private messages with the `/pmhistory` command.
 - You can type any emoji into chat using the
-  [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json).
+  [standard emoji shortcode](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json).
   For example, `:thinking:` will turn into 🤔.
 - You can type any
   [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json)
   into chat. For example, `Kappa` will turn into
   <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">.
-  (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
+  (Many BetterTTV and FrankerFaceZ emotes are also supported.)
 - There are various chat commands. The full list can be found on
   [the chat commands page](chat-commands.md).
 - All lobby chat will be replicated to (and from) the
@@ -845,10 +845,10 @@ use these numbers to make the best move for the current situation.
   of a game. But what if you want to put a note on an entire game? That's where
   tags come in.
 - By using the `/tag [tag]` command, you can attach arbitrary notes to a
-  specific game so that you can more-easily find it later.
+  specific game so that you can more easily find it later.
 - For example, if you performed a massive _Quadruple Finesse_, then you could do
   a `/tag Quadruple Finesse`.
-- You can have an unlimited amount of tags per game. Anyone can add a tag to a
+- You can have an unlimited number of tags per game. Anyone can add a tag to a
   game, regardless of whether they played in it or not. Everyone's tags are
   shared.
 - You can add tags during an ongoing game. The server will not reveal what the
@@ -887,23 +887,23 @@ use these numbers to make the best move for the current situation.
   "Watch Specific Replay" from the menu, select "JSON Data" as the source, and
   then paste in the JSON data.
 - This is useful for researchers and bot-makers because you can take one of the
-  games that your bot plays and then plug it into the website in order to
-  more-easily see what kinds of strategies that it is doing.
+  games that your bot plays and then plug it into the website in order to more
+  easily see what kinds of strategies it uses.
 
 ### JSON Endpoints
 
-| URL                                      | Description                                                                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/export/[game ID]`                      | Provides the data for an arbitrary game from the database.                                                  |
-| `/api/v1/variants`                       | Displays a list of variants and their IDs.                                                                  |
-| `/api/v1/variants-full`                  | Displays a list of variants information and their IDs.                                                      |
-| `/api/v1/history/[username]`             | Lists a paginated list of the player's past games.                                                          |
-| `/api/v1/history/[username]/[username2]` | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
-| `/api/v1/tags/[username]`                | Lists a paginated list of the games tagged by the player, with only that player's tags on each game.        |
-| `/api/v1/tag/[tag]`                      | Lists a paginated list of the games containing the specified tag.                                           |
-| `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
-| `/api/v1/seed/[seed]/stats`              | Shows the statistics of the games played on a specific seed.                                                |
-| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and achievements.                                                |
+| URL                                      | Description                                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `/export/[game ID]`                      | Provides the data for an arbitrary game from the database.                                                    |
+| `/api/v1/variants`                       | Displays a list of variants and their IDs.                                                                    |
+| `/api/v1/variants-full`                  | Displays a list of variant information and their IDs.                                                         |
+| `/api/v1/history/[username]`             | Provides a paginated list of the player's past games.                                                         |
+| `/api/v1/history/[username]/[username2]` | Provides a paginated list of past games that the players were in together. (You can specify up to 6 players.) |
+| `/api/v1/tags/[username]`                | Provides a paginated list of the games tagged by the player, with only that player's tags on each game.       |
+| `/api/v1/tag/[tag]`                      | Provides a paginated list of the games containing the specified tag.                                          |
+| `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                              |
+| `/api/v1/seed/[seed]/stats`              | Shows the statistics of the games played on a specific seed.                                                  |
+| `/api/v1/scores/[username]`              | Shows the player's statistics, max scores, and achievements.                                                  |
 
 The profile and scores pages redirect to their JSON routes when you add `?api`
 to their URLs.
@@ -960,7 +960,7 @@ If you need to reset your password, visit
 
 ## Project History
 
-The Hanab Live website was released in July 2017 by Zamiel as an attempt to
+The Hanab Live website was released in July 2017 by Zamiell as an attempt to
 emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game
 (which is now deleted). Since then, many new features have been added and the
 code is vastly different.

@@ -30,7 +30,7 @@
 
 Find teammates to play games with at
 [the Discord server](https://discord.gg/FADvkJp). We also discuss code changes
-here.
+there.
 
 ## List of Variants
 

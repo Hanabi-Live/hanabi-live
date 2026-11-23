@@ -6,11 +6,11 @@ If you want to learn the basics of the game with a helpful video, then
 ## Overview
 
 - Hanab is a card game based on logic and deduction.
-- Unlike other card games, it is cooperative, meaning that everyone either wins
+- Unlike most card games, it is cooperative, meaning that everyone either wins
   or loses together.
-- Unlike other card games, you cannot see your own hand, but you can see the
+- Unlike most card games, you cannot see your own hand, but you can see the
   hands of the other players.
-- There is a deck of 50 cards comprised of 5 colors and numbers 1 through 5.
+- There is a deck of 50 cards made up of 5 colors and numbers 1 through 5.
 - The goal is to play the cards for each color in order (1 through 5), kind of
   like [Solitaire](<https://en.wikipedia.org/wiki/Klondike_(solitaire)>).
 
@@ -69,7 +69,7 @@ If you want to learn the basics of the game with a helpful video, then
   - "The third card is blue."
   - "The fourth card is green."
   - "The first card is a 1."
-  - "The second and third cards are 3's."
+  - "The second and third cards are 3s."
   - "The fourth card is a 4."
 
 ## Misplays
@@ -93,7 +93,7 @@ If you want to learn the basics of the game with a helpful video, then
   - Two 4s
   - One 5
 - It is important for players to keep in mind how many copies of each card there
-  are - if all copies of a card are discarded, then the team can no longer get a
+  are. If all copies of a card are discarded, then the team can no longer get a
   perfect score.
 
 ## The End of the Game

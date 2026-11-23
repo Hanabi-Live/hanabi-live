@@ -222,7 +222,7 @@ of the repository.
   and shows how many players voted. Right-clicking the skull no longer ends the
   game.
 - When the clues leave a card with possibilities that the suit and rank pips
-  cannot show, such as "any Pink card or a red 3", the card now lists each suit
+  cannot show, such as "any pink card or a red 3", the card now lists each suit
   with the ranks that it can be.
 - The new flashlight button beside "Give Clue" shows the target's hand as they
   would see it after the selected clue. It turns off at the start of each turn.
@@ -337,7 +337,7 @@ of the repository.
   - `/linked` (use `/links` instead)
 - The deck tooltip in a shared replay shows how long the replay has been
   running.
-- Slightly changed the appearance of number pips to try and make them less
+- Slightly changed the appearance of number pips to try to make them less
   visually buggy.
 - Removed the card cycling option and the games that used it.
 - Removed the legacy starting player option and the pre-April 2020 games that
@@ -618,11 +618,11 @@ of the repository.
 
 ## January 11th, 2023
 
-- Spectators can use the right-click note shortcuts (such as shift + right-click
+- Spectators can use the right-click note shortcuts (such as Shift + right-click
   for `f`).
 - A finished game's shared replay now keeps the table name, adding the game
   number.
-- In a hypothetical, Empathy shows morphed cards as their morphed identity.
+- In a hypothetical, empathy shows morphed cards as their morphed identity.
 
 ## January 4th, 2023
 
@@ -687,7 +687,7 @@ of the repository.
 
 ## May 31st, 2022
 
-- Suit pips are highlighted when a positive color clue touched that suit.
+- Suit pips are highlighted when a positive color clue touches that suit.
 - Players can spectate a table before it starts by clicking on the spectators
   section of the row.
 
@@ -725,7 +725,7 @@ of the repository.
 
 ## January 11th, 2022
 
-- Added the /copy chat command, which copies a hypothetical (with anonymized
+- Added the `/copy` chat command, which copies a hypothetical (with anonymized
   players) to the clipboard.
 
 ## January 8th, 2022
@@ -813,7 +813,7 @@ of the repository.
 
 ## March 5th, 2021
 
-- The shift + right click and alt + right click shortcuts now put the
+- The Shift + right-click and Alt + right-click shortcuts now put the
   corresponding identity note in square brackets.
 - Players who are not the leader can now suggest variants with the dropdown.
 
@@ -955,7 +955,7 @@ of the repository.
 
 ## July 12th, 2020
 
-- The cursor changes over cards to show when you can drag or Empathy.
+- The cursor changes over cards to show when you can drag or use empathy.
 - Stack bases can now be morphed.
 
 ## July 7th, 2020
@@ -1005,7 +1005,7 @@ of the repository.
 
 ## May 28th, 2020
 
-- Added the `/shrug` chat commands to display `¯\_(ツ)_/¯`.
+- Added the `/shrug` chat command to display `¯\_(ツ)_/¯`.
 - Added the `/setleader` chat command.
 - Added reversed variants.
 
@@ -1083,7 +1083,7 @@ of the repository.
 
 ## April 5th, 2020
 
-- Added server-side rate limiting to prevent denial of service attacks.
+- Added server-side rate limiting to prevent denial-of-service attacks.
 - In a shared replay, you can now change your perspective to a specific player.
 
 ## March 31st, 2020
@@ -1366,7 +1366,7 @@ of the repository.
 ## January 1st, 2019
 
 - Preplaying is now an optional setting.
-- Added three suit and four suit variants.
+- Added three-suit and four-suit variants.
 - The history screens are full screen.
 
 ## December 30th, 2018

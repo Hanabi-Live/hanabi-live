@@ -15,7 +15,7 @@ underlying problem of an attacker being able to pivot between websites.
 
 The real solution is to use a
 [password manager](https://www.pcmag.com/picks/the-best-password-managers) such
-as [BitWarden](https://bitwarden.com/). Every website should have a unique,
+as [Bitwarden](https://bitwarden.com/). Every website should have a unique,
 randomly generated, super-long password. And the password manager remembers all
 of them for you and automatically enters them in whenever you go to a website.
 Easy.

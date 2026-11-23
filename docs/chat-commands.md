@@ -47,7 +47,7 @@ If you need general help with the website, then read the
 
 | Command                              | Description                                                                                                                   |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `/impostor`                          | Randomly tells one of the players they are an impostor and the others they are crew-mates.                                    |
+| `/impostor`                          | Randomly tells one of the players they are an impostor and the others they are crewmates                                      |
 | `/kick [username]`                   | Remove a player from the table                                                                                                |
 | `/setvariant [variant]`              | Change the variant of the current game                                                                                        |
 | `/split [username1] [username2] ...` | Move specified players to a new lobby with the same settings. The first player in the list becomes the owner of the new lobby |
@@ -74,7 +74,7 @@ If you need general help with the website, then read the
 | `/unpause`   | Unpause the game                         |
 | `/terminate` | Terminate the game                       |
 
-## Game or Replay commands
+## Game or Replay Commands
 
 | Command      | Description                                                       |
 | ------------ | ----------------------------------------------------------------- |
@@ -84,10 +84,10 @@ If you need general help with the website, then read the
 
 ## Replay Commands
 
-| Command           | Description                                                                              |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| `/copy`           | Copy the current game (and hypothetical, if any) to your clipboard as a URL for sharing. |
-| `/suggest [turn]` | Suggest a specific turn for the shared replay leader to go to                            |
-| `/untag [tag]`    | Delete an existing tag from the game                                                     |
-| `/tags`           | Show all of the tags for this game                                                       |
-| `/tagsdeleteall`  | Delete all user's tags from the game                                                     |
+| Command           | Description                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `/copy`           | Copy the current game (and hypothetical, if any) to your clipboard as a URL for sharing |
+| `/suggest [turn]` | Suggest a specific turn for the shared replay leader to go to                           |
+| `/untag [tag]`    | Delete an existing tag from the game                                                    |
+| `/tags`           | Show all of the tags for this game                                                      |
+| `/tagsdeleteall`  | Delete all of your tags from the game                                                   |

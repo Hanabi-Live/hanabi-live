@@ -4,9 +4,9 @@
 
 A: No.
 
-Adding a new option to the website for you (and the people who share your
-use-case) is not free. We have to evaluate the benefits of adding the option
-versus the costs.
+Adding a new option to the website for you (and the people who share your use
+case) is not free. We have to evaluate the benefits of adding the option versus
+the costs.
 
 1. Every option added to the website has to be stored in the database. For every
    user. In perpetuity. You're not paying for this, I am.
@@ -29,7 +29,7 @@ versus the costs.
    of extra bells and whistles. That means routinely saying "no" to small groups
    of users who want specific things.
 
-Often times, the usability of the site for basic users and the long term health
+Oftentimes, the usability of the site for basic users and the long-term health
 of the website is going to be more important than your feature request. Thanks
 for understanding.
 
