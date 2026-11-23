@@ -354,16 +354,16 @@
     "clueColors": ["Blue"]
   },
   {
-    "name": "Tangerine",
-    "id": "tangerine",
-    "fill": "#b35f00",
+    "name": "Peach",
+    "id": "peach",
+    "fill": "#ffac4d",
     "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Peach",
-    "id": "peach",
-    "fill": "#ffac4d",
+    "name": "Tangerine",
+    "id": "tangerine",
+    "fill": "#b35f00",
     "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
@@ -417,13 +417,6 @@
     "clueColors": ["Red", "Green"]
   },
   {
-    "name": "Violet",
-    "id": "violet",
-    "fill": "#7f00ff",
-    "pip": "auto",
-    "clueColors": ["Red", "Blue"]
-  },
-  {
     "name": "Magenta",
     "id": "magenta",
     "fill": "#ff00ff",
@@ -431,11 +424,11 @@
     "clueColors": ["Red", "Blue"]
   },
   {
-    "name": "Cardinal",
-    "id": "cardinal",
-    "fill": "#810735",
+    "name": "Violet",
+    "id": "violet",
+    "fill": "#7f00ff",
     "pip": "auto",
-    "clueColors": ["Red", "Purple"]
+    "clueColors": ["Red", "Blue"]
   },
   {
     "name": "Maroon",
@@ -492,5 +485,12 @@
     "fill": "#000066",
     "pip": "auto",
     "clueColors": ["Blue", "Black"]
+  },
+  {
+    "name": "Cardinal",
+    "id": "cardinal",
+    "fill": "#810735",
+    "pip": "auto",
+    "clueColors": ["Red", "Purple"]
   }
 ]
