@@ -132,7 +132,7 @@ export function ProfileStatistics({
             value: countText(statistics.numGamesNormal),
           },
           {
-            label: "Longest streak",
+            label: "Longest win streak",
             value: countText(statistics.bestStreak?.length ?? 0),
             tooltip: STREAK_TOOLTIP,
             ...(statistics.bestStreak !== undefined && {
