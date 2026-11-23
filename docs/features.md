@@ -562,7 +562,7 @@ additional UI elements are enabled:
 
 - If you want to keep the behavior of a special note but write additional text
   on the note, place the special note in square brackets. (For example, "[r2]
-  known from turn 3")
+  known from turn 3".)
 - This feature can also be used to stack multiple effects on top of each other.
   (For example, "[r1] [f]" will mark a card as both a red 1 and having the
   _Finesse_ border)
