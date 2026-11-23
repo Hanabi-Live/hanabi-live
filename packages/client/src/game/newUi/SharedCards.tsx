@@ -408,7 +408,8 @@ interface ZoneLabelProps {
 
 /**
  * The label of a drop target while the player drags a card. It fades in and out with the dark boxes
- * (see "DropZones.tsx"). It is in the color of clues while the card is over the target.
+ * (see "DropZones.tsx"). While the card is over the target, it is in the color of clues, or red
+ * when the target cannot take the card.
  */
 function ZoneLabel(props: ZoneLabelProps): React.JSX.Element | undefined {
   return props.state === "idle" ? undefined : <ShownZoneLabel {...props} />;
@@ -422,16 +423,17 @@ function ShownZoneLabel({
 }: ZoneLabelProps): React.JSX.Element {
   const ref = useRef<HTMLSpanElement>(null);
   useFade(ref, reducedMotion, DROP_ZONE_FADE_MILLISECONDS);
-  // The color of clues is a layer that fades in and out. Only its opacity animates, never a color.
+  // The color is a layer that fades in and out. Only its opacity animates, never a color. The text
+  // is white on the dark red, as on the clue count's badge with no clues.
   const lit = state === "hovered" || state === "blocked";
   return (
     <span
-      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:isolate tw:-translate-1/2 tw:rounded-full tw:border-2 tw:border-black tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-lg"
+      className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:z-20 tw:isolate tw:-translate-1/2 tw:rounded-full tw:border-2 tw:border-black tw:bg-game-text tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${state === "blocked" ? "tw:text-white" : "tw:text-card-ink"}`}
       ref={ref}
     >
       <span
         aria-hidden="true"
-        className="tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] tw:bg-clue"
+        className={`tw:absolute tw:inset-0 tw:-z-10 tw:rounded-[inherit] ${isRefusing(state) ? "tw:bg-critical" : "tw:bg-clue"}`}
         style={{
           opacity: lit ? 1 : 0,
           transition: reducedMotion ? undefined : getOpacityTransition(lit),
@@ -1774,7 +1776,7 @@ export function DiscardPile({
         style={{ transitionDuration: `${DROP_ZONE_FADE_MILLISECONDS}ms` }}
       />
       {/* A faint trash can behind the cards names the pile without a heading. At max clues, a
-          sign in the color of clues takes its place, to show that no one can discard. */}
+          red sign takes its place, to show that no one can discard. */}
       {showNoDiscard ? (
         <NoDiscardSign reducedMotion={reducedMotion} size={cardWidth * 1.5} />
       ) : (
@@ -1910,9 +1912,8 @@ export function DiscardPile({
         text="Discard"
         unavailableText="No discarding at max clues"
       />
-      {/* At max clues, a dashed border in the color of clues shows that no one can discard,
-          before anyone picks up a card and while they drag one. It has the color of the clue
-          count, which is the reason. It is last, so that the well does not darken it. "Real life
+      {/* At max clues, a red border shows that no one can discard, before anyone picks up a
+          card and while they drag one. It is last, so that the well does not darken it. "Real life
           mode" leaves it out. */}
       {showNoDiscard && <NoDiscardOutline reducedMotion={reducedMotion} />}
       {showDoubleDiscard && (
@@ -2025,8 +2026,9 @@ function DoubleDiscardOutline({
 }
 
 /**
- * The border and tint of the discard pile at max clues. When it shows, it pulses once in the color
- * of clues, so that the players notice that no one can discard. "Reduced motion" leaves out the
+ * The border and tint of the discard pile at max clues. They are red and solid, so that they look
+ * stronger than the yellow border of a Double Discard, which only warns. When they show, the border
+ * pulses once, so that the players notice that no one can discard. "Reduced motion" leaves out the
  * pulse.
  */
 function NoDiscardOutline({
@@ -2045,7 +2047,7 @@ function NoDiscardOutline({
 
     const animation = outline.animate(
       [
-        { boxShadow: "inset 0 0 0 12px var(--clue-border)" },
+        { boxShadow: "inset 0 0 0 12px var(--critical)" },
         { boxShadow: "inset 0 0 0 0 transparent" },
       ],
       {
@@ -2061,7 +2063,7 @@ function NoDiscardOutline({
   return (
     <div
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-clue/8 tw:outline-2 tw:-outline-offset-2 tw:outline-clue tw:outline-dashed"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-critical/8 tw:outline-3 tw:-outline-offset-3 tw:outline-critical tw:outline-solid"
       data-no-discard
       ref={ref}
     />
@@ -2116,14 +2118,14 @@ function NoDiscardSign({
   return (
     <div
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:opacity-40"
+      className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:opacity-60"
       data-discard-pile-icon
       style={{
         width: size,
         height: size,
       }}
     >
-      <NoEntrySvg className="tw:size-full tw:text-clue" ref={ref} />
+      <NoEntrySvg className="tw:size-full tw:text-critical" ref={ref} />
     </div>
   );
 }
@@ -2158,9 +2160,9 @@ function NoEntrySvg({
 
 /**
  * The sign over the discard pile while the player holds a card over it and the team cannot discard.
- * It is a circle with a slash, not an X, because an X on this screen is a strike. It is in the
- * color of clues, because the team has too many clues to discard. It is larger than the held card,
- * so that the card does not cover it. It is in the middle of the pile, around the label.
+ * It is a circle with a slash, not an X, because an X on this screen is a strike. It is red, like
+ * the border of the pile at max clues. It is larger than the held card, so that the card does not
+ * cover it. It is in the middle of the pile, around the label.
  */
 function NoEntrySign({
   reducedMotion,
@@ -2175,7 +2177,7 @@ function NoEntrySign({
       className="tw:pointer-events-none tw:absolute tw:inset-3 tw:z-10"
       ref={ref}
     >
-      <NoEntrySvg className="tw:size-full tw:text-clue tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]" />
+      <NoEntrySvg className="tw:size-full tw:text-critical tw:drop-shadow-[0_2px_6px_rgb(0_0_0/60%)]" />
     </div>
   );
 }

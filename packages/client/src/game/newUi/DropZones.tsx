@@ -29,7 +29,7 @@ const HANDS_MARGIN = 16;
 /**
  * The ring of the box under the held card, in the color of clues. It is a layer of its own, so that
  * it fades in and out as the card moves between the boxes. The shadow of the box's top edge falls
- * on it. At max clues, only the discard pile itself has the dashed border.
+ * on it. At max clues, only the discard pile itself has the red border.
  */
 function ZoneLayers({
   state,
