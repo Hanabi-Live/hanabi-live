@@ -30,7 +30,7 @@ the costs.
    of users who want specific things.
 
 Oftentimes, the usability of the site for basic users and the long-term health
-of the website is going to be more important than your feature request. Thanks
+of the website are going to be more important than your feature request. Thanks
 for understanding.
 
 ## Q: Can you add automated turn tracking to notes?

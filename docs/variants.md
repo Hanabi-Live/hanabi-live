@@ -431,7 +431,8 @@ The pips that are assigned to each suit are documented on the
 ### Odds and Evens
 
 - Rank clues are limited to 1 and 2.
-- "O" (Odd) rank clue touches all odd cards; "E" (Even) touches all even cards.
+- An "O" (Odd) rank clue touches all odd cards; "E" (Even) touches all even
+  cards.
 
 ### Synesthesia
 
