@@ -11,19 +11,20 @@ of the repository.
 
 - Profiles now show achievements for getting the max score many times: "I've Got
   the Hang of This" and "Core Mastery" for 10 and 100 games of No Variant, and
-  one for 10 games of each of Black, Rainbow, Pink, White, Brown, Omni, Null,
-  Muddy Rainbow, Light Pink, Prism, and Orange (with 5 suits), and "Lights Out"
-  for one game of each dark suit (with 5 suits), one for 10 games of each
-  special rank (with 5 suits), one for 10 games of each of Ambiguous, Very
-  Ambiguous, and Extremely Ambiguous (with 6 suits) and Dual-Color (with 5 and 6
-  suits), one for 10 games with each of critical 2s, 3s, and 4s, Scarce Ones,
-  Clue Starved, Color Blind, Number Blind, Totally Blind, Cow and Pig, Duck,
-  Odds and Evens, a reversed suit, Up or Down, Throw It in a Hole, and Sudoku
-  (with 5 suits), and "Power Trio", "Four-Part Harmony", and "High Five" for 10
-  games with 3, 4, and 5 players, and "On a Roll" for 5 games of No Variant in a
-  row with the same number of players. Games with 2 players, or with an option
-  such as "One Extra Card" or detrimental characters, do not count. Each
-  achievement shows how many of the players with an achievement have it.
+  one for 10 games of Black (with 6 suits) and of each of Rainbow, Pink, White,
+  Brown, Omni, Null, Muddy Rainbow, Light Pink, Prism, and Orange (with 5
+  suits), and "Lights Out" for one game of each dark suit (with 6 suits), one
+  for 10 games of each special rank (with 5 suits), one for 10 games of each of
+  Ambiguous, Very Ambiguous, and Extremely Ambiguous (with 6 suits) and
+  Dual-Color (with 5 and 6 suits), one for 10 games with each of critical 2s,
+  3s, and 4s, Scarce Ones, Clue Starved, Color Blind, Number Blind, Totally
+  Blind, Cow and Pig, Duck, Odds and Evens, a reversed suit, Up or Down, and
+  Sudoku (with 5 suits) and Throw It in a Hole (with 6 suits), and "Power Trio",
+  "Four-Part Harmony", and "High Five" for 10 games with 3, 4, and 5 players,
+  and "On a Roll" for 5 games of No Variant in a row with the same number of
+  players. Games with 2 players, or with an option such as "One Extra Card" or
+  detrimental characters, do not count. Each achievement shows how many of the
+  players with an achievement have it.
 - Profiles no longer show the table of best scores on each variant.
 - Profiles no longer have the "Missing scores" tab.
 - Profiles show their statistics in two short lists, games and time. Each

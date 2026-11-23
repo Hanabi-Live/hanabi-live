@@ -35,7 +35,7 @@ const ACHIEVEMENT_CARDS = {
     allSuits: true,
   },
   black10Wins: {
-    variant: "Black (5 Suits)",
+    variant: "Black (6 Suits)",
     allSuits: false,
   },
   rainbow10Wins: {
@@ -79,7 +79,7 @@ const ACHIEVEMENT_CARDS = {
     allSuits: false,
   },
   darkSuitsWins: {
-    variant: "Black (5 Suits)",
+    variant: "Black (6 Suits)",
     allSuits: false,
   },
   rainbowRank10Wins: {

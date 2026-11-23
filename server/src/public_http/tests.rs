@@ -903,8 +903,8 @@ async fn profile_counts_wins_toward_achievements() {
     // (variants 527 and 168). Only game 21 counts toward the Rainbow rank. Game 23 is a win in
     // Ambiguous (6 Suits) (variant 8). Games 24 and 25 are wins in Up or Down (5 Suits) and Up or
     // Down (6 Suits) (variants 24 and 40). Only game 24 counts toward Up or Down. Games 26, 27, and
-    // 28 are wins in Black (5 Suits), Critical Fours (5 Suits), and Totally Blind (5 Suits)
-    // (variants 21, 1822, and 152). Totally Blind does not count toward Color Blind or Number
+    // 28 are wins in Black (6 Suits), Critical Fours (5 Suits), and Totally Blind (5 Suits)
+    // (variants 2, 1822, and 152). Totally Blind does not count toward Color Blind or Number
     // Blind. Black is also one of the dark suits. The wins with 3 players are games 1 to 9, 13, 14,
     // 16, and 21 to 28.
     #[expect(
@@ -926,7 +926,7 @@ async fn profile_counts_wins_toward_achievements() {
           FROM generate_series(1,12) id
           UNION ALL VALUES(13,16,25),(14,3,30),(16,17,20),(19,107,25),(20,0,25),(21,527,25),
             (22,168,30),(23,8,30),(24,24,25),
-            (25,40,30),(26,21,25),(27,1822,25),(28,152,25)) AS g(id,variant,score);
+            (25,40,30),(26,2,30),(27,1822,25),(28,152,25)) AS g(id,variant,score);
         INSERT INTO game_participants(game_id,user_id,seat) SELECT id,1,0 FROM generate_series(1,16) id WHERE id<>15;
         INSERT INTO game_participants(game_id,user_id,seat) VALUES(19,1,0),(20,1,0),(21,1,0),(22,1,0),(23,1,0),
           (24,1,0),(25,1,0),(26,1,0),(27,1,0),(28,1,0);",
@@ -1057,7 +1057,7 @@ async fn profile_unlocks_the_dark_suits_achievement_with_a_win_in_each() {
     ]
     .iter()
     .map(|suit| {
-        let name = format!("{suit} (5 Suits)");
+        let name = format!("{suit} (6 Suits)");
         let variant = hanabi_engine::variants()
             .iter()
             .find(|variant| variant.name == name)
@@ -1079,7 +1079,7 @@ async fn profile_unlocks_the_dark_suits_achievement_with_a_win_in_each() {
               detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
               datetime_finished)
             SELECT id,'test',3,variant,false,NULL,NULL,false,false,false,false,false,false,false,
-              's'||id,25,10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
+              's'||id,30,10,1,'2026-01-01T00:00:00Z'::timestamptz+make_interval(days=>id),
               '2026-01-01T01:00:00Z'::timestamptz+make_interval(days=>id)
             FROM (VALUES{values}) AS g(id,variant);
             INSERT INTO game_participants(game_id,user_id,seat)

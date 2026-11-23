@@ -26,9 +26,8 @@ const SYNC_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_mi
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum CatalogVariant {
     NoVariant,
-    /// The 5-suit variant of a suit, such as "Pink (5 Suits)". Games with 6 suits take too long to
-    /// count.
-    FiveSuits(&'static str),
+    /// The variant of a suit with a number of suits, such as "Pink (5 Suits)".
+    Suits(&'static str, u8),
     /// A variant of the catalog, by its full name, such as "Ambiguous (6 Suits)".
     Named(&'static str),
 }
@@ -37,7 +36,7 @@ impl CatalogVariant {
     fn name(self) -> String {
         match self {
             Self::NoVariant => DEFAULT_VARIANT_NAME.to_owned(),
-            Self::FiveSuits(suit) => format!("{suit} (5 Suits)"),
+            Self::Suits(suit, suits) => format!("{suit} ({suits} Suits)"),
             Self::Named(name) => name.to_owned(),
         }
     }
@@ -69,13 +68,10 @@ pub(crate) enum Games {
     /// The games of the 5-suit variants with a special rank, such as "Rainbow-Ones (5 Suits)" and
     /// "Rainbow-Fives (5 Suits)". The catalog has special ranks only for ones and fives.
     SpecialRank(&'static str),
-    /// The games of every 5-suit variant with a rule, such as Up or Down, alone or with other
-    /// rules and suits.
-    Rule(VariantRule),
+    /// The games of every variant with a rule and a number of suits, such as Up or Down with 5
+    /// suits, alone or with other rules and suits.
+    Rule(VariantRule, u8),
 }
-
-/// The suits that a variant needs to count toward a `Games::Rule` achievement.
-const RULE_SUITS: usize = 5;
 
 /// A rule of a variant that an achievement counts the wins with.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -158,7 +154,7 @@ impl Games {
                 "games with a {} special rank and 5 suits",
                 rank.replace('-', " ")
             ),
-            Self::Rule(rule) => format!("games with {} ({RULE_SUITS} Suits)", rule.name()),
+            Self::Rule(rule, suits) => format!("games with {} ({suits} Suits)", rule.name()),
         }
     }
 }
@@ -174,10 +170,13 @@ pub(crate) enum Rule {
         variant: CatalogVariant,
         length: i64,
     },
-    /// One win in the 5-suit variant of each suit, such as each dark suit.
+    /// One win in the variant of each suit with a number of suits, such as each dark suit with 6
+    /// suits.
     OneWinEach {
         /// What the suits are, such as "dark suit".
         kind: &'static str,
+        /// The number of suits of each variant.
+        suit_count: u8,
         suits: &'static [&'static str],
     },
 }
@@ -189,9 +188,11 @@ impl Rule {
         match self {
             Self::Wins { games, .. } => vec![*games],
             Self::Streak { .. } => Vec::new(),
-            Self::OneWinEach { suits, .. } => suits
+            Self::OneWinEach {
+                suit_count, suits, ..
+            } => suits
                 .iter()
-                .map(|&suit| Games::Variant(CatalogVariant::FiveSuits(suit)))
+                .map(|&suit| Games::Variant(CatalogVariant::Suits(suit, *suit_count)))
                 .collect(),
         }
     }
@@ -214,8 +215,12 @@ impl Rule {
                  players.",
                 variant.name()
             ),
-            Self::OneWinEach { kind, suits } => format!(
-                "Get the max score in a 5-suit game with each {kind}: {}",
+            Self::OneWinEach {
+                kind,
+                suit_count,
+                suits,
+            } => format!(
+                "Get the max score in a {suit_count}-suit game with each {kind}: {}",
                 suits.join(", ")
             ),
         }
@@ -241,13 +246,18 @@ pub(crate) struct Unlocked {
     pub achievement: &'static Definition,
 }
 
-/// An achievement for `WINS` wins in the 5-suit variant of a special suit.
-const fn special_suit(id: AchievementId, name: &'static str, suit: &'static str) -> Definition {
+/// An achievement for `WINS` wins in the variant of a special suit with a number of suits.
+const fn special_suit(
+    id: AchievementId,
+    name: &'static str,
+    suit: &'static str,
+    suits: u8,
+) -> Definition {
     Definition {
         id,
         name,
         rule: Rule::Wins {
-            games: Games::Variant(CatalogVariant::FiveSuits(suit)),
+            games: Games::Variant(CatalogVariant::Suits(suit, suits)),
             goal: WINS,
         },
     }
@@ -277,13 +287,13 @@ const fn named(id: AchievementId, name: &'static str, variant: &'static str) -> 
     }
 }
 
-/// An achievement for `WINS` wins in the 5-suit variants with a rule.
-const fn rule(id: AchievementId, name: &'static str, rule: VariantRule) -> Definition {
+/// An achievement for `WINS` wins in the variants with a rule and a number of suits.
+const fn rule(id: AchievementId, name: &'static str, rule: VariantRule, suits: u8) -> Definition {
     Definition {
         id,
         name,
         rule: Rule::Wins {
-            games: Games::Rule(rule),
+            games: Games::Rule(rule, suits),
             goal: WINS,
         },
     }
@@ -330,27 +340,39 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
             goal: 100,
         },
     },
-    special_suit(AchievementId::Black10Wins, "Pitch Black", "Black"),
-    special_suit(AchievementId::Rainbow10Wins, "Rainbow Wrangler", "Rainbow"),
-    special_suit(AchievementId::Pink10Wins, "Tickled Pink", "Pink"),
-    special_suit(AchievementId::White10Wins, "Whiteout", "White"),
-    special_suit(AchievementId::Brown10Wins, "Brown Belt", "Brown"),
-    special_suit(AchievementId::Omni10Wins, "Omnipotent", "Omni"),
-    special_suit(AchievementId::Null10Wins, "Null and Void", "Null"),
+    special_suit(AchievementId::Black10Wins, "Pitch Black", "Black", 6),
+    special_suit(
+        AchievementId::Rainbow10Wins,
+        "Rainbow Wrangler",
+        "Rainbow",
+        5,
+    ),
+    special_suit(AchievementId::Pink10Wins, "Tickled Pink", "Pink", 5),
+    special_suit(AchievementId::White10Wins, "Whiteout", "White", 5),
+    special_suit(AchievementId::Brown10Wins, "Brown Belt", "Brown", 5),
+    special_suit(AchievementId::Omni10Wins, "Omnipotent", "Omni", 5),
+    special_suit(AchievementId::Null10Wins, "Null and Void", "Null", 5),
     special_suit(
         AchievementId::MuddyRainbow10Wins,
         "Stuck in the Mud",
         "Muddy Rainbow",
+        5,
     ),
-    special_suit(AchievementId::LightPink10Wins, "Light Touch", "Light Pink"),
-    special_suit(AchievementId::Prism10Wins, "Prismatic", "Prism"),
-    special_suit(AchievementId::Orange10Wins, "Citrus Twist", "Orange"),
+    special_suit(
+        AchievementId::LightPink10Wins,
+        "Light Touch",
+        "Light Pink",
+        5,
+    ),
+    special_suit(AchievementId::Prism10Wins, "Prismatic", "Prism", 5),
+    special_suit(AchievementId::Orange10Wins, "Citrus Twist", "Orange", 5),
     Definition {
         id: AchievementId::DarkSuitsWins,
         name: "Lights Out",
         // Dark Orange is left out, as Orange is left out of the special suit achievements.
         rule: Rule::OneWinEach {
             kind: "dark suit",
+            suit_count: 6,
             suits: &[
                 "Black",
                 "Dark Rainbow",
@@ -415,69 +437,92 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         AchievementId::CriticalTwos10Wins,
         "Pair Bond",
         VariantRule::CriticalRank(2),
+        5,
     ),
     rule(
         AchievementId::CriticalThrees10Wins,
         "Triple Threat",
         VariantRule::CriticalRank(3),
+        5,
     ),
     rule(
         AchievementId::CriticalFours10Wins,
         "Four-Leaf Clover",
         VariantRule::CriticalRank(4),
+        5,
     ),
     rule(
         AchievementId::ScarceOnes10Wins,
         "Rare Find",
         VariantRule::ScarceOnes,
+        5,
     ),
     rule(
         AchievementId::ClueStarved10Wins,
         "Lean Times",
         VariantRule::ClueStarved,
+        5,
     ),
     rule(
         AchievementId::ColorBlind10Wins,
         "Shades of Gray",
         VariantRule::ColorBlind,
+        5,
     ),
     rule(
         AchievementId::NumberBlind10Wins,
         "Lost Count",
         VariantRule::NumberBlind,
+        5,
     ),
     rule(
         AchievementId::TotallyBlind10Wins,
         "Blindfolded",
         VariantRule::TotallyBlind,
+        5,
     ),
     rule(
         AchievementId::CowAndPig10Wins,
         "Barnyard Banter",
         VariantRule::CowAndPig,
+        5,
     ),
-    rule(AchievementId::Duck10Wins, "Sitting Duck", VariantRule::Duck),
+    rule(
+        AchievementId::Duck10Wins,
+        "Sitting Duck",
+        VariantRule::Duck,
+        5,
+    ),
     rule(
         AchievementId::OddsAndEvens10Wins,
         "Against the Odds",
         VariantRule::OddsAndEvens,
+        5,
     ),
     rule(
         AchievementId::ReversedSuit10Wins,
         "Rewind",
         VariantRule::ReversedSuit,
+        5,
     ),
     rule(
         AchievementId::UpOrDown10Wins,
         "Ups and Downs",
         VariantRule::UpOrDown,
+        5,
     ),
     rule(
         AchievementId::ThrowItInAHole10Wins,
         "Hole in One",
         VariantRule::ThrowItInAHole,
+        6,
     ),
-    rule(AchievementId::Sudoku10Wins, "Gridlock", VariantRule::Sudoku),
+    rule(
+        AchievementId::Sudoku10Wins,
+        "Gridlock",
+        VariantRule::Sudoku,
+        5,
+    ),
 ];
 
 /// The streak lengths that the achievements ask for in each variant.
@@ -552,10 +597,10 @@ impl QueryRows {
                     .collect::<Result<_>>()?,
                 0,
             ),
-            Games::Rule(rule) => (
+            Games::Rule(rule, suits) => (
                 hanabi_engine::variants()
                     .iter()
-                    .filter(|v| v.suits.len() == RULE_SUITS && rule.of(v))
+                    .filter(|v| v.suits.len() == usize::from(suits) && rule.of(v))
                     .map(|v| Ok((i16::try_from(v.id)?, i16::try_from(v.max_score)?)))
                     .collect::<Result<_>>()?,
                 0,
