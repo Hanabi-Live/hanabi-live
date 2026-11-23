@@ -92,7 +92,7 @@ export const CURATED_VARIANT_GROUPS = [
       "r-y-g-b-p_oe", // Odds and Evens (5 Suits)
       "r-y-g-b-p.rev", // Reversed (5 Suits)
       "r-y-g-b-p-t_updown", // Up or Down (6 Suits)
-      "r-y-g-b-p_hole", // Throw It in a Hole (5 Suits)
+      "r-y-g-b-p-t_hole", // Throw It in a Hole (6 Suits)
       "r-y-g-b-p_sudoku", // Sudoku (5 Suits)
     ],
   },
