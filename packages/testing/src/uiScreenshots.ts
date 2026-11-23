@@ -147,6 +147,15 @@ const MAX_ANIMATION_WAIT_MILLISECONDS = 10_000;
  */
 const STEP_TIMEOUT_MILLISECONDS = 10_000;
 
+/**
+ * The most time that starting the server, seeding it, or signing in its accounts takes. A phase
+ * that takes longer is stuck, and the run stops with its name.
+ */
+const SETUP_TIMEOUT_MILLISECONDS = 60_000;
+
+/** The most time that one state takes, at every width. */
+const STATE_TIMEOUT_MILLISECONDS = 2 * 60_000;
+
 /** How often to check whether the fireworks, which a canvas draws, have ended. */
 const FIREWORKS_CHECK_MILLISECONDS = 100;
 
@@ -3731,14 +3740,18 @@ async function capture(
       }
     });
     try {
-      await captureState(
-        page,
-        address,
-        state,
-        cast,
-        options,
-        compareBundle,
-        results,
+      await withTimeout(
+        `State ${state.name}`,
+        captureState(
+          page,
+          address,
+          state,
+          cast,
+          options,
+          compareBundle,
+          results,
+        ),
+        STATE_TIMEOUT_MILLISECONDS,
       );
     } catch (error) {
       // The page as the state left it, to see why it failed.
@@ -4180,6 +4193,59 @@ ${figures.join("\n")}
   );
 }
 
+/**
+ * Changes the seeded database for the states. The server shows the tutorial to an account that is a
+ * few seconds old, and the browser's accounts are not new. A player whom no other score state shows
+ * gets best scores, so that the "Best scores" tab has max scores, a lower score, and a max score
+ * with an option (4 is "One Extra Card").
+ */
+async function prepareDatabase(
+  sql: ReturnType<Awaited<ReturnType<typeof evaluationDatabase>>["connect"]>,
+) {
+  await sql`UPDATE users SET datetime_created = datetime_created - interval '1 day'`;
+  await sql`
+    INSERT INTO user_stats (user_id, variant_id, num_games, best_score3, best_score3_mod, best_score4, best_score4_mod, best_score5, best_score5_mod)
+    SELECT users.id, variants.id, 3, best.three, 0, best.four, best.four_mod, best.five,
+      CASE WHEN best.five IS NULL THEN NULL ELSE 0 END
+    FROM users, variants, (VALUES
+      ('No Variant', 25, 25, 0, 23),
+      ('Rainbow (5 Suits)', 25, 21, 0, NULL),
+      ('Black (6 Suits)', 30, 30, 4, NULL)
+    ) AS best(name, three, four, four_mod, five)
+    WHERE users.username = ${BEST_SCORES_USERNAME} AND variants.name = best.name
+    ON CONFLICT (user_id, variant_id) DO UPDATE SET
+      best_score3 = EXCLUDED.best_score3, best_score3_mod = EXCLUDED.best_score3_mod,
+      best_score4 = EXCLUDED.best_score4, best_score4_mod = EXCLUDED.best_score4_mod,
+      best_score5 = EXCLUDED.best_score5, best_score5_mod = EXCLUDED.best_score5_mod
+  `;
+}
+
+/**
+ * Waits for a phase of the run, and fails with its name when it takes too long, so that a stuck run
+ * stops and says where it was stuck.
+ */
+async function withTimeout<T>(
+  phase: string,
+  promise: Promise<T>,
+  milliseconds = SETUP_TIMEOUT_MILLISECONDS,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new Error(
+          `${phase} timed out after ${milliseconds / SECOND_IN_MILLISECONDS} seconds.`,
+        ),
+      );
+    }, milliseconds);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function main() {
   const options = parseOptions();
   await rm(OUTPUT_DIRECTORY, {
@@ -4192,6 +4258,8 @@ async function main() {
   const database = await evaluationDatabase();
   let server: ReturnType<typeof startProcess> | undefined;
   let seeded: Seed | undefined;
+  // The error that stopped the run, if any. A failed cleanup must not hide it.
+  let failure: Error | undefined;
   try {
     await prepareRoot(directory, database, DOMAIN);
     // A production domain makes the server listen on every interface unless told otherwise.
@@ -4205,11 +4273,11 @@ async function main() {
     await buildRust(directory);
     await installSchema(directory);
     server = startProcess(directory);
-    const localAddress = await server.ready;
+    const localAddress = await withTimeout("Starting the server", server.ready);
     const { port } = new URL(localAddress);
     const address = `http://${DOMAIN}:${port}`;
 
-    const seedResult = await seed(localAddress);
+    const seedResult = await withTimeout("Seeding", seed(localAddress));
     seeded = seedResult;
     const allStates = getStates();
     const states = allStates.filter(
@@ -4228,38 +4296,24 @@ async function main() {
     }
     // One cast for each page that takes the screenshots of the isolated states that are signed in,
     // and one for the page of those that are signed out.
-    const allCasts = await Promise.all(
-      Array.from(
-        { length: NUM_WORKERS + 1 },
-        async (_cast, index) =>
-          await createCast(localAddress, index, seedResult),
+    const allCasts = await withTimeout(
+      "Signing in the accounts",
+      Promise.all(
+        Array.from(
+          { length: NUM_WORKERS + 1 },
+          async (_cast, index) =>
+            await createCast(localAddress, index, seedResult),
+        ),
       ),
     );
     const casts = allCasts.slice(0, NUM_WORKERS);
     const signedOutCast = allCasts.at(-1);
     assertDefined(signedOutCast, "There is no cast.");
-    // The server shows the tutorial to an account that is a few seconds old, and the browser's
-    // accounts are not new.
-    const sql = database.connect();
-    await sql`UPDATE users SET datetime_created = datetime_created - interval '1 day'`;
-    // Best scores of a player whom no other score state shows, so that the "Best scores" tab has
-    // max scores, a lower score, and a max score with an option (4 is "One Extra Card").
-    await sql`
-      INSERT INTO user_stats (user_id, variant_id, num_games, best_score3, best_score3_mod, best_score4, best_score4_mod, best_score5, best_score5_mod)
-      SELECT users.id, variants.id, 3, best.three, 0, best.four, best.four_mod, best.five,
-        CASE WHEN best.five IS NULL THEN NULL ELSE 0 END
-      FROM users, variants, (VALUES
-        ('No Variant', 25, 25, 0, 23),
-        ('Rainbow (5 Suits)', 25, 21, 0, NULL),
-        ('Black (6 Suits)', 30, 30, 4, NULL)
-      ) AS best(name, three, four, four_mod, five)
-      WHERE users.username = ${BEST_SCORES_USERNAME} AND variants.name = best.name
-      ON CONFLICT (user_id, variant_id) DO UPDATE SET
-        best_score3 = EXCLUDED.best_score3, best_score3_mod = EXCLUDED.best_score3_mod,
-        best_score4 = EXCLUDED.best_score4, best_score4_mod = EXCLUDED.best_score4_mod,
-        best_score5 = EXCLUDED.best_score5, best_score5_mod = EXCLUDED.best_score5_mod
-    `;
-    await sql.end();
+    {
+      // The connection closes even when a change fails, so that it does not keep the run alive.
+      await using sql = database.connect();
+      await withTimeout("Preparing the database", prepareDatabase(sql));
+    }
 
     await run(process.execPath, [
       "x",
@@ -4354,6 +4408,8 @@ async function main() {
     await writeReports(options, results);
     await writeIndex();
     console.info(`Screenshots: ${OUTPUT_DIRECTORY}`);
+  } catch (error) {
+    failure = error instanceof Error ? error : new Error(String(error));
   } finally {
     if (seeded !== undefined) {
       for (const peer of seeded.peers) {
@@ -4363,11 +4419,21 @@ async function main() {
     if (server !== undefined) {
       await stopChild(server.child);
     }
-    await database.close();
     await rm(directory, {
       recursive: true,
       force: true,
     });
+  }
+  try {
+    await database.close();
+  } catch (error) {
+    if (failure === undefined) {
+      throw error;
+    }
+    console.error("Failed to drop the database after the error below:", error);
+  }
+  if (failure !== undefined) {
+    throw failure;
   }
 }
 
@@ -4375,5 +4441,7 @@ try {
   await main();
 } catch (error) {
   console.error("Failed to take the screenshots:", error);
-  process.exitCode = 1;
+  // A phase that timed out can leave a connection or a timer open, which would keep the process
+  // alive.
+  process.exit(1);
 }

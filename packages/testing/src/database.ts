@@ -251,7 +251,8 @@ export async function evaluationDatabase(): Promise<EvaluationDatabase> {
     connect: () => evaluationPool(connection),
     async close() {
       try {
-        await admin`DROP DATABASE ${admin(name)}`;
+        // A connection that a failed run left open would otherwise stop the drop.
+        await admin`DROP DATABASE ${admin(name)} WITH (FORCE)`;
       } finally {
         await admin.end({ timeout: 3 });
       }
