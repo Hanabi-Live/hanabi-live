@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 23rd, 2026
+
+- At a table, a slash command that the website does not know, such as a typo,
+  now also tells its sender that it was sent as a chat message for bots.
+
 ## November 22nd, 2026
 
 - Profiles now show achievements for getting the max score many times: "I've Got

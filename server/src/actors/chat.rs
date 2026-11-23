@@ -431,7 +431,6 @@ impl TableActor {
             }
             return self.publish(e).await;
         }
-        // Unknown slash commands are ordinary table messages for bots.
         if let Some(ChatCommand {
             kind: CommandKind::Table(table_command),
             args,
@@ -442,6 +441,21 @@ impl TableActor {
                 .chat_command(session, &text, *table_command, args)
                 .await;
         }
+        // An unknown slash command goes to the table as a normal message, because bots read
+        // commands such as "/setall". Its sender also gets a warning, in case it is a typo.
+        let unknown_command = command
+            .as_ref()
+            .filter(|command| matches!(command.kind, CommandKind::Unknown))
+            .map(|command| {
+                private_server_chat(
+                    self.table.id,
+                    &session.name,
+                    &format!(
+                        "\"/{}\" is not a command of this website, so it was sent as a chat message for bots to read. Use \"/help\" to get a list of available commands.",
+                        command.name
+                    ),
+                )
+            });
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
         push_chat(&mut next, [(Some(session.user), message.clone())])?;
@@ -454,6 +468,10 @@ impl TableActor {
         self.add_chat(&mut e, &message);
         if typing {
             self.typing_messages(&mut e, session.user, &session.name, false);
+        }
+        if let Some(warning) = unknown_command {
+            e.messages
+                .push((session, frame(hanabi_protocol::event::CHAT, warning)));
         }
         self.publish(e).await
     }

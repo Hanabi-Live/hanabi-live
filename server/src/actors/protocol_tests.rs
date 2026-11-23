@@ -2713,7 +2713,7 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
 }
 
 #[tokio::test]
-async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<()> {
+async fn unknown_table_commands_reach_bots_and_warn_the_sender() -> Result<()> {
     let Some(mut h) = Harness::new(&["Bot", "Alice", "Outsider"]).await? else {
         return Ok(());
     };
@@ -2725,8 +2725,9 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 h.start(0, id).await?;
                 ensure!(matches!(h.snapshot(id).await?.0.phase, Phase::Live { .. }));
             }
-            h.frames(0);
-            h.frames(2);
+            for index in 0..3 {
+                h.frames(index);
+            }
             for (text, expected) in [
                 ("/setall 11", "/setall 11"),
                 ("/custom-bot <level>", "/custom-bot <level>"),
@@ -2735,9 +2736,23 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 h.send(1, "chat", json!({"tableId":id,"text":text})).await?;
                 let messages = chat_messages(&h.frames(0));
                 ensure!(
-                    messages.iter().any(|message| message["text"] == expected
-                        && message["kind"]["author"] == json!({"type":"user","username":"Alice"})),
-                    "Bot did not receive table command"
+                    messages.len() == 1
+                        && messages[0]["text"] == expected
+                        && messages[0]["kind"]["author"]
+                            == json!({"type":"user","username":"Alice"}),
+                    "Bot did not receive only the table command: {messages:?}"
+                );
+                // The sender also gets a private warning, in case the command is a typo.
+                let messages = chat_messages(&h.frames(1));
+                let name = expected.split_whitespace().next().unwrap_or_default();
+                ensure!(
+                    messages.len() == 2
+                        && messages[0]["text"] == expected
+                        && messages[1]["kind"]["type"] == "private"
+                        && messages[1]["text"].as_str().is_some_and(|text| {
+                            text.starts_with(&format!("\"{name}\" is not a command"))
+                        }),
+                    "Sender did not get the unknown-command warning: {messages:?}"
                 );
                 let snapshot = h.snapshot(id).await?.0;
                 ensure!(
