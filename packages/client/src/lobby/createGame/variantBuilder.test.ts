@@ -40,9 +40,10 @@ describe("variant builder", () => {
     const missed = VARIANT_NAMES.map((name) => getVariant(name).recipe).filter(
       (recipe) => getRecipe(getChoice(recipe)) !== recipe,
     );
-    // The others are themed sets whose suits have an order of their own, such as
-    // "r-gold-g-cyan-b-violet". Players find them by their names.
-    expect(missed).toHaveLength(33);
+    // The others list their suits in an order of their own, such as "r-gold-g-cyan-b-violet", or
+    // use normal suits that the builder does not fill in, such as the Candy Corn and Holiday mixes.
+    // Players find them by their names.
+    expect(missed).toHaveLength(10);
   });
 
   test("makes a variant that the catalog does not have", () => {
