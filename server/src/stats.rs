@@ -6,7 +6,7 @@ use crate::{
     transport::Identity,
 };
 use anyhow::{Context, Result};
-use hanabi_protocol::{PregameStats, UserId};
+use hanabi_protocol::{GameId, PregameStats, UserId};
 use sqlx::PgPool;
 use std::collections::BTreeMap;
 
@@ -74,8 +74,8 @@ pub(crate) async fn pregame_stats_of(
         .collect()
 }
 
-/// Updates the seed count and the best scores with a finished game. Running it again for the same
-/// game changes nothing. The game counts are updated when the game is saved (`archive::insert`).
+/// Updates the seed count and the best scores with a finished game, and records the game that set a
+/// best score. Running it again for the same game changes nothing. The game counts are updated when the game is saved (`archive::insert`).
 pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
     let v = i16::try_from(variant.id)?;
@@ -104,17 +104,18 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
         .execute(&mut *tx)
         .await?;
         sqlx::query!(
-            "UPDATE user_stats SET best_score2=CASE WHEN $5=2 THEN GREATEST(best_score2,$3) ELSE best_score2 END,best_score2_mod=CASE WHEN $5=2 AND (best_score2 IS NULL OR $3>best_score2 OR ($3=best_score2 AND $4<best_score2_mod)) THEN $4 ELSE best_score2_mod END,
-             best_score3=CASE WHEN $5=3 THEN GREATEST(best_score3,$3) ELSE best_score3 END,best_score3_mod=CASE WHEN $5=3 AND (best_score3 IS NULL OR $3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $4 ELSE best_score3_mod END,
-             best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND (best_score4 IS NULL OR $3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,
-             best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND (best_score5 IS NULL OR $3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,
-             best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND (best_score6 IS NULL OR $3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END
+            "UPDATE user_stats SET best_score2=CASE WHEN $5=2 THEN GREATEST(best_score2,$3) ELSE best_score2 END,best_score2_mod=CASE WHEN $5=2 AND (best_score2 IS NULL OR $3>best_score2 OR ($3=best_score2 AND $4<best_score2_mod)) THEN $4 ELSE best_score2_mod END,best_score2_game_id=CASE WHEN $5=2 AND (best_score2 IS NULL OR $3>best_score2 OR ($3=best_score2 AND $4<best_score2_mod)) THEN $6 ELSE best_score2_game_id END,
+             best_score3=CASE WHEN $5=3 THEN GREATEST(best_score3,$3) ELSE best_score3 END,best_score3_mod=CASE WHEN $5=3 AND (best_score3 IS NULL OR $3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $4 ELSE best_score3_mod END,best_score3_game_id=CASE WHEN $5=3 AND (best_score3 IS NULL OR $3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $6 ELSE best_score3_game_id END,
+             best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND (best_score4 IS NULL OR $3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,best_score4_game_id=CASE WHEN $5=4 AND (best_score4 IS NULL OR $3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $6 ELSE best_score4_game_id END,
+             best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND (best_score5 IS NULL OR $3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,best_score5_game_id=CASE WHEN $5=5 AND (best_score5 IS NULL OR $3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $6 ELSE best_score5_game_id END,
+             best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND (best_score6 IS NULL OR $3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END,best_score6_game_id=CASE WHEN $5=6 AND (best_score6 IS NULL OR $3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $6 ELSE best_score6_game_id END
              WHERE user_id=$1 AND variant_id=$2",
             user,
             v,
             i16::try_from(s.game.score)?,
             modifier.bits(),
             players,
+            s.game_id.map(GameId::get),
         )
         .execute(&mut *tx)
         .await?;

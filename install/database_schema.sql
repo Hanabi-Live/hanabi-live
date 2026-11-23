@@ -107,6 +107,16 @@ CREATE TABLE user_stats (
     best_score5_mod  SMALLINT  NULL,
     best_score6      SMALLINT  NULL,
     best_score6_mod  SMALLINT  NULL,
+    /*
+     * The game that set each best score: the first game with that score and modifier. NULL when
+     * it is not known. They are not foreign keys, so that deleting a game does not search this
+     * table. A reader checks that the game still exists and has the score.
+     */
+    best_score2_game_id  INTEGER  NULL,
+    best_score3_game_id  INTEGER  NULL,
+    best_score4_game_id  INTEGER  NULL,
+    best_score5_game_id  INTEGER  NULL,
+    best_score6_game_id  INTEGER  NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, variant_id),
     CONSTRAINT user_stats_best_score2_mod_check

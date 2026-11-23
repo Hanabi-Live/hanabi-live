@@ -1311,8 +1311,9 @@ mod tests {
             let mut table = pregame(store.allocate_table().await?);
             terminal(&mut table)?;
             let template = table.game().unwrap().clone();
-            // A player count without a game has no best score.
+            // A player count without a game has no best score, and no game that set it.
             let mut expected = [None::<i16>; 5];
+            let mut expected_games = [None::<i32>; 5];
             for count in hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS {
                 let mut snapshot = template.clone();
                 snapshot.players = (1..=hanabi_engine::int(count))
@@ -1325,9 +1326,17 @@ mod tests {
                     .collect();
                 snapshot.game.state_mut().score = hanabi_engine::int(count) + 10;
                 expected[count - 2] = Some(i16::try_from(count)? + 10);
+                let game_id = i32::try_from(count)? + 100;
+                snapshot.game_id = Some(GameId::new(game_id).unwrap());
+                expected_games[count - 2] = Some(game_id);
+                crate::stats::refresh(&store.primary, &snapshot).await?;
+                // A later game with the same score keeps the first game.
+                snapshot.game_id = Some(GameId::new(game_id + 1000).unwrap());
                 crate::stats::refresh(&store.primary, &snapshot).await?;
                 let user = sqlx::query!(
-                    "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
+                    "SELECT best_score2,best_score3,best_score4,best_score5,best_score6,
+                     best_score2_game_id,best_score3_game_id,best_score4_game_id,
+                     best_score5_game_id,best_score6_game_id
                      FROM user_stats WHERE user_id=1 AND variant_id=0"
                 )
                 .fetch_one(&store.primary)
@@ -1342,6 +1351,17 @@ mod tests {
                 ensure!(
                     users == expected,
                     "User stats after {count} players: {users:?}"
+                );
+                let games = [
+                    user.best_score2_game_id,
+                    user.best_score3_game_id,
+                    user.best_score4_game_id,
+                    user.best_score5_game_id,
+                    user.best_score6_game_id,
+                ];
+                ensure!(
+                    games == expected_games,
+                    "Best score games after {count} players: {games:?}"
                 );
             }
             Ok::<(), anyhow::Error>(())
