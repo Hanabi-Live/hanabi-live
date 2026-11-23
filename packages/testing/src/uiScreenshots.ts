@@ -2077,10 +2077,9 @@ async function useClassicScreen(cast: Cast) {
   await cast.setNewUi(false);
 }
 
-/** Switches the New UI to the classic screen with the "/ui" chat command. */
+/** Switches the New UI to the classic screen with Alt + u. */
 async function showClassic(page: Page) {
-  await page.locator("#game-chat-input").fill("/ui");
-  await page.press("#game-chat-input", "Enter");
+  await page.locator("body").press("Alt+u");
   await page.waitForSelector(".konvajs-content");
   await settle(page);
 }
