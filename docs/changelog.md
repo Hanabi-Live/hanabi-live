@@ -12,6 +12,8 @@ of the repository.
 - A slash command that the website does not know, such as a typo, is now refused
   at tables too, instead of being sent as a chat message. Bots must read
   commands that start with another character, such as "!setall".
+- If you try to discard a card that you know is critical, the game now asks you
+  to confirm.
 
 ## November 22nd, 2026
 

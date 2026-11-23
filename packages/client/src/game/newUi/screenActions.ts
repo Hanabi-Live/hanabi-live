@@ -10,7 +10,7 @@ import { getTotalCardsInDeck, isAtMaxClueTokens } from "@hanabi-live/game";
 import { flushSync } from "react-dom";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
-import { confirmPlay } from "../confirmPlay.ts";
+import { confirmDiscard, confirmPlay } from "../confirmMove.ts";
 import { currentState, currentVariant } from "../gameSession.ts";
 import * as hypothetical from "../hypothetical.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
@@ -31,8 +31,9 @@ export function sendAction(action: ClientAction): void {
 /**
  * Plays or discards a card, after asking the player when the move needs it, as on the classic
  * screen. Playing a card that cannot be played, or that the player's note says cannot be, asks
- * first. In a hypothetical, a card of unknown identity asks which card it is. `onSend` is called
- * when the move goes, and `onCancel` when the player cancels it.
+ * first, as does discarding a card that is known to be critical. In a hypothetical, a card of
+ * unknown identity asks which card it is. `onSend` is called when the move goes, and `onCancel`
+ * when the player cancels it.
  */
 export function moveCard(
   type: "play" | "discard",
@@ -74,8 +75,9 @@ export function moveCard(
 
   // A replay shows a past turn, but the move is made on the turn that is played now.
   const cardState = getActionState(state).deck[order];
-  if (type === "play" && cardState !== undefined) {
-    confirmPlay(cardState, send, onCancel);
+  if (cardState !== undefined) {
+    const confirm = type === "play" ? confirmPlay : confirmDiscard;
+    confirm(cardState, send, onCancel);
     return;
   }
 

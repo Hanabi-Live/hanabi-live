@@ -19,7 +19,7 @@ import { getHtmlElement } from "../../utils.ts";
 import { GAME_CHAT_INPUT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
 import { getColorKeyIndex, getRankKeyIndex } from "../clueKeys.ts";
-import { confirmPlay } from "../confirmPlay.ts";
+import { confirmDiscard, confirmPlay } from "../confirmMove.ts";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import * as hypothetical from "../hypothetical.ts";
 import { swapUi } from "../main.ts";
@@ -502,14 +502,15 @@ function click(element: Konva.Node) {
 
 function performAction(actionType: PlayOrDiscard, order: CardOrder) {
   const cardState = globals.state.visibleState?.deck[order];
-  if (actionType === "play" && cardState !== undefined) {
-    confirmPlay(cardState, () => {
-      sendAction(actionType, order);
-    });
+  if (cardState === undefined) {
+    sendAction(actionType, order);
     return;
   }
 
-  sendAction(actionType, order);
+  const confirm = actionType === "play" ? confirmPlay : confirmDiscard;
+  confirm(cardState, () => {
+    sendAction(actionType, order);
+  });
 }
 
 function sendAction(actionType: PlayOrDiscard, order: CardOrder) {

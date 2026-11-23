@@ -1,5 +1,5 @@
 import type { SuitRankTuple } from "@hanabi-live/game";
-import { StackDirection, getVariant } from "@hanabi-live/game";
+import { CardStatus, StackDirection, getVariant } from "@hanabi-live/game";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const askForConfirmation = vi.fn();
@@ -10,7 +10,7 @@ vi.mock("./gameSession.ts", () => ({
   currentVariant: () => globals.variant,
 }));
 vi.mock("../modals.ts", () => ({ askForConfirmation }));
-const { confirmPlay } = await import("./confirmPlay.ts");
+const { confirmPlay, confirmDiscard } = await import("./confirmMove.ts");
 
 const NUM_SUITS = 5;
 const BLUE = 3;
@@ -108,4 +108,69 @@ describe("confirmPlay with an identity note", () => {
       expect(play).toHaveBeenCalled();
     },
   );
+});
+
+function discard(possibleCards: readonly SuitRankTuple[]) {
+  // Only red 5 is critical.
+  const cardStatus = Array.from({ length: NUM_SUITS }, (_, suitIndex) =>
+    Object.fromEntries(
+      [1, 2, 3, 4, 5].map((rank) => [
+        rank,
+        suitIndex === RED && rank === 5
+          ? CardStatus.Critical
+          : CardStatus.NeedsToBePlayed,
+      ]),
+    ),
+  );
+  Object.assign(globals, {
+    state: {
+      metadata: {
+        options: {
+          speedrun: false,
+        },
+      },
+      replay: {
+        hypothetical: undefined,
+      },
+      ongoingGame: {
+        cardStatus,
+      },
+    },
+  });
+  const send = vi.fn<() => void>();
+  confirmDiscard(
+    {
+      order: 0,
+      possibleCards,
+    } as unknown as Parameters<typeof confirmDiscard>[0],
+    send,
+  );
+  return send;
+}
+
+describe("confirmDiscard", () => {
+  beforeEach(() => {
+    askForConfirmation.mockClear();
+  });
+
+  test("warns when the card is known to be critical", () => {
+    const send = discard([tuple(RED, 5)]);
+
+    expect(askForConfirmation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "This card is critical.",
+        caution: true,
+      }),
+      send,
+      undefined,
+    );
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  test("discards without a warning when the card may not be critical", () => {
+    const send = discard([tuple(RED, 5), tuple(BLUE, 5)]);
+
+    expect(askForConfirmation).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalled();
+  });
 });

@@ -1,5 +1,9 @@
 import type { CardState, SuitRankTuple } from "@hanabi-live/game";
-import { MAX_STRIKES, isCardPotentiallyPlayable } from "@hanabi-live/game";
+import {
+  CardStatus,
+  MAX_STRIKES,
+  isCardPotentiallyPlayable,
+} from "@hanabi-live/game";
 import { askForConfirmation } from "../modals.ts";
 import { currentState, currentVariant } from "./gameSession.ts";
 import { isOurSeat } from "./ourSeat.ts";
@@ -75,6 +79,47 @@ export function confirmPlay(
   }
 
   play();
+}
+
+/**
+ * Discards a card, first asking the user for confirmation if the card is known to be critical.
+ *
+ * @param cardState The state of the card being discarded.
+ * @param discard Called if the discard should proceed.
+ * @param cancel Called if the user cancels the discard.
+ */
+export function confirmDiscard(
+  cardState: CardState,
+  discard: () => void,
+  cancel?: () => void,
+): void {
+  const state = currentState();
+  const { cardStatus } = state.ongoingGame;
+
+  const shouldWarn =
+    state.replay.hypothetical === undefined
+    && !state.metadata.options.speedrun
+    && cardState.possibleCards.length > 0
+    && cardState.possibleCards.every(
+      ([suitIndex, rank]) =>
+        cardStatus[suitIndex][rank] === CardStatus.Critical,
+    );
+  if (!shouldWarn) {
+    discard();
+    return;
+  }
+
+  askForConfirmation(
+    {
+      title: "This card is critical.",
+      description:
+        "The clues on it and the cards that you can see show that it is the last copy of a card that the team still needs.",
+      confirmText: "Discard anyway",
+      caution: true,
+    },
+    discard,
+    cancel,
+  );
 }
 
 function isPlayable(

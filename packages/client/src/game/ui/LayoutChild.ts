@@ -3,7 +3,7 @@ import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals.ts";
 import * as sounds from "../../sounds.ts";
-import { confirmPlay } from "../confirmPlay.ts";
+import { confirmDiscard, confirmPlay } from "../confirmMove.ts";
 import { SoundType } from "../types/SoundType.ts";
 import type { CardLayout } from "./CardLayout.ts";
 import * as cursor from "./cursor.ts";
@@ -172,7 +172,7 @@ export class LayoutChild extends Konva.Group {
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | undefined): void {
     const returnToHand = () => {
-      // The card can be destroyed while the morph or play confirmation modal is open.
+      // The card can be destroyed while the morph or move confirmation modal is open.
       if (this.parent !== null) {
         (this.parent as unknown as CardLayout | PlayStack).doLayout();
       }
@@ -202,10 +202,17 @@ export class LayoutChild extends Konva.Group {
       }
 
       case "discardArea": {
-        turn.end({
-          type: "discard",
-          order: this.card.order,
-        });
+        // Before we discard a card, ensure that it is not known to be critical.
+        confirmDiscard(
+          this.card.state,
+          () => {
+            turn.end({
+              type: "discard",
+              order: this.card.order,
+            });
+          },
+          returnToHand,
+        );
         break;
       }
     }
