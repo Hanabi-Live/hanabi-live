@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.variant_id,b.num_players AS \"num_players!\",g.id\n         FROM user_stats s\n         CROSS JOIN LATERAL (VALUES\n           (2::smallint,s.best_score2,s.best_score2_mod,s.best_score2_game_id),\n           (3::smallint,s.best_score3,s.best_score3_mod,s.best_score3_game_id),\n           (4::smallint,s.best_score4,s.best_score4_mod,s.best_score4_game_id),\n           (5::smallint,s.best_score5,s.best_score5_mod,s.best_score5_game_id),\n           (6::smallint,s.best_score6,s.best_score6_mod,s.best_score6_game_id)\n         ) AS b(num_players,score,modifier,game_id)\n         JOIN games g ON g.id=b.game_id AND g.variant_id=s.variant_id\n           AND g.num_players=b.num_players AND g.score=b.score\n         WHERE s.user_id=$1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "variant_id",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "variant_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "num_players!",
+        "type_info": "Int2",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "6011b0fe2710e734b549eda17a12ff27c30f29e1733e374b582eed8154888122"
+}

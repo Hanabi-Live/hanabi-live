@@ -1458,6 +1458,11 @@ export const seedStatisticsSchema = z
 const playerCountScoreSchema = z
   .strictObject({
     /**
+     * The first game with this score and option. Absent when it is not known, such as when the
+     * game was deleted.
+     */
+    gameId: gameIdSchema.optional(),
+    /**
      * The option that keeps the score from counting as a normal one, if any.
      */
     modifier: scoreModifierOptionSchema.optional(),

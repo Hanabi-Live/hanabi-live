@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { gameIdSchema } from "@hanabi-live/data";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
 import { BestScoresTable } from "./BestScoresTable.tsx";
@@ -20,6 +21,7 @@ test("a max score stands out, and a score with an option does not count", () => 
               {
                 numPlayers: 3,
                 score: 25,
+                gameId: gameIdSchema.parse(123),
               },
               {
                 numPlayers: 4,
@@ -53,6 +55,11 @@ test("a max score stands out, and a score with an option does not count", () => 
     "\u{2013}",
   ]);
   expect(cells[1]?.querySelector(".tw\\:bg-green")).not.toBe(null);
+  // A score links to the game that set it, when the server knows it.
+  expect(cells[1]?.querySelector("a")?.getAttribute("href")).toBe(
+    "/replay/123",
+  );
+  expect(cells[2]?.querySelector("a")).toBe(null);
   expect(cells[2]?.querySelector(".tw\\:bg-green")).toBe(null);
 
   const black = screen.getByRole("row", { name: /^Black/u });

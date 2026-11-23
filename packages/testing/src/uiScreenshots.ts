@@ -688,6 +688,10 @@ function getStates(): readonly State[] {
       name: "best-scores",
       path: `/best-scores/${BEST_SCORES_USERNAME}`,
       loggedIn: false,
+      // The scores link to their games.
+      prepare: async (page) => {
+        await page.locator('a[href^="/replay/"]').first().waitFor();
+      },
     },
     {
       name: "history",
@@ -4197,7 +4201,7 @@ ${figures.join("\n")}
  * Changes the seeded database for the states. The server shows the tutorial to an account that is a
  * few seconds old, and the browser's accounts are not new. A player whom no other score state shows
  * gets best scores, so that the "Best scores" tab has max scores, a lower score, and a max score
- * with an option (4 is "One Extra Card").
+ * with an option (4 is "One Extra Card"). Each score gets a game, which the tab links to.
  */
 async function prepareDatabase(
   sql: ReturnType<Awaited<ReturnType<typeof evaluationDatabase>>["connect"]>,
@@ -4217,6 +4221,38 @@ async function prepareDatabase(
       best_score3 = EXCLUDED.best_score3, best_score3_mod = EXCLUDED.best_score3_mod,
       best_score4 = EXCLUDED.best_score4, best_score4_mod = EXCLUDED.best_score4_mod,
       best_score5 = EXCLUDED.best_score5, best_score5_mod = EXCLUDED.best_score5_mod
+  `;
+  await sql`
+    WITH cells AS (
+      SELECT s.user_id, s.variant_id, n.num_players,
+        CASE n.num_players WHEN 3 THEN s.best_score3 WHEN 4 THEN s.best_score4 ELSE s.best_score5 END AS score,
+        CASE n.num_players WHEN 3 THEN s.best_score3_mod WHEN 4 THEN s.best_score4_mod ELSE s.best_score5_mod END AS modifier
+      FROM user_stats s
+      JOIN users ON users.id = s.user_id
+      CROSS JOIN (VALUES (3), (4), (5)) AS n(num_players)
+      WHERE users.username = ${BEST_SCORES_USERNAME}
+    ), added AS (
+      INSERT INTO games (name, num_players, variant_id, timed, speedrun, deck_plays, empty_clues,
+        one_extra_card, one_less_card, all_or_nothing, detrimental_characters, seed, score,
+        num_turns, end_condition, datetime_started, datetime_finished)
+      SELECT 'Best scores', num_players, variant_id, false, false, false, false, modifier = 4,
+        false, false, false, 'p' || num_players || 'v' || variant_id || 'best-scores', score, 40, 1,
+        now() - interval '2 days', now() - interval '2 days'
+      FROM cells
+      WHERE score IS NOT NULL
+      RETURNING id, variant_id, num_players
+    ), participants AS (
+      INSERT INTO game_participants (game_id, user_id, seat)
+      SELECT added.id, users.id, 0
+      FROM added, users
+      WHERE users.username = ${BEST_SCORES_USERNAME}
+    )
+    UPDATE user_stats s SET
+      best_score3_game_id = (SELECT id FROM added WHERE added.variant_id = s.variant_id AND added.num_players = 3),
+      best_score4_game_id = (SELECT id FROM added WHERE added.variant_id = s.variant_id AND added.num_players = 4),
+      best_score5_game_id = (SELECT id FROM added WHERE added.variant_id = s.variant_id AND added.num_players = 5)
+    FROM users
+    WHERE users.id = s.user_id AND users.username = ${BEST_SCORES_USERNAME}
   `;
 }
 

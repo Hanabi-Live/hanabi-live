@@ -5,6 +5,7 @@ import type { publicPageTableSchema } from "@hanabi-live/data";
 import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { ReadonlyMap } from "complete-common";
 import type * as z from "zod";
+import { PATH } from "../constants.ts";
 import { CURATED_VARIANT_GROUPS, getCuratedLabel } from "../curatedVariants.ts";
 import { tooltipRef } from "../tooltipRef.ts";
 import { ModifierIcon } from "./MissingScoresTable.tsx";
@@ -87,18 +88,29 @@ function ScoreCell({
     return <span className="tw:text-text-label">{NONE}</span>;
   }
   const max = isMax(score, maxScore);
+  const className = max
+    ? "tw:inline-block tw:min-w-[2.2em] tw:rounded-full tw:bg-green tw:px-1.5 tw:font-semibold tw:text-text-on-accent"
+    : "";
+  const tooltip = `${score.score} of ${maxScore}.`;
   return (
     <span className="tw:inline-flex tw:items-center tw:gap-1">
-      <span
-        className={
-          max
-            ? "tw:inline-block tw:min-w-[2.2em] tw:rounded-full tw:bg-green tw:px-1.5 tw:font-semibold tw:text-text-on-accent"
-            : undefined
-        }
-        ref={tooltipRef(`${score.score} of ${maxScore}.`)}
-      >
-        {score.score}
-      </span>
+      {score.gameId === undefined ? (
+        <span className={className} ref={tooltipRef(tooltip)}>
+          {score.score}
+        </span>
+      ) : (
+        // The link keeps the look of the score, so that the table stays calm. The tooltip and the
+        // underline on hover show that it opens the game.
+        <a
+          className={`${className} tw:no-underline tw:hover:underline ${max ? "" : "tw:text-inherit"}`}
+          href={`${PATH.REPLAY}/${score.gameId}`}
+          ref={tooltipRef(
+            `${tooltip} Click to show the first game with this score.`,
+          )}
+        >
+          {score.score}
+        </a>
+      )}
       {score.modifier !== undefined && (
         <ModifierIcon modifier={score.modifier} />
       )}

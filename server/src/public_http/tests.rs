@@ -596,20 +596,43 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let row = missing_no_variant().await.unwrap();
     assert_eq!(row["score"], row["maxScore"], "{row}");
     assert_eq!(row["modifier"], "oneExtraCard", "{row}");
-    // The "Best scores" tab lists each played variant by its recipe, with each player count.
-    let (status, body) = request(app.clone(), "/best-scores/Alice").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    let rows = page_table(&body)["rows"].clone();
+    // The "Best scores" tab lists each played variant by its recipe, with each player count, and
+    // the game that set each score.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
+    sqlx::raw_sql("UPDATE user_stats SET best_score2_game_id=1 WHERE user_id=1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let best_scores = async || {
+        let (status, body) = request(app.clone(), "/best-scores/Alice").await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        page_table(&body)["rows"].clone()
+    };
+    let rows = best_scores().await;
     assert_eq!(
         rows,
         json!([{
             "recipe": "r-y-g-b-p",
             "variantName": "No Variant",
             "maxScore": 25,
-            "scores": [{"numPlayers": 2, "score": 25, "modifier": "oneExtraCard"}],
+            "scores": [{"numPlayers": 2, "score": 25, "modifier": "oneExtraCard", "gameId": 1}],
         }]),
         "{rows}"
     );
+    // A game without the best score, such as one that an older server left, is not shown.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
+    sqlx::raw_sql("UPDATE user_stats SET best_score2_game_id=2 WHERE user_id=1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let rows = best_scores().await;
+    assert!(rows[0]["scores"][0].get("gameId").is_none(), "{rows}");
     #[expect(
         clippy::disallowed_methods,
         reason = "test SQL that sets up database state or failures directly"

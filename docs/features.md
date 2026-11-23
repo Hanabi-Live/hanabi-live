@@ -174,7 +174,8 @@ that have not been played yet and have only one copy remaining.)
   unlocked it sees a message at the top of the screen.
 - A profile's "Best scores" tab shows the player's best score in each curated
   variant with 2, 3, 4, and 5 players. A max score is highlighted, and each
-  column counts the player's max scores.
+  column counts the player's max scores. Each score links to the first game with
+  it.
 
 ### Replays
 

@@ -7,7 +7,7 @@ use crate::errors::StatementLimit;
 use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_protocol::{
-    BestStreak, Count, Difficulty, MaxScoreCount, MaxScoreSummary, MissingScore,
+    BestStreak, Count, Difficulty, GameId, MaxScoreCount, MaxScoreSummary, MissingScore,
     MissingScoresFilters, MissingScoresPlayer, NumPlayers, PlayerCountScore, PlayerScores,
     PlayerStatistics, PublicGameList, PublicPageTable, Score, ScoreModifierOption, SeedDifficulty,
     SeedStatistics, VariantBestScores, VariantId,
@@ -554,9 +554,35 @@ const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
 const VERY_HARD_EFFICIENCY: f64 = 1.5;
 
+/// The game that set each of a player's best scores, by variant ID and player count. It leaves out
+/// a game that was deleted, or whose score is no longer the best score.
+async fn best_score_games(state: &PublicState, id: i32) -> Result<HashMap<(i16, i16), GameId>> {
+    let rows = sqlx::query!(
+        "SELECT s.variant_id,b.num_players AS \"num_players!\",g.id
+         FROM user_stats s
+         CROSS JOIN LATERAL (VALUES
+           (2::smallint,s.best_score2,s.best_score2_mod,s.best_score2_game_id),
+           (3::smallint,s.best_score3,s.best_score3_mod,s.best_score3_game_id),
+           (4::smallint,s.best_score4,s.best_score4_mod,s.best_score4_game_id),
+           (5::smallint,s.best_score5,s.best_score5_mod,s.best_score5_game_id),
+           (6::smallint,s.best_score6,s.best_score6_mod,s.best_score6_game_id)
+         ) AS b(num_players,score,modifier,game_id)
+         JOIN games g ON g.id=b.game_id AND g.variant_id=s.variant_id
+           AND g.num_players=b.num_players AND g.score=b.score
+         WHERE s.user_id=$1",
+        id
+    )
+    .fetch_all(&state.pool)
+    .await?;
+    rows.into_iter()
+        .map(|row| Ok(((row.variant_id, row.num_players), GameId::try_from(row.id)?)))
+        .collect()
+}
+
 /// A player's best scores in each variant of the catalog that they played.
 async fn best_scores(state: &PublicState, id: i32) -> Result<Vec<VariantBestScores>> {
     let statistics = user_stats(state, id).await?;
+    let games = best_score_games(state, id).await?;
     let mut rows = Vec::new();
     for variant in catalog::variants() {
         // A variant without a row has no games.
@@ -573,6 +599,9 @@ async fn best_scores(state: &PublicState, id: i32) -> Result<Vec<VariantBestScor
                     num_players: NumPlayers::try_from(num_players)?,
                     score: Score::try_from(score)?,
                     modifier: shown_modifier(modifier),
+                    game_id: games
+                        .get(&(row.variant_id, i16::try_from(num_players)?))
+                        .copied(),
                 })
             })
             .collect::<Result<Vec<_>>>()?;

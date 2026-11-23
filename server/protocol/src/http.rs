@@ -387,6 +387,10 @@ pub struct PlayerCountScore {
     /// The option that keeps the score from counting as a normal one, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub modifier: Option<ScoreModifierOption>,
+    /// The first game with this score and option. Absent when it is not known, such as when the
+    /// game was deleted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_id: Option<GameId>,
 }
 
 /// A player of a shared missing scores page.

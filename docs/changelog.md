@@ -40,6 +40,7 @@ of the repository.
   tabs shows only the player's name.
 - Profiles have a "Best scores" tab, with the player's best scores in the
   curated variants with 2 to 5 players.
+- Each score on a profile's "Best scores" tab links to the first game with it.
 
 ## November 21st, 2026
 
