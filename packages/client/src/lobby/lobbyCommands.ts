@@ -110,6 +110,7 @@ lobbyCommands.set("tableJoined", (data) => {
     data.stage !== "replay"
     && store.getState().session.screen === Screen.PreGame
   ) {
+    pregame.moveChatDraftToGame();
     pregame.hide(false);
   }
   gameMain.show(data.stage === "justStarted");

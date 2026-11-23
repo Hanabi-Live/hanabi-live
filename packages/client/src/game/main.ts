@@ -1,5 +1,6 @@
 // The Hanabi game UI.
 
+import { setChatInputText } from "../chat.ts";
 import { HISTORY_HASH, PATH } from "../constants.ts";
 import {
   fadeIn,
@@ -19,6 +20,7 @@ import { store } from "../store.ts";
 import * as tooltips from "../tooltips.ts";
 import { getHtmlElement, setBrowserAddressBarPath } from "../utils.ts";
 import * as clock from "./clock.ts";
+import { GAME_CHAT_INPUT_ID } from "./GameChatBox.tsx";
 import { gameChatCleared } from "./gameChatSlice.ts";
 import { loadGameInit } from "./gameCommands.ts";
 import { releaseGameObservers } from "./gameObservers.ts";
@@ -188,6 +190,9 @@ export function hide(): void {
     setBrowserAddressBarPath(PATH.LOBBY, historyHash);
   }
   document.body.dataset["screen"] = "lobby";
+
+  // What we typed belongs to this table, so it does not carry over to the next one.
+  setChatInputText(GAME_CHAT_INPUT_ID, "");
 
   newUi.unmount();
   closeGame();

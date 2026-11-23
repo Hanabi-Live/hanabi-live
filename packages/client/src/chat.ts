@@ -138,6 +138,14 @@ export function init(): void {
   }
 }
 
+/** Sets the text of a chat input, if it is on the page. */
+export function setChatInputText(id: string, text: string): void {
+  const element = document.querySelector<HTMLInputElement>(`#${id}`);
+  if (element !== null) {
+    element.value = text;
+  }
+}
+
 /** Handles a change to a chat input's text. */
 export function onChatInput(element: HTMLInputElement, room: ChatRoom): void {
   // We have typed something new, so reset the tab-complete variables.
