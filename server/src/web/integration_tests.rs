@@ -179,9 +179,14 @@ async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
     let cookie = login(&fixture, "StrictHttp").await;
     let client = reqwest::Client::new();
     let requests = [
-        client.get(format!("{}/test-cookie", fixture.url)).body("x"),
-        client.get(format!("{}/test-cookie?utm_source=x", fixture.url)),
-        client.get(format!("{}/test-cookie?account=0", fixture.url)),
+        client
+            .get(format!("{}/api/v1/identity/token", fixture.url))
+            .body("x"),
+        client.get(format!(
+            "{}/api/v1/identity/token?utm_source=x",
+            fixture.url
+        )),
+        client.get(format!("{}/api/v1/identity/token?account=0", fixture.url)),
         client.post(format!("{}/logout?dev=1", fixture.url)),
         client.post(format!("{}/logout?return=%2F", fixture.url)),
         client
@@ -754,7 +759,7 @@ async fn native_admission_waits_for_inflight_http_and_fences_lost_ownership_post
         .await
         .unwrap();
     let response = reqwest::Client::new()
-        .get(format!("{}/test-cookie", fixture.url))
+        .get(format!("{}/api/v1/identity/token", fixture.url))
         .send()
         .await
         .unwrap();

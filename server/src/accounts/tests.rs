@@ -351,10 +351,10 @@ async fn native_accounts_http_and_identity_postgres() {
     };
     let app = router(db.pool.clone(), config(), hub());
     assert_eq!(
-        request(&app, "GET", "/test-cookie", "", None, false)
+        request(&app, "GET", "/api/v1/identity/token", "", None, false)
             .await
             .0,
-        StatusCode::NO_CONTENT
+        StatusCode::UNAUTHORIZED
     );
     assert_eq!(
         request(
@@ -391,9 +391,16 @@ async fn native_accounts_http_and_identity_postgres() {
     }
     let cookie = header.split(';').next().unwrap();
     assert_eq!(
-        request(&app, "GET", "/test-cookie", "", Some(cookie), false)
-            .await
-            .0,
+        request(
+            &app,
+            "GET",
+            "/api/v1/identity/token",
+            "",
+            Some(cookie),
+            false
+        )
+        .await
+        .0,
         StatusCode::OK
     );
     let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username='Alice'")
@@ -447,17 +454,31 @@ async fn native_accounts_http_and_identity_postgres() {
     assert_eq!(status, StatusCode::OK);
     // A password change ends other sessions, but keeps the one that changed it.
     assert_eq!(
-        request(&app, "GET", "/test-cookie", "", Some(cookie), false)
-            .await
-            .0,
-        StatusCode::NO_CONTENT
+        request(
+            &app,
+            "GET",
+            "/api/v1/identity/token",
+            "",
+            Some(cookie),
+            false
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
     );
     let header = headers[header::SET_COOKIE].to_str().unwrap();
     let cookie = header.split(';').next().unwrap();
     assert_eq!(
-        request(&app, "GET", "/test-cookie", "", Some(cookie), false)
-            .await
-            .0,
+        request(
+            &app,
+            "GET",
+            "/api/v1/identity/token",
+            "",
+            Some(cookie),
+            false
+        )
+        .await
+        .0,
         StatusCode::OK
     );
     assert_eq!(
@@ -667,8 +688,16 @@ async fn cookie_for_a_missing_account_is_not_a_session_postgres() {
     )
     .unwrap();
     let cookie = format!("hanabi.sid={value}");
-    let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
-    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, _, _) = request(
+        &app,
+        "GET",
+        "/api/v1/identity/token",
+        "",
+        Some(&cookie),
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
     db.close().await;
 }
 
@@ -696,7 +725,7 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     }
     let cookie = jar.join("; ");
     for (id, expected) in [(ids[0], StatusCode::OK), (ids[1], StatusCode::OK)] {
-        let path = format!("/test-cookie?account={id}");
+        let path = format!("/api/v1/identity/token?account={id}");
         assert_eq!(
             request(&app, "GET", &path, "", Some(&cookie), false)
                 .await
@@ -709,12 +738,12 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     let (_, headers, _) = request(&app, "POST", &path, "", Some(&cookie), false).await;
     assert_eq!(set_cookies(&headers), [format!("hanabi.sid.{}=", ids[0])]);
     // Signing out ends the session, so a copy of its cookie stops working.
-    let path = format!("/test-cookie?account={}", ids[0]);
+    let path = format!("/api/v1/identity/token?account={}", ids[0]);
     assert_eq!(
         request(&app, "GET", &path, "", Some(&cookie), false)
             .await
             .0,
-        StatusCode::NO_CONTENT
+        StatusCode::UNAUTHORIZED
     );
     // Signing out of the latest account also clears it for new tabs.
     let path = format!("/logout?account={}", ids[1]);
@@ -966,7 +995,15 @@ async fn test_paths_sign_in_to_the_test_accounts_postgres() {
             .map(|value| value.to_str().unwrap().split(';').next().unwrap())
             .collect::<Vec<_>>()
             .join("; ");
-        let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
+        let (status, _, _) = request(
+            &app,
+            "GET",
+            "/api/v1/identity/token",
+            "",
+            Some(&cookie),
+            false,
+        )
+        .await;
         assert_eq!(status, StatusCode::OK);
         let body = format!("username={account}&password={account}&version=42&createAccount=true");
         let (status, _, _) = request(&app, "POST", "/login", &body, None, false).await;

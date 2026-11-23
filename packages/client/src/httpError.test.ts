@@ -6,7 +6,7 @@ describe("httpError", () => {
     const response = Response.json(
       {
         message:
-          "Account test-cookie failed: The database is unavailable. [Reference: abc123]",
+          "Account login failed: The database is unavailable. [Reference: abc123]",
         code: "databaseUnavailable",
       },
       {
@@ -16,9 +16,9 @@ describe("httpError", () => {
         },
       },
     );
-    const error = await httpError(response, "Checking your saved session");
+    const error = await httpError(response, "Logging in");
     expect(error.message).toBe(
-      "Checking your saved session failed (HTTP 503). Account test-cookie failed: The database is unavailable. [Reference: abc123]",
+      "Logging in failed (HTTP 503). Account login failed: The database is unavailable. [Reference: abc123]",
     );
   });
 });

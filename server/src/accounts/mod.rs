@@ -70,7 +70,6 @@ pub fn router(pool: PgPool, config: AccountConfig, hub: mpsc::Sender<HubCommand>
         })
         .route("/login", post(login))
         .route("/logout", post(logout))
-        .route("/test-cookie", get(test_cookie))
         .route(
             &format!("{API_PREFIX}/identity/token"),
             get(identity_token).post(identity_token),
@@ -603,22 +602,6 @@ async fn end_sessions(state: &Accounts, session: cookie::Session) -> Result<()> 
         .await??;
     }
     Ok(())
-}
-
-async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
-    let query = match account_query(uri.query(), &["account"]) {
-        Ok(query) => query,
-        Err(message) => return HttpError::refused(StatusCode::BAD_REQUEST, message).json(),
-    };
-    let Some(session) = session(&headers, &state.config.secret, requested_account(&query)) else {
-        return StatusCode::NO_CONTENT.into_response();
-    };
-    // A valid cookie can outlive its account, such as when a development database is reset.
-    match session_username(&state.pool, session).await {
-        Ok(Some(_)) => "OK\n".into_response(),
-        Ok(None) => StatusCode::NO_CONTENT.into_response(),
-        Err(error) => account_failure("session-check", &error),
-    }
 }
 
 pub(crate) const BANNED: &str = "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";

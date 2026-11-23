@@ -110,7 +110,6 @@ async fn canonical_host(State(origin): State<Arc<str>>, request: Request, next: 
     // move to the cookie domain before either client attempts to sign in or connect.
     let navigation = matches!(*request.method(), Method::GET | Method::HEAD)
         && path != "/ws"
-        && path != "/test-cookie"
         && !path.starts_with("/api/")
         && !request.headers().contains_key(header::UPGRADE)
         && request
@@ -279,7 +278,6 @@ mod tests {
             Request::builder()
                 .method(Method::CONNECT)
                 .uri("https://hanabi.live/ws"),
-            Request::builder().uri("/test-cookie"),
             Request::builder().uri("/api/v1/identity/token"),
             Request::builder().method(Method::POST).uri("/login"),
             Request::builder()
