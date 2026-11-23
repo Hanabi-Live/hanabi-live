@@ -369,7 +369,6 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
     Definition {
         id: AchievementId::DarkSuitsWins,
         name: "Lights Out",
-        // Dark Orange is left out, as Orange is left out of the special suit achievements.
         rule: Rule::OneWinEach {
             kind: "dark suit",
             suit_count: 6,
@@ -384,6 +383,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
                 "Cocoa Rainbow",
                 "Gray Pink",
                 "Dark Prism",
+                "Dark Orange",
             ],
         },
     },
@@ -449,13 +449,13 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         AchievementId::CriticalFours10Wins,
         "Four-Leaf Clover",
         VariantRule::CriticalRank(4),
-        5,
+        6,
     ),
     rule(
         AchievementId::ScarceOnes10Wins,
         "Rare Find",
         VariantRule::ScarceOnes,
-        5,
+        6,
     ),
     rule(
         AchievementId::ClueStarved10Wins,
@@ -509,7 +509,7 @@ pub(crate) const ACHIEVEMENTS: &[Definition] = &[
         AchievementId::UpOrDown10Wins,
         "Ups and Downs",
         VariantRule::UpOrDown,
-        5,
+        6,
     ),
     rule(
         AchievementId::ThrowItInAHole10Wins,
