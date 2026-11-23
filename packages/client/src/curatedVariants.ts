@@ -107,6 +107,8 @@ export const CURATED_VARIANT_GROUPS = [
       "ruby-yam-geas-beatnik-plum-taupe", // Matryoshka (6 Suits)
       "tangerine-lime-cyan-indigo-cardinal", // Dual-Color (5 Suits)
       "tangerine-violet-maroon-jade-tan-cobalt", // Dual-Color (6 Suits)
+      "r-gold-g-cyan-b-violet", // RGB Mix (6 Suits)
+      "peach-tangerine-magenta-violet-lime-jungle", // Ambiguous & Dual-Color Mix
     ],
   },
 ] as const satisfies ReadonlyArray<{
