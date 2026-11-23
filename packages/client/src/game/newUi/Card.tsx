@@ -349,6 +349,9 @@ type ClueBadgeView =
 /** How much of a suit's color tints a card face. The rest is white. */
 const FACE_TINT_PERCENT = 44;
 
+/** How much of its rank's color a prism card's tint has. The rest is white, or black if dark. */
+const PRISM_TINT_PERCENT = 50;
+
 /** How much of a suit's color is in the rank and the possible ranks. The rest is black. */
 const INK_PERCENT = 80;
 
@@ -2222,13 +2225,19 @@ function getFaceColors(
 
   const fill = colorblindMode ? suit.fillColorblind : suit.fill;
 
-  // A prism card is tinted with the color that touches it, which depends on its rank. A card of
-  // unknown rank uses the suit color.
-  const tintSource =
-    rank !== undefined && suit.prism
-      ? getColorForPrismCard(variant, rank)
-      : suit;
-  const tint = colorblindMode ? tintSource.fillColorblind : tintSource.fill;
+  // A prism card is tinted with the color that touches it, which depends on its rank. As on the
+  // classic screen, that color is first mixed evenly with white (or with black for a dark suit), so
+  // that a prism card looks paler than a card of that color. A card of unknown rank uses the suit
+  // color.
+  let tint = fill;
+  if (rank !== undefined && suit.prism) {
+    const prismColor = getColorForPrismCard(variant, rank);
+    const rankTint = colorblindMode
+      ? prismColor.fillColorblind
+      : prismColor.fill;
+    const mixColor = suit.oneOfEach ? "black" : "white";
+    tint = `color-mix(in srgb, ${rankTint} ${PRISM_TINT_PERCENT}%, ${mixColor})`;
+  }
 
   return {
     className: "",
