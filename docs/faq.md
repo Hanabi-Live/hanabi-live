@@ -39,8 +39,8 @@ A: No.
 
 Players routinely write the note on a future turn or past turn from when the
 contextual information was actually inferred. For example, if Alice performs a
-clue, Bob blind plays, and Cathy discards, then Donald needs to write a note
-about the blind-play, but it is now on the N+1 turn. If automated notes were the
+clue, Bob blind-plays, and Cathy discards, then Donald needs to write a note
+about the blind play, but it is now on the N+1 turn. If automated notes were the
 default, then Donald would either 1) have to explicitly enter a replay just in
 order to make the note correct, or 2) explicitly decrement the turn after the
 automated system entered the wrong note. The same example can also happen in

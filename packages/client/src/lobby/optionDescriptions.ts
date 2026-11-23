@@ -50,7 +50,7 @@ export function getOptionDescriptions(
       name: "deck-plays",
       icon: OptionIcons.DeckPlays,
       tooltip:
-        "The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.",
+        "The <strong>Bottom-Deck Blind Plays</strong> option is enabled.",
     });
   }
 

@@ -919,7 +919,7 @@ of the repository.
 ## July 29th, 2020
 
 - Added the `/missingscores` chat command.
-- Five and six blind-plays in a row each have their own sound.
+- Five and six blind plays in a row each have their own sound.
 
 ## July 28th, 2020
 
@@ -1467,7 +1467,7 @@ of the repository.
 
 ## January 7th, 2018
 
-- Two, three, and four blind-plays in a row each have their own sound.
+- Two, three, and four blind plays in a row each have their own sound.
 
 ## November 29th, 2017
 
@@ -1602,11 +1602,11 @@ of the repository.
 ## July 9th, 2017
 
 - A sound plays when a player's timer runs low.
-- Blind-plays and misplays have their own sounds.
+- Blind plays and misplays have their own sounds.
 
 ## July 7th, 2017
 
-- Added the "Bottom-Deck Blind-Plays" table option.
+- Added the "Bottom-Deck Blind Plays" table option.
 
 ## July 6th, 2017
 

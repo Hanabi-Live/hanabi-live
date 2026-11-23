@@ -96,7 +96,7 @@ const EXTRA_OPTION_ROWS = [
     option: "deckPlays",
     id: "createTableDeckPlays",
     icon: "fa-person-walking-with-cane",
-    label: "Bottom-Deck Blind-Plays",
+    label: "Bottom-Deck Blind Plays",
     help: `${DOCS_URL}/features.md#bottom-deck-blind-plays`,
   },
   {

@@ -125,7 +125,7 @@ function turnReducerFunction(
         }
       } else {
         // We do not want to increment the segment if we are drawing the final card of the deck in
-        // order to perform a bottom-deck blind-play.
+        // order to perform a bottom-deck blind play.
         if (turn.cardsPlayedOrDiscardedThisTurn > 0) {
           turn.segment++;
         }

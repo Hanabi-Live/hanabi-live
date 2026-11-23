@@ -181,7 +181,7 @@ function getOptionItems(
   if (options.deckPlays) {
     items.push({
       icon: OptionIcons.DeckPlays,
-      text: "Bottom-Deck Blind-Plays",
+      text: "Bottom-Deck Blind Plays",
     });
   }
   if (options.emptyClues) {

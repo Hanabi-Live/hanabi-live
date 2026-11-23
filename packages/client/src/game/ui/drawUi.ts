@@ -431,7 +431,7 @@ const DECK_TURNS_LEFT_LABEL = {
   fontSize: 0.025,
 } as const;
 
-/** The width of the border around the deck when a bottom-deck blind-play is available. */
+/** The width of the border around the deck when a bottom-deck blind play is available. */
 const DECK_PLAY_AVAILABLE_BORDER_WIDTH = 10 * STROKE_WIDTH_UNIT;
 
 /**
@@ -1408,7 +1408,7 @@ function drawDeck() {
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2);
 
   // This is a yellow border around the deck that will appear when only one card is left (if the
-  // "Bottom-Deck Blind-Plays" game option is enabled).
+  // "Bottom-Deck Blind Plays" game option is enabled).
   globals.elements.deckPlayAvailableLabel = new Konva.Rect({
     x: deckValues.x * winW,
     y: deckValues.y * winH,

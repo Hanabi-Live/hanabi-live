@@ -238,7 +238,7 @@ const ongoingGameObservers: Subscriptions = [
     turnView.shouldIndicateNoCluesChanged,
   ),
 
-  // Bottom-Deck Blind-Play UI
+  // The UI for the "Bottom-Deck Blind Plays" option.
   subAfterInit(
     (s) => turnView.shouldEnableBottomDeckBlindPlay(s),
     turnView.shouldEnableBottomDeckBlindPlayChanged,

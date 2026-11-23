@@ -23,22 +23,22 @@ export enum SoundType {
   /** When a two misplays (bombs) happen in a row. */
   Fail2 = "turn-fail2",
 
-  /** When a blind-play happens. */
+  /** When a blind play happens. */
   Blind1 = "turn-blind1",
 
-  /** When two blind-plays happen in a row. */
+  /** When two blind plays happen in a row. */
   Blind2 = "turn-blind2",
 
-  /** When three blind-plays happen in a row. */
+  /** When three blind plays happen in a row. */
   Blind3 = "turn-blind3",
 
-  /** When four blind-plays happen in a row. */
+  /** When four blind plays happen in a row. */
   Blind4 = "turn-blind4",
 
-  /** When five blind-plays happen in a row. */
+  /** When five blind plays happen in a row. */
   Blind5 = "turn-blind5",
 
-  /** When six blind-plays happen in a row. */
+  /** When six blind plays happen in a row. */
   Blind6 = "turn-blind6",
 
   /** When someone performs an "Order Chop Move". */

@@ -166,7 +166,7 @@ export const DOUBLE_DISCARD_COLOR = "yellow";
 
 /**
  * For the border around the deck when the last card can be blind-played (with the "Bottom-Deck
- * Blind-Plays" option).
+ * Blind Plays" option).
  */
 export const DECK_PLAY_AVAILABLE_COLOR = "yellow";
 

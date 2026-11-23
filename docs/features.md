@@ -298,11 +298,11 @@ that have not been played yet and have only one copy remaining.)
   profile counts them with the other games in its game count and its time.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
-### Bottom Deck Blind Plays
+### Bottom-Deck Blind Plays
 
 - Each game has the option to allow a special "house" rule.
 - If enabled, when there is 1 card left in the deck, players are allowed to
-  blind play it.
+  blind-play it.
 - This is done by dragging the deck onto the play area.
 - A golden border will appear around the deck when there is 1 card left in order
   to signify that this is possible.
@@ -927,7 +927,7 @@ The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or
 `score`. Seed lists filter by `gameId` or `score`, and the other lists by any
 column. A sort by `score` puts the games with an option that changes the score
-(Bottom-Deck Blind-Plays, Empty Clues, One Extra Card, One Less Card, All or
+(Bottom-Deck Blind Plays, Empty Clues, One Extra Card, One Less Card, All or
 Nothing, or Detrimental Characters) after the other games.
 
 `filter[variant]` finds the games whose variant's name contains its text, and

@@ -15,8 +15,8 @@ type ScoreModifierOption = NonNullable<MissingScore["modifier"]>;
 /** The name of each option that keeps a score from counting as a normal one. */
 const MODIFIER_NAMES = {
   allOrNothing: "All or Nothing",
-  deckPlays: "Bottom-Deck Blind-Play",
-  emptyClues: "Empty Clue",
+  deckPlays: "Bottom-Deck Blind Plays",
+  emptyClues: "Empty Clues",
   oneExtraCard: "One Extra Card",
   oneLessCard: "One Less Card",
 } as const satisfies Record<ScoreModifierOption, string>;
