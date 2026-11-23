@@ -2429,10 +2429,7 @@ async function startGame(alice: Peer, bob: Peer, name: string, suffix: string) {
       name,
       maxPlayers: DEFAULT_MAX_PLAYERS,
       options: {},
-      deal: {
-        type: "seed",
-        suffix,
-      },
+      seedSuffix: suffix,
     },
   });
   const { tableId } = await alice.receive(
@@ -2573,7 +2570,7 @@ async function seedLobbyGames(address: string): Promise<readonly Peer[]> {
 async function createBobsTable(
   bob: Peer,
   name: string,
-  deal?: { readonly type: "seed"; readonly suffix: string },
+  seedSuffix?: string,
   variantName = LONG_VARIANT_NAME,
   timed = false,
   speedrun = true,
@@ -2595,7 +2592,7 @@ async function createBobsTable(
         variantId: getVariant(variantName).id,
         ...(timed && { timeControl: TIME_CONTROL }),
       },
-      ...(deal !== undefined && { deal }),
+      ...(seedSuffix !== undefined && { seedSuffix }),
     },
   });
   const { tableId } = await bob.receive(
@@ -2776,10 +2773,11 @@ async function createCast(
   async function startWatchedGame(): Promise<WatchedGame> {
     const you = await connectAccount(true);
     const bob = await connectPeer(name(BOB));
-    const tableId = await createBobsTable(bob, `${name(BOB)}'s table`, {
-      type: "seed",
-      suffix: BOBS_GAME_SEED_SUFFIX,
-    });
+    const tableId = await createBobsTable(
+      bob,
+      `${name(BOB)}'s table`,
+      BOBS_GAME_SEED_SUFFIX,
+    );
     const players: Peer[] = [bob];
     for (const other of [...OTHER_PLAYER_NAMES, SPECTATOR_NAMES[0]]) {
       const peer = await connectPeer(name(other));
@@ -2836,10 +2834,7 @@ async function createCast(
     const tableId = await createBobsTable(
       bob,
       `${name(BOB)}'s table`,
-      {
-        type: "seed",
-        suffix: BOBS_GAME_SEED_SUFFIX,
-      },
+      BOBS_GAME_SEED_SUFFIX,
       variantName,
       timed,
       speedrun,

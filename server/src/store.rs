@@ -968,6 +968,33 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn format_21_tables_lose_their_replay_deal() -> Result<()> {
+        let mut table = pregame(TableId::new(1).unwrap());
+        table.extra.set_seed_suffix = Some("match-1".into());
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let parts = encoded.changes.written.clone();
+        // Format 21 wrote every `custom*` field, and `replay` for a table that replays a game.
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = "hanabi-live-21".into();
+        let extra = &mut head["extra"];
+        extra["customSeed"] = "p2v0s1".into();
+        extra["customActions"] = json!([{"type": 0, "target": 0, "value": 0}]);
+        extra["customCharacters"] = Value::Null;
+        extra["customNumPlayers"] = 2.into();
+        extra["replay"] = json!({"gameId": 7, "turns": 1});
+        let head = head.to_string();
+        ensure!(crate::checkpoint::is_outdated(&head));
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(
+            decoded.format == FORMAT
+                && decoded.extra.custom_seed.is_none()
+                && decoded.extra.set_seed_suffix.as_deref() == Some("match-1"),
+            "The upgrade kept the replay deal: {:?}",
+            decoded.extra
+        );
+        Ok(())
+    }
+    #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId::new(1).unwrap());
         terminal(&mut table)?;

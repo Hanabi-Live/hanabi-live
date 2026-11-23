@@ -56,8 +56,7 @@ import {
   DEFAULT_TIME_CONTROL,
   formFromTable,
   getErrors,
-  isReplaying,
-  readFormDeal,
+  readFormSeedSuffix,
   readTable,
 } from "../createGameForm.ts";
 import * as lobbyPage from "../lobbyPage.ts";
@@ -221,8 +220,6 @@ function getInitialForm(mode: Mode): CreateGameForm {
       password:
         localStorage.getItem(LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD) ?? "",
       seed: "",
-      replayGameId: "",
-      replayTurn: "",
       ...formFromTable(
         createTable,
         getVariantById(createTable.options.variantId).name,
@@ -231,16 +228,11 @@ function getInitialForm(mode: Mode): CreateGameForm {
   }
 
   const { settings } = game;
-  const { deal, options } = settings;
+  const { options } = settings;
   return {
     name: settings.name,
     password: "",
-    seed: deal?.type === "seed" ? deal.suffix : "",
-    replayGameId: deal?.type === "replay" ? deal.gameId.toString() : "",
-    replayTurn:
-      deal?.type === "replay" && deal.turn !== undefined
-        ? (deal.turn + 1).toString()
-        : "",
+    seed: settings.seedSuffix ?? "",
     ...formFromTable(
       {
         maxPlayers: isValidNumPlayers(settings.maxPlayers)
@@ -276,10 +268,7 @@ export function CreateGame(): React.JSX.Element {
   const [form, setForm] = useState(initialForm);
   // Only show the extra options when one of them is chosen or when the user asks for them.
   const [extraOptionsShown, setExtraOptionsShown] = useState(
-    () =>
-      form.seed !== ""
-      || form.replayGameId !== ""
-      || Object.values(form.extraOptions).some(Boolean),
+    () => form.seed !== "" || Object.values(form.extraOptions).some(Boolean),
   );
   const errors = getErrors(form);
   const fadeStyle = getFadeStyle(useReducedMotion());
@@ -291,7 +280,6 @@ export function CreateGame(): React.JSX.Element {
   // refusal keeps what the user entered.
   const [waiting, setWaiting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
-  const replaying = isReplaying(form);
 
   /** Changes the form. Changes to the table are remembered for next time when `save` is true. */
   function change(changed: Partial<CreateGameForm>, save: boolean) {
@@ -355,13 +343,13 @@ export function CreateGame(): React.JSX.Element {
       localStorage.setItem(LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD, password);
     }
 
-    // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
-    const deal = readFormDeal(form);
+    // Seeds are not saved, so that a new game does not accidentally repeat a deal.
+    const seedSuffix = readFormSeedSuffix(form);
     const settings = {
       name: name.trim() === "" ? getDefaultTableName() : name,
       maxPlayers: table.maxPlayers,
       options: table.options,
-      ...(deal !== undefined && { deal }),
+      ...(seedSuffix !== undefined && { seedSuffix }),
     };
 
     setWaiting(true);
@@ -628,58 +616,6 @@ export function CreateGame(): React.JSX.Element {
                   spellCheck={false}
                   value={form.seed}
                 />
-              </li>
-              <li className="lobby-row">
-                <div className="lobby-row-label">
-                  <RowLabel
-                    htmlFor="create-game-replay-game-id"
-                    icon="fa-arrow-rotate-left"
-                  >
-                    Replay Game
-                  </RowLabel>
-                  <HelpLink
-                    href={`${DOCS_URL}/features.md#similar-deals-and-competitive-play`}
-                    text="About Replay Game"
-                  />
-                </div>
-                {/* The ID of the game to replay and the turn to start from share one row. */}
-                <div
-                  className={`tw:flex tw:items-center tw:gap-3 ${FIELD_WIDTH}`}
-                >
-                  <CheckedInput
-                    aria-label="Game ID"
-                    autoComplete="off"
-                    className="tw:min-w-0 tw:flex-1"
-                    error={extraOptionsShown ? errors.replayGameId : undefined}
-                    id="create-game-replay-game-id"
-                    inputMode="numeric"
-                    onChange={(value) => {
-                      change({ replayGameId: value }, false);
-                    }}
-                    placeholder="Game ID"
-                    value={form.replayGameId}
-                  />
-                  {/* Dimmed until a game ID is entered. */}
-                  <label
-                    className="tw:m-0 tw:flex tw:items-center tw:gap-3 tw:whitespace-nowrap"
-                    style={replaying ? undefined : { opacity: DIMMED_OPACITY }}
-                  >
-                    from turn
-                    <CheckedInput
-                      autoComplete="off"
-                      className="tw:w-[4em] tw:text-center"
-                      disabled={!replaying}
-                      error={extraOptionsShown ? errors.replayTurn : undefined}
-                      id="create-game-replay-turn"
-                      inputMode="numeric"
-                      onChange={(value) => {
-                        change({ replayTurn: value }, false);
-                      }}
-                      placeholder="1"
-                      value={form.replayTurn}
-                    />
-                  </label>
-                </div>
               </li>
             </ul>
           </div>

@@ -267,16 +267,11 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.detrimental_characters = true;
     let extra = ExtraOptions {
         set_seed_suffix: Some("match-1".into()),
-        replay: Some(crate::model::TableReplay {
-            game_id: GameId::new(7).unwrap(),
-            turns: 4,
-        }),
         ..ExtraOptions::default()
     };
     let summary = option_changes(&table, &options, "<new>", 2, &extra);
     assert!(summary.contains("\nTable Name: <new>"));
     assert!(summary.contains("\nSeed: match-1"));
-    assert!(summary.contains("\nReplay: Game #7 from turn 5"));
     assert!(summary.contains("\nMax Players: 2"));
     assert!(!summary.contains("Timed:"));
     for label in [

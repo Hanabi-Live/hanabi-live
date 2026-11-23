@@ -397,10 +397,6 @@ impl TableActor {
             "Only the shared replay leader can restart."
         );
         self.seat(session)?;
-        ensure_or_reject!(
-            self.table.extra.replay.is_none(),
-            "Cannot restart replayed games."
-        );
         let players = self
             .table
             .players()

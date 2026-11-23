@@ -6,7 +6,6 @@ import {
   DEFAULT_TIME_CONTROL,
   formFromTable,
   getErrors,
-  readFormDeal,
   readTable,
 } from "./createGameForm.ts";
 
@@ -14,8 +13,6 @@ const defaultForm: CreateGameForm = {
   name: "",
   password: "",
   seed: "",
-  replayGameId: "",
-  replayTurn: "",
   ...formFromTable(defaultSettings.createTable, "No Variant"),
 };
 
@@ -58,32 +55,6 @@ describe("getErrors", () => {
         seed: "a b c!",
       }).seed,
     ).toBe("You cannot have these characters in a seed: (space) !");
-  });
-
-  test("does not allow both a seed and a replay", () => {
-    expect(
-      getErrors({
-        ...defaultForm,
-        seed: "abc",
-        replayGameId: "5",
-      }).replayGameId,
-    ).toBe("A replay uses its game's seed, so the custom seed must be blank.");
-  });
-
-  test("checks the turn only for a replay", () => {
-    expect(
-      getErrors({
-        ...defaultForm,
-        replayTurn: "0",
-      }),
-    ).toStrictEqual({});
-    expect(
-      getErrors({
-        ...defaultForm,
-        replayGameId: "5",
-        replayTurn: "0",
-      }).replayTurn,
-    ).toBe("The turn must be a positive number.");
   });
 });
 
@@ -143,19 +114,5 @@ describe("readTable", () => {
     );
     expect(table.options.variantId).toBe(getVariant("No Variant").id);
     expect(table.maxPlayers).toBe(defaultSettings.createTable.maxPlayers);
-  });
-});
-
-test("a replay takes its turn from 1 and ignores spaces", () => {
-  expect(
-    readFormDeal({
-      ...defaultForm,
-      replayGameId: " 12 ",
-      replayTurn: "3",
-    }),
-  ).toStrictEqual({
-    type: "replay",
-    gameId: 12,
-    turn: 2,
   });
 });

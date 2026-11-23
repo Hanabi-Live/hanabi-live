@@ -288,7 +288,7 @@ pub struct TimeControl {
     pub per_turn_seconds: PerTurnSeconds,
 }
 
-/// A table's name, player limit, options, and deal, as its owner sets them and as tables report
+/// A table's name, player limit, options, and seed, as its owner sets them and as tables report
 /// them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -296,34 +296,11 @@ pub struct TableSettings {
     pub name: String,
     pub max_players: NumPlayers,
     pub options: GameOptions,
-    /// The deal that the table requests. Absent when the server deals the next seed that none of
-    /// the players have played.
+    /// The end of the seed that the table chooses: "123" in a 3-player game of No Variant deals
+    /// `p3v0s123`. Absent when the server deals the next seed that none of the players have played.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub deal: Option<Deal>,
-}
-
-/// The deal that a table requests: a seed that it chooses, or the deal of a finished game.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase",
-    deny_unknown_fields
-)]
-pub enum Deal {
-    Seed {
-        /// The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
-        #[schemars(length(min = 1))]
-        suffix: String,
-    },
-    /// A finished game that the table plays again with its deal, seats, characters, and options,
-    /// which replace the others.
-    Replay {
-        game_id: GameId,
-        /// The turn that the game starts from. Absent starts from the first turn.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        turn: Option<Turn>,
-    },
+    #[schemars(length(min = 1))]
+    pub seed_suffix: Option<String>,
 }
 
 impl TableSettings {
@@ -333,7 +310,7 @@ impl TableSettings {
             name: name.into(),
             max_players: NumPlayers::default(),
             options: GameOptions::default(),
-            deal: None,
+            seed_suffix: None,
         }
     }
 }

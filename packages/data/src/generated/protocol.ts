@@ -1284,44 +1284,19 @@ const pregamePlayerSchema = z
   .readonly();
 
 /**
- * The deal that a table requests: a seed that it chooses, or the deal of a finished game.
- */
-const dealSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      /**
-       * The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
-       */
-      suffix: z.string().min(1),
-      type: z.literal("seed"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      gameId: gameIdSchema,
-      /**
-       * The turn that the game starts from. Absent starts from the first turn.
-       */
-      turn: turnSchema.optional(),
-      type: z.literal("replay"),
-    })
-    .readonly(),
-]);
-
-/**
- * A table's name, player limit, options, and deal, as its owner sets them and as tables report
+ * A table's name, player limit, options, and seed, as its owner sets them and as tables report
  * them.
  */
 const tableSettingsSchema = z
   .strictObject({
-    /**
-     * The deal that the table requests. Absent when the server deals the next seed that none of
-     * the players have played.
-     */
-    deal: dealSchema.optional(),
     maxPlayers: numPlayersSchema,
     name: z.string(),
     options: gameOptionsSchema,
+    /**
+     * The end of the seed that the table chooses: "123" in a 3-player game of No Variant deals
+     * `p3v0s123`. Absent when the server deals the next seed that none of the players have played.
+     */
+    seedSuffix: z.string().min(1).optional(),
   })
   .readonly();
 

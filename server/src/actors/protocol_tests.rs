@@ -1239,53 +1239,6 @@ async fn shared_replay_spectators_return_to_the_same_replay_after_a_restart() ->
 }
 
 #[tokio::test]
-async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
-        return Ok(());
-    };
-    let outcome = async {
-        let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
-             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES('Replayed game',2,0,true,120,20,false,false,false,false,false,false,false,'p2v0s1',0,3,4,NOW(),NOW())
-             RETURNING id")
-        .fetch_one(&h.store.primary)
-        .await?;
-        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat)
-             VALUES($1,1,0),($1,2,1)", game)
-        .execute(&h.store.primary)
-        .await?;
-        // Each player plays their first card, and then the game is terminated.
-        sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value)
-             VALUES($1,0,0,0,NULL),($1,1,0,5,NULL),($1,2,4,0,4)", game)
-            .execute(&h.store.primary)
-            .await?;
-
-        let id = h
-            .create(0, "Replay", json!({"deal":{"type":"replay","gameId":game,"turn":1}}))
-            .await?;
-        let listed = h.receive(1, "table").await?;
-        ensure!(
-            listed["settings"]["deal"] == json!({"type":"replay","gameId":game,"turn":1})
-                && listed["settings"]["options"]["timeControl"].is_object(),
-            "The table did not report the replayed game and its options: {listed}"
-        );
-        h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.start(0, id).await?;
-        let (table, _) = h.snapshot(id).await?;
-        let started = table.game().context("The replayed game did not start")?;
-        ensure!(
-            started.seed.as_deref() == Some("p2v0s1") && started.game.actions.len() == 1,
-            "The replay did not start from its second turn"
-        );
-        Ok(())
-    }
-    .await;
-    h.close().await?;
-    outcome
-}
-
-#[tokio::test]
 async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());
@@ -4120,7 +4073,7 @@ async fn actors_run_multiplayer_variants_and_recover_all_runtime_mutations() -> 
                 "native",
                 json!({
                     "maxPlayers": 6,
-                    "deal": {"type": "seed", "suffix": "native"},
+                    "seedSuffix": "native",
                     "options": {
                         "variantId": 51,
                         "timeControl": {"baseSeconds": 120, "perTurnSeconds": 20},

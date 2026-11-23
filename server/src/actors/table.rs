@@ -275,7 +275,7 @@ impl TableActor {
     /// Whether the user in `s` played the game at this table and can play it again with a restart.
     /// The seats of a replay of a saved or imported game have no users, so it matches nobody.
     pub(super) fn can_play_again(&self, s: &Session) -> bool {
-        self.table.extra.replay.is_none() && self.seat(s).is_ok()
+        self.seat(s).is_ok()
     }
     pub(super) fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())

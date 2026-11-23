@@ -1,7 +1,7 @@
 use anyhow::{Context, Result, ensure};
-pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
 use hanabi_engine::{Character, ClueType};
 use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
+pub use hanabi_engine::{DeckCard as Card, Options};
 use hanabi_engine::{PlayerAction, RecordedAction};
 use hanabi_protocol::{CharacterAssignment, ClueRank, ColorIndex};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

@@ -1,7 +1,6 @@
-use crate::game::{AssignedCharacter, Game, Options};
+use crate::game::{Game, Options};
 use anyhow::{Context, Result, ensure};
 use hanabi_engine::EndCondition;
-use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
@@ -18,7 +17,7 @@ use std::{
 };
 use time::OffsetDateTime;
 
-pub const FORMAT: &str = "hanabi-live-21";
+pub const FORMAT: &str = "hanabi-live-22";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -53,26 +52,11 @@ impl Player {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
-    pub custom_actions: Vec<RecordedAction>,
-    pub custom_characters: Option<Vec<AssignedCharacter>>,
-    pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,
     /// The seed that the table requested, without the player count and variant that prefix it.
     /// Absent deals the next seed that none of the players have played.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub set_seed_suffix: Option<String>,
-    /// The finished game that the table replays.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub replay: Option<TableReplay>,
-}
-
-/// A finished game that a table replays.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableReplay {
-    pub game_id: GameId,
-    /// How many of the game's actions the table plays before its players take over.
-    pub turns: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

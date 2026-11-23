@@ -18,8 +18,6 @@ import {
   isValidNumPlayers,
 } from "@hanabi-live/game";
 import { parseFloatSafe, parseIntSafe } from "complete-common";
-import type { Deal } from "./deal.ts";
-import { readDeal } from "./deal.ts";
 
 /** The table that the form starts from: the last one that we created, which our settings keep. */
 export type CreateTable = Settings["createTable"];
@@ -66,32 +64,22 @@ export interface CreateGameForm {
   readonly timePerTurnSeconds: string;
   readonly extraOptions: Readonly<Record<ExtraOption, boolean>>;
   readonly seed: string;
-  readonly replayGameId: string;
-  readonly replayTurn: string;
 }
 
 /** The text boxes that turn red and explain why while their value is invalid. */
-type CheckedField =
-  | "timeBaseMinutes"
-  | "timePerTurnSeconds"
-  | "seed"
-  | "replayGameId"
-  | "replayTurn";
+type CheckedField = "timeBaseMinutes" | "timePerTurnSeconds" | "seed";
 
 /** Why each invalid text box is invalid. */
 export type FormErrors = Partial<Record<CheckedField, string>>;
 
 /**
- * Fills in the form from a table. The name, password, seed, and replay come from elsewhere. An
- * untimed table offers the default clock.
+ * Fills in the form from a table. The name, password, and seed come from elsewhere. An untimed
+ * table offers the default clock.
  */
 export function formFromTable(
   { maxPlayers, options }: CreateTable,
   variantName: string,
-): Omit<
-  CreateGameForm,
-  "name" | "password" | "seed" | "replayGameId" | "replayTurn"
-> {
+): Omit<CreateGameForm, "name" | "password" | "seed"> {
   const timeControl = options.timeControl ?? DEFAULT_TIME_CONTROL;
   return {
     variantName,
@@ -110,11 +98,6 @@ function isTimed(form: CreateGameForm): boolean {
   return form.timed && !form.extraOptions.speedrun;
 }
 
-/** Whether the turn to replay from applies, which needs a game to replay. */
-export function isReplaying(form: CreateGameForm): boolean {
-  return form.replayGameId.trim() !== "";
-}
-
 export function getErrors(form: CreateGameForm): FormErrors {
   const errors: Record<CheckedField, string | undefined> = {
     timeBaseMinutes: isTimed(form)
@@ -124,8 +107,6 @@ export function getErrors(form: CreateGameForm): FormErrors {
       ? getTimePerTurnError(form.timePerTurnSeconds)
       : undefined,
     seed: getSeedError(form.seed.trim()),
-    replayGameId: getReplayGameIdError(form),
-    replayTurn: getReplayTurnError(form),
   };
   return Object.fromEntries(
     Object.entries(errors).filter(([, error]) => error !== undefined),
@@ -169,21 +150,6 @@ function getSeedError(seed: string): string | undefined {
   return `You cannot have these characters in a seed: ${shown}`;
 }
 
-function getReplayGameIdError(form: CreateGameForm): string | undefined {
-  const text = form.replayGameId.trim();
-  if (text === "") {
-    return undefined;
-  }
-  const idError = getGameIdError(text);
-  if (idError !== undefined) {
-    return idError;
-  }
-  if (form.seed.trim() !== "") {
-    return "A replay uses its game's seed, so the custom seed must be blank.";
-  }
-  return undefined;
-}
-
 /**
  * Why a game ID is invalid, if it is. The "Watch a Specific Replay" page checks its ID with this.
  */
@@ -191,13 +157,6 @@ export function getGameIdError(text: string): string | undefined {
   return isPositiveInteger(text)
     ? undefined
     : "The game ID must be a positive number.";
-}
-
-function getReplayTurnError(form: CreateGameForm): string | undefined {
-  const text = form.replayTurn.trim();
-  return text === "" || !isReplaying(form) || isPositiveInteger(text)
-    ? undefined
-    : "The turn must be a positive number.";
 }
 
 function isPositiveInteger(text: string): boolean {
@@ -248,11 +207,8 @@ export function readTable(
   };
 }
 
-/** The deal that the form asks for. Seeds and replays are not remembered. */
-export function readFormDeal(form: CreateGameForm): Deal | undefined {
-  return readDeal(
-    form.seed.trim(),
-    form.replayGameId.trim(),
-    form.replayTurn.trim(),
-  );
+/** The seed that the form asks for, if any. Seeds are not remembered. */
+export function readFormSeedSuffix(form: CreateGameForm): string | undefined {
+  const seed = form.seed.trim();
+  return seed === "" ? undefined : seed;
 }

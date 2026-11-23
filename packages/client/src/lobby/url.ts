@@ -19,7 +19,6 @@ import * as modals from "../modals.ts";
 import { store } from "../store.ts";
 import { escapeHtml, setBrowserAddressBarPath } from "../utils.ts";
 import { DEFAULT_TIME_CONTROL } from "./createGameForm.ts";
-import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
 import { getOtherScoresSeed } from "./historyHash.ts";
@@ -134,11 +133,7 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
     // A blank seed deals one that none of the players have played.
-    const deal = readDeal(
-      urlParams.get("seed") ?? "",
-      urlParams.get("replayGameId") ?? "",
-      urlParams.get("replayTurn") ?? "",
-    );
+    const seedSuffix = urlParams.get("seed") ?? "";
 
     globals.connection.send(
       "tableCreate",
@@ -157,7 +152,7 @@ function gotoPath(data: ServerEventData["welcome"], onReply: OnReply): boolean {
             allOrNothing,
             detrimentalCharacters,
           },
-          ...(deal !== undefined && { deal }),
+          ...(seedSuffix !== "" && { seedSuffix }),
         },
         ...(password !== "" && { password }),
       },

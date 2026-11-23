@@ -41,6 +41,7 @@ of the repository.
 - Profiles have a "Best scores" tab, with the player's best scores in the
   curated variants with 2 to 5 players.
 - Each score on a profile's "Best scores" tab links to the first game with it.
+- The "New Game" screen no longer has the "Replay Game" option.
 
 ## November 21st, 2026
 

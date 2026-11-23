@@ -10,5 +10,4 @@ export enum OptionIcons {
   AllOrNothing = "fas fa-layer-group",
   DetrimentalCharacters = "fas fa-face-flushed",
   Seed = "fas fa-seedling",
-  Replay = "fas fa-arrow-rotate-left",
 }

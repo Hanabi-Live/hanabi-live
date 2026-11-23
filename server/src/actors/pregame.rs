@@ -3,10 +3,7 @@ use super::table::wrong_phase;
 use super::{
     Allocation, Effects, HubCommand, Status, TableActor,
     chat::{push_chat, server_chat, table_notice},
-    setup::{
-        load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
-        table_name,
-    },
+    setup::{normalize_options, option_changes, options_suggestion, requested_extra, table_name},
 };
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
@@ -124,21 +121,10 @@ impl TableActor {
         let mut options = engine_options(&request.settings.options)?;
         normalize_options(&mut options)?;
         let name = table_name(&request.settings.name)?;
-        let mut max_players = usize::from(request.settings.max_players);
-        let mut extra = requested_extra(&request.settings)?;
-        if session.user == self.table.owner.user_id {
-            load_replay(
-                &self.store,
-                &mut extra,
-                self.table.id,
-                session.user,
-                &mut options,
-            )
-            .await?;
-        }
+        let max_players = usize::from(request.settings.max_players);
+        let extra = requested_extra(&request.settings)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
-        max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         let changes = option_changes(&self.table, &options, &name, max_players, &extra);
         if session.user != self.table.owner.user_id {
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
@@ -227,58 +213,28 @@ impl TableActor {
             hanabi_protocol::is_player_count(players.len()),
             "You need at least {MIN_PLAYERS} players."
         );
-        ensure_or_reject!(
-            next.extra
-                .custom_num_players
-                .is_none_or(|n| n == players.len()),
-            "Custom game requires its original player count."
-        );
-        if next.extra.custom_num_players.is_some() {
-            ensure_or_reject!(
-                players.iter().all(|p| p
-                    .id
-                    .and_then(|id| self.attendees.get(&id))
-                    .is_some_and(|a| a.session.active() && !a.spectator)),
-                "Custom games require all players present."
-            );
-        }
         let mut players = players.to_vec();
         let variant = hanabi_engine::get_variant(&next.options.variant_name)?;
-        let seed = if let Some(seed) = &next.extra.custom_seed {
-            seed.clone()
-        } else {
-            let prefix = crate::game::seed_prefix(players.len(), variant.id, &next.options);
-            match &next.extra.set_seed_suffix {
-                None => self.store.next_seed(&players, prefix).await?,
-                Some(suffix) => prefix + suffix,
-            }
+        let prefix = crate::game::seed_prefix(players.len(), variant.id, &next.options);
+        let seed = match &next.extra.set_seed_suffix {
+            None => self.store.next_seed(&players, prefix).await?,
+            Some(suffix) => prefix + suffix,
         };
         let game_id = self.store.reserve().await?;
-        let extra = &next.extra;
-        // A replayed game keeps its seats; a new game shuffles them after the deck.
-        let deck = hanabi_engine::prepare_deck_and_players(
-            variant,
-            &seed,
-            &mut players,
-            extra.custom_seed.is_none(),
-        );
+        let deck = hanabi_engine::prepare_deck_and_players(variant, &seed, &mut players);
         ensure_or_reject!(session.active(), "Owner disconnected during start.");
         let mut options = next.options.clone();
         options.num_players = players.len();
-        let emulated = match extra.replay {
-            Some(replay) => &extra.custom_actions[..replay.turns.min(extra.custom_actions.len())],
-            None => &extra.custom_actions,
-        };
         let game = Game::replay(
             GameSetup {
                 options: options.clone(),
                 player_names: players.iter().map(|p| p.name.clone()).collect(),
                 seed: Some(seed),
                 deck: Some(deck),
-                characters: extra.custom_characters.clone(),
+                characters: None,
                 interpretation: Interpretation::Live,
             },
-            emulated,
+            &[],
         )?;
         let n = players.len();
         let snapshot = Snapshot {

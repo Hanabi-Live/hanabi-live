@@ -144,10 +144,7 @@ databaseDescribe("normal-server protocol workload", () => {
                 name: "Benchmark",
                 maxPlayers: DEFAULT_MAX_PLAYERS,
                 options: {},
-                deal: {
-                  type: "seed",
-                  suffix: SEED_SUFFIX,
-                },
+                seedSuffix: SEED_SUFFIX,
               },
             });
             const { tableId } = await alice.receive(

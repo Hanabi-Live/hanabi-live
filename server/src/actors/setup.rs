@@ -4,17 +4,14 @@ use crate::errors::OrReject;
 use crate::{
     game::Options,
     model::{
-        ExtraOptions, FORMAT, Phase, ReplayState, Snapshot, TableReplay, TableSnapshot,
-        engine_options, num_players, wire_options,
+        ExtraOptions, FORMAT, Phase, ReplayState, Snapshot, TableSnapshot, engine_options,
+        num_players, wire_options,
     },
     store::{Saved, Store},
     transport::Session,
 };
 use hanabi_protocol::TableId;
-use hanabi_protocol::UserId;
-use hanabi_protocol::{
-    Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableSettingsSuggestion, Turn,
-};
+use hanabi_protocol::{MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, TableSettingsSuggestion, Turn};
 use std::{collections::BTreeMap, fmt::Write as _};
 use time::OffsetDateTime;
 
@@ -100,61 +97,16 @@ pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<St
     requested_seed(Some(&next))
 }
 
-/// Reads the custom seed and the replayed game that a table requests, without loading the game.
+/// Reads the custom seed that a table requests.
 pub(super) fn requested_extra(
     request: &hanabi_protocol::TableSettings,
 ) -> CommandResult<ExtraOptions> {
-    Ok(match &request.deal {
-        None => ExtraOptions::default(),
-        Some(Deal::Seed { suffix }) => ExtraOptions {
-            set_seed_suffix: requested_seed(Some(suffix))?,
-            ..ExtraOptions::default()
-        },
-        Some(Deal::Replay { game_id, turn }) => ExtraOptions {
-            replay: Some(TableReplay {
-                game_id: *game_id,
-                turns: turn.map_or(0, Turn::index),
-            }),
-            ..ExtraOptions::default()
-        },
+    Ok(ExtraOptions {
+        set_seed_suffix: requested_seed(request.seed_suffix.as_deref())?,
+        ..ExtraOptions::default()
     })
 }
-
-/// Loads the finished game that a table replays, if any. Its options replace `options`.
-pub(super) async fn load_replay(
-    store: &Store,
-    extra: &mut ExtraOptions,
-    table_id: TableId,
-    user: UserId,
-    options: &mut Options,
-) -> CommandResult<()> {
-    let Some(TableReplay { game_id, turns }) = extra.replay else {
-        return Ok(());
-    };
-    let historical = crate::archive::replay(&store.primary, game_id, table_id, user).await?;
-    ensure_or_reject!(
-        usize::try_from(historical.game.turn).is_ok_and(|limit| turns < limit),
-        "Replay turn exceeds game."
-    );
-    *options = historical.game.options.clone();
-    extra.custom_seed = historical.seed;
-    extra.custom_num_players = Some(options.num_players);
-    extra.custom_characters = historical
-        .game
-        .players
-        .iter()
-        .map(|p| {
-            p.character().map(|c| hanabi_engine::AssignedCharacter {
-                name: c.name().into(),
-                metadata: p.assigned_value(),
-            })
-        })
-        .collect();
-    extra.custom_actions.clone_from(&historical.game.actions);
-    Ok(())
-}
-/// A table's settings as the lobby and its players see them, with its custom seed and replayed
-/// game.
+/// A table's settings as the lobby and its players see them, with its custom seed.
 pub(super) fn table_settings(
     name: &str,
     max_players: usize,
@@ -165,22 +117,8 @@ pub(super) fn table_settings(
         name: name.into(),
         max_players: num_players(max_players),
         options: wire_options(options),
-        deal: match (&extra.replay, &extra.set_seed_suffix) {
-            (Some(replay), _) => Some(Deal::Replay {
-                game_id: replay.game_id,
-                turn: replay_turn(extra),
-            }),
-            (None, Some(suffix)) => Some(Deal::Seed {
-                suffix: suffix.clone(),
-            }),
-            (None, None) => None,
-        },
+        seed_suffix: extra.set_seed_suffix.clone(),
     }
-}
-/// The turn that a replayed game starts from, unless it is the first turn.
-fn replay_turn(extra: &ExtraOptions) -> Option<Turn> {
-    let replay = extra.replay.filter(|replay| replay.turns > 0)?;
-    Turn::new(replay.turns)
 }
 /// Settings that the client offers a table's owner to apply.
 pub(super) fn options_suggestion(
@@ -226,19 +164,6 @@ pub(super) fn option_changes(
     let seed = &extra.set_seed_suffix;
     if *seed != table.extra.set_seed_suffix {
         add("Seed", seed.as_deref().unwrap_or("Any"));
-    }
-    if extra.replay != table.extra.replay {
-        add(
-            "Replay",
-            &extra.replay.map_or_else(
-                || "No".into(),
-                |TableReplay { game_id: id, .. }| match replay_turn(extra) {
-                    // Players count turns from 1.
-                    Some(turn) => format!("Game #{id} from turn {}", turn.index() + 1),
-                    None => format!("Game #{id}"),
-                },
-            ),
-        );
     }
     if max_players != table.max_players {
         add("Max Players", &max_players.to_string());
@@ -392,13 +317,11 @@ pub(super) async fn prepare_table(
         let name = table_name(&settings.name)?;
         let mut options = engine_options(&settings.options)?;
         normalize_options(&mut options)?;
-        let mut extra = requested_extra(&settings)?;
-        load_replay(store, &mut extra, id, session.user, &mut options).await?;
+        let extra = requested_extra(&settings)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         let player = crate::stats::player(&store.primary, &session.identity, variant.id).await?;
-        let max_players =
-            usize::from(settings.max_players).max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
+        let max_players = usize::from(settings.max_players);
         let password_hash = match r.password {
             Some(password) => {
                 ensure_or_reject!(

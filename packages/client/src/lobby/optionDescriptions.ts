@@ -94,19 +94,12 @@ export function getOptionDescriptions(
     });
   }
 
-  const { deal } = settings;
-  if (deal?.type === "seed") {
+  const { seedSuffix } = settings;
+  if (seedSuffix !== undefined) {
     descriptions.push({
       name: "seed",
       icon: OptionIcons.Seed,
-      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(deal.suffix)}</strong>`,
-    });
-  } else if (deal?.type === "replay") {
-    const turn = deal.turn === undefined ? "" : ` (from turn ${deal.turn + 1})`;
-    descriptions.push({
-      name: "replay",
-      icon: OptionIcons.Replay,
-      tooltip: `This table replays game: <strong>#${deal.gameId}</strong>${turn}`,
+      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(seedSuffix)}</strong>`,
     });
   }
 

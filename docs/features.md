@@ -783,10 +783,6 @@ use these numbers to make the best move for the current situation.
     for the game was `p3v0sshowmatch-jan-2050-game-1`.)
   - Restarting a game with a seed moves on to the next one, such as from
     `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
-- Additionally, you can start a game that will be a "replay" of a previously
-  played game. All of the same moves are automatically executed up to the
-  selected turn. For example, this is useful if a game gets terminated and you
-  want to resume it later on.
 
 ## Chat
 

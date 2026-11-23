@@ -242,11 +242,7 @@ describe("CreateGame", () => {
           options: {
             ...defaultSettings.createTable.options,
           },
-          deal: {
-            type: "replay",
-            gameId: 12,
-            turn: 2,
-          },
+          seedSuffix: "abc",
         },
       } as unknown as Game),
     );
@@ -256,7 +252,7 @@ describe("CreateGame", () => {
       "Suggest Game Options",
     );
     expect(document.querySelector("#createTablePassword")).toBeNull();
-    expect(getInput("create-game-replay-turn").value).toBe("3");
+    expect(getInput("create-game-seed").value).toBe("abc");
 
     // The options that the table already has cannot be proposed.
     expect(getInput("create-game-submit").classList).toContain("disabled");
@@ -278,11 +274,7 @@ describe("CreateGame", () => {
           name: "Bob's other game",
           maxPlayers: 4,
           options: defaultSettings.createTable.options,
-          deal: {
-            type: "replay",
-            gameId: 12,
-            turn: 2,
-          },
+          seedSuffix: "abc",
         },
       },
       expect.any(Function),

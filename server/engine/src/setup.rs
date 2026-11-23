@@ -27,16 +27,15 @@ pub fn create_shuffled_deck(variant: &Variant, seed: &str) -> Vec<DeckCard> {
     deck
 }
 
-/// When the lobby shuffles seats, consume the same stream *after* shuffling the deck.
+/// Shuffles the deck, then the seats, with the same stream.
 /// `create_game` accepts ordered seats and a prepared deck and never shuffles them again.
 pub fn prepare_deck_and_players<T>(
     variant: &Variant,
     seed: &str,
     players: &mut [T],
-    shuffle_players: bool,
 ) -> Vec<DeckCard> {
     let mut deck = create_deck(variant);
-    prepare_game_order(&mut deck, players, seed, true, shuffle_players);
+    prepare_game_order(&mut deck, players, seed, true, true);
     deck
 }
 

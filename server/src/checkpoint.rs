@@ -370,7 +370,26 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 /// The formats that older servers wrote, each with the format after it and the upgrade between
 /// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
 /// only once no deployed server writes its format. Format 21 is the oldest that a server reads.
-const UPGRADES: &[(&str, &str, Upgrade)] = &[];
+const UPGRADES: &[(&str, &str, Upgrade)] = &[("hanabi-live-21", "hanabi-live-22", no_replay_deal)];
+
+/// Format 21 let a table replay the deal of a finished game, with the game in `extra.replay` and
+/// its seed, actions, characters, and player count in the other `extra.custom*` fields. Format 22
+/// has no such deal. A replay of a saved or imported game keeps its `customSeed`.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade step has the `Upgrade` signature"
+)]
+fn no_replay_deal(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    if let Some(Value::Object(extra)) = head.get_mut("extra") {
+        if extra.remove("replay").is_some() {
+            extra.insert("customSeed".into(), Value::Null);
+        }
+        for key in ["customActions", "customCharacters", "customNumPlayers"] {
+            extra.remove(key);
+        }
+    }
+    Ok(())
+}
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
 /// `head` holds the game's start.
