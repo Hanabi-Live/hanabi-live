@@ -241,11 +241,11 @@ describe("CreateGame", () => {
       },
     });
     fireEvent.click(
-      screen.getByRole("button", { name: "Critical Twos (5 Suits)" }),
+      screen.getByRole("button", { name: "Critical Twos (6 Suits)" }),
     );
 
     expect(dropdown.selectedOptions[0]?.textContent).toBe(
-      "Critical Twos (5 Suits)",
+      "Critical Twos (6 Suits)",
     );
     // Until the server can create a new variant, the form cannot create its table.
     expect(
