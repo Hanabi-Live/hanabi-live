@@ -960,7 +960,7 @@ If you need to reset your password, visit
 
 ## Project History
 
-The Hanab Live website was released in July 2017 by Zamiell as an attempt to
+The Hanab Live website was released in July 2017 by Zamiel as an attempt to
 emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game
 (which is now deleted). Since then, many new features have been added and the
 code is vastly different.
