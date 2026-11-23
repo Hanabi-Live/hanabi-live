@@ -80,11 +80,11 @@ export const CURATED_VARIANT_GROUPS = [
     label: "Rules",
     swatches: false,
     recipes: [
-      "r-y-g-b-p_2crit", // Critical Twos (5 Suits)
-      "r-y-g-b-p_3crit", // Critical Threes (5 Suits)
-      "r-y-g-b-p_4crit", // Critical Fours (5 Suits)
-      "r-y-g-b-p_1scarce", // Scarce Ones (5 Suits)
-      "r-y-g-b-p_starved", // Clue Starved (5 Suits)
+      "r-y-g-b-p-t_2crit", // Critical Twos (6 Suits)
+      "r-y-g-b-p-t_3crit", // Critical Threes (6 Suits)
+      "r-y-g-b-p-t_4crit", // Critical Fours (6 Suits)
+      "r-y-g-b-p-t_1scarce", // Scarce Ones (6 Suits)
+      "r-y-g-b-p-t_starved", // Clue Starved (6 Suits)
       "r-y-g-b-p_cb", // Color Blind (5 Suits)
       "r-y-g-b-p_nb", // Number Blind (5 Suits)
       "r-y-g-b-p_cb_nb", // Totally Blind (5 Suits)
@@ -92,7 +92,7 @@ export const CURATED_VARIANT_GROUPS = [
       "r-y-g-b-p_duck", // Duck (5 Suits)
       "r-y-g-b-p_oe", // Odds and Evens (5 Suits)
       "r-y-g-b-p.rev", // Reversed (5 Suits)
-      "r-y-g-b-p_updown", // Up or Down (5 Suits)
+      "r-y-g-b-p-t_updown", // Up or Down (6 Suits)
       "r-y-g-b-p_hole", // Throw It in a Hole (5 Suits)
       "r-y-g-b-p_sudoku", // Sudoku (5 Suits)
     ],
