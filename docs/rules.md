@@ -22,7 +22,7 @@ If you want to learn the basics of the game with a helpful video, then
   - 6 players --> 3 cards each
 - The team always starts off with 8 clue tokens.
 - The play stacks for each color are located in the center of the table. All
-  players play their cards on to the shared play stacks. To start off with,
+  players play their cards onto the shared play stacks. To start off with,
   nothing is played on the play stacks.
 - The discard pile is located off to the side. All players discard their cards
   to the shared discard pile. To start off with, no cards are discarded.
@@ -61,7 +61,7 @@ If you want to learn the basics of the game with a helpful video, then
 
 #### Example
 
-- For example, if a player's hand is as follows, from left-to-right:
+- For example, if a player's hand is as follows, from left to right:
   - red 1, red 3, blue 3, green 4
 - Then, the possible clues that a player could give to that hand would be as
   follows:
@@ -69,7 +69,7 @@ If you want to learn the basics of the game with a helpful video, then
   - "The third card is blue."
   - "The fourth card is green."
   - "The first card is a 1."
-  - "The second and third card are 3's."
+  - "The second and third cards are 3's."
   - "The fourth card is a 4."
 
 ## Misplays

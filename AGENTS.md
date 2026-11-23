@@ -5,8 +5,8 @@
 When you receive a prompt:
 
 - If you are not in a worktree, switch to the "main" branch and run `git pull`.
-- If you are in a a worktree, switch to detached HEAD and then run `git fetch`
-  and `git merge --ff-only origin/main`.
+- If you are in a worktree, switch to detached HEAD and then run `git fetch` and
+  `git merge --ff-only origin/main`.
 
 Then, delete any local branches that do not exist on the remote.
 

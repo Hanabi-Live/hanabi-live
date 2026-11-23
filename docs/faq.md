@@ -9,7 +9,7 @@ use-case) is not free. We have to evaluate the benefits of adding the option
 versus the costs.
 
 1. Every option added to the website has to be stored in the database. For every
-   user. For perpetuity. You're not paying for this, I am.
+   user. In perpetuity. You're not paying for this, I am.
 
 2. Every option added to the website makes it more complicated and harder to
    understand for users. Adding more optional features obfuscates existing

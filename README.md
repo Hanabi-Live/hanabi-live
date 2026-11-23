@@ -11,8 +11,8 @@
   card game [Hanabi](https://boardgamegeek.com/boardgame/98778/hanabi).
 - This project has no affiliation with the card game Hanabi,
   [Antoine Bauza](https://en.wikipedia.org/wiki/Antoine_Bauza) (the creator of
-  Hanabi), or any of the the real-life publishers of the game (of which there
-  are many).
+  Hanabi), or any of the real-life publishers of the game (of which there are
+  many).
 - The client is programmed in [TypeScript](https://www.typescriptlang.org/). It
   is located in the [`packages/client`](packages/client) directory.
   - A lot of the code was originally taken from

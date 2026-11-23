@@ -368,7 +368,7 @@ of the repository.
   - `/unblock`
   - `/blocked`
 - Players with a block between them cannot join or spectate each other's tables
-  or send each other private messages. (They can still the blocked person's
+  or send each other private messages. (They can still see the blocked person's
   public messages though.)
 - Added a warning before an idle game ends.
 - Added a "Spoiler-Free Review" mode for reviews, which only reveals what has
@@ -486,7 +486,7 @@ of the repository.
 
 ## November 11th, 2025
 
-- Added the "Play a sound when its my turn" option.
+- Added the "Play a sound when it's my turn" option.
 - Sound options are now chosen from a dropdown.
 
 ## November 3rd, 2025
@@ -1141,7 +1141,7 @@ of the repository.
 ## November 19th, 2019
 
 - Added in-game hypotheticals.
-- Added morphing a card inside of a hypotheticals.
+- Added morphing a card inside of a hypothetical.
 
 ## November 17th, 2019
 

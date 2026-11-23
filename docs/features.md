@@ -36,7 +36,7 @@ before asking any questions in the chat.
   - Once logged in, click on the "New Game" button on the top navigation bar and
     then click "Create".
   - For everyone else, the game will now appear in the list of games. To join
-    it, they need to click on row corresponding to the game.
+    it, they need to click on the row corresponding to the game.
   - Then, the creator of the table needs to click on the "Start Game" button on
     the top navigation bar.
 - Once inside a game, the UI elements are as follows:
@@ -47,7 +47,7 @@ before asking any questions in the chat.
     bolded.
   - In the top-right-hand corner is a clue log that will track every clue given
     over the course of the game.
-  - In the middle-right is some statistics about how well the game is going.
+  - In the middle-right are some statistics about how well the game is going.
   - In the bottom-left-hand corner is the deck, which shows how many cards are
     left in it.
   - In the bottom-right-hand corner is the discard pile.
@@ -138,7 +138,8 @@ that have not been played yet and have only one copy remaining.)
   a specific turn.
 - There are some helpful shortcuts for going to a specific turn:
   - You can Alt + click on a card to go to the turn it was drawn.
-  - You can middle-click on a card go to the turn it was first positively clued.
+  - You can middle-click on a card to go to the turn it was first positively
+    clued.
   - You can click on a card in the play stacks to go to the turn before the card
     was played.
   - You can click on a card in the discard pile to go to the turn before the
@@ -268,7 +269,7 @@ that have not been played yet and have only one copy remaining.)
 
 ### Timed Games
 
-- Each game has the option to be created with as a "Timed Game".
+- Each game has the option to be created as a "Timed Game".
 - Similar to chess, each player has a bank of time that decreases only during
   their turn.
 - By default, each player starts with 2 minutes and adds 20 seconds to their
@@ -353,7 +354,7 @@ that have not been played yet and have only one copy remaining.)
 - The characters are loosely based on
   [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant)
   from Sean McCarthy on the Board Game Geek forums.
-- More information on the characters are listed on
+- More information on the characters is listed on
   [a separate page](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/characters.md).
 
 ### Password-Protected Games
@@ -438,7 +439,7 @@ These options are on the "Settings" page.
 If you are playing with the [H-Group](https://hanabi.github.io/), some
 additional UI elements are enabled:
 
-- an "H" indicator next to the username in the "Online Users" section.
+- an "H" indicator next to the username in the "Online Users" section
 - your highest H-Group level (which you can set on the "Settings" page) beside
   your name at pre-game tables, with a link to that level's page
 - a different arrow color for chop-moved cards
@@ -513,8 +514,8 @@ additional UI elements are enabled:
 ### Card Partial Identity Notes
 
 - If you do not know the exact identity of a card, but you do have it narrowed
-  it down to a few possibilities, then you can also express that as a note on
-  the card.
+  down to a few possibilities, then you can also express that as a note on the
+  card.
 - List all the possibilities separated by commas.
 - For example, a note of "r2, r3" on a red card will tell the game that "even
   though this card only has a red clue and nothing else, represent it as having
@@ -544,17 +545,18 @@ additional UI elements are enabled:
 - A note of "fix", "fixme", or "needs fix" can be written to indicate that the
   card needs to be given a "Fix Clue" at some point in the future. This will
   draw a special image on the card, and the card will never be faded.
-- A note of "?" can be written to indicate that the card have uncertain
+- A note of "?" can be written to indicate that the card has uncertain
   information written on it. This will draw a special image on the card.
-- A note of "!" can be written to indicate that the card have certain
-  information written on it. This will draw a special image on the card.
+- A note of "!" can be written to indicate that the card has certain information
+  written on it. This will draw a special image on the card.
 - A note of "spook" can be written to draw a ghost on the card.
 - A note of "blank" or "unknown" can be written on a card to make it look like
   the deck back.
 - A note of "unclued" or "x" can be written to manually remove the border that
   normally appears around a card when it is touched by one or more clues.
 - A note of "clued" or "cl" can be written to manually raise a card and add the
-  border that normally appear on a card when it is touched by one or more clues.
+  border that normally appears on a card when it is touched by one or more
+  clues.
 
 ### Adding Context to Special Notes
 
@@ -690,8 +692,8 @@ use these numbers to make the best move for the current situation.
   - That means that if everyone on the team gave 1-for-1 clues for the rest of
     the game, the clues would run out before all of the cards could be played,
     and a max score would not be achieved.
-  - Thus, a player in this situation should probably discard and in that hopes
-    that a teammate can perform a 2-for-1 clue.
+  - Thus, a player in this situation should probably discard in the hope that a
+    teammate can perform a 2-for-1 clue.
 
 ## Keyboard Shortcuts
 
@@ -761,7 +763,7 @@ use these numbers to make the best move for the current situation.
   game and the variant. For example, in the seed `p3v2070s5`:
   - The "p3" part means that it is a 3-player game.
   - The "v2070" part means that it is variant number 2070, which in this case is
-    "Valentine Mix (6 Suit)". (Variant number 0 would be equal to no variant.)
+    "Valentine Mix (6 Suits)". (Variant number 0 would be equal to no variant.)
   - The "s5" part means that it is seed 5. In other words, it is the 5th
     generated deal for this player number and variant combination.
 - You can force the server to give you a specific deal by entering a seed in the
@@ -777,8 +779,8 @@ use these numbers to make the best move for the current situation.
   - For example, say that two groups wanted to play a brand new deal that had
     never been played before. So, they each created a game with the same player
     count & variant, using a seed of `showmatch-jan-2050-game-1`. (In this case,
-    they were playing a 3-player game of no variant, so resulting full seed for
-    the game was `p3v0sshowmatch-jan-2050-game-1`.)
+    they were playing a 3-player game of no variant, so the resulting full seed
+    for the game was `p3v0sshowmatch-jan-2050-game-1`.)
   - Restarting a game with a seed moves on to the next one, such as from
     `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
 - Additionally, you can start a game that will be a partial replay of an
@@ -833,8 +835,8 @@ use these numbers to make the best move for the current situation.
   unique for all of the players at the table and all of the linked accounts of
   those players.
 - Linking is not necessarily for accounts that you own. For example, if you
-  spectate someone's else game and want to ensure that you never see that seed,
-  then you can also link yourself to one of the player's in that group, which
+  spectate someone else's game and want to ensure that you never see that seed,
+  then you can also link yourself to one of the players in that group, which
   would prevent you from ever getting that seed in your own games.
 - Linking is asymmetric. In other words, if Alice links to Bob, she will not
   receive any of Bob's seeds, but Bob might still receive seeds that Alice has

@@ -25,12 +25,12 @@ With pull requests:
   "variantDescriptions" variable. This contains the functions that create each
   variant. You need to create a new function and add it to this list. (You can
   use an existing function as a template.)
-- Note that the clue color palate will add clue colors from left to right for
+- Note that the clue color palette will add clue colors from left to right for
   the variant in the order that the suits are listed for that variant.
 - Once your modifications are complete, run `bun run create-variants-json` to
   create a new version of "variants.json" and "variants.txt". (The
   "variants.json" file is used by the server as the list of allowed variant
   combinations.)
-- Run a test game to make sure everything in the new variants work as intended.
+- Run a test game to make sure everything in the new variant works as intended.
 - Run "./lint.sh" to make sure that your changes pass the linter.
 - Submit a pull request.

@@ -10,7 +10,7 @@ Note that separately from variants, games can be further customized with
 
 ## A Quick Overview of Special Suits
 
-Normal amount of cards per suit (10 in total):
+Normal number of cards per suit (10 in total):
 
 |                    | No color clues | Own color clue | All color clues |
 | ------------------ | -------------- | -------------- | --------------- |
@@ -26,7 +26,7 @@ One of each card per suit (5 in total):
 | **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
 | **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
-The pips that are assigned to each suit is documented on the
+The pips that are assigned to each suit are documented on the
 [pips reference page](https://hanab.live/public/standalone/pips-reference.html).
 
 ## Detailed Rules per Variant
@@ -44,7 +44,7 @@ The pips that are assigned to each suit is documented on the
 ### 6 Suits
 
 - A teal suit is added.
-- It works identical to the other suits in that you can clue teal cards with
+- It works identically to the other suits in that you can clue teal cards with
   teal clues.
 
 ### 4 Suits
@@ -58,7 +58,7 @@ The pips that are assigned to each suit is documented on the
 ### Black
 
 - One of the suits is replaced with a black suit.
-- It works similar to the other suits in that you can clue black cards with
+- It works similarly to the other suits in that you can clue black cards with
   black clues.
 - There is only one of each black card in the deck, which means that every black
   card is "critical".
@@ -111,7 +111,7 @@ The pips that are assigned to each suit is documented on the
 - The prism 1 is touched by the left-most color, the prism 2 is touched by the
   second-to-left-most color, and so forth.
 - If there are less than 5 colors available in the variant, then the colors used
-  for prism cards will wrap-around.
+  for prism cards will wrap around.
 
 ### Orange
 

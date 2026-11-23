@@ -35,7 +35,7 @@ Ordinary client builds use the committed output and do not need Rust. Generation
 builds only this small crate and formats its output. Full lint and CI's Rust
 lint job run `generate-protocol.sh --check`. The crate shares the server's Cargo
 workspace, lockfile, and dependency cache, so generation and runtime use the
-same schema-library versions. Neither generation nor these contract tests needs
+same schema-library versions. Neither generation nor these contract tests need
 PostgreSQL.
 
 Schemars derives the schema from the DTOs. Native decoding validates that schema
