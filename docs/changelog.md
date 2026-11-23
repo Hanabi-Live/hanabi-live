@@ -1086,10 +1086,6 @@ of the repository.
 - Added server-side rate limiting to prevent denial of service attacks.
 - In a shared replay, you can now change your perspective to a specific player.
 
-## March 23rd, 2020
-
-- Removed the desktop notification feature.
-
 ## March 31st, 2020
 
 - While in a game, there is now an indicator to show that a player is currently
@@ -1131,6 +1127,7 @@ of the repository.
 ## March 23rd, 2020
 
 - Added an option for "Enable H-Group features".
+- Removed the desktop notification feature.
 
 ## March 22nd, 2020
 
