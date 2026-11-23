@@ -110,9 +110,6 @@ REMOTE
       exit 1
     fi
     echo "The server logged no failures."
-    # New installations download the latest release.
-    GH_TOKEN=$token python3 "$DIR/install/publish_release.py" "$build/release" "$revision"
-    echo "Published the release on GitHub."
   fi
 else
   status=$?

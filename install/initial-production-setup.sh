@@ -13,6 +13,13 @@ DB_USER="hanabiuser"
 
 # Everything is in a function because "git checkout" can replace this file while it is running.
 function main {
+  if (($# != 1)); then
+    echo "Usage: $0 RELEASE_ARCHIVE" >&2
+    exit 1
+  fi
+  # The release archive, with its ".sha256" file beside it.
+  ARCHIVE=$(realpath -- "$1")
+
   # Refuse to overwrite an existing installation or its secrets.
   if [[ $EUID -ne 0 ]]; then
     echo "Error: This script must be run as root." >&2
@@ -60,23 +67,25 @@ function main {
   install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
   systemctl daemon-reload
 
-  # Download the latest release.
+  # Install the release that was built and uploaded with "install/build-release.sh".
   local sha256 archive rev
-  DOWNLOAD=$(mktemp --directory)
-  trap 'rm --recursive --force -- "$DOWNLOAD"' EXIT
-  curl --silent --fail --show-error --location --output "$DOWNLOAD/SHA256SUMS" https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
-  read -r sha256 archive < "$DOWNLOAD/SHA256SUMS"
+  read -r sha256 archive < "$ARCHIVE.sha256"
   rev=${archive#hanabi-live-}
   rev=${rev%-linux-amd64.tar.gz}
-  [[ "$rev" =~ ^[a-f0-9]{40}$ && "$sha256" =~ ^[a-f0-9]{64}$ && "$archive" == "hanabi-live-$rev-linux-amd64.tar.gz" ]] || {
-    echo "Error: Invalid GitHub release checksum file." >&2
+  [[ "$rev" =~ ^[a-f0-9]{40}$ && "$sha256" =~ ^[a-f0-9]{64}$ && "$archive" == "$(basename -- "$ARCHIVE")" ]] || {
+    echo "Error: Invalid release checksum file: $ARCHIVE.sha256" >&2
     exit 1
   }
-  curl --silent --fail --show-error --location --output "$DOWNLOAD/$archive" "https://github.com/Hanabi-Live/hanabi-live/releases/download/server-$rev/$archive"
   git checkout "$rev"
-  python3 install/release.py init "$DOWNLOAD/release"
-  python3 install/release.py stage "$DOWNLOAD/release" "$DOWNLOAD/$archive" "$sha256"
-  cp --archive "$DOWNLOAD/release/releases/$rev/"{hanabi-live,public,packages} .
+  STAGE=$(mktemp --directory)
+  trap 'rm --recursive --force -- "$STAGE"' EXIT
+  python3 install/release.py init "$STAGE/release"
+  python3 install/release.py stage "$STAGE/release" "$ARCHIVE" "$sha256"
+  if ! grep --quiet '"dirty": false' "$STAGE/release/releases/$rev/release.json"; then
+    echo "Error: The release was not built from a clean checkout." >&2
+    exit 1
+  fi
+  cp --archive "$STAGE/release/releases/$rev/"{hanabi-live,public,packages} .
 
   # Create the database and generate its password.
   local db_password session_secret

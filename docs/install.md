@@ -23,6 +23,10 @@ To set up the production server for hanab.live:
 ```sh
 # Set up an SSH key. (This part is important, since the setup script disables password authentication.)
 ssh-copy-id root@hanab.live
+# Build the release from a clean checkout of main, and upload it.
+bun install --frozen-lockfile
+bash install/build-release.sh /tmp/hanabi-release
+scp /tmp/hanabi-release/hanabi-live-* root@hanab.live:
 ssh root@hanab.live
 ```
 
@@ -34,5 +38,5 @@ apt upgrade --yes
 apt install --yes git
 mkdir -p /home/hanabi
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
-/home/hanabi/hanabi-live/install/initial-production-setup.sh
+/home/hanabi/hanabi-live/install/initial-production-setup.sh /root/hanabi-live-*-linux-amd64.tar.gz
 ```
