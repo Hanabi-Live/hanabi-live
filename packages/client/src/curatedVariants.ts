@@ -108,6 +108,8 @@ export const CURATED_VARIANT_GROUPS = [
       "tangerine-violet-maroon-jade-tan-cobalt", // Dual-Color (6 Suits)
       "r-gold-g-cyan-b-violet", // RGB Mix (6 Suits)
       "peach-tangerine-magenta-violet-lime-jungle", // Ambiguous & Dual-Color Mix
+      "r-tangerine-y-wh-br", // Candy Corn Mix (5 Suits)
+      "whpi-r-g-wh-sky-navy", // Holiday Mix (6 Suits)
     ],
   },
 ] as const satisfies ReadonlyArray<{
