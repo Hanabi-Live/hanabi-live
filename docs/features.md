@@ -100,9 +100,6 @@ before asking any questions in the chat.
 A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 that have not been played yet and have only one copy remaining.)
 
-If you try to discard a card that you know is critical, the game asks you to
-confirm. (This does not happen in speedruns or hypotheticals.)
-
 ### Clue Log
 
 - A clue log is shown in the top-right-hand corner.
@@ -481,8 +478,6 @@ additional UI elements are enabled:
 - Everyone's notes are combined and shown to spectators, which is fun to see.
 - Spectators can write their own notes too. They are kept after the spectator
   leaves, and are shown after the game, below the players' notes.
-- If you try to play a card whose note says that it is unplayable, the game asks
-  you to confirm. Enter cancels the play.
 
 ### Card Identity Notes
 
