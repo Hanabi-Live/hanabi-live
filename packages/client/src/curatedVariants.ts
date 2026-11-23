@@ -84,7 +84,6 @@ export const CURATED_VARIANT_GROUPS = [
       "r-y-g-b-p-t_3crit", // Critical Threes (6 Suits)
       "r-y-g-b-p-t_4crit", // Critical Fours (6 Suits)
       "r-y-g-b-p-t_1scarce", // Scarce Ones (6 Suits)
-      "r-y-g-b-p-t_starved", // Clue Starved (6 Suits)
       "r-y-g-b-p_cb", // Color Blind (5 Suits)
       "r-y-g-b-p_nb", // Number Blind (5 Suits)
       "r-y-g-b-p_cb_nb", // Totally Blind (5 Suits)
