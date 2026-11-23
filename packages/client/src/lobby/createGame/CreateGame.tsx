@@ -30,6 +30,11 @@ import {
   LOCAL_STORAGE_KEY,
 } from "../../constants.ts";
 import {
+  CURATED_VARIANT_GROUPS,
+  CURATED_VARIANT_RECIPES,
+  getCuratedLabel,
+} from "../../curatedVariants.ts";
+import {
   getFadeStyle,
   useReducedMotion,
   useRevealClassName,
@@ -63,10 +68,6 @@ import {
 import * as lobbyPage from "../lobbyPage.ts";
 import { PageTitle } from "../PageTitle.tsx";
 import { Screen } from "../types/Screen.ts";
-import {
-  CURATED_VARIANT_GROUPS,
-  CURATED_VARIANT_RECIPES,
-} from "./curatedVariants.ts";
 import {
   getCatalogName,
   getRecipeName,
@@ -829,9 +830,6 @@ function VariantPicker({
 }
 
 /** The menu of curated variants, which opens from the dropdown in the site's tooltip. */
-/** The suit count that most curated variants have, which their names in the menu leave out. */
-const USUAL_SUITS_SUFFIX = " (5 Suits)";
-
 /**
  * The menu of curated variants, which opens from the dropdown in the site's tooltip. No Variant
  * comes first, then the groups, which flow into as many columns as fit, so that the menu stays
@@ -897,22 +895,6 @@ function CuratedVariantMenu({
   );
 }
 
-/**
- * The name that the menu shows: without "(5 Suits)", unless another variant of the group has the
- * same name with another suit count, such as Dual-Color (6 Suits).
- */
-function getShortName(name: string, groupRecipes: readonly string[]): string {
-  if (!name.endsWith(USUAL_SUITS_SUFFIX)) {
-    return name;
-  }
-  const short = name.slice(0, -USUAL_SUITS_SUFFIX.length);
-  const shared = groupRecipes.some((recipe) => {
-    const other = getRecipeName(recipe);
-    return other !== name && other.startsWith(`${short} (`);
-  });
-  return shared ? name : short;
-}
-
 function CuratedList({
   currentRecipe,
   onPick,
@@ -964,7 +946,7 @@ function CuratedList({
                     style={{ background: getSuitBackground(suit) }}
                   />
                 ))}
-              {getShortName(name, recipes)}
+              {getCuratedLabel(name, recipes.map(getRecipeName))}
             </button>
           </li>
         );

@@ -1,8 +1,8 @@
 /**
- * The variants that players know to be fun, in groups, which the site features, such as in the
- * "Best scores" tab of a profile. Each is a recipe, which is a variant's identity, with its name in
- * a comment. A recipe that the catalog does not have, such as Critical Twos, is a new variant,
- * which the server creates once a table uses it.
+ * The variants that players know to be fun, in groups, which the site features: the menu "Other
+ * curated variants" of Create Game, and the "Best scores" tab of a profile. Each is a recipe, which
+ * is a variant's identity, with its name in a comment. A recipe that the catalog does not have,
+ * such as Critical Twos, is a new variant, which the server creates once a table uses it.
  */
 export const CURATED_VARIANT_GROUPS = [
   {
@@ -120,6 +120,9 @@ export const CURATED_VARIANT_GROUPS = [
   readonly swatches: boolean;
   readonly recipes: readonly string[];
 }>;
+
+export const CURATED_VARIANT_RECIPES: readonly string[] =
+  CURATED_VARIANT_GROUPS.flatMap(({ recipes }) => recipes);
 
 /** The suit count that most curated variants have, which their short names leave out. */
 const USUAL_SUITS_SUFFIX = " (5 Suits)";

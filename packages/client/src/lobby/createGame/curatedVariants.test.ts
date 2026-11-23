@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CURATED_VARIANT_RECIPES } from "./curatedVariants.ts";
+import { CURATED_VARIANT_RECIPES } from "../../curatedVariants.ts";
 import { getCatalogName, getChoice, getRecipe } from "./variantBuilder.ts";
 
 test("every curated variant is in the catalog or one that the builder makes, once", () => {
