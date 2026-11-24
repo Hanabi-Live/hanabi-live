@@ -5,18 +5,18 @@ If you need general help with the website, then read the
 
 ## General Commands (that work everywhere)
 
-| Command                    | Description                                                                                                                        |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `/help`                    | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
-| `/bga`                     | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)         |
-| `/discord`                 | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
-| `/doc`                     | Get the link for the [H-Group reference document](https://hanabi.github.io/reference)                                              |
-| `/new`                     | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/beginner)                                                 |
-| `/path`                    | Get the link for the [H-Group level summary](https://hanabi.github.io/learning-path/#level-summary)                                |
-| `/random [min] [max]`      | Get a random integer                                                                                                               |
-| `/replay [game ID] [turn]` | Generate a link to a replay so that you can share it with others                                                                   |
-| `/rules`                   | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
-| `/uptime`                  | Get how long the server has been online                                                                                            |
+| Command                                  | Description                                                                                                                        |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/help`                                  | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
+| `/bga`                                   | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)         |
+| `/discord`                               | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
+| `/doc`                                   | Get the link for the [H-Group reference document](https://hanabi.github.io/reference)                                              |
+| `/new`                                   | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/beginner)                                                 |
+| `/path`                                  | Get the link for the [H-Group level summary](https://hanabi.github.io/learning-path/#level-summary)                                |
+| `/random [max]` or `/random [min] [max]` | Get a random integer (the minimum is 1 if you do not give one)                                                                     |
+| `/replay [game ID] [turn]`               | Generate a link to a replay so that you can share it with others                                                                   |
+| `/rules`                                 | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
+| `/sin`                                   | Show a reminder to not make the same mistake twice                                                                                 |
 
 ## General Commands (that work everywhere except for Discord)
 
@@ -39,42 +39,38 @@ If you need general help with the website, then read the
 | `/unblock [username]`            | Remove someone from your blocked list                                |
 | `/tagsearch [tag]`               | Search through all games for a specific tag                          |
 | `/token`                         | Get a token (valid for one day) that tells another site who you are  |
+| `/uptime`                        | Get how long the server has been online                              |
 
 ## Pre-game Commands (table-owner-only)
 
-| Command                              | Description                                                                                                                   |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `/impostor`                          | Randomly tells one of the players they are an impostor and the others they are crewmates                                      |
-| `/kick [username]`                   | Remove a player from the table                                                                                                |
-| `/setvariant [variant]`              | Change the variant of the current game                                                                                        |
-| `/split [username1] [username2] ...` | Move specified players to a new lobby with the same settings. The first player in the list becomes the owner of the new lobby |
-| `/splitauto` or `/sa`                | Automatically split players into two lobbies based on total game count                                                        |
-
-## Pre-game or Game Commands
-
-| Command        | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `/findvariant` | Find a random variant that everyone needs the max score in |
-| `/missing`     | Get the list of every max score that the team is missing   |
+| Command                                    | Description                                                                                                                   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `/impostor`                                | Randomly tells one of the players they are an impostor and the others they are crewmates                                      |
+| `/kick [username]`                         | Remove a player from the table                                                                                                |
+| `/setvariant [variant]` or `/sv [variant]` | Change the variant of the current game                                                                                        |
+| `/split [username1] [username2] ...`       | Move specified players to a new lobby with the same settings. The first player in the list becomes the owner of the new lobby |
+| `/splitauto` or `/sa`                      | Automatically split players into two lobbies based on total game count                                                        |
 
 ## Pre-game, Game, and Replay Commands
 
-| Command      | Description                         |
-| ------------ | ----------------------------------- |
-| `/setleader` | Change the owner/leader of the game |
+| Command                 | Description                                                |
+| ----------------------- | ---------------------------------------------------------- |
+| `/setleader [username]` | Change the owner/leader of the game                        |
+| `/findvariant` or `/fv` | Find a random variant that everyone needs the max score in |
+| `/missing` or `/m`      | Get the list of every max score that the team is missing   |
 
 ## Game or Replay Commands
 
-| Command      | Description                                                       |
-| ------------ | ----------------------------------------------------------------- |
-| `/tag [tag]` | Tag this game with a word or phrase so that you can find it later |
-| `/seed`      | Show the seed of this game (after it ends)                        |
-| `/id`        | Show the database ID of this game (after it ends)                 |
+| Command        | Description                                                       |
+| -------------- | ----------------------------------------------------------------- |
+| `/tag [tag]`   | Tag this game with a word or phrase so that you can find it later |
+| `/untag [tag]` | Delete an existing tag from the game                              |
+| `/seed`        | Show the seed of this game (after it ends)                        |
+| `/id`          | Show the database ID of this game (after it ends)                 |
 
 ## Replay Commands
 
-| Command        | Description                                                                             |
-| -------------- | --------------------------------------------------------------------------------------- |
-| `/copy`        | Copy the current game (and hypothetical, if any) to your clipboard as a URL for sharing |
-| `/untag [tag]` | Delete an existing tag from the game                                                    |
-| `/tags`        | Show all of the tags for this game                                                      |
+| Command | Description                                                                             |
+| ------- | --------------------------------------------------------------------------------------- |
+| `/copy` | Copy the current game (and hypothetical, if any) to your clipboard as a URL for sharing |
+| `/tags` | Show all of the tags for this game                                                      |
