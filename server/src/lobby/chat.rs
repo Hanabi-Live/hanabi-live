@@ -60,8 +60,6 @@ pub struct SimpleResponse {
     command: String,
     response: String,
     #[serde(default)]
-    alias: Vec<String>,
-    #[serde(default)]
     private: bool,
     #[serde(default)]
     lists_commands: bool,
@@ -269,9 +267,7 @@ impl TableChatCommand {
 }
 
 fn simple(command: &str) -> Option<&'static SimpleResponse> {
-    RESPONSES
-        .iter()
-        .find(|r| r.command == command || r.alias.iter().any(|a| a == command))
+    RESPONSES.iter().find(|r| r.command == command)
 }
 
 pub fn classify_chat(message: &str) -> Classification {

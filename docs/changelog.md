@@ -29,6 +29,7 @@ of the repository.
 - The "/manual" and "/features" chat commands were removed. Use "/help" instead.
 - The "/suggest" chat command was removed.
 - The "/variants" and "/vars" chat commands were removed.
+- The "/efficiency", "/github", and "/gh" chat commands were removed.
 
 ## November 23rd, 2026
 

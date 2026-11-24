@@ -34,16 +34,7 @@
     "response": "If you have experience playing with the Board Game Arena convention framework and you are interested in playing with the H-Group, then read this: https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md"
   },
   {
-    "command": "efficiency",
-    "response": "Info on efficiency calculation: https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md"
-  },
-  {
     "command": "sin",
     "response": "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context."
-  },
-  {
-    "command": "github",
-    "response": "Github repository for Hanab Live: https://github.com/Hanabi-Live/hanabi-live",
-    "alias": ["gh"]
   }
 ]
