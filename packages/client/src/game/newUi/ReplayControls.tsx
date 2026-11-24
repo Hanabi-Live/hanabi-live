@@ -650,7 +650,8 @@ function OwnHypotheticalControls({
       <div className={RIGHT_CLASS}>
         <IconToggle
           disabled={!canToggleDrawnCards(state)}
-          icon="fa-wand-magic"
+          // Two stacked cards. A wand looks too much like the pencil of "Edit cards" beside it.
+          icon="fa-clone"
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo?.showDrawnCards === true}
