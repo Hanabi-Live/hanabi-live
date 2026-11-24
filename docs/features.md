@@ -964,4 +964,4 @@ code is vastly different.
 
 Development on the site continues to the present day. There have been many
 helpful contributions from various community members. If you can code,
-[you are welcome to help us](https://github.com/Hanabi-Live/hanabi-live/blob/main/CONTRIBUTING.md).
+[you are welcome to help us](../CONTRIBUTING.md).
