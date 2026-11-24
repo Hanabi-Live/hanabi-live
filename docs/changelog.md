@@ -18,7 +18,8 @@ of the repository.
 - These aliases of chat commands were removed: "/missing-scores",
   "/missingscores", "/shared-missing-scores", and "/sharedmissingscores" (use
   "/missing"), "/find-variant", "/random-variant", and "/randomvariant" (use
-  "/findvariant"), and "/taglist" (use "/tags").
+  "/findvariant"), "/taglist" (use "/tags"), and "/commands" and "/?" (use
+  "/help").
 
 ## November 23rd, 2026
 

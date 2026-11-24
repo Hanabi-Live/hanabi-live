@@ -2,7 +2,6 @@
   {
     "command": "help",
     "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/chat-commands.md",
-    "alias": ["commands", "?"],
     "private": true,
     "isHelp": true
   },
