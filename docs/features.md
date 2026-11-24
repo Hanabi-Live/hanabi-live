@@ -442,6 +442,8 @@ additional UI elements are enabled:
 - an "H" indicator next to the username in the "Online Users" section
 - your highest H-Group level (which you can set on the "Settings" page) beside
   your name at pre-game tables, with a link to that level's page
+- the lowest H-Group level of the players in the game's information tooltip,
+  when every player has set one
 - a different arrow color for chop-moved cards
 - a red efficiency number in hard variants (1.33 efficiency or higher)
 - double discard situation notification (as a border around the discard pile and

@@ -8,6 +8,7 @@ import {
 import { OptionIcons } from "../../enums/OptionIcons.ts";
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import { selectTable } from "../../lobby/tables/tablesSlice.ts";
+import { selectHGroupLevel } from "../../lobby/users/usersSlice.ts";
 import { store } from "../../store.ts";
 import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
@@ -103,6 +104,15 @@ export function getGameInfoTooltip(): string {
     `<strong>${globals.variant.name}</strong>`,
   );
 
+  const hGroupLevel = getLowestHGroupLevel();
+  if (hGroupLevel !== undefined) {
+    content += tooltipField(
+      "fas fa-signal",
+      "H-Group Level",
+      `<strong>${hGroupLevel}</strong>`,
+    );
+  }
+
   const { timeControl } = globals.options;
   if (timeControl !== undefined) {
     const timeBase = secondsToClockString(timeControl.baseSeconds);
@@ -147,6 +157,23 @@ export function getGameInfoTooltip(): string {
   content += "</ul>";
 
   return content;
+}
+
+/**
+ * The lowest H-Group level that the players chose, or `undefined` when a player has not chosen one
+ * (or is offline).
+ */
+function getLowestHGroupLevel(): number | undefined {
+  const state = store.getState();
+  let lowestLevel: number | undefined;
+  for (const playerName of globals.metadata.playerNames) {
+    const level = selectHGroupLevel(state, playerName);
+    if (level === undefined) {
+      return undefined;
+    }
+    lowestLevel = Math.min(lowestLevel ?? level, level);
+  }
+  return lowestLevel;
 }
 
 function tooltipItem(iconClass: string, html: string) {

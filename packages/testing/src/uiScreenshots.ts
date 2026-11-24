@@ -1576,6 +1576,25 @@ function getStates(): readonly State[] {
         );
       },
     },
+    // The tooltip of the game's information. Every player chose an H-Group level, so it shows the
+    // lowest.
+    {
+      name: "new-ui-game-info-tooltip",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      setup: async (cast) => {
+        await cast.startBobsGame(5, undefined, { hGroupLevels: true });
+      },
+      hover: async (page) => {
+        await hoverForTooltip(
+          page,
+          page.locator(
+            '#game-new-ui [aria-label^="Show the game\'s information"]',
+          ),
+        );
+      },
+    },
     // The account types a note on the first card of the last player's hand, which is at the bottom
     // of the screen.
     {
@@ -2333,6 +2352,8 @@ interface Cast {
       readonly colorblindMode?: boolean;
       readonly timed?: boolean;
       readonly speedrun?: boolean;
+      /** Whether every player chooses an H-Group level, and Bob's is the lowest. */
+      readonly hGroupLevels?: boolean;
     },
   ) => Promise<BobsGame>;
   readonly bobsGame: () => BobsGame;
@@ -2822,14 +2843,28 @@ async function createCast(
       colorblindMode = false,
       timed = false,
       speedrun = true,
+      hGroupLevels = false,
     }: {
       readonly showClocks?: boolean;
       readonly colorblindMode?: boolean;
       readonly timed?: boolean;
       readonly speedrun?: boolean;
+      readonly hGroupLevels?: boolean;
     } = {},
   ): Promise<BobsGame> {
     const you = await connectAccount(true, showClocks, colorblindMode);
+    // Bob always chooses H_GROUP_LEVEL, so the other players choose higher levels.
+    function chooseHGroupLevel(peer: Peer, levelAboveBob: number) {
+      if (hGroupLevels) {
+        peer.send("settings", {
+          settings: {
+            hGroupConventions: true,
+            hGroupLevel: H_GROUP_LEVEL + levelAboveBob,
+          },
+        });
+      }
+    }
+    chooseHGroupLevel(you, 1);
     const bob = await connectPeer(name(BOB));
     const tableId = await createBobsTable(
       bob,
@@ -2861,6 +2896,7 @@ async function createCast(
     const others: Peer[] = [];
     for (const other of OTHER_PLAYER_NAMES.slice(0, numPlayers - 2)) {
       const peer = await connectPeer(name(other));
+      chooseHGroupLevel(peer, others.length + 2);
       peer.send("tableJoin", { tableId });
       await peer.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
       others.push(peer);

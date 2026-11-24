@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 24th, 2026
+
+- When every player has set an H-Group level, the game's information tooltip now
+  shows the lowest one.
+
 ## November 23rd, 2026
 
 - A slash command that the website does not know, such as a typo, is now refused
