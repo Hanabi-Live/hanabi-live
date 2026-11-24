@@ -90,13 +90,6 @@ pub struct TableRestartDeclineRequest {
     pub declined: bool,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableSuggestRequest {
-    pub table_id: TableId,
-    pub turn: Turn,
-}
-
 /// A table to spectate, and the seat to shadow there, if any.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

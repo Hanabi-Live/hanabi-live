@@ -55,12 +55,6 @@ impl TableActor {
         use PhaseRequest as P;
         match request {
             P::ReplayAction(r) => self.replay_action(session, r).await,
-            // A suggestion is a message to the leader, so it is charged like one. The "/suggest"
-            // command is charged as a chat message.
-            P::TableSuggest(r) => {
-                self.charge_chat(session.user)?;
-                self.suggest(session, r.turn).await
-            }
             // A restart starts in `client`, through `start_restart`.
             P::TableRestart => {
                 bail_internal!("A restart ran without its statistics.")
@@ -267,34 +261,6 @@ impl TableActor {
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
         }
-        self.publish(e).await
-    }
-    pub(super) async fn suggest(
-        &self,
-        session: Arc<Session>,
-        segment: hanabi_protocol::Turn,
-    ) -> CommandResult<()> {
-        ensure_or_reject!(
-            self.attending(&session) && self.table.visible,
-            "Not a shared replay."
-        );
-        let leader = self
-            .attendees
-            .get(&self.table.owner.user_id)
-            .filter(|a| a.session.active())
-            .or_reject("Leader is not attending.")?;
-        let mut e = self.effects();
-        e.messages.push((
-            leader.session.clone(),
-            frame(
-                hanabi_protocol::event::TABLE_SUGGESTION,
-                hanabi_protocol::TableSuggestion {
-                    table_id: self.table.id,
-                    username: session.name.clone().into(),
-                    turn: segment,
-                },
-            ),
-        ));
         self.publish(e).await
     }
     async fn replay_action(

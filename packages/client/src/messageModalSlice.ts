@@ -11,14 +11,12 @@ import { createSlice } from "@reduxjs/toolkit";
  */
 export type ErrorCause = "disconnected" | "maintenance" | "failed";
 
-/** A question that asks the user to confirm an action. */
+/** A question that asks the user to confirm an action that can go wrong. */
 export interface Confirmation {
   readonly title: string;
-  readonly description?: string;
+  readonly description: string;
   /** The name of the action, such as "Play anyway". */
   readonly confirmText: string;
-  /** The action can go wrong, such as a play that can misplay, so "Cancel" is the main button. */
-  readonly caution: boolean;
 }
 
 export type MessageModal =

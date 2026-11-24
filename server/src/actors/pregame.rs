@@ -106,7 +106,6 @@ impl TableActor {
             | P::Note(_)
             | P::Tag(_)
             | P::ReplayAction(_)
-            | P::TableSuggest(_)
             | P::TableRestart
             | P::TableRestartDecline(_) => Err(wrong_phase(request)),
         }

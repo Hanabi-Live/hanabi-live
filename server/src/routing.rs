@@ -4,8 +4,8 @@ use hanabi_protocol::{
     ChatPmHistoryRequest, ChatPmRequest, ChatRequest, ClientRequest, NoteRequest,
     PauseQueueRequest, PauseRequest, PlayerActionRequest, RelationshipRequest, ReplayAction,
     SettingsRequest, TableId, TableRestartDeclineRequest, TableSetOwnerRequest,
-    TableSpectateRequest, TableStartRequest, TableSuggestRequest, TableTerminateVoteRequest,
-    TableUpdateRequest, TagRequest, TagSearchRequest, UserInactiveRequest,
+    TableSpectateRequest, TableStartRequest, TableTerminateVoteRequest, TableUpdateRequest,
+    TagRequest, TagSearchRequest, UserInactiveRequest,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -80,7 +80,6 @@ pub enum PhaseRequest<'a> {
     Note(&'a NoteRequest),
     Tag(TagChange<'a>),
     ReplayAction(&'a ReplayAction),
-    TableSuggest(&'a TableSuggestRequest),
     /// A restart, which starts in the table's `client` with its statistics.
     TableRestart,
     TableRestartDecline(&'a TableRestartDeclineRequest),
@@ -161,7 +160,6 @@ pub fn route(message: &ClientRequest) -> Route<'_> {
         M::TagAdd(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Add(r)))),
         M::TagRemove(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Remove(r)))),
         M::ReplayAction(r) => Route::Table(r.table_id, T::Phase(P::ReplayAction(r))),
-        M::TableSuggest(r) => Route::Table(r.table_id, T::Phase(P::TableSuggest(r))),
         M::TableRestart(r) => Route::Table(r.table_id, T::Phase(P::TableRestart)),
         M::TableRestartDecline(r) => Route::Table(r.table_id, T::Phase(P::TableRestartDecline(r))),
     }

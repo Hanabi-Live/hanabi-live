@@ -83,7 +83,6 @@ describe("confirmPlay with an identity note", () => {
     expect(askForConfirmation).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "Your note says that this card is not playable.",
-        caution: true,
       }),
       play,
       undefined,
@@ -159,7 +158,6 @@ describe("confirmDiscard", () => {
     expect(askForConfirmation).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "This card is critical.",
-        caution: true,
       }),
       send,
       undefined,

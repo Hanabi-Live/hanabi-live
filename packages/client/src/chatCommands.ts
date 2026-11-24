@@ -317,57 +317,6 @@ function setVariant(tableId: TableId | undefined, args: readonly string[]) {
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
 
-// /suggest [turn]
-chatCommands.set(
-  "suggest",
-  (tableId: TableId | undefined, args: readonly string[]) => {
-    if (globals.tableId === undefined) {
-      sendSelfPmFromServer(
-        [
-          "You are not currently at a table, so you cannot use the ",
-          { code: "/suggest" },
-          " command.",
-        ],
-        tableId,
-        SelfChatMessageType.Error,
-      );
-      return;
-    }
-
-    if (args.length === 0) {
-      sendSelfPmFromServer(
-        [
-          "The format of the /suggest command is: ",
-          { code: "/suggest [turn]" },
-        ],
-        tableId,
-        SelfChatMessageType.Info,
-      );
-      return;
-    }
-
-    const firstArg = args[0];
-    if (firstArg === undefined) {
-      return;
-    }
-
-    const segment = parseIntSafe(firstArg);
-    if (segment === undefined) {
-      sendSelfPmFromServer(
-        "The [turn] argument must be a valid number",
-        tableId,
-        SelfChatMessageType.Info,
-      );
-      return;
-    }
-
-    globals.connection.send("tableSuggest", {
-      tableId: globals.tableId,
-      turn: segment,
-    });
-  },
-);
-
 // /tag [tag]
 chatCommands.set(
   "tag",

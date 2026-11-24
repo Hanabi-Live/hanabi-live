@@ -24,6 +24,7 @@ of the repository.
 - The "/help" chat command now links to the manual, and everyone in the chat
   sees the reply. Use "/commands" for the list of chat commands.
 - The "/manual" and "/features" chat commands were removed. Use "/help" instead.
+- The "/suggest" chat command was removed.
 
 ## November 23rd, 2026
 

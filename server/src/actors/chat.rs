@@ -558,23 +558,6 @@ impl TableActor {
             }
             return self.publish(e).await;
         }
-        if command == TableChatCommand::Suggest {
-            ensure_or_reject!(
-                matches!(self.table.phase, Phase::Replay { .. }),
-                "Not a shared replay."
-            );
-            ensure_or_reject!(args.len() == 1, "Expected /suggest [turn].");
-            return self
-                .suggest(
-                    session,
-                    args[0]
-                        .parse::<usize>()
-                        .ok()
-                        .and_then(hanabi_protocol::Turn::new)
-                        .or_reject("Expected /suggest [turn].")?,
-                )
-                .await;
-        }
         if let TableChatCommand::Split { automatic } = command {
             return self.split(session, args, automatic).await;
         }

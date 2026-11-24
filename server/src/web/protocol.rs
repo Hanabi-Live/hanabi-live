@@ -128,7 +128,6 @@ mod tests {
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
                 "tableTerminateVote" => json!({"tableId":1,"voted":true}),
                 "tableSetOwner" => json!({"tableId":1,"userId":1}),
-                "tableSuggest" => json!({"tableId":1,"turn":0}),
                 "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
                 | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),

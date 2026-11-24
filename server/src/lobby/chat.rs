@@ -86,7 +86,6 @@ const TABLE_ONLY_RESPONSE: &str = "You can only perform this command while in a 
 pub enum TableChatCommand {
     MissingScores,
     FindVariant,
-    Suggest,
     Tags,
     Split {
         automatic: bool,
@@ -105,7 +104,6 @@ const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
     ("missing", TableChatCommand::MissingScores),
     ("findvariant", TableChatCommand::FindVariant),
     ("fv", TableChatCommand::FindVariant),
-    ("suggest", TableChatCommand::Suggest),
     ("tags", TableChatCommand::Tags),
     ("sa", TableChatCommand::Split { automatic: true }),
     ("split", TableChatCommand::Split { automatic: false }),

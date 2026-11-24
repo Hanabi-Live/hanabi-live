@@ -44,7 +44,6 @@ export function confirmPlay(
         description:
           "The clues on it and the cards that you can see show that it cannot be played now.",
         confirmText: "Play anyway",
-        caution: true,
       },
       play,
       cancel,
@@ -70,7 +69,6 @@ export function confirmPlay(
         title: "Your note says that this card is not playable.",
         description: "If your note is right, this play is a misplay.",
         confirmText: "Play anyway",
-        caution: true,
       },
       play,
       cancel,
@@ -115,7 +113,6 @@ export function confirmDiscard(
       description:
         "The clues on it and the cards that you can see show that it is the last copy of a card that the team still needs.",
       confirmText: "Discard anyway",
-      caution: true,
     },
     discard,
     cancel,

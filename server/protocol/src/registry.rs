@@ -43,7 +43,6 @@ macro_rules! request_contracts {
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
             TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;
-            TableSuggest "tableSuggest" => TableSuggestRequest;
             TableSpectate "tableSpectate" => TableSpectateRequest;
             TableUnattend "tableUnattend" => TableRef;
             TableTerminate "tableTerminate" => TableRef;
@@ -85,7 +84,6 @@ macro_rules! event_contracts {
             REPLAY_ACTION "replayAction" => ReplayAction;
             TABLE_OWNER "tableOwner" => TableOwner;
             TABLE_RESTART_DECLINERS "tableRestartDecliners" => TableRestartDecliners;
-            TABLE_SUGGESTION "tableSuggestion" => TableSuggestion;
             NOTE "note" => Note;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_STATE "gameState" => GameState;

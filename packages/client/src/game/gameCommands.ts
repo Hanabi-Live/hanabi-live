@@ -2,7 +2,7 @@
 // client also sends these messages to itself in order to emulate actions coming from the server,
 // such as for in-game replays.
 
-import type { ReplyData, ServerEventData, TableId } from "@hanabi-live/data";
+import type { ReplyData, ServerEventData } from "@hanabi-live/data";
 import type { GameMetadata, NumPlayers, Options } from "@hanabi-live/game";
 import {
   addVariant,
@@ -18,7 +18,6 @@ import type { Tuple } from "complete-common";
 import { newArray } from "complete-common";
 import type { Connection } from "../Connection.ts";
 import { globals as lobbyGlobals } from "../Globals.ts";
-import { sendSelfPmFromServer } from "../chat.ts";
 import { PATH } from "../constants.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
@@ -468,15 +467,6 @@ gameCommands.set("tableRestartDecliners", (data) => {
   );
 });
 
-// A spectator of a shared replay suggests a turn to its leader.
-gameCommands.set("tableSuggestion", (data) => {
-  if (gameSession.currentState().replay.shared === undefined) {
-    return;
-  }
-
-  suggestTurn(data.username, data.tableId, data.turn);
-});
-
 // This is used to update the names of the people currently spectating the game.
 gameCommands.set("spectators", (data) => {
   setSpectators(data.spectators);
@@ -494,57 +484,6 @@ function setSpectators(spectators: GameState["spectators"]) {
 // -----------
 // Subroutines
 // -----------
-
-function canFollowSuggestion(): boolean {
-  const state = gameSession.currentState();
-  return (
-    state.finished
-    && state.replay.shared !== undefined
-    && state.replay.shared.amLeader
-    && state.replay.hypothetical === undefined
-  );
-}
-
-function suggestTurn(who: string, tableId: TableId, segment: number) {
-  if (!canFollowSuggestion()) {
-    return;
-  }
-
-  // We minus one to account for the fact that turns are presented to the user starting from 1.
-  const internalSegment = segment - 1;
-  const leaderSuggested =
-    who === gameSession.currentState().metadata.ourUsername;
-  if (
-    leaderSuggested
-    || internalSegment === gameSession.currentState().replay.shared!.segment
-  ) {
-    replay.goToSegment(internalSegment);
-  } else {
-    modals.askForConfirmation(
-      {
-        title: `${who} suggests going to turn ${segment}.`,
-        confirmText: `Go to turn ${segment}`,
-        caution: false,
-      },
-      () => {
-        // The replay may have changed while the modal was open.
-        if (canFollowSuggestion()) {
-          replay.goToSegment(internalSegment);
-        }
-      },
-    );
-  }
-  if (leaderSuggested) {
-    sendSelfPmFromServer(
-      [
-        "You are the shared replay leader, so you can simply click on the turn number instead of using the ",
-        { code: "/suggest" },
-        " command.",
-      ],
-      tableId,
-    );
-  }
-}
 
 function setUrl(tableId: number, data: GameInit) {
   const { mode } = data;

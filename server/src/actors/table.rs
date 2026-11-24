@@ -52,7 +52,7 @@ pub(super) fn wrong_phase(request: PhaseRequest<'_>) -> CommandError {
         | P::TableTerminate
         | P::TableTerminateVote(_) => "Not an ongoing game.",
         P::ReplayAction(_) => "Not a replay.",
-        P::TableSuggest(_) | P::TableRestartDecline(_) => "Not a shared replay.",
+        P::TableRestartDecline(_) => "Not a shared replay.",
         P::TableRestart => "Only the shared replay leader can restart.",
         P::Tag(_) => "No game.",
     };

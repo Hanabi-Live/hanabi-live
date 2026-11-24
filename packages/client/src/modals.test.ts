@@ -101,7 +101,6 @@ const CONFIRMATION = {
   title: "Title",
   description: "Description",
   confirmText: "OK",
-  caution: false,
 } as const;
 
 test("a confirmation runs exactly one of its callbacks", async () => {

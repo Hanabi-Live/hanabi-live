@@ -91,44 +91,19 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
     case "confirm": {
       return (
         <section className={MODAL_COLUMN_CLASS_NAME} id="confirm-modal">
-          <ModalIcon
-            icon={
-              modal.caution
-                ? "fa-triangle-exclamation tw:text-game-error"
-                : "fa-question tw:text-game-turn"
-            }
-          />
-          {/* Without a description, the title keeps the space that it would have. */}
-          <h3
-            className={
-              modal.description === undefined
-                ? `${MODAL_TITLE_CLASS_NAME} tw:mb-[1.25em]`
-                : MODAL_TITLE_CLASS_NAME
-            }
-          >
-            {modal.title}
-          </h3>
-          {modal.description !== undefined && (
-            <p className={MODAL_DESCRIPTION_CLASS_NAME}>{modal.description}</p>
-          )}
-          {/* A risky action, such as a play that can misplay, makes "Cancel" the main button, so
-              that Enter does not take it. */}
+          <ModalIcon icon="fa-triangle-exclamation tw:text-game-error" />
+          <h3 className={MODAL_TITLE_CLASS_NAME}>{modal.title}</h3>
+          <p className={MODAL_DESCRIPTION_CLASS_NAME}>{modal.description}</p>
+          {/* The action can go wrong, such as a play that can misplay, so "Cancel" is the main button
+              and Enter does not take the action. */}
           <ul className={MODAL_ACTIONS_CLASS_NAME}>
             <li>
-              <Button
-                autoFocus={!modal.caution}
-                onClick={confirm}
-                variant={modal.caution ? "alt" : "primary"}
-              >
+              <Button onClick={confirm} variant="alt">
                 {modal.confirmText}
               </Button>
             </li>
             <li>
-              <Button
-                autoFocus={modal.caution}
-                onClick={closeModals}
-                variant={modal.caution ? "primary" : "alt"}
-              >
+              <Button autoFocus onClick={closeModals} variant="primary">
                 Cancel
               </Button>
             </li>

@@ -42,7 +42,6 @@ export const WEBSITE_CHAT_COMMANDS = [
   "r",
   "setleader",
   "setvariant",
-  "suggest",
   "sv",
   "tag",
   "tagsearch",
@@ -65,7 +64,6 @@ export const SERVER_CHAT_COMMANDS = [
   "seed",
   "split",
   "splitauto",
-  "suggest",
   "tags",
   "token",
   "uptime",
@@ -2087,20 +2085,6 @@ export const tableStartRequestSchema = z
     tableId: tableIdSchema,
   })
   .readonly();
-export const tableSuggestRequestSchema = z
-  .strictObject({ tableId: tableIdSchema, turn: turnSchema })
-  .readonly();
-
-/**
- * A spectator suggesting a turn to the shared replay's leader.
- */
-export const tableSuggestionSchema = z
-  .strictObject({
-    tableId: tableIdSchema,
-    turn: turnSchema,
-    username: z.string().min(1),
-  })
-  .readonly();
 
 /**
  * Casts or takes back the sender's vote to end the game.
@@ -2253,7 +2237,6 @@ export const CLIENT_REQUEST_SCHEMAS = {
   tableSetOwner: tableSetOwnerRequestSchema,
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
-  tableSuggest: tableSuggestRequestSchema,
   tableTerminate: tableRefSchema,
   tableTerminateVote: tableTerminateVoteRequestSchema,
   tableUnattend: tableRefSchema,
@@ -2297,7 +2280,6 @@ export const SERVER_EVENT_SCHEMAS = {
   tableRemoved: tableRefSchema,
   tableRestartDecliners: tableRestartDeclinersSchema,
   tableSettingsSuggestion: tableSettingsSuggestionSchema,
-  tableSuggestion: tableSuggestionSchema,
   user: userSchema,
   userRemoved: userRemovedSchema,
   votes: votesSchema,
