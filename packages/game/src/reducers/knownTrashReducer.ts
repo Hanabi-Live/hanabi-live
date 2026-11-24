@@ -10,9 +10,7 @@ export function knownTrashReducer(
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): readonly CardState[] {
-  const newDeck = [...deck];
-
-  for (const [order, card] of newDeck.entries()) {
+  return deck.map((card) => {
     const isKnownTrashFromEmpathy = isAllCardPossibilitiesTrash(
       card,
       deck,
@@ -23,11 +21,12 @@ export function knownTrashReducer(
       true,
     );
 
-    newDeck[order] = {
-      ...card,
-      isKnownTrashFromEmpathy,
-    };
-  }
-
-  return newDeck;
+    // Keep the same object for a card that does not change, so that Immer does not walk it again.
+    return card.isKnownTrashFromEmpathy === isKnownTrashFromEmpathy
+      ? card
+      : {
+          ...card,
+          isKnownTrashFromEmpathy,
+        };
+  });
 }

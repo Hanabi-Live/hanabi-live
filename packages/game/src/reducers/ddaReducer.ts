@@ -8,17 +8,8 @@ export function ddaReducer(
   dda: number | undefined,
   currentPlayerIndex: PlayerIndex | undefined,
 ): readonly CardState[] {
-  const newDeck = [...deck];
-
   if (dda === undefined || currentPlayerIndex === undefined) {
-    for (const [order, card] of newDeck.entries()) {
-      newDeck[order] = {
-        ...card,
-        inDoubleDiscard: false,
-      };
-    }
-
-    return newDeck;
+    return deck.map((card) => setInDoubleDiscard(card, false));
   }
 
   const ddaCard = deck[dda];
@@ -26,16 +17,24 @@ export function ddaReducer(
 
   const { suitIndex, rank } = ddaCard;
 
-  for (const [order, card] of newDeck.entries()) {
-    const inDoubleDiscard =
+  return deck.map((card) =>
+    setInDoubleDiscard(
+      card,
       card.location === currentPlayerIndex
-      && canCardPossiblyBeFromCluesOnly(card, suitIndex, rank);
+        && canCardPossiblyBeFromCluesOnly(card, suitIndex, rank),
+    ),
+  );
+}
 
-    newDeck[order] = {
-      ...card,
-      inDoubleDiscard,
-    };
-  }
-
-  return newDeck;
+/** Keeps the same object for a card that does not change, so that Immer does not walk it again. */
+function setInDoubleDiscard(
+  card: CardState,
+  inDoubleDiscard: boolean,
+): CardState {
+  return card.inDoubleDiscard === inDoubleDiscard
+    ? card
+    : {
+        ...card,
+        inDoubleDiscard,
+      };
 }

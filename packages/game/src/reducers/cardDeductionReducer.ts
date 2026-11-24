@@ -382,6 +382,14 @@ function updateCardPossibilities(
     );
   }
 
+  // Possibilities only shrink.
+  if (
+    possibleCards.length === card.possibleCards.length
+    && possibleCardsForEmpathy.length === card.possibleCardsForEmpathy.length
+  ) {
+    return;
+  }
+
   const newCard = {
     ...card,
     possibleCards,
@@ -606,67 +614,71 @@ function deckPossibilitiesDifferent(
   return false;
 }
 
+/**
+ * Returns the identities that our card can have while every card in `deckPossibilities` has one of
+ * its own possibilities, without using more copies of an identity than exist.
+ *
+ * This is a bipartite matching between cards and card copies, so it is solved with augmenting paths
+ * in polynomial time. (Backtracking over every combination is exponential when there is no valid
+ * combination, which froze games with many unknown clued cards, such as Throw It in a Hole.) The
+ * matching of the deck is made once. Then our card can have an identity if a copy of it is free, or
+ * if the card that uses a copy can move to another identity.
+ */
 export function filterCardPossibilities(
   cardPossibilities: readonly SuitRankTuple[],
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   cardCountMap: readonly number[][],
 ): readonly SuitRankTuple[] {
-  return cardPossibilities.filter((possibility) =>
-    possibilityValid(possibility, deckPossibilities, cardCountMap),
-  );
-}
-
-/**
- * Checks whether our card can have the given identity while every card in `deckPossibilities` has
- * one of its own possibilities, without using more copies of an identity than exist.
- *
- * This is a bipartite matching between cards and card copies, so it is solved with augmenting paths
- * in polynomial time. (Backtracking over every combination is exponential when there is no valid
- * combination, which froze games with many unknown clued cards, such as Throw It in a Hole.)
- */
-function possibilityValid(
-  [suitIndex, rank]: SuitRankTuple,
-  deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
-  cardCountMap: readonly number[][],
-): boolean {
-  const remaining = new Map<number, number>();
-  function capacity(key: number, s: SuitIndex, r: Rank): number {
-    return remaining.get(key) ?? cardCountMap[s]?.[r] ?? 0;
-  }
-
-  const ownKey = identityKey(suitIndex, rank);
-  const ownCapacity = capacity(ownKey, suitIndex, rank);
-  if (ownCapacity <= 0) {
-    return false;
-  }
-  remaining.set(ownKey, ownCapacity - 1);
-
   /** The deck cards currently assigned to each identity. */
   const assigned = new Map<number, number[]>();
+
+  /** Frees a copy of the identity, if needed by moving a deck card to another identity. */
+  function getFreeCopy(
+    suitIndex: SuitIndex,
+    rank: Rank,
+    // eslint-disable-next-line complete/prefer-readonly-parameter-types
+    visited: Set<number>,
+  ): { readonly cards: number[]; readonly index: number } | undefined {
+    const key = identityKey(suitIndex, rank);
+    if (visited.has(key)) {
+      return undefined;
+    }
+    visited.add(key);
+
+    let cards = assigned.get(key);
+    if (cards === undefined) {
+      cards = [];
+      assigned.set(key, cards);
+    }
+
+    if (cards.length < (cardCountMap[suitIndex]?.[rank] ?? 0)) {
+      return {
+        cards,
+        index: cards.length,
+      };
+    }
+
+    // Every copy is taken, so try to move one of the cards using it to another identity.
+    for (const [index, other] of cards.entries()) {
+      if (assign(other, visited)) {
+        return {
+          cards,
+          index,
+        };
+      }
+    }
+
+    return undefined;
+  }
 
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   function assign(card: number, visited: Set<number>): boolean {
     const possibilities = deckPossibilities[card] ?? [];
-    for (const [s, r] of possibilities) {
-      const key = identityKey(s, r);
-      if (visited.has(key)) {
-        continue;
-      }
-      visited.add(key);
-
-      const cards = assigned.get(key) ?? [];
-      if (cards.length < capacity(key, s, r)) {
-        cards.push(card);
-        assigned.set(key, cards);
+    for (const [suitIndex, rank] of possibilities) {
+      const copy = getFreeCopy(suitIndex, rank, visited);
+      if (copy !== undefined) {
+        copy.cards[copy.index] = card;
         return true;
-      }
-
-      // Every copy is taken, so try to move one of the cards using it to another identity.
-      for (const [index, other] of cards.entries()) {
-        if (assign(other, visited)) {
-          cards[index] = card;
-          return true;
-        }
       }
     }
 
@@ -675,11 +687,20 @@ function possibilityValid(
 
   for (const card of deckPossibilities.keys()) {
     if (!assign(card, new Set())) {
-      return false;
+      return [];
     }
   }
 
-  return true;
+  return cardPossibilities.filter(([suitIndex, rank]) => {
+    const copy = getFreeCopy(suitIndex, rank, new Set());
+    if (copy === undefined) {
+      return false;
+    }
+
+    // The card that used this copy moved to another identity, so it no longer has this one.
+    copy.cards.splice(copy.index, 1);
+    return true;
+  });
 }
 
 function identityKey(suitIndex: SuitIndex, rank: Rank): number {

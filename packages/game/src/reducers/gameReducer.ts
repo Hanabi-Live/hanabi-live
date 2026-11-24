@@ -4,7 +4,7 @@
 
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
-import { castDraft, original, produce } from "immer";
+import { castDraft, current, original, produce } from "immer";
 import { VALID_PLAYER_INDEXES } from "../constants.ts";
 import { getVariantById } from "../gameData.ts";
 import type { CardNote } from "../interfaces/CardNote.ts";
@@ -583,11 +583,12 @@ function gameReducerFunction(
 
   // Finally, mark cards as known-trash.
   gameState.deck = castDraft(
+    // Plain copies are much faster to read than drafts, and this reads them many times.
     knownTrashReducer(
       gameState.deck,
-      gameState.playStacks,
-      gameState.playStackDirections,
-      gameState.playStackStarts,
+      current(gameState.playStacks),
+      current(gameState.playStackDirections),
+      current(gameState.playStackStarts),
       variant,
     ),
   );
