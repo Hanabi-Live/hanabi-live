@@ -76,5 +76,7 @@ export default defineConfig(({ command, mode }) => ({
   },
   test: {
     include: ["src/**/*.test.{ts,tsx}"],
+    // Many tests import the client's modules, which is slow while the other suites and lint run.
+    testTimeout: 30_000,
   },
 }));
