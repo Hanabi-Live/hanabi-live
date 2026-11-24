@@ -14,6 +14,8 @@ of the repository.
   commands that start with another character, such as "!setall".
 - If you try to discard a card that you know is critical, the game now asks you
   to confirm.
+- In a game, Page Up now enters a hypothetical from the current turn. Before,
+  you had to open the in-game replay first.
 
 ## November 22nd, 2026
 

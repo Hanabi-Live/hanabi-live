@@ -720,6 +720,7 @@ use these numbers to make the best move for the current situation.
     - Or `q`, `w`, `e`, `r`, `t`, `y` for a color clue
     - Then `Ctrl + Enter` to submit
   - Open or close the in-game replay: `Up` or `Down`
+  - Enter a hypothetical from the current turn: `Page Up`
   - Toggle the chat: `Alt + c`
   - Go to a specific turn: `Alt + t`
   - Switch between the New UI and the classic screen: `Alt + u`

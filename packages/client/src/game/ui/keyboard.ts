@@ -204,11 +204,15 @@ function keydown(event: KeyboardEvent) {
     return;
   }
 
-  // Page Up = Enter a hypothetical from the replay, as the "Enter Hypothetical" button does. (The
-  // browser would otherwise scroll the page.)
+  // Page Up = Enter a hypothetical, as the "Enter Hypothetical" button does. In an ongoing game, it
+  // first goes into the in-game replay, on the current turn. (The browser would otherwise scroll
+  // the page.)
   if (event.key === "PageUp") {
     event.preventDefault();
-    if (globals.state.finished || globals.state.replay.segment !== undefined) {
+    if (globals.state.replay.hypothetical === undefined) {
+      if (!globals.state.finished) {
+        replay.enter();
+      }
       hypothetical.startHypothetical(); // This function has validation inside of it
     }
     return;
