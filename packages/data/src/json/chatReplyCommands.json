@@ -15,13 +15,11 @@
   },
   {
     "command": "rules",
-    "response": "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md",
-    "alias": ["community", "guidelines"]
+    "response": "Please follow the community guidelines: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md"
   },
   {
     "command": "new",
-    "response": "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the H-Group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://hanabi.github.io/beginner",
-    "alias": ["beginner", "beginners", "guide"]
+    "response": "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the H-Group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: https://hanabi.github.io/beginner"
   },
   {
     "command": "doc",
@@ -29,8 +27,7 @@
   },
   {
     "command": "path",
-    "response": "The level summary for the H-Group: https://hanabi.github.io/learning-path/#level-summary",
-    "alias": ["learningpath", "level", "levels", "learning"]
+    "response": "The level summary for the H-Group: https://hanabi.github.io/learning-path/#level-summary"
   },
   {
     "command": "bga",
@@ -42,8 +39,7 @@
   },
   {
     "command": "sin",
-    "response": "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context.",
-    "alias": ["cardinal", "cardinalsin"]
+    "response": "Getting two strikes from the same mistake is sinful. Getting three strikes from the same mistake should never be forgiven. Ensure it never happens under any context."
   },
   {
     "command": "github",
@@ -52,7 +48,6 @@
   },
   {
     "command": "variants",
-    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md",
-    "alias": ["vars"]
+    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md"
   }
 ]
