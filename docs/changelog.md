@@ -11,7 +11,6 @@ of the repository.
 
 - When every player has set an H-Group level, the game's information tooltip now
   shows the lowest one.
-- The "/discord" chat command was removed.
 - The "/w", "/whisper", "/msg", and "/tell" chat commands were removed. Use
   "/pm" instead.
 - The "/terminate" chat command was removed. Use the button in the game instead.

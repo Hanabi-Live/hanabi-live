@@ -7,6 +7,10 @@
     "isHelp": true
   },
   {
+    "command": "discord",
+    "response": "Join the Discord server for the H-Group: https://discord.gg/FADvkJp"
+  },
+  {
     "command": "manual",
     "response": "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md",
     "alias": ["features"]
