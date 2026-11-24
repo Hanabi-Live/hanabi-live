@@ -9,7 +9,6 @@ If you need general help with the website, then read the
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `/help`                    | Displays a list of the available commands and the link to this page                                                                |
 | `/bga`                     | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)         |
-| `/discord`                 | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
 | `/doc`                     | Get the link for the [H-Group reference document](https://hanabi.github.io/reference)                                              |
 | `/efficiency`              | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)                |
 | `/manual`                  | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
