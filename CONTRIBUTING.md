@@ -10,7 +10,7 @@ With pull requests:
 - Your pull requests need to pass the linter. Run the "lint.sh" script before
   you submit your pull request.
 - We hang out in [the Discord server](https://discord.gg/FADvkJp) in the
-  `#website-development` channel. Come say hi.
+  `#website-github` channel. Come say hi.
 
 ## Creating a New Variant
 
