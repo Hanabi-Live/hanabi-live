@@ -447,26 +447,6 @@ chatCommands.set("tagsdeleteall", (tableId: TableId | undefined) => {
   });
 });
 
-// /terminate
-chatCommands.set("terminate", (tableId: TableId | undefined) => {
-  // Terminates the ongoing game. This is the same as right-clicking the skull button.
-  if (globals.tableId === undefined) {
-    sendSelfPmFromServer(
-      [
-        "You are not currently at a table, so you cannot use the ",
-        { code: "/terminate" },
-        " command.",
-      ],
-      tableId,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-  globals.connection.send("tableTerminate", {
-    tableId: globals.tableId,
-  });
-});
-
 // /version
 chatCommands.set("version", (tableId: TableId | undefined) => {
   const msg = [

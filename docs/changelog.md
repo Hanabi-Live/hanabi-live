@@ -14,6 +14,7 @@ of the repository.
 - The "/discord" chat command was removed.
 - The "/w", "/whisper", "/msg", and "/tell" chat commands were removed. Use
   "/pm" instead.
+- The "/terminate" chat command was removed. Use the button in the game instead.
 
 ## November 23rd, 2026
 

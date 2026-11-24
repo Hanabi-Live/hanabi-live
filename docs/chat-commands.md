@@ -65,12 +65,6 @@ If you need general help with the website, then read the
 | ------------ | ----------------------------------- |
 | `/setleader` | Change the owner/leader of the game |
 
-## Game Commands
-
-| Command      | Description        |
-| ------------ | ------------------ |
-| `/terminate` | Terminate the game |
-
 ## Game or Replay Commands
 
 | Command      | Description                                                       |

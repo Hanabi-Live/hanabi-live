@@ -208,7 +208,6 @@ constants! {
         "tag",
         "tagsdeleteall",
         "tagsearch",
-        "terminate",
         "unblock",
         "unfriend",
         "unlink",
