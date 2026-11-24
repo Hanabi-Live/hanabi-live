@@ -198,7 +198,6 @@ constants! {
         "friends",
         "link",
         "links",
-        "msg",
         "pm",
         "pmhistory",
         "r",
@@ -209,15 +208,12 @@ constants! {
         "tag",
         "tagsdeleteall",
         "tagsearch",
-        "tell",
         "terminate",
         "unblock",
         "unfriend",
         "unlink",
         "untag",
         "version",
-        "w",
-        "whisper",
     ];
     /// The chat commands that the server runs, besides the fixed replies in
     /// "chatReplyCommands.json". The website refuses any other command that the website does not

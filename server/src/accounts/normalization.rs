@@ -190,8 +190,8 @@ mod tests {
         // A non-breaking or full-width space still separates words, such as a command from its
         // first word.
         assert_eq!(
-            normalize_chat("/w\u{a0}Bob\u{3000}hi"),
-            Ok("/w Bob hi".into())
+            normalize_chat("/pm\u{a0}Bob\u{3000}hi"),
+            Ok("/pm Bob hi".into())
         );
         assert_eq!(clean_text(" r1\u{a0}b2\u{200B} "), "r1 b2");
         assert_eq!(truncate_to_max_chars("éé", 1), "é");

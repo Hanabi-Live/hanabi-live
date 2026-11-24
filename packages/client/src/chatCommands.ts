@@ -92,7 +92,7 @@ function pm(tableId: TableId | undefined, args: readonly string[]) {
 
   if (recipient === undefined || msg === "") {
     sendSelfPmFromServer(
-      ["The format of a private message is: ", { code: "/w Alice hello" }],
+      ["The format of a private message is: ", { code: "/pm Alice hello" }],
       tableId,
       SelfChatMessageType.Info,
     );
@@ -127,10 +127,6 @@ function pm(tableId: TableId | undefined, args: readonly string[]) {
   });
 }
 chatCommands.set("pm", pm);
-chatCommands.set("w", pm);
-chatCommands.set("whisper", pm);
-chatCommands.set("msg", pm);
-chatCommands.set("tell", pm);
 
 // /r [msg]
 chatCommands.set(

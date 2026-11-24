@@ -37,7 +37,6 @@ export const WEBSITE_CHAT_COMMANDS = [
   "friends",
   "link",
   "links",
-  "msg",
   "pm",
   "pmhistory",
   "r",
@@ -48,15 +47,12 @@ export const WEBSITE_CHAT_COMMANDS = [
   "tag",
   "tagsdeleteall",
   "tagsearch",
-  "tell",
   "terminate",
   "unblock",
   "unfriend",
   "unlink",
   "untag",
   "version",
-  "w",
-  "whisper",
 ] as const;
 export const SERVER_CHAT_COMMANDS = [
   "find-variant",
