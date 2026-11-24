@@ -252,14 +252,14 @@ Bring in upstream changes before the final lint, so that you lint only once:
 3. Run `bash lint.sh` and the relevant tests.
 4. Push. If the push is rejected because `main` moved, go back to step 2.
 
-The root lint entrypoint caches package lint scripts in Turborepo's local
-`.turbo/cache`; CI restores results from trusted `main` runs. Source changes
-invalidate dependent packages through transit tasks. Keep shared lint
-configuration in `turbo.json` inputs. The generated client version stays outside
-the cache inputs: lint uses its tracked type declaration, not its changing
-runtime value. Rust and repository-wide checks still run normally. To bypass
-package caching, run
-`bunx --bun --no-install turbo run lint --force --cache=local:rw`.
+The root lint entrypoint caches package lint scripts in Turborepo's
+`.turbo/cache` of the main checkout, which every worktree shares; CI restores
+results from trusted `main` runs. Source changes invalidate dependent packages
+through transit tasks. Keep shared lint configuration in `turbo.json` inputs.
+The generated client version stays outside the cache inputs: lint uses its
+tracked type declaration, not its changing runtime value. Rust and
+repository-wide checks still run normally. To bypass package caching, run
+`bunx --bun --no-install turbo run lint --cache=local:w`.
 
 ## Server and wire contracts
 

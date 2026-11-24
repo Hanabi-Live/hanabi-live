@@ -19,7 +19,8 @@ const TWITCH_GLOBAL_EMOTES_URL =
   "https://emotes.adamcy.pl/v1/global/emotes/twitch";
 const FRANKERFACEZ_GLOBAL_EMOTES_URL =
   "https://api.frankerfacez.com/v1/set/global";
-const TIMEOUT_MS = 30_000;
+/** Short, because an emote site that does not answer would hold up every lint. */
+const TIMEOUT_MS = 3000;
 const HTTP_SERVER_ERROR = 500;
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
@@ -365,12 +366,16 @@ async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
 
 async function fetchOk(url: string): Promise<Response> {
   let response: Response;
+  let body: ArrayBuffer;
   try {
     response = await fetch(url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
+    // The timeout covers the body too.
+    body = await response.arrayBuffer();
   } catch (error) {
-    // "fetch" rejects only when it gets no response: a timeout, or a network or TLS error.
+    // "fetch" rejects only when it gets no response: a timeout, or a network or TLS error. Reading
+    // the body rejects for the same reasons.
     throw new UnreachableError(`${url} did not answer: ${String(error)}`);
   }
   if (response.status >= HTTP_SERVER_ERROR) {
@@ -379,7 +384,7 @@ async function fetchOk(url: string): Promise<Response> {
   if (!response.ok) {
     throw new Error(`${url} returned HTTP ${response.status}.`);
   }
-  return response;
+  return new Response(body);
 }
 
 /**

@@ -1,6 +1,5 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "cacheDir": ".turbo/cache",
   "globalDependencies": [
     ".gitignore",
     "bunfig.toml",
