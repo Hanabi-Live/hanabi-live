@@ -30,6 +30,8 @@ of the repository.
 - The "/suggest" chat command was removed.
 - The "/variants" and "/vars" chat commands were removed.
 - The "/efficiency", "/github", and "/gh" chat commands were removed.
+- The "/subscribe" and "/unsubscribe" commands of the Discord bot were removed,
+  with the "DISCORD_PING_CREW_ROLE_NAME" setting.
 
 ## November 23rd, 2026
 

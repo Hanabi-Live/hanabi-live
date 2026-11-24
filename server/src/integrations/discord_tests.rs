@@ -101,15 +101,6 @@ async fn answer(
     }
     let data = if path == "/users/@me" {
         json!({"id":BOT,"username":"bot","discriminator":"0","avatar":null,"bot":true,"mfa_enabled":false})
-    } else if path.ends_with("/roles") {
-        let role = |id: &str, name: &str| {
-            json!({"id":id,"name":name,"color":0,"hoist":false,"managed":false,"mentionable":true,
-                   "permissions":"0","position":1,"flags":0,
-                   "colors":{"primary_color":0,"secondary_color":null,"tertiary_color":null}})
-        };
-        json!([role("111111111111111111", "Ping Crew")])
-    } else if path.contains("/roles/") {
-        return StatusCode::NO_CONTENT.into_response();
     } else if path.contains("/members/") {
         json!({"nick":"Nick <@333333333333333333>","user":user("888888888888888888","Nick"),
                "roles":[],"joined_at":null,"deaf":false,"mute":false,"flags":0})
@@ -264,7 +255,6 @@ fn configuration() -> Configuration {
             "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT".into(),
             "666666666666666666".into(),
         ),
-        ("DISCORD_PING_CREW_ROLE_NAME".into(), "Ping Crew".into()),
     ]))
     .unwrap()
     .unwrap()

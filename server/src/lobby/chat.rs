@@ -613,11 +613,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<ChatMessage>
                 // the website did not see, which can be a private message.
                 _ if source == "user" && matches!(command.kind, CommandKind::Website) => false,
                 Classification::Text | Classification::Public => true,
-                Classification::Private => false,
-                Classification::Unknown => {
-                    source == "discord"
-                        && ["subscribe", "unsubscribe"].contains(&command.name.as_str())
-                }
+                Classification::Private | Classification::Unknown => false,
             };
             if !shown {
                 continue;

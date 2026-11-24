@@ -233,9 +233,9 @@ const chatAuthorSchema = z.discriminatedUnion("type", [
     .strictObject({
       type: z.literal("discord"),
       /**
-       * The Discord user who wrote the message. Absent for a notice about the Discord server.
+       * The Discord user who wrote the message.
        */
-      username: z.string().min(1).optional(),
+      username: z.string().min(1),
     })
     .readonly(),
   z.strictObject({ type: z.literal("server") }).readonly(),
@@ -936,7 +936,6 @@ export const noticeCodeSchema = z.enum([
   "discordAnnouncementTimeout",
   "discordChannelInvalid",
   "discordConfiguration",
-  "discordRoleMissing",
   "internalOperationFailed",
   "liveStateUnavailable",
   "lobbyLoadTimeout",

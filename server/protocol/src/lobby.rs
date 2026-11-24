@@ -508,7 +508,6 @@ named_enum! {
         DiscordAnnouncementTimeout => "discordAnnouncementTimeout",
         DiscordChannelInvalid => "discordChannelInvalid",
         DiscordConfiguration => "discordConfiguration",
-        DiscordRoleMissing => "discordRoleMissing",
         // A failure that the report does not recognize.
         InternalOperationFailed => "internalOperationFailed",
         LiveStateUnavailable => "liveStateUnavailable",

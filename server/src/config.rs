@@ -140,7 +140,6 @@ impl Config {
             "DISCORD_GUILD_ID",
             "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
             "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
-            "DISCORD_PING_CREW_ROLE_NAME",
             crate::integrations::github::APP_ID,
             crate::integrations::github::PRIVATE_KEY_FILE,
         ] {

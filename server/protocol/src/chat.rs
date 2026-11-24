@@ -88,20 +88,19 @@ pub enum ChatAuthor {
     },
     /// The Discord server, whose messages the lobby mirrors.
     Discord {
-        /// The Discord user who wrote the message. Absent for a notice about the Discord server.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        username: Option<Username>,
+        /// The Discord user who wrote the message.
+        username: Username,
     },
     Server {},
 }
 
 impl ChatAuthor {
-    /// The author that the chat log records with this source and name. A user has a name, and the
-    /// server has none.
+    /// The author that the chat log records with this source and name. A user of the website
+    /// or Discord has a name, and the server has none.
     pub fn new(source: ChatSource, username: Option<Username>) -> Option<Self> {
         match (source, username) {
             (ChatSource::User, Some(username)) => Some(Self::User { username }),
-            (ChatSource::Discord, username) => Some(Self::Discord { username }),
+            (ChatSource::Discord, Some(username)) => Some(Self::Discord { username }),
             (ChatSource::Server, None) => Some(Self::Server {}),
             _ => None,
         }

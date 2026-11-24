@@ -90,7 +90,6 @@ pub struct Configuration {
     guild: Id<GuildMarker>,
     lobby: Id<ChannelMarker>,
     development: Id<ChannelMarker>,
-    ping_role: String,
 }
 
 impl Configuration {
@@ -99,8 +98,7 @@ impl Configuration {
         const GUILD: &str = "DISCORD_GUILD_ID";
         const LOBBY: &str = "DISCORD_CHANNEL_SYNC_WITH_LOBBY";
         const DEVELOPMENT: &str = "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT";
-        const PING_ROLE: &str = "DISCORD_PING_CREW_ROLE_NAME";
-        const KEYS: [&str; 5] = [TOKEN, GUILD, LOBBY, DEVELOPMENT, PING_ROLE];
+        const KEYS: [&str; 4] = [TOKEN, GUILD, LOBBY, DEVELOPMENT];
         if KEYS
             .iter()
             .all(|key| values.get(*key).is_none_or(|v| v.trim().is_empty()))
@@ -125,7 +123,6 @@ impl Configuration {
             guild: configured_id(GUILD, &value(GUILD)?)?,
             lobby: configured_id(LOBBY, &value(LOBBY)?)?,
             development: configured_id(DEVELOPMENT, &value(DEVELOPMENT)?)?,
-            ping_role: value(PING_ROLE)?,
         }))
     }
 
@@ -173,8 +170,8 @@ pub struct Bridge {
 }
 
 impl Bridge {
-    /// Connects to Discord and checks the configured roles and channels. `listen` then starts
-    /// receiving its events. Tests pass their own `http` client.
+    /// Connects to Discord and checks the configured channels. `listen` then starts receiving its
+    /// events. Tests pass their own `http` client.
     pub async fn start(
         server: Server,
         config: Configuration,
@@ -182,15 +179,6 @@ impl Bridge {
     ) -> Result<Arc<Self>> {
         let http = http.unwrap_or_else(|| config.client());
         let bot_id = http.current_user().await?.model().await?.id;
-        let roles = roles(&http, config.guild).await?;
-        if !roles.values().any(|name| *name == config.ping_role) {
-            return Err(crate::errors::Fault::new(
-                hanabi_protocol::NoticeCode::DiscordRoleMissing,
-                "The role configured by DISCORD_PING_CREW_ROLE_NAME was not found in the Discord guild.",
-                axum::http::StatusCode::BAD_GATEWAY,
-            )
-            .into());
-        }
         for (key, channel) in [
             ("DISCORD_CHANNEL_SYNC_WITH_LOBBY", config.lobby),
             ("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT", config.development),
@@ -343,8 +331,13 @@ impl Bridge {
         )
     }
 
-    async fn current_roles(&self) -> Result<HashMap<Id<RoleMarker>, String>> {
-        roles(&self.http, self.config.guild).await
+    async fn role_name(&self, id: Id<RoleMarker>) -> Option<String> {
+        let roles = self.http.roles(self.config.guild).await.ok()?;
+        let roles = roles.model().await.ok()?;
+        roles
+            .into_iter()
+            .find(|role| role.id == id)
+            .map(|role| role.name)
     }
 
     pub async fn render(&self, text: &str) -> String {
@@ -383,10 +376,8 @@ impl Bridge {
                 ),
                 "@&" => format!(
                     "@{}",
-                    self.current_roles()
+                    self.role_name(id.cast())
                         .await
-                        .ok()
-                        .and_then(|mut roles| roles.remove(&id.cast()))
                         .unwrap_or_else(|| "[unknown role]".into())
                 ),
                 _ => format!("@{}", self.nickname(id.cast()).await),
@@ -607,53 +598,39 @@ impl Bridge {
                 }
                 let id = message.id.to_string();
                 let author = message.author.id;
-                let content = message.content.as_str();
-                let subscription = content
-                    .lines()
-                    .map(|line| line.split(' ').next().unwrap_or("").to_ascii_lowercase())
-                    .find(|cmd| cmd == "/subscribe" || cmd == "/unsubscribe");
-                let Ok(text) = normalize_discord_chat(subscription.as_deref().unwrap_or(content))
-                else {
+                let Ok(text) = normalize_discord_chat(&message.content) else {
                     return Ok(());
                 };
                 let class = lobby::classify_chat(&text);
-                if subscription.is_none()
-                    && matches!(
-                        class,
-                        lobby::Classification::Private | lobby::Classification::Unknown
-                    )
-                {
+                if matches!(
+                    class,
+                    lobby::Classification::Private | lobby::Classification::Unknown
+                ) {
                     return Ok(());
                 }
                 let name = self.nickname(author).await;
                 let rendered = self.render(&text).await;
-                let inserted =
-                    insert_message(&self.pool, Some(&name), &rendered, Some(&id)).await?;
+                let inserted = insert_message(&self.pool, &name, &rendered, &id).await?;
                 let Some((chat_id, time)) = inserted else {
                     return Ok(());
                 };
-                if let Some(subscription) = subscription {
-                    self.subscribe(author, &name, subscription == "/subscribe")
+                self.broadcast(vec![Outgoing::new(
+                    hanabi_protocol::event::CHAT,
+                    hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage {
+                        chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
+                        ..hanabi_protocol::ChatMessage::public(
+                            rendered,
+                            hanabi_protocol::ChatAuthor::Discord {
+                                username: name.into(),
+                            },
+                            hanabi_protocol::Timestamp::from(time),
+                        )
+                    }),
+                )])
+                .await?;
+                if class == lobby::Classification::Public {
+                    self.publish_reply(lobby::external_command(&self.pool, &text).await?)
                         .await?;
-                } else {
-                    self.broadcast(vec![Outgoing::new(
-                        hanabi_protocol::event::CHAT,
-                        hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage {
-                            chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
-                            ..hanabi_protocol::ChatMessage::public(
-                                rendered,
-                                hanabi_protocol::ChatAuthor::Discord {
-                                    username: Some(name.clone().into()),
-                                },
-                                hanabi_protocol::Timestamp::from(time),
-                            )
-                        }),
-                    )])
-                    .await?;
-                    if class == lobby::Classification::Public {
-                        self.publish_reply(lobby::external_command(&self.pool, &text).await?)
-                            .await?;
-                    }
                 }
             }
             Event::MessageDelete(deleted) if deleted.channel_id == self.config.lobby => {
@@ -687,74 +664,6 @@ impl Bridge {
         }
         Ok(())
     }
-
-    async fn subscribe(&self, author: Id<UserMarker>, name: &str, add: bool) -> Result<()> {
-        let current = self.current_roles().await?;
-        let role = current
-            .iter()
-            .find(|(_, name)| *name == &self.config.ping_role)
-            .map(|(id, _)| *id)
-            .context("Subscription role missing")?;
-        let response = if add {
-            self.http
-                .add_guild_member_role(self.config.guild, author, role)
-                .await
-        } else {
-            self.http
-                .remove_guild_member_role(self.config.guild, author, role)
-                .await
-        };
-        if let Err(error) = response {
-            let report = crate::errors::Report::from_error(
-                "Updating Discord subscription role",
-                &error.into(),
-            );
-            report.log();
-            self.send(&format!(
-                "Error: the `@Ping Crew` role could not be {} your profile. {}",
-                if add { "added to" } else { "removed from" },
-                report.text()
-            ))
-            .await?;
-            return Ok(());
-        }
-        let action = if add {
-            "is now a member of"
-        } else {
-            "has left"
-        };
-        let notice = format!("@{name} {action} the @Ping Crew.");
-        let rendered = self.render(&notice).await;
-        if let Some((id, time)) = insert_message(&self.pool, None, &rendered, None).await? {
-            self.broadcast(vec![Outgoing::new(
-                hanabi_protocol::event::CHAT,
-                hanabi_protocol::Chat::from(hanabi_protocol::ChatMessage {
-                    chat_id: Some(hanabi_protocol::ChatId::try_from(id)?),
-                    ..hanabi_protocol::ChatMessage::public(
-                        rendered,
-                        hanabi_protocol::ChatAuthor::Discord { username: None },
-                        hanabi_protocol::Timestamp::from(time),
-                    )
-                }),
-            )])
-            .await?;
-        }
-        self.send(&format!("`@{name}` {action} the `@Ping Crew`."))
-            .await?;
-        Ok(())
-    }
-}
-
-/// The roles of `guild`, by ID.
-async fn roles(http: &Client, guild: Id<GuildMarker>) -> Result<HashMap<Id<RoleMarker>, String>> {
-    Ok(http
-        .roles(guild)
-        .await?
-        .model()
-        .await?
-        .into_iter()
-        .map(|role| (role.id, role.name))
-        .collect())
 }
 
 /// When the most recent server announcement is a graceful shutdown, returns when it was sent.
@@ -774,16 +683,17 @@ async fn last_shutdown(pool: &PgPool) -> Result<Option<OffsetDateTime>> {
 
 pub async fn insert_message(
     pool: &PgPool,
-    name: Option<&str>,
+    name: &str,
     text: &str,
-    message_id: Option<&str>,
+    message_id: &str,
 ) -> Result<Option<(i32, OffsetDateTime)>> {
     let mut tx = pool.begin().await?;
-    if let Some(id) = message_id {
-        sqlx::query!("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id)
-            .execute(&mut *tx)
-            .await?;
-    }
+    sqlx::query!(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+        message_id
+    )
+    .execute(&mut *tx)
+    .await?;
     let result = sqlx::query!(
         "INSERT INTO chat_log(user_id,source,discord_name,message,discord_message_id)
          VALUES(NULL,'discord',$1,$2,$3)
@@ -909,7 +819,7 @@ mod tests {
         let id = "111111111111111111";
         assert!(delete_message(&db.pool, id).await.unwrap().is_some());
         assert!(
-            insert_message(&db.pool, Some("name"), "must not resurrect", Some(id))
+            insert_message(&db.pool, "name", "must not resurrect", id)
                 .await
                 .unwrap()
                 .is_none()
@@ -917,8 +827,8 @@ mod tests {
         assert!(delete_message(&db.pool, id).await.unwrap().is_none());
         let live = "222222222222222222";
         let (one, two) = tokio::join!(
-            insert_message(&db.pool, Some("name"), "one", Some(live)),
-            insert_message(&db.pool, Some("name"), "two", Some(live))
+            insert_message(&db.pool, "name", "one", live),
+            insert_message(&db.pool, "name", "two", live)
         );
         assert_ne!(one.unwrap().is_some(), two.unwrap().is_some());
         let author = db.user("Alice").await;
