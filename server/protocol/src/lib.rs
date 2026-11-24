@@ -203,6 +203,7 @@ constants! {
         "r",
         "setleader",
         "setvariant",
+        "shrug",
         "sv",
         "tag",
         "tagsearch",

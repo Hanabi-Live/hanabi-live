@@ -116,7 +116,8 @@ describe("functions", () => {
 });
 
 test("runs the chat commands that the server lists as website commands", () => {
-  expect([...chatCommands.keys()].toSorted()).toEqual(
+  // The chat box replaces the text of "/shrug" before the player sends it.
+  expect([...chatCommands.keys(), "shrug"].toSorted()).toEqual(
     [...WEBSITE_CHAT_COMMANDS].toSorted(),
   );
 });
