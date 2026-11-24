@@ -2742,7 +2742,7 @@ async fn tables_refuse_unknown_slash_commands_and_bots_read_other_commands() -> 
                 messages.len() == 1
                     && messages[0]["kind"]["type"] == "private"
                     && messages[0]["text"]
-                        == "The chat command of \"/setall\" is not valid. Use \"/help\" to get a list of available commands.",
+                        == "The chat command of \"/setall\" is not valid. Use \"/commands\" to get a list of available commands.",
                 "Sender did not get the refusal: {messages:?}"
             );
             ensure!(

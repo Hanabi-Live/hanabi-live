@@ -281,7 +281,7 @@ function sendText(room: ChatRoom, msgRaw: string) {
           "The chat command of ",
           { code: `/${command}` },
           " is not valid. Use ",
-          { code: "/help" },
+          { code: "/commands" },
           " to get a list of available commands.",
         ],
         tableId,

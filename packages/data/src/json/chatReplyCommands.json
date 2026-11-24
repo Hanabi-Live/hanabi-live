@@ -1,18 +1,17 @@
 [
   {
     "command": "help",
+    "response": "For the list of chat commands, use \"/commands\" on the website. For everything else, read the manual: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md"
+  },
+  {
+    "command": "commands",
     "response": "You can find detailed explanation of commands here: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/chat-commands.md",
     "private": true,
-    "isHelp": true
+    "listsCommands": true
   },
   {
     "command": "discord",
     "response": "Join the Discord server for the H-Group: https://discord.gg/FADvkJp"
-  },
-  {
-    "command": "manual",
-    "response": "The Hanab Live Manual & List of Features: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md",
-    "alias": ["features"]
   },
   {
     "command": "rules",

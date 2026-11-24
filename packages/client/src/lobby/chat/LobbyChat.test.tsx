@@ -173,7 +173,7 @@ describe("LobbyChat", () => {
       "The chat command of /pause is not valid.",
     );
 
-    for (const text of ["/HELP", "/features", "/fv", "!setall 11"]) {
+    for (const text of ["/HELP", "/gh", "/fv", "!setall 11"]) {
       fireEvent.input(input, {
         target: {
           value: text,

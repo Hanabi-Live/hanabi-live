@@ -453,10 +453,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     )
     .await;
     assert_eq!(self_data(&result, "chatPmHistory")["messages"], json!([]));
+    assert!(matches!(classify_chat("/help"), Classification::Public));
     for text in [
         "/not-a-command private",
         "/token extra",
-        "/help",
+        "/commands",
         "/seed",
         "/id",
         // The website did not see this command, because of the zero-width space before it.

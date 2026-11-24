@@ -18,9 +18,12 @@ of the repository.
 - These aliases of chat commands were removed: "/missing-scores",
   "/missingscores", "/shared-missing-scores", and "/sharedmissingscores" (use
   "/missing"), "/find-variant", "/random-variant", and "/randomvariant" (use
-  "/findvariant"), "/taglist" (use "/tags"), "/commands" and "/?" (use "/help"),
-  and "/document" and "/reference" (use "/doc").
+  "/findvariant"), "/taglist" (use "/tags"), "/?" (use "/commands"), and
+  "/document" and "/reference" (use "/doc").
 - The "/tagsdeleteall" chat command was removed.
+- The "/help" chat command now links to the manual, and everyone in the chat
+  sees the reply. Use "/commands" for the list of chat commands.
+- The "/manual" and "/features" chat commands were removed. Use "/help" instead.
 
 ## November 23rd, 2026
 

@@ -64,7 +64,7 @@ pub struct SimpleResponse {
     #[serde(default)]
     private: bool,
     #[serde(default)]
-    is_help: bool,
+    lists_commands: bool,
 }
 
 static RESPONSES: LazyLock<Vec<SimpleResponse>> = LazyLock::new(|| {
@@ -222,7 +222,7 @@ impl<'a> ChatCommand<'a> {
     /// without asking the server.
     pub fn invalid_response(&self) -> String {
         format!(
-            "The chat command of \"/{}\" is not valid. Use \"/help\" to get a list of available commands.",
+            "The chat command of \"/{}\" is not valid. Use \"/commands\" to get a list of available commands.",
             self.name
         )
     }
@@ -231,8 +231,12 @@ impl<'a> ChatCommand<'a> {
     pub fn general_response(&self) -> Option<GeneralResponse> {
         Some(match self.kind {
             CommandKind::Reply(response) => {
-                let content = if response.is_help {
-                    format!("\nList of commands:\n{}\n{}", help(), response.response)
+                let content = if response.lists_commands {
+                    format!(
+                        "\nList of commands:\n{}\n{}",
+                        command_list(),
+                        response.response
+                    )
                 } else {
                     response.response.clone()
                 };
@@ -296,7 +300,7 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<Ext
     )))
 }
 
-fn help() -> String {
+fn command_list() -> String {
     let mut names: Vec<_> = hanabi_protocol::WEBSITE_CHAT_COMMANDS
         .iter()
         .chain(hanabi_protocol::SERVER_CHAT_COMMANDS)

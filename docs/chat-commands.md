@@ -7,12 +7,11 @@ If you need general help with the website, then read the
 
 | Command                    | Description                                                                                                                        |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `/help`                    | Displays a list of the available commands and the link to this page                                                                |
+| `/help`                    | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
 | `/bga`                     | Get the link for the [Board Game Arena transition guide](https://github.com/hanabi/hanabi.github.io/blob/main/misc/BGA.md)         |
 | `/discord`                 | Get the link for the [Discord server](https://discord.gg/FADvkJp)                                                                  |
 | `/doc`                     | Get the link for the [H-Group reference document](https://hanabi.github.io/reference)                                              |
 | `/efficiency`              | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)                |
-| `/manual`                  | Get the link for the [Hanab Live Manual & List of Features](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md) |
 | `/new`                     | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/beginner)                                                 |
 | `/path`                    | Get the link for the [H-Group level summary](https://hanabi.github.io/learning-path/#level-summary)                                |
 | `/variants`                | Get the link for the [list of variant descriptions](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md)         |
@@ -26,6 +25,7 @@ If you need general help with the website, then read the
 
 | Command                          | Description                                                          |
 | -------------------------------- | -------------------------------------------------------------------- |
+| `/commands`                      | Show a list of the available commands and the link to this page      |
 | `/pm [username] [msg]`           | Send a private message                                               |
 | `/pmhistory [username] [amount]` | Show recent private messages with a player (default 5, maximum 100)  |
 | `/pmhistory [amount]`            | Show recent private messages with anyone (default 5, maximum 100)    |
