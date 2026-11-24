@@ -43,6 +43,7 @@ export const WEBSITE_CHAT_COMMANDS = [
   "setleader",
   "setvariant",
   "shrug",
+  "sl",
   "sv",
   "tag",
   "tagsearch",

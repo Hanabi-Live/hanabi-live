@@ -32,6 +32,7 @@ of the repository.
 - The "/efficiency", "/github", and "/gh" chat commands were removed.
 - The "/subscribe" and "/unsubscribe" commands of the Discord bot were removed,
   with the "DISCORD_PING_CREW_ROLE_NAME" setting.
+- Added a "/sl" chat command, which is an alias of "/setleader".
 
 ## November 23rd, 2026
 

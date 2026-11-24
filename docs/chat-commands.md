@@ -53,11 +53,11 @@ If you need general help with the website, then read the
 
 ## Pre-game, Game, and Replay Commands
 
-| Command                 | Description                                                |
-| ----------------------- | ---------------------------------------------------------- |
-| `/setleader [username]` | Change the owner/leader of the game                        |
-| `/findvariant` or `/fv` | Find a random variant that everyone needs the max score in |
-| `/missing` or `/m`      | Get the list of every max score that the team is missing   |
+| Command                                     | Description                                                |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| `/setleader [username]` or `/sl [username]` | Change the owner/leader of the game                        |
+| `/findvariant` or `/fv`                     | Find a random variant that everyone needs the max score in |
+| `/missing` or `/m`                          | Get the list of every max score that the team is missing   |
 
 ## Game or Replay Commands
 

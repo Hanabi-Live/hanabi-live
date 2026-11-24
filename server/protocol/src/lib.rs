@@ -204,6 +204,7 @@ constants! {
         "setleader",
         "setvariant",
         "shrug",
+        "sl",
         "sv",
         "tag",
         "tagsearch",

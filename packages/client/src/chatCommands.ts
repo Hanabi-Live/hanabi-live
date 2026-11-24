@@ -262,6 +262,7 @@ function setLeader(tableId: TableId | undefined, args: readonly string[]) {
   });
 }
 chatCommands.set("setleader", setLeader);
+chatCommands.set("sl", setLeader);
 
 // /setvariant [variant]
 function setVariant(tableId: TableId | undefined, args: readonly string[]) {
