@@ -22,7 +22,6 @@ const CONTINUATION_LINE_CLASSES = "cp tw:block tw:pl-13";
 export type LocalPart =
   | string
   | { readonly code: string }
-  | { readonly strong: string }
   /** A button that copies text to the clipboard. */
   | { readonly copy: string; readonly label: string };
 
@@ -236,9 +235,6 @@ function localPartElement(
   }
   if ("code" in part) {
     return <code key={key}>{part.code}</code>;
-  }
-  if ("strong" in part) {
-    return <strong key={key}>{part.strong}</strong>;
   }
   return (
     <button

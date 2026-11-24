@@ -40,7 +40,6 @@ If you need general help with the website, then read the
 | `/blocked`                       | Show a list of everyone you have blocked                             |
 | `/unblock [username]`            | Remove someone from your blocked list                                |
 | `/tagsearch [tag]`               | Search through all games for a specific tag                          |
-| `/version`                       | Show the version number of the client code                           |
 
 ## Pre-game Commands (table-owner-only)
 

@@ -15,6 +15,11 @@ of the repository.
 - The "/w", "/whisper", "/msg", and "/tell" chat commands were removed. Use
   "/pm" instead.
 - The "/terminate" chat command was removed. Use the button in the game instead.
+- The "/version" chat command was removed.
+- These aliases of chat commands were removed: "/missing-scores",
+  "/missingscores", "/shared-missing-scores", and "/sharedmissingscores" (use
+  "/missing"), "/find-variant", "/random-variant", and "/randomvariant" (use
+  "/findvariant"), and "/taglist" (use "/tags").
 
 ## November 23rd, 2026
 

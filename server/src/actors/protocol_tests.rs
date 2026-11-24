@@ -3100,30 +3100,28 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         )
         .execute(&h.store.primary)
         .await?;
-        for alias in ["/tags", "/taglist"] {
-            h.send(0, "chat", json!({"tableId":id,"text":alias}))
-                .await?;
-            h.barrier(0).await?;
-            for index in 0..2 {
-                let chats = chat_messages(&h.frames(index));
-                let lines = chats
-                    .iter()
-                    .map(|v| v["text"].as_str().unwrap_or(""))
-                    .collect::<Vec<_>>();
-                ensure!(
-                    lines
-                        == vec![
-                            "The list of tags for this game are as follows:",
-                            "1) alpha <b>",
-                            "2) zeta"
-                        ],
-                    "Tag listing was stale, duplicated, unescaped, or combined"
-                );
-                ensure!(
-                    chats.iter().all(|v| v["kind"]["type"] == "public"),
-                    "Replay list was not public"
-                );
-            }
+        h.send(0, "chat", json!({"tableId":id,"text":"/tags"}))
+            .await?;
+        h.barrier(0).await?;
+        for index in 0..2 {
+            let chats = chat_messages(&h.frames(index));
+            let lines = chats
+                .iter()
+                .map(|v| v["text"].as_str().unwrap_or(""))
+                .collect::<Vec<_>>();
+            ensure!(
+                lines
+                    == vec![
+                        "The list of tags for this game are as follows:",
+                        "1) alpha <b>",
+                        "2) zeta"
+                    ],
+                "Tag listing was stale, duplicated, unescaped, or combined"
+            );
+            ensure!(
+                chats.iter().all(|v| v["kind"]["type"] == "public"),
+                "Replay list was not public"
+            );
         }
         h.send(1, "tagRemove", json!({"tableId":id,"tag":"zeta"}))
             .await?;

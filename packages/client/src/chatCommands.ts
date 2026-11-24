@@ -1,5 +1,5 @@
 import type { TableId } from "@hanabi-live/data";
-import { MAX_PAGE_LIMIT, VERSION } from "@hanabi-live/data";
+import { MAX_PAGE_LIMIT } from "@hanabi-live/data";
 import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
@@ -445,16 +445,6 @@ chatCommands.set("tagsdeleteall", (tableId: TableId | undefined) => {
   globals.connection.send("tagRemoveAll", {
     tableId: globals.tableId,
   });
-});
-
-// /version
-chatCommands.set("version", (tableId: TableId | undefined) => {
-  const msg = [
-    "You are running version ",
-    { strong: VERSION },
-    " of the client.",
-  ] as const;
-  sendSelfPmFromServer(msg, tableId, SelfChatMessageType.Info);
 });
 
 export function getVariantFromArgs(args: readonly string[]): string {

@@ -212,13 +212,11 @@ constants! {
         "unfriend",
         "unlink",
         "untag",
-        "version",
     ];
     /// The chat commands that the server runs, besides the fixed replies in
     /// "chatReplyCommands.json". The website refuses any other command that the website does not
     /// run itself.
     @data pub const SERVER_CHAT_COMMANDS: &[&str] = &[
-        "find-variant",
         "findvariant",
         "fv",
         "id",
@@ -226,20 +224,13 @@ constants! {
         "kick",
         "m",
         "missing",
-        "missing-scores",
-        "missingscores",
         "random",
-        "random-variant",
-        "randomvariant",
         "replay",
         "sa",
         "seed",
-        "shared-missing-scores",
-        "sharedmissingscores",
         "split",
         "splitauto",
         "suggest",
-        "taglist",
         "tags",
         "token",
         "uptime",
