@@ -729,15 +729,6 @@ async fn apply_tag(
             .execute(&mut **transaction)
             .await?;
         }
-        TagEdit::DeleteAll => {
-            sqlx::query!(
-                "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
-                edit.game_id.get(),
-                edit.user_id.get()
-            )
-            .execute(&mut **transaction)
-            .await?;
-        }
     }
     sqlx::query!(
         "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",

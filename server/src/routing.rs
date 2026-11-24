@@ -91,7 +91,6 @@ pub enum PhaseRequest<'a> {
 pub enum TagChange<'a> {
     Add(&'a TagRequest),
     Remove(&'a TagRequest),
-    RemoveAll,
 }
 
 impl<'a> Route<'a> {
@@ -161,7 +160,6 @@ pub fn route(message: &ClientRequest) -> Route<'_> {
         M::Note(r) => Route::Table(r.table_id, T::Phase(P::Note(r))),
         M::TagAdd(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Add(r)))),
         M::TagRemove(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::Remove(r)))),
-        M::TagRemoveAll(r) => Route::Table(r.table_id, T::Phase(P::Tag(TagChange::RemoveAll))),
         M::ReplayAction(r) => Route::Table(r.table_id, T::Phase(P::ReplayAction(r))),
         M::TableSuggest(r) => Route::Table(r.table_id, T::Phase(P::TableSuggest(r))),
         M::TableRestart(r) => Route::Table(r.table_id, T::Phase(P::TableRestart)),

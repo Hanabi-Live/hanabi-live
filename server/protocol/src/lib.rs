@@ -206,7 +206,6 @@ constants! {
         "suggest",
         "sv",
         "tag",
-        "tagsdeleteall",
         "tagsearch",
         "unblock",
         "unfriend",

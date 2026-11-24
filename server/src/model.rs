@@ -140,8 +140,6 @@ pub struct PendingTag {
 pub enum TagEdit {
     Add(String),
     Delete(String),
-    /// Deletes every tag of the user.
-    DeleteAll,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

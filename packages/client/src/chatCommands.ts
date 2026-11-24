@@ -429,24 +429,6 @@ chatCommands.set(
   },
 );
 
-chatCommands.set("tagsdeleteall", (tableId: TableId | undefined) => {
-  if (globals.tableId === undefined) {
-    sendSelfPmFromServer(
-      [
-        "You are not currently at a table, so you cannot use the ",
-        { code: "/tagsdeleteall" },
-        " command.",
-      ],
-      tableId,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-  globals.connection.send("tagRemoveAll", {
-    tableId: globals.tableId,
-  });
-});
-
 export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
     doubleSpaces: / {2,}/gu,

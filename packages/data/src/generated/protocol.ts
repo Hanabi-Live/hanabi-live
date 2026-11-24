@@ -45,7 +45,6 @@ export const WEBSITE_CHAT_COMMANDS = [
   "suggest",
   "sv",
   "tag",
-  "tagsdeleteall",
   "tagsearch",
   "unblock",
   "unfriend",
@@ -2261,7 +2260,6 @@ export const CLIENT_REQUEST_SCHEMAS = {
   tableUpdate: tableUpdateRequestSchema,
   tagAdd: tagRequestSchema,
   tagRemove: tagRequestSchema,
-  tagRemoveAll: tableRefSchema,
   tagSearch: tagSearchRequestSchema,
   userInactive: userInactiveRequestSchema,
 } as const;

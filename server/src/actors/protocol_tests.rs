@@ -3133,8 +3133,10 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Replay tag action was not published"
         );
         h.frames(1);
-        h.send(0, "tagRemoveAll", json!({"tableId":id})).await?;
-        h.send(1, "tagRemoveAll", json!({"tableId":id})).await?;
+        for index in 0..2 {
+            h.send(index, "tagRemove", json!({"tableId":id,"tag":"alpha <b>"}))
+                .await?;
+        }
         h.barrier(0).await?;
         h.frames(0);
         h.frames(1);

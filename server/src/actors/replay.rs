@@ -91,7 +91,6 @@ impl TableActor {
             TagChange::Remove(r) => TagEdit::Delete(
                 crate::model::normalize_tag(&r.tag).map_err(CommandError::rejected)?,
             ),
-            TagChange::RemoveAll => TagEdit::DeleteAll,
         };
         self.tag(session, edit).await
     }
@@ -146,7 +145,6 @@ impl TableActor {
                 s.tags
                     .retain(|t| t.tag != *tag || (replay && t.user != session.user));
             }
-            TagEdit::DeleteAll => s.tags.retain(|t| t.user != session.user),
         }
         let name = &session.name;
         let text = match (&edit, replay) {
@@ -154,15 +152,9 @@ impl TableActor {
             (TagEdit::Delete(tag), true) => {
                 format!("{name} has deleted a game tag of \"{tag}\".")
             }
-            (TagEdit::DeleteAll, true) => {
-                format!("{name} has deleted all their tags for this game.")
-            }
             (TagEdit::Add(tag), false) => format!("Successfully added a tag of \"{tag}\"."),
             (TagEdit::Delete(tag), false) => {
                 format!("Successfully deleted the tag of \"{tag}\".")
-            }
-            (TagEdit::DeleteAll, false) => {
-                "Successfully deleted all your tags for this game.".into()
             }
         };
         let edit = if replay {

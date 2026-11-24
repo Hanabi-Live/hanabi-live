@@ -65,7 +65,6 @@ macro_rules! request_contracts {
             Note "note" => NoteRequest;
             TagAdd "tagAdd" => TagRequest;
             TagRemove "tagRemove" => TagRequest;
-            TagRemoveAll "tagRemoveAll" => TableRef;
             ReplayAction "replayAction" => ReplayAction;
         }
     };

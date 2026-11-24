@@ -20,6 +20,7 @@ of the repository.
   "/missing"), "/find-variant", "/random-variant", and "/randomvariant" (use
   "/findvariant"), "/taglist" (use "/tags"), "/commands" and "/?" (use "/help"),
   and "/document" and "/reference" (use "/doc").
+- The "/tagsdeleteall" chat command was removed.
 
 ## November 23rd, 2026
 
