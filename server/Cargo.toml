@@ -151,5 +151,9 @@ tower = { version = "0.5", features = ["util"] }
 [profile.dev.package.argon2]
 opt-level = 3
 
+# The engine tests play thousands of games, which take several times longer without optimization.
+[profile.dev.package.hanabi-engine]
+opt-level = 3
+
 [lints]
 workspace = true
