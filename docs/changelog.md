@@ -21,13 +21,14 @@ of the repository.
   "/findvariant"), "/taglist" (use "/tags"), "/?" (use "/commands"), "/document"
   and "/reference" (use "/doc"), "/community" and "/guidelines" (use "/rules"),
   "/beginner", "/beginners", and "/guide" (use "/new"), "/learningpath",
-  "/level", "/levels", and "/learning" (use "/path"), "/cardinal" and
-  "/cardinalsin" (use "/sin"), and "/vars" (use "/variants").
+  "/level", "/levels", and "/learning" (use "/path"), and "/cardinal" and
+  "/cardinalsin" (use "/sin").
 - The "/tagsdeleteall" chat command was removed.
 - The "/help" chat command now links to the manual, and everyone in the chat
   sees the reply. Use "/commands" for the list of chat commands.
 - The "/manual" and "/features" chat commands were removed. Use "/help" instead.
 - The "/suggest" chat command was removed.
+- The "/variants" and "/vars" chat commands were removed.
 
 ## November 23rd, 2026
 

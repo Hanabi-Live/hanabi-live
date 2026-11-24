@@ -14,7 +14,6 @@ If you need general help with the website, then read the
 | `/efficiency`              | Get the link for the [efficiency document](https://github.com/hanabi/hanabi.github.io/blob/main/misc/efficiency.md)                |
 | `/new`                     | Get the link for the [H-Group beginner's guide](https://hanabi.github.io/beginner)                                                 |
 | `/path`                    | Get the link for the [H-Group level summary](https://hanabi.github.io/learning-path/#level-summary)                                |
-| `/variants`                | Get the link for the [list of variant descriptions](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md)         |
 | `/github`                  | Get the link for the [GitHub repository](https://github.com/Hanabi-Live/hanabi-live)                                               |
 | `/random [min] [max]`      | Get a random integer                                                                                                               |
 | `/replay [game ID] [turn]` | Generate a link to a replay so that you can share it with others                                                                   |

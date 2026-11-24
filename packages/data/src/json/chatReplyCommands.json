@@ -45,9 +45,5 @@
     "command": "github",
     "response": "Github repository for Hanab Live: https://github.com/Hanabi-Live/hanabi-live",
     "alias": ["gh"]
-  },
-  {
-    "command": "variants",
-    "response": "Description of variants: https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md"
   }
 ]
