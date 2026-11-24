@@ -1350,7 +1350,8 @@ function getStates(): readonly State[] {
         await game.discardTurns(15, { mixClueTypes: true });
       },
     },
-    // It is the account's turn and the team has no clues, so that no hand shows a clue button.
+    // It is the account's turn and the team has no clues, so that the clue buttons show crossed
+    // out.
     {
       name: "new-ui-no-clues",
       path: "/",

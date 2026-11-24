@@ -158,6 +158,8 @@ interface HandsProps {
    * opens the clues that they can get (`clueMenu`) on their hand.
    */
   readonly canChooseClueTarget: boolean;
+  /** It is the viewer's turn, but the team has no clues. The clue buttons show crossed out. */
+  readonly cluesSpent: boolean;
 
   /** The player whose clue menu is open, if any. Their hand stands out. */
   readonly clueTarget: PlayerIndex | undefined;
@@ -1763,8 +1765,13 @@ function Hand({
       warning={seat.turnWarning}
     />
   );
-  const clueButton = canClueSeat && !chosen && !props.draggingCard && (
+  const showClueButton =
+    (canClueSeat || (props.cluesSpent && !seat.acting && !editing))
+    && !chosen
+    && !props.draggingCard;
+  const clueButton = showClueButton && (
     <ClueButton
+      cluesSpent={!canClueSeat}
       name={seat.name}
       onOpen={() => {
         props.onChooseClueTarget(seat.playerIndex);

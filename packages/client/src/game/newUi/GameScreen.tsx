@@ -607,13 +607,15 @@ export function GameScreen(): React.JSX.Element {
       : metadata.playerNames[state.pause.pausingPlayerIndex];
   // A hypothetical goes on while the game is paused.
   const paused = hypo === undefined && pausedBy !== undefined;
-  const canClue =
+  // At 0 clues, the clue buttons still show, crossed out, so that the viewer sees that they cannot
+  // clue.
+  const couldClue =
     ourTurn
-    && clueAvailable
     && !editingCards
     && !paused
     && sendingMove === undefined
     && !reconnecting;
+  const canClue = couldClue && clueAvailable;
   const onlyOtherPlayer =
     actingPlayerIndex !== undefined && metadata.playerNames.length === 2
       ? ((1 - actingPlayerIndex) as PlayerIndex)
@@ -1566,6 +1568,7 @@ export function GameScreen(): React.JSX.Element {
                       />
                     )
                   }
+                  cluesSpent={couldClue && !clueAvailable}
                   clueTarget={menuTarget}
                   colorblindMode={settings.colorblindMode}
                   draggedCard={held?.order}

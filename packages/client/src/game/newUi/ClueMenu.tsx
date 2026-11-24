@@ -857,6 +857,38 @@ export const CLUE_BUTTON_COLUMN_HEIGHT =
 export const CLUE_BUTTON_COLUMN_WIDTH =
   CLUE_BUTTON_SIZE.PHONE + CLUE_BUTTON_NAME_GAP;
 
+const NO_CLUES_TEXT = "The team has no clues.";
+
+/**
+ * A red X over the whole clue button. A dark outline goes around both strokes together, so that the
+ * X shows on the yellow button and the outline does not break where the strokes cross.
+ */
+function ClueButtonCross(): React.JSX.Element {
+  const strokes = "M5 5L19 19M19 5L5 19";
+  return (
+    <svg
+      aria-hidden
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:size-full"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d={strokes}
+        fill="none"
+        stroke="rgb(0 0 0 / 55%)"
+        strokeLinecap="round"
+        strokeWidth={4.5}
+      />
+      <path
+        className="tw:stroke-game-error"
+        d={strokes}
+        fill="none"
+        strokeLinecap="round"
+        strokeWidth={2.5}
+      />
+    </svg>
+  );
+}
+
 /**
  * Where a clue button sits: to the right of the hand, below the middle of the hand when its menu
  * opens below it, in the name column below the name or to the right of it, or at the right end of
@@ -885,14 +917,17 @@ const CLUE_BUTTON_PLACEMENT_CLASS = {
  * in the name column, below the name, or to the right of the name when the cards are too short for
  * it below. With the name above the cards, it sits at the right end of the name's row, as tall as
  * the name. It brightens while the pointer is over it. It fades in when it appears, such as when
- * the viewer's turn starts, and fades out when it goes, such as when its menu opens.
+ * the viewer's turn starts, and fades out when it goes, such as when its menu opens. When the team
+ * has no clues, it still shows, with a red X through it, and does nothing.
  */
 export function ClueButton({
+  cluesSpent,
   name,
   placement,
   reducedMotion,
   onOpen,
 }: {
+  readonly cluesSpent: boolean;
   readonly name: string;
   readonly placement: ClueButtonPlacement;
   readonly reducedMotion: boolean;
@@ -929,10 +964,11 @@ export function ClueButton({
         className={`tw:transition-[filter] tw:hover:brightness-110 ${placement === "nameRow" ? "tw:size-full" : ""} ${HOVER_CLASS}`}
       >
         <button
-          aria-label={`Give ${name} a clue`}
-          className={`tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${RAISED_BUTTON_CLASS}`}
-          onClick={onOpen}
-          ref={tooltipRef(`Give ${name} a clue`)}
+          aria-disabled={cluesSpent}
+          aria-label={cluesSpent ? NO_CLUES_TEXT : `Give ${name} a clue`}
+          className={`tw:relative tw:flex tw:items-center tw:justify-center tw:rounded-game-control tw:border-0 tw:bg-clue tw:text-card-ink ${RAISED_BUTTON_CLASS} ${cluesSpent ? "tw:cursor-default" : "tw:cursor-pointer"}`}
+          onClick={cluesSpent ? undefined : onOpen}
+          ref={tooltipRef(cluesSpent ? NO_CLUES_TEXT : `Give ${name} a clue`)}
           style={{
             width: size,
             height: size,
@@ -940,6 +976,7 @@ export function ClueButton({
           type="button"
         >
           <ClueTokenIcon className={iconClass} />
+          {cluesSpent && <ClueButtonCross />}
         </button>
       </div>
     </div>
