@@ -696,16 +696,7 @@ function PlayerClock({
       className={`tw:flex tw:items-center tw:gap-2 ${underName ? "tw:pl-3.5" : ""}`}
     >
       <span
-        // The player can also right-click their own clock to pause, as on the classic screen.
         className={`tw:relative tw:text-sm tw:tabular-nums ${clockClass}`}
-        onContextMenu={
-          pauseAction === undefined
-            ? undefined
-            : (event) => {
-                event.preventDefault();
-                onPause();
-              }
-        }
         ref={tooltipRef(seat.clockTooltip)}
       >
         {seat.lowTime && <LowTimeFlash reducedMotion={reducedMotion} />}
@@ -764,8 +755,7 @@ function LowTimeFlash({
 
 const PAUSE_BUTTON_TOOLTIP = {
   pause: "Pause the game.",
-  queue:
-    "Queue a pause: the game pauses when your turn starts. You can also right-click your clock.",
+  queue: "Queue a pause: the game pauses when your turn starts.",
   unqueue:
     "Your pause is queued: the game pauses when your turn starts. Click to cancel it.",
 } as const satisfies Record<PauseAction, string>;
