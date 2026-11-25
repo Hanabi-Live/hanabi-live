@@ -223,9 +223,19 @@ jobs:
           name: github-pages-${{ github.run_attempt }}
           path: ./packages/game/docs
 
+      # GitHub Pages sometimes fails a deployment that works when it is tried again.
       - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
         id: pages
         if: steps.docs.outputs.changed == 'true'
+        continue-on-error: true
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+      - name: Wait before the second attempt
+        if: steps.pages.outcome == 'failure'
+        run: sleep 60
+      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        id: pages-retry
+        if: steps.pages.outcome == 'failure'
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
       - name: Record documentation publication outcome
@@ -233,7 +243,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           DEPLOYMENT_ID: ${{ steps.docs.outputs.deployment_id }}
-          DEPLOYMENT_STATE: ${{ steps.pages.outcome == 'success' && 'success' || 'failure' }}
+          DEPLOYMENT_STATE: ${{ (steps.pages.outcome == 'success' || steps.pages-retry.outcome == 'success') && 'success' || 'failure' }}
         run: python3 scripts/ci/typedoc_deployment.py record "$DEPLOYMENT_ID" "$DEPLOYMENT_STATE"
 
   discord:
