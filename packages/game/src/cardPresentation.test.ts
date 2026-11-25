@@ -53,6 +53,25 @@ function getIdentity(
 
 describe("card presentation", () => {
   describe("visible identity", () => {
+    test("does not throw when clues leave no possible cards", () => {
+      expect(
+        getCardIdentityToShow({
+          cardIdentity: unknownIdentity,
+          state: {
+            ...baseCard,
+            possibleCardsFromClues: [],
+          },
+          note: {
+            ...emptyNote,
+            possibilities: [[0, 1]],
+          },
+          empathy: false,
+          isStackBase: false,
+          finished: false,
+        }),
+      ).toEqual(unknownIdentity);
+    });
+
     test("shows a known suit while leaving an unknown rank hidden", () => {
       expect(
         getIdentity(emptyNote, {
