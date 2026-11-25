@@ -303,7 +303,8 @@ preserving active games for recovery. Verify a successful process exit before
 maintaining storage; a successful HTTP response only acknowledges the request.
 `systemctl start` is only appropriate when the server is already stopped. An
 HTTP success response does not prove a graceful restart has finished: verify the
-new PID, running revision, restored tables, client assets, and logs.
+new start in the log, running revision, restored tables, client assets, and
+logs. The PID does not change, because the server replaces its own process.
 
 ## Discord links
 
