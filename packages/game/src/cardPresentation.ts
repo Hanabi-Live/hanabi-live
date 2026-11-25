@@ -396,9 +396,11 @@ function getSuitIndexFromNote(
 ): SuitIndex | undefined {
   if (note.possibilities.length > 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
-    const [candidateSuitIndex] = possibilities[0]!;
+    // Contradictory clues in a hypothetical can leave no possibilities.
+    const candidateSuitIndex = possibilities[0]?.[0];
     if (
-      possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
+      candidateSuitIndex !== undefined
+      && possibilities.every(([suitIndex]) => suitIndex === candidateSuitIndex)
     ) {
       return candidateSuitIndex;
     }
