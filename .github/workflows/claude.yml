@@ -56,6 +56,7 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./scripts/dev/set-version.sh
       - uses: ./.github/actions/setup-rust
+      - uses: ./.github/actions/setup-lint-tools
       - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1
         with:
           # Uses the Claude subscription of the account that made the token.
