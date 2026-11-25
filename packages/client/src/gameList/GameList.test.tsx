@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { gameSummarySchema } from "@hanabi-live/data";
+import { getVariant } from "@hanabi-live/game";
 import {
   act,
   cleanup,
@@ -35,7 +36,9 @@ function urlOf(url: Parameters<typeof fetch>[0]): URL {
 }
 
 /** A filter of the last request for games, or undefined if it had none. */
-function lastFilter(name: "variant" | "player"): string | undefined {
+function lastFilter(
+  name: "variant" | "variantId" | "player",
+): string | undefined {
   const [url] = fetchMock.mock.calls.at(-1)!;
   return urlOf(url).searchParams.get(`filter[${name}]`) ?? undefined;
 }
@@ -64,6 +67,12 @@ async function renderHistory(actions?: GameActions) {
 
 function box(name: "Variant" | "With"): HTMLInputElement {
   return screen.getByLabelText<HTMLInputElement>(name);
+}
+
+function exactMatch(): HTMLInputElement | null {
+  return screen.queryByRole<HTMLInputElement>("checkbox", {
+    name: "Exact match",
+  });
 }
 
 /** The suggestions that the Variant box shows. */
@@ -124,8 +133,36 @@ describe("GameList", () => {
     await settle();
 
     expect(box("Variant").value).toBe(name);
-    expect(lastFilter("variant")).toBe(name);
+    expect(lastFilter("variantId")).toBe(String(getVariant(name).id));
     expect(suggestions()).toHaveLength(0);
+  });
+
+  test('a name that other names contain finds only its variant, unless "Exact match" is off', async () => {
+    await renderHistory();
+    await type("Variant", "Rainbow (6");
+    expect(exactMatch()).toBeNull();
+
+    await type("Variant", "rainbow (6 suits)");
+    expect(exactMatch()!.checked).toBe(true);
+    expect(lastFilter("variantId")).toBe(
+      String(getVariant("Rainbow (6 Suits)").id),
+    );
+    expect(lastFilter("variant")).toBeUndefined();
+
+    fireEvent.click(exactMatch()!);
+    await settle();
+    expect(exactMatch()!.checked).toBe(false);
+    expect(lastFilter("variantId")).toBeUndefined();
+    expect(lastFilter("variant")).toBe("rainbow (6 suits)");
+
+    await type("Variant", "6 Suits");
+    expect(exactMatch()!.checked).toBe(true);
+    expect(lastFilter("variantId")).toBe(String(getVariant("6 Suits").id));
+
+    // No other name contains this one.
+    await type("Variant", "No Variant");
+    expect(exactMatch()).toBeNull();
+    expect(lastFilter("variant")).toBe("No Variant");
   });
 
   test("the buttons are links, which the lobby's actions take over", async () => {

@@ -9,9 +9,16 @@ import type {
   scoreFrequencySchema,
 } from "@hanabi-live/data";
 import { errorDetails, gamePageSchema, httpError } from "@hanabi-live/data";
-import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
+import type { Variant } from "@hanabi-live/game";
+import {
+  getVariant,
+  getVariantById,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  VARIANT_NAMES,
+} from "@hanabi-live/game";
 import { iRange } from "complete-common";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type * as z from "zod";
 import { PATH } from "../constants.ts";
@@ -99,6 +106,7 @@ export function GameList({
   const seed = table.list === "seed";
   const [sortIndex, setSortIndex] = useState(seed ? 2 : 0);
   const [variant, setVariant] = useState("");
+  const [exactMatch, setExactMatch] = useState(true);
   const [players, setPlayers] = useState("");
   const [numPlayers, setNumPlayers] = useState<number>();
   const [score, setScore] = useState<string>();
@@ -110,6 +118,12 @@ export function GameList({
   const [error, setError] = useState<string>();
   const owners = useMemo(() => new Set(table.players), [table]);
   const sort = SORT_CHOICES[sortIndex] ?? SORT_CHOICES[0];
+  /** The variant that the box names, when a search for its name also finds other variants. */
+  const containedVariant = useMemo(
+    () => findContainedVariant(variant),
+    [variant],
+  );
+  const exactVariantId = exactMatch ? containedVariant?.id : undefined;
   const filtered =
     variant !== ""
     || players !== ""
@@ -123,7 +137,9 @@ export function GameList({
       sort: sort.column,
       order: sort.descending ? "desc" : "asc",
     });
-    if (variant !== "") {
+    if (exactVariantId !== undefined) {
+      params.append("filter[variantId]", String(exactVariantId));
+    } else if (variant !== "") {
       params.append("filter[variant]", variant);
     }
     if (players !== "") {
@@ -162,7 +178,17 @@ export function GameList({
     return () => {
       controller.abort();
     };
-  }, [table.apiPath, page, size, sort, variant, players, numPlayers, score]);
+  }, [
+    table.apiPath,
+    page,
+    size,
+    sort,
+    variant,
+    exactVariantId,
+    players,
+    numPlayers,
+    score,
+  ]);
 
   /** Applies a change to the filters or the sort, from the first page. */
   function change(apply: () => void) {
@@ -198,11 +224,22 @@ export function GameList({
             onChange={(value) => {
               change(() => {
                 setVariant(value);
+                setExactMatch(true);
               });
             }}
             placeholder="Any"
             suggest={suggestVariants}
             widthClassName="tw:w-[10em]"
+          />
+        )}
+        {!seed && containedVariant !== undefined && (
+          <ExactMatch
+            checked={exactMatch}
+            onChange={(checked) => {
+              change(() => {
+                setExactMatch(checked);
+              });
+            }}
           />
         )}
         {!seed && (
@@ -313,6 +350,50 @@ export function GameList({
       <Spinner shown={loading} />
       <ErrorMessage error={error} />
     </>
+  );
+}
+
+/**
+ * The variant that the text names in full, ignoring case, if the names of other variants also
+ * contain the text.
+ */
+function findContainedVariant(text: string): Variant | undefined {
+  const lowercase = text.trim().toLowerCase();
+  if (lowercase === "") {
+    return undefined;
+  }
+  const matches = VARIANT_NAMES.filter((name) =>
+    name.toLowerCase().includes(lowercase),
+  );
+  const named = matches.find((name) => name.toLowerCase() === lowercase);
+  return named === undefined || matches.length === 1
+    ? undefined
+    : getVariant(named);
+}
+
+/** Whether the list leaves out the variants whose names only contain the name in the box. */
+function ExactMatch({
+  checked,
+  onChange,
+}: {
+  readonly checked: boolean;
+  readonly onChange: (checked: boolean) => void;
+}) {
+  const id = useId();
+  return (
+    <div>
+      <input
+        checked={checked}
+        id={id}
+        onChange={(event) => {
+          onChange(event.target.checked);
+        }}
+        type="checkbox"
+      />
+      <label className="tw:m-0 tw:text-[1em]" htmlFor={id}>
+        Exact match
+      </label>
+    </div>
   );
 }
 

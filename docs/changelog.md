@@ -7,6 +7,12 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 25th, 2026
+
+- In a game list, if the "Variant" box has a variant's full name, the list now
+  leaves out other variants whose names contain it. Turn off the new "Exact
+  match" checkbox to include them.
+
 ## November 24th, 2026
 
 - When every player has set an H-Group level, the game's information tooltip now

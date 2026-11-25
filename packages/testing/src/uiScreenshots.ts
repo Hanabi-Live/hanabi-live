@@ -695,20 +695,25 @@ function getStates(): readonly State[] {
     },
     {
       name: "history",
-      path: `/history/${USERNAME}`,
+      path: `/history/${BEST_SCORES_USERNAME}`,
       loggedIn: false,
-      // Filter by a player count, so that the filters show a selected choice, and type in the
-      // search box, so that it suggests variant names.
+      // Filter by a player count, so that the filters show a selected choice, and type a variant
+      // name that other names contain, so that the box suggests them and "Exact match" shows.
       prepare: async (page) => {
         await page
           .getByRole("button", {
-            name: "2",
+            name: "3",
             exact: true,
           })
           .click();
         await page.getByRole("button", { name: "Clear filters" }).waitFor();
-        await page.getByRole("combobox", { name: "Variant" }).fill("no v");
+        await page
+          .getByRole("combobox", { name: "Variant" })
+          .fill("Rainbow (5 Suits)");
         await page.getByRole("listbox").waitFor();
+        await page.getByRole("checkbox", { name: "Exact match" }).waitFor({
+          state: "attached",
+        });
       },
     },
     // Open a dropdown, which the page draws.
@@ -4233,7 +4238,8 @@ ${figures.join("\n")}
  * Changes the seeded database for the states. The server shows the tutorial to an account that is a
  * few seconds old, and the browser's accounts are not new. A player whom no other score state shows
  * gets best scores, so that the "Best scores" tab has max scores, a lower score, and a max score
- * with an option (4 is "One Extra Card"). Each score gets a game, which the tab links to.
+ * with an option (4 is "One Extra Card"). Each score gets a game, which the tab links to and the
+ * player's history shows.
  */
 async function prepareDatabase(
   sql: ReturnType<Awaited<ReturnType<typeof evaluationDatabase>>["connect"]>,
@@ -4275,9 +4281,13 @@ async function prepareDatabase(
       RETURNING id, variant_id, num_players
     ), participants AS (
       INSERT INTO game_participants (game_id, user_id, seat)
-      SELECT added.id, users.id, 0
-      FROM added, users
-      WHERE users.username = ${BEST_SCORES_USERNAME}
+      SELECT added.id, players.id, players.seat
+      FROM added, (
+        SELECT id, (row_number() OVER (ORDER BY username <> ${BEST_SCORES_USERNAME}, id) - 1)::smallint AS seat
+        FROM users
+        WHERE username NOT IN (${USERNAME}, ${BOB})
+      ) AS players
+      WHERE players.seat < added.num_players
     )
     UPDATE user_stats s SET
       best_score3_game_id = (SELECT id FROM added WHERE added.variant_id = s.variant_id AND added.num_players = 3),

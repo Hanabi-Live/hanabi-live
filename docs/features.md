@@ -159,9 +159,11 @@ that have not been played yet and have only one copy remaining.)
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
 - A player's history groups the games by day. The "Variant" box finds games by
-  part of a variant's name, and suggests variant names as you type. The "With"
-  box finds games by parts of other players' names. Separate names with commas
-  to find the games that have all of them.
+  part of a variant's name, and suggests variant names as you type. If the box
+  has a variant's full name, and other variants' names contain it, then an
+  "Exact match" checkbox shows. It is on by default and leaves out the other
+  variants. The "With" box finds games by parts of other players' names.
+  Separate names with commas to find the games that have all of them.
 - Profiles show the player's longest streak: the most max scores in a row in one
   variant with the same number of players, and that variant and number of
   players.
