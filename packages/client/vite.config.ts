@@ -79,6 +79,9 @@ export default defineConfig(({ command, mode }) => ({
     // Vitest's default pool, "forks", does not start under Bun, which lacks "channel.unref":
     // https://github.com/oven-sh/bun/issues/33593
     pool: "threads",
+    // With many threads, Bun gets so slow that tests time out. On a 24-core machine, 4 threads are
+    // as fast as 8, and 16 fail.
+    maxWorkers: 4,
     // Many tests import the client's modules, which is slow while the other suites and lint run.
     testTimeout: 30_000,
   },
