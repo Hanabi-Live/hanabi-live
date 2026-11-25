@@ -63,6 +63,11 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The server opens the issues for client errors as this GitHub App.
           allowed_bots: hanabi-live-issues-bot
+          # The action denies commands such as bash, bun, and cargo on the pull
+          # requests of authors without write access, and it counts every bot as
+          # one. Trust the pull requests that this workflow opens, so that the
+          # agent can lint and test them.
+          restrict_untrusted_prs: ${{ (github.event.issue.user.login || github.event.pull_request.user.login) != 'claude[bot]' }}
           # The agent can already run any code through bun, so a tool allowlist
           # would not limit it. It only makes the agent give up partway.
           claude_args: |
