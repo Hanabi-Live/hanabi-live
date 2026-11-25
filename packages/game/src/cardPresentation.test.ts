@@ -57,8 +57,14 @@ describe("card presentation", () => {
       expect(
         getCardIdentityToShow({
           cardIdentity: unknownIdentity,
-          state: { ...baseCard, possibleCardsFromClues: [] },
-          note: { ...emptyNote, possibilities: [[0, 1]] },
+          state: {
+            ...baseCard,
+            possibleCardsFromClues: [],
+          },
+          note: {
+            ...emptyNote,
+            possibilities: [[0, 1]],
+          },
           empathy: false,
           isStackBase: false,
           finished: false,

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import type { CardIdentity } from "./interfaces/CardIdentity.ts";
 import type { CardNote } from "./interfaces/CardNote.ts";
 import type { CardState } from "./interfaces/CardState.ts";
