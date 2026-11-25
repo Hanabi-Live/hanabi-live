@@ -156,6 +156,24 @@ describe("Pregame", () => {
     expect(screen.getByText("dave").className).toBe("tw:text-friend");
   });
 
+  test("a lone player sees the numbers of a 2-player game", () => {
+    act(() => {
+      store.dispatch(
+        gameChanged({
+          ...game,
+          players: [player(1, "alice", true)],
+        }),
+      );
+    });
+
+    expect(
+      document.querySelector("#lobby-pregame-starting-stats")!.textContent,
+    ).toBe("2p: +17, 0.86");
+    expect(
+      document.querySelector("#lobby-pregame-player-1")!.textContent,
+    ).toContain("Best score (2p)25");
+  });
+
   test("a spectator shadows a player, and stops shadowing them", () => {
     act(() => {
       screen.getByRole("button", { name: "alice" }).click();

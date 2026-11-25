@@ -93,6 +93,8 @@ export function Pregame(): React.JSX.Element | undefined {
     ...game.settings.options,
     numPlayers: game.settings.maxPlayers,
   });
+  // A lone player sees the numbers of the smallest game.
+  const numPlayers = Math.max(game.players.length, MIN_PLAYERS) as NumPlayers;
   const numOpenSeats = Math.max(
     game.settings.maxPlayers - game.players.length,
     0,
@@ -116,9 +118,7 @@ export function Pregame(): React.JSX.Element | undefined {
             {variant.name}
           </span>
           <StartingStats
-            numPlayers={
-              Math.max(game.players.length, MIN_PLAYERS) as NumPlayers
-            }
+            numPlayers={numPlayers}
             options={game.settings.options}
           />
           {hasOptions && (
@@ -187,7 +187,7 @@ export function Pregame(): React.JSX.Element | undefined {
               isSpectator={isSpectator}
               key={player.username}
               maxScore={variant.maxScore}
-              numPlayers={game.players.length}
+              numPlayers={numPlayers}
               player={player}
               playerIndex={i as PlayerIndex}
               shadowed={shadowingPlayerIndex === i}
@@ -206,10 +206,7 @@ export function Pregame(): React.JSX.Element | undefined {
   );
 }
 
-/**
- * The pace and the required efficiency that the game would start with. A lone player sees those of
- * the smallest game.
- */
+/** The pace and the required efficiency that the game would start with. */
 function StartingStats({
   numPlayers,
   options,
@@ -434,7 +431,7 @@ function StatRow({
   );
 }
 
-/** The player's best score on the variant at the player count of this table. */
+/** The player's best score on the variant at the player count that the table shows. */
 function BestScoreRow({
   bestScores,
   maxScore,
