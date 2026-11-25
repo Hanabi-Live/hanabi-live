@@ -600,8 +600,10 @@ There are different sounds for:
 
 ## Pace & Efficiency
 
-_Pace_ and _Efficiency_ are shown for the current game. Good players will often
-use these numbers to make the best move for the current situation.
+_Pace_ and _Efficiency_ are shown for the current game. (The pre-game screen
+shows the values that the game would start with, such as "4p: +3, 1.25".) Good
+players will often use these numbers to make the best move for the current
+situation.
 
 ### Pace
 

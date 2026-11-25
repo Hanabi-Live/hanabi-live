@@ -131,6 +131,11 @@ describe("Pregame", () => {
       document.querySelectorAll("#lobby-pregame-options > li"),
     ).toHaveLength(2);
 
+    // A deck of 40 cards after the deal, and 2 turns in the final round, for 25 points.
+    expect(
+      document.querySelector("#lobby-pregame-starting-stats")!.textContent,
+    ).toBe("2p: +17, 0.86");
+
     const boxes = document.querySelectorAll('[id^="lobby-pregame-player-"]');
     expect(boxes).toHaveLength(2);
     // Alice's best score at the 2 players of this table.

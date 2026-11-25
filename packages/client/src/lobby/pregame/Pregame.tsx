@@ -1,8 +1,16 @@
 // The lobby area that shows the players and options of the table that we are at, before its game
 // starts.
 
-import type { PlayerIndex } from "@hanabi-live/game";
-import { getCardsPerHand, getVariantById } from "@hanabi-live/game";
+import type { GameOptions, NumPlayers, PlayerIndex } from "@hanabi-live/game";
+import {
+  MIN_PLAYERS,
+  getCardsPerHand,
+  getEndGameLength,
+  getMinEfficiency,
+  getStartingDeckSize,
+  getStartingPace,
+  getVariantById,
+} from "@hanabi-live/game";
 import { useEffect, useState } from "react";
 import { FitText } from "../../FitText.tsx";
 import { globals } from "../../Globals.ts";
@@ -10,6 +18,8 @@ import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { CARD_BACK_STYLE } from "../../cardBack.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
+import { formatEfficiency } from "../../game/efficiency.ts";
+import { formatPace } from "../../game/newUi/tableView.ts";
 import { useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
@@ -105,6 +115,12 @@ export function Pregame(): React.JSX.Element | undefined {
             />
             {variant.name}
           </span>
+          <StartingStats
+            numPlayers={
+              Math.max(game.players.length, MIN_PLAYERS) as NumPlayers
+            }
+            options={game.settings.options}
+          />
           {hasOptions && (
             <ul
               className="tw:m-0 tw:list-none tw:p-0"
@@ -187,6 +203,58 @@ export function Pregame(): React.JSX.Element | undefined {
         </ol>
       </div>
     </div>
+  );
+}
+
+/**
+ * The pace and the required efficiency that the game would start with. A lone player sees those of
+ * the smallest game.
+ */
+function StartingStats({
+  numPlayers,
+  options,
+}: {
+  readonly numPlayers: NumPlayers;
+  readonly options: GameOptions;
+}) {
+  const variant = getVariantById(options.variantId);
+  const fullOptions = {
+    ...options,
+    numPlayers,
+  };
+  const cardsPerHand = getCardsPerHand(fullOptions);
+  const deckSize = getStartingDeckSize(numPlayers, cardsPerHand, variant);
+  if (deckSize <= 0) {
+    // The deck is too small to deal to this many players, so there is no game to describe.
+    return undefined;
+  }
+
+  // The server only assigns the characters when the game starts.
+  const endGameLength = getEndGameLength(fullOptions, []);
+  const pace = getStartingPace(deckSize, variant.maxScore, endGameLength);
+  // No clue has been given yet, so the future required efficiency is the minimum one.
+  const efficiency = getMinEfficiency(
+    numPlayers,
+    endGameLength,
+    variant,
+    cardsPerHand,
+  );
+
+  return (
+    <span className="tw:tabular-nums" id="lobby-pregame-starting-stats">
+      {numPlayers}p:{" "}
+      <span ref={tooltipRef(`Starting pace with ${numPlayers} players`)}>
+        {formatPace(pace, false, options.allOrNothing)}
+      </span>
+      ,{" "}
+      <span
+        ref={tooltipRef(
+          `Future required efficiency with ${numPlayers} players`,
+        )}
+      >
+        {formatEfficiency(efficiency)}
+      </span>
+    </span>
   );
 }
 

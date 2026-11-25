@@ -33,6 +33,8 @@ of the repository.
 - The "/subscribe" and "/unsubscribe" commands of the Discord bot were removed,
   with the "DISCORD_PING_CREW_ROLE_NAME" setting.
 - Added a "/sl" chat command, which is an alias of "/setleader".
+- The pre-game screen now shows the starting pace and the required efficiency
+  next to the name of the variant.
 
 ## November 23rd, 2026
 
