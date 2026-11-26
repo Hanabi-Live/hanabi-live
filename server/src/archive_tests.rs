@@ -71,3 +71,29 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
     db.close().await;
     result
 }
+
+#[tokio::test]
+async fn replay_of_an_unknown_game_is_rejected_postgres() -> Result<()> {
+    let Some(db) = TestDb::create().await else {
+        return Ok(());
+    };
+    let result = replay(
+        &db.pool,
+        GameId::new(999).unwrap(),
+        TableId::new(1).unwrap(),
+        UserId::new(1).unwrap(),
+    )
+    .await;
+    db.close().await;
+    let error = result
+        .err()
+        .context("A replay of an unknown game was created")?;
+    ensure!(
+        matches!(
+            error.downcast_ref::<CommandError>(),
+            Some(CommandError::Rejected { .. })
+        ),
+        "Not a rejection: {error:#}"
+    );
+    Ok(())
+}

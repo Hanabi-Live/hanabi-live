@@ -1,6 +1,7 @@
 //! Finished games in the database: archiving one, and reading one back as a replay.
 
 use crate::{
+    errors::CommandError,
     game::{Game, Options},
     model::{Player, Snapshot, Tag},
     stats::zero_stats,
@@ -260,7 +261,10 @@ pub(crate) async fn replay(
     table_id: TableId,
     owner: UserId,
 ) -> Result<Snapshot> {
-    let archive = load(pool, id).await?.context("Unknown replay")?;
+    // A player can ask for any ID, so a missing game is their mistake, not a fault of the server.
+    let archive = load(pool, id).await?.ok_or_else(|| {
+        CommandError::rejected(format!("Game #{id} does not exist in the database."))
+    })?;
     let row = archive.game;
     let options = options(&row)?;
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
