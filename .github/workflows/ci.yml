@@ -189,7 +189,8 @@ jobs:
         run: python3 sqlx_schema.py
 
   # The ruleset on "main" requires this check, which lets Dependabot pull requests merge
-  # automatically once every other job succeeds.
+  # automatically once every other job succeeds. Later jobs depend on it instead of listing every
+  # job.
   ci-passed:
     name: CI passed
     needs: [client-build, lint, test, server-build]
@@ -202,7 +203,7 @@ jobs:
 
   deploy-docs-website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [lint]
+    needs: ci-passed
     runs-on: ubuntu-latest
     concurrency:
       group: github-pages
@@ -260,7 +261,7 @@ jobs:
 
   discord:
     name: Discord Failure Notification
-    needs: [client-build, server-build, lint, test, deploy-docs-website]
+    needs: [ci-passed, deploy-docs-website]
     if: failure() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
