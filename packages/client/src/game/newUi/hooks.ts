@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { onEscapeKey } from "./escapeKey.ts";
+import { STACKED_MAX_WIDTH } from "./screenScale.ts";
 
 /** The current time, updated at the given interval, for clocks that count down. */
 export function useNow(intervalMilliseconds: number): number {
@@ -93,7 +94,7 @@ export function useWindowSize(): { width: number; height: number } {
  * "getWideLayoutRoom"). The first is a breakpoint from "public/css/tokens.css".
  */
 export const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
-export const STACKED_WIDTH_QUERY = "(max-width: 956px)";
+export const STACKED_WIDTH_QUERY = `(max-width: ${STACKED_MAX_WIDTH}px)`;
 
 /** Whether a media query, such as a window width, matches. It updates as the window changes. */
 export function useMediaQuery(query: string): boolean {

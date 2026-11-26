@@ -13,20 +13,33 @@ const REFERENCE_SIZE = {
 } as const;
 
 /**
- * The largest scale. A smaller window than the reference keeps a scale of 1, so that the layout's
- * own breakpoints take over.
+ * The smallest scale. A laptop window that is a little smaller than the reference shows the same
+ * layout, a little smaller, instead of a layout for a narrower screen. Below this scale, the text
+ * gets too small to read, so a smaller window keeps this scale and the layout's own breakpoints
+ * take over.
  */
+const MIN_SCREEN_SCALE = 0.8;
+
+/** The largest scale. */
 const MAX_SCREEN_SCALE = 1.75;
+
+/** The widest window that shows the phone layout (see `STACKED_WIDTH_QUERY` in "hooks.ts"). */
+export const STACKED_MAX_WIDTH = 956;
 
 let screenScale = 1;
 
-/** The scale for a window size: as large as fits both its width and its height. */
+/**
+ * The scale for a window size: as large as fits both its width and its height. The phone layout
+ * does not scale, since it scrolls instead.
+ */
 export function getScreenScaleForWindow(width: number, height: number): number {
-  return clamp(
-    Math.min(width / REFERENCE_SIZE.width, height / REFERENCE_SIZE.height),
-    1,
-    MAX_SCREEN_SCALE,
-  );
+  return width <= STACKED_MAX_WIDTH
+    ? 1
+    : clamp(
+        Math.min(width / REFERENCE_SIZE.width, height / REFERENCE_SIZE.height),
+        MIN_SCREEN_SCALE,
+        MAX_SCREEN_SCALE,
+      );
 }
 
 /** The scale that the screen shows at now. */
