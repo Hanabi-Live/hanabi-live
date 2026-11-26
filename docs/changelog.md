@@ -7,6 +7,10 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 26th, 2026
+
+- The "/w" chat command is back. It sends a private message, like "/pm".
+
 ## November 25th, 2026
 
 - In a game list, if the "Variant" box has a variant's full name, the list now

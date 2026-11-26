@@ -51,6 +51,7 @@ export const WEBSITE_CHAT_COMMANDS = [
   "unfriend",
   "unlink",
   "untag",
+  "w",
 ] as const;
 export const SERVER_CHAT_COMMANDS = [
   "findvariant",

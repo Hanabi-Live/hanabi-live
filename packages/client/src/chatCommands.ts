@@ -127,6 +127,7 @@ function pm(tableId: TableId | undefined, args: readonly string[]) {
   });
 }
 chatCommands.set("pm", pm);
+chatCommands.set("w", pm);
 
 // /r [msg]
 chatCommands.set(

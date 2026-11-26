@@ -212,6 +212,7 @@ constants! {
         "unfriend",
         "unlink",
         "untag",
+        "w",
     ];
     /// The chat commands that the server runs, besides the fixed replies in
     /// "chatReplyCommands.json". The website refuses any other command that the website does not

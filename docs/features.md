@@ -794,8 +794,8 @@ situation.
 - The website offers a public lobby chat and a private per-game chat. When
   chatting with other players, please follow
   [the community guidelines](community-guidelines.md).
-- You can also send private messages to other players with the `/pm` command and
-  revisit recent private messages with the `/pmhistory` command.
+- You can also send private messages to other players with the `/pm` command (or
+  `/w`) and revisit recent private messages with the `/pmhistory` command.
 - You can type any emoji into chat using the
   [standard emoji shortcode](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json).
   For example, `:thinking:` will turn into 🤔.

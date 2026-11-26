@@ -20,26 +20,26 @@ If you need general help with the website, then read the
 
 ## General Commands (that work everywhere except for Discord)
 
-| Command                          | Description                                                          |
-| -------------------------------- | -------------------------------------------------------------------- |
-| `/commands`                      | Show a list of the available commands and the link to this page      |
-| `/pm [username] [msg]`           | Send a private message                                               |
-| `/pmhistory [username] [amount]` | Show recent private messages with a player (default 5, maximum 100)  |
-| `/pmhistory [amount]`            | Show recent private messages with anyone (default 5, maximum 100)    |
-| `/r [msg]`                       | Reply to a private message                                           |
-| `/shrug`                         | Replace the chat box text with `¯\_(ツ)_/¯`, ready to send           |
-| `/friend [username]`             | Add someone to your friends list                                     |
-| `/friends`                       | Show a list of all your friends                                      |
-| `/unfriend [username]`           | Remove someone from your friends list                                |
-| `/link [username]`               | Add someone to your linked accounts                                  |
-| `/links`                         | Show a list of all your linked accounts                              |
-| `/unlink [username]`             | Remove someone from your linked accounts                             |
-| `/block [username]`              | Stop someone from joining or spectating your tables or messaging you |
-| `/blocked`                       | Show a list of everyone you have blocked                             |
-| `/unblock [username]`            | Remove someone from your blocked list                                |
-| `/tagsearch [tag]`               | Search through all games for a specific tag                          |
-| `/token`                         | Get a token (valid for one day) that tells another site who you are  |
-| `/uptime`                        | Get how long the server has been online                              |
+| Command                                         | Description                                                          |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| `/commands`                                     | Show a list of the available commands and the link to this page      |
+| `/pm [username] [msg]` or `/w [username] [msg]` | Send a private message                                               |
+| `/pmhistory [username] [amount]`                | Show recent private messages with a player (default 5, maximum 100)  |
+| `/pmhistory [amount]`                           | Show recent private messages with anyone (default 5, maximum 100)    |
+| `/r [msg]`                                      | Reply to a private message                                           |
+| `/shrug`                                        | Replace the chat box text with `¯\_(ツ)_/¯`, ready to send           |
+| `/friend [username]`                            | Add someone to your friends list                                     |
+| `/friends`                                      | Show a list of all your friends                                      |
+| `/unfriend [username]`                          | Remove someone from your friends list                                |
+| `/link [username]`                              | Add someone to your linked accounts                                  |
+| `/links`                                        | Show a list of all your linked accounts                              |
+| `/unlink [username]`                            | Remove someone from your linked accounts                             |
+| `/block [username]`                             | Stop someone from joining or spectating your tables or messaging you |
+| `/blocked`                                      | Show a list of everyone you have blocked                             |
+| `/unblock [username]`                           | Remove someone from your blocked list                                |
+| `/tagsearch [tag]`                              | Search through all games for a specific tag                          |
+| `/token`                                        | Get a token (valid for one day) that tells another site who you are  |
+| `/uptime`                                       | Get how long the server has been online                              |
 
 ## Pre-game Commands (table-owner-only)
 
