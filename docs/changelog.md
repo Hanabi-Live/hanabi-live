@@ -10,6 +10,8 @@ of the repository.
 ## November 26th, 2026
 
 - The "/w" chat command is back. It sends a private message, like "/pm".
+- Messages from the server in the chat, such as "Alice joined the game.", are
+  now gray and in italics, so that players' messages stand out.
 
 ## November 25th, 2026
 

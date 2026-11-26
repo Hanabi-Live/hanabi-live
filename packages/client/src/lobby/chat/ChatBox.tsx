@@ -202,7 +202,13 @@ function ChatLineBody({
 
   switch (line.tone) {
     case undefined: {
-      return body;
+      // Messages from the server are quieter than the players' messages, so that the conversation
+      // stands out.
+      return line.fromServer ? (
+        <span className="tw:text-text-faint tw:italic">{body}</span>
+      ) : (
+        body
+      );
     }
 
     case "info": {

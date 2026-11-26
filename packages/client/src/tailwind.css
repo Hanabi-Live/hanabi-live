@@ -32,6 +32,7 @@
   --color-border: var(--border);
   --color-text: var(--text);
   --color-text-label: var(--text-label);
+  --color-text-faint: var(--text-faint);
   --color-text-on-accent: var(--text-on-accent);
   --color-link: var(--link);
   --color-focus: var(--focus);
