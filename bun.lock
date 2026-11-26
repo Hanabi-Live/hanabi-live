@@ -139,7 +139,7 @@
     "git-pull-run": "2.1.0",
     "husky": "9.1.7",
     "immer": "11.2.10",
-    "interactjs": "1.10.28",
+    "interactjs": "1.10.29",
     "jsdom": "31.0.1",
     "konva": "10.10.0",
     "lightningcss": "1.33.0",
@@ -461,7 +461,7 @@
 
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
-    "@interactjs/types": ["@interactjs/types@1.10.28", "", {}, "sha512-vPmu4HWmsg0Fub3BPKGk7DuozkhgVK84TVkziY47v8Uh0A14gph55/vVRaQN4oZov0lGNJNK6Jyddim2qd/4vw=="],
+    "@interactjs/types": ["@interactjs/types@1.10.29", "", {}, "sha512-m7GrYjsr2xI1TYukxkseshevq432tKQ9c0vwukPdiYMYF5QrWaIjHiavnHIM2KpuBdvNtp5fbW/MnPuUsp4MeQ=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
@@ -1155,7 +1155,7 @@
 
     "ini": ["ini@6.0.0", "", {}, "sha512-IBTdIkzZNOpqm7q3dRqJvMaldXjDHWkEDfrwGEQTs5eaQMWV+djAhR+wahyNNMAa+qpbDUhBMVt4ZKNwpPm7xQ=="],
 
-    "interactjs": ["interactjs@1.10.28", "", { "dependencies": { "@interactjs/types": "1.10.28" } }, "sha512-QCa4ksTPd2p/FZ4I6hrH6fogjLqru1TxYywRiKYNuLZtrlAxTIYUa/MYsE7PnUgWZJU3SrGVDjiz065BeaXYng=="],
+    "interactjs": ["interactjs@1.10.29", "", { "dependencies": { "@interactjs/types": "1.10.29" } }, "sha512-FplxcAOooBwIWF5i/DrUZ/QhqMfziksJJfKGy+dPeyc9ztmIT9VRXeZE89eyWMHvERtcDHWeDRBenBkX5zACgA=="],
 
     "iobuffer": ["iobuffer@6.0.1", "", {}, "sha512-SZWYkWNfjIXIBYSDpXDYIgshqtbOPsi4lviawAEceR1Kqk+sHDlcQjWrzNQsii80AyBY0q5c8HCTNjqo74ul+Q=="],
 
