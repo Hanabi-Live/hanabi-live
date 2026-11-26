@@ -188,6 +188,18 @@ jobs:
       - name: Check SQLx metadata against a disposable schema
         run: python3 sqlx_schema.py
 
+  # The ruleset on "main" requires this check, which lets Dependabot pull requests merge
+  # automatically once every other job succeeds.
+  ci-passed:
+    name: CI passed
+    needs: [client-build, lint, test, server-build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check that all of the previous jobs succeeded
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: exit 1
+
   deploy-docs-website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint]
