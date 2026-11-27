@@ -2196,7 +2196,7 @@ function PossibleCardsGrid({
 
 /**
  * Returns the ranks of a variant in the order that cards show them. A START card comes before the
- * 1, as in the classic UI.
+ * 1.
  */
 function rankColumns(variant: Variant): readonly Rank[] {
   return variant.ranks.toSorted(
