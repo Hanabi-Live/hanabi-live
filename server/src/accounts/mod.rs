@@ -379,7 +379,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 update_password_if_unchanged(&state.pool, id, &hash, &original, !automatic_upgrade)
                     .await?;
             match changed {
-                Some(changed) => version = changed,
+                Some(changed) => {
+                    version = changed;
+                    if !automatic_upgrade {
+                        close_sessions(state, id).await?;
+                    }
+                }
                 None if !automatic_upgrade => {
                     return Ok(unauthorized("That is not the correct password."));
                 }
@@ -594,13 +599,22 @@ async fn end_sessions(state: &Accounts, session: cookie::Session) -> Result<()> 
     .rows_affected()
         > 0;
     if ended {
-        let user_id = hanabi_protocol::UserId::try_from(session.id)?;
-        crate::actors::request(&state.hub, |reply| HubCommand::Operations {
-            command: Operation::SignOut { user_id },
-            reply,
-        })
-        .await??;
+        close_sessions(state, session.id).await?;
     }
+    Ok(())
+}
+
+/// Closes the connections of an account whose sessions have ended, and deletes its identity token.
+async fn close_sessions(state: &Accounts, id: i32) -> Result<()> {
+    sqlx::query!("DELETE FROM user_identity_tokens WHERE user_id=$1", id)
+        .execute(&state.pool)
+        .await?;
+    let user_id = hanabi_protocol::UserId::try_from(id)?;
+    crate::actors::request(&state.hub, |reply| HubCommand::Operations {
+        command: Operation::SignOut { user_id },
+        reply,
+    })
+    .await??;
     Ok(())
 }
 

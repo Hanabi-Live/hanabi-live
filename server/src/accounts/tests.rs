@@ -452,7 +452,18 @@ async fn native_accounts_http_and_identity_postgres() {
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    // A password change ends other sessions, but keeps the one that changed it.
+    // A password change ends other sessions, but keeps the one that changed it. It also revokes
+    // the identity token of the old sessions.
+    assert_eq!(
+        sqlx::query_scalar!(
+            "SELECT COUNT(*) FROM user_identity_tokens WHERE user_id=$1",
+            id
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap(),
+        Some(0)
+    );
     assert_eq!(
         request(
             &app,
