@@ -1309,9 +1309,10 @@ function Possibilities({
   const suitSlots = variant.suits.map((_suit, i) =>
     suits.find((pip) => pip.suitIndex === i),
   );
-  const rankSlots = variant.ranks.map((rank) =>
-    ranks.find((pip) => pip.rank === rank),
-  );
+  const rankSlots = rankColumns(variant).map((rank) => ({
+    rank,
+    pip: ranks.find((pip) => pip.rank === rank),
+  }));
   const chipSize = Math.min(
     width * maxChip,
     (width * (1 - 2 * rankInset) - (rankSlots.length - 1) * width * chipGap)
@@ -1402,11 +1403,11 @@ function Possibilities({
       {ranks.length > 0 && (
         // The row is centered, so that it reaches past the suits' inset on both sides.
         <div className="tw:flex" style={{ gap: width * chipGap }}>
-          {rankSlots.map((pip, i) =>
+          {rankSlots.map(({ rank, pip }) =>
             pip === undefined ? (
               <span
                 className="tw:shrink-0"
-                key={variant.ranks[i]}
+                key={rank}
                 style={{
                   width: chipSize,
                   height: chipSize * RANK_CHIP_HEIGHT_PER_WIDTH,
@@ -2061,9 +2062,7 @@ function PossibleCardsGrid({
     };
   }, []);
 
-  const ranks = variant.ranks.toSorted(
-    (a, b) => rankColumnOrder(a) - rankColumnOrder(b),
-  );
+  const ranks = rankColumns(variant);
 
   // The pointer's shape, pointing up from the top edge of the bubble. It starts above the bubble's
   // outline, and reaches into the bubble to cover the outline. It is drawn larger by as much as the
@@ -2192,6 +2191,16 @@ function PossibleCardsGrid({
         </svg>
       )}
     </div>
+  );
+}
+
+/**
+ * Returns the ranks of a variant in the order that cards show them. A START card comes before the
+ * 1, as in the classic UI.
+ */
+function rankColumns(variant: Variant): readonly Rank[] {
+  return variant.ranks.toSorted(
+    (a, b) => rankColumnOrder(a) - rankColumnOrder(b),
   );
 }
 
