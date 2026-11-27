@@ -105,7 +105,7 @@ function ScoreCell({
           className={`${className} tw:no-underline tw:hover:underline ${max ? "" : "tw:text-inherit"}`}
           href={`${PATH.REPLAY}/${score.gameId}`}
           ref={tooltipRef(
-            `${tooltip} Click to show the first game with this score.`,
+            `${tooltip} Click to show game ${score.gameId} (the first game with this score).`,
           )}
         >
           {score.score}
