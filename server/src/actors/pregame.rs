@@ -160,32 +160,36 @@ impl TableActor {
         next.options = options;
         next.max_players = max_players;
         next.extra = extra;
+        let message = table_notice(
+            &mut next,
+            &format!("{} has changed game options.", session.name),
+        );
+        // The owner sits first, so the players past the new limit never include them.
+        let removed = next
+            .players()
+            .iter()
+            .skip(max_players)
+            .filter_map(|p| p.id)
+            .collect::<HashSet<_>>();
+        let notices = remove_pregame_players(&mut next, &removed);
         let Phase::Pregame { players, .. } = &mut next.phase else {
             bail_internal!("A pregame command ran outside a pregame.");
         };
-        let removed = players.split_off(players.len().min(max_players));
         crate::stats::refresh_players(&self.store.primary, players, variant.id).await?;
         ensure_or_reject!(
             session.active(),
             "Session changed while refreshing table options."
         );
-        if players.iter().all(|p| !p.is(next.owner.user_id)) {
-            next.owner = players[0].user_ref()?;
-        }
-        let message = table_notice(
-            &mut next,
-            &format!("{} has changed game options.", session.name),
-        );
         self.persist(next).await?;
         let mut e = self.effects();
-        for p in removed {
-            if let Some(a) = p.id.and_then(|id| self.attendees.remove(&id)) {
+        for id in &removed {
+            if let Some(a) = self.attendees.remove(id) {
                 e.leave(a.session);
             }
         }
         self.pregame_messages(&mut e);
-        if let Some(message) = message {
-            self.add_chat(&mut e, &message);
+        for notice in message.iter().chain(&notices) {
+            self.add_chat(&mut e, notice);
         }
         self.publish(e).await
     }
@@ -344,14 +348,6 @@ impl TableActor {
                 table: Box::new(destination),
                 saved: destination_saved,
                 allocation,
-                chat_read: moving
-                    .iter()
-                    .filter_map(|(session, _, _)| {
-                        self.chat_read
-                            .get(&session.user)
-                            .map(|read| (session.user, *read))
-                    })
-                    .collect(),
                 attendees: moving,
             })
             .await?;

@@ -327,7 +327,6 @@ pub enum HubCommand {
         saved: Saved,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
-        chat_read: HashMap<UserId, usize>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
     Stop(oneshot::Sender<()>),
@@ -432,6 +431,9 @@ struct TableActor {
     saved: Saved,
     retired: bool,
     attendees: HashMap<UserId, Attendance>,
+    /// The connections of the players who returned to the lobby from the pregame. They keep their
+    /// seat until they leave or disconnect.
+    seated_in_lobby: HashMap<UserId, Arc<Session>>,
     chat_read: HashMap<UserId, usize>,
     cleanup: Arc<Notify>,
     store: Store,

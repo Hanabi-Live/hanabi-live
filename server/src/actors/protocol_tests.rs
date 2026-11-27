@@ -1568,6 +1568,112 @@ async fn a_queued_pause_waits_for_the_turn_or_pauses_at_once_on_it() -> Result<(
 }
 
 #[tokio::test]
+async fn lowering_max_players_after_a_restart_keeps_the_owner() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let result =
+        async {
+            let id = h.create(0, "Smaller", json!({})).await?;
+            for index in 1..3 {
+                h.send(index, "tableJoin", json!({"tableId":id})).await?;
+            }
+            h.start(0, id).await?;
+            h.send(0, "tableTerminate", json!({"tableId":id})).await?;
+            h.send(0, "tableRestart", json!({"tableId":id,"startNow":false}))
+                .await?;
+            let (table, _) = h.snapshot(id).await?;
+            ensure!(
+                table.players()[0].name == "Alice",
+                "The restart leader does not sit first: {:?}",
+                table.players().iter().map(|p| &p.name).collect::<Vec<_>>()
+            );
+            let removed = table.players()[2].name.clone();
+            h.barrier(0).await?;
+            h.frames(0);
+            h.send(0, "tableUpdate", json!({
+            "tableId":id,"settings":{"name":"Smaller","maxPlayers":2,"options":{"variantId":0}}
+        })).await?;
+            h.barrier(0).await?;
+            let (table, _) = h.snapshot(id).await?;
+            ensure!(
+                table.owner.user_id == h.users[0].user
+                    && table.players().len() == 2
+                    && table.players()[0].name == "Alice",
+                "Lowering Max Players removed the owner"
+            );
+            let frames = h.frames(0);
+            let left = format!("{removed} left the game.");
+            ensure!(
+                chat_messages(&frames)
+                    .iter()
+                    .any(|m| m["text"] == left.as_str()),
+                "The table was not told that {removed} left"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
+async fn players_who_return_to_the_lobby_keep_their_seat_while_connected() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.store.allocate_table().await?;
+        let mut table = tests::pregame(id);
+        if let Phase::Pregame { players, .. } = &mut table.phase {
+            players.push(Player {
+                id: Some(h.users[1].user),
+                name: h.users[1].name.clone(),
+                bot: false,
+                stats: crate::stats::zero_stats(),
+            });
+        }
+        let revision = h.store.save_at(&table, 0).await?;
+        let capacity = Arc::new(Semaphore::new(1));
+        let (hub, _notifications) = mpsc::channel(64);
+        let saved = h.store.saved_at(table.id, revision).await?;
+        let mut actor = TableActor::new(
+            table,
+            saved,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
+        );
+        for user in &h.users[..2] {
+            actor.initialize(user.clone(), vec![]).await?;
+        }
+        actor.leave(h.users[1].clone(), false).await?;
+        let now = Instant::now();
+        actor.cleanup(now).await?;
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
+        ensure!(
+            actor.table.players().len() == 2,
+            "A connected player who returned to the lobby lost their seat"
+        );
+        h.users[1].cancel.cancel();
+        let later = now + PREGAME_RECONNECT_GRACE;
+        actor.cleanup(later).await?;
+        actor.cleanup(later + PREGAME_RECONNECT_GRACE).await?;
+        ensure!(
+            actor.table.players().len() == 1,
+            "A player who disconnected from the lobby kept their seat"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    outcome?;
+    cleanup
+}
+
+#[tokio::test]
 async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());

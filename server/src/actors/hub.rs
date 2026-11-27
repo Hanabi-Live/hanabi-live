@@ -787,8 +787,7 @@ impl Hub {
                     saved,
                     allocation,
                     attendees,
-                    chat_read,
-                } => self.spawn_split(*table, saved, allocation, attendees, chat_read),
+                } => self.spawn_split(*table, saved, allocation, attendees),
                 HubCommand::Reply {
                     session,
                     frame,
@@ -1009,19 +1008,19 @@ impl Hub {
         );
         handle
     }
-    /// Starts the table that a split or restart created, and moves its attendees to it.
+    /// Starts the table that a split created, and moves its attendees to it. Its chat is new, so no
+    /// one has read any of it.
     fn spawn_split(
         &mut self,
         table: TableSnapshot,
         saved: Saved,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
-        chat_read: HashMap<UserId, usize>,
     ) {
         if self.closing {
             return;
         }
-        let handle = self.install(table, saved, allocation, chat_read, None);
+        let handle = self.install(table, saved, allocation, HashMap::new(), None);
         for (session, spectate, shadow) in attendees {
             if self.current(&session) {
                 let (reply, _) = oneshot::channel();

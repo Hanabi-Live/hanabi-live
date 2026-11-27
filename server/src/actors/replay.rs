@@ -439,6 +439,12 @@ impl TableActor {
         );
         // The table kept running while the statistics were saved, so check the restart again.
         let mut players = self.restart_players(&session, hide)?;
+        // The owner of a pregame sits first, as the game's seats are shuffled only when it starts.
+        let leader_seat = players
+            .iter()
+            .position(|p| p.is(session.user))
+            .context("The restart leader is missing from the players")?;
+        players[..=leader_seat].rotate_right(1);
         for player in &mut players {
             player.stats = stats
                 .remove(&player.user()?)

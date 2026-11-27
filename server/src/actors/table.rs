@@ -138,6 +138,7 @@ impl TableActor {
             saved,
             retired: false,
             attendees: HashMap::new(),
+            seated_in_lobby: HashMap::new(),
             chat_read: HashMap::new(),
             cleanup: Arc::new(Notify::new()),
             store,
@@ -984,16 +985,20 @@ impl TableActor {
     }
     pub(super) async fn cleanup_pregame(&mut self, now: Instant) -> CommandResult<()> {
         let Phase::Pregame { players, .. } = &self.table.phase else {
+            self.seated_in_lobby.clear();
             return Ok(());
         };
+        self.seated_in_lobby
+            .retain(|id, session| session.active() && players.iter().any(|p| p.is(*id)));
         let absent = players
             .iter()
             .filter_map(|p| p.id)
             .filter(|id| {
-                !self
-                    .attendees
-                    .get(id)
-                    .is_some_and(|a| !a.spectator && a.session.active())
+                !self.seated_in_lobby.contains_key(id)
+                    && !self
+                        .attendees
+                        .get(id)
+                        .is_some_and(|a| !a.spectator && a.session.active())
             })
             .collect::<HashSet<_>>();
         let Some(absent_until) = self.absent_players() else {

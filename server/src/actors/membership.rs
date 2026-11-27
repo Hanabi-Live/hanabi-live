@@ -325,6 +325,7 @@ impl TableActor {
         let mut next = self.candidate();
         let mut notices = vec![];
         next.shadows.remove(&session.user);
+        self.seated_in_lobby.remove(&session.user);
         if matches!(next.phase, Phase::Pregame { .. }) {
             if self.spectating(session.user) {
                 notices.extend(table_notice(
@@ -336,6 +337,8 @@ impl TableActor {
                 if next.players().is_empty() {
                     return self.retire().await;
                 }
+            } else if attending && next.players().iter().any(|p| p.is(session.user)) {
+                self.seated_in_lobby.insert(session.user, session.clone());
             }
         }
         // A replay's leader who leaves passes the lead to someone who stays.
