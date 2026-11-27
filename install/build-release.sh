@@ -26,24 +26,38 @@ cp LICENSE "$release/"
 
 (
   cd server
-  if [[ $(rustc -vV | sed -n 's/^host: //p') != x86_64-unknown-linux-gnu ]]; then
-    echo "Rust release builds require a Linux amd64 host." >&2
-    exit 1
-  fi
-  cargo build --release --locked --target x86_64-unknown-linux-musl
+  case $(rustc -vV | sed -n 's/^host: //p') in
+    x86_64-unknown-linux-gnu)
+      cargo build --release --locked --target x86_64-unknown-linux-musl
+      ;;
+    *-apple-darwin)
+      # A Mac cross-compiles with Zig as the linker. It needs `rustup target add
+      # x86_64-unknown-linux-musl`, `brew install zig`, and `cargo install --locked cargo-zigbuild`.
+      cargo zigbuild --release --locked --target x86_64-unknown-linux-musl
+      ;;
+    *)
+      echo "Rust release builds require a Linux amd64 host or a Mac." >&2
+      exit 1
+      ;;
+  esac
 )
 # CARGO_TARGET_DIR can move the build out of "server/target".
 target=$(cd server && cargo metadata --format-version 1 --no-deps \
   | python3 -c 'import json, sys; print(json.load(sys.stdin)["target_directory"])')
 cp "$target/x86_64-unknown-linux-musl/release/hanabi-live" "$release/hanabi-live"
-if readelf -l "$release/hanabi-live" | grep -q INTERP; then
+if file "$release/hanabi-live" | grep -q interpreter; then
   echo "Rust releases must not depend on the build host's dynamic loader." >&2
   exit 1
 fi
 python3 install/release.py manifest "$release"
-python3 install/release.py verify "$release"
+# The check runs the server, which a Mac cannot. The production server checks the release again
+# before it installs it.
+if [[ $(uname -s) == Linux ]]; then
+  python3 install/release.py verify "$release"
+fi
 archive="hanabi-live-$revision-linux-amd64.tar.gz"
-tar -czf "$output/$archive" -C "$release" .
+# Mac tar would otherwise add "._" files for extended attributes, which the manifest does not list.
+COPYFILE_DISABLE=1 tar -czf "$output/$archive" -C "$release" .
 (
   cd "$output"
   sha256sum "$archive" > "$archive.sha256"
