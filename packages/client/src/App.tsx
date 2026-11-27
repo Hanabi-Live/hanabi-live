@@ -7,6 +7,7 @@ import { AchievementToasts } from "./AchievementToasts.tsx";
 import { EmojiPicker } from "./EmojiPicker.tsx";
 import { MessageModal } from "./MessageModal.tsx";
 import { PromptModal } from "./PromptModal.tsx";
+import { ReconnectingBanner } from "./ReconnectingBanner.tsx";
 import { rememberTemplateWaitingCard } from "./WaitingCard.tsx";
 import { fadeIn, hideElement } from "./elementVisibility.ts";
 import { GameChatBox } from "./game/GameChatBox.tsx";
@@ -89,6 +90,7 @@ function App({ targets }: { readonly targets: Targets }): React.JSX.Element {
       {createPortal(<GameChatBox />, targets.gameChat)}
       {newUiShown && createPortal(<GameScreen />, targets.newUi)}
       <AchievementToasts />
+      <ReconnectingBanner />
     </>
   );
 }

@@ -861,6 +861,22 @@ function getStates(): readonly State[] {
         await settle(page);
       },
     },
+    // The banner while the connection to the server is down. New connections never reach the
+    // server, so the page keeps trying.
+    {
+      name: "lobby-reconnecting",
+      path: "/",
+      loggedIn: true,
+      isolated: true,
+      prepare: async (page) => {
+        await page.routeWebSocket(/\/ws/u, () => {
+          // The route does not connect to the server, so the page waits.
+        });
+        await page.evaluate(closeConnection);
+        await page.locator("[data-reconnecting-banner]").waitFor();
+        await settle(page);
+      },
+    },
     // An error that the page did not catch shows its stack trace.
     {
       name: "error-modal",
@@ -3565,6 +3581,14 @@ async function createCast(
  * Runs in the page. Sends an error event, as an error that the page did not catch does. Its stack
  * trace is not in the website's scripts, so the page does not report it.
  */
+/** Runs in the page. Closes its connection to the server. */
+function closeConnection() {
+  const page = globalThis as unknown as {
+    globals2: { conn?: { ws: WebSocket } };
+  };
+  page.globals2.conn?.ws.close();
+}
+
 function dispatchUncaughtError() {
   const error = new TypeError("Cannot read properties of undefined");
   globalThis.dispatchEvent(

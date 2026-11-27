@@ -15,7 +15,7 @@ import { fadeOutCopy } from "./motion.ts";
  * How long the connection must stay down before the panel shows, in milliseconds. Most drops
  * recover sooner than this, and a panel that flashes for a moment would only distract.
  */
-const SHOW_DELAY_MILLISECONDS = 1000;
+export const SHOW_DELAY_MILLISECONDS = 1000;
 
 /** How long one breath of the icon takes, in milliseconds. */
 export const BREATHE_MILLISECONDS = 1600;
@@ -33,6 +33,11 @@ function isOnline(): boolean {
   return navigator.onLine;
 }
 
+/** Whether the device has a network. */
+export function useOnline(): boolean {
+  return useSyncExternalStore(subscribeToOnline, isOnline);
+}
+
 /**
  * The panel over the hands while the connection to the server is down. Until the game reloads, the
  * server receives no move, so the panel also stops clicks on the cards. The cards show through it,
@@ -44,7 +49,7 @@ export function ReconnectingPanel({
   readonly reducedMotion: boolean;
 }): React.JSX.Element | undefined {
   const [shown, setShown] = useState(false);
-  const online = useSyncExternalStore(subscribeToOnline, isOnline);
+  const online = useOnline();
   const panelRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLElement>(null);
 

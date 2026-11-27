@@ -11,6 +11,8 @@ of the repository.
 
 - A bot can now lead only one table that it created, and at most 3 shared
   replays, like other players.
+- The lobby shows "Reconnecting..." at the top of the page while the connection
+  to the server is down.
 
 ## November 26th, 2026
 
