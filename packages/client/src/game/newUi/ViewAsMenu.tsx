@@ -1,8 +1,8 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { useRef, useState } from "react";
+import { useReducedMotion } from "../../fade.ts";
 import { FitText } from "../../FitText.tsx";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
-import { store } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { FADE_LAYER_PARENT_CLASS, FadeLayer } from "./FadeLayer.tsx";
 import { useCloseOnOutsideClick } from "./hooks.ts";
@@ -42,7 +42,7 @@ export function ViewAsMenu({
   const viewedName =
     viewedSeat === undefined ? undefined : playerNames[viewedSeat];
   const shadowing = !finished && viewedName !== undefined;
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
 
   function choose(playerIndex: PlayerIndex | undefined) {
     setOpen(false);

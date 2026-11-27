@@ -1,7 +1,7 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
-import { store } from "../../store.ts";
+import { useReducedMotion } from "../../fade.ts";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import { GAME_CHAT_TEXT_ID } from "../GameChatBox.tsx";
 import * as gameChat from "../chat.ts";
@@ -461,7 +461,7 @@ export function ChatButton({
   readonly pressedClassName?: string;
 }): React.JSX.Element {
   const collapses = open && !poppedOut;
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
   let action = "Open chat";
   if (poppedOut) {
     action = "Show chat window";

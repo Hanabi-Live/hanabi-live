@@ -255,6 +255,7 @@ export function GameScreen(): React.JSX.Element {
   const unreadNotes = useAppSelector((root) => root.newUi.unreadNotes);
   const arrow = useAppSelector((root) => root.newUi.arrow);
   const sentMove = useAppSelector((root) => root.newUi.sentMove);
+  const settings = useAppSelector((root) => root.session.settings);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const narrowWindow = useMediaQuery(STACKED_WIDTH_QUERY);
   // The phone layout: the columns stack, and the page scrolls.
@@ -554,7 +555,6 @@ export function GameScreen(): React.JSX.Element {
   const { visibleState, ongoingGame, metadata } = state;
   const shownArrow = getShownArrowTarget(arrow, state);
   const variant = currentVariant();
-  const { settings } = store.getState().session;
   const { options } = metadata;
   const inReplay = state.replay.segment !== undefined;
   // Zen mode is for players in a game. A finished game shows the chat as usual.

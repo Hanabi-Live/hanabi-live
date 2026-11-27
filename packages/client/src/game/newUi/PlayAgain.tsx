@@ -1,5 +1,5 @@
 import { useRef, useState, useSyncExternalStore } from "react";
-import { store } from "../../store.ts";
+import { useReducedMotion } from "../../fade.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import * as gameSession from "../gameSession.ts";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
@@ -98,7 +98,7 @@ function PlayAgainMenu({
     gameSession.isRestartPending,
   );
 
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
   // When the button goes back from the wait to its label, the label fades in, as the wait did.
   const [waited, setWaited] = useState(false);
   if (pending && !waited) {

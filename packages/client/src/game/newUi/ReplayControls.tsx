@@ -9,7 +9,7 @@
 
 import { clamp } from "complete-common";
 import { useRef } from "react";
-import { store } from "../../store.ts";
+import { useReducedMotion } from "../../fade.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import {
   canToggleDrawnCards,
@@ -280,7 +280,7 @@ function LeaderMark({
   readonly lastSegment: number;
 }): React.JSX.Element {
   const ref = useRef<HTMLButtonElement | null>(null);
-  useFade(ref, store.getState().session.settings.reducedMotion);
+  useFade(ref, useReducedMotion());
   const tooltip = tooltipRef(leaderMarkTooltip(leader));
   return (
     <button
@@ -375,7 +375,7 @@ export function Checkbox({
 }: {
   readonly checked: boolean;
 }): React.JSX.Element {
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
   // The checked box is a layer over the empty one, with the check. It fades in and out. Only its
   // opacity animates, never a color.
   return (
@@ -408,7 +408,7 @@ function PressedLayer({
   return (
     <FadeLayer
       className="tw:bg-game-text tw:group-hover/layer:bg-white"
-      reducedMotion={store.getState().session.settings.reducedMotion}
+      reducedMotion={useReducedMotion()}
       shown={pressed}
     />
   );
@@ -426,6 +426,7 @@ function FollowToggle({
 }: {
   readonly state: State;
 }): React.JSX.Element | undefined {
+  const reducedMotion = useReducedMotion();
   const { states, shared } = state.replay;
   if (shared === undefined) {
     return undefined;
@@ -459,10 +460,7 @@ function FollowToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={getButtonTextColorStyle(
-        following,
-        store.getState().session.settings.reducedMotion,
-      )}
+      style={getButtonTextColorStyle(following, reducedMotion)}
       type="button"
     >
       <PressedLayer pressed={following} />
@@ -481,6 +479,7 @@ function ShareTurnsToggle({
 }: {
   readonly state: State;
 }): React.JSX.Element | undefined {
+  const reducedMotion = useReducedMotion();
   const { states, shared } = state.replay;
   if (shared === undefined) {
     return undefined;
@@ -517,10 +516,7 @@ function ShareTurnsToggle({
       }`}
       onClick={replay.toggleSharedSegments}
       ref={tooltipRef(tooltip)}
-      style={getButtonTextColorStyle(
-        sharing,
-        store.getState().session.settings.reducedMotion,
-      )}
+      style={getButtonTextColorStyle(sharing, reducedMotion)}
       type="button"
     >
       <PressedLayer pressed={sharing} />
@@ -571,6 +567,7 @@ function IconToggle({
   readonly tooltip: string;
   readonly onClick: () => void;
 }): React.JSX.Element {
+  const reducedMotion = useReducedMotion();
   return (
     <button
       aria-label={label}
@@ -581,10 +578,7 @@ function IconToggle({
       disabled={disabled}
       onClick={onClick}
       ref={tooltipRef(`${label}: ${tooltip}`)}
-      style={getButtonTextColorStyle(
-        pressed,
-        store.getState().session.settings.reducedMotion,
-      )}
+      style={getButtonTextColorStyle(pressed, reducedMotion)}
       type="button"
     >
       <PressedLayer pressed={pressed} />

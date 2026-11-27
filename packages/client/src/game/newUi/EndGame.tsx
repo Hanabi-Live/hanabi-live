@@ -1,6 +1,6 @@
 import type { ServerEventData } from "@hanabi-live/data";
 import { useRef, useState } from "react";
-import { store } from "../../store.ts";
+import { useReducedMotion } from "../../fade.ts";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 import {
   FADE_LAYER_PARENT_CLASS,
@@ -40,7 +40,7 @@ export function EndGameMenu({
   useCloseOnOutsideClick(open, containerRef, setOpen);
 
   const voted = votes?.voted === true;
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
 
   return (
     <div className="tw:relative" ref={containerRef}>

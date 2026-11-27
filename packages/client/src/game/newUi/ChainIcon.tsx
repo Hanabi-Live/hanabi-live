@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { store } from "../../store.ts";
+import { useReducedMotion } from "../../fade.ts";
 
 /**
  * How far each link of the chain moves out from the middle when the links come apart, in units of
@@ -49,8 +49,9 @@ export function ChainIcon({
 }): React.JSX.Element {
   const id = useId();
   const offset = linked ? 0 : APART_OFFSET;
+  const reducedMotion = useReducedMotion();
   let motionClass = "";
-  if (!store.getState().session.settings.reducedMotion) {
+  if (!reducedMotion) {
     motionClass = linked
       ? "tw:transition-transform tw:duration-250 tw:ease-[cubic-bezier(0.34,1.8,0.64,1)]"
       : "tw:transition-transform tw:duration-200 tw:ease-out";

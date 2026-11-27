@@ -4,6 +4,7 @@
  */
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { useReducedMotion } from "../../fade.ts";
 import { store } from "../../store.ts";
 import {
   CLOSE_DURATION_IN_MILLISECONDS,
@@ -383,8 +384,9 @@ export function MenuCaret({
   readonly open: boolean;
 }): React.JSX.Element {
   // It turns over as fast as the menu opens and closes.
+  const reducedMotion = useReducedMotion();
   let transition: string | undefined;
-  if (!store.getState().session.settings.reducedMotion) {
+  if (!reducedMotion) {
     transition = open
       ? `rotate ${OPEN_DURATION_IN_MILLISECONDS}ms ease-out`
       : `rotate ${CLOSE_DURATION_IN_MILLISECONDS}ms ease-in`;

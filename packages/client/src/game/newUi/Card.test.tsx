@@ -3,7 +3,9 @@
 import type { Rank, SuitIndex } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { store } from "../../store.ts";
 import { CLOSE_DURATION_IN_MILLISECONDS } from "../../Tooltip.ts";
 import { CardFace } from "./Card.tsx";
 import type { CardPipsView } from "./tableView.ts";
@@ -31,6 +33,15 @@ const PIPS = {
     ],
   },
 } as const satisfies CardPipsView;
+
+/** Gives the card the store, which it reads the settings from. */
+function StoreProvider({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return <Provider store={store}>{children}</Provider>;
+}
 
 function renderCard(trash: boolean, showPossibleCards = true) {
   return (
@@ -94,7 +105,9 @@ afterEach(() => {
 test("the bubble follows the card when the card stops being trash", () => {
   // Holding the pointer down on a hand shows its holder's view, where a card that is trash may not
   // be.
-  const { container, rerender } = render(renderCard(true));
+  const { container, rerender } = render(renderCard(true), {
+    wrapper: StoreProvider,
+  });
   const face = container.querySelector("[data-card-face]");
   expect(face).not.toBeNull();
   fireEvent.pointerEnter(face!);
@@ -114,7 +127,9 @@ test("the bubble follows the card when the card stops being trash", () => {
 });
 
 test("the bubble stays closed when the card missed the pointer leaving it", () => {
-  const { container, rerender } = render(renderCard(false, false));
+  const { container, rerender } = render(renderCard(false, false), {
+    wrapper: StoreProvider,
+  });
   const face = container.querySelector("[data-card-face]");
   expect(face).not.toBeNull();
   // The card gets the "pointerenter" but not the "pointerleave". In jsdom, nothing matches
@@ -132,7 +147,9 @@ test("the bubble stays closed when the card missed the pointer leaving it", () =
 test("the bubble fades out when the card stops showing its holder's view", () => {
   // Holding the pointer down on another player's hand shows what they know about their cards. When
   // the button comes up, each card shows its face again and has no bubble.
-  const { container, rerender } = render(renderCard(false));
+  const { container, rerender } = render(renderCard(false), {
+    wrapper: StoreProvider,
+  });
   const face = container.querySelector("[data-card-face]");
   expect(face).not.toBeNull();
   fireEvent.pointerEnter(face!);
@@ -184,6 +201,7 @@ test.each(["3 Suits", "4 Suits", "No Variant", "6 Suits"])(
         variant={variant}
         width={CARD_RECT.width}
       />,
+      { wrapper: StoreProvider },
     );
 
     const rows = [...container.querySelectorAll("[data-suit-row]")];
@@ -212,6 +230,7 @@ test("the clue token of a trash card does not fade with the card", () => {
       variant={getDefaultVariant()}
       width={CARD_RECT.width}
     />,
+    { wrapper: StoreProvider },
   );
 
   const face = container.querySelector<HTMLElement>("[data-card-face]");

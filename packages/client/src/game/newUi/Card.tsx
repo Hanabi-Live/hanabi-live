@@ -18,6 +18,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CARD_BACK_STYLE } from "../../cardBack.ts";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import { useReducedMotion } from "../../fade.ts";
 import { store } from "../../store.ts";
 import {
   ARROW_SIZE_IN_PIXELS,
@@ -1726,7 +1727,7 @@ export function PossibleCardsBubble({
   const isShown = shownNow !== undefined;
   const [wasShown, setWasShown] = useState(isShown);
   // The "Reduced motion" setting leaves out the fades, so the bubble goes at once.
-  const { reducedMotion } = store.getState().session.settings;
+  const reducedMotion = useReducedMotion();
   if (isShown !== wasShown) {
     setWasShown(isShown);
     setClosing(!isShown && !reducedMotion);
