@@ -297,6 +297,10 @@ function openConnection(isReconnect: boolean) {
             return;
           }
           if (table.stage === "pregame") {
+            // The table went back to a pregame while we were away, so we missed leaving its game.
+            gameMain.hide();
+            finishReconnecting(conn);
+            initCommands(conn);
             lobbyCommands.get("tableJoined")?.(table);
           } else if (
             table.tableId === retained
@@ -355,6 +359,24 @@ function openConnection(isReconnect: boolean) {
                   ? store.getState().game.current?.metadata.ourPlayerIndex
                   : undefined,
             }),
+          },
+          (reply) => {
+            // A connection that closes also fails its requests. The next connection tries again.
+            if (
+              reply.ok
+              || !isCurrentConnection(conn)
+              || conn.ws.readyState !== WebSocket.OPEN
+            ) {
+              return;
+            }
+            // The table is gone, so the server describes no game. Go back to the lobby.
+            if (store.getState().session.screen === Screen.Game) {
+              gameMain.hide();
+            }
+            globals.tableId = undefined;
+            store.dispatch(returnedTableIdChanged(undefined));
+            finishReconnecting(conn);
+            initCommands(conn);
           },
         );
       } else {
