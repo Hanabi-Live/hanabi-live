@@ -2,6 +2,7 @@
 
 import { parseFloatSafe } from "complete-common";
 import interact from "interactjs";
+import { flushSync } from "react-dom";
 import { globals } from "../Globals.ts";
 import { LOCAL_STORAGE_KEY } from "../constants.ts";
 import { fadeIn, fadeOut, isElementShown } from "../elementVisibility.ts";
@@ -177,8 +178,11 @@ export function show(focusInput = true): void {
   }
 
   if (newUi.shown) {
-    // The redesigned game screen shows the chat in its side panel instead of in the modal.
-    store.dispatch(newUiChatOpenChanged(true));
+    // The redesigned game screen shows the chat in its side panel instead of in the modal. Render
+    // the panel now, so that the chat box is in it and can take focus.
+    flushSync(() => {
+      store.dispatch(newUiChatOpenChanged(true));
+    });
     if (focusInput) {
       getHtmlElement(`#${GAME_CHAT_INPUT_ID}`).focus();
     }

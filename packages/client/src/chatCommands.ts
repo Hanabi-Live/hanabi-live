@@ -414,10 +414,24 @@ function capitalize(input: string) {
   return input.toLowerCase().replaceAll(pattern, (x) => x.toUpperCase());
 }
 
+/**
+ * Returns the variant named by the search, ignoring case, or else the first one that starts with
+ * it. Returns an empty string if none matches.
+ */
 export function getVariantNameFromPartial(search: string): string {
-  const firstVariant = VARIANT_NAMES.find((variantName) =>
-    variantName.startsWith(search),
+  if (search === "") {
+    return "";
+  }
+
+  const lowercaseSearch = search.toLowerCase();
+  const exactMatch = VARIANT_NAMES.find(
+    (variantName) => variantName.toLowerCase() === lowercaseSearch,
   );
+  const firstVariant =
+    exactMatch
+    ?? VARIANT_NAMES.find((variantName) =>
+      variantName.toLowerCase().startsWith(lowercaseSearch),
+    );
 
   return firstVariant ?? "";
 }

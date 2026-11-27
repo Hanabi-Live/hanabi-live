@@ -112,6 +112,23 @@ describe("functions", () => {
         expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
+    describe("names with lowercase or uppercase words", () => {
+      test("is valid", () => {
+        const partial = getVariantFromArgs("cow and pig (5 suits)".split(" "));
+        expect(getVariantNameFromPartial(partial)).toBe(
+          "Cow and Pig (5 Suits)",
+        );
+      });
+      test("is valid", () => {
+        const partial = getVariantFromArgs("rgb mix (6".split(" "));
+        expect(getVariantNameFromPartial(partial)).toBe("RGB Mix (6 Suits)");
+      });
+    });
+    describe("no input", () => {
+      test("is not valid", () => {
+        expect(getVariantNameFromPartial(getVariantFromArgs([]))).toBe("");
+      });
+    });
   });
 });
 
