@@ -133,6 +133,8 @@ impl TableActor {
                 ));
             }
         }
+        // A spectator who joins is no longer a spectator.
+        self.spectator_messages(&mut e);
         self.publish(e).await
     }
     /// Tells a full table, once per person, that someone else wants to play, so that the players
@@ -366,6 +368,13 @@ impl TableActor {
         };
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
+        }
+        if attending && matches!(self.table.phase, Phase::Live { .. }) {
+            self.add_all(
+                &mut e,
+                hanabi_protocol::event::CONNECTIONS,
+                self.connections(),
+            );
         }
         if let Some(owner) = &successor {
             self.leader_messages(&mut e, owner, None);

@@ -468,12 +468,14 @@ impl TableActor {
         // The table keeps its ID and audience, but plays a new game, which its name counts.
         next.created = OffsetDateTime::now_utc();
         next.name = {
-            let (base, count) =
-                if let Some(m) = regex!(r"^(.*) \(#(\d+)\)$").captures(&self.table.name) {
-                    (m[1].to_owned(), m[2].parse::<u64>()? + 1)
-                } else {
-                    (self.table.name.clone(), 2)
-                };
+            // A count too large for a number counts as a part of the name.
+            let counted = regex!(r"^(.*) \(#([0-9]+)\)$")
+                .captures(&self.table.name)
+                .and_then(|m| {
+                    let count = m[2].parse::<u64>().ok()?.checked_add(1)?;
+                    Some((m[1].to_owned(), count))
+                });
+            let (base, count) = counted.unwrap_or_else(|| (self.table.name.clone(), 2));
             let suffix = format!(" (#{count})");
             format!(
                 "{}{suffix}",

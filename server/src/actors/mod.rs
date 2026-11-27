@@ -327,6 +327,7 @@ pub enum HubCommand {
         saved: Saved,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
+        seated_in_lobby: HashMap<UserId, Arc<Session>>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
     Stop(oneshot::Sender<()>),

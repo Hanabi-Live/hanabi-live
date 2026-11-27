@@ -969,14 +969,16 @@ impl TableActor {
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
             }
-            // Only a game in progress has players who can be away. (A pregame can also have fewer
-            // players than a game.)
-            if matches!(self.table.phase, Phase::Live { .. }) {
-                self.add_all(
+            // A game in progress shows who is away with its connections, and a pregame with its
+            // players. (A pregame can also have fewer players than a game.)
+            match self.table.phase {
+                Phase::Live { .. } => self.add_all(
                     &mut e,
                     hanabi_protocol::event::CONNECTIONS,
                     self.connections(),
-                );
+                ),
+                Phase::Pregame { .. } => self.pregame_messages(&mut e),
+                Phase::Replay { .. } => {}
             }
             self.spectator_messages(&mut e);
             self.publish(e).await?;

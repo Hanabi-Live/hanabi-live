@@ -18,7 +18,10 @@ use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableJoined, TableStage};
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 use time::OffsetDateTime;
 
 /// Appended to the name of a table that a split creates.
@@ -334,6 +337,22 @@ impl TableActor {
             self.attendees.remove(&session.user);
             effects.leave(session.clone());
         }
+        // The players who returned to the lobby keep their seats at the new table.
+        let seated = destination.players();
+        let seated_in_lobby = self
+            .seated_in_lobby
+            .iter()
+            .filter(|(id, _)| seated.iter().any(|p| p.is(**id)))
+            .map(|(id, session)| (*id, session.clone()))
+            .collect::<HashMap<_, _>>();
+        self.seated_in_lobby
+            .retain(|id, _| !seated_in_lobby.contains_key(id));
+        if retire {
+            // No one is left to play, so the spectators leave too.
+            for a in self.attendees.drain() {
+                effects.leave(a.1.session);
+            }
+        }
         self.pregame_messages(&mut effects);
         for notice in &notices {
             self.add_chat(&mut effects, notice);
@@ -349,6 +368,7 @@ impl TableActor {
                 saved: destination_saved,
                 allocation,
                 attendees: moving,
+                seated_in_lobby,
             })
             .await?;
         Ok(())
