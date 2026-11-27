@@ -466,6 +466,13 @@ pub(super) async fn websocket(
                     if let Err(error) = result {
                         let report = crate::errors::Report::from_error("WebSocket session", &error);
                         report.log();
+                        if report.code == hanabi_protocol::NoticeCode::InternalOperationFailed {
+                            // The cause could hold anything, so only the log shows it.
+                            tracing::error!(
+                                diagnostic_id = %report.diagnostic_id,
+                                "WebSocket session failed: {error:#}"
+                            );
+                        }
                         app.alert(&report);
                     }
                     }
@@ -628,15 +635,24 @@ async fn connection(
         reader_session.cancel.cancel();
     }.in_current_span());
     let result = async {
-        request(&app.hub, |reply| HubCommand::Register {
+        let registered = request(&app.hub, |reply| HubCommand::Register {
             session: session.clone(),
             blocks: data.blocks.into_iter().collect(),
             welcome: data.welcome,
             initial: data.initial,
             reply,
         })
-        .await?
-        .map_err(anyhow::Error::from)?;
+        .await?;
+        match registered {
+            Ok(()) => {}
+            // The connection closed or a newer one took its place while it started, or the server
+            // is draining. Nothing failed.
+            Err(crate::errors::CommandError::Rejected { message, .. }) => {
+                tracing::info!("Ending a connection that the hub did not register: {message}");
+                return Ok(());
+            }
+            Err(error) => return Err(error.into()),
+        }
         let user = app.users.task(&app, session.user);
         user.send(user::UserCommand::Current(session.generation))
             .await?;
