@@ -2,6 +2,7 @@ import type { CardIdentity, CardOrder, CardState } from "@hanabi-live/game";
 import {
   getDefaultVariant,
   getTotalCardsInDeck,
+  getVariant,
   newColorClue,
   newRankClue,
 } from "@hanabi-live/game";
@@ -250,6 +251,18 @@ describe("getSpeedrunCommand", () => {
     expect(getSpeedrunCommand(click(RIGHT), OUR_CARD, context())).toStrictEqual(
       { type: "refuse" },
     );
+  });
+
+  test("discards at the maximum number of clues with an inverted suit", () => {
+    const variant = getVariant("Orange (6 Suits)");
+    expect(variant.hasInverted).toBe(true);
+    const inverted = {
+      ...context(),
+      variant,
+    };
+    expect(getSpeedrunCommand(click(RIGHT), OUR_CARD, inverted)).toStrictEqual({
+      type: "discard",
+    });
   });
 
   test("gives a teammate a color clue or a rank clue", () => {

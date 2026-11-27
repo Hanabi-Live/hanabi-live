@@ -6,7 +6,7 @@ import type {
   SuitIndex,
   SuitRankTuple,
 } from "@hanabi-live/game";
-import { getTotalCardsInDeck, isAtMaxClueTokens } from "@hanabi-live/game";
+import { getTotalCardsInDeck, isDiscardAllowed } from "@hanabi-live/game";
 import { flushSync } from "react-dom";
 import * as modals from "../../modals.ts";
 import { store } from "../../store.ts";
@@ -90,7 +90,7 @@ export function getActionState(state: State): GameState {
 }
 
 export function canDiscardNow(): boolean {
-  return !isAtMaxClueTokens(
+  return isDiscardAllowed(
     getActionState(currentState()).clueTokens,
     currentVariant(),
   );

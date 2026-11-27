@@ -4,7 +4,7 @@
 import {
   getClueCost,
   getVariantById,
-  isAtMaxClueTokens,
+  isDiscardAllowed,
 } from "@hanabi-live/game";
 import { globals } from "../Globals.ts";
 import * as notifications from "../notifications.ts";
@@ -55,7 +55,7 @@ function handlePremove(state: State) {
 
     case "discard": {
       // Prevent discarding if the team is at the maximum amount of clues.
-      if (isAtMaxClueTokens(clueTokens, variant)) {
+      if (!isDiscardAllowed(clueTokens, variant)) {
         return;
       }
 

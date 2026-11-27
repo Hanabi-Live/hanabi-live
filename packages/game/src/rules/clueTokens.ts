@@ -89,6 +89,17 @@ export function isAtMaxClueTokens(
 }
 
 /**
+ * Whether the team may discard. It may not at the maximum clue tokens, except in variants with an
+ * inverted suit, where a discard can play a card.
+ */
+export function isDiscardAllowed(
+  clueTokens: number,
+  variant: Variant,
+): boolean {
+  return variant.hasInverted || !isAtMaxClueTokens(clueTokens, variant);
+}
+
+/**
  * The value of clues gained when discarding. This function is only used in efficiency calculations
  * (because we do not want to use floating point numbers for the general case).
  *

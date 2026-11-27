@@ -13,9 +13,9 @@ import {
   START_CARD_RANK,
   getClueCost,
   getTotalCardsInDeck,
-  isAtMaxClueTokens,
   isCardDiscarded,
   isCardPlayed,
+  isDiscardAllowed,
   newColorClue,
   newRankClue,
 } from "@hanabi-live/game";
@@ -139,9 +139,9 @@ export function getSpeedrunCommand(
       return { type: "play" };
     }
     if (click.button === RIGHT_MOUSE_BUTTON) {
-      return isAtMaxClueTokens(ongoingGame.clueTokens, variant)
-        ? { type: "refuse" }
-        : { type: "discard" };
+      return isDiscardAllowed(ongoingGame.clueTokens, variant)
+        ? { type: "discard" }
+        : { type: "refuse" };
     }
     return undefined;
   }

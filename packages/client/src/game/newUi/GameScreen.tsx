@@ -7,7 +7,7 @@ import {
   getClueCost,
   getTotalCardsInDeck,
   getUnadjustedClueTokens,
-  isAtMaxClueTokens,
+  isDiscardAllowed,
 } from "@hanabi-live/game";
 import {
   useCallback,
@@ -1161,7 +1161,7 @@ export function GameScreen(): React.JSX.Element {
   );
 
   const tokensProps = {
-    atMaxClues: isAtMaxClueTokens(visibleState.clueTokens, variant),
+    atMaxClues: !isDiscardAllowed(visibleState.clueTokens, variant),
     clues: getUnadjustedClueTokens(visibleState.clueTokens, variant),
     oneClueLeft: visibleState.clueTokens === getClueCost(variant),
     onShowStrike: showStrike,
@@ -1174,7 +1174,7 @@ export function GameScreen(): React.JSX.Element {
   };
   const discardPile = (
     <DiscardPile
-      atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
+      atMaxClues={!isDiscardAllowed(visibleState.clueTokens, variant)}
       cardWidth={Math.min(tableCardWidth, DISCARD_CARD_MAX_WIDTH)}
       colorblindMode={settings.colorblindMode}
       doubleDiscard={
