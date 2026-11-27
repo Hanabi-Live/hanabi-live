@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 27th, 2026
+
+- A bot can now lead only one table that it created, and at most 3 shared
+  replays, like other players.
+
 ## November 26th, 2026
 
 - The "/w" chat command is back. It sends a private message, like "/pm".

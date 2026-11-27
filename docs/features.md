@@ -951,7 +951,9 @@ its URL. Seed lists do not take `filter[variant]`.
   in again. A program that people use, such as a mobile client, sends
   `client=app` instead. To create the account on its first login, also send
   `createAccount=true`.
-- Unlike human players, bots can play at more than one table at a time.
+- Unlike human players, bots can play at more than one table at a time. But like
+  human players, a bot can lead only one table that it created, and at most 3
+  shared replays.
 
 ## Password Reset
 

@@ -3371,7 +3371,14 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.send(0, "tableReattend", json!({"tableId":pregame}))
             .await?;
         let bot_one = h.create(3, "Bot first", json!({})).await?;
-        let bot_two = h.create(3, "Bot second", json!({})).await?;
+        ensure!(
+            h.send(3, "tableCreate", json!({"settings":{"name":"Bot extra"}}))
+                .await
+                .is_err(),
+            "A bot led a second table"
+        );
+        let bot_two = h.create(1, "Bot second", json!({})).await?;
+        h.send(3, "tableJoin", json!({"tableId":bot_two})).await?;
         ensure!(
             bot_one != bot_two,
             "Bot did not get distinct playing memberships"
@@ -3414,7 +3421,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         );
         ensure!(
             h.snapshot(bot_one).await?.0.players()[0].is(UserId::new(4).unwrap())
-                && h.snapshot(bot_two).await?.0.players()[0].is(UserId::new(4).unwrap()),
+                && h.snapshot(bot_two).await?.0.players()[1].is(UserId::new(4).unwrap()),
             "Logout lost durable bot memberships"
         );
         Ok::<(), anyhow::Error>(())

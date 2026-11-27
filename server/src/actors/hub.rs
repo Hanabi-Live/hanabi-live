@@ -267,16 +267,35 @@ impl Hub {
                 .all(|user| !self.playing_elsewhere(*user, except)),
             "{playing_elsewhere}"
         );
+        Ok(self.insert_reservation(users))
+    }
+    /// Reserves a table for a bot to create. A bot may play at many tables, but it may lead only
+    /// one table that is not a replay, so that it cannot fill the server's tables.
+    fn reserve_bot_table(&mut self, user: UserId) -> CommandResult<SeatReservation> {
+        ensure_or_reject!(
+            !self.reservations.contains_key(&user),
+            "Another playing-table request is already pending."
+        );
+        ensure_or_reject!(
+            !self
+                .tables
+                .values()
+                .any(|e| !e.view.replay && e.view.owner == user),
+            "A bot cannot lead more than one table at a time. Leave your other table before creating a new one."
+        );
+        Ok(self.insert_reservation(vec![user]))
+    }
+    fn insert_reservation(&mut self, users: Vec<UserId>) -> SeatReservation {
         self.next_reservation += 1;
         let id = self.next_reservation;
         for user in &users {
             self.reservations.insert(*user, id);
         }
-        Ok(SeatReservation {
+        SeatReservation {
             id,
             users,
             hub: Some(self.sender.clone()),
-        })
+        }
     }
     /// Ends a seat reservation once its request has finished. A table that the request changed
     /// publishes its view before it answers, so the view already shows the seats.
@@ -416,7 +435,7 @@ impl Hub {
             .min()
     }
     /// Checks the replay limits before a user creates a replay, and closes the user's other solo
-    /// replays. Bots are trusted, so the per-user limits do not apply to them.
+    /// replays.
     fn make_room_for_replay(
         &mut self,
         s: &Arc<Session>,
@@ -427,9 +446,6 @@ impl Hub {
             replays < MAX_REPLAYS,
             "The server has reached its limit of {MAX_REPLAYS} open replays. Please try again later."
         );
-        if s.bot {
-            return Ok(());
-        }
         if matches!(
             r.visibility,
             hanabi_protocol::ReplayVisibility::Shared { .. }
@@ -487,13 +503,17 @@ impl Hub {
             )));
             return;
         };
-        let playing = matches!(creation, Creation::Table(_)) && !s.bot;
-        let reservation = if playing {
-            match self.reserve(
-                vec![s.user],
-                None,
-                "You cannot join more than one table at a time. Terminate your other game before creating a new one.",
-            ) {
+        let reservation = if matches!(creation, Creation::Table(_)) {
+            let reserved = if s.bot {
+                self.reserve_bot_table(s.user)
+            } else {
+                self.reserve(
+                    vec![s.user],
+                    None,
+                    "You cannot join more than one table at a time. Terminate your other game before creating a new one.",
+                )
+            };
+            match reserved {
                 Ok(reservation) => Some(reservation),
                 Err(error) => {
                     let _ = reply.send(Err(error));
@@ -787,7 +807,8 @@ impl Hub {
                     saved,
                     allocation,
                     attendees,
-                } => self.spawn_split(*table, saved, allocation, attendees),
+                    seated_in_lobby,
+                } => self.spawn_split(*table, saved, allocation, attendees, seated_in_lobby),
                 HubCommand::Reply {
                     session,
                     frame,
@@ -970,23 +991,31 @@ impl Hub {
         &mut self,
         table: TableSnapshot,
         saved: Saved,
-        mut allocation: Allocation,
+        allocation: Allocation,
         chat_read: HashMap<UserId, usize>,
         initial: Option<(Arc<Session>, Vec<String>, RequestReply)>,
     ) -> TableHandle {
+        let mut actor = self.new_actor(table, saved, allocation);
+        actor.chat_read = chat_read;
+        self.add_table(actor, initial)
+    }
+    fn new_actor(
+        &mut self,
+        table: TableSnapshot,
+        saved: Saved,
+        mut allocation: Allocation,
+    ) -> TableActor {
         if let Some(reservation) = allocation.reservation.take() {
             self.end_reservation(reservation);
         }
-        let mut actor = TableActor::new(
+        TableActor::new(
             table,
             saved,
             self.store.clone(),
             self.sender.clone(),
             allocation.into_permit(),
             self.info.clone(),
-        );
-        actor.chat_read = chat_read;
-        self.add_table(actor, initial)
+        )
     }
     /// Starts an actor and lists its table. Returns the table's handle.
     fn add_table(
@@ -1008,19 +1037,22 @@ impl Hub {
         );
         handle
     }
-    /// Starts the table that a split created, and moves its attendees to it. Its chat is new, so no
-    /// one has read any of it.
+    /// Starts the table that a split created, and moves its attendees and the players seated in the
+    /// lobby to it. Its chat is new, so no one has read any of it.
     fn spawn_split(
         &mut self,
         table: TableSnapshot,
         saved: Saved,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
+        seated_in_lobby: HashMap<UserId, Arc<Session>>,
     ) {
         if self.closing {
             return;
         }
-        let handle = self.install(table, saved, allocation, HashMap::new(), None);
+        let mut actor = self.new_actor(table, saved, allocation);
+        actor.seated_in_lobby = seated_in_lobby;
+        let handle = self.add_table(actor, None);
         for (session, spectate, shadow) in attendees {
             if self.current(&session) {
                 let (reply, _) = oneshot::channel();
