@@ -19,7 +19,23 @@ import { SAVED_STATUS_MILLISECONDS, SettingsPage } from "./SettingsPage.tsx";
 vi.mock("../../theme.ts", () => ({ setDarkMode: vi.fn() }));
 vi.mock("../../notifications.ts", () => ({ test: vi.fn() }));
 
-const send = vi.fn();
+/** Whether the server saves the next change. */
+let replyOk = true;
+const send = vi.fn(
+  (_command: string, _data: unknown, onReply?: (reply: unknown) => void) => {
+    onReply?.(
+      replyOk
+        ? {
+            ok: true,
+            data: undefined,
+          }
+        : {
+            ok: false,
+            refused: false,
+          },
+    );
+  },
+);
 
 function getInput(id: string) {
   return document.querySelector<HTMLInputElement>(`#${id}`);
@@ -30,6 +46,7 @@ beforeEach(() => {
   globals.conn = { send } as unknown as Connection;
   store.dispatch(settingsChanged(defaultSettings));
   send.mockClear();
+  replyOk = true;
   render(
     <Provider store={store}>
       <SettingsPage />
@@ -48,11 +65,15 @@ describe("SettingsPage", () => {
       getInput("colorblindMode")!.click();
     });
     expect(store.getState().session.settings.colorblindMode).toBe(true);
-    expect(send).toHaveBeenCalledWith("settings", {
-      settings: {
-        colorblindMode: true,
+    expect(send).toHaveBeenCalledWith(
+      "settings",
+      {
+        settings: {
+          colorblindMode: true,
+        },
       },
-    });
+      expect.any(Function),
+    );
     const status = screen.getByRole("status");
     expect(status.textContent).toBe("Saved");
     expect(status.className).toContain("tw:opacity-100");
@@ -88,10 +109,14 @@ describe("SettingsPage", () => {
       });
     });
     expect(store.getState().session.settings).not.toHaveProperty("hGroupLevel");
-    expect(send).toHaveBeenLastCalledWith("settings", {
-      settings: {},
-      cleared: ["hGroupLevel"],
-    });
+    expect(send).toHaveBeenLastCalledWith(
+      "settings",
+      {
+        settings: {},
+        cleared: ["hGroupLevel"],
+      },
+      expect.any(Function),
+    );
   });
 
   test("the volume saves only when the slider is released", () => {
@@ -114,10 +139,23 @@ describe("SettingsPage", () => {
       });
     });
     expect(store.getState().session.settings.volume).toBe(80);
-    expect(send).toHaveBeenCalledWith("settings", {
-      settings: {
-        volume: 80,
+    expect(send).toHaveBeenCalledWith(
+      "settings",
+      {
+        settings: {
+          volume: 80,
+        },
       },
+      expect.any(Function),
+    );
+  });
+
+  test("a change that does not reach the server changes back", () => {
+    replyOk = false;
+    act(() => {
+      getInput("colorblindMode")!.click();
     });
+    expect(store.getState().session.settings.colorblindMode).toBe(false);
+    expect(screen.getByRole("status").textContent).toBe("Not saved");
   });
 });

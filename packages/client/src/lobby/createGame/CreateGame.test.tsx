@@ -142,9 +142,15 @@ describe("CreateGame", () => {
     click("create-game-submit");
     expect(send).toHaveBeenCalledTimes(1);
 
-    const onReply = send.mock.calls[0]![2] as (reply: { ok: false }) => void;
+    const onReply = send.mock.calls[0]![2] as (reply: {
+      ok: false;
+      refused: boolean;
+    }) => void;
     act(() => {
-      onReply({ ok: false });
+      onReply({
+        ok: false,
+        refused: true,
+      });
     });
     expect(hide).not.toHaveBeenCalled();
     expect(getInput("create-game-submit").ariaBusy).toBe("false");

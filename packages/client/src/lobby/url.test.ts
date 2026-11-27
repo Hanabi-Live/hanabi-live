@@ -332,7 +332,10 @@ describe("going back to a table", () => {
   test("reports that we go to a table, and when the server refuses", () => {
     vi.spyOn(globals.connection, "send").mockImplementation(
       (_command, _data, onReply) => {
-        onReply?.({ ok: false });
+        onReply?.({
+          ok: false,
+          refused: true,
+        });
       },
     );
     Object.defineProperty(globalThis, "location", {

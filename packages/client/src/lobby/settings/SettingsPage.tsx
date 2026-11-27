@@ -138,8 +138,12 @@ function CheckboxRow({
           id={setting}
           onChange={(event) => {
             const value = event.target.checked;
-            changeSetting({ [setting]: value });
-            showSaved();
+            changeSetting({ [setting]: value }, (saved) => {
+              showSaved(saved);
+              if (!saved && setting === "darkMode") {
+                theme.setDarkMode(!value);
+              }
+            });
             if (setting === "desktopNotification" && value) {
               notifications.test();
             } else if (setting === "darkMode") {
@@ -167,10 +171,10 @@ function SoundMoveRow() {
       <Select
         id="soundMove"
         onChange={(event) => {
-          changeSetting({
-            soundMove: soundMoveSchema.parse(event.target.value),
-          });
-          showSaved();
+          changeSetting(
+            { soundMove: soundMoveSchema.parse(event.target.value) },
+            showSaved,
+          );
         }}
         value={soundMove}
       >
@@ -194,9 +198,8 @@ function VolumeRow() {
   useEffect(() => {
     const slider = sliderRef.current!;
     function onRelease() {
-      changeSetting({ volume: slider.valueAsNumber });
+      changeSetting({ volume: slider.valueAsNumber }, showSaved);
       setMovingVolume(undefined);
-      showSaved();
     }
     slider.addEventListener("change", onRelease);
     return () => {
@@ -271,19 +274,12 @@ function HGroupLevelRow({ shown }: { readonly shown: boolean }) {
         id="hGroupLevel"
         onChange={(event) => {
           const level = parseIntSafe(event.target.value);
-          if (level === undefined) {
-            // A level that we did not choose is absent from our settings.
-            const { hGroupLevel: _cleared, ...settings } =
-              store.getState().session.settings;
-            store.dispatch(settingsChanged(settings));
-            globals.connection.send("settings", {
-              settings: {},
-              cleared: ["hGroupLevel"],
-            });
-          } else {
-            changeSetting({ hGroupLevel: level });
-          }
-          showSaved();
+          // A level that we did not choose is absent from our settings.
+          changeSetting(
+            level === undefined ? {} : { hGroupLevel: level },
+            showSaved,
+            level === undefined,
+          );
         }}
         onKeyDown={moveInLevelGrid}
         style={LEVEL_PICKER_STYLE}
@@ -377,27 +373,70 @@ function RowLabel({
   );
 }
 
-/** Changes our settings here and on the server. */
-function changeSetting(changed: Partial<Settings>) {
+/**
+ * Changes our settings here and on the server, and then tells `onSaved` whether the server saved
+ * them. If it did not, they change back here. `clearHGroupLevel` removes the H-Group level.
+ */
+function changeSetting(
+  changed: Partial<Settings>,
+  onSaved: (saved: boolean) => void,
+  clearHGroupLevel = false,
+) {
+  const previous = store.getState().session.settings;
+  applySettings(changed, clearHGroupLevel);
+  globals.connection.send(
+    "settings",
+    {
+      settings: changed,
+      ...(clearHGroupLevel && { cleared: ["hGroupLevel"] }),
+    },
+    (reply) => {
+      if (!reply.ok) {
+        // Change back only what this change set, since other settings can change meanwhile.
+        const keys = Object.keys(changed) as Array<keyof Settings>;
+        if (clearHGroupLevel) {
+          keys.push("hGroupLevel");
+        }
+        const undo: Partial<Settings> = {};
+        for (const key of keys) {
+          if (previous[key] !== undefined) {
+            Object.assign(undo, { [key]: previous[key] });
+          }
+        }
+        applySettings(
+          undo,
+          keys.includes("hGroupLevel") && previous.hGroupLevel === undefined,
+        );
+      }
+      onSaved(reply.ok);
+    },
+  );
+}
+
+/** Changes our settings here. `clearHGroupLevel` removes the H-Group level. */
+function applySettings(changed: Partial<Settings>, clearHGroupLevel: boolean) {
+  const { settings } = store.getState().session;
+  const { hGroupLevel: _cleared, ...withoutLevel } = settings;
   store.dispatch(
     settingsChanged({
-      ...store.getState().session.settings,
+      ...(clearHGroupLevel ? withoutLevel : settings),
       ...changed,
     }),
   );
-  globals.connection.send("settings", { settings: changed });
 }
 
 /**
- * Returns the "Saved" status of a row, which goes before its control, and a function that shows it.
- * The status takes no room until the first save.
+ * Returns the "Saved" status of a row, which goes before its control, and a function that shows it,
+ * or "Not saved" if the server did not save the change. The status takes no room until the first
+ * save.
  */
-function useSavedStatus(): [React.ReactNode, () => void] {
+function useSavedStatus(): [React.ReactNode, (saved: boolean) => void] {
   const reducedMotion = useAppSelector(
     (state) => state.session.settings.reducedMotion,
   );
   const [saves, setSaves] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [saved, setSaved] = useState(true);
 
   useEffect(() => {
     if (saves === 0) {
@@ -411,8 +450,9 @@ function useSavedStatus(): [React.ReactNode, () => void] {
     };
   }, [saves]);
 
-  const showSaved = useRef(() => {
+  const showSaved = useRef((isSaved: boolean) => {
     setSaves((count) => count + 1);
+    setSaved(isSaved);
     setVisible(true);
   }).current;
 
@@ -420,7 +460,8 @@ function useSavedStatus(): [React.ReactNode, () => void] {
     saves === 0 ? undefined : (
       <span
         className={[
-          "tw:shrink-0 tw:text-[0.9em] tw:whitespace-nowrap tw:text-green-text",
+          "tw:shrink-0 tw:text-[0.9em] tw:whitespace-nowrap",
+          saved ? "tw:text-green-text" : "tw:text-error",
           visible
             ? "tw:visible tw:opacity-100"
             : `tw:invisible tw:opacity-0 ${reducedMotion ? "" : "tw:transition-[opacity,visibility] tw:duration-[0.4s] tw:ease-[ease]"}`,
@@ -429,8 +470,10 @@ function useSavedStatus(): [React.ReactNode, () => void] {
       >
         {/* New nodes for each save, so that screen readers announce every one. */}
         <Fragment key={saves}>
-          <i className="fas fa-check tw:mr-[0.4em]" />
-          Saved
+          <i
+            className={`fas ${saved ? "fa-check" : "fa-xmark"} tw:mr-[0.4em]`}
+          />
+          {saved ? "Saved" : "Not saved"}
         </Fragment>
       </span>
     );

@@ -39,6 +39,7 @@
   --color-green: var(--green);
   --color-green-text: var(--green-text);
   --color-green-tint: var(--green-tint);
+  --color-error: var(--error);
   --color-button-translucent: var(--button-translucent-bg);
   --color-button-translucent-hover: var(--button-translucent-hover-bg);
   --color-button-disabled: var(--button-disabled-bg);

@@ -180,7 +180,37 @@ describe("LobbyChat", () => {
         },
       });
       fireEvent.keyDown(input, { key: "Enter" });
-      expect(send).toHaveBeenLastCalledWith("chat", { text });
+      expect(send).toHaveBeenLastCalledWith(
+        "chat",
+        { text },
+        expect.any(Function),
+      );
     }
+  });
+
+  test("keeps a message that does not reach the server", () => {
+    const send = vi.fn(
+      (_command: string, _data: unknown, onReply: (reply: unknown) => void) => {
+        onReply({
+          ok: false,
+          refused: false,
+        });
+      },
+    );
+    Element.prototype.animate = vi.fn();
+    globals.conn = { send } as unknown as NonNullable<typeof globals.conn>;
+    const input =
+      document.querySelector<HTMLInputElement>("#lobby-chat-input")!;
+
+    fireEvent.input(input, {
+      target: {
+        value: "hello",
+      },
+    });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(input.value).toBe("hello");
+    expect(lineTexts().at(-1)).toContain(
+      "Your message was not sent, because you are not connected to the server.",
+    );
   });
 });

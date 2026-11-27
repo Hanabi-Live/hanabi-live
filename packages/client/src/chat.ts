@@ -222,13 +222,27 @@ function send(room: ChatRoom, element: HTMLInputElement) {
     return;
   }
 
-  // Clear the chat box.
+  // Clear the chat box. A message that does not reach the server comes back, so that the player can
+  // send it again.
   element.value = "";
 
-  sendText(room, msg);
+  sendText(room, msg, (tableId) => {
+    if (element.value === "") {
+      element.value = msg;
+    }
+    sendSelfPmFromServer(
+      "Your message was not sent, because you are not connected to the server.",
+      tableId,
+      SelfChatMessageType.Error,
+    );
+  });
 }
 
-function sendText(room: ChatRoom, msgRaw: string) {
+function sendText(
+  room: ChatRoom,
+  msgRaw: string,
+  onNotSent: (tableId: TableId | undefined) => void,
+) {
   // Validate that they did not send an empty message.
   if (msgRaw === "") {
     return;
@@ -292,10 +306,18 @@ function sendText(room: ChatRoom, msgRaw: string) {
   }
 
   // This is not a command, so send a the chat message to the server.
-  globals.connection.send("chat", {
-    text: msg,
-    ...(tableId !== undefined && { tableId }),
-  });
+  globals.connection.send(
+    "chat",
+    {
+      text: msg,
+      ...(tableId !== undefined && { tableId }),
+    },
+    (reply) => {
+      if (!reply.ok && !reply.refused) {
+        onNotSent(tableId);
+      }
+    },
+  );
 }
 
 function keydown(element: HTMLInputElement, event: KeyboardEvent) {

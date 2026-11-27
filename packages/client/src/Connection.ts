@@ -33,10 +33,14 @@ const serverSchemas: Readonly<
 const replySchemas: Readonly<Partial<Record<string, z.ZodType>>> =
   REPLY_SCHEMAS;
 
-/** The server's answer to a request: its data, or a failure, which the client has shown. */
+/**
+ * The server's answer to a request: its data, or a failure. The client has shown a failure that the
+ * server sent (`refused`). Otherwise, the request did not reach the server, or the connection
+ * closed before the server answered.
+ */
 export type Reply<Command extends ClientRequest> =
   | { readonly ok: true; readonly data: ReplyData[Command] }
-  | { readonly ok: false };
+  | { readonly ok: false; readonly refused: boolean };
 
 /** A request that the server has not answered. */
 interface PendingRequest {
@@ -102,7 +106,10 @@ export class Connection {
           ((data: ServerEventData["warning"]) => void) | undefined;
         warning?.(structuredClone(notice.data));
       }
-      resolve({ ok: false });
+      resolve({
+        ok: false,
+        refused: true,
+      });
       return;
     }
     const schema = replySchemas[command];
@@ -122,7 +129,10 @@ export class Connection {
           `The server sent an invalid reply to "${command}": ${result.error.message}`,
         ),
       );
-      resolve({ ok: false });
+      resolve({
+        ok: false,
+        refused: true,
+      });
       return;
     }
     if (this.debug) {
@@ -154,7 +164,10 @@ export class Connection {
   onClose(event: CloseEvent): void {
     // A closed connection answers nothing more.
     for (const request of this.pending.values()) {
-      request.onReply?.({ ok: false });
+      request.onReply?.({
+        ok: false,
+        refused: false,
+      });
     }
     this.pending.clear();
     this.lifecycleCallback("close")?.(event);
@@ -238,7 +251,10 @@ export class Connection {
       this.ws.readyState !== WebSocket.OPEN
       || (!this.ready && !COMMANDS_BEFORE_READY.has(command))
     ) {
-      onReply?.({ ok: false });
+      onReply?.({
+        ok: false,
+        refused: false,
+      });
       return;
     }
 

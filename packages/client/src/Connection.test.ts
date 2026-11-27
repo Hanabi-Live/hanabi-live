@@ -182,12 +182,15 @@ describe("replies", () => {
       },
       refused: {
         ok: false,
+        refused: true,
       },
       ignored: {
         ok: false,
+        refused: true,
       },
       unanswered: {
         ok: false,
+        refused: false,
       },
     });
     expect(warnings).toEqual([{ message: "Not your table." }]);
