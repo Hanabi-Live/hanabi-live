@@ -33,12 +33,9 @@ const CLUE_REGEX =
   /^.+ tells (?<playerName>.*) about \w+ (?<clueWord>[A-Za-z]+|\d)s?$/u;
 
 export function createJsonFromReplay(tableId: TableId | undefined): void {
-  const { segment } = currentState().replay;
-  if (
-    segment === undefined
-    || store.getState().game.current === undefined
-    || !currentState().finished
-  ) {
+  const state = store.getState().game.current;
+  const segment = state?.replay.segment;
+  if (state === undefined || segment === undefined || !state.finished) {
     sendSelfPmFromServer(
       [
         "You can only use the ",

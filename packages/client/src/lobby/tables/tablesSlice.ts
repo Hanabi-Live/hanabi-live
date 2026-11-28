@@ -1,7 +1,6 @@
 // The tables in the lobby, from the "welcome", "table", and "tableRemoved" server messages.
 
 import type { ServerEventData } from "@hanabi-live/data";
-import { MAX_PLAYERS } from "@hanabi-live/game";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
   createEntityAdapter,
@@ -98,7 +97,7 @@ export const selectTableRows = createSelector(
       const firstJoinable =
         !foundJoinable
         && action === "join"
-        && table.playerNames.length < MAX_PLAYERS;
+        && table.playerNames.length < table.settings.maxPlayers;
       foundJoinable ||= firstJoinable;
       return {
         table,

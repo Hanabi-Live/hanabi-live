@@ -99,6 +99,8 @@ function stopRecovery() {
   stopped = true;
   clearConnectTimer();
   recovering = false;
+  // The client no longer tries to get the connection back, so the game screen must not wait for it.
+  store.dispatch(reconnectingChanged(false));
   clearWelcomeTimer();
   if (reconnectTimer === undefined) {
     return;

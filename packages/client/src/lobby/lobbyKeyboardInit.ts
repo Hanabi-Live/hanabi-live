@@ -39,6 +39,11 @@ export function lobbyKeyboardInit(): void {
     // On a lobby page, submit its form if enter is pressed (unless it activates a focused button or
     // link, or adds a line to a text area), and only allow returning otherwise.
     if (lobbyPage.isShown() && !isModalVisible()) {
+      // An element of the page already used the key, such as the list of variant suggestions.
+      if (event.defaultPrevented) {
+        return;
+      }
+
       // A page with a form has one submit button.
       const submitButton = document.querySelector<HTMLButtonElement>(
         '.lobby-page button[type="submit"]',
