@@ -57,6 +57,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         hanabi_protocol::is_player_count(players.len())
             && players.iter().all(|n| !n.is_empty()
                 && n.len() <= crate::accounts::MAX_USERNAME_LENGTH
+                && crate::accounts::clean_text(n) == **n
                 && !n.contains(|c| crate::accounts::USERNAME_SPECIAL_CHARACTERS.contains(c))),
         "Invalid players."
     );
@@ -164,7 +165,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                 text.chars().count() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
                 "Note too long."
             );
-            text.clone_into(&mut notes[i][j]);
+            notes[i][j] = crate::accounts::clean_text(text);
         }
     }
     let (game, invalid) = Game::replay_valid(

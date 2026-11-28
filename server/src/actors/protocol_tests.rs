@@ -3156,6 +3156,28 @@ async fn a_player_cannot_add_more_than_the_tag_limit_to_a_live_game() -> Result<
 }
 
 #[tokio::test]
+async fn a_game_with_a_control_character_in_a_tag_can_end() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Tag characters", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        // PostgreSQL refuses a NUL character in text, so the tag must not keep it.
+        h.send(0, "tagAdd", json!({"tableId":id,"tag":"a\u{0}b"}))
+            .await?;
+        h.send(0, "tableTerminate", json!({"tableId":id}))
+            .await
+            .context("The game could not end")?;
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

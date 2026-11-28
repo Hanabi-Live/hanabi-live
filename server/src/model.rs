@@ -675,11 +675,7 @@ pub fn normalize_tag(raw: &str) -> Result<String, String> {
             "Tags cannot be longer than {MAX_TAG_LENGTH} characters."
         ));
     }
-    let spaced: String = raw
-        .chars()
-        .map(|c| if c.is_whitespace() { ' ' } else { c })
-        .collect();
-    let tag = crate::accounts::normalize_string(spaced.trim_matches(' '));
+    let tag = crate::accounts::normalize_string(raw).trim().to_owned();
     if tag.is_empty() {
         return Err("Tags cannot be blank.".into());
     }

@@ -1,9 +1,22 @@
 use hanabi_protocol::MAX_CHAT_LENGTH;
 use unicode_normalization::UnicodeNormalization;
 
-/// Transliterates to lower-case ASCII, dropping characters that have no transliteration.
+/// Removes every character that is not text. All text from a client goes through this before the
+/// server stores it or matches it, so that no control character (such as NUL, which PostgreSQL
+/// refuses) or invisible character gets in. Every kind of space becomes a plain space, so that it
+/// still separates words. Other characters that are not letters, marks, numbers, punctuation, or
+/// symbols are removed.
+pub fn remove_non_text(input: &str) -> String {
+    let spaced = regex!(r"\s").replace_all(input, " ");
+    regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]")
+        .replace_all(&spaced, "")
+        .into_owned()
+}
+
+/// Transliterates to lower-case ASCII, dropping characters that have no transliteration and
+/// characters that are not text.
 pub fn normalize_string(input: &str) -> String {
-    deunicode::deunicode_with_tofu(input, "").to_lowercase()
+    remove_non_text(&deunicode::deunicode_with_tofu(input, "")).to_lowercase()
 }
 
 /// The key that a new username must not share with an existing account's normalized username. It
@@ -42,15 +55,10 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     maximum
 }
 
-/// Cleans text that a player writes, such as a chat message or a note. Every kind of space becomes a
-/// plain space, so that it still separates words. Other characters that are not letters, marks,
-/// numbers, punctuation, or symbols are removed. Spaces at the start and the end are removed.
+/// Cleans text that a player writes, such as a chat message or a note: removes the characters that
+/// are not text, then the spaces at the start and the end.
 pub fn clean_text(input: &str) -> String {
-    let spaced = regex!(r"\s").replace_all(input, " ");
-    regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]")
-        .replace_all(&spaced, "")
-        .trim()
-        .to_owned()
+    remove_non_text(input).trim().to_owned()
 }
 
 /// Returns the first `max` characters of `input`.
@@ -103,6 +111,9 @@ pub fn validate_username(input: &str) -> Result<&str, String> {
     let name = input.trim();
     if name.chars().any(char::is_whitespace) {
         return Err("Usernames cannot contain any whitespace characters.".into());
+    }
+    if name.chars().any(char::is_control) {
+        return Err("Usernames cannot contain any control characters.".into());
     }
     if name.len() < MIN_USERNAME_LENGTH {
         return Err(format!(
@@ -212,6 +223,10 @@ mod tests {
         assert_eq!(normalize_username(" \u{c5}lice "), "alice");
         assert_eq!(normalize_string("\u{391}lice"), "alice");
         assert_eq!(normalize_string("\u{10ffff}"), "");
+        // PostgreSQL refuses a NUL character in text.
+        assert_eq!(normalize_string("A\u{0}b\u{1b}c\u{7f}"), "abc");
+        assert_eq!(remove_non_text(" a\u{0}\tb\u{202E} "), " a b ");
+        assert!(validate_username("Al\u{0}ice").is_err());
         for emoji in ["🦄", "🇺🇸", "#\u{20e3}", "©"] {
             assert!(has_username_emoji(emoji), "{emoji}");
         }
