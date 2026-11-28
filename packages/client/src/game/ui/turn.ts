@@ -1,6 +1,7 @@
 import { globals as lobbyGlobals } from "../../Globals.ts";
 import { store } from "../../store.ts";
 import { toWireAction } from "../../wire.ts";
+import * as gameSession from "../gameSession.ts";
 import { gameUpdated } from "../gameSlice.ts";
 import * as hypothetical from "../hypothetical.ts";
 import { newUiMoveSent, newUiSentMoveCleared } from "../newUi/newUiSlice.ts";
@@ -25,6 +26,11 @@ export function end(clientAction: ClientAction): void {
     return;
   }
 
+  // A spectator who watches from a player's seat does not move for them.
+  if (!globals.state.playing) {
+    return;
+  }
+
   const { turnNum, currentPlayerIndex } = globals.state.ongoingGame.turn;
 
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
@@ -42,9 +48,12 @@ export function end(clientAction: ClientAction): void {
       (reply) => {
         // The server refused the move, or it never reached the server (such as when the connection
         // is down), so the move no longer waits. A move that succeeds ends the turn instead.
-        if (!reply.ok && store.getState().newUi.sentMove?.turnNum === turnNum) {
-          store.dispatch(newUiSentMoveCleared());
+        if (reply.ok || store.getState().newUi.sentMove?.turnNum !== turnNum) {
+          return;
         }
+
+        store.dispatch(newUiSentMoveCleared());
+        hideWaitingOnServer();
       },
     );
     return;
@@ -76,4 +85,21 @@ function showWaitingOnServer(clientAction: ClientAction) {
       turnNum: globals.state.ongoingGame.turn.turnNum,
     }),
   );
+}
+
+/**
+ * The move did not end our turn, so the classic screen shows the clue area again. (When a turn
+ * ends, "turnView.ts" does this.)
+ */
+function hideWaitingOnServer() {
+  if (!gameSession.isOpen()) {
+    return;
+  }
+
+  globals.elements.waitingOnServer?.hide();
+  globals.elements.waitingOnServerAnimation?.stop();
+  globals.elements.clueArea?.visible(
+    globals.state.replay.segment === undefined,
+  );
+  globals.layers.UI.batchDraw();
 }

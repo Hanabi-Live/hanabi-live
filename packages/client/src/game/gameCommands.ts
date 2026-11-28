@@ -379,7 +379,9 @@ gameCommands.set("gameState", (data) => {
 
   // We might need to go to a specific turn if we loaded a URL such as:
   // http://localhost/replay/123#5
-  if (specificTurnString !== undefined) {
+  // In an ongoing game, the hash is only the turn that the screen last showed. Going to it after a
+  // reconnection would put a player into the in-game replay on an old turn.
+  if (specificTurnString !== undefined && phase.type === "replay") {
     replay.goTo(specificTurnString);
   }
 });

@@ -127,6 +127,8 @@ function tick() {
     activePlayerIndex === undefined
     || state === undefined
     || elapsedTime < 0
+    // A pause can arrive after the "clock" message that started this count.
+    || state.pause.pausingPlayerIndex !== undefined
   ) {
     return;
   }
@@ -148,7 +150,6 @@ function tick() {
     && session.settings.soundTimer
     && isLowOnTime(milliseconds)
     && Math.abs(elapsedTime - TICK_MILLISECONDS) < TICK_TOLERANCE_MILLISECONDS
-    && state.pause.pausingPlayerIndex === undefined
     && !session.errorOccurred;
   if (warning) {
     sounds.play(SoundType.Tone);

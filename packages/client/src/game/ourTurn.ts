@@ -14,7 +14,7 @@ import { gameUpdated } from "./gameSlice.ts";
 import type { State } from "./types/State.ts";
 import * as arrows from "./ui/arrows.ts";
 import { PREPLAY_DELAY_MILLISECONDS } from "./ui/constants.ts";
-import { isOurTurn } from "./ui/isOurTurn.ts";
+import { isOurTurnInOngoingGame } from "./ui/isOurTurn.ts";
 
 export function onOurTurn(state: State): void {
   if (store.getState().session.settings.desktopNotification) {
@@ -70,7 +70,7 @@ function handlePremove(state: State) {
   // We do not want to send the action right away, or else it introduces bugs.
   setTimeout(() => {
     // As a sanity check, ensure that it is still our turn.
-    if (!isOurTurn()) {
+    if (!isOurTurnInOngoingGame()) {
       return;
     }
 

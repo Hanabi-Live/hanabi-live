@@ -14,7 +14,9 @@ vi.mock("../Globals.ts", () => ({
 }));
 vi.mock("../notifications.ts", () => ({ send: vi.fn() }));
 vi.mock("./ui/arrows.ts", () => ({ hideAll: vi.fn() }));
-vi.mock("./ui/isOurTurn.ts", () => ({ isOurTurn: () => true }));
+vi.mock("./ui/isOurTurn.ts", () => ({
+  isOurTurnInOngoingGame: () => true,
+}));
 const { initialState } =
   await import("./reducers/initialStates/initialState.ts");
 const { onOurTurn } = await import("./ourTurn.ts");

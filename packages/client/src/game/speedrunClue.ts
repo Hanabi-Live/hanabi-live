@@ -84,6 +84,16 @@ export function getRankForSpeedrunClue(
     return chosenRank;
   }
 
-  // Otherwise, assume that they want to use the real rank of the card.
-  return isValidClueRank(rank) ? rank : undefined;
+  // Otherwise, assume that they want to use the real rank of the card. In some variants, that rank
+  // is not a clue (such as a 3 in "Odds and Evens"), so use the first rank that touches the card.
+  const ownRank =
+    isValidClueRank(rank) && variant.clueRanks.includes(rank)
+      ? rank
+      : undefined;
+  return ownRank !== undefined
+    && isCardTouchedByClueRank(variant, ownRank, suitIndex, suit, rank)
+    ? ownRank
+    : (variant.clueRanks.find((clueRank) =>
+        isCardTouchedByClueRank(variant, clueRank, suitIndex, suit, rank),
+      ) ?? ownRank);
 }

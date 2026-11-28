@@ -196,7 +196,7 @@ function shouldGiveClue() {
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
   const ourTurn =
-    isOurSeat(currentPlayerIndex, globals.metadata)
+    (globals.state.playing && isOurSeat(currentPlayerIndex, globals.metadata))
     || globals.state.replay.hypothetical !== undefined;
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);

@@ -293,7 +293,7 @@ export function openEditTooltip(card: HanabiCard, isDesktop = true): void {
 
     if (key === "Tab") {
       event.preventDefault();
-      chat.tab(input, event.shiftKey);
+      chat.tab(inputElement, event.shiftKey);
       return;
     }
 

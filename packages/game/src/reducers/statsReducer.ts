@@ -217,6 +217,7 @@ function statsReducerFunction(
   if (action.type === "discard" || action.type === "misplay") {
     statsState.doubleDiscardCard = getDoubleDiscardCard(
       action.order,
+      action.playerIndex,
       gameState,
       variant,
     );

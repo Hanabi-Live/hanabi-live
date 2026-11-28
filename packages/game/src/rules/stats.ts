@@ -12,6 +12,7 @@ import type { CardOrder } from "../types/CardOrder.ts";
 import type { NumPlayers } from "../types/NumPlayers.ts";
 import type { NumSuits } from "../types/NumSuits.ts";
 import type { Perspective } from "../types/Perspective.ts";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import {
   isAllCardPossibilitiesTrash,
   isCardNeededForMaxScore,
@@ -451,6 +452,7 @@ export function getFutureEfficiency(gameState: GameState): number | undefined {
  */
 export function getDoubleDiscardCard(
   orderOfDiscardedCard: CardOrder,
+  discardingPlayerIndex: PlayerIndex,
   gameState: GameState,
   variant: Variant,
 ): CardOrder | undefined {
@@ -464,9 +466,9 @@ export function getDoubleDiscardCard(
   }
 
   // It is never a double discard situation if the next player has one or more positive clues on
-  // every card in their hand.
-  const nextPlayerIndex =
-    (gameState.turn.currentPlayerIndex + 1) % gameState.hands.length;
+  // every card in their hand. (The turn may have already passed to them: it does so on the discard
+  // when the deck is empty, and on the draw otherwise.)
+  const nextPlayerIndex = (discardingPlayerIndex + 1) % gameState.hands.length;
   const hand = gameState.hands[nextPlayerIndex];
   if (hand !== undefined) {
     const nextPlayerLocked = isHandLocked(hand, gameState.deck);

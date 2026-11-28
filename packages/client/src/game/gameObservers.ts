@@ -12,7 +12,7 @@ import { onOurTurn } from "./ourTurn.ts";
 import type { SoundData } from "./soundEffects.ts";
 import { onNewSoundEffect } from "./soundEffects.ts";
 import type { State } from "./types/State.ts";
-import { isOurTurn } from "./ui/isOurTurn.ts";
+import { isOurTurnInOngoingGame } from "./ui/isOurTurn.ts";
 import type { Listener, Subscription } from "./ui/reactive/observeStore.ts";
 import { observeStore, SKIP } from "./ui/reactive/observeStore.ts";
 import * as replay from "./ui/replay.ts";
@@ -82,7 +82,7 @@ function onOngoingTurnChanged(
     data.segment !== undefined
     && previousData.segment !== undefined
     && Math.abs(data.segment - previousData.segment) >= 2;
-  if (!jumped && isOurTurn()) {
+  if (!jumped && isOurTurnInOngoingGame()) {
     onOurTurn(state);
   }
 }

@@ -67,4 +67,10 @@ describe("getRankForSpeedrunClue", () => {
   test("ignores a chosen rank that does not touch the card", () => {
     expect(getRankForSpeedrunClue(PRISM, 0, 3, 2)).toBe(3);
   });
+
+  test("uses a rank that touches the card when its own rank is not a clue", () => {
+    const oddsAndEvens = getVariant("Odds and Evens (5 Suits)");
+    expect(getRankForSpeedrunClue(oddsAndEvens, 0, 3, undefined)).toBe(1);
+    expect(getRankForSpeedrunClue(oddsAndEvens, 0, 4, undefined)).toBe(2);
+  });
 });

@@ -325,7 +325,8 @@ function getNormalGameplayHotkeyFunction(
   // Do nothing if we are not in a normal game situation.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const ourTurnInOngoingGame =
-    globals.state.replay.segment === undefined
+    globals.state.playing
+    && globals.state.replay.segment === undefined
     && isOurSeat(currentPlayerIndex, globals.metadata);
   const controlHypotheticalInSharedReplay =
     globals.state.replay.shared !== undefined
