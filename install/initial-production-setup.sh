@@ -114,6 +114,10 @@ SQL
   # Configure the server.
   session_secret=$(openssl rand -hex 64)
   chmod 600 .env
+  # The operator's last line can lack a newline, so that the first value would join it.
+  if [[ -s .env && "$(tail --bytes 1 .env)" != "" ]]; then
+    echo >> .env
+  fi
   cat >> .env << EOF
 DOMAIN="$DOMAIN"
 SESSION_SECRET="$session_secret"
