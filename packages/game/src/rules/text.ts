@@ -183,7 +183,7 @@ export function getGameOverText(
     }
 
     case "allOrNothingSoftlock": {
-      return `${playerName} was left with 0 clues and 0 cards!`;
+      return `${playerName} was left with 0 cards and no clue to give!`;
     }
   }
 

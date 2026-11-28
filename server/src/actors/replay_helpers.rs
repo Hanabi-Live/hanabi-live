@@ -81,12 +81,17 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     {
         deck.clone_from(seeded);
     }
+    // The client counts the copies of each card from the variant, so a deck must have exactly them.
+    let sorted = |deck: &[Card]| {
+        let mut cards: Vec<_> = deck.iter().map(|c| (c.suit_index, c.rank)).collect();
+        cards.sort_unstable();
+        cards
+    };
+    let variant_deck = hanabi_engine::create_deck(variant);
     ensure_or_reject!(
-        deck.len() == hanabi_engine::create_deck(variant).len()
-            && deck.iter().all(|c| c.suit_index < variant.suits.len()
-                && (c.rank == hanabi_protocol::START_CARD_RANK || variant.ranks.contains(&c.rank))),
-        "The deck must have {} valid cards in it.",
-        hanabi_engine::create_deck(variant).len()
+        sorted(&deck) == sorted(&variant_deck),
+        "The deck must have the {} cards of the variant, in any order.",
+        variant_deck.len()
     );
     ensure_or_reject!(
         seeded.as_ref().is_none_or(|d| *d == deck),
@@ -366,9 +371,20 @@ mod tests {
             error(input(seed, Some(&other))),
             "The deck does not match the seed."
         );
+        // A deck must have every card of the variant, with the right number of copies of each.
+        let not_the_variant_deck = "The deck must have the 50 cards of the variant, in any order.";
+        let mut extra_copy = other.clone();
+        let duplicated = extra_copy[0];
+        let replaced = extra_copy.iter().position(|c| *c != duplicated).unwrap();
+        extra_copy[replaced] = duplicated;
+        let mut start_card = other.clone();
+        start_card[0].rank = hanabi_protocol::START_CARD_RANK;
+        for deck in [&seeded[..10], &extra_copy[..], &start_card[..]] {
+            assert_eq!(error(input("", Some(deck))), not_the_variant_deck);
+        }
         assert_eq!(
             error(input(seed, Some(&seeded[..10]))),
-            "The deck must have 50 valid cards in it."
+            not_the_variant_deck
         );
     }
 }

@@ -6,6 +6,7 @@ import type { GameState } from "../interfaces/GameState.ts";
 import type { Variant } from "../interfaces/Variant.ts";
 import type { Rank } from "../types/Rank.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
+import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
 import {
   getDiscardHelpers,
   getNumCopiesOfCard,
@@ -170,34 +171,74 @@ export function isCardPotentiallyPlayable(
   variant: Variant,
 ): boolean {
   return card.possibleCards.some((possibleCard) => {
-    const [suitIndex, rank] = possibleCard;
-
     // Always consider inverted cards to be "playable".
-    const suit = variant.suits[suitIndex];
-    if (suit !== undefined && suit.inverted) {
-      return true;
-    }
+    const suit = variant.suits[possibleCard[0]];
+    return (
+      (suit !== undefined && suit.inverted)
+      || isNextOnPlayStack(
+        possibleCard,
+        deck,
+        playStacks,
+        playStackDirections,
+        playStackStarts,
+        variant,
+      )
+    );
+  });
+}
 
-    const playStack = playStacks[suitIndex];
-    if (playStack === undefined) {
-      return false;
-    }
-
-    const playStackDirection = playStackDirections[suitIndex];
-    if (playStackDirection === undefined) {
-      return false;
-    }
-
-    const nextRanksArray = getNextPlayableRanks(
-      suitIndex,
-      playStack,
-      playStackDirection,
+/**
+ * Whether one of the card's possible identities is the next card of its play stack. The server
+ * engine ends the game when no player left to act holds such a card (`has_remaining_play`). Unlike
+ * `isCardPotentiallyPlayable`, this treats inverted suits like any other suit, as the engine does.
+ */
+export function isCardPotentiallyNextOnPlayStack(
+  card: CardState,
+  deck: readonly CardState[],
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
+  variant: Variant,
+): boolean {
+  return card.possibleCards.some((possibleCard) =>
+    isNextOnPlayStack(
+      possibleCard,
+      deck,
+      playStacks,
+      playStackDirections,
       playStackStarts,
       variant,
-      deck,
-    );
-    return nextRanksArray.includes(rank);
-  });
+    ),
+  );
+}
+
+function isNextOnPlayStack(
+  [suitIndex, rank]: SuitRankTuple,
+  deck: readonly CardState[],
+  playStacks: GameState["playStacks"],
+  playStackDirections: GameState["playStackDirections"],
+  playStackStarts: GameState["playStackStarts"],
+  variant: Variant,
+): boolean {
+  const playStack = playStacks[suitIndex];
+  if (playStack === undefined) {
+    return false;
+  }
+
+  const playStackDirection = playStackDirections[suitIndex];
+  if (playStackDirection === undefined) {
+    return false;
+  }
+
+  const nextRanksArray = getNextPlayableRanks(
+    suitIndex,
+    playStack,
+    playStackDirection,
+    playStackStarts,
+    variant,
+    deck,
+  );
+  return nextRanksArray.includes(rank);
 }
 
 export function canCardPossiblyBeFromCluesOnly(

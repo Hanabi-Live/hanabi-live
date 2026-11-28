@@ -345,7 +345,7 @@ that have not been played yet and have only one copy remaining.)
   or misplayed. (Critical cards are cards that have not been played yet and have
   only one copy remaining.)
 - The game immediately ends with a score of 0 if a player has no cards in their
-  hand and no clue tokens are available.
+  hand and cannot give a clue.
 - (This is the fourth
   [official variant](https://github.com/hanabi/hanabi.github.io/blob/main/misc/rules.md#multicolor-variants).)
 

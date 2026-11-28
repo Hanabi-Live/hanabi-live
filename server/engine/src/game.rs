@@ -8,7 +8,7 @@ use crate::{
         needs_second_action, validate_character_action, validate_character_clue,
         validate_character_discard, validate_character_play,
     },
-    create_shuffled_deck, get_variant, index,
+    create_shuffled_deck, get_variant, index, int,
     rules::{
         calculate_max_score, clue_cost, clue_cost_for, draw_card, follower_misplays,
         has_remaining_play, remove_card, sees_card, touched_by, try_play, variant_for,
@@ -17,8 +17,8 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use hanabi_protocol::{
-    GameOverTurn, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
-    START_CARD_RANK,
+    Clue as WireClue, ClueRank, ClueTurn, ColorIndex, GameOverTurn, MAX_CLUES, MAX_PLAYERS,
+    MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
 };
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
@@ -91,8 +91,9 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
     ensure!(
         !identities.is_empty()
             && identities.len() <= hanabi_protocol::MAX_DECK_SIZE
-            && identities.iter().all(|c| c.suit_index < variant.suits.len()
-                && (c.rank == START_CARD_RANK || variant.ranks.contains(&c.rank))),
+            && identities
+                .iter()
+                .all(|c| c.suit_index < variant.suits.len() && variant.ranks.contains(&c.rank)),
         "The prepared deck contains invalid card identities."
     );
     // Every player has a character when detrimental characters are on, and none otherwise.
@@ -380,6 +381,40 @@ fn give_clue(
     character_post_clue(state, actor, target, clue, &touched);
 }
 
+/// Whether the active player can do anything. It asks `validate_action`, so that it agrees with
+/// the actions that the engine accepts.
+fn has_legal_action(state: &EngineState) -> bool {
+    let actor = state.active_player_index;
+    let variant = variant_for(state);
+    let top_of_deck = (state.deck_index < state.deck.len()).then_some(state.deck_index);
+    let card_actions = state.players[actor]
+        .hand
+        .iter()
+        .copied()
+        .chain(top_of_deck)
+        .map(target_card)
+        .flat_map(|card| [PlayerAction::Play(card), PlayerAction::Discard(card)]);
+    let colors = (0..variant.clue_colors.len())
+        .filter_map(|color| ColorIndex::new(int(color)))
+        .map(|color| WireClue::Color { color });
+    let ranks = variant
+        .clue_ranks
+        .iter()
+        .filter_map(|&rank| ClueRank::new(rank))
+        .map(|rank| WireClue::Rank { rank });
+    let clue_actions = colors.chain(ranks).flat_map(|clue| {
+        (0..state.players.len()).map(move |target| {
+            PlayerAction::Clue(ClueTurn {
+                receiver_index: seat(target),
+                clue,
+            })
+        })
+    });
+    card_actions
+        .chain(clue_actions)
+        .any(|action| validate_action(state, actor, &action).is_ok())
+}
+
 fn check_end(state: &mut EngineState) -> bool {
     use EndCondition::{
         AllOrNothingFail, AllOrNothingSoftlock, CharacterSoftlock, IdleTimeout, Normal,
@@ -388,7 +423,12 @@ fn check_end(state: &mut EngineState) -> bool {
     if state.end.is_some_and(|end| {
         matches!(
             end.condition,
-            Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout | CharacterSoftlock
+            Timeout
+                | TerminatedByPlayer
+                | TerminatedByVote
+                | IdleTimeout
+                | CharacterSoftlock
+                | AllOrNothingFail
         )
     }) {
         return true;
@@ -400,15 +440,14 @@ fn check_end(state: &mut EngineState) -> bool {
         (SpeedrunFail, None)
     } else if state.options.all_or_nothing && state.max_score < v.max_score {
         (AllOrNothingFail, None)
+    } else if state.score == state.max_score {
+        (Normal, None)
     } else if state.options.all_or_nothing
         && state.players[state.active_player_index].hand.is_empty()
-        && state.clue_tokens < clue_cost(state)
+        && !has_legal_action(state)
     {
         (AllOrNothingSoftlock, Some(state.active_player_index))
-    } else if Some(state.turn) == state.end_turn
-        || state.score == state.max_score
-        || !has_remaining_play(state)
-    {
+    } else if Some(state.turn) == state.end_turn || !has_remaining_play(state) {
         (Normal, None)
     } else {
         return false;
@@ -499,13 +538,6 @@ pub fn apply_action(
             let inverted = state.interpretation == Interpretation::Live
                 && variant_for(state).suits[state.deck[order].suit_index].inverted;
             let is_play = chose_play != inverted;
-            ensure!(
-                !(is_play
-                    && variant_for(state).sudoku
-                    && state.deck[order].rank == START_CARD_RANK
-                    && state.stacks[state.deck[order].suit_index].is_none()),
-                "The prepared card cannot start a Sudoku stack."
-            );
             if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(state) {
                 state.clue_tokens += 1;
             }
@@ -540,14 +572,20 @@ pub fn terminate_game(
     if termination.actor_index >= previous.players.len() {
         return reject("You are not playing in this game.");
     }
-    if !matches!(
-        termination.condition,
-        EndCondition::AllOrNothingFail
-            | EndCondition::IdleTimeout
-            | EndCondition::TerminatedByPlayer
-            | EndCondition::TerminatedByVote
-            | EndCondition::Timeout
-    ) {
+    // A recorded game can end as a failed All or Nothing game where the rules here do not.
+    let valid = match termination.condition {
+        EndCondition::AllOrNothingFail => previous.options.all_or_nothing,
+        EndCondition::IdleTimeout
+        | EndCondition::TerminatedByPlayer
+        | EndCondition::TerminatedByVote
+        | EndCondition::Timeout => true,
+        EndCondition::Normal
+        | EndCondition::Strikeout
+        | EndCondition::SpeedrunFail
+        | EndCondition::CharacterSoftlock
+        | EndCondition::AllOrNothingSoftlock => false,
+    };
+    if !valid {
         return reject("That is not a valid value for the end game action.");
     }
     if termination

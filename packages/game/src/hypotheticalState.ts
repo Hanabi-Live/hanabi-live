@@ -8,7 +8,7 @@ import type { GameMetadata } from "./interfaces/GameMetadata.ts";
 import type { GameState } from "./interfaces/GameState.ts";
 import { recalculateDeductions } from "./reducers/cardDeductionReducer.ts";
 import { gameReducer } from "./reducers/gameReducer.ts";
-import { isCardPotentiallyPlayable } from "./rules/card.ts";
+import { isCardPotentiallyNextOnPlayStack } from "./rules/card.ts";
 import { getTotalCardsInDeck } from "./rules/deck.ts";
 import { isGameOver } from "./rules/gameOver.ts";
 import type { PlayerIndex } from "./types/PlayerIndex.ts";
@@ -314,7 +314,7 @@ function isHypotheticalOver(
       };
     }
 
-    return isCardPotentiallyPlayable(
+    return isCardPotentiallyNextOnPlayStack(
       shownCard,
       gameState.deck,
       gameState.playStacks,

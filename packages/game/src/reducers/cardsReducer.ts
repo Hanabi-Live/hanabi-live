@@ -159,7 +159,15 @@ export function cardsReducer(
 
       let { location, segmentDiscarded, segmentPlayed, isMisplayed } = card;
 
-      switch (action.type) {
+      // The server does not tell the players of a "Throw It in a Hole" game the identity of a
+      // misplayed card. They must not see that the play failed, so the card is stored as a played
+      // card. Otherwise, a card that the clues show would count as discarded.
+      const resultHidden =
+        variant.throwItInAHole
+        && action.type === "misplay"
+        && action.identity === undefined;
+
+      switch (resultHidden ? "play" : action.type) {
         case "play": {
           location = "playStack";
           segmentPlayed = game.turn.segment;

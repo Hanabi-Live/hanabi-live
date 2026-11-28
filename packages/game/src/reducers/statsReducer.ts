@@ -65,6 +65,12 @@ function statsReducerFunction(
 ) {
   const variant = getVariantById(metadata.options.variantId);
 
+  // The players of an ongoing "Throw It in a Hole" game do not see whether a play succeeded.
+  const misplayHidden =
+    action.type === "misplay"
+    && perspective === "seat"
+    && variant.throwItInAHole;
+
   switch (action.type) {
     case "clue": {
       // A clue was spent.
@@ -76,7 +82,7 @@ function statsReducerFunction(
     case "misplay": {
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (perspective !== "seat" || !variant.throwItInAHole) {
+      if (!misplayHidden) {
         statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
@@ -214,15 +220,15 @@ function statsReducerFunction(
     || statsState.cluesStillUsable < 1;
 
   // Handle double discard calculation.
-  if (action.type === "discard" || action.type === "misplay") {
+  if (misplayHidden || action.type === "play" || action.type === "clue") {
+    statsState.doubleDiscardCard = undefined;
+  } else if (action.type === "discard" || action.type === "misplay") {
     statsState.doubleDiscardCard = getDoubleDiscardCard(
       action.order,
       action.playerIndex,
       gameState,
       variant,
     );
-  } else if (action.type === "play" || action.type === "clue") {
-    statsState.doubleDiscardCard = undefined;
   }
 
   // Handle `numSubsequentBlindPlays`.

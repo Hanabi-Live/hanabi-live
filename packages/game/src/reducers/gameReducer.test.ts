@@ -14,6 +14,7 @@ import {
   play,
   rankClue,
 } from "../testActions.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
 import type { ActionClue, GameAction } from "../types/gameActions.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
@@ -33,6 +34,23 @@ const CLUE_STARVED_METADATA = getDefaultMetadata(
   "Clue Starved (6 Suits)",
 );
 const SUDOKU_METADATA = getDefaultMetadata(NUM_PLAYERS, "Sudoku (5 Suits)");
+
+/** The parts of a game that a player of "Throw It in a Hole" sees, or that decide what they see. */
+function shown(gameState: GameState) {
+  return {
+    maxScore: gameState.stats.maxScore,
+    maxScorePerStack: gameState.stats.maxScorePerStack,
+    pace: gameState.stats.pace,
+    paceRisk: gameState.stats.paceRisk,
+    cardsGotten: gameState.stats.cardsGotten,
+    cluesStillUsable: gameState.stats.cluesStillUsable,
+    doubleDiscardCard: gameState.stats.doubleDiscardCard,
+    cardStatus: gameState.cardStatus,
+    deck: gameState.deck,
+    hole: gameState.hole,
+    clueTokens: gameState.clueTokens,
+  };
+}
 
 describe("gameReducer", () => {
   test("rejects a draw that skips a card order", () => {
@@ -554,6 +572,65 @@ describe("gameReducer", () => {
       state = gameReducer(state, testClue, "seat", DEFAULT_METADATA);
 
       expect(state.clueTokens).toBe(MAX_CLUES - 1);
+    });
+  });
+
+  describe("Throw It in a Hole", () => {
+    // The team needs both cards. The red 5 has one copy, and the red 1 has more.
+    test.each([5, 1] as const)(
+      "a hidden misplay of a known red %i looks like a hidden play to a player",
+      (rank) => {
+        const metadata = getDefaultMetadata(2, "Throw It in a Hole (5 Suits)");
+        let state = getInitialGameStateTest(metadata);
+        const setup = [
+          // We do not see our own card.
+          draw(0, 0),
+          draw(1, 1, 1, 1),
+          // The clues show the identity of our card.
+          colorClue(0, 1, [0], 0),
+          rankClue(rank, 1, [0], 0),
+        ];
+        for (const action of setup) {
+          state = gameReducer(state, action, "seat", metadata);
+        }
+        expect(state.deck[0]).toMatchObject({
+          suitIndex: 0,
+          rank,
+        });
+
+        // The server does not tell a player the identity of a card that goes into the hole.
+        const afterPlay = gameReducer(
+          state,
+          {
+            type: "play",
+            playerIndex: 0,
+            order: 0 as CardOrder,
+          },
+          "seat",
+          metadata,
+        );
+        const afterMisplay = gameReducer(
+          state,
+          misplay(0, 0, undefined, undefined),
+          "seat",
+          metadata,
+        );
+
+        expect(afterMisplay.stats.maxScore).toBe(state.stats.maxScore);
+        expect(shown(afterMisplay)).toEqual(shown(afterPlay));
+      },
+    );
+
+    test("a spectator sees a misplayed card in the discard pile", () => {
+      const metadata = getDefaultMetadata(2, "Throw It in a Hole (5 Suits)");
+      let state = getInitialGameStateTest(metadata);
+      state = gameReducer(state, draw(0, 0, 0, 5), "spectator", metadata);
+      state = gameReducer(state, misplay(0, 0, 0, 5), "spectator", metadata);
+      expect(state.deck[0]).toMatchObject({
+        location: "discard",
+        isMisplayed: true,
+      });
+      expect(state.stats.maxScore).toBe(24);
     });
   });
 

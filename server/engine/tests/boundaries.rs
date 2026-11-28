@@ -355,7 +355,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
     let deck = vec![
         DeckCard {
             suit_index: 0,
-            rank: 7,
+            rank: 2,
         },
         DeckCard {
             suit_index: 1,
@@ -410,21 +410,25 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
         input.deck = Some(deck);
         assert!(create_game(input).is_err());
     }
-    let mut input = setup(
-        Options {
-            variant_name: "Sudoku (5 Suits)".into(),
-            ..Options::default()
-        },
-        None,
-    );
-    input.deck = Some(vec![DeckCard {
-        suit_index: 0,
-        rank: 7,
-    }]);
-    let state = create_game(input).unwrap();
-    let before = state.clone();
-    assert!(applied(&state, 0, action(RecordedActionType::Play, 0, 0), None).is_err());
-    assert_eq!(state, before);
+    // Only "Up or Down" variants have START cards.
+    for (variant_name, valid) in [
+        (hanabi_protocol::DEFAULT_VARIANT_NAME, false),
+        ("Sudoku (5 Suits)", false),
+        ("Up or Down (5 Suits)", true),
+    ] {
+        let mut input = setup(
+            Options {
+                variant_name: variant_name.into(),
+                ..Options::default()
+            },
+            None,
+        );
+        input.deck = Some(vec![DeckCard {
+            suit_index: 0,
+            rank: hanabi_protocol::START_CARD_RANK,
+        }]);
+        assert_eq!(create_game(input).is_ok(), valid, "{variant_name}");
+    }
     // A rank that the variant does not have could start a Sudoku stack that is longer than the
     // variant's stacks.
     let mut input = setup(
@@ -585,6 +589,127 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
     assert_eq!(state.end_turn, None);
     assert_eq!(state.score, 0);
     assert!(state.actions.len() > 60 && state.actions.len() <= 2 * state.deck.len() + 9);
+}
+
+/// An All or Nothing game of "Null (3 Suits)" with an empty deck. Alice has no cards. Bob holds a
+/// spare red 1 and the Null 5, which no clue touches. Every other card that the team needs is
+/// played. It is Bob's turn.
+fn null_endgame(empty_clues: bool) -> EngineState {
+    const VARIANT_NAME: &str = "Null (3 Suits)";
+    let mut input = setup(
+        Options {
+            variant_name: VARIANT_NAME.into(),
+            all_or_nothing: true,
+            empty_clues,
+            ..Options::default()
+        },
+        None,
+    );
+    let variant = get_variant(VARIANT_NAME).expect("the catalog has the variant");
+    input.deck = Some(create_deck(variant));
+    let mut state = create_game(input).expect("the options are valid");
+    let null = state.stacks.len() - 1;
+    let order_of = |suit_index, rank| {
+        state
+            .deck
+            .iter()
+            .position(|c| c.suit_index == suit_index && c.rank == rank)
+            .expect("the deck has every card of the variant")
+    };
+    let hand = vec![order_of(0, 1), order_of(null, 5)];
+    state.players[0].hand = vec![];
+    state.players[1].hand = hand;
+    state.deck_index = state.deck.len();
+    state.stacks = vec![Some(5), Some(5), Some(4)];
+    state.score = state.max_score - 1;
+    state.clue_tokens -= 1;
+    state.active_player_index = 1;
+    state
+}
+
+#[test]
+fn all_or_nothing_ends_when_a_player_without_cards_has_no_legal_clue() {
+    let discard_spare = |state: &EngineState| {
+        let spare = int(state.players[1].hand[0]);
+        applied(
+            state,
+            1,
+            action(RecordedActionType::Discard, spare, 0),
+            None,
+        )
+        .unwrap()
+    };
+    // Alice cannot play, discard, or give a clue that touches a card.
+    let stuck = discard_spare(&null_endgame(false));
+    assert_eq!(stuck.state.clue_tokens, 8);
+    assert_eq!(
+        stuck.state.end,
+        Some(GameEnd {
+            condition: EndCondition::AllOrNothingSoftlock,
+            player: Some(0),
+        })
+    );
+    assert!(stuck.events.iter().any(|e| matches!(
+        e,
+        EngineEvent::GameOver {
+            end_condition: EndCondition::AllOrNothingSoftlock,
+            player_index: Some(0),
+            ..
+        }
+    )));
+    // With empty clues, Alice can give a clue that touches no card.
+    let free = discard_spare(&null_endgame(true));
+    assert_eq!(free.state.end, None);
+    assert!(
+        applied(
+            &free.state,
+            0,
+            action(RecordedActionType::RankClue, 1, 1),
+            None
+        )
+        .is_ok()
+    );
+    // The last play wins the game, although the next player has no cards and no legal clue.
+    let state = null_endgame(false);
+    let last = int(state.players[1].hand[1]);
+    let won = applied(&state, 1, action(RecordedActionType::Play, last, 0), None).unwrap();
+    assert_eq!(
+        won.state.end.map(|end| end.condition),
+        Some(EndCondition::Normal)
+    );
+    assert_eq!(won.state.score, won.state.max_score);
+}
+
+#[test]
+fn a_recorded_all_or_nothing_failure_ends_the_game() {
+    let fail = Termination {
+        actor_index: 0,
+        condition: EndCondition::AllOrNothingFail,
+        player_index: Some(0),
+        votes: None,
+    };
+    let state = create_game(setup(
+        Options {
+            all_or_nothing: true,
+            ..Options::default()
+        },
+        None,
+    ))
+    .unwrap();
+    let ended = terminated(&state, fail.clone(), None).unwrap();
+    assert_eq!(
+        ended.state.end.map(|end| end.condition),
+        Some(EndCondition::AllOrNothingFail)
+    );
+    assert!(ended.events.iter().any(|e| matches!(
+        e,
+        EngineEvent::GameOver {
+            end_condition: EndCondition::AllOrNothingFail,
+            ..
+        }
+    )));
+    // A game without the option cannot fail as one.
+    assert!(terminated(&standard(), fail, None).is_err());
 }
 
 #[test]
