@@ -1969,6 +1969,9 @@ function PossibleCardsGrid({
     anchorRect.top,
     anchorRect.width,
     unit,
+    // A clue can rule out a suit while the bubble is open. The bubble then has fewer rows, so it
+    // takes its place again.
+    bubble.suits.length,
   ]);
 
   // The bubble sits a little away from the card while it is closed, as a tooltip does. It slides in

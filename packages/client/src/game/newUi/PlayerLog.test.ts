@@ -5,7 +5,8 @@ import type { ClueLogEntry } from "./ClueLog.tsx";
 
 // The modals need a page.
 vi.mock("../../modals.ts", () => ({}));
-const { getPlayerLog, getPlayerActions } = await import("./PlayerLog.tsx");
+const { getPlayerLog, getLogSegments, getPlayerActions } =
+  await import("./PlayerLog.tsx");
 
 describe("getPlayerLog", () => {
   const log = [
@@ -160,6 +161,97 @@ describe("getPlayerActions", () => {
         type: "other",
         text: "Ran out of time",
       },
+    ]);
+  });
+
+  test("reads the lines of a hypothetical", () => {
+    const actions = getPlayerActions(
+      [
+        {
+          turn: 1,
+          text: "[Hypo] Alice plays Red 1 from slot #1",
+        },
+        {
+          turn: 2,
+          text: "[Hypo] Alice tells Bob about one red",
+        },
+        {
+          turn: 6,
+          text: "[Hypo] Alice ran out of time",
+        },
+      ],
+      "Alice",
+      deck,
+      [clue],
+      variant,
+    );
+    expect(actions.map((entry) => entry.action)).toEqual([
+      {
+        type: "play",
+        card: {
+          suitIndex: 0,
+          rank: 1,
+        },
+        slot: 1,
+        note: undefined,
+      },
+      {
+        type: "clue",
+        clue,
+      },
+      {
+        type: "other",
+        text: "Ran out of time",
+      },
+    ]);
+  });
+});
+
+describe("getLogSegments", () => {
+  // A game that a player terminates. The last lines get segments without a new turn.
+  const log = [
+    {
+      turn: 1,
+      text: "Alice goes first",
+    },
+    {
+      turn: 1,
+      text: "Alice plays Red 1 from slot #1",
+    },
+    {
+      turn: 2,
+      text: "Bob terminated the game!",
+    },
+    {
+      turn: 2,
+      text: "Alice took: 0:10",
+    },
+  ];
+  const states = [
+    { log: log.slice(0, 1) },
+    { log: log.slice(0, 2) },
+    { log: log.slice(0, 3) },
+    { log },
+  ];
+
+  test("gives each line the first segment that has it", () => {
+    const segments = getLogSegments(log, states);
+    expect(log.map((entry) => segments.get(entry))).toEqual([0, 1, 2, 3]);
+  });
+
+  test("leaves out the lines of a hypothetical", () => {
+    const hypoLog = [
+      ...log.slice(0, 2),
+      {
+        turn: 2,
+        text: "[Hypo] Bob plays Red 2 from slot #1",
+      },
+    ];
+    const segments = getLogSegments(hypoLog, states);
+    expect(hypoLog.map((entry) => segments.get(entry))).toEqual([
+      0,
+      1,
+      undefined,
     ]);
   });
 });

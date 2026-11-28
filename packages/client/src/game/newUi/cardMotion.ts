@@ -245,6 +245,11 @@ export function measureMovingCards(
 
 /** Returns where the cards and the deck are now. */
 export function measureCards(root: HTMLElement): CardPositions {
+  // A card in the middle of a play or a misplay is measured where it rests, not where it shows.
+  // Otherwise, its next move would start from a place in the air.
+  const releases = cardElements(root)
+    .filter((element) => isShowingPlay(element))
+    .map((element) => holdStill(element));
   const positions = new Map<string, CardPosition>();
   for (const element of cardElements(root)) {
     const key = element.dataset["cardOrder"];
@@ -267,6 +272,9 @@ export function measureCards(root: HTMLElement): CardPositions {
     });
   }
 
+  for (const release of releases) {
+    release();
+  }
   return positions;
 }
 
@@ -794,6 +802,13 @@ export function animateClue(root: HTMLElement): void {
   const t = CLUE_TIMING;
   const railEnd = t.railDelay + t.rail;
 
+  // The rail and the fall of the tokens show what the clue did, so they always play. The pops past
+  // full size and the bounce of a token only decorate them, so "Reduced motion" leaves them out:
+  // each part fades in instead, and a token falls straight to its place.
+  const decorated = !store.getState().session.settings.reducedMotion;
+  const small = decorated ? 0.2 : 1;
+  const popEasing = decorated ? EASE_OUT_BACK : "ease-out";
+
   // The rail draws itself from the giver to the receiver, and its arrowhead pops in at the end.
   for (const line of root.querySelectorAll("[data-clue-rail-line]")) {
     line.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
@@ -807,7 +822,7 @@ export function animateClue(root: HTMLElement): void {
   root.querySelector("[data-clue-rail-head]")?.animate(
     [
       {
-        scale: 0.2,
+        scale: small,
         opacity: 0,
       },
       {
@@ -819,7 +834,7 @@ export function animateClue(root: HTMLElement): void {
       id,
       delay: railEnd - t.headLead,
       duration: t.pop,
-      easing: EASE_OUT_BACK,
+      easing: popEasing,
       fill: "backwards",
     },
   );
@@ -828,7 +843,7 @@ export function animateClue(root: HTMLElement): void {
   root.querySelector("[data-clue-rail-token]")?.animate(
     [
       {
-        scale: 0.2,
+        scale: small,
         opacity: 0,
       },
       {
@@ -840,7 +855,7 @@ export function animateClue(root: HTMLElement): void {
       id,
       delay: t.railDelay + t.rail / 2,
       duration: t.pop,
-      easing: EASE_OUT_BACK,
+      easing: popEasing,
       fill: "backwards",
     },
   );
@@ -853,21 +868,32 @@ export function animateClue(root: HTMLElement): void {
     const { height } = measure(marker);
 
     marker.animate(
-      [
-        {
-          transform: `translateY(${-height}px) scale(1.7)`,
-          opacity: 0,
-        },
-        {
-          transform: "translateY(3px) scale(0.88)",
-          opacity: 1,
-          offset: t.landImpact,
-        },
-        {
-          transform: "none",
-          opacity: 1,
-        },
-      ],
+      decorated
+        ? [
+            {
+              transform: `translateY(${-height}px) scale(1.7)`,
+              opacity: 0,
+            },
+            {
+              transform: "translateY(3px) scale(0.88)",
+              opacity: 1,
+              offset: t.landImpact,
+            },
+            {
+              transform: "none",
+              opacity: 1,
+            },
+          ]
+        : [
+            {
+              transform: `translateY(${-height}px)`,
+              opacity: 0,
+            },
+            {
+              transform: "none",
+              opacity: 1,
+            },
+          ],
       {
         id,
         duration: t.land,
@@ -880,7 +906,7 @@ export function animateClue(root: HTMLElement): void {
   root.querySelector<HTMLElement>("[data-clue-empty]")?.animate(
     [
       {
-        scale: 0.5,
+        scale: decorated ? 0.5 : 1,
         opacity: 0,
       },
       {
@@ -892,7 +918,7 @@ export function animateClue(root: HTMLElement): void {
       id,
       delay: 0,
       duration: t.pop,
-      easing: EASE_OUT_BACK,
+      easing: popEasing,
       fill: "backwards",
     },
   );

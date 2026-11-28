@@ -60,6 +60,37 @@ export function getPlayerLog(
   });
 }
 
+/**
+ * For each line of the log, the segment that shows the game just after it: the first segment whose
+ * log has the line. During the game, it is the turn of the line. At the end of the game, it can
+ * differ: the score and the times of the players get segments without a new turn. `states` are the
+ * states of the game by segment. A line that they do not have, such as a line of a hypothetical, is
+ * not in the result.
+ */
+export function getLogSegments(
+  log: readonly LogEntry[],
+  states: ReadonlyArray<{ readonly log: readonly LogEntry[] } | undefined>,
+): ReadonlyMap<LogEntry, number> {
+  const segments = new Map<LogEntry, number>();
+  for (const [segment, state] of states.entries()) {
+    if (state === undefined) {
+      continue;
+    }
+
+    const end = Math.min(state.log.length, log.length);
+    for (let i = segments.size; i < end; i++) {
+      const line = log[i]!;
+      const stored = state.log[i]!;
+      // From here, the log is not the log of the game, as in a hypothetical.
+      if (stored.turn !== line.turn || stored.text !== line.text) {
+        return segments;
+      }
+      segments.set(line, segment);
+    }
+  }
+  return segments;
+}
+
 /** A card that left a hand: played, misplayed, or discarded. */
 type CardMove = "play" | "misplay" | "discard";
 
@@ -85,6 +116,8 @@ type PlayerAction =
 
 export interface PlayerActionEntry {
   readonly turn: number;
+  /** The segment that shows the game just after the action. */
+  readonly segment: number;
   readonly action: PlayerAction;
 }
 
@@ -105,7 +138,8 @@ const CARD_MOVE_PATTERN =
 /**
  * Reads a player's lines of the log (from `getPlayerLog`) as actions. The words of a line say what
  * the player did and what the viewer may know. The state of the game supplies the card or the clue
- * that a line names. A line that does not match them stays as text.
+ * that a line names. A line that does not match them stays as text. `segments` has the segment of
+ * each line (see `getLogSegments`). Without it, the segment of a line is its turn.
  */
 export function getPlayerActions(
   entries: readonly LogEntry[],
@@ -113,9 +147,18 @@ export function getPlayerActions(
   deck: readonly CardState[],
   clues: readonly ClueLogEntry[],
   variant: Variant,
+  segments: ReadonlyMap<LogEntry, number> = new Map(),
 ): readonly PlayerActionEntry[] {
   return entries.map((entry) => {
-    const rest = entry.text.slice(name.length);
+    const shown = {
+      turn: entry.turn,
+      segment: segments.get(entry) ?? entry.turn,
+    };
+    // A line of a hypothetical has a prefix before the name.
+    const line = entry.text.startsWith(HYPO_PREFIX)
+      ? entry.text.slice(HYPO_PREFIX.length)
+      : entry.text;
+    const rest = line.slice(name.length);
     // The segment of an action is one less than the turn that the log gives it.
     const segment = entry.turn - 1;
 
@@ -132,7 +175,7 @@ export function getPlayerActions(
       };
       if (cardName === HIDDEN_CARD_NAME) {
         return {
-          turn: entry.turn,
+          ...shown,
           action: {
             ...action,
             card: undefined,
@@ -152,7 +195,7 @@ export function getPlayerActions(
       );
       if (card?.suitIndex !== undefined && card.rank !== undefined) {
         return {
-          turn: entry.turn,
+          ...shown,
           action: {
             ...action,
             card: {
@@ -172,7 +215,7 @@ export function getPlayerActions(
     );
     if (clue !== undefined) {
       return {
-        turn: entry.turn,
+        ...shown,
         action: {
           type: "clue",
           clue,
@@ -182,7 +225,7 @@ export function getPlayerActions(
 
     const text = rest.trim();
     return {
-      turn: entry.turn,
+      ...shown,
       action: {
         type: "other",
         text: text.charAt(0).toUpperCase() + text.slice(1),
@@ -266,7 +309,7 @@ export function PlayerLog({
   entries,
   variant,
   colorblindMode,
-  onShowTurn,
+  onShowSegment,
   onClose,
   reducedMotion,
 }: {
@@ -274,8 +317,8 @@ export function PlayerLog({
   readonly entries: readonly PlayerActionEntry[];
   readonly variant: Variant;
   readonly colorblindMode: boolean;
-  /** Shows the state of the game after the action of a turn. */
-  readonly onShowTurn: (turn: number) => void;
+  /** Shows the state of the game after an action, which is a segment of the game. */
+  readonly onShowSegment: (segment: number) => void;
   readonly onClose: () => void;
   readonly reducedMotion: boolean;
 }): React.JSX.Element {
@@ -391,7 +434,7 @@ export function PlayerLog({
                 <button
                   className="tw:col-span-full tw:grid tw:cursor-pointer tw:grid-cols-subgrid tw:items-center tw:gap-x-3 tw:rounded-game-control tw:border-0 tw:bg-transparent tw:py-1.5 tw:pr-3 tw:pl-2 tw:text-left tw:text-game-text tw:hover:bg-white/10"
                   onClick={() => {
-                    onShowTurn(entry.turn);
+                    onShowSegment(entry.segment);
                   }}
                   type="button"
                 >

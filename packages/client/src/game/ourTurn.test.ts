@@ -46,11 +46,35 @@ test("our turn sends the move that we queued, and clears it", () => {
   expect(store.getState().game.current?.premove).toBeUndefined();
   expect(send).not.toHaveBeenCalled();
   vi.runAllTimers();
-  expect(send).toHaveBeenCalledWith("playerAction", {
-    tableId: 42,
-    action: {
-      type: "play",
-      order: 3,
+  expect(send).toHaveBeenCalledWith(
+    "playerAction",
+    {
+      tableId: 42,
+      action: {
+        type: "play",
+        order: 3,
+      },
     },
-  });
+    expect.any(Function),
+  );
+  // The move counts as sent, so that a second move must wait for the server's answer.
+  expect(store.getState().newUi.sentMove?.move).toEqual(state.premove);
+});
+
+test("our turn drops a queued discard at the maximum number of clues", () => {
+  const state: State = {
+    ...initialState(getDefaultMetadata(2)),
+    premove: {
+      type: "discard",
+      order: 3 as CardOrder,
+    },
+  };
+  store.dispatch(gameStarted(state));
+
+  onOurTurn(state);
+  vi.runAllTimers();
+
+  expect(store.getState().game.current?.premove).toBeUndefined();
+  expect(send).not.toHaveBeenCalled();
+  expect(store.getState().newUi.sentMove).toBeUndefined();
 });

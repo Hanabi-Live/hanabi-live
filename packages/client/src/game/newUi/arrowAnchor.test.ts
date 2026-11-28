@@ -2,7 +2,11 @@
 
 import type { CardOrder, CardState, PlayerIndex } from "@hanabi-live/game";
 import { beforeEach, expect, test } from "vitest";
-import { findArrowAnchor, getArrowTargetAt } from "./arrowAnchor.ts";
+import {
+  findArrowAnchor,
+  findFirstNumberText,
+  getArrowTargetAt,
+} from "./arrowAnchor.ts";
 
 /** Adds an element with these attributes to `parent`, and returns it. */
 function add(
@@ -116,4 +120,21 @@ test("a target in a hidden tab points at the tab", () => {
 
   tab.setAttribute("aria-selected", "true");
   expect(findArrowAnchor(document, "pace", [])).toBe(pace);
+});
+
+test("the first number of a value is its own text, not the invisible copy before it", () => {
+  // As in "StatusStrip.tsx": a hidden copy holds the space, and wrappers are around the text.
+  const value = add(document.body, {});
+  const grid = add(value, {});
+  const copy = add(grid, { "aria-hidden": "true" });
+  copy.append("10 ");
+  add(copy, {}).append("/ 25");
+  const line = add(add(grid, { id: "shown" }), {});
+  line.append("7 ");
+  add(line, {}).append("/ 25");
+
+  const text = findFirstNumberText(value);
+
+  expect(text?.textContent.trim()).toBe("7");
+  expect(text?.parentElement?.closest("#shown")).not.toBeNull();
 });

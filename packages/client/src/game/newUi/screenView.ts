@@ -41,6 +41,7 @@ import * as notes from "../ui/notes.ts";
 import * as replay from "../ui/replay.ts";
 import type { ActionLogEntry, ClueLogEntry } from "./ClueLog.tsx";
 import type { HandView, Seat } from "./Hands.tsx";
+import { getLogSegments } from "./PlayerLog.tsx";
 import type {
   DeckEmpathy,
   DiscardView,
@@ -563,7 +564,9 @@ export function getActionLogEntries(state: State): readonly ActionLogEntry[] {
       getGoesFirstText(i as PlayerIndex, playerNames),
     ),
   );
-  return state.visibleState!.log.map((entry) =>
+  const { log } = state.visibleState!;
+  const segments = getLogSegments(log, state.replay.states);
+  return log.map((entry) =>
     goesFirstTexts.has(entry.text)
       ? {
           segment: 0,
@@ -571,7 +574,8 @@ export function getActionLogEntries(state: State): readonly ActionLogEntry[] {
           text: entry.text,
         }
       : {
-          segment: entry.turn,
+          // A line of a hypothetical has no segment of the game, so it keeps its turn.
+          segment: segments.get(entry) ?? entry.turn,
           turn: entry.turn,
           text: entry.text,
         },

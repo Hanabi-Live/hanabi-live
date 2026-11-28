@@ -211,6 +211,19 @@ export function useCardMotion(
     shownClue: undefined,
     finished: false,
   });
+  // Some effects of a move are outside of the game screen, on the page itself, such as the sparks
+  // of a misplay. When the screen goes away, such as when the player leaves for the lobby, they
+  // would play on over the next screen. So they stop.
+  useLayoutEffect(
+    () => () => {
+      stopCardMoves();
+      stopPlayEffects();
+      finishScoreSignals();
+      stopFinale();
+    },
+    [],
+  );
+
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (root === null || state?.visibleState === undefined) {

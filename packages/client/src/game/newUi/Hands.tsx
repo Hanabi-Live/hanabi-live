@@ -212,6 +212,8 @@ interface HandsProps {
    * or the discard pile instead (see "QueuedMove.tsx"), so its slot is empty.
    */
   readonly queuedCard: CardOrder | undefined;
+  /** Whether the hands show their oldest card first (the "Reverse hands" setting). */
+  readonly reverseHands: boolean;
 
   /** The card that the viewer played or discarded, while the move waits for the server. */
   readonly sendingCard?: CardOrder;
@@ -1733,6 +1735,19 @@ function Hand({
     heldRef.current = false;
     props.onHoldEmpathy(undefined);
   }
+
+  // A window that loses the focus never gets the release of the pointer. The screen ends the hold
+  // then (see "GameScreen.tsx"), and the hand forgets it too.
+  useEffect(() => {
+    function onBlur() {
+      heldRef.current = false;
+      setTouchedCard(undefined);
+    }
+    globalThis.addEventListener("blur", onBlur);
+    return () => {
+      globalThis.removeEventListener("blur", onBlur);
+    };
+  }, []);
   // The player who acted on the turn that shows has a ring around their name: the one who gave the
   // clue, or the one who played or discarded a card.
   const isRinged =
@@ -1940,7 +1955,8 @@ function Hand({
               editing={editing}
               props={props}
               seat={seat}
-              slot={i + 1}
+              // Slot 1 is the newest card, which is on the right when the hands are reversed.
+              slot={props.reverseHands ? seat.cards.length - i : i + 1}
               touched={touchedCard === card.order}
             />
           </CardNote>

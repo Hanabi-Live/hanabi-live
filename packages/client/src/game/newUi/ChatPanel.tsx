@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
 import { SpectatorsIcon } from "../../SpectatorsIcon.tsx";
 import { CHAT_WINDOW_ID } from "../../Tooltip.ts";
 import { useReducedMotion } from "../../fade.ts";
@@ -260,6 +260,17 @@ export function ChatPanel({
       dockChat();
     };
   }, [poppedOut]);
+
+  // Zen mode hides the chat when it turns on (see "zen.ts"). That collapses the panel, but it does
+  // not close a chat that is in its own window, so the panel closes the window.
+  const zenBeforeRef = useRef(zen);
+  useEffect(() => {
+    const turnedOn = zen && !zenBeforeRef.current;
+    zenBeforeRef.current = zen;
+    if (turnedOn && poppedOut) {
+      chatWindowClosed();
+    }
+  }, [zen, poppedOut]);
 
   const spectatorsLabel = `${spectators.length} watching`;
 

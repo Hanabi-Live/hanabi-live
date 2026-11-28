@@ -73,7 +73,12 @@ import { HighlightArrow } from "./HighlightArrow.tsx";
 import { LeaderDirection } from "./LeaderDirection.tsx";
 import { PausePanel } from "./PausePanel.tsx";
 import { PlayAgain } from "./PlayAgain.tsx";
-import { getPlayerActions, getPlayerLog, PlayerLog } from "./PlayerLog.tsx";
+import {
+  getLogSegments,
+  getPlayerActions,
+  getPlayerLog,
+  PlayerLog,
+} from "./PlayerLog.tsx";
 import { QueuedMove } from "./QueuedMove.tsx";
 import { ReconnectingPanel } from "./ReconnectingPanel.tsx";
 import { hasReplayControls, ReplayControls } from "./ReplayControls.tsx";
@@ -329,6 +334,29 @@ export function GameScreen(): React.JSX.Element {
   // The hand that shows its player's view of it, while the viewer holds the pointer down on it.
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
   const [fingerHold, setFingerHold] = useState(false);
+  // The deck and the hands end a hold when the pointer goes up on them. They can miss that: the
+  // screen can replace the deck while it is held, such as when the game ends, and a window that
+  // loses the focus never gets the release. So the window ends every hold too.
+  const empathyHeld = deckEmpathy || heldEmpathy !== undefined;
+  useEffect(() => {
+    if (!empathyHeld) {
+      return undefined;
+    }
+
+    function endHolds() {
+      setDeckEmpathy(false);
+      setHeldEmpathy(undefined);
+      setFingerHold(false);
+    }
+    globalThis.addEventListener("pointerup", endHolds);
+    globalThis.addEventListener("pointercancel", endHolds);
+    globalThis.addEventListener("blur", endHolds);
+    return () => {
+      globalThis.removeEventListener("pointerup", endHolds);
+      globalThis.removeEventListener("pointercancel", endHolds);
+      globalThis.removeEventListener("blur", endHolds);
+    };
+  }, [empathyHeld]);
   // The log that the box of logs shows.
   const [logTab, setLogTab] = useState<LogTab>(CLUE_LOG_TAB);
   // The player whose actions the screen lists, after a click on their name.
@@ -716,10 +744,16 @@ export function GameScreen(): React.JSX.Element {
             return;
           }
           // A second right-click on the card closes its box without saving, as on the classic
-          // screen.
-          if (rightClickNote(event, order)) {
-            setNoteCard((current) => (current === order ? undefined : order));
-          }
+          // screen. A shortcut writes the note at once, and does not open the box. If the box of
+          // that card is open, it still has the text from before, and Enter would save it over the
+          // new note, so the box closes then too.
+          const edits = rightClickNote(event, order);
+          setNoteCard((current) => {
+            if (current === order) {
+              return undefined;
+            }
+            return edits ? order : current;
+          });
         },
     onCloseNote: () => {
       setNoteCard(undefined);
@@ -1248,7 +1282,8 @@ export function GameScreen(): React.JSX.Element {
       // spoiler-free replay hides how long the game lasts.
       logTab={logTab}
       lowScorePhase={
-        settings.hGroupConventions
+        !scoreHidden
+        && settings.hGroupConventions
         && isLowScorePhase(visibleState.score, variant.suits.length)
       }
       // In "Throw It in a Hole" variants, the players cannot see the score, so they see how many
@@ -1626,6 +1661,7 @@ export function GameScreen(): React.JSX.Element {
                   }
                   queuedCard={queuedCard}
                   reducedMotion={settings.reducedMotion}
+                  reverseHands={settings.reverseHands}
                   seats={seats}
                   sendingCard={
                     sendingMove?.type === "play"
@@ -1634,7 +1670,8 @@ export function GameScreen(): React.JSX.Element {
                       : undefined
                   }
                   sendingClueTarget={
-                    sendingMove?.type === "clue"
+                    // The box of a queued clue already shows that the clue is on its way.
+                    queuedMove === undefined && sendingMove?.type === "clue"
                       ? sendingMove.receiverIndex
                       : undefined
                   }
@@ -1743,12 +1780,13 @@ export function GameScreen(): React.JSX.Element {
             visibleState.deck,
             getClueLogEntries(state),
             variant,
+            getLogSegments(visibleState.log, state.replay.states),
           )}
           name={metadata.playerNames[logSeat] ?? ""}
           onClose={closePlayerLog}
-          onShowTurn={(turn) => {
+          onShowSegment={(segment) => {
             closePlayerLog();
-            showReplayTurn(turn);
+            showReplayTurn(segment);
           }}
           reducedMotion={settings.reducedMotion}
           variant={variant}

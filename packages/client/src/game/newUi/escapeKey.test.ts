@@ -63,6 +63,44 @@ describe("onEscapeKey", () => {
     stop();
   });
 
+  test("closes only the layer that opened last", () => {
+    const closeFirst = vi.fn<() => void>();
+    const closeSecond = vi.fn<() => void>();
+    const stopFirst = onEscapeKey(closeFirst);
+    const stopSecond = onEscapeKey(closeSecond);
+
+    pressEscape();
+
+    expect(closeSecond).toHaveBeenCalledOnce();
+    expect(closeFirst).not.toHaveBeenCalled();
+    expect(gameHotkey).not.toHaveBeenCalled();
+
+    stopSecond();
+    pressEscape();
+
+    expect(closeFirst).toHaveBeenCalledOnce();
+    stopFirst();
+  });
+
+  test("leaves Escape to a text box that the player types in", () => {
+    const close = vi.fn<() => void>();
+    const stop = onEscapeKey(close);
+    const input = document.createElement("input");
+    document.body.append(input);
+
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+
+    expect(close).not.toHaveBeenCalled();
+    expect(gameHotkey).toHaveBeenCalledOnce();
+    input.remove();
+    stop();
+  });
+
   test("leaves Escape to a modal that shows", () => {
     modalVisible = true;
     const close = vi.fn<() => void>();

@@ -143,6 +143,24 @@ function findTargetElement(
 }
 
 /**
+ * The text of the first number that an element shows. For "5 / 21", it is the "5". The number can
+ * be some elements deep, and an invisible copy of the text can come before it to hold its space
+ * (see "StatusStrip.tsx").
+ */
+export function findFirstNumberText(anchor: Element): Text | undefined {
+  const walker = document.createTreeWalker(anchor, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+    if (
+      node.textContent?.trim() !== ""
+      && node.parentElement?.closest('[aria-hidden="true"]') === null
+    ) {
+      return node as Text;
+    }
+  }
+  return undefined;
+}
+
+/**
  * The box that the arrow points at, in the window's pixels. For "5 / 21", it is the box of the
  * first number. For a tab, it is the whole tab.
  */
@@ -150,13 +168,16 @@ export function measureArrowAnchor(
   anchor: Element,
   target: ArrowTarget,
 ): DOMRect {
-  const first = anchor.firstChild;
   if (
-    first === null
-    || typeof target !== "string"
+    typeof target !== "string"
     || !FIRST_NUMBER_ELEMENTS.has(target)
     || anchor.getAttribute("role") === "tab"
   ) {
+    return anchor.getBoundingClientRect();
+  }
+
+  const first = findFirstNumberText(anchor);
+  if (first === undefined) {
     return anchor.getBoundingClientRect();
   }
 
