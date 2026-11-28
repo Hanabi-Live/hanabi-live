@@ -581,12 +581,19 @@ export function GameScreen(): React.JSX.Element {
       : undefined;
   // Speedruns use clicks instead of dragging.
   const speedrunClicks = usesSpeedrunClicks(state, settings.speedrunFeatures);
+  const pausedBy =
+    state.pause.pausingPlayerIndex === undefined
+      ? undefined
+      : metadata.playerNames[state.pause.pausingPlayerIndex];
+  // A hypothetical goes on while the game is paused.
+  const paused = hypo === undefined && pausedBy !== undefined;
   // A queued move must be canceled before another card moves. In the in-game replay, the player can
   // still play or discard a card from their hand, as on the classic screen. The move ends the
   // replay.
   const canMoveCards =
     hypo === undefined
       ? state.playing
+        && !paused
         && !speedrunClicks
         && state.premove === undefined
         && sendingMove === undefined
@@ -601,12 +608,6 @@ export function GameScreen(): React.JSX.Element {
   );
   const canDiscard = canDiscardNow();
   const clueAvailable = actionState.clueTokens >= getClueCost(variant);
-  const pausedBy =
-    state.pause.pausingPlayerIndex === undefined
-      ? undefined
-      : metadata.playerNames[state.pause.pausingPlayerIndex];
-  // A hypothetical goes on while the game is paused.
-  const paused = hypo === undefined && pausedBy !== undefined;
   // At 0 clues, the clue buttons still show, crossed out, so that the viewer sees that they cannot
   // clue.
   const couldClue =
@@ -1077,6 +1078,7 @@ export function GameScreen(): React.JSX.Element {
     options.deckPlays
     && ourTurn
     && !editingCards
+    && !paused
     && actionState.cardsRemainingInTheDeck === 1;
   const scoreHidden = isScoreHidden(state);
   // The move that the viewer queued shows only in the game as it stands, not in a replay of it.

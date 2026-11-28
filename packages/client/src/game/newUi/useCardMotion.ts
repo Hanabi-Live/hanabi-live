@@ -2,6 +2,7 @@
 // game advances or the replay steps through a turn, and shows the changes of the score.
 
 import type { CardOrder, GameState, StateClue } from "@hanabi-live/game";
+import { getUnadjustedClueTokens } from "@hanabi-live/game";
 import type { RefObject } from "react";
 import { useLayoutEffect, useRef } from "react";
 import { store } from "../../store.ts";
@@ -112,7 +113,10 @@ function animateScoreChanges(
       variant.suits,
       completed,
       playedCard,
-      after.clueTokens > before.clueTokens ? before.clueTokens : undefined,
+      // The state counts clue tokens in half clues in "Clue Starved" variants.
+      after.clueTokens > before.clueTokens
+        ? getUnadjustedClueTokens(before.clueTokens, variant)
+        : undefined,
     );
   }
 

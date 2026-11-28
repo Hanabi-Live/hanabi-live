@@ -7,7 +7,7 @@ import type {
   SuitIndex,
   Variant,
 } from "@hanabi-live/game";
-import { getCardName, getGoesFirstText } from "@hanabi-live/game";
+import { getCardName, getGoesFirstText, HYPO_PREFIX } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import {
@@ -43,10 +43,14 @@ export function getPlayerLog(
       return false;
     }
 
+    // A line of a hypothetical has a prefix before the name.
+    const text = entry.text.startsWith(HYPO_PREFIX)
+      ? entry.text.slice(HYPO_PREFIX.length)
+      : entry.text;
     let longest: number | undefined;
     for (const [i, name] of playerNames.entries()) {
       if (
-        entry.text.startsWith(name)
+        text.startsWith(name)
         && (longest === undefined || name.length > playerNames[longest]!.length)
       ) {
         longest = i;

@@ -43,6 +43,19 @@ describe("getPlayerLog", () => {
       getPlayerLog(log, playerNames, 2).map((entry) => entry.turn),
     ).toEqual([3]);
   });
+
+  test("includes the lines of a hypothetical", () => {
+    const hypoLog = [
+      ...log,
+      {
+        turn: 5,
+        text: "[Hypo] Alice plays Red 2 from slot #1",
+      },
+    ];
+    expect(
+      getPlayerLog(hypoLog, playerNames, 1).map((entry) => entry.turn),
+    ).toEqual([1, 4, 5]);
+  });
 });
 
 describe("getPlayerActions", () => {

@@ -28,7 +28,7 @@ import { getCardSlot } from "./hand.ts";
 const SECONDS_PER_MINUTE = MINUTE_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
 const SECONDS_PER_HOUR = HOUR_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
 
-const HYPO_PREFIX = "[Hypo] ";
+export const HYPO_PREFIX = "[Hypo] ";
 const NUMBER_WORDS = [
   "zero",
   "one",
