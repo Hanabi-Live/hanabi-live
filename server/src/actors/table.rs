@@ -1247,13 +1247,6 @@ impl TableActor {
             .context("A game's timers were read without a game")?;
         if matches!(self.table.phase, Phase::Replay { .. }) {
             if timers.idle_remaining == 0 {
-                // A solo replay sends the server nothing, so its viewer's connection is its
-                // activity. It closes when the viewer leaves or stays disconnected.
-                if !self.table.visible && self.audience().next().is_some() {
-                    let mut next = self.candidate();
-                    game_mut(&mut next)?.idle_remaining = IDLE_TIMEOUT_MS;
-                    return self.apply_without_checkpoint(next);
-                }
                 return self.retire().await;
             }
             return Ok(());

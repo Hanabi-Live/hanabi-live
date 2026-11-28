@@ -1074,7 +1074,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
 }
 
 #[tokio::test]
-async fn a_solo_replay_stays_open_while_its_viewer_is_connected() -> Result<()> {
+async fn a_solo_replay_stays_open_while_its_viewer_is_active() -> Result<()> {
     let Some(h) = Harness::new(&["Alice"]).await? else {
         return Ok(());
     };
@@ -1098,19 +1098,25 @@ async fn a_solo_replay_stays_open_while_its_viewer_is_connected() -> Result<()> 
         let mut next = actor.candidate();
         next.game_mut().unwrap().idle_remaining = 1000;
         actor.persist(next).await?;
+        // The client reports that the viewer does something, which restarts the idle timer.
+        actor
+            .replay_command(h.users[0].clone(), crate::routing::PhaseRequest::IdleReset)
+            .await?;
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(
-            !actor.retired && actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
-            "A solo replay closed while its viewer was connected"
+            !actor.retired,
+            "A solo replay closed while its viewer was active"
         );
-        h.users[0].cancel.cancel();
-        let now = Instant::now();
-        actor.cleanup(now).await?;
-        actor.cleanup(now + REPLAY_RECONNECT_GRACE).await?;
+        // Without a report for the whole idle time, the replay closes.
+        let mut next = actor.candidate();
+        next.game_mut().unwrap().idle_remaining = 1000;
+        actor.persist(next).await?;
+        actor.anchor -= Duration::from_secs(2);
+        actor.tick().await?;
         ensure!(
             actor.retired,
-            "A solo replay stayed open after its viewer disconnected"
+            "A solo replay stayed open while its viewer was idle"
         );
         Ok(())
     })

@@ -12,6 +12,7 @@ import { HISTORY_HASH, PATH } from "./constants.ts";
 import { initErrorListener } from "./errors.ts";
 import * as gameChat from "./game/chat.ts";
 import * as game from "./game/main.ts";
+import { replayActivityInit } from "./game/replayActivity.ts";
 import { backToLobby } from "./game/ui/backToLobby.ts";
 import * as lobbyHistory from "./lobby/history.ts";
 import { getOtherScoresSeed } from "./lobby/historyHash.ts";
@@ -102,6 +103,7 @@ function init() {
   gameChat.init();
   tooltips.initGame();
   lobbyIdleInit();
+  replayActivityInit();
   lobbyKeyboardInit();
   sounds.init();
 

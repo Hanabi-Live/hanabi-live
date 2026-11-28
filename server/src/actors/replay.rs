@@ -61,6 +61,7 @@ impl TableActor {
             }
             P::TableRestartDecline(r) => self.decline_restart(session, r.declined).await,
             P::Tag(change) => self.tag_message(session, change).await,
+            P::IdleReset => self.solo_activity(&session),
             P::TableStart(_)
             | P::TableUpdate(_)
             | P::TableTerminate
@@ -68,9 +69,21 @@ impl TableActor {
             | P::PlayerAction(_)
             | P::Pause(_)
             | P::PauseQueue(_)
-            | P::IdleReset
             | P::Note(_) => Err(wrong_phase(request)),
         }
+    }
+    /// The viewer of a solo replay did something, which restarts its idle timer. Going to another
+    /// turn of a solo replay sends the server nothing, so the client reports that the viewer is
+    /// there. In a shared replay, only chat and the leader's actions restart the timer.
+    fn solo_activity(&mut self, session: &Session) -> CommandResult<()> {
+        ensure_or_reject!(
+            self.attending(session) && !self.table.visible,
+            "You are not in a solo replay."
+        );
+        let mut next = self.candidate();
+        next.game_mut().context("Missing game")?.idle_remaining = IDLE_TIMEOUT_MS;
+        // Like arrows and sounds, this only restarts the idle timer, so it skips the durable write.
+        self.apply_without_checkpoint(next)
     }
     /// Runs a tag command, which games in progress and replays accept.
     pub(super) async fn tag_message(
