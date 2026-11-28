@@ -694,6 +694,7 @@ export function PlayArea({
   notes,
   tokens,
   movedCard,
+  queueing,
 }: {
   readonly stacks: readonly StackView[];
 
@@ -714,6 +715,9 @@ export function PlayArea({
 
   /** The card played on the last move, if it was a play. */
   readonly movedCard: MovedCard | undefined;
+
+  /** Whether a card dropped here is queued, since it is another player's turn. */
+  readonly queueing: boolean;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const suitLabels = hasSuitLabels(variant);
@@ -930,8 +934,8 @@ export function PlayArea({
           <ZoneLabel
             reducedMotion={deck.reducedMotion}
             state={zoneState}
-            text="Play"
-            unavailableText="Play"
+            text={queueing ? "Queue Play" : "Play"}
+            unavailableText={queueing ? "Queue Play" : "Play"}
           />
         </section>
         {/* In a row, the deck moves down by the stacks' padding, so that its top card is level
@@ -1713,6 +1717,7 @@ export function DiscardPile({
   notes,
   reducedMotion,
   movedCard,
+  queueing,
 }: {
   readonly rows: ReadonlyArray<readonly DiscardView[]>;
   readonly variant: Variant;
@@ -1737,6 +1742,9 @@ export function DiscardPile({
 
   /** The card discarded or misplayed on the last move, if there was one. */
   readonly movedCard: MovedCard | undefined;
+
+  /** Whether a card dropped here is queued, since it is another player's turn. */
+  readonly queueing: boolean;
 }): React.JSX.Element {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const showNoDiscard = atMaxClues && !realLifeMode;
@@ -1909,7 +1917,7 @@ export function DiscardPile({
       <ZoneLabel
         reducedMotion={reducedMotion}
         state={zoneState}
-        text="Discard"
+        text={queueing ? "Queue Discard" : "Discard"}
         unavailableText="No discarding at max clues"
       />
       {/* At max clues, a red border shows that no one can discard, before anyone picks up a

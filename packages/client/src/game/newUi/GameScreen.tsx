@@ -629,6 +629,10 @@ export function GameScreen(): React.JSX.Element {
         && (ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex
           || settings.preplay)
       : ourTurn && !editingCards;
+  // On another player's turn, a card that the player moves is queued (a "premove").
+  const queueingMove =
+    hypo === undefined
+    && ongoingGame.turn.currentPlayerIndex !== metadata.ourPlayerIndex;
   // The cards that can move: those in the acting player's hand now. A replay shows cards that have
   // since left the hand.
   const movableCards = new Set(
@@ -1220,6 +1224,7 @@ export function GameScreen(): React.JSX.Element {
       movedCard={outlinedMove}
       notes={cardNotes}
       onShowDiscard={showDiscard}
+      queueing={queueingMove}
       realLifeMode={settings.realLifeMode}
       reducedMotion={settings.reducedMotion}
       rows={discardRows}
@@ -1524,6 +1529,7 @@ export function GameScreen(): React.JSX.Element {
                 hole={getHole(state)}
                 movedCard={outlinedMove}
                 notes={cardNotes}
+                queueing={queueingMove}
                 stacks={stacks}
                 // In the phone layout, the tokens are beside the discard pile instead.
                 tokens={
