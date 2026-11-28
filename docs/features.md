@@ -296,8 +296,9 @@ that have not been played yet and have only one copy remaining.)
   - Empathy can still be used by holding down the space bar.
 - If a card is lost so that a perfect score is no longer possible, the game
   immediately ends with a score of 0.
-- Speedrunning games do not count toward your statistics on each variant. A
-  profile counts them with the other games in its game count and its time.
+- Speedrunning games do not count toward your number of games on each variant,
+  but they can set your best scores. A profile counts them with the other games
+  in its game count and its time.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
 ### Bottom-Deck Blind Plays
