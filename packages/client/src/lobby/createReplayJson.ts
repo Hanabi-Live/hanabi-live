@@ -144,8 +144,7 @@ export function createJsonFromReplay(tableId: TableId | undefined): void {
   };
 
   const json = JSON.stringify(game);
-  // A link holds only the variant of a game. With other options, the link would deal another game,
-  // so we copy the JSON data instead. Other websites read the links, so their format stays.
+  // A link cannot hold every game. If it cannot hold this one, we copy the JSON data instead.
   const UrlData = shrink(json);
   if (UrlData === undefined || UrlData === "") {
     navigator.clipboard

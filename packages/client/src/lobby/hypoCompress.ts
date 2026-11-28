@@ -53,13 +53,26 @@ interface MinMax {
 }
 
 /**
- * The number of comma-separated parts of a compressed game: the players and deck, the actions, the
- * variant ID, and the seed.
+ * The number of comma-separated parts that every compressed game has: the players and deck, the
+ * actions, the variant ID, and the seed.
  */
 const COMPRESSED_PARTS = 4;
 
-/** The seed is the last part. */
+/** The seed is the last of the parts that every compressed game has. */
 const SEED_PART = COMPRESSED_PARTS - 1;
+
+/**
+ * The options that a compressed game can hold, which change how the game plays. A game that has one
+ * of them has one more part after the seed: a number with one bit for each option, in this order.
+ * Thus, add a new option at the end.
+ */
+const COMPRESSED_OPTIONS = [
+  "deckPlays",
+  "emptyClues",
+  "oneExtraCard",
+  "oneLessCard",
+  "allOrNothing",
+] as const;
 
 /** How often a hyphen is inserted so that a long compressed game wraps when it is posted. */
 const HYPHEN_INTERVAL = 20;
@@ -83,11 +96,13 @@ function endCondition(index: number | undefined): EndCondition | undefined {
 /**
  * Compresses a string representing a `GameJson` object. Returns undefined if the compression fails.
  *
- * The resulting string is composed of four substrings separated by commas:
+ * The resulting string is composed of four or five substrings separated by commas:
  * - The first substring represents the number of players and the deck.
  * - The second substring represents the actions.
  * - The third substring is the ID of the variant.
  * - The fourth substring is the seed (empty for an unspecified seed).
+ * - The fifth substring represents the options (see `COMPRESSED_OPTIONS`). A game that has none of
+ *   them does not have this substring.
  *
  * Hyphens are added to the first three substrings to make URL text wrap when posting. The seed is
  * appended verbatim so that meaningful seed hyphens are preserved.
@@ -126,9 +141,14 @@ export function expand(data: string): string | undefined {
   const seed = parts[SEED_PART];
   if (
     seed === undefined
-    || parts.length !== COMPRESSED_PARTS
+    || parts.length < COMPRESSED_PARTS
+    || parts.length > COMPRESSED_PARTS + 1
     || !/^[\d\-A-Za-z]*$/u.test(seed)
   ) {
+    return undefined;
+  }
+  const options = decompressOptions(parts[COMPRESSED_PARTS]);
+  if (options === undefined) {
     return undefined;
   }
   // Remove wrapping hyphens from the compressed data, never from the seed.
@@ -185,6 +205,7 @@ export function expand(data: string): string | undefined {
     actions: [...actions],
     options: {
       variantId: variant.id,
+      ...options,
     },
     characters: [],
     notes: [],
@@ -232,7 +253,47 @@ function gameJsonCompress(
   // Add hyphens for URL posting (hyphens make the text wrap).
   out = out.match(new RegExp(`.{1,${HYPHEN_INTERVAL}}`, "gu"))!.join("-");
 
-  return `${out},${seed}`;
+  const options = compressOptions(data.options);
+  return `${out},${seed}${options === "" ? "" : `,${options}`}`;
+}
+
+/** Compresses the options of a game. Returns an empty string for a game that has none of them. */
+function compressOptions(
+  options: z.output<typeof replayGameSchema>["options"],
+): string {
+  let bits = 0;
+  for (const [i, option] of COMPRESSED_OPTIONS.entries()) {
+    if (options?.[option] === true) {
+      bits += 2 ** i;
+    }
+  }
+  return bits === 0 ? "" : bits.toString();
+}
+
+/**
+ * Decompresses the options part of a game, which a game without these options does not have.
+ * Returns undefined if the part is not valid.
+ */
+function decompressOptions(
+  src: string | undefined,
+): Partial<Record<(typeof COMPRESSED_OPTIONS)[number], true>> | undefined {
+  if (src === undefined) {
+    return {};
+  }
+
+  const bits = /^[1-9]\d*$/u.test(src) ? parseIntSafe(src) : undefined;
+  if (bits === undefined || bits >= 2 ** COMPRESSED_OPTIONS.length) {
+    return undefined;
+  }
+
+  const options: Partial<Record<(typeof COMPRESSED_OPTIONS)[number], true>> =
+    {};
+  for (const [i, option] of COMPRESSED_OPTIONS.entries()) {
+    if (Math.floor(bits / 2 ** i) % 2 === 1) {
+      options[option] = true;
+    }
+  }
+  return options;
 }
 
 /**

@@ -119,20 +119,24 @@ describe("replay URL options", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.
   const payload = "215abcde,00ab,0,";
 
-  test("does not compress a game with an option that the URL cannot hold", () => {
+  test("keeps the options that change how a game plays", () => {
     const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
-    expect(
-      shrink(
-        JSON.stringify({
-          ...game,
-          options: {
-            ...game.options,
-            oneExtraCard: true,
-          },
-        }),
-      ),
-    ).toBeUndefined();
-    // The options that a copied game always names do not stop the compression.
+    const withOptions = {
+      ...game,
+      options: {
+        ...game.options,
+        oneExtraCard: true,
+        allOrNothing: true,
+      },
+    };
+    // One Extra Card is the third option and All or Nothing is the fifth: 4 + 16.
+    expect(shrink(JSON.stringify(withOptions))).toBe(`${payload},20`);
+    expect(expandGame(`${payload},20`)).toEqual(withOptions);
+  });
+
+  test("a game without these options keeps the old format", () => {
+    const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
+    // A copied game always names the options, also when they are off.
     expect(
       shrink(
         JSON.stringify({
@@ -144,6 +148,28 @@ describe("replay URL options", () => {
           },
         }),
       ),
-    ).toBeDefined();
+    ).toBe(payload);
   });
+
+  test("does not compress a game with an option that the URL cannot hold", () => {
+    const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
+    expect(
+      shrink(
+        JSON.stringify({
+          ...game,
+          options: {
+            ...game.options,
+            speedrun: true,
+          },
+        }),
+      ),
+    ).toBeUndefined();
+  });
+
+  test.each(["0", "32", "x", "04", ""])(
+    "refuses the options part %j",
+    (options) => {
+      expect(expand(`${payload},${options}`)).toBeUndefined();
+    },
+  );
 });

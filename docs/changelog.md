@@ -11,6 +11,8 @@ of the repository.
 
 - The production setup script now stops before it changes anything if `.env`
   does not set the Google Drive backup values.
+- The link that `/copy` makes now keeps the options of the game that change how
+  it plays, such as "One Extra Card".
 
 ## November 27th, 2026
 
