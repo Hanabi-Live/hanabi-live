@@ -254,7 +254,8 @@ pub(super) async fn dispatch(
     if matches!(message, ClientRequest::TagAdd(_)) {
         ensure_or_reject!(
             !accounts::is_muted(&app.store.primary, &session.ip).await?,
-            "You have been muted by an administrator."
+            "{}",
+            crate::actors::MUTED
         );
     }
     let message = if route.lobby().is_some() {

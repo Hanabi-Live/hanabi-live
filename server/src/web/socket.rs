@@ -515,6 +515,19 @@ fn refuse_session(
     })
 }
 
+/// Whether an account's sessions still have `session_version`, and `ip` is not banned.
+async fn still_allowed(
+    pool: &sqlx::PgPool,
+    id: UserId,
+    session_version: i32,
+    ip: &str,
+) -> Result<bool> {
+    let current = Account::read(pool, id)
+        .await?
+        .is_some_and(|account| account.session_version == session_version);
+    Ok(current && !accounts::is_banned(pool, ip).await?)
+}
+
 async fn connection(
     mut socket: WebSocket,
     app: Arc<App>,
@@ -523,6 +536,7 @@ async fn connection(
     ip: String,
 ) -> Result<()> {
     let id = account.id;
+    let session_version = account.session_version;
     let admission = app
         .lifecycle
         .admit()
@@ -652,6 +666,15 @@ async fn connection(
                 return Ok(());
             }
             Err(error) => return Err(error.into()),
+        }
+        // A sign-out or a ban closes only the connections that the hub has registered. One of
+        // them could have come while this connection started, so it checks again now.
+        if !still_allowed(&app.store.primary, id, session_version, &session.ip).await? {
+            tracing::warn!(
+                "Ending a connection for account {id}: its session ended or its IP was banned \
+                 while it started."
+            );
+            return Ok(());
         }
         let user = app.users.task(&app, session.user);
         user.send(user::UserCommand::Current(session.generation))

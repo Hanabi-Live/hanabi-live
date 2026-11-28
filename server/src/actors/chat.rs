@@ -637,6 +637,7 @@ impl TableActor {
         let mut e = self.effects();
         if let Some(a) = self.attendees.remove(&kicked_user) {
             self.credit_review([&a], Instant::now());
+            self.departed_typing_messages(&mut e, &a);
             e.leave(a.session);
         }
         self.pregame_messages(&mut e);

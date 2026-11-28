@@ -357,10 +357,12 @@ impl TableActor {
         }
         self.persist(next).await?;
         let mut e = if attending {
-            if let Some(a) = self.attendees.remove(&session.user) {
-                self.credit_review([&a], Instant::now());
-            }
+            let departed = self.attendees.remove(&session.user);
             let mut e = self.effects();
+            if let Some(a) = &departed {
+                self.credit_review([a], Instant::now());
+                self.departed_typing_messages(&mut e, a);
+            }
             e.leave(session);
             e
         } else {

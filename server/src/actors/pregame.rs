@@ -130,6 +130,12 @@ impl TableActor {
         let changes = option_changes(&self.table, &options, &name, max_players, &extra);
         if session.user != self.table.owner.user_id {
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
+            // A proposal is announced in the table's chat, which a muted user cannot write to.
+            ensure_or_reject!(
+                !crate::accounts::is_muted(&self.store.primary, &session.ip).await?,
+                "{}",
+                super::MUTED
+            );
             // A proposal is a message from its player, so it counts like one.
             self.charge_chat(session.user)?;
             let message = server_chat(
@@ -187,6 +193,7 @@ impl TableActor {
         let mut e = self.effects();
         for id in &removed {
             if let Some(a) = self.attendees.remove(id) {
+                self.departed_typing_messages(&mut e, &a);
                 e.leave(a.session);
             }
         }
@@ -333,9 +340,13 @@ impl TableActor {
         allocation.revision = destination_saved.revision;
         allocation.preserve();
         let mut effects = self.effects();
-        for (session, _, _) in &moving {
-            self.attendees.remove(&session.user);
-            effects.leave(session.clone());
+        let departed = moving
+            .iter()
+            .filter_map(|(session, _, _)| self.attendees.remove(&session.user))
+            .collect::<Vec<_>>();
+        for a in departed {
+            self.departed_typing_messages(&mut effects, &a);
+            effects.leave(a.session);
         }
         // The players who returned to the lobby keep their seats at the new table.
         let seated = destination.players();

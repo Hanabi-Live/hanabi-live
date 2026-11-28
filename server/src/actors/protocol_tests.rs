@@ -1074,6 +1074,104 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
 }
 
 #[tokio::test]
+async fn a_solo_replay_stays_open_while_its_viewer_is_connected() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let outcome = Box::pin(async {
+        let id = h.store.allocate_table().await?;
+        let mut table = tests::review(id, EndCondition::TerminatedByPlayer)?;
+        table.visible = false;
+        let revision = h.store.save_at(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(32);
+        let capacity = Arc::new(Semaphore::new(1));
+        let saved = h.store.saved_at(table.id, revision).await?;
+        let mut actor = TableActor::new(
+            table,
+            saved,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
+        );
+        actor.initialize(h.users[0].clone(), vec![]).await?;
+        let mut next = actor.candidate();
+        next.game_mut().unwrap().idle_remaining = 1000;
+        actor.persist(next).await?;
+        actor.anchor -= Duration::from_secs(2);
+        actor.tick().await?;
+        ensure!(
+            !actor.retired && actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+            "A solo replay closed while its viewer was connected"
+        );
+        h.users[0].cancel.cancel();
+        let now = Instant::now();
+        actor.cleanup(now).await?;
+        actor.cleanup(now + REPLAY_RECONNECT_GRACE).await?;
+        ensure!(
+            actor.retired,
+            "A solo replay stayed open after its viewer disconnected"
+        );
+        Ok(())
+    })
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn a_split_of_players_who_returned_to_the_lobby_lists_the_new_table() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Lobby", json!({})).await?;
+        for index in [1, 2] {
+            h.send(index, "tableJoin", json!({"tableId":id})).await?;
+        }
+        h.send(1, "tableUnattend", json!({"tableId":id})).await?;
+        h.barrier(1).await?;
+        h.frames(1);
+        h.send(0, "chat", json!({"tableId":id,"text":"/split Bob"}))
+            .await?;
+        h.barrier(1).await?;
+        let listed = h.frames(1).into_iter().any(|(name, table)| {
+            name == "table"
+                && table["settings"]["name"] == "Lobby (split)"
+                && table["playerNames"] == json!(["Bob"])
+        });
+        ensure!(listed, "Bob was not told about the table he was split to");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn a_typing_player_who_leaves_stops_typing() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Typing", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.send(1, "chatTyping", json!({"tableId":id})).await?;
+        ensure!(h.receive(0, "chatTyping").await?["typing"] == true);
+        h.send(1, "tableLeave", json!({"tableId":id})).await?;
+        h.barrier(0).await?;
+        let stopped = h.frames(0).into_iter().any(|(name, typing)| {
+            name == "chatTyping" && typing["username"] == "Bob" && typing["typing"] == false
+        });
+        ensure!(stopped, "Bob left the table and is still shown as typing");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
     let Some(h) = Harness::new(&["Alice"]).await? else {
         return Ok(());
@@ -2935,6 +3033,12 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         ensure!(h.snapshot(id).await?.0.chat.len() == before);
         // An owner who changes nothing does not announce a change.
         h.send(0, "tableUpdate", json!({"tableId":id,"settings":{"name":"Original"}})).await?;
+        ensure!(h.snapshot(id).await?.0.chat.len() == before);
+        // A proposal is written to the chat, so a muted user cannot make one.
+        sqlx::query!("INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING", h.users[1].ip, h.users[1].user.get()).execute(&h.store.primary).await?;
+        let error = h.send(1, "tableUpdate", json!({"tableId":id,"settings":{"name":"Muted"}}))
+            .await.expect_err("A muted user proposed options");
+        ensure!(error.to_string() == MUTED, "Unexpected refusal: {error}");
         ensure!(h.snapshot(id).await?.0.chat.len() == before);
         Ok::<(), anyhow::Error>(())
     }.await;

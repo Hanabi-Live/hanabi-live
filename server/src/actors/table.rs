@@ -368,6 +368,13 @@ impl TableActor {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
+    /// Tells the audience that an attendee who left the table stopped typing. Clients remove a
+    /// typing name only when they are told.
+    pub(super) fn departed_typing_messages(&self, e: &mut Effects, departed: &Attendance) {
+        if departed.typing_until.is_some() {
+            self.typing_messages(e, departed.session.user, &departed.session.name, false);
+        }
+    }
     /// The table's settings, as the lobby and its players see them.
     fn settings(&self) -> hanabi_protocol::TableSettings {
         table_settings(
@@ -1240,6 +1247,13 @@ impl TableActor {
             .context("A game's timers were read without a game")?;
         if matches!(self.table.phase, Phase::Replay { .. }) {
             if timers.idle_remaining == 0 {
+                // A solo replay sends the server nothing, so its viewer's connection is its
+                // activity. It closes when the viewer leaves or stays disconnected.
+                if !self.table.visible && self.audience().next().is_some() {
+                    let mut next = self.candidate();
+                    game_mut(&mut next)?.idle_remaining = IDLE_TIMEOUT_MS;
+                    return self.apply_without_checkpoint(next);
+                }
                 return self.retire().await;
             }
             return Ok(());

@@ -69,6 +69,9 @@ fn actor_name<C>() -> &'static str {
     name.rsplit("::").next().unwrap_or(name)
 }
 
+/// The refusal of a muted user who tries to write to a table's chat.
+pub const MUTED: &str = "You have been muted by an administrator.";
+
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 

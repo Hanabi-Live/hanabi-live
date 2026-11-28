@@ -1,6 +1,5 @@
 use super::chat::table_notice;
 use crate::errors::CommandResult;
-use crate::errors::OrReject;
 use crate::{
     game::Options,
     model::{
@@ -73,28 +72,30 @@ pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<Option<String>
 
 /// The seed after a requested one, counting up its trailing number: "game-9" becomes "game-10",
 /// "007" becomes "008", and "game" becomes "game1". No requested seed stays none.
-pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<String>> {
-    let Some(seed) = seed else {
-        return Ok(None);
-    };
+///
+/// The next seed is never longer than `MAX_SEED_LENGTH`. A seed that has no room for another
+/// digit loses the end of its text. A seed of only nines at that length starts again at zero.
+pub(super) fn next_requested_seed(seed: Option<&str>) -> Option<String> {
+    let seed = seed?;
     let split = seed
         .rfind(|c: char| !c.is_ascii_digit())
         .map_or(0, |i| i + 1);
     let (prefix, number) = seed.split_at(split);
-    let next = if number.is_empty() {
-        format!("{seed}1")
-    } else {
-        format!(
-            "{prefix}{:0width$}",
-            number
-                .parse::<u64>()
-                .ok()
-                .and_then(|number| number.checked_add(1))
-                .or_reject("Seed suffix exhausted.")?,
-            width = number.len()
-        )
-    };
-    requested_seed(Some(&next))
+    // Count up the digits as text, so that a number of any length works.
+    let mut digits = number.as_bytes().to_vec();
+    let counted = digits.iter().rposition(|digit| *digit != b'9');
+    for digit in &mut digits[counted.map_or(0, |i| i + 1)..] {
+        *digit = b'0';
+    }
+    match counted {
+        Some(i) => digits[i] += 1,
+        None if digits.len() < MAX_SEED_LENGTH => digits.insert(0, b'1'),
+        None => {}
+    }
+    let room = MAX_SEED_LENGTH.saturating_sub(digits.len());
+    let mut next = crate::accounts::truncate_to_max_chars(prefix, room).to_owned();
+    next.extend(digits.into_iter().map(char::from));
+    Some(next)
 }
 
 /// Reads the custom seed that a table requests.

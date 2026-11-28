@@ -484,7 +484,7 @@ impl TableActor {
         };
         // A table that requested a seed moves on to the one after it.
         next.extra = ExtraOptions {
-            set_seed_suffix: next_requested_seed(self.table.extra.set_seed_suffix.as_deref())?,
+            set_seed_suffix: next_requested_seed(self.table.extra.set_seed_suffix.as_deref()),
             ..ExtraOptions::default()
         };
         // The viewers who are not seated stay as spectators, so that they come back as spectators

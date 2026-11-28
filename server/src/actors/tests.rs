@@ -55,15 +55,27 @@ fn requested_seeds_are_validated_and_restarts_count_them_up() {
     for seed in ["has space", "p2v0s1!", &format!("{longest}a")] {
         assert!(requested_seed(Some(seed)).is_err(), "{seed}");
     }
-    assert_eq!(next_requested_seed(None).unwrap(), None);
-    for (seed, next) in [("game", "game1"), ("game-9", "game-10"), ("007", "008")] {
-        assert_eq!(
-            next_requested_seed(Some(seed)).unwrap().as_deref(),
-            Some(next)
-        );
+    assert_eq!(next_requested_seed(None), None);
+    // A seed at the longest length makes room for its next number, and a number can be too large
+    // for an integer.
+    let text = "a".repeat(MAX_SEED_LENGTH);
+    let nines = "9".repeat(MAX_SEED_LENGTH);
+    for (seed, next) in [
+        ("game", "game1"),
+        ("game-9", "game-10"),
+        ("007", "008"),
+        (&*text, &*format!("{}1", &text[1..])),
+        (&*format!("{}9", &text[1..]), &*format!("{}10", &text[2..])),
+        (
+            &*format!("a{}", &nines[1..]),
+            &*format!("1{}", "0".repeat(MAX_SEED_LENGTH - 1)),
+        ),
+        (&*nines, &*"0".repeat(MAX_SEED_LENGTH)),
+    ] {
+        let counted = next_requested_seed(Some(seed));
+        assert_eq!(counted.as_deref(), Some(next));
+        assert!(requested_seed(counted.as_deref()).is_ok(), "{seed}");
     }
-    let full = format!("{}9", "a".repeat(MAX_SEED_LENGTH - 1));
-    assert!(next_requested_seed(Some(&full)).is_err());
 }
 
 #[test]

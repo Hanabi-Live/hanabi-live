@@ -1060,9 +1060,19 @@ impl Hub {
         if self.closing {
             return;
         }
+        let id = table.id;
         let mut actor = self.new_actor(table, saved, allocation);
         actor.seated_in_lobby = seated_in_lobby;
         let handle = self.add_table(actor, None);
+        // The players seated in the lobby do not reattend, so the table may publish nothing. The
+        // hub lists it now, which also tells those players where they sit.
+        let listing = self.tables.get_mut(&id).and_then(|entry| {
+            entry.published = true;
+            entry.view.listing.clone()
+        });
+        if let Some(listing) = listing {
+            self.broadcast(&frame(hanabi_protocol::event::TABLE, listing));
+        }
         for (session, spectate, shadow) in attendees {
             if self.current(&session) {
                 let (reply, _) = oneshot::channel();
