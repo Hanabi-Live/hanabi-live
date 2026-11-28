@@ -20,7 +20,7 @@ import { globals } from "./UiGlobals.ts";
 import { clickRightCheckAddNote } from "./clickNotes.ts";
 import { LEFT_MOUSE_BUTTON, RIGHT_MOUSE_BUTTON } from "./constants.ts";
 import { colorToColorIndex } from "./convert.ts";
-import { isViewingOldTurn } from "./isOurTurn.ts";
+import { hasLeftItsHand } from "./isOurTurn.ts";
 import * as turn from "./turn.ts";
 
 export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
@@ -37,9 +37,9 @@ export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
     return;
   }
 
-  // The in-game replay shows the cards of an old turn, so a click there makes no move. A
-  // right-click still adds a note.
-  if (isViewingOldTurn(globals.state)) {
+  // The in-game replay shows the cards of an old turn. A click on a card that has left its hand
+  // since makes no move. A right-click still adds a note.
+  if (hasLeftItsHand(globals.state, card.state)) {
     if (event.button === RIGHT_MOUSE_BUTTON) {
       clickRightCheckAddNote(event, card, true);
     }

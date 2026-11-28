@@ -8,6 +8,7 @@ import { SoundType } from "../types/SoundType.ts";
 import type { CardLayout } from "./CardLayout.ts";
 import * as cursor from "./cursor.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
+import { hasLeftItsHand } from "./isOurTurn.ts";
 import type { MisplayAnimation } from "./misplayAnimation.ts";
 import type { PlayStack } from "./PlayStack.ts";
 import { draggablePlayerIndex } from "./reactive/views/draggableView.ts";
@@ -108,9 +109,7 @@ export class LayoutChild extends Konva.Group {
       && this.card.state.location === draggableIndex
       // The in-game replay shows the hand of an old turn. A card that has left the hand since
       // cannot be played or discarded.
-      && (globals.state.replay.hypothetical !== undefined
-        || globals.state.ongoingGame.deck[this.card.order]?.location
-          === draggableIndex)
+      && !hasLeftItsHand(globals.state, this.card.state)
       // A morphed card with an unknown identity cannot be played or discarded.
       && !this.blank
       // Cards should not be draggable while they are playing an animation. (This function will be

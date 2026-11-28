@@ -1,3 +1,4 @@
+import type { CardState } from "@hanabi-live/game";
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import type { State } from "../types/State.ts";
@@ -30,12 +31,14 @@ export function isOurTurnInOngoingGame(): boolean {
 }
 
 /**
- * Whether the screen shows an old turn of the game in a replay, outside of a hypothetical. A real
- * move is not made from there, because the cards on screen are not the cards of the game now.
+ * Whether a card on the screen has left its hand in the game now. The in-game replay shows the
+ * hands of an old turn. A player can make a move from there, but only with a card that is still in
+ * the same hand.
  */
-export function isViewingOldTurn(state: State): boolean {
+export function hasLeftItsHand(state: State, card: CardState): boolean {
   return (
     state.replay.segment !== undefined
     && state.replay.hypothetical === undefined
+    && state.ongoingGame.deck[card.order]?.location !== card.location
   );
 }

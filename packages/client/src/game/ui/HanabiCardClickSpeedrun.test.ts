@@ -106,21 +106,58 @@ describe("speedrun clue clicks", () => {
   test.each([
     ["color", 0],
     ["rank", 2],
-  ] as const)("a %s clue is not sent from an old turn", (_name, button) => {
-    Object.assign(globals, {
-      state: {
-        ongoingGame: {
-          clueTokens: 1,
+  ] as const)(
+    "a %s clue is sent from an old turn for a card still in the hand",
+    (_name, button) => {
+      Object.assign(globals, {
+        state: {
+          ongoingGame: {
+            clueTokens: 1,
+            deck: {
+              [teammateCard.state.order]: {
+                location: teammateCard.state.location,
+              },
+            },
+          },
+          replay: {
+            segment: 3,
+            hypothetical: undefined,
+          },
         },
-        replay: {
-          segment: 3,
-          hypothetical: undefined,
+      });
+
+      click(button);
+
+      expect(end).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test.each([
+    ["color", 0],
+    ["rank", 2],
+  ] as const)(
+    "a %s clue is not sent for a card that left the hand",
+    (_name, button) => {
+      Object.assign(globals, {
+        state: {
+          ongoingGame: {
+            clueTokens: 1,
+            deck: {
+              [teammateCard.state.order]: {
+                location: "discard",
+              },
+            },
+          },
+          replay: {
+            segment: 3,
+            hypothetical: undefined,
+          },
         },
-      },
-    });
+      });
 
-    click(button);
+      click(button);
 
-    expect(end).not.toHaveBeenCalled();
-  });
+      expect(end).not.toHaveBeenCalled();
+    },
+  );
 });

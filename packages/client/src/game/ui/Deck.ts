@@ -24,7 +24,7 @@ import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards.ts";
 import { getGameInfoTooltip } from "./gameInfoTooltip.ts";
 import { updatePip } from "./HanabiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
-import { isOurTurn, isViewingOldTurn } from "./isOurTurn.ts";
+import { isOurTurn } from "./isOurTurn.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
 import * as turn from "./turn.ts";
 import { globals } from "./UiGlobals.ts";
@@ -321,8 +321,9 @@ export class Deck extends Konva.Group {
       globals.options.deckPlays
       && this.numLeft === 1
       && isOurTurn()
-      // An old turn of the game can show one card in the deck when the deck is empty.
-      && !isViewingOldTurn(globals.state)
+      // An old turn of the game can show one card in the deck when the deck is empty now.
+      && (globals.state.replay.hypothetical !== undefined
+        || globals.state.ongoingGame.cardsRemainingInTheDeck === 1)
     );
   }
 
