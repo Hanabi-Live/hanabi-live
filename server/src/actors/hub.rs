@@ -414,8 +414,13 @@ impl Hub {
             }
         });
     }
-    /// A shared replay of the same database game that a link to it should join.
-    fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
+    /// A shared replay of the same database game that a link to it should join. This is the one
+    /// that the user leads or watches (such as before a page refresh), or else the oldest one.
+    fn existing_replay(
+        &self,
+        user: UserId,
+        r: &hanabi_protocol::ReplayCreateRequest,
+    ) -> Option<TableId> {
         let hanabi_protocol::ReplayCreateRequest {
             source: hanabi_protocol::ReplaySource::Saved { game_id: game },
             visibility:
@@ -428,11 +433,16 @@ impl Hub {
         else {
             return None;
         };
-        self.tables
-            .iter()
-            .filter(|(_, e)| e.view.replay && e.view.visible() && e.view.replay_game == Some(game))
+        let replays = || {
+            self.tables.iter().filter(|(_, e)| {
+                e.view.replay && e.view.visible() && e.view.replay_game == Some(game)
+            })
+        };
+        replays()
+            .filter(|(_, e)| e.view.owner == user || e.view.reconnects.contains_key(&user))
             .map(|(id, _)| *id)
-            .min()
+            .max()
+            .or_else(|| replays().map(|(id, _)| *id).min())
     }
     /// Checks the replay limits before a user creates a replay, and closes the user's other solo
     /// replays.
@@ -944,7 +954,7 @@ impl Hub {
         match message {
             ClientRequest::TableCreate(r) => self.create(session, Creation::Table(r), reply),
             ClientRequest::ReplayCreate(r) => {
-                if let Some(id) = self.existing_replay(&r) {
+                if let Some(id) = self.existing_replay(session.user, &r) {
                     let spectate =
                         ClientRequest::TableSpectate(hanabi_protocol::TableSpectateRequest {
                             table_id: id,

@@ -15,7 +15,12 @@ import { friendsChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { TablesList } from "./TablesList.tsx";
 import type { Table } from "./tablesSlice.ts";
-import { selectTableRows, tableChanged, tablesListed } from "./tablesSlice.ts";
+import {
+  selectTableRows,
+  sharedReplayPath,
+  tableChanged,
+  tablesListed,
+} from "./tablesSlice.ts";
 
 vi.mock("../../tooltips.ts", () => ({ showCopied: vi.fn() }));
 vi.mock("./tableActions.ts", () => ({
@@ -46,6 +51,16 @@ function table(id: number, name: string, fields: Partial<Table> = {}): Table {
     spectators: [],
     ...fields,
   } as Table;
+}
+
+function sharedReplay(id: number, gameId: number): Table {
+  return table(id, `replay ${id}`, {
+    phase: {
+      type: "sharedReplay",
+      progress: 0,
+      gameId,
+    },
+  } as Partial<Table>);
 }
 
 function renderList() {
@@ -216,5 +231,14 @@ describe("TablesList", () => {
     fireEvent.click(screen.getByText("ongoing"));
     expect(tableJoin).toHaveBeenCalledOnce();
     expect(tableSpectate).toHaveBeenCalledOnce();
+  });
+});
+
+describe("sharedReplayPath", () => {
+  test("links the oldest shared replay of a game by the game, and newer ones by their table", () => {
+    const tables = [sharedReplay(3, 7), sharedReplay(5, 7), sharedReplay(4, 8)];
+    expect(sharedReplayPath(tables, 3, 7)).toBe("/shared-replay/7");
+    expect(sharedReplayPath(tables, 5, 7)).toBe("/game/5");
+    expect(sharedReplayPath(tables, 4, 8)).toBe("/shared-replay/8");
   });
 });

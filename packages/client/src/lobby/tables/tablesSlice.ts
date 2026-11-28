@@ -7,6 +7,7 @@ import {
   createSelector,
   createSlice,
 } from "@reduxjs/toolkit";
+import { PATH } from "../../constants.ts";
 import type { RootState } from "../../store.ts";
 
 export type Table = ServerEventData["table"];
@@ -146,6 +147,27 @@ export const selectIsPlayingAtTable = createSelector(
   (tables: readonly Table[], username: string): boolean =>
     tables.some((table) => isOurGame(table, isPlayer(table, username))),
 );
+
+/**
+ * The path of a link to a shared replay of a stored game. A "/shared-replay/123" link lasts beyond
+ * the table, but it opens the oldest shared replay of the game, so a newer one gets a link to its
+ * own table.
+ */
+export function sharedReplayPath(
+  tables: readonly Table[],
+  tableId: number,
+  gameId: number,
+): string {
+  const isOldest = tables.every(
+    (other) =>
+      other.tableId >= tableId
+      || other.phase.type !== "sharedReplay"
+      || other.phase.gameId !== gameId,
+  );
+  return isOldest
+    ? `${PATH.SHARED_REPLAY}/${gameId}`
+    : `${PATH.GAME}/${tableId}`;
+}
 
 /** Whether the user is one of the table's players. */
 export function isPlayer(table: Table, username: string): boolean {

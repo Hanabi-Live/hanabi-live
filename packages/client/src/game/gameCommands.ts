@@ -19,6 +19,7 @@ import { newArray } from "complete-common";
 import type { Connection } from "../Connection.ts";
 import { globals as lobbyGlobals } from "../Globals.ts";
 import { PATH } from "../constants.ts";
+import { selectTables, sharedReplayPath } from "../lobby/tables/tablesSlice.ts";
 import { Screen } from "../lobby/types/Screen.ts";
 import * as modals from "../modals.ts";
 import { ServerHandlers } from "../serverHandlers.ts";
@@ -495,7 +496,10 @@ function setUrl(tableId: number, data: GameInit) {
     if (mode.gameId === undefined) {
       return;
     }
-    path = `${mode.type === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${mode.gameId}`;
+    path =
+      mode.type === "sharedReplay"
+        ? sharedReplayPath(selectTables(store.getState()), tableId, mode.gameId)
+        : `${PATH.REPLAY}/${mode.gameId}`;
   } else {
     path = `${PATH.GAME}/${tableId}${
       mode.type === "shadowing" ? `/shadow/${mode.ourPlayerIndex}` : ""

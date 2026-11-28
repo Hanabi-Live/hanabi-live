@@ -7,7 +7,7 @@ import {
 } from "@hanabi-live/game";
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants.ts";
-import { useAppSelector } from "../../store.ts";
+import { store, useAppSelector } from "../../store.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import * as tooltips from "../../tooltips.ts";
 import { copyStringToClipboard, getUrlFromPath } from "../../utils.ts";
@@ -22,7 +22,11 @@ import {
 import { getOptionDescriptions } from "../optionDescriptions.ts";
 import { tableJoin, tableReattend, tableSpectate } from "./tableActions.ts";
 import type { Table, TableRow } from "./tablesSlice.ts";
-import { selectTableRows } from "./tablesSlice.ts";
+import {
+  selectTableRows,
+  selectTables,
+  sharedReplayPath,
+} from "./tablesSlice.ts";
 
 /**
  * How long a row ignores clicks after it appears or moves. Tables come, go, and re-sort as the
@@ -395,10 +399,13 @@ function getPath(table: Table, action: TableRow["action"]): string {
     }
 
     case "spectate": {
-      // A shared replay of a stored game gets a link that lasts beyond this table.
       return table.phase.type === "sharedReplay"
         && table.phase.gameId !== undefined
-        ? `${PATH.SHARED_REPLAY}/${table.phase.gameId}`
+        ? sharedReplayPath(
+            selectTables(store.getState()),
+            table.tableId,
+            table.phase.gameId,
+          )
         : `${PATH.GAME}/${table.tableId}`;
     }
   }

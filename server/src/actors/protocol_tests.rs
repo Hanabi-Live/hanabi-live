@@ -1276,9 +1276,15 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
             open(&mut h, 1, request(shared(true))).await? == existing,
             "A link did not join the existing shared replay"
         );
+        let newer = open(&mut h, 2, request(shared(false))).await?;
         ensure!(
-            open(&mut h, 2, request(shared(false))).await? != existing,
+            newer != existing,
             "Creating a shared replay from the lobby joined an existing one"
+        );
+        // A refresh follows the link in the address bar, which must return to the user's own replay.
+        ensure!(
+            open(&mut h, 2, request(shared(true))).await? == newer,
+            "A link moved a spectator to another shared replay of the same game"
         );
         ensure!(
             open(&mut h, 2, request(json!({"type":"solo"}))).await? != existing,
