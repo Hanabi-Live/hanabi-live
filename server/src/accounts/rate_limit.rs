@@ -15,8 +15,8 @@ use std::{
 
 const IP_LIMIT: usize = 20;
 const IP_WINDOW: Duration = Duration::from_mins(15);
-/// The most failed logins that NIST SP 800-63B allows. A login with the correct password is never
-/// refused by this limit, so others cannot lock the owner out.
+/// The most failed logins that NIST SP 800-63B allows. At this limit, an account accepts a login
+/// only from the network that it last connected from, so others cannot lock the owner out.
 pub(super) const ACCOUNT_LIMIT: usize = 100;
 const ACCOUNT_WINDOW: Duration = Duration::from_hours(1);
 const MAX_TRACKED_KEYS: usize = 10_000;
@@ -133,6 +133,18 @@ impl<K: Copy + Eq + Hash + Ord> Counter<K> {
         Ok(())
     }
 
+    /// How long to wait if the key has reached the limit. This records no attempt.
+    fn wait(&self, key: K, now: Instant) -> Option<Duration> {
+        let recent = self
+            .attempts
+            .get(&key)?
+            .iter()
+            .filter(|attempt| now.duration_since(**attempt) < self.window);
+        let oldest = *recent.clone().next()?;
+        (recent.count() >= self.limit)
+            .then(|| self.window.saturating_sub(now.duration_since(oldest)))
+    }
+
     fn refund(&mut self, key: K) {
         let Some(attempts) = self.attempts.get_mut(&key) else {
             return;
@@ -195,6 +207,20 @@ impl Default for LoginLimits {
 }
 
 impl LoginLimits {
+    /// How long a login to an account must wait, if the account has reached its limit of failed
+    /// logins. A login from the network that the account last connected from never waits, so
+    /// that guesses from other networks cannot lock the owner out.
+    pub(super) fn account_wait(&self, id: i32, ip: &str, last_ip: &str) -> Option<Duration> {
+        let ip = ip_key(ip)?;
+        if ip_key(last_ip) == Some(ip) {
+            return None;
+        }
+        self.accounts
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .wait(id, Instant::now())
+    }
+
     /// Charging up front stops parallel requests from slipping past the limit. The charge is
     /// refunded when the attempt is dropped, unless it is kept.
     pub(super) fn begin(&self, ip: &str) -> Result<LoginAttempt<'_>, Duration> {

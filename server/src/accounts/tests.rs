@@ -127,7 +127,7 @@ async fn login_limit_blocks_guessing_before_hashing_postgres() {
 }
 
 #[tokio::test]
-async fn failed_logins_do_not_lock_out_the_correct_password_postgres() {
+async fn failed_logins_lock_out_other_networks_but_not_the_owner_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
@@ -169,6 +169,11 @@ async fn failed_logins_do_not_lock_out_the_correct_password_postgres() {
     assert_eq!(
         login("198.18.3.1", "wrong").await.unwrap().status(),
         StatusCode::TOO_MANY_REQUESTS
+    );
+    assert_eq!(
+        login("198.18.3.2", "correct").await.unwrap().status(),
+        StatusCode::TOO_MANY_REQUESTS,
+        "another network cannot keep guessing"
     );
     assert_eq!(
         login(owner, "correct").await.unwrap().status(),

@@ -356,7 +356,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(wait) => return Ok(too_many_attempts(wait)),
     };
     let existing = sqlx::query!(
-        "SELECT id, password_hash AS \"password_hash?\", session_version FROM users
+        "SELECT id, password_hash AS \"password_hash?\", session_version, last_ip FROM users
          WHERE username=$1",
         username
     )
@@ -375,7 +375,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             };
             return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         };
-        // Only failures count against the account, so that others cannot lock its owner out.
+        // An account with too many failed logins checks no more passwords, not even the correct
+        // one, except from the network that it last connected from.
+        if let Some(wait) = state.limits.account_wait(id, ip, &user.last_ip) {
+            tracing::warn!("Refused a login for account {id} from IP: {ip}");
+            return Ok(too_many_attempts(wait));
+        }
+        // Only failures count against the account.
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
             let charged = attempt.fail_account(id);
             tracing::warn!("Failed login for account {id} from IP: {ip}");
