@@ -193,9 +193,6 @@ interface HandsProps {
       }
     | undefined;
 
-  /** The player who played or discarded a card on the turn that shows. */
-  readonly shownMover: PlayerIndex | undefined;
-
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
   /** The cards in the acting player's hand now, which are the only ones that can move. */
@@ -1748,11 +1745,9 @@ function Hand({
       globalThis.removeEventListener("blur", onBlur);
     };
   }, []);
-  // The player who acted on the turn that shows has a ring around their name: the one who gave the
-  // clue, or the one who played or discarded a card.
-  const isRinged =
-    props.shownClue?.giver === seat.playerIndex
-    || props.shownMover === seat.playerIndex;
+  // The player who gave the clue on the turn that shows has a ring around their name, where the
+  // clue's rail starts. A played or discarded card names its player on its own tab instead.
+  const isRinged = props.shownClue?.giver === seat.playerIndex;
 
   // In the phone layout, there is no room to the right of the hand for the clue button. With the
   // name beside the cards, the name column keeps room for it below the name (see
@@ -1843,8 +1838,8 @@ function Hand({
       >
         {buttonBesideName && clueButton}
         <div className="tw:relative tw:flex tw:max-w-full tw:min-w-0">
-          {/* The name of the player who acted on the turn that shows keeps a ring. For a clue, the
-            clue rail starts there. A click on the name lists the player's actions. */}
+          {/* The name of the player who gave the clue on the turn that shows keeps a ring, where the
+            clue rail starts. A click on the name lists the player's actions. */}
           <button
             aria-haspopup="dialog"
             className={`tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-[length:inherit] tw:text-inherit tw:hover:brightness-110 ${MENU_BUTTON_CLASS}`}
@@ -1864,8 +1859,7 @@ function Hand({
                   boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${CLUE_RAIL_COLOR}, 0 0 0 ${
                     CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
                   }px ${CLUE_EDGE_COLOR}`,
-                  ...(props.shownClue?.giver === seat.playerIndex
-                    && getPreviewFadeStyle(props)),
+                  ...getPreviewFadeStyle(props),
                 }}
               />
             )}

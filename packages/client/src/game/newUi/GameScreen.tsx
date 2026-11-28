@@ -720,7 +720,16 @@ export function GameScreen(): React.JSX.Element {
   const shownGameEnd = getShownGameEnd(state);
   // On the turn on which the game ended, the end of the game takes the place of the last move, so
   // the moved card has no outline.
-  const outlinedMove = shownGameEnd === undefined ? shownMove : undefined;
+  const outlinedMove =
+    shownGameEnd === undefined && shownMove !== undefined
+      ? {
+          ...shownMove,
+          playerName:
+            shownMove.player === undefined
+              ? undefined
+              : metadata.playerNames[shownMove.player],
+        }
+      : undefined;
   const stacks = getStacks(state);
   const discardRows = getDiscardRows(state);
   const cardNotes: CardNotes = {
@@ -1693,7 +1702,6 @@ export function GameScreen(): React.JSX.Element {
                           ),
                         }
                   }
-                  shownMover={shownMove?.player}
                   showPossibleCards={showHandPossibleCards}
                   speedrunClicks={speedrunClicks}
                   stacked={stacked}

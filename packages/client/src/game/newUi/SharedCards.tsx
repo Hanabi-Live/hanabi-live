@@ -506,6 +506,9 @@ export interface MovedCard {
   /** The card's slot in its holder's hand, where slot 1 is the newest card. */
   readonly slot: number | undefined;
 
+  /** The name of the player who held the card, which the tab shows before the slot. */
+  readonly playerName: string | undefined;
+
   /** What the tab adds after the slot (see `MovedCardLabel`). */
   readonly label: MovedCardLabel | undefined;
 }
@@ -522,20 +525,25 @@ const SLOT_TAB_HEIGHT_PER_WIDTH = 0.3;
 /** The smallest height of the tab, in CSS pixels, so that its text stays readable on a phone. */
 const SLOT_TAB_MIN_HEIGHT = 17;
 
+/** The dot between the player's name and the slot on a moved card's tab. */
+const MIDDLE_DOT = "\u{B7}";
+
 /** The smallest space between the tab and the side of the window, in CSS pixels. */
 const SLOT_TAB_WINDOW_MARGIN = 2;
 
 /**
- * The tab on the top edge of a moved card's outline, which names the slot that the card left, and
- * says "(misplayed)", "(blind)", or "(clued)" when the move was unusual. It is white like the
- * outline, so that the two read as one shape. The note has its own color, so that it stands out
- * from the slot.
+ * The tab on the top edge of a moved card's outline, which names the player who moved the card and
+ * the slot that it left, and says "(misplayed)", "(blind)", or "(clued)" when the move was unusual.
+ * It is white like the outline, so that the two read as one shape. The note has its own color, so
+ * that it stands out from the slot.
  */
 function SlotTab({
+  playerName,
   slot,
   label,
   cardWidth,
 }: {
+  readonly playerName: string | undefined;
   readonly slot: number;
   readonly label: MovedCardLabel | undefined;
   readonly cardWidth: number;
@@ -585,6 +593,17 @@ function SlotTab({
         fontSize: height * 0.62,
       }}
     >
+      {playerName !== undefined && (
+        <>
+          {/* A long name is cut short, so that the tab does not cover much of the cards around it. */}
+          <span className="tw:max-w-[7em] tw:truncate tw:py-[0.15em]">
+            {playerName}
+          </span>
+          <span aria-hidden="true" className="tw:opacity-50">
+            {MIDDLE_DOT}
+          </span>
+        </>
+      )}
       <span>Slot {slot}</span>
       {label !== undefined && (
         <span
@@ -899,6 +918,7 @@ export function PlayArea({
                             <SlotTab
                               cardWidth={cardWidth}
                               label={movedCard.label}
+                              playerName={movedCard.playerName}
                               slot={movedCard.slot}
                             />
                           )}
@@ -1902,6 +1922,7 @@ export function DiscardPile({
                         <SlotTab
                           cardWidth={cardWidth}
                           label={movedCard.label}
+                          playerName={movedCard.playerName}
                           slot={movedCard.slot}
                         />
                       )}
