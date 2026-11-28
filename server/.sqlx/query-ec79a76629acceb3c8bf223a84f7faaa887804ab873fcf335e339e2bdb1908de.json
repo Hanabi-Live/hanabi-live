@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE login_failures SET blocked_until = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "ec79a76629acceb3c8bf223a84f7faaa887804ab873fcf335e339e2bdb1908de"
+}

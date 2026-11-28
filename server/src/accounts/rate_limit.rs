@@ -15,10 +15,10 @@ use std::{
 
 const IP_LIMIT: usize = 20;
 const IP_WINDOW: Duration = Duration::from_mins(15);
-/// The most failed logins that NIST SP 800-63B allows. At this limit, an account accepts a login
-/// only from the network that it last connected from, so others cannot lock the owner out.
-pub(super) const ACCOUNT_LIMIT: usize = 100;
-const ACCOUNT_WINDOW: Duration = Duration::from_hours(1);
+/// The failed logins that a browser which signed in to an account before may make to that account
+/// (see `lockout`). It keeps a copied device cookie from being a way around the account's limit.
+pub(super) const DEVICE_LIMIT: usize = 10;
+const DEVICE_WINDOW: Duration = Duration::from_hours(1);
 const MAX_TRACKED_KEYS: usize = 10_000;
 /// Every password check or hash costs the same, whether or not it succeeds, so all of them share
 /// one budget per address. A visit needs one or two.
@@ -194,31 +194,35 @@ pub(crate) fn network_key(ip: IpAddr) -> Option<IpAddr> {
 
 pub(super) struct LoginLimits {
     ips: Mutex<Counter<IpAddr>>,
-    accounts: Mutex<Counter<i32>>,
+    devices: Mutex<Counter<crate::cookie::Device>>,
 }
 
 impl Default for LoginLimits {
     fn default() -> Self {
         Self {
             ips: Mutex::new(Counter::new(IP_LIMIT, IP_WINDOW)),
-            accounts: Mutex::new(Counter::new(ACCOUNT_LIMIT, ACCOUNT_WINDOW)),
+            devices: Mutex::new(Counter::new(DEVICE_LIMIT, DEVICE_WINDOW)),
         }
     }
 }
 
 impl LoginLimits {
-    /// How long a login to an account must wait, if the account has reached its limit of failed
-    /// logins. A login from the network that the account last connected from never waits, so
-    /// that guesses from other networks cannot lock the owner out.
-    pub(super) fn account_wait(&self, id: i32, ip: &str, last_ip: &str) -> Option<Duration> {
-        let ip = ip_key(ip)?;
-        if ip_key(last_ip) == Some(ip) {
-            return None;
-        }
-        self.accounts
+    /// How long a known browser must wait, if it has reached its limit of failed logins.
+    pub(super) fn device_wait(&self, device: crate::cookie::Device) -> Option<Duration> {
+        self.devices
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-            .wait(id, Instant::now())
+            .wait(device, Instant::now())
+    }
+
+    /// Counts a wrong password from a known browser.
+    pub(super) fn fail_device(&self, device: crate::cookie::Device) {
+        // At the limit, `device_wait` refuses the next login.
+        let _ = self
+            .devices
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .charge(device, Instant::now());
     }
 
     /// Charging up front stops parallel requests from slipping past the limit. The charge is
@@ -246,18 +250,6 @@ pub(super) struct LoginAttempt<'a> {
 }
 
 impl LoginAttempt<'_> {
-    /// Counts a wrong password against the address and the account. Returns how long to wait if
-    /// the account has reached its limit.
-    pub(super) fn fail_account(self, id: i32) -> Result<(), Duration> {
-        let limits = self.limits;
-        self.keep();
-        limits
-            .accounts
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .charge(id, Instant::now())
-    }
-
     /// Counts this attempt against the address. Successful logins are not kept, and they do not
     /// clear earlier failures, because attackers could otherwise reset the count with an account
     /// of their own.
@@ -362,15 +354,14 @@ mod tests {
     }
 
     #[test]
-    fn accounts_are_limited_across_addresses() {
+    fn a_known_browser_has_its_own_limit() {
         let limits = LoginLimits::default();
-        for index in 0..ACCOUNT_LIMIT {
-            let attempt = limits.begin(&format!("10.0.{}.1", index % 200)).unwrap();
-            attempt.fail_account(7).unwrap();
+        let device = |nonce| crate::cookie::Device { id: 7, nonce };
+        for _ in 0..DEVICE_LIMIT {
+            assert_eq!(limits.device_wait(device(1)), None);
+            limits.fail_device(device(1));
         }
-        let attempt = limits.begin("203.0.113.9").unwrap();
-        assert!(attempt.fail_account(7).is_err());
-        let attempt = limits.begin("203.0.113.9").unwrap();
-        assert!(attempt.fail_account(8).is_ok());
+        assert!(limits.device_wait(device(1)).is_some());
+        assert_eq!(limits.device_wait(device(2)), None);
     }
 }

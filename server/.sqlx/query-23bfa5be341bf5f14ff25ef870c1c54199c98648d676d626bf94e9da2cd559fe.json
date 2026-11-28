@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, password_hash AS \"password_hash?\", session_version, last_ip FROM users\n         WHERE username=$1",
+  "query": "SELECT id, password_hash AS \"password_hash?\", session_version FROM users\n         WHERE username=$1",
   "describe": {
     "columns": [
       {
@@ -35,17 +35,6 @@
             "name": "session_version"
           }
         }
-      },
-      {
-        "ordinal": 3,
-        "name": "last_ip",
-        "type_info": "Text",
-        "origin": {
-          "Table": {
-            "table": "users",
-            "name": "last_ip"
-          }
-        }
       }
     ],
     "parameters": {
@@ -56,9 +45,8 @@
     "nullable": [
       false,
       true,
-      false,
       false
     ]
   },
-  "hash": "8de4f321336f7edddf012f00cae180442bbf85b95d40d99229df12152c8cac64"
+  "hash": "23bfa5be341bf5f14ff25ef870c1c54199c98648d676d626bf94e9da2cd559fe"
 }

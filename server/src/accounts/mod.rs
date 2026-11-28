@@ -1,5 +1,6 @@
 //! PostgreSQL-backed login and identity routes.
 mod crypto;
+mod lockout;
 mod normalization;
 mod rate_limit;
 #[cfg(test)]
@@ -65,7 +66,7 @@ pub fn router(pool: PgPool, config: AccountConfig, hub: mpsc::Sender<HubCommand>
         .fold(Router::new(), |router, &account| {
             router.route(
                 &format!("/{account}"),
-                get(move |state, address| test_login(state, address, account)),
+                get(move |state, address, headers| test_login(state, address, headers, account)),
             )
         })
         .route("/login", post(login))
@@ -303,6 +304,7 @@ fn account_failure(operation: &'static str, error: &anyhow::Error) -> Response {
 async fn login(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     input: Result<Form<LoginRequest>, axum::extract::rejection::FormRejection>,
 ) -> Response {
     let input = match input {
@@ -314,13 +316,33 @@ async fn login(
             );
         }
     };
-    match login_inner(&state, &address.ip().to_string(), input).await {
+    match login_inner(&state, &address.ip().to_string(), &headers, input).await {
         Ok(response) => response,
         Err(error) => account_failure("login", &error),
     }
 }
 
-async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<Response> {
+/// Reads the cookie that says that this browser signed in to the account before.
+fn known_device(headers: &HeaderMap, secret: &str, id: i32) -> Option<cookie::Device> {
+    let name = cookie::device_name(id);
+    let now = OffsetDateTime::now_utc().unix_timestamp();
+    headers
+        .get_all(header::COOKIE)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .flat_map(|value| value.split(';'))
+        .filter_map(|pair| pair.trim().split_once('='))
+        .filter(|(cookie_name, _)| *cookie_name == name)
+        .filter_map(|(_, value)| cookie::decode_device(value, secret, now).ok())
+        .find(|device| device.id == id)
+}
+
+async fn login_inner(
+    state: &Accounts,
+    ip: &str,
+    headers: &HeaderMap,
+    input: LoginRequest,
+) -> Result<Response> {
     if is_banned(&state.pool, ip).await? {
         return Ok(banned());
     }
@@ -356,7 +378,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(wait) => return Ok(too_many_attempts(wait)),
     };
     let existing = sqlx::query!(
-        "SELECT id, password_hash AS \"password_hash?\", session_version, last_ip FROM users
+        "SELECT id, password_hash AS \"password_hash?\", session_version FROM users
          WHERE username=$1",
         username
     )
@@ -365,6 +387,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     let id: i32;
     // New accounts start at the column's default.
     let mut version = 0;
+    let mut device = None;
     if let Some(user) = existing {
         id = user.id;
         version = user.session_version;
@@ -375,21 +398,27 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             };
             return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         };
-        // An account with too many failed logins checks no more passwords, not even the correct
-        // one, except from the network that it last connected from.
-        if let Some(wait) = state.limits.account_wait(id, ip, &user.last_ip) {
+        // An account with too many failed logins checks no more passwords for a while, not even
+        // the correct one. A browser that signed in to the account before has its own limit, so
+        // that the guesses of others cannot lock the owner out (see `lockout`).
+        device = known_device(headers, &state.config.secret, id);
+        let wait = match device {
+            Some(device) => state.limits.device_wait(device),
+            None => lockout::count_attempt(&state.pool, id).await?,
+        };
+        if let Some(wait) = wait {
             tracing::warn!("Refused a login for account {id} from IP: {ip}");
             return Ok(too_many_attempts(wait));
         }
-        // Only failures count against the account.
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
-            let charged = attempt.fail_account(id);
-            tracing::warn!("Failed login for account {id} from IP: {ip}");
-            if let Err(wait) = charged {
-                return Ok(too_many_attempts(wait));
+            attempt.keep();
+            if let Some(device) = device {
+                state.limits.fail_device(device);
             }
+            tracing::warn!("Failed login for account {id} from IP: {ip}");
             return Ok(unauthorized("That is not the correct password."));
         }
+        lockout::clear(&state.pool, id).await?;
         let automatic_upgrade =
             input.new_password.is_none() && crypto::password_needs_upgrade(&original)?;
         if input.new_password.is_some() || automatic_upgrade {
@@ -484,10 +513,16 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         ClientKind::App => " from an app",
     };
     tracing::info!("Successful login for account {id}{client} from IP: {ip}");
-    let signed = cookie::encode(
-        cookie::Session { id, version },
+    let now = OffsetDateTime::now_utc().unix_timestamp();
+    let signed = cookie::encode(cookie::Session { id, version }, &state.config.secret, now)?;
+    // From now on, this browser is one that signed in to the account before.
+    let device = cookie::encode_device(
+        device.unwrap_or_else(|| cookie::Device {
+            id,
+            nonce: rand::random(),
+        }),
         &state.config.secret,
-        OffsetDateTime::now_utc().unix_timestamp(),
+        now,
     )?;
     Ok(with_cookies(
         Json(hanabi_protocol::UserRef {
@@ -498,6 +533,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         [
             cookie_header(&state.config, cookie::NAME, &signed, false),
             cookie_header(&state.config, &cookie::account_name(id), &signed, false),
+            cookie_header(&state.config, &cookie::device_name(id), &device, false),
         ],
     ))
 }
@@ -581,6 +617,7 @@ pub const TEST_ACCOUNTS: [&str; 9] = [
 async fn test_login(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     account: &'static str,
 ) -> Response {
     let input = LoginRequest {
@@ -590,7 +627,7 @@ async fn test_login(
         create_account: true,
         ..LoginRequest::default()
     };
-    let response = match login_inner(&state, &address.ip().to_string(), input).await {
+    let response = match login_inner(&state, &address.ip().to_string(), &headers, input).await {
         Ok(response) => response,
         Err(error) => return account_failure("login", &error),
     };

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO login_failures AS f (user_id, failures, blocked_until) VALUES ($1, 1, NOW())\n         ON CONFLICT (user_id) DO UPDATE SET\n             failures = CASE\n                 WHEN f.blocked_until < NOW() - make_interval(secs => $4::float8) THEN 1\n                 ELSE f.failures + 1 END,\n             blocked_until = CASE\n                 WHEN f.blocked_until < NOW() - make_interval(secs => $4::float8) THEN NOW()\n                 WHEN (f.failures + 1) % $2::integer = 0 THEN NOW() + make_interval(secs => LEAST(\n                     $4::float8,\n                     $3::float8 * power(2, LEAST((f.failures + 1) / $2::integer - 1, $5::integer))))\n                 ELSE f.blocked_until END\n         WHERE f.blocked_until <= NOW()\n         RETURNING f.failures",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "failures",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "login_failures",
+            "name": "failures"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Float8",
+        "Float8",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "943f4144c1f00695afe9e3e647b9263c4b9d3244f0fd4e2364966339b4304e5c"
+}

@@ -25,10 +25,28 @@ pub struct Session {
     pub version: i32,
 }
 
-fn mac(secret: &str, message: &str) -> Result<Hmac<Sha256>> {
+/// The name of the cookie that marks a browser as one that signed in to an account before.
+pub fn device_name(id: i32) -> String {
+    format!("{DEVICE_NAME}.{id}")
+}
+const DEVICE_NAME: &str = "hanabi.device";
+
+/// A browser that signed in to an account before. It gives no access to the account. A login from
+/// it is not held back by the failed logins of other clients, so that they cannot lock the owner
+/// out (see `accounts::lockout`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Device {
+    pub id: i32,
+    /// A random number that tells the browsers of one account apart.
+    pub nonce: u64,
+}
+
+/// `purpose` is the name of the kind of cookie, so that a signature of one kind is not valid for
+/// another.
+fn mac(secret: &str, purpose: &str, message: &str) -> Result<Hmac<Sha256>> {
     ensure!(!secret.is_empty(), "Missing signing key");
     let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())?;
-    mac.update(format!("{NAME}|").as_bytes());
+    mac.update(format!("{purpose}|").as_bytes());
     mac.update(message.as_bytes());
     Ok(mac)
 }
@@ -45,7 +63,7 @@ pub fn decode(encoded: &str, secret: &str, now: i64) -> Result<Session> {
     };
     let (timestamp, version) = rest.split_once(SEPARATOR).unwrap_or((rest, "0"));
     // Only the server signs cookies, so the signed numbers are well formed.
-    mac(secret, message)?.verify_slice(&URL_SAFE_NO_PAD.decode(signature)?)?;
+    mac(secret, NAME, message)?.verify_slice(&URL_SAFE_NO_PAD.decode(signature)?)?;
     let id: i32 = id.parse()?;
     ensure!(id > 0, "Invalid user ID");
     ensure!(timestamp.parse::<i64>()? >= now - MAX_AGE, "Expired cookie");
@@ -62,7 +80,37 @@ pub fn encode(session: Session, secret: &str, timestamp: i64) -> Result<String> 
         "Invalid session identity"
     );
     let message = format!("{id}{SEPARATOR}{timestamp}{SEPARATOR}{version}");
-    let signature = mac(secret, &message)?.finalize().into_bytes();
+    let signature = mac(secret, NAME, &message)?.finalize().into_bytes();
+    Ok(format!(
+        "{message}{SEPARATOR}{}",
+        URL_SAFE_NO_PAD.encode(signature)
+    ))
+}
+
+/// Reads a device cookie in the form `{id}.{timestamp}.{nonce}.{signature}`.
+pub fn decode_device(encoded: &str, secret: &str, now: i64) -> Result<Device> {
+    ensure!(encoded.len() <= MAX_ENCODED_LENGTH, "Oversized cookie");
+    let Some((message, signature)) = encoded.rsplit_once(SEPARATOR) else {
+        bail!("Invalid cookie")
+    };
+    mac(secret, DEVICE_NAME, message)?.verify_slice(&URL_SAFE_NO_PAD.decode(signature)?)?;
+    let mut parts = message.split(SEPARATOR);
+    let (Some(id), Some(timestamp), Some(nonce), None) =
+        (parts.next(), parts.next(), parts.next(), parts.next())
+    else {
+        bail!("Invalid cookie")
+    };
+    ensure!(timestamp.parse::<i64>()? >= now - MAX_AGE, "Expired cookie");
+    Ok(Device {
+        id: id.parse()?,
+        nonce: nonce.parse()?,
+    })
+}
+
+pub fn encode_device(device: Device, secret: &str, timestamp: i64) -> Result<String> {
+    let Device { id, nonce } = device;
+    let message = format!("{id}{SEPARATOR}{timestamp}{SEPARATOR}{nonce}");
+    let signature = mac(secret, DEVICE_NAME, &message)?.finalize().into_bytes();
     Ok(format!(
         "{message}{SEPARATOR}{}",
         URL_SAFE_NO_PAD.encode(signature)
@@ -98,10 +146,29 @@ mod tests {
     }
 
     #[test]
+    fn device_cookies_round_trip_and_are_not_session_cookies() {
+        let secret = "synthetic-cookie-signing-key";
+        let device = Device {
+            id: 7,
+            nonce: u64::MAX,
+        };
+        let encoded = encode_device(device, secret, 100).unwrap();
+        assert_eq!(decode_device(&encoded, secret, 100).unwrap(), device);
+        assert!(decode_device(&encoded, "incorrect-key", 100).is_err());
+        assert!(decode_device(&encoded, secret, 100 + MAX_AGE + 1).is_err());
+        let signature = encoded.rsplit_once(SEPARATOR).unwrap().1;
+        assert!(decode_device(&format!("8.100.{}.{signature}", u64::MAX), secret, 100).is_err());
+        // Neither kind of cookie is valid as the other kind.
+        assert!(decode(&encoded, secret, 100).is_err());
+        let session = encode(Session { id: 7, version: 1 }, secret, 100).unwrap();
+        assert!(decode_device(&session, secret, 100).is_err());
+    }
+
+    #[test]
     fn cookies_without_a_version_are_version_zero() {
         let secret = "synthetic-cookie-signing-key";
         let message = "7.1700000000";
-        let signature = mac(secret, message).unwrap().finalize().into_bytes();
+        let signature = mac(secret, NAME, message).unwrap().finalize().into_bytes();
         let encoded = format!("{message}{SEPARATOR}{}", URL_SAFE_NO_PAD.encode(signature));
         assert_eq!(
             decode(&encoded, secret, 1_700_000_000).unwrap(),

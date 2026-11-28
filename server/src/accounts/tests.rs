@@ -102,9 +102,18 @@ async fn login_limit_blocks_guessing_before_hashing_postgres() {
             "successful logins do not use up the limit"
         );
     }
-    for _ in 0..20 {
+    // The guesses go to more than one account, so that no account reaches its own limit.
+    let others = ["Bob", "Cathy"];
+    for name in others {
         assert_eq!(
-            login_from(&app, attacker, "Alice", "wrong").await.status(),
+            login_from(&app, player, name, "correct").await.status(),
+            StatusCode::OK
+        );
+    }
+    for index in 0..20 {
+        let name = ["Alice", "Bob", "Cathy"][index % 3];
+        assert_eq!(
+            login_from(&app, attacker, name, "wrong").await.status(),
             StatusCode::UNAUTHORIZED
         );
     }
@@ -127,7 +136,7 @@ async fn login_limit_blocks_guessing_before_hashing_postgres() {
 }
 
 #[tokio::test]
-async fn failed_logins_lock_out_other_networks_but_not_the_owner_postgres() {
+async fn failed_logins_make_unknown_clients_wait_but_not_the_owner_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
@@ -137,47 +146,105 @@ async fn failed_logins_lock_out_other_networks_but_not_the_owner_postgres() {
         limits: rate_limit::LoginLimits::default(),
         hub: hub(),
     };
-    let login = |ip: &'static str, password: &str| {
-        login_inner(
-            &state,
-            ip,
-            LoginRequest {
-                username: "Alice".into(),
-                password: password.into(),
-                version: Some(config().version),
-                create_account: true,
-                ..LoginRequest::default()
-            },
-        )
+    let login = |ip: &'static str, password: &str, headers: &HeaderMap| {
+        let headers = headers.clone();
+        let request = LoginRequest {
+            username: "Alice".into(),
+            password: password.into(),
+            version: Some(config().version),
+            create_account: true,
+            ..LoginRequest::default()
+        };
+        let state = &state;
+        async move {
+            login_inner(state, ip, &headers, request)
+                .await
+                .unwrap()
+                .status()
+        }
     };
+    let unknown = HeaderMap::new();
     let owner = "198.18.1.1";
+    let created = login_inner(
+        &state,
+        owner,
+        &unknown,
+        LoginRequest {
+            username: "Alice".into(),
+            password: "correct".into(),
+            version: Some(config().version),
+            create_account: true,
+            ..LoginRequest::default()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(created.status(), StatusCode::OK);
+    // The owner's browser keeps the cookies of the sign-in.
+    let cookies = created
+        .headers()
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .map(|value| value.to_str().unwrap().split(';').next().unwrap())
+        .collect::<Vec<_>>()
+        .join("; ");
+    let mut known = HeaderMap::new();
+    known.insert(header::COOKIE, cookies.parse().unwrap());
+
+    // The guesses come from more than one address, so that no address reaches its own limit.
+    let guess = |password: &'static str| login("198.18.2.1", password, &unknown);
+    for _ in 0..10 {
+        assert_eq!(guess("wrong").await, StatusCode::UNAUTHORIZED);
+    }
+    assert_eq!(guess("wrong").await, StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(
-        login(owner, "correct").await.unwrap().status(),
-        StatusCode::OK
+        login("198.18.2.2", "correct", &unknown).await,
+        StatusCode::TOO_MANY_REQUESTS,
+        "an unknown client cannot keep guessing"
     );
-    let id = sqlx::query_scalar!("SELECT id FROM users WHERE username='Alice'")
-        .fetch_one(&db.pool)
+    let wait = |pool: PgPool| async move {
+        sqlx::query_scalar!(
+            "SELECT EXTRACT(EPOCH FROM blocked_until - NOW())::float8 AS \"seconds!\"
+             FROM login_failures"
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap()
+    };
+    let first = wait(db.pool.clone()).await;
+    assert!((50.0..=60.0).contains(&first), "{first}");
+
+    // After the wait, the next group of failed logins doubles it.
+    sqlx::query!("UPDATE login_failures SET blocked_until = NOW()")
+        .execute(&db.pool)
         .await
         .unwrap();
-    // Record the guesses directly, over enough addresses that no address reaches its own limit.
-    let guesses_per_address = 10;
-    for index in 0..rate_limit::ACCOUNT_LIMIT {
-        let attacker = format!("198.18.2.{}", index / guesses_per_address);
-        let attempt = state.limits.begin(&attacker).unwrap();
-        attempt.fail_account(id).unwrap();
+    for _ in 0..10 {
+        assert_eq!(
+            login("198.18.2.3", "wrong", &unknown).await,
+            StatusCode::UNAUTHORIZED
+        );
+    }
+    let second = wait(db.pool.clone()).await;
+    assert!((110.0..=120.0).contains(&second), "{second}");
+
+    // The owner's browser is not held back, and its sign-in forgives the failed logins.
+    assert_eq!(login(owner, "correct", &known).await, StatusCode::OK);
+    assert_eq!(
+        login("198.18.2.4", "correct", &unknown).await,
+        StatusCode::OK
+    );
+
+    // A known browser has its own limit, so a copied cookie is no way around the wait.
+    for _ in 0..rate_limit::DEVICE_LIMIT {
+        assert_eq!(
+            login(owner, "wrong", &known).await,
+            StatusCode::UNAUTHORIZED
+        );
     }
     assert_eq!(
-        login("198.18.3.1", "wrong").await.unwrap().status(),
+        login(owner, "correct", &known).await,
         StatusCode::TOO_MANY_REQUESTS
-    );
-    assert_eq!(
-        login("198.18.3.2", "correct").await.unwrap().status(),
-        StatusCode::TOO_MANY_REQUESTS,
-        "another network cannot keep guessing"
-    );
-    assert_eq!(
-        login(owner, "correct").await.unwrap().status(),
-        StatusCode::OK
     );
     db.close().await;
 }
@@ -733,8 +800,9 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
             .as_i64()
             .unwrap();
         let cookies = set_cookies(&headers);
-        assert_eq!(cookies.len(), 2);
+        assert_eq!(cookies.len(), 3);
         assert!(cookies[1].starts_with(&format!("hanabi.sid.{id}=")));
+        assert!(cookies[2].starts_with(&format!("hanabi.device.{id}=")));
         jar.retain(|cookie: &String| !cookie.starts_with("hanabi.sid="));
         jar.extend(cookies);
         ids.push(id);

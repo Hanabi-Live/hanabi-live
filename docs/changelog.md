@@ -13,6 +13,8 @@ of the repository.
   does not set the Google Drive backup values.
 - The link that `/copy` makes now keeps the options of the game that change how
   it plays, such as "One Extra Card".
+- An account with many failed logins now makes browsers that never signed in to
+  it wait before the next login. The wait doubles each time, up to one day.
 
 ## November 27th, 2026
 
