@@ -35,12 +35,15 @@ vi.mock("../lobbyPage.ts", () => ({
 
 /** The error tooltips that are open, by the ID of their text box. */
 const openErrors = new Map<string, string>();
-vi.mock("../../Tooltip.ts", () => ({
+vi.mock("../../Tooltip.ts", async (importOriginal) => ({
+  // The New UI's cards read its sizes.
+  ...(await importOriginal<object>()),
   Tooltip: class {
     private readonly id: string;
-    private content = "";
+    private content: Node | string = "";
+    isOpen = false;
     readonly openOnHover = vi.fn();
-    constructor(anchor: HTMLElement, options: { content: string }) {
+    constructor(anchor: HTMLElement, options: { content: Node | string }) {
       this.id = anchor.id;
       this.content = options.content;
     }
@@ -50,11 +53,26 @@ vi.mock("../../Tooltip.ts", () => ({
     }
 
     open() {
-      openErrors.set(this.id, this.content);
+      this.isOpen = true;
+      if (typeof this.content === "string") {
+        openErrors.set(this.id, this.content);
+      } else {
+        // A menu, such as that of a card of the variant builder, shows its element.
+        document.body.append(this.content);
+      }
+    }
+
+    openUntilClickElsewhere() {
+      this.open();
     }
 
     close() {
-      openErrors.delete(this.id);
+      this.isOpen = false;
+      if (typeof this.content === "string") {
+        openErrors.delete(this.id);
+      } else {
+        (this.content as ChildNode).remove();
+      }
     }
 
     destroy() {
@@ -192,45 +210,73 @@ describe("CreateGame", () => {
     });
   });
 
-  test("searching for a basic variant goes back to the dropdown", () => {
+  test("the curated menu chooses a variant, which the dropdown then shows", () => {
     showPage();
-    fireEvent.change(getInput("create-game-variant-dropdown1"), {
+    const dropdown = getInput("create-game-variant-dropdown1");
+    fireEvent.change(dropdown, {
       target: {
-        value: "Search custom variants...",
+        value: "Other curated variants",
       },
     });
-    fireEvent.change(getInput("create-game-variant-dropdown2"), {
-      target: {
-        value: "6 Suits",
-      },
-    });
+    // A name keeps "(5 Suits)" only beside the same name with another suit count.
+    expect(
+      screen.getByRole("button", { name: "Pink (5 Suits)" }).textContent,
+    ).toBe("Pink");
+    expect(
+      screen.getByRole("button", { name: "Dual-Color (5 Suits)" }).textContent,
+    ).toBe("Dual-Color (5 Suits)");
+    fireEvent.click(screen.getByRole("button", { name: "Pink (5 Suits)" }));
 
-    expect(getInput("create-game-variant-dropdown1").value).toBe("6 Suits");
+    expect(dropdown.value).toBe("Pink (5 Suits)");
     expect(
       store.getState().session.settings.createTable.options.variantId,
-    ).toBe(getVariant("6 Suits").id);
+    ).toBe(getVariant("Pink (5 Suits)").id);
+    expect(
+      screen.queryByRole("navigation", { name: "Other curated variants" }),
+    ).toBe(null);
   });
 
-  test("the variant search opens its list on a click, not when the page opens", () => {
-    store.dispatch(
-      settingsChanged({
-        ...defaultSettings,
-        createTable: {
-          ...defaultSettings.createTable,
-          options: {
-            ...defaultSettings.createTable.options,
-            variantId: getVariant("Rainbow (5 Suits)").id,
-          },
-        },
-      }),
-    );
+  test("a curated variant that the catalog does not have shows its new name", () => {
     showPage();
-    const search = getInput("create-game-variant-dropdown2");
-    expect(document.activeElement).toBe(search);
-    expect(search.ariaExpanded).toBe("false");
+    const dropdown = document.querySelector<HTMLSelectElement>(
+      "#create-game-variant-dropdown1",
+    )!;
+    fireEvent.change(dropdown, {
+      target: {
+        value: "Other curated variants",
+      },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Critical Twos (6 Suits)" }),
+    );
 
-    click("create-game-variant-dropdown2");
-    expect(search.ariaExpanded).toBe("true");
+    expect(dropdown.selectedOptions[0]?.textContent).toBe(
+      "Critical Twos (6 Suits)",
+    );
+    // Until the server can create a new variant, the form cannot create its table.
+    expect(
+      document
+        .querySelector("#create-game-submit")
+        ?.getAttribute("aria-disabled"),
+    ).toBe("true");
+  });
+
+  test("a deck card's menu reverses its suit, and Escape closes it", () => {
+    showPage();
+    fireEvent.click(screen.getByRole("button", { name: "Build a variant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Red" }));
+
+    const menu = screen.getByRole("dialog", { name: "Red" });
+    expect(menu.textContent).toContain("Red has no dark version.");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Reversed/u }));
+    const card = screen.getByRole("button", { name: "Red Reversed" });
+
+    // The menu takes the focus, so Escape reaches it.
+    fireEvent.keyDown(screen.getByRole("checkbox", { name: /Reversed/u }), {
+      key: "Escape",
+    });
+    expect(screen.queryByRole("dialog")).toBe(null);
+    expect(document.activeElement).toBe(card);
   });
 
   test("a guest suggests the options of the table to its owner", () => {

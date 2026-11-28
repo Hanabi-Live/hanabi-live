@@ -109,6 +109,11 @@ of the repository.
 - In a replay, `Shift + Left` and `Shift + Right` go back or forward one full
   rotation, the same as `[` and `]`.
 - The "Cow & Pig" variants are now named "Cow and Pig".
+- Create Game has a variant builder. Pick the suits and the rules that you want,
+  in any combination, and it makes the variant that has them.
+- The variant dropdown of Create Game lists No Variant, Black, and Rainbow.
+  "Other curated variants" opens a menu of variants that players know to be fun.
+  It replaces the search of every variant.
 
 ## November 20th, 2026
 
