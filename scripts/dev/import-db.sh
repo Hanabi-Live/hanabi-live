@@ -11,16 +11,10 @@ fi
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# shellcheck source=../lib/env.sh
-source "$DIR/../lib/env.sh"
+# shellcheck source=../lib/database.sh
+source "$DIR/../lib/database.sh"
 
-# This assumes that "postgres" and "hanabiuser" share the same password
-PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" << EOF
-DROP DATABASE $DB_NAME;
-CREATE DATABASE $DB_NAME;
-GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
-GRANT USAGE ON SCHEMA public TO $DB_USER;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
-EOF
+# Empty the database. The database user owns the database, so it can replace the "public" schema.
+# It then owns the new schema, so it needs no grants.
+sql --command="DROP SCHEMA public CASCADE" --command="CREATE SCHEMA public"
 PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" < "$1"

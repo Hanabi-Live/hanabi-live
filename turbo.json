@@ -23,12 +23,17 @@
       "inputs": [
         "bun.lock",
         "package.json",
+        "packages/client/src/**",
         "packages/scripts/src/buildCss.ts",
         "packages/scripts/src/fontAwesome.ts",
         "public/css/**",
         "!public/css/main.*.min.css",
         "!public/css/main.*.icons.woff2",
-        "scripts/lint/check-css.sh"
+        "public/standalone/**",
+        "public/webfonts/**",
+        "scripts/lint/check-css.sh",
+        "server/src/**",
+        "server/templates/**"
       ],
       "env": [
         "CI",
@@ -124,7 +129,6 @@
         ".prettierignore",
         "bun.lock",
         "install/database_schema.sql",
-        "install/migration-files.sh",
         "install/migrations/**",
         "package.json",
         "packages/data/src/generated/**",

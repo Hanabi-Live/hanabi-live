@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Remove the IP ban on a user's last IP address.
+# Remove the IP bans that were made for a user, and the ban on the user's last IP address.
 
 set -o errexit -o nounset -o pipefail
 
@@ -23,9 +23,17 @@ fi
 last_ip=$(sql --set=username="$USERNAME" <<< "SELECT last_ip FROM users WHERE username = :'username';")
 echo "Their last IP address is: $last_ip"
 
-deleted=$(sql --set=ip="$last_ip" <<< "WITH deleted AS (DELETE FROM banned_ips WHERE ip = :'ip' RETURNING 1) SELECT COUNT(*) FROM deleted;")
-if ((deleted == 0)); then
-  echo "The IP address of \"$last_ip\" is not banned."
+# A ban records the IP address that the user had at that time, which can differ from the last one.
+removed=$(
+  sql --set=username="$USERNAME" << 'SQL'
+DELETE FROM banned_ips USING users
+WHERE users.username = :'username' AND (banned_ips.user_id = users.id OR banned_ips.ip = users.last_ip)
+RETURNING banned_ips.ip;
+SQL
+)
+if [[ -z $removed ]]; then
+  echo "The user \"$USERNAME\" has no bans, and the IP address of \"$last_ip\" is not banned."
   exit 1
 fi
-echo "Complete."
+echo "Removed the bans on these IP addresses:"
+echo "$removed"

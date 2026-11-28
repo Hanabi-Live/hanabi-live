@@ -23,6 +23,11 @@ RESERVE_BYTES = 256 * 1024 * 1024
 KEEP_DEPLOYMENTS = 5  # Replaced files from recent deployments are kept for manual rollback.
 # The CI jobs that must pass before a revision is deployed. A matrix job is named "lint (rust)".
 GATE_JOBS = ("client-build", "server-build", "lint", "test")
+# The client files that are named after their revision, by directory. Each deployment adds a set.
+REVISION_FILES = {
+    "public/js/bundles": re.compile(r"main\.([a-f0-9]{40})\.min\.js(?:\.map)?"),
+    "public/css": re.compile(r"main\.([a-f0-9]{40})\.(?:min\.css|icons\.woff2)"),
+}
 
 
 def require(condition, message):
@@ -251,6 +256,34 @@ def prune(backups):
         print(f"Warning: could not remove old deployment files: {error}", file=sys.stderr)
 
 
+def prune_client(root, backups, revisions):
+    """Remove the client files of old revisions.
+
+    Keeps the files of the given revisions, and of every deployment whose replaced files are kept,
+    because a rollback to its old revision needs them. Removes nothing else.
+    """
+    try:
+        kept = set(revisions)
+        for work in backups.glob("deploy-*"):
+            if (work / "previous").exists():
+                record = json.loads((work / "deployment.json").read_text())
+                kept.update((record["previous"], record["revision"]))
+        removed = 0
+        for directory, pattern in REVISION_FILES.items():
+            folder = root / directory
+            require(folder.resolve() == folder, f"Client directory is a symlink: {directory}")
+            with os.scandir(folder) as entries:
+                for entry in entries:
+                    match = pattern.fullmatch(entry.name)
+                    if (match and match[1] not in kept
+                            and entry.is_file(follow_symlinks=False)):
+                        os.unlink(entry.path)
+                        removed += 1
+        print(f"Removed {removed} client files of old revisions.")
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"Warning: could not remove old client files: {error}", file=sys.stderr)
+
+
 def prepare(root, staged):
     shared = staged.parent.parent / "shared"
     (shared / ".env").symlink_to(root / ".env")
@@ -363,6 +396,8 @@ def deploy(root, archive, check, apply_migrations):
             print(f"Deployed {revision}; running revision, paired files, and recovery health verified.")
             print("Review fresh server logs.")
             prune(backups)
+            # Clients that still run the previous revision can request its files.
+            prune_client(root, backups, (running, revision))
         except (OSError, ValueError, KeyError, subprocess.SubprocessError):
             print(f"Deployment stopped in phase {record['phase']}. Preserve {work}; "
                   "no automatic rollback, forced restart, or state deletion was attempted.", file=sys.stderr)
