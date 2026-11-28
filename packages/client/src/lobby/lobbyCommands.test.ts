@@ -1,3 +1,4 @@
+import type { ServerEventData } from "@hanabi-live/data";
 import { tableIdSchema } from "@hanabi-live/data";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { screenChanged } from "../sessionSlice.ts";
@@ -15,13 +16,15 @@ vi.mock("../game/ui/reactive/views/spectatorsView.ts", () => ({}));
 vi.mock("../modals.ts", () => ({}));
 vi.mock("../sounds.ts", () => ({}));
 vi.mock("./history.ts", () => ({}));
-vi.mock("./login.ts", () => ({}));
+vi.mock("./login.ts", () => ({ hide: vi.fn() }));
 vi.mock("./playerSettings.ts", () => ({}));
 vi.mock("./pregame/pregame.ts", () => ({ hide: vi.fn() }));
-vi.mock("./url.ts", () => ({}));
+vi.mock("./url.ts", () => ({ parseAndGoto: vi.fn() }));
+vi.mock("../theme.ts", () => ({ setDarkMode: vi.fn() }));
 const { globals } = await import("../Globals.ts");
 const gameMain = await import("../game/main.ts");
 const pregame = await import("./pregame/pregame.ts");
+const url = await import("./url.ts");
 const { lobbyCommands } = await import("./lobbyCommands.ts");
 
 const TABLE_ID = tableIdSchema.parse(1);
@@ -60,6 +63,46 @@ describe('the "tableLeft" command', () => {
     lobbyCommands.get("tableLeft")?.({ tableId: tableIdSchema.parse(2) });
 
     expect(gameMain.hide).not.toHaveBeenCalled();
+    expect(globals.tableId).toBe(TABLE_ID);
+  });
+});
+
+describe('the "welcome" command after a reconnect', () => {
+  const welcome = {
+    settings: {},
+    friends: [],
+    blocked: [],
+    users: [],
+    tables: [],
+  } as unknown as ServerEventData["welcome"];
+
+  beforeEach(() => {
+    vi.mocked(pregame.hide).mockClear();
+    globals.tableId = TABLE_ID;
+    store.dispatch(screenChanged(Screen.PreGame));
+  });
+
+  test("leaves the pre-game of a table that the server refuses to take us back to", () => {
+    vi.mocked(url.parseAndGoto).mockImplementation((_data, onRefused) => {
+      onRefused(true);
+      return true;
+    });
+
+    lobbyCommands.get("welcome")?.(welcome);
+
+    expect(pregame.hide).toHaveBeenCalledTimes(1);
+    expect(globals.tableId).toBeUndefined();
+  });
+
+  test("stays in the pre-game when the request did not reach the server", () => {
+    vi.mocked(url.parseAndGoto).mockImplementation((_data, onRefused) => {
+      onRefused(false);
+      return true;
+    });
+
+    lobbyCommands.get("welcome")?.(welcome);
+
+    expect(pregame.hide).not.toHaveBeenCalled();
     expect(globals.tableId).toBe(TABLE_ID);
   });
 });

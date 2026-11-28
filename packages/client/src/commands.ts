@@ -113,28 +113,27 @@ commands.set("chatTyping", (data) => {
   );
 });
 
-// The "chatList" command is sent upon initial connection to give the client a list of past lobby
-// chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
-// messages, with the table's ID and the number of unread messages.
+// The "chatList" command is sent upon each connection to give the client a list of past lobby chat
+// messages. It is also sent upon connecting to a game to give a list of past in-game chat messages,
+// with the table's ID and the number of unread messages.
 commands.set("chatList", (data) => {
   const { table } = data;
-  for (const line of data.messages) {
+  chat.addList(
     // The list names its table once, not in each message.
-    const message =
-      table === undefined
-        ? line
-        : {
-            ...line,
-            tableId: table.tableId,
-          };
-    chat.add(message, true); // The second argument is "fast"
-  }
+    table === undefined
+      ? data.messages
+      : data.messages.map((line) => ({
+          ...line,
+          tableId: table.tableId,
+        })),
+    table === undefined,
+  );
   if (table === undefined || !gameSession.isOpen() || gameChat.isOpen()) {
     return;
   }
 
-  store.dispatch(
-    gameChatUnreadChanged(store.getState().gameChat.unread + table.numUnread),
-  );
+  // The server sends the list again after a reconnect. Its count is of the whole list, so it
+  // replaces our count.
+  store.dispatch(gameChatUnreadChanged(table.numUnread));
   globals.ui?.updateChatLabel();
 });

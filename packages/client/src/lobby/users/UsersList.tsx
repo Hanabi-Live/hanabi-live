@@ -6,7 +6,7 @@ import { FADE_IN_CLASS, getFadeStyle, useReducedMotion } from "../../fade.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { getTabClassName } from "../../tabClassName.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
+import { goToTable } from "../tables/goToTable.ts";
 import { selectTable } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import { UserLink } from "./UserMenu.tsx";
@@ -149,7 +149,7 @@ function UserRowView({
             href="#"
             onClick={(event) => {
               event.preventDefault();
-              goToTable(user);
+              goToUserTable(user);
             }}
           >
             {statusText}
@@ -196,20 +196,14 @@ function BotIcon() {
   );
 }
 
-/** Joins or spectates the table that a user is at. */
-function goToTable(user: UserRow["user"]) {
+/** Goes to the table that a user is at, as a click on the table in the list of games does. */
+function goToUserTable(user: UserRow["user"]) {
   const { activity } = user;
   if (!("tableId" in activity)) {
     return;
   }
   const table = selectTable(store.getState(), activity.tableId);
-  if (table === undefined) {
-    return;
-  }
-
-  if (activity.type === "pregame") {
-    tableJoin(table);
-  } else {
-    tableSpectate(table);
+  if (table !== undefined) {
+    goToTable(table);
   }
 }

@@ -172,3 +172,41 @@ describe("/r", () => {
     );
   });
 });
+
+describe("/setvariant", () => {
+  test("does nothing outside a pre-game, even after we saw one", async () => {
+    const { store } = await import("./store.ts");
+    const { gameChanged } = await import("./lobby/pregame/pregameSlice.ts");
+    const send = vi.fn();
+    Object.assign(globals, {
+      connection: {
+        send,
+      },
+      tableId: 1,
+    });
+    // The details of a table can arrive while its pre-game does not show.
+    store.dispatch(
+      gameChanged({
+        settings: {
+          options: {},
+        },
+      } as Parameters<typeof gameChanged>[0]),
+    );
+    vi.mocked(sendSelfPmFromServer).mockClear();
+
+    chatCommands.get("sv")?.(undefined, ["Rainbow", "(6", "Suits)"]);
+    expect(send).not.toHaveBeenCalled();
+    expect(sendSelfPmFromServer).toHaveBeenCalledWith(
+      "You can only change the variant before the game starts.",
+      undefined,
+      undefined,
+    );
+
+    // In the pre-game, the command asks the server.
+    const { screenChanged } = await import("./sessionSlice.ts");
+    const { Screen } = await import("./lobby/types/Screen.ts");
+    store.dispatch(screenChanged(Screen.PreGame));
+    chatCommands.get("sv")?.(undefined, ["Rainbow", "(6", "Suits)"]);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+});

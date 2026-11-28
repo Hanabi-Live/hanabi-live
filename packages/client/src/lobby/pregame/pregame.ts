@@ -14,7 +14,11 @@ import { setBrowserAddressBarPath } from "../../utils.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 import { Screen } from "../types/Screen.ts";
 import { PREGAME_CHAT_INPUT_ID } from "./PregameChat.tsx";
-import { pregameChatCleared, typingCleared } from "./pregameSlice.ts";
+import {
+  gameChanged,
+  pregameChatCleared,
+  typingCleared,
+} from "./pregameSlice.ts";
 
 export function show(): void {
   lobbyPage.hide();
@@ -50,6 +54,9 @@ export function hide(updateUrl = true): void {
 
   // Clear the typing list.
   store.dispatch(typingCleared());
+
+  // We no longer see the table, so what we know about it is out of date.
+  store.dispatch(gameChanged(undefined));
 
   // Set the browser address bar.
   if (updateUrl) {

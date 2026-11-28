@@ -114,3 +114,36 @@ describe("replay URL actions", () => {
     },
   );
 });
+
+describe("replay URL options", () => {
+  // Two players, one card of each rank, one play, standard variant, and no seed.
+  const payload = "215abcde,00ab,0,";
+
+  test("does not compress a game with an option that the URL cannot hold", () => {
+    const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
+    expect(
+      shrink(
+        JSON.stringify({
+          ...game,
+          options: {
+            ...game.options,
+            oneExtraCard: true,
+          },
+        }),
+      ),
+    ).toBeUndefined();
+    // The options that a copied game always names do not stop the compression.
+    expect(
+      shrink(
+        JSON.stringify({
+          ...game,
+          options: {
+            ...game.options,
+            oneExtraCard: false,
+            allOrNothing: false,
+          },
+        }),
+      ),
+    ).toBeDefined();
+  });
+});

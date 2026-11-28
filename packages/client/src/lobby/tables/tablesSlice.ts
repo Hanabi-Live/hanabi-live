@@ -191,7 +191,8 @@ function getGroup(table: Table): TableGroup {
     : TableGroup.Unstarted;
 }
 
-function getAction(table: Table, joined: boolean): TableAction {
+/** What a click on a table does: we go back to our own game, and join or watch another one. */
+export function getAction(table: Table, joined: boolean): TableAction {
   if (isOurGame(table, joined)) {
     return "resume";
   }

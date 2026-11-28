@@ -63,9 +63,10 @@ vi.mock("../../Tooltip.ts", () => ({
 }));
 vi.mock("../tables/tableActions.ts", () => ({
   tableJoin: vi.fn(),
+  tableReattend: vi.fn(),
   tableSpectate: vi.fn(),
 }));
-const { tableJoin } = await import("../tables/tableActions.ts");
+const { tableJoin, tableReattend } = await import("../tables/tableActions.ts");
 
 const TABLE_ID = tableIdSchema.parse(7);
 
@@ -235,7 +236,13 @@ describe("UsersList", () => {
   });
 
   test("links the status of users at a table, except from the pre-game", () => {
-    const table = { tableId: TABLE_ID } as ServerEventData["table"];
+    const table = {
+      tableId: TABLE_ID,
+      playerNames: ["Alice"],
+      phase: {
+        type: "pregame",
+      },
+    } as unknown as ServerEventData["table"];
     store.dispatch(tablesListed([table]));
     store.dispatch(usersListed([user(1, "Alice", "pregame"), user(2, "Bob")]));
     renderList();
@@ -243,6 +250,18 @@ describe("UsersList", () => {
     expect(screen.getByText("Lobby").tagName).toBe("TD");
     fireEvent.click(screen.getByText("Pre-Game"));
     expect(tableJoin).toHaveBeenCalledWith(table);
+    expect(tableReattend).not.toHaveBeenCalled();
+
+    // We go back to a table that we have a seat at. The server refuses a second join.
+    const ourTable = {
+      ...table,
+      playerNames: ["Alice", "me"],
+    };
+    act(() => {
+      store.dispatch(tablesListed([ourTable]));
+    });
+    fireEvent.click(screen.getByText("Pre-Game"));
+    expect(tableReattend).toHaveBeenCalledWith(ourTable);
 
     act(() => {
       store.dispatch(screenChanged(Screen.PreGame));

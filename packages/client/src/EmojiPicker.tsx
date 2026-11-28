@@ -102,8 +102,9 @@ export function openEmojiPicker(inputId: string): void {
 function pick(inputId: string, text: string) {
   const input = getHtmlInputElement(`#${inputId}`);
   input.value += text;
-  input.focus();
+  // The page cannot take the focus while the picker is open.
   closeModals();
+  input.focus();
 }
 
 /** The emote and emoji picker, which adds what we pick to the chat input with this ID. */

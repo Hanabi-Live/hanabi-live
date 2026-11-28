@@ -14,5 +14,13 @@ export function getOtherScoresSeed(hash: string): string | undefined {
     return undefined;
   }
   const encodedSeed = hash.slice(HISTORY_OTHER_SCORES_HASH_PREFIX.length);
-  return encodedSeed === "" ? undefined : decodeURIComponent(encodedSeed);
+  if (encodedSeed === "") {
+    return undefined;
+  }
+  try {
+    return decodeURIComponent(encodedSeed);
+  } catch {
+    // Someone can type a hash that is not a valid encoding, such as one that ends with "%".
+    return undefined;
+  }
 }

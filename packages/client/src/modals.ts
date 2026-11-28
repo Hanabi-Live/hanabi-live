@@ -25,7 +25,10 @@ let allowCloseModal = true;
 /** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
 let downtimeMessage: string | undefined;
 let currentModal: HTMLElement | undefined;
-/** The element that had focus before the modal opened, which gets focus back when it closes. */
+/**
+ * The element that had focus before the current modal opened, which gets focus back when the modal
+ * closes. Only some modals record it.
+ */
 let lastActiveElement: HTMLElement | undefined;
 let confirmModalOnConfirm: (() => void) | undefined;
 let confirmModalOnCancel: (() => void) | undefined;
@@ -150,12 +153,12 @@ export function showWarning(msg: string): void {
     return;
   }
 
-  // Store the screen's active element.
-  lastActiveElement = document.activeElement as HTMLElement;
+  const focused = getFocusToRestore();
   showMessageModal({
     type: "warning",
     html: msg,
   });
+  lastActiveElement = focused;
 }
 
 /**
@@ -170,12 +173,13 @@ export function showIdleWarning(
     return;
   }
 
-  lastActiveElement = document.activeElement as HTMLElement;
+  const focused = getFocusToRestore();
   showMessageModal({
     type: "idle",
     deadline: Date.now() + remainingMs,
     canKeepPlaying: onKeepPlaying !== undefined,
   });
+  lastActiveElement = focused;
   // Showing the modal closes any previous one, so the callback must be stored afterward.
   idleModalKeepPlaying = onKeepPlaying;
 }
@@ -211,12 +215,12 @@ export function askForConfirmation(
     return;
   }
 
-  // Store the screen's active element.
-  lastActiveElement = document.activeElement as HTMLElement;
+  const focused = getFocusToRestore();
   showMessageModal({
     type: "confirm",
     ...confirmation,
   });
+  lastActiveElement = focused;
 
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
   // must be stored afterward.
@@ -327,8 +331,12 @@ export function closeModals(): void {
   }
   modalDialog.close();
 
-  if (lastActiveElement !== undefined) {
-    lastActiveElement.focus();
+  // Only the modal that recorded the element gives the focus back to it. Otherwise, a later modal
+  // would move the focus to an element of another screen.
+  const focused = lastActiveElement;
+  lastActiveElement = undefined;
+  if (focused?.isConnected === true) {
+    focused.focus();
   }
 
   const onCancel = confirmModalOnCancel;
@@ -340,6 +348,21 @@ export function closeModals(): void {
   promptOnSubmit = undefined;
   promptOnCancel = undefined;
   onPromptCancel?.();
+}
+
+/**
+ * The element that gets the focus back when the modal that is about to open closes. Call this
+ * before the modal opens, and store the result after, because opening a modal closes the one before
+ * it. When the new modal replaces another one, the focus is inside that one, so the new modal takes
+ * over the element that it recorded.
+ */
+function getFocusToRestore(): HTMLElement | undefined {
+  if (currentModal !== undefined) {
+    return lastActiveElement;
+  }
+  return document.activeElement instanceof HTMLElement
+    ? document.activeElement
+    : undefined;
 }
 
 export function isModalVisible(): boolean {

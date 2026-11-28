@@ -1,5 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
+import type { TableId } from "@hanabi-live/data";
 import { setTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals.ts";
 import * as gameMain from "../game/main.ts";
@@ -19,6 +20,7 @@ import * as sounds from "../sounds.ts";
 import * as startupScreen from "../startupScreen.ts";
 import { store } from "../store.ts";
 import * as theme from "../theme.ts";
+import { lobbyChatIntroEnded } from "./chat/lobbyChatSlice.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
@@ -41,6 +43,9 @@ let startGameCooldownTimeout: ReturnType<typeof setTimeout> | undefined;
 export const lobbyCommands = new ServerHandlers();
 
 lobbyCommands.set("lobbyStatus", (data) => {
+  if (data.type !== "loading") {
+    store.dispatch(lobbyChatIntroEnded());
+  }
   if (data.type === "error") {
     modals.showWarning(noticeHtml(data));
   }
@@ -188,9 +193,38 @@ lobbyCommands.set("welcome", (data) => {
     lobbyLogin.hide(data.firstTimeUser);
   }
 
+  // After a reconnect, we can still show the pre-game of a table. The server took us out of it.
+  const pregameTableId =
+    store.getState().session.screen === Screen.PreGame
+      ? globals.tableId
+      : undefined;
+  function stayInLobby(refused: boolean) {
+    startupScreen.leave();
+    // A request that did not reach the server goes again after the next reconnect.
+    if (refused) {
+      leaveStalePregame(pregameTableId);
+    }
+  }
+
   // Go to the table that we were at before we disconnected, or somewhere specific if we have
   // entered a specific URL. If the server refuses, we stay in the lobby.
-  if (!url.parseAndGoto(data, startupScreen.leave)) {
-    startupScreen.leave();
+  if (!url.parseAndGoto(data, stayInLobby)) {
+    stayInLobby(true);
   }
 });
+
+/**
+ * Leaves the pre-game screen of a table that the server did not take us back to, such as when its
+ * game started without us. Otherwise, the screen would show a table that we are not at.
+ */
+function leaveStalePregame(tableId: TableId | undefined) {
+  if (
+    store.getState().session.screen !== Screen.PreGame
+    || globals.tableId !== tableId
+  ) {
+    return;
+  }
+  pregame.hide();
+  globals.tableId = undefined;
+  store.dispatch(returnedTableIdChanged(undefined));
+}

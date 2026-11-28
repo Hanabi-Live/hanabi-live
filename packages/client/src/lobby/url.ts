@@ -26,20 +26,25 @@ import { expand } from "./hypoCompress.ts";
 import { returnedTableIdChanged } from "./pregame/pregameSlice.ts";
 import { replayVisibility } from "./replayVisibility.ts";
 
+/** The server's answer to a request to go to a table. */
+type GotoReply =
+  { readonly ok: true } | { readonly ok: false; readonly refused: boolean };
+
 /** Gets the server's answer to a request to go to a table. */
-type OnReply = (reply: { readonly ok: boolean }) => void;
+type OnReply = (reply: GotoReply) => void;
 
 /**
  * Goes to the table or screen that the URL or the server names. Returns whether we asked the server
- * to take us to a table. `onRefused` runs if the server refuses.
+ * to take us to a table. `onRefused` runs if the server does not take us there. It gets whether the
+ * server refused, rather than the request not reaching the server.
  */
 export function parseAndGoto(
   data: ServerEventData["welcome"],
-  onRefused: () => void,
+  onRefused: (refused: boolean) => void,
 ): boolean {
-  function onReply(reply: { readonly ok: boolean }) {
+  function onReply(reply: GotoReply) {
     if (!reply.ok) {
-      onRefused();
+      onRefused(reply.refused);
     }
   }
 

@@ -137,6 +137,27 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   expect(onConfirm).toHaveBeenCalledTimes(1);
 });
 
+test("only the modal that recorded the focused element gives the focus back", async () => {
+  const modals = await import("./modals.ts");
+  const { document } = dom.window;
+  const lobbyInput = document.createElement("input");
+  const tableInput = document.createElement("input");
+  document.body.append(lobbyInput, tableInput);
+
+  lobbyInput.focus();
+  modals.showWarning("Warning");
+  modals.closeModals();
+  expect(document.activeElement).toBe(lobbyInput);
+
+  // A later close does not move the focus back to the element of the warning.
+  tableInput.focus();
+  modals.closeModals();
+  expect(document.activeElement).toBe(tableInput);
+
+  lobbyInput.remove();
+  tableInput.remove();
+});
+
 test("a warning shown after an error does not replace the error modal", async () => {
   const modals = await import("./modals.ts");
   const { store } = await import("./store.ts");

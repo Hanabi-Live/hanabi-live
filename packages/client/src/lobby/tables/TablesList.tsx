@@ -20,7 +20,8 @@ import {
   SPECTATE_CURSOR,
 } from "../cursorClasses.ts";
 import { getOptionDescriptions } from "../optionDescriptions.ts";
-import { tableJoin, tableReattend, tableSpectate } from "./tableActions.ts";
+import { goToTable } from "./goToTable.ts";
+import { tableSpectate } from "./tableActions.ts";
 import type { Table, TableRow } from "./tablesSlice.ts";
 import {
   selectTableRows,
@@ -164,23 +165,7 @@ function TableRowView({
           tooltips.showCopied(ref.current!);
           return;
         }
-        switch (action) {
-          case "join": {
-            // Trying to join a full table tells its players that someone else wants to play.
-            tableJoin(table);
-            break;
-          }
-
-          case "spectate": {
-            tableSpectate(table);
-            break;
-          }
-
-          case "resume": {
-            tableReattend(table);
-            break;
-          }
-        }
+        goToTable(table);
       }}
       onClickCapture={(event) => {
         // This blocks the clicks on the cells that spectate as well as the click on the row.

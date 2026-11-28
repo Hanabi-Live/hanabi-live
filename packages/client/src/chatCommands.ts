@@ -11,6 +11,7 @@ import {
 } from "./chat.ts";
 import { rememberVariant } from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
+import { Screen } from "./lobby/types/Screen.ts";
 import { findOnlineUser, getOnlineUserId } from "./onlineUsers.ts";
 import { store } from "./store.ts";
 
@@ -293,8 +294,12 @@ function setVariant(tableId: TableId | undefined, args: readonly string[]) {
     return;
   }
 
+  // The table's details stay while a pre-game shows.
   const { game } = store.getState().pregame;
-  if (game === undefined) {
+  if (
+    game === undefined
+    || store.getState().session.screen !== Screen.PreGame
+  ) {
     sendSelfPmFromServer(
       "You can only change the variant before the game starts.",
       tableId,
@@ -302,19 +307,25 @@ function setVariant(tableId: TableId | undefined, args: readonly string[]) {
     );
     return;
   }
-  globals.connection.send("tableUpdate", {
-    tableId: globals.tableId,
-    settings: {
-      ...game.settings,
-      options: {
-        ...game.settings.options,
-        variantId: getVariant(variantName).id,
+  globals.connection.send(
+    "tableUpdate",
+    {
+      tableId: globals.tableId,
+      settings: {
+        ...game.settings,
+        options: {
+          ...game.settings.options,
+          variantId: getVariant(variantName).id,
+        },
       },
     },
-  });
-
-  // Update our stored create table setting to be equal to this variant.
-  rememberVariant(variantName);
+    (reply) => {
+      // Update our stored create table setting to be equal to this variant.
+      if (reply.ok) {
+        rememberVariant(variantName);
+      }
+    },
+  );
 }
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);

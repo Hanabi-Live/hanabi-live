@@ -12,7 +12,7 @@ import {
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { globals } from "../../Globals.ts";
-import { add, removeDeletedLobbyMessage } from "../../chat.ts";
+import { add, addList, removeDeletedLobbyMessage } from "../../chat.ts";
 import { screenChanged, usernameChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { Screen } from "../types/Screen.ts";
@@ -133,6 +133,49 @@ describe("LobbyChat", () => {
       "second",
       "psst",
     ]);
+  });
+
+  test("shows each past message once when the server sends its list again", () => {
+    // The test page cannot animate a line that arrives live.
+    Element.prototype.animate = vi.fn();
+    const before = lineTexts().length;
+    const list = [
+      message({
+        chatId: chatIdSchema.parse(101),
+        text: "listed",
+      }),
+    ];
+    const notice = message({
+      kind: {
+        type: "public",
+        author: {
+          type: "server",
+        },
+      },
+      text: "notice",
+    });
+    act(() => {
+      addList(list, true);
+      add(notice, false);
+      // After a reconnect, the server sends the list and its notice again, with what we missed.
+      addList(
+        [
+          ...list,
+          message({
+            chatId: chatIdSchema.parse(102),
+            text: "missed",
+          }),
+        ],
+        true,
+      );
+      add(notice, false);
+    });
+
+    expect(
+      lineTexts()
+        .slice(before)
+        .map((line) => line.split(" ").at(-1)),
+    ).toStrictEqual(["listed", "missed", "notice"]);
   });
 
   test("moves the caret before browsing the typed history, and never clears typed text", () => {

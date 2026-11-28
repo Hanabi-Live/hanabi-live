@@ -16,6 +16,7 @@ import type { LengthLimit } from "./LengthCounter.tsx";
 import { countCharacters, rejectTooLong } from "./LengthCounter.tsx";
 import { chatCommands } from "./chatCommands.ts";
 import { LobbyChatDeletionState } from "./chatDeletion.ts";
+import { chatHistoryId, withoutShown } from "./chatHistory.ts";
 import type { SuggestedSettings } from "./chatKind.ts";
 import { chatAuthor, chatAuthorName, chatRecipient } from "./chatKind.ts";
 import { LOCAL_STORAGE_KEY, TYPED_HISTORY_MAX_LENGTH } from "./constants.ts";
@@ -24,6 +25,7 @@ import type { ChatLine, LocalPart } from "./lobby/chat/ChatBox.tsx";
 import {
   lobbyChatLineAdded,
   lobbyChatLineDeleted,
+  lobbyChatListed,
 } from "./lobby/chat/lobbyChatSlice.ts";
 import {
   pregameChatLineAdded,
@@ -559,6 +561,47 @@ export function add(data: ChatData, fast: boolean): void {
 }
 
 /**
+ * Adds the past messages of the lobby or of a table. The server sends them again after each
+ * reconnect, so this skips the messages that the chat already shows. The lines that the client
+ * wrote itself stay, such as the notice about a message that was not sent.
+ */
+export function addList(messages: readonly ChatData[], lobby: boolean): void {
+  if (lobby) {
+    store.dispatch(
+      lobbyChatListed(messages.flatMap((message) => message.chatId ?? [])),
+    );
+  }
+
+  const first = messages[0];
+  const box = first === undefined ? undefined : getChatBox(first);
+  if (box === undefined) {
+    return;
+  }
+
+  const shown = getChatBoxLines(box).flatMap((line) => line.historyId ?? []);
+  for (const message of withoutShown(messages, shown)) {
+    addInternal(message, true, true);
+  }
+}
+
+function getChatBoxLines(box: "lobby" | "pregame" | "game") {
+  const state = store.getState();
+  switch (box) {
+    case "lobby": {
+      return state.lobbyChat.lines;
+    }
+
+    case "pregame": {
+      return state.pregame.chatLines;
+    }
+
+    case "game": {
+      return state.gameChat.lines;
+    }
+  }
+}
+
+/**
  * Shows the owner of a table the settings that the server suggests, with a button to apply them.
  */
 export function addSettingsSuggestion(
@@ -640,6 +683,14 @@ function addInternal(
   const fromServer = author.type === "server";
   const line: ChatLine = {
     key,
+    // A line that the client wrote itself is in no list of past messages.
+    ...(local === undefined && { historyId: chatHistoryId(data) }),
+    ...(box === "lobby"
+      && store.getState().lobbyChat.intro
+      && fromServer
+      && recipient === undefined
+      && data.tableId === undefined
+      && data.chatId === undefined && { intro: true }),
     fadeIn: !fast,
     time: chatTimeFormatter.format(new Date(data.sentAt)),
     ...(recipient !== undefined && {

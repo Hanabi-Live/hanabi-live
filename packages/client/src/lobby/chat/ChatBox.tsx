@@ -32,6 +32,18 @@ export interface ChatLine {
   /** The database ID of a lobby message, which a moderator can delete. */
   readonly chatId?: number;
 
+  /**
+   * Identifies a message that the server sent, so that a list of past messages does not add it
+   * again. The server sends the lists again after each reconnect.
+   */
+  readonly historyId?: string;
+
+  /**
+   * Whether the line is a notice that the server sends with the lobby's past messages, such as its
+   * message of the day. The next list of past messages replaces it.
+   */
+  readonly intro?: boolean;
+
   /** Whether the line arrived live, so it fades in. Lines from the history do not. */
   readonly fadeIn: boolean;
 

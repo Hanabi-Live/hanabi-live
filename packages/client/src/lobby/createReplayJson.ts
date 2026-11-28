@@ -3,14 +3,15 @@ import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
+  GameState,
   LogEntry,
+  Options,
   PlayerIndex,
   Variant,
 } from "@hanabi-live/game";
 import {
   DEFAULT_PLAYER_NAMES,
   EVEN_RANK_CLUE,
-  getCardsPerHand,
   ODD_RANK_CLUE,
 } from "@hanabi-live/game";
 import { assertDefined, includes, parseIntSafe } from "complete-common";
@@ -31,6 +32,34 @@ const DISCARD_REGEX =
   /^(?:\[Hypo\] )?(?<playerName>.*) discards .* slot #(?<slot>\d).*$/u;
 const CLUE_REGEX =
   /^.+ tells (?<playerName>.*) about \w+ (?<clueWord>[A-Za-z]+|\d)s?$/u;
+
+/**
+ * The options that change how a game plays, which a copied game keeps. For example, "One Extra
+ * Card" changes the hands that the deck deals. The clock options do not matter in a replay.
+ */
+export function getReplayOptions(
+  options: Options,
+): NonNullable<GameJson["options"]> {
+  return {
+    variantId: options.variantId,
+    deckPlays: options.deckPlays,
+    emptyClues: options.emptyClues,
+    oneExtraCard: options.oneExtraCard,
+    oneLessCard: options.oneLessCard,
+    allOrNothing: options.allOrNothing,
+  };
+}
+
+/**
+ * The card in a slot of a hand, as the game log counts slots: slot 1 is the newest card, which is
+ * the last one of the hand. A hand can be short when the deck is empty.
+ */
+export function getCardOrderInSlot(
+  hand: readonly CardOrder[],
+  slot: number,
+): CardOrder | undefined {
+  return hand[hand.length - slot];
+}
 
 export function createJsonFromReplay(tableId: TableId | undefined): void {
   const state = store.getState().game.current;
@@ -94,12 +123,7 @@ export function createJsonFromReplay(tableId: TableId | undefined): void {
   const { replay } = currentState();
   const actions = [...getGameActionsFromState(replay, segment)];
   if (replay.hypothetical !== undefined) {
-    const { states } = replay.hypothetical;
-    const { log } = states.at(-1)!;
-    if (segment < log.length) {
-      const logLines = log.slice(segment + 1);
-      actions.push(...getGameActionsFromLog(logLines));
-    }
+    actions.push(...getGameActionsFromLog(replay.hypothetical.states));
   }
 
   // Anonymize the players
@@ -110,9 +134,7 @@ export function createJsonFromReplay(tableId: TableId | undefined): void {
     ),
     deck,
     actions,
-    options: {
-      variantId: currentState().metadata.options.variantId,
-    },
+    options: getReplayOptions(currentState().metadata.options),
     notes: [],
     characters: [],
     ...(unchanged
@@ -122,13 +144,26 @@ export function createJsonFromReplay(tableId: TableId | undefined): void {
   };
 
   const json = JSON.stringify(game);
+  // A link holds only the variant of a game. With other options, the link would deal another game,
+  // so we copy the JSON data instead. Other websites read the links, so their format stays.
   const UrlData = shrink(json);
   if (UrlData === undefined || UrlData === "") {
-    sendSelfPmFromServer(
-      "Failed to compress the JSON data.",
-      tableId,
-      SelfChatMessageType.Error,
-    );
+    navigator.clipboard
+      .writeText(json)
+      .then(() => {
+        sendSelfPmFromServer(
+          'A link cannot hold this game, so its JSON data is copied to your clipboard instead. Paste it into "Watch Specific Replay".',
+          tableId,
+          SelfChatMessageType.Info,
+        );
+      })
+      .catch((error: unknown) => {
+        sendSelfPmFromServer(
+          `Failed to copy the JSON data to your clipboard: ${error}`,
+          tableId,
+          SelfChatMessageType.Error,
+        );
+      });
     return;
   }
 
@@ -236,13 +271,28 @@ function getGameActionsFromState(
   return actions;
 }
 
+/**
+ * Reads the moves of a hypothetical from the log. Each move adds one state and one line to the log,
+ * so the lines after those of the first state are the moves, and each move starts from the state
+ * with its number.
+ */
 function getGameActionsFromLog(
-  log: readonly LogEntry[],
+  states: readonly GameState[],
 ): readonly ClientAction[] {
-  const actions: ClientAction[] = [];
+  const firstState = states[0];
+  const lastState = states.at(-1);
+  if (firstState === undefined || lastState === undefined) {
+    return [];
+  }
 
-  for (const [i, logEntry] of log.entries()) {
-    const action = getActionFromLogEntry(i, logEntry);
+  const actions: ClientAction[] = [];
+  const moves = lastState.log.slice(firstState.log.length);
+  for (const [i, logEntry] of moves.entries()) {
+    const stateBefore = states[i];
+    const action =
+      stateBefore === undefined
+        ? undefined
+        : getActionFromLogEntry(stateBefore, logEntry);
 
     if (action !== undefined) {
       actions.push(action);
@@ -253,7 +303,7 @@ function getGameActionsFromLog(
 }
 
 function getActionFromLogEntry(
-  i: number,
+  stateBefore: GameState,
   logEntry: LogEntry,
 ): ClientAction | undefined {
   const foundPlay = PLAY_REGEX.exec(logEntry.text);
@@ -262,7 +312,12 @@ function getActionFromLogEntry(
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
-        return getActionFromHypoPlayOrDiscard(i, "play", playerName, slot);
+        return getActionFromHypoPlayOrDiscard(
+          stateBefore,
+          "play",
+          playerName,
+          slot,
+        );
       }
     }
   }
@@ -273,7 +328,12 @@ function getActionFromLogEntry(
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
-        return getActionFromHypoPlayOrDiscard(i, "discard", playerName, slot);
+        return getActionFromHypoPlayOrDiscard(
+          stateBefore,
+          "discard",
+          playerName,
+          slot,
+        );
       }
     }
   }
@@ -290,7 +350,7 @@ function getActionFromLogEntry(
 }
 
 function getActionFromHypoPlayOrDiscard(
-  entryNumber: number,
+  stateBefore: GameState,
   actionType: "play" | "discard",
   playerName: string,
   slot: number,
@@ -301,14 +361,10 @@ function getActionFromHypoPlayOrDiscard(
     `Failed to find the player index corresponding to: ${playerName}`,
   );
 
-  // Go to previous hypo state to find the card. Cards are stored in reverse order than the one
-  // perceived.
-  const numCards = getCardsPerHand(currentState().metadata.options);
-  const slotIndex = numCards - slot;
-  const cardOrder = getCardOrderFromHypoState(
-    entryNumber - 1,
-    playerIndex,
-    slotIndex,
+  // Find the card in the hand before the move.
+  const cardOrder = getCardOrderInSlot(
+    stateBefore.hands[playerIndex] ?? [],
+    slot,
   );
   assertDefined(
     cardOrder,
@@ -380,26 +436,6 @@ function getPlayerIndexFromPlayerName(
 ): PlayerIndex | undefined {
   const playerIndex = currentState().metadata.playerNames.indexOf(playerName);
   return playerIndex === -1 ? undefined : (playerIndex as PlayerIndex);
-}
-
-function getCardOrderFromHypoState(
-  previousStateIndex: number,
-  playerIndex: PlayerIndex,
-  slotIndex: number,
-): CardOrder | undefined {
-  const { hypothetical } = currentState().replay;
-  if (hypothetical === undefined) {
-    return undefined;
-  }
-
-  const stateIndex = Math.max(previousStateIndex, 0);
-  const stateOnHypoTurn = hypothetical.states[stateIndex];
-  if (stateOnHypoTurn === undefined) {
-    return undefined;
-  }
-
-  const playerHand = stateOnHypoTurn.hands[playerIndex];
-  return playerHand === undefined ? undefined : playerHand[slotIndex];
 }
 
 function getColorIndexFromColorName(
