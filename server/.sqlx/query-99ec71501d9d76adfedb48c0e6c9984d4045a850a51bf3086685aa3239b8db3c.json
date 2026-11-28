@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variants SET name = $1 WHERE id = 2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "99ec71501d9d76adfedb48c0e6c9984d4045a850a51bf3086685aa3239b8db3c"
+}

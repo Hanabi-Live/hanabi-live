@@ -24,10 +24,14 @@ const MAX_TRACKED_KEYS: usize = 10_000;
 /// one budget per address. A visit needs one or two.
 const WORK_LIMIT: usize = 30;
 const WORK_WINDOW: Duration = Duration::from_mins(5);
-/// The IPv6 prefix length, in bits, that one customer usually controls.
-const IPV6_SUBNET_PREFIX_BITS: u32 = 64;
 static WORK: LazyLock<Mutex<Counter<IpAddr>>> =
     LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
+/// A site checks a player's identity token once for each sign-in to that site, so one token needs
+/// few checks.
+static TOKEN_WORK: LazyLock<Mutex<Counter<i32>>> =
+    LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
+/// The IPv6 prefix length, in bits, that one customer usually controls.
+const IPV6_SUBNET_PREFIX_BITS: u32 = 64;
 
 /// Describes how long a rate-limited client must wait, in whole minutes rounded up.
 pub(super) fn minutes_to_wait(wait: Duration) -> String {
@@ -67,6 +71,17 @@ pub(super) fn charge_password_work(ip: &str) -> Result<(), TooMuchPasswordWork> 
             );
             TooMuchPasswordWork(wait)
         })
+}
+
+/// Charges one check of an identity token to the token's account, or returns how long to wait. The
+/// address is not charged: it belongs to another site's server, which checks the tokens of all of
+/// that site's players. Only a token that the server issued gets this far, so each account limits
+/// how much work its own token can cause.
+pub(super) fn charge_token_work(account: i32) -> Result<(), Duration> {
+    TOKEN_WORK
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .charge(account, Instant::now())
 }
 
 pub(crate) struct Counter<K> {

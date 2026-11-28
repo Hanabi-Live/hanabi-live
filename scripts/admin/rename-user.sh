@@ -41,7 +41,8 @@ if [[ $taken == "t" ]]; then
 fi
 
 sql --set=username="$USERNAME" --set=new_username="$NEW_USERNAME" --set=normalized="$NEW_NORMALIZED" << 'SQL'
-UPDATE users SET (username, normalized_username) = (:'new_username', :'normalized')
+-- The server fills in the lookalike key of the new name when it next starts.
+UPDATE users SET (username, normalized_username, lookalike_key) = (:'new_username', :'normalized', NULL)
 WHERE username = :'username';
 SQL
 echo "Complete."

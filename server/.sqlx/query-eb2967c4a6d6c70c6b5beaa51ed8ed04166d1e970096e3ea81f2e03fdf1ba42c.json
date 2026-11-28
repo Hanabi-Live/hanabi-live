@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET lookalike_key=k.key\n             FROM UNNEST($1::integer[],$2::text[]) AS k(id,key) WHERE users.id=k.id",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "eb2967c4a6d6c70c6b5beaa51ed8ed04166d1e970096e3ea81f2e03fdf1ba42c"
+}

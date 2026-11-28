@@ -32,6 +32,15 @@ CREATE TABLE users (
      */
     normalized_username  TEXT         NOT NULL  UNIQUE,
 
+    /**
+     * Transliteration does not catch every lookalike, such as "Modern" next to "Modem", or "AIice" with
+     * a capital i next to "Alice". Thus, we also store the key that such usernames share (see
+     * "lookalike_key" in "server/src/accounts/normalization.rs"), and a new username must not have
+     * the key of an existing one. Older accounts can share a key. It is NULL until the server
+     * computes it, which it does for such users after it starts.
+     */
+    lookalike_key        TEXT         NULL,
+
     password_hash        TEXT         NULL, /* An Argon2id hash; NULL requires a password reset. */
 
     last_ip              TEXT         NOT NULL,
@@ -60,6 +69,7 @@ CREATE TABLE users (
      */
     session_version            INTEGER  NOT NULL  DEFAULT 0
 );
+CREATE INDEX users_index_lookalike_key ON users (lookalike_key);
 
 /**
  * The recipe of each variant ID, such as "r-y-g-b-p" for "No Variant". Games name their variant by

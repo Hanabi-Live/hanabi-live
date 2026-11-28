@@ -214,6 +214,22 @@ fn too_many_attempts(wait: std::time::Duration) -> Response {
     response
 }
 
+fn too_many_token_checks(wait: std::time::Duration) -> Response {
+    let mut response = HttpError::refused(
+        StatusCode::TOO_MANY_REQUESTS,
+        format!(
+            "Too many checks of this identity token. Please try again in {}.",
+            rate_limit::minutes_to_wait(wait)
+        ),
+    )
+    .json();
+    response.headers_mut().insert(
+        header::RETRY_AFTER,
+        axum::http::HeaderValue::from(wait.as_secs().max(1)),
+    );
+    response
+}
+
 fn unauthorized(message: impl Into<String>) -> Response {
     HttpError::refused(StatusCode::UNAUTHORIZED, message).json()
 }
@@ -406,11 +422,16 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             ));
         }
         // A new name must also not look like an existing one, such as "AIice" (with a capital i)
-        // next to "Alice".
-        let keys = [normalized.clone(), normalization::lookalike_key(username)];
+        // next to "Alice", or "Modern" next to "Modem". An account that has no key yet (see
+        // `backfill_lookalike_keys`) is still found by its normalized name, as before the keys.
+        let key = normalization::lookalike_key(username);
+        let keys = [normalized.clone(), key.clone()];
         let similar: Option<String> = sqlx::query_scalar!(
-            "SELECT username FROM users WHERE normalized_username=ANY($1) LIMIT 1",
-            &keys
+            "SELECT username FROM users
+             WHERE normalized_username=ANY($1) OR lookalike_key=$2 LIMIT 1",
+            &keys,
+            // Names that have no key do not look alike.
+            (!key.is_empty()).then_some(&key)
         )
         .fetch_optional(&state.pool)
         .await?;
@@ -438,10 +459,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         // Creating an account costs as much as a guess, so it counts against the address.
         attempt.keep();
         id = sqlx::query_scalar!(
-            "INSERT INTO users (username, normalized_username, password_hash, last_ip, is_bot)
-             VALUES ($1,$2,$3,$4,$5) RETURNING id",
+            "INSERT INTO users
+             (username, normalized_username, lookalike_key, password_hash, last_ip, is_bot)
+             VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
             username,
             normalized,
+            key,
             hash,
             ip,
             input.client == ClientKind::Bot
@@ -471,6 +494,52 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             cookie_header(&state.config, &cookie::account_name(id), &signed, false),
         ],
     ))
+}
+
+/// The accounts whose lookalike key one transaction of `backfill_lookalike_keys` fills in.
+const LOOKALIKE_BATCH_SIZE: i64 = 500;
+
+/// Fills in the lookalike key of each account that has none: an account from before the keys, or
+/// one that an administrator renamed. SQL cannot compute the key, so the server does. Each batch
+/// commits by itself, so the work can stop at any time, and the next start continues it.
+pub(crate) async fn backfill_lookalike_keys(pool: &PgPool) -> Result<()> {
+    let mut last_id = 0;
+    let mut filled = 0;
+    loop {
+        let mut transaction = pool.begin().await?;
+        // Other transactions lock several accounts in the order of their IDs, such as the one that
+        // saves a game. Locking in the same order here cannot deadlock with them.
+        let accounts = sqlx::query!(
+            "SELECT id, username FROM users WHERE lookalike_key IS NULL AND id>$1
+             ORDER BY id LIMIT $2 FOR NO KEY UPDATE",
+            last_id,
+            LOOKALIKE_BATCH_SIZE
+        )
+        .fetch_all(&mut *transaction)
+        .await?;
+        let Some(last) = accounts.last() else {
+            break;
+        };
+        last_id = last.id;
+        let (ids, keys): (Vec<i32>, Vec<String>) = accounts
+            .iter()
+            .map(|account| (account.id, normalization::lookalike_key(&account.username)))
+            .unzip();
+        filled += sqlx::query!(
+            "UPDATE users SET lookalike_key=k.key
+             FROM UNNEST($1::integer[],$2::text[]) AS k(id,key) WHERE users.id=k.id",
+            &ids,
+            &keys
+        )
+        .execute(&mut *transaction)
+        .await?
+        .rows_affected();
+        transaction.commit().await?;
+    }
+    if filled > 0 {
+        tracing::info!("Filled in the lookalike keys of {filled} accounts.");
+    }
+    Ok(())
 }
 
 /// Returns the account's session version after the change, or `None` if the password changed
@@ -671,7 +740,15 @@ async fn identity_token(
             );
         };
         let ip = address.ip().to_string();
-        let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
+        let secret = &state.config.secret;
+        let Some(result) =
+            crypto::regenerate_session_token(&state.pool, secret, id, session.version, &ip).await?
+        else {
+            // The session ended while the token was hashed.
+            return Ok(
+                HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
+            );
+        };
         tracing::info!("Issued identity token for account {id} from IP: {ip}");
         Ok(Json(IdentityTokenResponse {
             user: hanabi_protocol::UserRef {
@@ -722,12 +799,14 @@ async fn identity(
         )
         .fetch_optional(&state.pool)
         .await?;
-        if let Some(row) = row {
-            let expiry: OffsetDateTime = row.expires_at;
-            let ip = address.ip().to_string();
-            if expiry > OffsetDateTime::now_utc()
-                && verify_password(&ip, token, row.token_hash.clone()).await?
-            {
+        if let Some(row) = row
+            && row.expires_at > OffsetDateTime::now_utc()
+        {
+            if let Err(wait) = rate_limit::charge_token_work(row.id) {
+                return Ok(too_many_token_checks(wait));
+            }
+            if crypto::verify_hash(token, row.token_hash.clone()).await? {
+                let ip = address.ip();
                 tracing::info!("Verified identity token from IP: {ip}");
                 return Ok(Json(hanabi_protocol::UserRef {
                     user_id: hanabi_protocol::UserId::try_from(row.id)?,

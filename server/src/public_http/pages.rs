@@ -685,9 +685,11 @@ async fn missing(
                  {MAX_FILTER_LENGTH} characters."
             )));
         }
+        // A term can normalize to nothing. Every name contains the empty term, so drop it.
         Ok(terms
             .into_iter()
             .map(crate::accounts::normalize_string)
+            .filter(|term| !term.is_empty())
             .collect())
     };
     let excluded_players = terms("excludePlayers")?;

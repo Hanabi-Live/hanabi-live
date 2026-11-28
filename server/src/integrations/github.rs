@@ -11,6 +11,7 @@ use base64::{
     Engine as _,
     engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
 };
+use hanabi_protocol::UserId;
 use ring::{
     rand::SystemRandom,
     signature::{RSA_PKCS1_SHA256, RsaKeyPair},
@@ -46,7 +47,8 @@ const REPOSITORY: &str = "Hanabi-Live/hanabi-live";
 const LABEL: &str = "client-error";
 
 /// The most issues that the server opens in `ISSUE_WINDOW`, so that a burst of errors does not
-/// start many runs of Claude Code.
+/// start many runs of Claude Code. One user's reports open at most one of them, so that one account
+/// cannot use them all up with errors that it made up.
 const MAX_ISSUES: usize = 3;
 const ISSUE_WINDOW: Duration = Duration::from_hours(1);
 
@@ -63,6 +65,8 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// An error that a client did not catch.
 pub struct ClientError {
+    /// The user whose client reported the error.
+    pub user: UserId,
     /// The positions in the website's scripts in the stack, from the innermost frame.
     pub positions: Vec<String>,
     pub translated: bool,
@@ -118,10 +122,13 @@ impl Issues {
                 let Some(title) = throttle.title(&error, Instant::now()) else {
                     continue;
                 };
-                if let Err(failure) =
-                    open_issue(&client, &app, &title, &issue_body(&error, &release)).await
-                {
-                    Report::from_error("Opening a GitHub issue for a client error", &failure).log();
+                match open_issue(&client, &app, &title, &issue_body(&error, &release)).await {
+                    Ok(true) => throttle.opened(error.user, Instant::now()),
+                    Ok(false) => {}
+                    Err(failure) => {
+                        Report::from_error("Opening a GitHub issue for a client error", &failure)
+                            .log();
+                    }
                 }
             }
         });
@@ -147,15 +154,16 @@ impl Issues {
 /// Decides which client errors get an issue.
 #[derive(Default)]
 struct Throttle {
-    /// When the server last opened an issue for each title.
+    /// When the server last tried to open an issue for each title.
     recent: HashMap<String, Instant>,
-    /// When the server opened its issues in the last `ISSUE_WINDOW`.
-    opened: VecDeque<Instant>,
+    /// The issues that the server opened in the last `ISSUE_WINDOW`: when, and for whose report.
+    opened: VecDeque<(Instant, UserId)>,
 }
 
 impl Throttle {
-    /// Returns the title of the issue to open, or `None` for a recent repeat or when too many
-    /// issues were opened recently.
+    /// Returns the title of the issue to open, or `None` for a recent repeat, or when the server
+    /// or the error's user opened too many issues recently. The caller reports an issue that it
+    /// opens with `opened`.
     fn title(&mut self, error: &ClientError, now: Instant) -> Option<String> {
         let location = error.positions.first()?;
         let title = format!("Client error at {location}");
@@ -164,16 +172,24 @@ impl Throttle {
         while self
             .opened
             .front()
-            .is_some_and(|sent| now.duration_since(*sent) >= ISSUE_WINDOW)
+            .is_some_and(|(sent, _)| now.duration_since(*sent) >= ISSUE_WINDOW)
         {
             self.opened.pop_front();
         }
-        if self.recent.contains_key(&title) || self.opened.len() >= MAX_ISSUES {
+        if self.recent.contains_key(&title)
+            || self.opened.len() >= MAX_ISSUES
+            || self.opened.iter().any(|(_, user)| *user == error.user)
+        {
             return None;
         }
         self.recent.insert(title.clone(), now);
-        self.opened.push_back(now);
         Some(title)
+    }
+
+    /// Counts an issue that the server opened for a user's report. A request that failed, or that
+    /// found the issue already open, does not count.
+    fn opened(&mut self, user: UserId, now: Instant) {
+        self.opened.push_back((now, user));
     }
 }
 
@@ -308,8 +324,9 @@ struct Issue {
     title: String,
 }
 
-/// Opens the issue, unless an open issue already has its title, such as after a restart.
-async fn open_issue(client: &reqwest::Client, app: &App, title: &str, body: &str) -> Result<()> {
+/// Opens the issue, unless an open issue already has its title, such as after a restart. Returns
+/// whether it opened one.
+async fn open_issue(client: &reqwest::Client, app: &App, title: &str, body: &str) -> Result<bool> {
     let token = app.installation_token(client).await?;
     let url = format!("{API}/repos/{REPOSITORY}/issues");
     let open: Vec<Issue> = client
@@ -325,7 +342,7 @@ async fn open_issue(client: &reqwest::Client, app: &App, title: &str, body: &str
         .await
         .context("Reading the open client error issues")?;
     if open.iter().any(|issue| issue.title == title) {
-        return Ok(());
+        return Ok(false);
     }
     client
         .post(&url)
@@ -341,7 +358,7 @@ async fn open_issue(client: &reqwest::Client, app: &App, title: &str, body: &str
         .context("Creating the issue")?
         .error_for_status()
         .context("Creating the issue")?;
-    Ok(())
+    Ok(true)
 }
 
 #[cfg(test)]
@@ -349,7 +366,12 @@ mod tests {
     use super::*;
 
     fn error(location: &str) -> ClientError {
+        error_of(1, location)
+    }
+
+    fn error_of(user: i32, location: &str) -> ClientError {
         ClientError {
+            user: UserId::new(user).unwrap(),
             positions: vec![location.to_owned(), "main.abc.min.js:1:2".to_owned()],
             translated: true,
             diagnostic_id: "d1".to_owned(),
@@ -360,27 +382,38 @@ mod tests {
     fn repeats_and_bursts_open_no_issue() {
         let mut throttle = Throttle::default();
         let start = Instant::now();
+        // A request that fails, or that finds the issue already open, uses up no issue.
+        assert!(
+            throttle
+                .title(&error("main.abc.min.js:7:7"), start)
+                .is_some()
+        );
         assert_eq!(
             throttle
                 .title(&error("main.abc.min.js:5:6"), start)
                 .as_deref(),
             Some("Client error at main.abc.min.js:5:6")
         );
+        throttle.opened(error("").user, start);
         assert!(
             throttle
                 .title(&error("main.abc.min.js:5:6"), start)
                 .is_none()
         );
-        for index in 1..MAX_ISSUES {
-            assert!(
-                throttle
-                    .title(&error(&format!("main.abc.min.js:{index}:0")), start)
-                    .is_some()
-            );
+        // One user cannot open every issue of the window.
+        assert!(
+            throttle
+                .title(&error("main.abc.min.js:8:8"), start)
+                .is_none()
+        );
+        for (user, index) in (2..).zip(1..MAX_ISSUES) {
+            let other = error_of(user, &format!("main.abc.min.js:{index}:0"));
+            assert!(throttle.title(&other, start).is_some());
+            throttle.opened(other.user, start);
         }
         assert!(
             throttle
-                .title(&error("main.abc.min.js:9:9"), start)
+                .title(&error_of(9, "main.abc.min.js:9:9"), start)
                 .is_none()
         );
         // Once the window passes, a new error gets an issue, but a repeat still waits.

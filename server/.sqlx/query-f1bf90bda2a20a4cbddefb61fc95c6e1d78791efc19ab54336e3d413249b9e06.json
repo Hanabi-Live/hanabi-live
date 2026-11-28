@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variants SET name = NULL\n         WHERE name = ANY($2) AND NOT EXISTS (\n             SELECT FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, name)\n             WHERE catalog.id = variants.id AND catalog.name = variants.name\n         )",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2Array",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f1bf90bda2a20a4cbddefb61fc95c6e1d78791efc19ab54336e3d413249b9e06"
+}

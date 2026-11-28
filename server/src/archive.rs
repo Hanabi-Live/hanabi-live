@@ -394,11 +394,15 @@ pub(crate) async fn insert(
         character_ids.push(character_id);
         assigned_metadata.push(assigned);
     }
+    // The "count_games_of_participant" trigger updates the `users` row of each new row, in the
+    // order of the rows. Two games that save at once must lock their players in the same order, so
+    // the rows are in the order of `count_game`: players by ID.
     let participants = sqlx::query!(
         "INSERT INTO game_participants(game_id,user_id,seat,character_id,assigned_metadata)
          SELECT $1,p.user_id,p.seat,p.character_id,p.assigned_metadata
          FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
          AS p(user_id,seat,character_id,assigned_metadata)
+         ORDER BY p.user_id
          RETURNING id,seat",
         id.get(),
         &users,

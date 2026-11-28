@@ -33,6 +33,8 @@ pub struct Store {
     stats_slots: Arc<Semaphore>,
     /// Bounds the statistics refreshes that run at once, so they cannot take every connection.
     stats_running: Arc<Semaphore>,
+    /// Stops the maintenance that `connect` starts, when the store closes.
+    closing: CancellationToken,
 }
 /// How long the primary pool waits for a connection, a statement, or an idle transaction.
 pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -129,6 +131,22 @@ pub(crate) async fn record_variants(primary: &PgPool) -> Result<()> {
             )
         );
     }
+    // A name is unique, and the database checks that for each row that a statement changes. Thus,
+    // first clear each recorded name that the catalog now gives to another ID. Such a row is a
+    // variant that got a new name, or one that left the catalog.
+    let mut transaction = primary.begin().await?;
+    sqlx::query!(
+        "UPDATE variants SET name = NULL
+         WHERE name = ANY($2) AND NOT EXISTS (
+             SELECT FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, name)
+             WHERE catalog.id = variants.id AND catalog.name = variants.name
+         )",
+        &ids,
+        &names
+    )
+    .execute(&mut *transaction)
+    .await
+    .context("Failed to clear the old variant names")?;
     sqlx::query!(
         "UPDATE variants SET name = catalog.name
          FROM UNNEST($1::smallint[], $2::text[]) AS catalog(id, name)
@@ -136,9 +154,10 @@ pub(crate) async fn record_variants(primary: &PgPool) -> Result<()> {
         &ids,
         &names
     )
-    .execute(primary)
+    .execute(&mut *transaction)
     .await
     .context("Failed to record the variant names")?;
+    transaction.commit().await?;
     Ok(())
 }
 
@@ -154,6 +173,7 @@ impl Store {
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
             stats_running: Arc::new(Semaphore::new(STATS_RUNNING)),
+            closing: CancellationToken::new(),
         }
     }
     pub async fn connect(config: &crate::config::Config) -> Result<Self> {
@@ -185,7 +205,7 @@ impl Store {
         record_variants(&primary).await?;
         let state =
             LiveState::connect(primary.clone(), &options.application_name(&ownership_name)).await?;
-        Ok(Self {
+        let store = Self {
             primary,
             lobby_reads,
             primary_name,
@@ -194,7 +214,22 @@ impl Store {
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
             stats_running: Arc::new(Semaphore::new(STATS_RUNNING)),
-        })
+            closing: CancellationToken::new(),
+        };
+        // This can take a while on the first start after the keys were added, so the server does
+        // not wait for it.
+        let (pool, closing) = (store.primary.clone(), store.closing.clone());
+        store.stats.spawn(async move {
+            tokio::select! {
+                () = closing.cancelled() => {}
+                result = crate::accounts::backfill_lookalike_keys(&pool) => {
+                    if let Err(error) = result {
+                        tracing::error!("Filling in the lookalike keys failed: {error:#}");
+                    }
+                }
+            }
+        });
+        Ok(store)
     }
     pub fn check_state(&self) -> Result<()> {
         self.state.check()
@@ -539,6 +574,7 @@ impl Store {
         });
     }
     pub async fn close(&self) -> Result<()> {
+        self.closing.cancel();
         self.stats.close();
         self.stats.wait().await;
         let result = self.state.close().await;
@@ -1070,6 +1106,19 @@ mod tests {
         sqlx::query!("UPDATE variants SET name = 'Six Suits' WHERE id = 1")
             .execute(&db.pool)
             .await?;
+        // Names that the catalog now gives to other IDs: of a variant that it still has, and of
+        // one that left it.
+        let reused =
+            |id: u32| Ok::<_, anyhow::Error>(hanabi_engine::get_variant_by_id(id)?.name.clone());
+        sqlx::query!("UPDATE variants SET name = $1 WHERE id = 2", reused(3)?)
+            .execute(&db.pool)
+            .await?;
+        sqlx::query!(
+            "INSERT INTO variants (id, recipe, name) VALUES (32000, 'left the catalog', $1)",
+            reused(4)?
+        )
+        .execute(&db.pool)
+        .await?;
         record_variants(&db.pool).await?;
         let recorded: std::collections::HashMap<i16, Option<String>> =
             sqlx::query!("SELECT id, name FROM variants")

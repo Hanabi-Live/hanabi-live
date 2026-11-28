@@ -789,6 +789,88 @@ async fn a_new_username_cannot_look_like_an_existing_one_postgres() {
         assert_eq!(status, StatusCode::UNAUTHORIZED, "{lookalike}");
         assert!(body.contains("too similar"), "{lookalike}: {body}");
     }
+    // The existing name is the one that changes when its lookalike characters are replaced: "m"
+    // looks like "rn". "Com" is an account from before the keys, which the server fills in.
+    let (status, _, _) = request(&app, "POST", "/login", &register("Modem"), None, false).await;
+    assert_eq!(status, StatusCode::OK);
+    db.user("Com").await;
+    backfill_lookalike_keys(&db.pool).await.unwrap();
+    for lookalike in ["Modern", "Corn"] {
+        let (status, _, body) =
+            request(&app, "POST", "/login", &register(lookalike), None, false).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{lookalike}");
+        assert!(body.contains("too similar"), "{lookalike}: {body}");
+    }
+    db.close().await;
+}
+
+#[tokio::test]
+async fn an_ended_session_gets_no_identity_token_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let id = db.user("Alice").await;
+    let secret = config().secret;
+    // The sessions end while the token of a session with version 0 is hashed.
+    sqlx::query!("UPDATE users SET session_version=1 WHERE id=$1", id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    for (version, issued) in [(0, false), (1, true)] {
+        let token = crypto::regenerate_session_token(&db.pool, &secret, id, version, "127.0.0.1")
+            .await
+            .unwrap();
+        assert_eq!(token.is_some(), issued, "version {version}");
+        let stored = sqlx::query_scalar!(
+            "SELECT COUNT(*) AS \"count!\" FROM user_identity_tokens WHERE user_id=$1",
+            id
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        assert_eq!(stored, i64::from(issued), "version {version}");
+    }
+    db.close().await;
+}
+
+#[tokio::test]
+async fn a_site_can_check_tokens_after_its_address_used_up_its_password_work_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    // The limits live for the whole test run, so this test uses an account ID and an address that
+    // no other test uses.
+    let id = 77_000_001;
+    sqlx::query!(
+        "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+         VALUES($1,'Alice','alice','test-password-hash','127.0.0.1')",
+        id
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let app = router(db.pool.clone(), config(), hub());
+    let token = regenerate_token(&db.pool, &config().secret, id, "127.0.0.1")
+        .await
+        .unwrap()
+        .token;
+    // The address of another site's server, which checks the tokens of all of its players.
+    let site = "203.0.113.77";
+    while rate_limit::charge_password_work(site).is_ok() {}
+    let check = || async {
+        let request = Request::builder()
+            .method("POST")
+            .uri("/api/v1/identity")
+            .header(header::CONTENT_TYPE, "application/json")
+            .extension(ConnectInfo(SocketAddr::new(site.parse().unwrap(), 12345)))
+            .body(Body::from(json!({ "token": token }).to_string()))
+            .unwrap();
+        app.clone().oneshot(request).await.unwrap().status()
+    };
+    assert_eq!(check().await, StatusCode::OK);
+    // One token still has a limit, so that its account cannot cause much work.
+    while rate_limit::charge_token_work(id).is_ok() {}
+    assert_eq!(check().await, StatusCode::TOO_MANY_REQUESTS);
     db.close().await;
 }
 

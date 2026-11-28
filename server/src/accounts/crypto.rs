@@ -142,6 +142,12 @@ pub async fn hash_password(ip: &str, password: String) -> Result<String> {
 
 pub async fn verify_password(ip: &str, password: String, hash: String) -> Result<bool> {
     super::rate_limit::charge_password_work(ip)?;
+    verify_hash(password, hash).await
+}
+
+/// Checks a password or an identity token against its hash. The caller must limit how often this
+/// runs, because each check costs much time and memory.
+pub(super) async fn verify_hash(password: String, hash: String) -> Result<bool> {
     let permit = HASH_ADMISSION.acquire(HASH_WAIT).await?;
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
@@ -178,31 +184,58 @@ pub struct IdentityToken {
     pub expires_at: OffsetDateTime,
 }
 
+/// Replaces the account's identity token. Use `regenerate_session_token` when the caller knows the
+/// session version of the request.
 pub async fn regenerate_token(
     pool: &PgPool,
     secret: &str,
     id: i32,
     ip: &str,
 ) -> Result<IdentityToken> {
+    let version = sqlx::query_scalar!("SELECT session_version FROM users WHERE id=$1", id)
+        .fetch_one(pool)
+        .await?;
+    regenerate_session_token(pool, secret, id, version, ip)
+        .await?
+        .ok_or_else(|| anyhow!("The sessions of account {id} ended before its new identity token"))
+}
+
+/// Replaces the account's identity token, for a session with the version `version`. Returns `None`
+/// if the account's sessions ended since then, such as with a password change while the token was
+/// hashed. The token of an ended session would stay valid, because ending the sessions deletes the
+/// token only once.
+pub async fn regenerate_session_token(
+    pool: &PgPool,
+    secret: &str,
+    id: i32,
+    version: i32,
+    ip: &str,
+) -> Result<Option<IdentityToken>> {
     let mut bytes = [0; IDENTITY_TOKEN_BYTES];
     rand::rngs::SysRng.try_fill_bytes(&mut bytes)?;
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(ip, token.clone()).await?;
     let expires_at = OffsetDateTime::now_utc() + IDENTITY_TOKEN_LIFETIME;
-    sqlx::query!(
+    // The lock makes a change of the session version wait for this statement. Thus, the statement
+    // that deletes the token, which runs after that change, sees this token.
+    let stored = sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)
-         VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET
+         (SELECT id,$2,$3,$4 FROM users WHERE id=$1 AND session_version=$5 FOR SHARE)
+         ON CONFLICT (user_id) DO UPDATE SET
          token_hash=EXCLUDED.token_hash, token_lookup_hash=EXCLUDED.token_lookup_hash,
          expires_at=EXCLUDED.expires_at, datetime_updated=NOW()",
         id,
         hash,
         lookup,
-        expires_at
+        expires_at,
+        version
     )
     .execute(pool)
-    .await?;
-    Ok(IdentityToken { token, expires_at })
+    .await?
+    .rows_affected()
+        > 0;
+    Ok(stored.then_some(IdentityToken { token, expires_at }))
 }
 
 #[cfg(test)]

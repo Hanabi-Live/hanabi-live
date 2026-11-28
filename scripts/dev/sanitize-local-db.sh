@@ -34,6 +34,7 @@ TRUNCATE
 UPDATE users SET
   username = CONCAT('anon_user_', id),
   normalized_username = CONCAT('anon_user_', id),
+  lookalike_key = NULL,
   password_hash = NULL,
   last_ip = '',
   datetime_created = NOW(),

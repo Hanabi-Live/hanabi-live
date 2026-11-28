@@ -682,6 +682,13 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     )
     .await;
     assert!(missing_variants(&body).contains(&json!("No Variant")));
+    // A term that normalizes to nothing excludes no variant.
+    let (_, body) = request(
+        app.clone(),
+        "/shared-missing-scores/2/Alice/Bob?excludePlayers=Alice&excludeVariants=%F4%8F%BF%BF",
+    )
+    .await;
+    assert!(missing_variants(&body).contains(&json!("No Variant")));
     for (path, status, text) in [
         ("/profile", 404, "specify a player"),
         ("/history/Missing/Alice/alice", 404, "No player is named"),

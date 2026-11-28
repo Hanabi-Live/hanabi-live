@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO variants (id, recipe, name) VALUES (32000, 'left the catalog', $1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4c105b99b9d8d0c243e665cb61d7bfe312813776c210c8419f7a1304a77af0b2"
+}
