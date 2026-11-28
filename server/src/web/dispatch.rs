@@ -250,6 +250,13 @@ pub(super) async fn dispatch(
         measurement.success();
         return Ok(None);
     }
+    // A new tag is announced in the table's chat, which a muted user cannot write to.
+    if matches!(message, ClientRequest::TagAdd(_)) {
+        ensure_or_reject!(
+            !accounts::is_muted(&app.store.primary, &session.ip).await?,
+            "You have been muted by an administrator."
+        );
+    }
     let message = if route.lobby().is_some() {
         let outcome = request(user, |reply| user::UserCommand::Lobby {
             session: session.clone(),

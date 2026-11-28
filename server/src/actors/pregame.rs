@@ -438,6 +438,9 @@ impl TableActor {
         if let Some(owner) = &new_owner {
             source.owner = owner.user_ref()?;
         }
+        for id in &selected_ids {
+            source.shadows.remove(id);
+        }
         let names = selected
             .iter()
             .map(|p| p.name.as_str())

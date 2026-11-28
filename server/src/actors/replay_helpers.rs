@@ -83,11 +83,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     ensure_or_reject!(
         deck.len() == hanabi_engine::create_deck(variant).len()
             && deck.iter().all(|c| c.suit_index < variant.suits.len()
-                && matches!(
-                    c.rank,
-                    hanabi_protocol::MIN_RANK
-                        ..=hanabi_protocol::MAX_RANK | hanabi_protocol::START_CARD_RANK
-                )),
+                && (c.rank == hanabi_protocol::START_CARD_RANK || variant.ranks.contains(&c.rank))),
         "The deck must have {} valid cards in it.",
         hanabi_engine::create_deck(variant).len()
     );

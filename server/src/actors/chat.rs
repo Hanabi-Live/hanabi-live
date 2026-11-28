@@ -588,6 +588,8 @@ impl TableActor {
                 let player = players.remove(index);
                 let user = player.user()?;
                 kicked.push(user);
+                // Otherwise, the table would restore them as a spectator when they reconnect.
+                next.shadows.remove(&user);
                 (
                     format!("Successfully kicked \"{}\" from the game.", player.name),
                     user,

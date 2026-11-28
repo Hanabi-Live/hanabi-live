@@ -92,7 +92,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         !identities.is_empty()
             && identities.len() <= hanabi_protocol::MAX_DECK_SIZE
             && identities.iter().all(|c| c.suit_index < variant.suits.len()
-                && matches!(c.rank, MIN_RANK..=MAX_RANK | START_CARD_RANK)),
+                && (c.rank == START_CARD_RANK || variant.ranks.contains(&c.rank))),
         "The prepared deck contains invalid card identities."
     );
     // Every player has a character when detrimental characters are on, and none otherwise.

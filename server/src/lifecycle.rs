@@ -259,17 +259,26 @@ impl Control {
                 "The server is not ready for lifecycle operations."
             }
         );
-        if matches!(reason, StopReason::Restart(_))
-            && let Err(error) = crate::restart::prepare(&self.root).await
-        {
-            self.lifecycle.withdraw_stop();
-            return Err(error);
+        // The request can be dropped while it waits, such as when its client disconnects. The stop
+        // is then withdrawn, so that the server does not stay in this phase.
+        let mut withdraw = WithdrawStop(Some(&self.lifecycle));
+        if matches!(reason, StopReason::Restart(_)) {
+            crate::restart::prepare(&self.root).await?;
         }
-        if let Err(error) = self.stops.try_send(reason) {
-            self.lifecycle.withdraw_stop();
-            return Err(error.into());
-        }
+        self.stops.try_send(reason)?;
+        withdraw.0 = None;
         Ok(())
+    }
+}
+
+/// Withdraws a stop request when dropped, unless the request was sent.
+struct WithdrawStop<'a>(Option<&'a Lifecycle>);
+
+impl Drop for WithdrawStop<'_> {
+    fn drop(&mut self) {
+        if let Some(lifecycle) = self.0 {
+            lifecycle.withdraw_stop();
+        }
     }
 }
 
@@ -283,12 +292,13 @@ pub fn duration(seconds: u64) -> String {
     if seconds < MINUTE {
         return unit(seconds, "second");
     }
+    let seconds = (seconds + MINUTE / 2) / MINUTE * MINUTE;
     if seconds < HOUR {
-        return unit((seconds + MINUTE / 2) / MINUTE, "minute");
+        return unit(seconds / MINUTE, "minute");
     }
     let total = seconds / HOUR;
-    let days = total.saturating_sub(1) / HOURS_PER_DAY;
-    let hours = total - days * HOURS_PER_DAY;
+    let days = total / HOURS_PER_DAY;
+    let hours = total % HOURS_PER_DAY;
     let minutes = seconds % HOUR / MINUTE;
     if days == 0 {
         format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))

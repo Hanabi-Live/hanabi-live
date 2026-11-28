@@ -425,6 +425,20 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
     let before = state.clone();
     assert!(applied(&state, 0, action(RecordedActionType::Play, 0, 0), None).is_err());
     assert_eq!(state, before);
+    // A rank that the variant does not have could start a Sudoku stack that is longer than the
+    // variant's stacks.
+    let mut input = setup(
+        Options {
+            variant_name: "Sudoku (4 Suits)".into(),
+            ..Options::default()
+        },
+        None,
+    );
+    input.deck = Some(vec![DeckCard {
+        suit_index: 0,
+        rank: 5,
+    }]);
+    assert!(create_game(input).is_err());
 }
 
 fn potential(state: &EngineState) -> f64 {

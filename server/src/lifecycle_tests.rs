@@ -210,3 +210,14 @@ fn lost_ownership_or_shutdown_stops_connections() {
         assert!(receiver.try_recv().is_err());
     }
 }
+
+#[test]
+fn duration_carries_whole_hours_and_days() {
+    assert_eq!(duration(59), "59 seconds");
+    assert_eq!(duration(3_599), "1 hour and 0 minutes");
+    assert_eq!(duration(24 * 3_600), "1 day, 0 hours, and 0 minutes");
+    assert_eq!(
+        duration(48 * 3_600 + 5 * 60),
+        "2 days, 0 hours, and 5 minutes"
+    );
+}
