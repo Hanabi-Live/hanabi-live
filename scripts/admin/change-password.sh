@@ -33,6 +33,6 @@ fi
 # The hash is passed in the environment, not as a psql argument, to keep it out of the process list.
 PASSWORD_HASH=$password_hash sql --set=username="$USERNAME" << 'SQL'
 \getenv password_hash PASSWORD_HASH
-UPDATE users SET password_hash = :'password_hash' WHERE username = :'username';
+UPDATE users SET password_hash = :'password_hash', session_version = session_version + 1 WHERE username = :'username';
 SQL
 echo "Complete."

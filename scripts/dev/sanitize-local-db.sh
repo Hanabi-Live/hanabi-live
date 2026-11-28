@@ -28,7 +28,9 @@ TRUNCATE
   chat_log,
   chat_log_pm,
   banned_ips,
-  muted_ips;
+  muted_ips,
+  live_tables,
+  live_table_parts;
 UPDATE users SET
   username = CONCAT('anon_user_', id),
   normalized_username = CONCAT('anon_user_', id),

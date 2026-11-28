@@ -147,9 +147,8 @@ EOF
   echo "0 3 * * * $APP_USER $APP_DIR/scripts/admin/database-backup.sh" > /etc/cron.d/hanabi-live
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
-  sudo --user "$APP_USER" ./scripts/admin/database-backup.sh
 
-  echo "The server is set up. Also keep PostgreSQL backups off this server."
+  echo "The server is set up. The daily backup fails until you set GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME and GOOGLE_DRIVE_PARENT_DIRECTORY_ID in .env."
 }
 
 main "$@"
