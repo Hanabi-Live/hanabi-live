@@ -24,7 +24,7 @@ import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards.ts";
 import { getGameInfoTooltip } from "./gameInfoTooltip.ts";
 import { updatePip } from "./HanabiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
-import { isOurTurn } from "./isOurTurn.ts";
+import { isOurTurn, isViewingOldTurn } from "./isOurTurn.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
 import * as turn from "./turn.ts";
 import { globals } from "./UiGlobals.ts";
@@ -132,24 +132,13 @@ export class Deck extends Konva.Group {
   dragEnd(): void {
     const draggedTo = cursor.getElementDragLocation(this);
 
-    if (draggedTo === "playArea") {
-      // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
-      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
-      turn.end({
-        type: "play",
-        order: cardOrder,
-      });
-    } else if (draggedTo === "discardArea" && globals.variant.hasInverted) {
-      // Inverted suit needs discard whenever play is available.
-      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
-      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
-      turn.end({
-        type: "discard",
-        order: cardOrder,
-      });
-    } else {
-      // The card was dragged to an invalid location; tween it back to the hand.
+    // Tweens the card back to the deck. This also runs when the move does not happen.
+    const returnToDeck = () => {
+      // The deck can be destroyed before the server answers the move.
+      if (this.parent === null) {
+        return;
+      }
+
       this.to({
         // Tween
         duration: CARD_ANIMATION_LENGTH_SECONDS,
@@ -161,6 +150,33 @@ export class Deck extends Konva.Group {
           globals.layers.UI.batchDraw();
         },
       });
+    };
+
+    if (draggedTo === "playArea") {
+      // Card orders start at 0, so the final card order is the length of the deck - 1.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end(
+        {
+          type: "play",
+          order: cardOrder,
+        },
+        returnToDeck,
+      );
+    } else if (draggedTo === "discardArea" && globals.variant.hasInverted) {
+      // Inverted suit needs discard whenever play is available.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end(
+        {
+          type: "discard",
+          order: cardOrder,
+        },
+        returnToDeck,
+      );
+    } else {
+      // The card was dragged to an invalid location.
+      returnToDeck();
     }
   }
 
@@ -301,7 +317,13 @@ export class Deck extends Konva.Group {
   }
 
   canDragDeck(): boolean {
-    return globals.options.deckPlays && this.numLeft === 1 && isOurTurn();
+    return (
+      globals.options.deckPlays
+      && this.numLeft === 1
+      && isOurTurn()
+      // An old turn of the game can show one card in the deck when the deck is empty.
+      && !isViewingOldTurn(globals.state)
+    );
   }
 
   setCount(count: number): void {
@@ -312,26 +334,30 @@ export class Deck extends Konva.Group {
     // When there are no cards left in the deck, remove the card-back and show a label that
     // indicates how many turns are left before the game ends.
     this.cardBack.visible(count > 0);
-    const numLeftY = count === 0 ? EMPTY_DECK_NUM_LEFT_Y : NUM_LEFT_Y;
-    this.numLeftText.y(numLeftY * this.height());
     globals.elements.deckTurnsRemainingLabel1!.visible(
       count === 0 && !globals.options.allOrNothing,
     );
     globals.elements.deckTurnsRemainingLabel2!.visible(
       count === 0 && !globals.options.allOrNothing,
     );
-
-    // If the game ID is showing, we want to center the deck count between it and the other labels.
-    if (count === 0 && globals.elements.gameIdLabel!.isVisible() === true) {
-      this.nudgeCountDownwards();
-    }
+    this.positionCount();
 
     this.updateEmpathy();
   }
 
-  nudgeCountDownwards(): void {
-    const nudgeAmount = GAME_ID_NUM_LEFT_NUDGE * this.height();
-    this.numLeftText.y(this.numLeftText.y() + nudgeAmount);
+  /**
+   * Puts the count in its place. On an empty deck, the count is lower. If the game ID also shows
+   * there, the count is lower still, centered between the game ID and the other labels.
+   */
+  positionCount(): void {
+    let numLeftY = NUM_LEFT_Y;
+    if (this.numLeft === 0) {
+      numLeftY = EMPTY_DECK_NUM_LEFT_Y;
+      if (globals.elements.gameIdLabel?.visible() === true) {
+        numLeftY += GAME_ID_NUM_LEFT_NUDGE;
+      }
+    }
+    this.numLeftText.y(numLeftY * this.height());
   }
 
   resetCardBack(): void {

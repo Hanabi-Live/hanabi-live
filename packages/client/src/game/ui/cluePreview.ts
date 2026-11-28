@@ -43,6 +43,16 @@ export function reset(): void {
   setEnabled(false);
 }
 
+/**
+ * Forgets the preview when the screen is destroyed or drawn again. The previewed cards are
+ * destroyed with it, so this does not touch them.
+ */
+export function clear(): void {
+  enabled = false;
+  potentialClue = undefined;
+  previewedCards = [];
+}
+
 function setEnabled(newEnabled: boolean) {
   enabled = newEnabled;
   globals.elements.postClueEmpathyCheckbox?.setChecked(enabled);

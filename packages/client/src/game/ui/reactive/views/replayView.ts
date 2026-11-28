@@ -206,10 +206,8 @@ export function onGameIdLabelChanged(text: string): void {
   globals.elements.gameIdLabel?.text(text);
   globals.elements.gameIdLabel?.show();
 
-  // Also move the card count label on the deck downwards.
-  if (globals.state.visibleState!.cardsRemainingInTheDeck === 0) {
-    globals.elements.deck?.nudgeCountDownwards();
-  }
+  // The card count on an empty deck sits lower while the game ID shows.
+  globals.elements.deck?.positionCount();
 
   globals.layers.arrow.batchDraw(); // gameIdLabel is on the arrow layer
   globals.layers.card.batchDraw(); // deck is on the card layer

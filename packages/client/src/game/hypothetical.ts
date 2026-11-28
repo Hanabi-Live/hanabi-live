@@ -146,8 +146,9 @@ export function finishHypothetical(): void {
   );
 }
 
-export function sendHypotheticalAction(hypoAction: ClientAction): void {
-  planAndSendHypotheticalAction(hypoAction);
+/** Makes a move in the hypothetical. Returns false if the move cannot be made there. */
+export function sendHypotheticalAction(hypoAction: ClientAction): boolean {
+  return planAndSendHypotheticalAction(hypoAction);
 }
 
 /** Spends a clue to give the turn to the next player, without giving a clue. */
@@ -205,7 +206,9 @@ function getCardView(
   };
 }
 
-function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
+function planAndSendHypotheticalAction(
+  intent: HypotheticalActionIntent,
+): boolean {
   const state = getState();
   const { hypothetical } = state.replay;
   assertDefined(hypothetical, "There is no hypothetical.");
@@ -250,9 +253,12 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
     playing: state.playing,
     cardViews,
   });
-  if (actions !== undefined && actions.length > 0) {
-    sendHypotheticalActionsToServer(actions);
+  if (actions === undefined || actions.length === 0) {
+    return false;
   }
+
+  sendHypotheticalActionsToServer(actions);
+  return true;
 }
 
 /** Applies the actions of one move, or one changed card, in one message or store update. */

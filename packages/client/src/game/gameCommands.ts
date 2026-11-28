@@ -59,6 +59,12 @@ type HypotheticalControl = Extract<
   { type: "hypothetical" }
 >["control"];
 
+/**
+ * The table whose game in progress the last "gameState" message described, if any. Until the game
+ * becomes a replay, the turn in the address bar is a turn of that game in progress.
+ */
+let inProgressTableId: number | undefined;
+
 // ----------------
 // Command handlers
 // ----------------
@@ -83,6 +89,15 @@ function setCardIdentities(deck: ServerEventData["gameFinished"]["deck"]) {
 
 gameCommands.set("gameFinished", (data) => {
   modals.closeIdleWarning();
+  inProgressTableId = undefined;
+
+  // A queued move can no longer happen. Clearing it puts a dragged card back in the hand.
+  store.dispatch(
+    gameUpdated({
+      type: "premove",
+      premove: undefined,
+    }),
+  );
 
   // The game is rebuilt as a replay below, which needs the cards that were hidden from us.
   setCardIdentities(data.deck);
@@ -378,11 +393,29 @@ gameCommands.set("gameState", (data) => {
     }
   }
 
-  // We might need to go to a specific turn if we loaded a URL such as:
-  // http://localhost/replay/123#5
   // In an ongoing game, the hash is only the turn that the screen last showed. Going to it after a
   // reconnection would put a player into the in-game replay on an old turn.
-  if (specificTurnString !== undefined && phase.type === "replay") {
+  if (phase.type === "playing") {
+    inProgressTableId = lobbyGlobals.joinedTableId;
+    return;
+  }
+
+  // If the game ended while we were away, the hash is still the last turn that we saw of it.
+  const hashIsFromGameInProgress =
+    inProgressTableId === lobbyGlobals.joinedTableId;
+  inProgressTableId = undefined;
+
+  // We might need to go to a specific turn if we loaded a URL such as:
+  // http://localhost/replay/123#5
+  // The hash is also the turn that the screen last showed, so this runs after a reconnection or a
+  // reload too. Going to a turn takes a follower of a shared replay away from the leader's turns.
+  // Thus, the hash applies in a solo replay, and in a shared replay only when we lead it.
+  const sharedReplay = gameSession.currentState().replay.shared;
+  if (
+    specificTurnString !== undefined
+    && !hashIsFromGameInProgress
+    && (sharedReplay === undefined || sharedReplay.amLeader)
+  ) {
     replay.goTo(specificTurnString);
   }
 });

@@ -82,6 +82,15 @@ function keydown(event: KeyboardEvent) {
       return;
     }
 
+    // Escape = If typing in the chat panel of the New UI, stop typing. The panel is not the chat
+    // window above, so without this, Escape would end the hypothetical or leave the replay.
+    if (isGameChatInputFocused()) {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      return;
+    }
+
     if (globals.state.replay.hypothetical !== undefined) {
       // Escape = If in a hypothetical, exit back to the replay.
       hypothetical.endHypothetical();
@@ -328,11 +337,9 @@ function getNormalGameplayHotkeyFunction(
     globals.state.playing
     && globals.state.replay.segment === undefined
     && isOurSeat(currentPlayerIndex, globals.metadata);
-  const controlHypotheticalInSharedReplay =
-    globals.state.replay.shared !== undefined
-    && controlsHypothetical(globals.state);
+  // The hotkeys also act on a hypothetical that we control: our own, or the shared one as leader.
   const shouldHaveKeyboardHotkeysForActions =
-    ourTurnInOngoingGame || controlHypotheticalInSharedReplay;
+    ourTurnInOngoingGame || controlsHypothetical(globals.state);
   if (!shouldHaveKeyboardHotkeysForActions) {
     return undefined;
   }

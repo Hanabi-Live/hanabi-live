@@ -31,8 +31,6 @@ import { abortEffectTimelines } from "./ui/fireworks.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
 import * as keyboard from "./ui/keyboard.ts";
 import { StateObserver } from "./ui/reactive/StateObserver.ts";
-import { drawConnections } from "./ui/serverUpdates.ts";
-import * as timer from "./ui/timer.ts";
 import { resetGlobals, globals as uiGlobals } from "./ui/UiGlobals.ts";
 import { uiInit } from "./ui/uiInit.ts";
 
@@ -126,9 +124,7 @@ export function buildClassicScreen(): void {
 
   uiInit(() => {
     uiGlobals.stateObserver = new StateObserver();
-    timer.draw();
-    drawConnections();
-    ui.updateChatLabel();
+    ui.drawOutsideGameState();
   });
 }
 

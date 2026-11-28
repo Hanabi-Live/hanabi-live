@@ -20,14 +20,22 @@ export function resetSelectedClue(): void {
   globals.layers.UI.batchDraw();
 }
 
-export function end(clientAction: ClientAction): void {
+/**
+ * Makes the move in the game, or in the hypothetical when there is one. When it is not our turn,
+ * the move is queued instead, if the player allows that. `onNotDone` is called when the move is
+ * neither made nor queued, or when the server refuses it. A dragged card uses it to go back.
+ */
+export function end(clientAction: ClientAction, onNotDone?: () => void): void {
   if (globals.state.replay.hypothetical !== undefined) {
-    hypothetical.sendHypotheticalAction(clientAction);
+    if (!hypothetical.sendHypotheticalAction(clientAction)) {
+      onNotDone?.();
+    }
     return;
   }
 
   // A spectator who watches from a player's seat does not move for them.
   if (!globals.state.playing) {
+    onNotDone?.();
     return;
   }
 
@@ -37,6 +45,7 @@ export function end(clientAction: ClientAction): void {
     // Until the server answers the move that we sent on this turn, a second move would be refused.
     // This stops a fast double click in a speedrun.
     if (store.getState().newUi.sentMove?.turnNum === turnNum) {
+      onNotDone?.();
       return;
     }
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
@@ -48,7 +57,12 @@ export function end(clientAction: ClientAction): void {
       (reply) => {
         // The server refused the move, or it never reached the server (such as when the connection
         // is down), so the move no longer waits. A move that succeeds ends the turn instead.
-        if (reply.ok || store.getState().newUi.sentMove?.turnNum !== turnNum) {
+        if (reply.ok) {
+          return;
+        }
+
+        onNotDone?.();
+        if (store.getState().newUi.sentMove?.turnNum !== turnNum) {
           return;
         }
 
@@ -66,6 +80,11 @@ export function end(clientAction: ClientAction): void {
         premove: clientAction,
       }),
     );
+  }
+
+  // The move is not queued when the player has pre-playing off, or when the game refuses it.
+  if (globals.state.premove === undefined) {
+    onNotDone?.();
   }
 }
 

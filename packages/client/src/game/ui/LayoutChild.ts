@@ -106,6 +106,11 @@ export class LayoutChild extends Konva.Group {
     return (
       draggableIndex !== undefined
       && this.card.state.location === draggableIndex
+      // The in-game replay shows the hand of an old turn. A card that has left the hand since
+      // cannot be played or discarded.
+      && (globals.state.replay.hypothetical !== undefined
+        || globals.state.ongoingGame.deck[this.card.order]?.location
+          === draggableIndex)
       // A morphed card with an unknown identity cannot be played or discarded.
       && !this.blank
       // Cards should not be draggable while they are playing an animation. (This function will be
@@ -172,7 +177,8 @@ export class LayoutChild extends Konva.Group {
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | undefined): void {
     const returnToHand = () => {
-      // The card can be destroyed while the morph or move confirmation modal is open.
+      // The card can be destroyed while the morph or move confirmation modal is open, or before the
+      // server answers the move.
       if (this.parent !== null) {
         (this.parent as unknown as CardLayout | PlayStack).doLayout();
       }
@@ -191,10 +197,13 @@ export class LayoutChild extends Konva.Group {
         confirmPlay(
           this.card.state,
           () => {
-            turn.end({
-              type: "play",
-              order: this.card.order,
-            });
+            turn.end(
+              {
+                type: "play",
+                order: this.card.order,
+              },
+              returnToHand,
+            );
           },
           returnToHand,
         );
@@ -206,10 +215,13 @@ export class LayoutChild extends Konva.Group {
         confirmDiscard(
           this.card.state,
           () => {
-            turn.end({
-              type: "discard",
-              order: this.card.order,
-            });
+            turn.end(
+              {
+                type: "discard",
+                order: this.card.order,
+              },
+              returnToHand,
+            );
           },
           returnToHand,
         );

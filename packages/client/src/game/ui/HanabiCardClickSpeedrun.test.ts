@@ -56,6 +56,10 @@ describe("speedrun clue clicks", () => {
         ongoingGame: {
           clueTokens: 0,
         },
+        replay: {
+          segment: undefined,
+          hypothetical: undefined,
+        },
       },
       elements: {
         clueTypeButtonGroup: undefined,
@@ -86,6 +90,10 @@ describe("speedrun clue clicks", () => {
         ongoingGame: {
           clueTokens: 1,
         },
+        replay: {
+          segment: undefined,
+          hypothetical: undefined,
+        },
       },
     });
 
@@ -93,5 +101,26 @@ describe("speedrun clue clicks", () => {
 
     expect(play).not.toHaveBeenCalled();
     expect(end).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    ["color", 0],
+    ["rank", 2],
+  ] as const)("a %s clue is not sent from an old turn", (_name, button) => {
+    Object.assign(globals, {
+      state: {
+        ongoingGame: {
+          clueTokens: 1,
+        },
+        replay: {
+          segment: 3,
+          hypothetical: undefined,
+        },
+      },
+    });
+
+    click(button);
+
+    expect(end).not.toHaveBeenCalled();
   });
 });

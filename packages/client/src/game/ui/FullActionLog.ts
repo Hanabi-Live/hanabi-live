@@ -4,6 +4,7 @@ import { assertDefined, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/lib/Container";
 import { getCanvasColors } from "../../canvasColors.ts";
+import { getLogLinePlayerIndex } from "../logLinePlayer.ts";
 import { MultiFitText } from "./MultiFitText.ts";
 import { globals } from "./UiGlobals.ts";
 import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants.ts";
@@ -153,22 +154,23 @@ export class FullActionLog extends Konva.Group {
         logEntry.turnNum,
         logEntry.text,
       );
-      for (const playerIndex of eRange(globals.options.numPlayers)) {
-        if (
-          logEntry.text.startsWith(globals.metadata.playerNames[playerIndex]!)
-        ) {
-          if (this.playerLogs[playerIndex] === undefined) {
-            this.makePlayerLog(playerIndex);
-          }
-          appendLine(
-            this.playerLogs[playerIndex]!,
-            this.playerLogNumbers[playerIndex]!,
-            logEntry.turnNum,
-            logEntry.text,
-          );
-          break;
-        }
+      const playerIndex = getLogLinePlayerIndex(
+        logEntry.text,
+        globals.metadata.playerNames,
+      );
+      if (playerIndex === undefined) {
+        continue;
       }
+
+      if (this.playerLogs[playerIndex] === undefined) {
+        this.makePlayerLog(playerIndex);
+      }
+      appendLine(
+        this.playerLogs[playerIndex]!,
+        this.playerLogNumbers[playerIndex]!,
+        logEntry.turnNum,
+        logEntry.text,
+      );
     }
 
     this.logText!.refreshText();

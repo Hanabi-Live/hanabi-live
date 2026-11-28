@@ -1,5 +1,6 @@
 import { controlsHypothetical } from "../controlsHypothetical.ts";
 import { isOurSeat } from "../ourSeat.ts";
+import type { State } from "../types/State.ts";
 import { globals } from "./UiGlobals.ts";
 
 /**
@@ -25,5 +26,16 @@ export function isOurTurnInOngoingGame(): boolean {
       globals.state.ongoingGame.turn.currentPlayerIndex,
       globals.metadata,
     )
+  );
+}
+
+/**
+ * Whether the screen shows an old turn of the game in a replay, outside of a hypothetical. A real
+ * move is not made from there, because the cards on screen are not the cards of the game now.
+ */
+export function isViewingOldTurn(state: State): boolean {
+  return (
+    state.replay.segment !== undefined
+    && state.replay.hypothetical === undefined
   );
 }

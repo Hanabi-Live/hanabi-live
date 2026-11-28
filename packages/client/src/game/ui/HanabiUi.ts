@@ -6,6 +6,7 @@ import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import * as gameSession from "../gameSession.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
+import * as cluePreview from "./cluePreview.ts";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
 import { drawUi } from "./drawUi.ts";
@@ -13,6 +14,7 @@ import { abortEffectTimelines } from "./fireworks.ts";
 import * as keyboard from "./keyboard.ts";
 import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
+import { drawConnections } from "./serverUpdates.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
 import { globals, releaseSubscriptions } from "./UiGlobals.ts";
@@ -122,7 +124,6 @@ export class HanabiUi {
    * Rebuilds the entire game UI from scratch, redrawing every element (for example, so that canvas
    * elements pick up the new stage size).
    */
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private rebuildGameUi(): void {
     const stageContainer = globals.stage.container();
     stageContainer.style.transform = "";
@@ -148,6 +149,8 @@ export class HanabiUi {
       unsubscribe();
     }
     globals.cardSubscriptions = [];
+    // The cards of the clue preview are destroyed too.
+    cluePreview.clear();
 
     drawUi();
 
@@ -170,8 +173,7 @@ export class HanabiUi {
     globals.layers.card.draw();
     globals.layers.UI2.draw();
     globals.layers.arrow.draw();
-    // The timers were drawn again, so show the clocks on them.
-    timer.draw();
+    this.drawOutsideGameState();
   }
 
   private finishResize(): void {
@@ -183,6 +185,16 @@ export class HanabiUi {
   }
 
   // The following methods are called from various parent functions.
+
+  /**
+   * Shows on newly drawn elements what the game's state does not hold: the clocks, which players
+   * are connected, and the chat button's unread count.
+   */
+  drawOutsideGameState(): void {
+    timer.draw();
+    drawConnections();
+    this.updateChatLabel();
+  }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   updateChatLabel(): void {
@@ -222,6 +234,7 @@ export class HanabiUi {
       this.resizeRequestAnimationFrame = undefined;
     }
     releaseSubscriptions();
+    cluePreview.clear();
     unmountClueLog();
     keyboard.destroy();
     this.stopDrawingTimers();
