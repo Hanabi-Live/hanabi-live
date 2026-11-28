@@ -10,6 +10,10 @@ APP_USER="hanabi"
 APP_DIR="/home/$APP_USER/hanabi-live"
 DB_NAME="hanabi"
 DB_USER="hanabiuser"
+# The values that the operator must set in .env before setup, because the server cannot make them.
+REQUIRED_VARIABLES=(GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME GOOGLE_DRIVE_PARENT_DIRECTORY_ID)
+# The values that this script writes to .env.
+GENERATED_VARIABLES=(DOMAIN SESSION_SECRET DB_NAME DB_USER DB_PASSWORD TLS_CERT_FILE TLS_KEY_FILE)
 
 # Everything is in a function because "git checkout" can replace this file while it is running.
 function main {
@@ -29,11 +33,8 @@ function main {
     echo "Error: The repository must be cloned to: $APP_DIR" >&2
     exit 1
   fi
-  if [[ -e "$APP_DIR/.env" ]]; then
-    echo "Error: This server is already set up: $APP_DIR/.env exists" >&2
-    exit 1
-  fi
   cd "$APP_DIR"
+  check_env
 
   # Install dependencies.
   apt update
@@ -112,8 +113,8 @@ SQL
 
   # Configure the server.
   session_secret=$(openssl rand -hex 64)
-  install --mode 600 /dev/null .env
-  cat > .env << EOF
+  chmod 600 .env
+  cat >> .env << EOF
 DOMAIN="$DOMAIN"
 SESSION_SECRET="$session_secret"
 DB_NAME="$DB_NAME"
@@ -148,7 +149,44 @@ EOF
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
 
-  echo "The server is set up. The daily backup fails until you set GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME and GOOGLE_DRIVE_PARENT_DIRECTORY_ID in .env."
+  echo "The server is set up."
+}
+
+# Checks the .env file that the operator made, before setup changes anything.
+function check_env {
+  if [[ ! -f .env ]]; then
+    echo "Error: Create $APP_DIR/.env first, with these values: ${REQUIRED_VARIABLES[*]}" >&2
+    exit 1
+  fi
+  local name missing=() generated=()
+  for name in "${REQUIRED_VARIABLES[@]}"; do
+    # shellcheck source=/dev/null
+    if [[ -z "$(source .env && printf "%s" "${!name-}")" ]]; then
+      missing+=("$name")
+    fi
+  done
+  if ((${#missing[@]} > 0)); then
+    echo "Error: Set these values in $APP_DIR/.env: ${missing[*]}" >&2
+    exit 1
+  fi
+  for name in "${GENERATED_VARIABLES[@]}"; do
+    # shellcheck source=/dev/null
+    if [[ -n "$(source .env && printf "%s" "${!name-}")" ]]; then
+      generated+=("$name")
+    fi
+  done
+  if ((${#generated[@]} > 0)); then
+    echo "Error: This server is already set up, or $APP_DIR/.env sets values that setup makes. Remove them: ${generated[*]}" >&2
+    exit 1
+  fi
+  # The backup runs as the app user, and gdrive reads the service account from its home directory.
+  local account
+  # shellcheck source=/dev/null
+  account="/home/$APP_USER/.gdrive/$(source .env && printf "%s" "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME")"
+  if [[ ! -f "$account" ]]; then
+    echo "Error: The Google Drive service account file does not exist: $account" >&2
+    exit 1
+  fi
 }
 
 main "$@"

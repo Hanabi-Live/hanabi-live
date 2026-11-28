@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 28th, 2026
+
+- The production setup script now stops before it changes anything if `.env`
+  does not set the Google Drive backup values.
+
 ## November 27th, 2026
 
 - A bot can now lead only one table that it created, and at most 3 shared

@@ -38,5 +38,13 @@ apt upgrade --yes
 apt install --yes git
 mkdir -p /home/hanabi
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
+```
+
+The daily database backup needs a Google Drive service account. Put its key file
+in `/home/hanabi/.gdrive/`. Then create `/home/hanabi/hanabi-live/.env` with
+`GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME` and `GOOGLE_DRIVE_PARENT_DIRECTORY_ID`
+(see `.env.example`), and run the setup script:
+
+```sh
 /home/hanabi/hanabi-live/install/initial-production-setup.sh /root/hanabi-live-*-linux-amd64.tar.gz
 ```
